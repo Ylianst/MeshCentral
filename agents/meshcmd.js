@@ -707,7 +707,7 @@ function run(argv) {
         // Start Intel AMT configuration
         if ((settings.url == null) || (typeof settings.url != 'string') || (settings.url == '')) { console.log('No MeshCentral server URL specified, use --url [url].'); exit(1); return; }
         if ((settings.id == null) || (typeof settings.id != 'string') || (settings.id == '')) { console.log('No device group identifier specified, use --id [identifier].'); exit(1); return; }
-        settings.id = settings.id.replace('\'', ''); // Remove single quote.
+        settings.id = settings.id.split('\'').join(''); // Remove single quotes.
         debug(1, "Settings: " + JSON.stringify(settings));
         configureAmt();
     } else if (settings.action == 'amtccm') {
