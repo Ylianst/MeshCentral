@@ -159,7 +159,7 @@
         "agentBlockedIP": { "type": [ "string", "array" ], "default": null, "description": "When set, agents from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\"" },
         "authLog": { "type": "string", "default": null, "description": "File path and name of the authentication log to be created. This log can be parsed by Fail2ban." },
         "InterUserMessaging": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to send and receive inter-user messages. This can be used to implement bots or other software where MeshCentral is used as data transport. See \"interuser\" websocket command in the code." },
-        "manageAllDeviceGroups": { "type": "array", "uniqueItems": true, "items": { "type": " string" }, "description": "Users in this list are allowed to see and manage all device groups within their domain." },
+        "manageAllDeviceGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to see and manage all device groups within their domain." },
         "manageCrossDomain": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to manage all users in all domains." },
         "localDiscovery": {
           "type": "object",
@@ -1020,7 +1020,7 @@
                 "properties": {
                   "clientId": { "type": "string" },
                   "clientSecret": { "type": "string" },
-                  "refreshTfoken": { "type": "string" }
+                  "refreshToken": { "type": "string" }
                 },
                 "required": [ "clientId", "clientSecret", "refreshToken" ]
               },
