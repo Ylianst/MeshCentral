@@ -440,253 +440,177 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }, 0);
             });
         } else if (domain.auth == 'ldap') {
-            if (domain.ldapoptions.url == 'test') {
-                // Fake LDAP login
-                var xxuser = domain.ldapoptions[name.toLowerCase()];
-                if (xxuser == null) {
-                    fn(new Error('invalid password'));
-                    return;
+            // This method will handle LDAP login
+            const ldapHandler = function ldapHandlerFunc(err, xxuser) {
+                if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } // Close the LDAP object
+                if (err) { fn(new Error('invalid password')); return; }
+
+                // Save this LDAP user to file if needed
+                if (typeof domain.ldapsaveusertofile == 'string') {
+                    obj.fs.appendFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
+                }
+
+                // Work on getting the userid for this LDAP user
+                var shortname = null;
+                if ('[object Array]' == Object.prototype.toString.call(email)) {
+                    // mail may be multivalued in ldap in which case, answer would be an array. Use the 1st one.
+                    email = email[0];
+                }
+                if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
+                var username = xxuser['displayName'];
+                if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
+                if (domain.ldapuserbinarykey) {
+                    // Use a binary key as the userid
+                    if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
+                } else if (domain.ldapuserkey) {
+                    // Use a string key as the userid
+                    if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
                 } else {
-                    // Save this LDAP user to file if needed
-                    if (typeof domain.ldapsaveusertofile == 'string') {
-                        obj.fs.appendFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
-                    }
+                    // Use the default key as the userid
+                    if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
+                    else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
+                    else if (xxuser.name) { shortname = xxuser.name; }
+                    else if (xxuser.cn) { shortname = xxuser.cn; }
+                }
+                if (shortname == null) { fn(new Error('no user identifier')); return; }
+                if (username == null) { username = shortname; }
+                var userid = 'user/' + domain.id + '/' + shortname;
 
-                    // Work on getting the userid for this LDAP user
-                    var username = xxuser['displayName'];
-                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
-                    var shortname = null;
-                    if (domain.ldapuserbinarykey) {
-                        // Use a binary key as the userid
-                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex'); }
-                    } else if (domain.ldapuserkey) {
-                        // Use a string key as the userid
-                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
-                    } else {
-                        // Use the default key as the userid
-                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
-                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
-                        else if (xxuser.name) { shortname = xxuser.name; }
-                        else if (xxuser.cn) { shortname = xxuser.cn; }
-                    }
-                    if (shortname == null) { fn(new Error('no user identifier')); return; }
-                    if (username == null) { username = shortname; }
-                    var userid = 'user/' + domain.id + '/' + shortname;
+                // Work on getting the email address for this LDAP user
+                var email = null;
+                if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
+                if ('[object Array]' == Object.prototype.toString.call(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
+                if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
 
-                    // Work on getting the email address for this LDAP user
-                    var email = null;
-                    if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
-                    if ('[object Array]' == Object.prototype.toString.call(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
-                    if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
+                // Work on getting the real name for this LDAP user
+                var realname = null;
+                if (domain.ldapuserrealname) { realname = xxuser[domain.ldapuserrealname]; }
 
-                    // Work on getting the real name for this LDAP user
-                    var realname = null;
-                    if (domain.ldapuserrealname) { realname = xxuser[domain.ldapuserrealname]; }
+                // Work on getting the phone number for this LDAP user
+                var phonenumber = null;
+                if (domain.ldapuserphonenumber) { phonenumber = xxuser[domain.ldapuserphonenumber]; }
 
-                    // Work on getting the real name for this LDAP user
-                    var phonenumber = null;
-                    if (domain.ldapuserphonenumber) { phonenumber = xxuser[domain.ldapuserphonenumber]; }
+                // Work on getting the image of this LDAP user
+                /*
+                var userimage = null;
+                if (domain.ldapuserimage && xxuser[domain.ldapuserimage]) {
+                    console.log('IMAGE', Buffer.from(xxuser[domain.ldapuserimage], 'utf8'));
+                    userimage = 'data:image/jpeg;base64,' + Buffer.from(xxuser[domain.ldapuserimage], 'binary').toString('base64');
+                }
+                */
 
-                    // Check if the user already exists
-                    var user = obj.users[userid];
-                    if (user == null) {
-                        // Create a new user
-                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
-                        if (email) { user['email'] = email; user['emailVerified'] = true; }
-                        if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
-                        if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
-                        var usercount = 0;
-                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                        if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
+                // Display user information extracted from LDAP data
+                /*
+                console.log('shortname', shortname);
+                console.log('email', email);
+                console.log('realname', realname);
+                console.log('phonenumber', phonenumber);
+                console.log('userimage', userimage);
+                */
 
-                        // Auto-join any user groups
-                        if (typeof domain.newaccountsusergroups == 'object') {
-                            for (var i in domain.newaccountsusergroups) {
-                                var ugrpid = domain.newaccountsusergroups[i];
-                                if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
-                                var ugroup = obj.userGroups[ugrpid];
-                                if (ugroup != null) {
-                                    // Add group to the user
-                                    if (user.links == null) { user.links = {}; }
-                                    user.links[ugroup._id] = { rights: 1 };
+                // If there is a testing userid, use that
+                if (ldapHandlerFunc.ldapShortName) {
+                    shortname = ldapHandlerFunc.ldapShortName;
+                    userid = 'user/' + domain.id + '/' + shortname;
+                }
 
-                                    // Add user to the group
-                                    ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
-                                    db.Set(ugroup);
+                // Check if the user already exists
+                var user = obj.users[userid];
+                if (user == null) {
+                    // This user does not exist, create a new account.
+                    var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
+                    if (email) { user['email'] = email; user['emailVerified'] = true; }
+                    if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
+                    if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
+                    var usercount = 0;
+                    for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
+                    if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
 
-                                    // Notify user group change
-                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 71, msgArgs: [user.name, ugroup.name], msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
-                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                    parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
-                                }
+                    // Auto-join any user groups
+                    if (typeof domain.newaccountsusergroups == 'object') {
+                        for (var i in domain.newaccountsusergroups) {
+                            var ugrpid = domain.newaccountsusergroups[i];
+                            if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                            var ugroup = obj.userGroups[ugrpid];
+                            if (ugroup != null) {
+                                // Add group to the user
+                                if (user.links == null) { user.links = {}; }
+                                user.links[ugroup._id] = { rights: 1 };
+
+                                // Add user to the group
+                                ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                                db.Set(ugroup);
+
+                                // Notify user group change
+                                var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 71, msgArgs: [user.name, ugroup.name], msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                                parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
                             }
                         }
+                    }
 
-                        obj.users[user._id] = user;
+                    obj.users[user._id] = user;
+                    obj.db.SetUser(user);
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msgid: 128, msgArgs: [user.name], msg: 'Account created, name is ' + user.name, domain: domain.id };
+                    if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
+                    obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
+                    return fn(null, user._id);
+                } else {
+                    // This is an existing user
+                    // If the display username has changes, update it.
+                    if (user.name != username) {
+                        user.name = username;
                         obj.db.SetUser(user);
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msgid: 128, msgArgs: [user.name], msg: 'Account created, name is ' + user.name, domain: domain.id };
-                        if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                        obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
-                        return fn(null, user._id);
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 127, msgArgs: [user.name], msg: 'Changed account display name to ' + user.name, domain: domain.id };
+                        if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+                    }
+                    // Check if user email has changed
+                    var emailreason = null;
+                    if (user.email && !email) { // email unset in ldap => unset
+                        delete user.email;
+                        delete user.emailVerified;
+                        emailreason = 'Unset email (no more email in LDAP)'
+                    } else if (user.email != email) { // update email
+                        user['email'] = email;
+                        user['emailVerified'] = true;
+                        emailreason = 'Set account email to ' + email + '. Sync with LDAP.';
+                    }
+                    if (emailreason) {
+                        obj.db.SetUser(user);
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: emailreason, domain: domain.id };
+                        if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+                    }
+                    // If user is locker out, block here.
+                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
+                    return fn(null, user._id);
+                }
+            }
+
+            if (domain.ldapoptions.url == 'test') {
+                // Test LDAP login
+                var xxuser = domain.ldapoptions[name.toLowerCase()];
+                if (xxuser == null) { fn(new Error('invalid password')); return; } else {
+                    ldapHandler.ldapShortName = name.toLowerCase();
+                    if (typeof xxuser == 'string') {
+                        // This test LDAP user points to a JSON file we user information, load it.
+                        ldapHandler(null, require(xxuser));
                     } else {
-                        // This is an existing user
-                        // If the display username has changes, update it.
-                        if (user.name != username) {
-                            user.name = username;
-                            obj.db.SetUser(user);
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 127, msgArgs: [user.name], msg: 'Changed account display name to ' + user.name, domain: domain.id };
-                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-                        }
-                        // Check if user email has changed
-                        var emailreason = null;
-                        if (user.email && !email) { // email unset in ldap => unset
-                            delete user.email;
-                            delete user.emailVerified;
-                            emailreason = 'Unset email (no more email in LDAP)'
-                        } else if (user.email != email) { // update email
-                            user['email'] = email;
-                            user['emailVerified'] = true;
-                            emailreason = 'Set account email to ' + email + '. Sync with LDAP.';
-                        }
-                        if (emailreason) {
-                            obj.db.SetUser(user);
-                            var event = { etype: 'user', userid: userid, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: emailreason, domain: domain.id };
-                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-                        }
-                        // If user is locker out, block here.
-                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
-                        return fn(null, user._id);
+                        // THe user information is in the config.json, use it.
+                        ldapHandler(null, xxuser);
                     }
                 }
             } else {
                 // LDAP login
                 var LdapAuth = require('ldapauth-fork');
                 var ldap = new LdapAuth(domain.ldapoptions);
-                ldap.on('error', function (err) { console.log('ldap error: ', err); });
-                ldap.authenticate(name, pass, function (err, xxuser) {
+                ldapHandler.ldapobj = ldap;
+                ldap.on('error', function (err) {
                     try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
-                    if (err) { fn(new Error('invalid password')); return; }
-
-                    // Save this LDAP user to file if needed
-                    if (typeof domain.ldapsaveusertofile == 'string') {
-                        obj.fs.appendFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
-                    }
-
-                    // Work on getting the userid for this LDAP user
-                    var shortname = null;
-                    if ('[object Array]' == Object.prototype.toString.call(email)) {
-                        // mail may be multivalued in ldap in which case, answer would be an array. Use the 1st one.
-                        email = email[0];
-                    }
-                    if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
-                    var username = xxuser['displayName'];
-                    if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
-                    if (domain.ldapuserbinarykey) {
-                        // Use a binary key as the userid
-                        if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
-                    } else if (domain.ldapuserkey) {
-                        // Use a string key as the userid
-                        if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
-                    } else {
-                        // Use the default key as the userid
-                        if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
-                        else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
-                        else if (xxuser.name) { shortname = xxuser.name; }
-                        else if (xxuser.cn) { shortname = xxuser.cn; }
-                    }
-                    if (shortname == null) { fn(new Error('no user identifier')); return; }
-                    if (username == null) { username = shortname; }
-                    var userid = 'user/' + domain.id + '/' + shortname;
-
-                    // Work on getting the email address for this LDAP user
-                    var email = null;
-                    if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
-                    if ('[object Array]' == Object.prototype.toString.call(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
-                    if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
-
-                    // Work on getting the real name for this LDAP user
-                    var realname = null;
-                    if (domain.ldapuserrealname) { realname = xxuser[domain.ldapuserrealname]; }
-
-                    // Work on getting the real name for this LDAP user
-                    var phonenumber = null;
-                    if (domain.ldapuserphonenumber) { phonenumber = xxuser[domain.ldapuserphonenumber]; }
-
-                    // Check if the user already exists
-                    var user = obj.users[userid];
-                    if (user == null) {
-                        // This user does not exist, create a new account.
-                        var user = { type: 'user', _id: userid, name: username, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
-                        if (email) { user['email'] = email; user['emailVerified'] = true; }
-                        if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
-                        if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
-                        var usercount = 0;
-                        for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                        if (usercount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
-
-                        // Auto-join any user groups
-                        if (typeof domain.newaccountsusergroups == 'object') {
-                            for (var i in domain.newaccountsusergroups) {
-                                var ugrpid = domain.newaccountsusergroups[i];
-                                if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
-                                var ugroup = obj.userGroups[ugrpid];
-                                if (ugroup != null) {
-                                    // Add group to the user
-                                    if (user.links == null) { user.links = {}; }
-                                    user.links[ugroup._id] = { rights: 1 };
-
-                                    // Add user to the group
-                                    ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
-                                    db.Set(ugroup);
-
-                                    // Notify user group change
-                                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 71, msgArgs: [user.name, ugroup.name], msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
-                                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                    parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
-                                }
-                            }
-                        }
-
-                        obj.users[user._id] = user;
-                        obj.db.SetUser(user);
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msgid: 128, msgArgs: [user.name], msg: 'Account created, name is ' + user.name, domain: domain.id };
-                        if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                        obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
-                        return fn(null, user._id);
-                    } else {
-                        // This is an existing user
-                        // If the display username has changes, update it.
-                        if (user.name != username) {
-                            user.name = username;
-                            obj.db.SetUser(user);
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 127, msgArgs: [user.name], msg: 'Changed account display name to ' + user.name, domain: domain.id };
-                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-                        }
-                        // Check if user email has changed
-                        var emailreason = null;
-                        if (user.email && !email) { // email unset in ldap => unset
-                            delete user.email;
-                            delete user.emailVerified;
-                            emailreason = 'Unset email (no more email in LDAP)'
-                        } else if (user.email != email) { // update email
-                            user['email'] = email;
-                            user['emailVerified'] = true;
-                            emailreason = 'Set account email to ' + email + '. Sync with LDAP.';
-                        }
-                        if (emailreason) {
-                            obj.db.SetUser(user);
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: emailreason, domain: domain.id };
-                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-                        }
-                        // If user is locker out, block here.
-                        if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
-                        return fn(null, user._id);
-                    }
+                    console.log('ldap error: ', err);
                 });
+                ldap.authenticate(name, pass, ldapHandler);
             }
         } else {
             // Regular login
