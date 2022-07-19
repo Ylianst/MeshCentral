@@ -172,14 +172,14 @@ function CreateMeshCentralServer(config, args) {
 
         // Fix a NeDB database
         if (obj.args.dbfix) {
-            var lines = null, badJsonCount = 0, feildNames = [], fixedDb = [];
+            var lines = null, badJsonCount = 0, fieldNames = [], fixedDb = [];
             try { lines = obj.fs.readFileSync(obj.getConfigFilePath(obj.args.dbfix), { encoding: 'utf8' }).split('\n'); } catch (ex) { console.log('Invalid file: ' + obj.args.dbfix + ': ' + ex); process.exit(); }
             for (var i = 0; i < lines.length; i++) {
                 var x = null;
                 try { x = JSON.parse(lines[i]); } catch (ex) { badJsonCount++; }
-                if (x != null) { fixedDb.push(lines[i]); for (var j in x) { if (feildNames.indexOf(j) == -1) { feildNames.push(j); } } }
+                if (x != null) { fixedDb.push(lines[i]); for (var j in x) { if (fieldNames.indexOf(j) == -1) { fieldNames.push(j); } } }
             }
-            console.log('Lines: ' + lines.length + ', badJSON: ' + badJsonCount + ', Feilds: ' + feildNames);
+            console.log('Lines: ' + lines.length + ', badJSON: ' + badJsonCount + ', Feilds: ' + fieldNames);
             obj.fs.writeFileSync(obj.getConfigFilePath(obj.args.dbfix) + '-fixed', fixedDb.join('\n'), { encoding: 'utf8' });
             return;
         }
