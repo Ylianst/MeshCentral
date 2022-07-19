@@ -21,6 +21,12 @@ Make sure you understand how MeshCentral works with your browser using chrome de
 "AgentWsCompression": false,
 ```
 
+### Port Troubleshooting on server
+
+If you're getting a `port 4433 is not available` error, this is because someone else is using this port, very likely another instance of MeshCentral. If your MeshCentral server is bound to ports 81/444 MeshCentral could not get port 80/443 and got the next available ones.
+
+In general the problem is that you are running two MeshCentral instances at the same time. Probably one as a background Windows Service and one in the command line. Which ever instance can grab port 4433 will have a running MPS and CIRA should work, but the second instance will not have port 4433 and CIRA will not work.
+
 ### Enabling trace in your browser Dev Tools
 
 `Trace=1` as a parameter in chrome dev tools for debugging
