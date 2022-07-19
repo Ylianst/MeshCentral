@@ -318,7 +318,7 @@ if (args['_'].length == 0) {
                             console.log("  --id '[groupid]'       - Device group identifier (or --group).");
                         }
                         console.log("  --group [groupname]    - Device group name (or --id).");
-                        console.log("  --hours [hours]        - Validity period in hours or 0 for infinit.");
+                        console.log("  --hours [hours]        - Validity period in hours or 0 for infinite.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --flags [mode]         - Mode flag for link type (0 = both, 1 = interactive only, 2 = background only)");
                         break;

@@ -21,6 +21,12 @@ Make sure you understand how MeshCentral works with your browser using chrome de
 "AgentWsCompression": false,
 ```
 
+### Port Troubleshooting on server
+
+If you're getting a `port 4433 is not available` error, this is because someone else is using this port, very likely another instance of MeshCentral. If your MeshCentral server is bound to ports 81/444 MeshCentral could not get port 80/443 and got the next available ones.
+
+In general the problem is that you are running two MeshCentral instances at the same time. Probably one as a background Windows Service and one in the command line. Which ever instance can grab port 4433 will have a running MPS and CIRA should work, but the second instance will not have port 4433 and CIRA will not work.
+
 ### Enabling trace in your browser Dev Tools
 
 `Trace=1` as a parameter in chrome dev tools for debugging
@@ -214,6 +220,37 @@ Then open your browser to http://localhost:9999 or whatever port you used.
 
 !!!note
     If you pause the debugger, and happen to forget about it, the agent will automatically kill itself and restart because it will think that a thread is stuck. Default debugger timeout is 10 minutes, you may find a log entry saved to disk saying "Microstack Thread STUCK", or something similar.
+
+### Troubleshooting Agent connectivity
+
+If an agent keeps disconnecting and reconnecting, add this line to the "settings" section of the config.json:
+
+```
+"agentping": 30
+```
+
+This will cause MeshCentral to "ping" the agent every 30 seconds and the agent to respond with a "pong" each time. That usually solves the issue however, it does generate more traffic. If that works, you can remove the line and try this line instead:
+
+```
+"agentpong": 30
+```
+
+This will cause MeshCentral to "pong" the agent every 30 seconds, the agent will not respond. This usually fixes the issue, but you have half the traffic. I would also increase the time like:
+
+```
+"agentpong": 90
+```
+
+This is the best, you have one way traffic to all agents every 90 seconds. The larger the number you can get away with the better.
+
+If you ever get the same problem but on the browser side, you can also use one of these:
+
+```
+"browserping": 30
+"browserpong": 30
+```
+
+Same idea, browser side instead of agent side.
 
 ## Intel AMT
 
