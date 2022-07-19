@@ -89,15 +89,15 @@
         "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 443, "description": "Ths port of the main HTTPS server." },
         "portBind": { "type": "string", "description": "When set, bind the HTTPS main port to a specific network address." },
         "aliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null, "description": "The actual main port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
-        "redirPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 80, "description": "This is a HTTP web server port that mostly redirects users to the HTTPS port but does provide some other servces, 0 will turn this port off." },
+        "redirPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 80, "description": "This is a HTTP web server port that mostly redirects users to the HTTPS port but does provide some other services, 0 will turn this port off." },
         "redirPortBind": { "type": "string", "description": "When set, bind the HTTP redirection port to a specific network address." },
         "redirAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "The actual redirection port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
         "relayPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 0, "description": "When set, a web relay web server is bound to this port and will allow user access to remote web sites." },
         "relayAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null, "description": "The actual relay port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
-        "relayDNS": { "type": "string", "default": null, "description": "When set, relayPort valie is ignored. Set this to a DNS name the points to this server. When the server is accessed using the DNS name, the main web server port is used as a web relay port."  },
+        "relayDNS": { "type": "string", "default": null, "description": "When set, relayPort value is ignored. Set this to a DNS name the points to this server. When the server is accessed using the DNS name, the main web server port is used as a web relay port."  },
         "agentPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, enabled a new HTTPS server port that only accepts agent connections." },
         "agentPortBind": { "type": "string", "description": "When set, binds the agent port to a specific network interface." },
-        "agentAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, indicates the actual publically visible agent-only port. If not set, the AgentPort value is used." },
+        "agentAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, indicates the actual publicly visible agent-only port. If not set, the AgentPort value is used." },
         "agentAliasDNS": { "type": "string", "format": "hostname", "description": "When set, specified the DNS name used by agents to connect to the agent-only port." },
         "agentPortTls": { "type": "boolean", "default": true, "description": "Indicates if the agent-only port must perform TLS, this should be set to false if TLS is performed in front of this server." },
         "agentLogDump": { "type": "boolean", "default": false, "description": "Automatically downloads all agent error logs into meshcentral-data/agenterrorlogs.txt." },
@@ -106,7 +106,7 @@
         "agentSignLock": { "type": "boolean", "default": false, "description": "When code signing an agent using authenticode, lock the agent to only allow connection to this server. (This is in testing, the default value will change to true in the future)." },
         "agentTimeStampServer": { "type": [ "boolean", "string" ], "default": "http://timestamp.comodoca.com/authenticode", "description": "The time stamping server to use when code signing Windows executables. When set to false, the executables are not time stamped." },
         "agentTimeStampProxy": { "type": [ "boolean", "string" ], "description": "The HTTP proxy to use when contacting the time stamping server, if false, no proxy is used. By default, the npmproxy value is used." },
-        "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma seperated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
+        "ignoreAgentHashCheck": { "type": [ "boolean", "string" ], "default": false, "description": "When true, the agent no longer checked the TLS certificate of the server. This should be used for debugging only. You can also set this to a comma separated list of IP addresses to ignore, for example: \"192.168.2.100,192.168.1.0/24\"." },
         "exactPorts": { "type": "boolean", "default": false, "description": "When set to true, MeshCentral will only grab the required TCP listening ports or fail. It will not try to use the next available port of it's busy." },
         "allowLoginToken": { "type": "boolean", "default": false },
         "StrictTransportSecurity": { "type": ["boolean", "string"], "default": null, "description": "Controls the Strict-Transport-Security header, default is 1 year. Set to false to remove, true to force enable, or string to set a custom value. If set to null, MeshCentral will enable if a trusted certificate is set." },
@@ -116,7 +116,7 @@
         "webRTC": { "type": "boolean", "default": false, "description": "When enabled, allows use of WebRTC to allow direct network traffic between the agent and browser." },
         "nice404": { "type": "boolean", "default": true, "description": "By default, a nice looking 404 error page is displayed when needed. Set this to false to disable it." },
         "selfUpdate": { "type": "boolean", "default": false, "description": "When true, this server will attempt to self-update everyday after midnight." },
-        "cleanNpmCacheOnUpdate": { "type": "boolean", "default": false, "description": "When true, run \"npm cache clean --force\" to reclame disk space." },
+        "cleanNpmCacheOnUpdate": { "type": "boolean", "default": false, "description": "When true, run \"npm cache clean --force\" to reclaim disk space." },
         "browserPing": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval and expects a response from the browser." },
         "browserPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval." },
         "agentsInRam": { "type": "boolean", "default": false, "description": "Loads all agent binaries in RAM for faster agent updates." },
@@ -159,7 +159,7 @@
         "agentBlockedIP": { "type": [ "string", "array" ], "default": null, "description": "When set, agents from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\"" },
         "authLog": { "type": "string", "default": null, "description": "File path and name of the authentication log to be created. This log can be parsed by Fail2ban." },
         "InterUserMessaging": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to send and receive inter-user messages. This can be used to implement bots or other software where MeshCentral is used as data transport. See \"interuser\" websocket command in the code." },
-        "manageAllDeviceGroups": { "type": "array", "uniqueItems": true, "items": { "type": " string" }, "description": "Users in this list are allowed to see and manage all device groups within their domain." },
+        "manageAllDeviceGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to see and manage all device groups within their domain." },
         "manageCrossDomain": { "type": "array", "uniqueItems": true, "items": { "type": "string" }, "description": "Users in this list are allowed to manage all users in all domains." },
         "localDiscovery": {
           "type": "object",
@@ -371,7 +371,7 @@
           "agentSelfGuestSharing": {
             "type": [ "boolean", "object" ],
             "default": false,
-            "description": "When set to true, MeshCentral Asssitant can create it's own guest sharing links.",
+            "description": "When set to true, MeshCentral Assistant can create it's own guest sharing links.",
             "properties": {
               "expire": { "type": "number", "description": "When set, limits the self-created guest sharing link to this number of minutes." }
             }
@@ -403,7 +403,7 @@
                 "name": { "type": "string", "description": "Name of the alternative messaging service, for example: \"Jitsi\" " },
                 "url": { "type": "string", "description": "URL to the alternative messaging services, for example: \"https://meet.jit.si/myserver-{0}\", for a device {0}, {1}, {2}, {3} is the device id. For a user, {0} is the userid, {1} is full userid with dashes, {2} is real name with no spaces, {3} is real name with dash instead of spaces." },
                 "localurl": { "type": "string", "description": "If specified, this is the URL that is used on the administrator side, for example: \"https://meet.jit.si/myserver-{0}\", for a device {0}, {1}, {2}, {3} is the device id. For a user, {0} is the userid, {1} is full userid with dashes, {2} is real name with no spaces, {3} is real name with dash instead of spaces." },
-                "type": { "type": "string", "enum": [null, "user", "device"], "default": null, "description": "Indicate if this button should be shown in the user or device type. If obmitted, it will be displayed in both." }
+                "type": { "type": "string", "enum": [null, "user", "device"], "default": null, "description": "Indicate if this button should be shown in the user or device type. If omitted, it will be displayed in both." }
               },
               "required": [ "name", "url" ]
             }
@@ -463,8 +463,8 @@
             "type": [ "object", "boolean" ],
             "additionalProperties": false,
             "properties": {
-              "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab. This option can only enabled when the NeDB databse is in use. For other databases, this option disabled and the setting is ignored." },
-              "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab. This option can only enabled when the NeDB databse is in use. For other databases, this option disabled and the setting is ignored." },
+              "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab. This option can only enabled when the NeDB database is in use. For other databases, this option disabled and the setting is ignored." },
+              "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab. This option can only enabled when the NeDB database is in use. For other databases, this option disabled and the setting is ignored." },
               "Upgrade": { "type": "boolean", "default": true, "description": "Allows administrators to update the server from the My Server tab." },
               "ErrorLog": { "type": "boolean", "default": true, "description": "Allows administrators to see the server crash log the server from the My Server tab." },
               "Console": { "type": "boolean", "default": true, "description": "Allows administrators to access the server console from the My Server tab." },
@@ -683,7 +683,7 @@
             "additionalProperties": false,
             "description": "Information passed to the AMT manager module that impacts all Intel AMT device managed within this domain.",
             "properties": {
-              "TlsConnections": { "type": "boolean", "default": true, "description": "When set to false, MeshCentral will use TLS to connect to Intel AMT, this is not recommanded." },
+              "TlsConnections": { "type": "boolean", "default": true, "description": "When set to false, MeshCentral will use TLS to connect to Intel AMT, this is not recommended." },
               "TlsAcmActivation": { "type": "boolean", "default": false, "description": "When set to false, MeshCentral will not attempt a TLS ACM activation on Intel AMT v14+" },
               "AdminAccounts": {
                 "description": "List of username and passwords to try when connecting to Intel AMT.",
@@ -1020,7 +1020,7 @@
                 "properties": {
                   "clientId": { "type": "string" },
                   "clientSecret": { "type": "string" },
-                  "refreshTfoken": { "type": "string" }
+                  "refreshToken": { "type": "string" }
                 },
                 "required": [ "clientId", "clientSecret", "refreshToken" ]
               },
@@ -1167,7 +1167,7 @@
         "email": { "type": "string", "format": "email", "description": "Email address of the administrator of this server. Make sure this is a valid email address otherwise the certificate request will fail." },
         "names": { "type": "string" },
         "skipChallengeVerification": { "type": "boolean", "default": false, "description": "By default, MeshCentral will perform a self-test to make sure HTTP port 80 can respond correctly before making a request to Let's Encrypt. In some cases, this self-test can't work and must be skipped." },
-        "production": { "type": "boolean", "default": false, "description": "By default a test certificate will be obtained from Let's Encrypt. Always start by getting a test certificate and make sure that works before setting this to true and obtaining a production certificaite. Making too many bad requests for a production certificate will get you banned for a long period of time." }
+        "production": { "type": "boolean", "default": false, "description": "By default a test certificate will be obtained from Let's Encrypt. Always start by getting a test certificate and make sure that works before setting this to true and obtaining a production certificate. Making too many bad requests for a production certificate will get you banned for a long period of time." }
       },
       "required": [ "email", "names" ]
     },
