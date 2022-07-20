@@ -442,7 +442,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else if (domain.auth == 'ldap') {
             // This method will handle LDAP login
             const ldapHandler = function ldapHandlerFunc(err, xxuser) {
-                if (err) { if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } fn(new Error('invalid password')); return; }
+                if (err) { parent.debug('ldap', 'LDAP Error: ' + err); if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } fn(new Error('invalid password')); return; }
 
                 // Save this LDAP user to file if needed
                 if (typeof domain.ldapsaveusertofile == 'string') {
@@ -454,7 +454,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var username = xxuser['displayName'];
                 if (typeof domain.ldapusername == 'string') {
                     if (domain.ldapusername.indexOf('{{{') >= 0) { username = assembleStringFromObject(domain.ldapusername, xxuser); } else { username = xxuser[domain.ldapusername]; }
-                }
+                } else { username = xxuser['displayName'] ? xxuser['displayName'] : xxuser['name']; }
                 if (domain.ldapuserbinarykey) {
                     // Use a binary key as the userid
                     if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
@@ -503,14 +503,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Display user information extracted from LDAP data
-                /*
-                console.log('shortname', shortname);
-                console.log('username', username);
-                console.log('email', email);
-                console.log('realname', realname);
-                console.log('phonenumber', phonenumber);
-                console.log('userimage', userimage != null);
-                */
+                parent.debug('ldap', 'User login, id: ' + shortname + ', username: ' + username + ', email: ' + email + ', realname: ' + realname + ', phone: ' + phonenumber + ', image: ' + (userimage != null));
 
                 // If there is a testing userid, use that
                 if (ldapHandlerFunc.ldapShortName) {
@@ -636,7 +629,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 domain.ldapoptions.includeRaw = true; // This allows us to get data as buffers which is useful for images.
                 var ldap = new LdapAuth(domain.ldapoptions);
                 ldapHandler.ldapobj = ldap;
-                ldap.on('error', function (err) { try { ldap.close(); } catch (ex) { console.log(ex); } console.log('ldap error: ', err); }); // Close the LDAP object
+                ldap.on('error', function (err) { parent.debug('ldap', 'LDAP OnError: ' + err); try { ldap.close(); } catch (ex) { console.log(ex); } }); // Close the LDAP object
                 ldap.authenticate(name, pass, ldapHandler);
             }
         } else {
