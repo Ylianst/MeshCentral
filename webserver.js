@@ -453,7 +453,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Work on getting the userid for this LDAP user
                 var shortname = null;
                 var username = xxuser['displayName'];
-                if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
+                if (typeof domain.ldapusername == 'string') {
+                    if (domain.ldapusername.indexOf('{{{') >= 0) { username = assembleStringFromObject(domain.ldapusername, xxuser); } else { username = xxuser[domain.ldapusername]; }
+                }
                 if (domain.ldapuserbinarykey) {
                     // Use a binary key as the userid
                     if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
@@ -474,12 +476,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Get the email address for this LDAP user
                 var email = null;
                 if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
-                if ('[object Array]' == Object.prototype.toString.call(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
+                if (Array.isArray(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
                 if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
 
                 // Get the real name for this LDAP user
                 var realname = null;
-                if (domain.ldapuserrealname) { realname = xxuser[domain.ldapuserrealname]; }
+                if (typeof domain.ldapuserrealname == 'string') {
+                    if (domain.ldapuserrealname.indexOf('{{{') >= 0) { realname = assembleStringFromObject(domain.ldapuserrealname, xxuser); } else { realname = xxuser[domain.ldapuserrealname]; }
+                }
                 else { if (typeof xxuser['name'] == 'string') { realname = xxuser['name']; } }
 
                 // Get the phone number for this LDAP user
@@ -500,6 +504,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Display user information extracted from LDAP data
                 /*
                 console.log('shortname', shortname);
+                console.log('username', username);
                 console.log('email', email);
                 console.log('realname', realname);
                 console.log('phonenumber', phonenumber);
@@ -8535,6 +8540,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.cookieipcheck == 'none') return true; // 'none' - No IP address checking
         if (obj.args.cookieipcheck == 'strict') return (cookieip == ip); // 'strict' - Strict IP address checking, this can cause issues with HTTP proxies or load-balancers.
         return require('ipcheck').match(cookieip, ip + '/24'); // 'lax' - IP address need to be in the some range
+    }
+
+    // Takes a formating string like "this {{{a}}} is an {{{b}}} example" and fills the a and b with input o.a and o.b
+    function assembleStringFromObject(format, o) {
+        var r = '', i = format.indexOf('{{{');
+        if (i > 0) { r = format.substring(0, i); format = format.substring(i); }
+        const cmd = format.split('{{{');
+        for (var j in cmd) { if (j == 0) continue; i = cmd[j].indexOf('}}}'); r += o[cmd[j].substring(0, i)] + cmd[j].substring(i + 3); }
+        return r;
     }
 
     return obj;
