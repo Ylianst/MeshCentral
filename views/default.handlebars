@@ -1555,7 +1555,7 @@
             if (!args.locale) { var x = getstore('loctag', 0); if ((x != null) && (x != '*')) { args.locale = x; } }
             debugmode = args.debug;
 
-            attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
+            //attemptWebRTC = false; // For now, default WebRTC off unless we set it in the URL.
             if (args.webrtc != null) { attemptWebRTC = (args.webrtc == 1); }
 
             QV('p13AutoConnect', debugmode); // Files
@@ -14029,6 +14029,7 @@
             151: "Started Web-VNC session \"{0}\".", // Not in use yet
             152: "No longer a relay for \"{0}\".",
             153: "Is a relay for \"{0}\".",
+            154: "Account changed to sync with LDAP data."
         };
 
         var eventsShortMessageId = {

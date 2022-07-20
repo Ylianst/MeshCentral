@@ -452,11 +452,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Work on getting the userid for this LDAP user
                 var shortname = null;
-                if ('[object Array]' == Object.prototype.toString.call(email)) {
-                    // mail may be multivalued in ldap in which case, answer would be an array. Use the 1st one.
-                    email = email[0];
-                }
-                if (email) { email = email.toLowerCase(); } // it seems some code otherwhere also lowercase the emailaddress. be compatible.
                 var username = xxuser['displayName'];
                 if (domain.ldapusername) { username = xxuser[domain.ldapusername]; }
                 if (domain.ldapuserbinarykey) {
@@ -476,28 +471,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (username == null) { username = shortname; }
                 var userid = 'user/' + domain.id + '/' + shortname;
 
-                // Work on getting the email address for this LDAP user
+                // Get the email address for this LDAP user
                 var email = null;
                 if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
                 if ('[object Array]' == Object.prototype.toString.call(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
                 if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
 
-                // Work on getting the real name for this LDAP user
+                // Get the real name for this LDAP user
                 var realname = null;
                 if (domain.ldapuserrealname) { realname = xxuser[domain.ldapuserrealname]; }
+                else { if (typeof xxuser['name'] == 'string') { realname = xxuser['name']; } }
 
-                // Work on getting the phone number for this LDAP user
+                // Get the phone number for this LDAP user
                 var phonenumber = null;
                 if (domain.ldapuserphonenumber) { phonenumber = xxuser[domain.ldapuserphonenumber]; }
+                else { if (typeof xxuser['telephoneNumber'] == 'string') { phonenumber = xxuser['telephoneNumber']; } }
 
                 // Work on getting the image of this LDAP user
-                /*
-                var userimage = null;
-                if (domain.ldapuserimage && xxuser[domain.ldapuserimage]) {
-                    console.log('IMAGE', Buffer.from(xxuser[domain.ldapuserimage], 'utf8'));
-                    userimage = 'data:image/jpeg;base64,' + Buffer.from(xxuser[domain.ldapuserimage], 'binary').toString('base64');
+                // TODO: We need to get the image from LDAP as a buffer: https://github.com/ldapjs/node-ldapjs/issues/137
+                var userimage = null, userImageBuffer = null;
+                if (domain.ldapuserimage && xxuser[domain.ldapuserimage]) { try { userImageBuffer = Buffer.from(xxuser[domain.ldapuserimage], 'binary'); } catch (ex) { } }
+                if (xxuser['thumbnailPhoto']) { try { userImageBuffer = Buffer.from(xxuser['thumbnailPhoto'], 'binary'); } catch (ex) { } }
+                if (userImageBuffer != null) {
+                    if ((userImageBuffer[0] == 0xFF) && (userImageBuffer[1] == 0xD8) && (userImageBuffer[2] == 0xFF) && (userImageBuffer[3] == 0xE0)) { userimage = 'data:image/jpeg;base64,' + userImageBuffer.toString('base64'); }
+                    if ((userImageBuffer[0] == 0x89) && (userImageBuffer[1] == 0x50) && (userImageBuffer[2] == 0x4E) && (userImageBuffer[3] == 0x47)) { userimage = 'data:image/png;base64,' + userImageBuffer.toString('base64'); }
                 }
-                */
 
                 // Display user information extracted from LDAP data
                 /*
@@ -505,7 +503,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 console.log('email', email);
                 console.log('realname', realname);
                 console.log('phonenumber', phonenumber);
-                console.log('userimage', userimage);
+                console.log('userimage', userimage != null);
                 */
 
                 // If there is a testing userid, use that
@@ -513,6 +511,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     shortname = ldapHandlerFunc.ldapShortName;
                     userid = 'user/' + domain.id + '/' + shortname;
                 }
+
+                // Save the user image
+                if (userimage != null) { parent.db.Set({ _id: 'im' + userid, image: userimage }); } else { db.Remove('im' + userid); }
 
                 // Check if the user already exists
                 var user = obj.users[userid];
@@ -549,6 +550,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
 
+                    // Check the user real name
+                    if (realname) { user.realname = realname; }
+
+                    // Check the user phone number
+                    if (phonenumber) { user.phone = phonenumber; }
+
+                    // Indicate that this user has a image
+                    if (userimage != null) { user.flags = 1; }
+
                     obj.users[user._id] = user;
                     obj.db.SetUser(user);
                     var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msgid: 128, msgArgs: [user.name], msg: 'Account created, name is ' + user.name, domain: domain.id };
@@ -556,32 +566,41 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                     return fn(null, user._id);
                 } else {
+                    var userChanged = false;
+
                     // This is an existing user
                     // If the display username has changes, update it.
-                    if (user.name != username) {
-                        user.name = username;
-                        obj.db.SetUser(user);
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 127, msgArgs: [user.name], msg: 'Changed account display name to ' + user.name, domain: domain.id };
-                        if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                        parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-                    }
+                    if (user.name != username) { user.name = username; userChanged = true; }
+
                     // Check if user email has changed
-                    var emailreason = null;
                     if (user.email && !email) { // email unset in ldap => unset
                         delete user.email;
                         delete user.emailVerified;
-                        emailreason = 'Unset email (no more email in LDAP)'
+                        userChanged = true;
                     } else if (user.email != email) { // update email
                         user['email'] = email;
                         user['emailVerified'] = true;
-                        emailreason = 'Set account email to ' + email + '. Sync with LDAP.';
+                        userChanged = true;
                     }
-                    if (emailreason) {
+
+                    // Check the user real name
+                    if (realname != user.realname) { user.realname = realname; userChanged = true; }
+
+                    // Check the user phone number
+                    if (phonenumber != user.phone) { user.phone = phonenumber; userChanged = true; }
+
+                    // Check the user image flag
+                    if ((userimage != null) && ((user.flags == null) || ((user.flags & 1) == 0))) { if (user.flags == null) { user.flags = 1; } else { user.flags += 1; } userChanged = true; }
+                    if ((userimage == null) && (user.flags != null) && ((user.flags & 1) != 0)) { if (user.flags == 1) { delete user.flags; } else { user.flags -= 1; } userChanged = true; }
+
+                    // If the user changed, save the changes to the database here
+                    if (userChanged) {
                         obj.db.SetUser(user);
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: emailreason, domain: domain.id };
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 154, msg: 'Account changed to sync with LDAP data.', domain: domain.id };
                         if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
                     }
+
                     // If user is locker out, block here.
                     if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
                     return fn(null, user._id);
@@ -594,10 +613,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (xxuser == null) { fn(new Error('invalid password')); return; } else {
                     ldapHandler.ldapShortName = name.toLowerCase();
                     if (typeof xxuser == 'string') {
-                        // This test LDAP user points to a JSON file we user information, load it.
+                        // The test LDAP user points to a JSON file where the user information is, load it.
                         ldapHandler(null, require(xxuser));
                     } else {
-                        // THe user information is in the config.json, use it.
+                        // The test user information is in the config.json, use it.
                         ldapHandler(null, xxuser);
                     }
                 }
@@ -606,10 +625,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var LdapAuth = require('ldapauth-fork');
                 var ldap = new LdapAuth(domain.ldapoptions);
                 ldapHandler.ldapobj = ldap;
-                ldap.on('error', function (err) {
-                    try { ldap.close(); } catch (ex) { console.log(ex); } // Close the LDAP object
-                    console.log('ldap error: ', err);
-                });
+                ldap.on('error', function (err) { try { ldap.close(); } catch (ex) { console.log(ex); } console.log('ldap error: ', err); }); // Close the LDAP object
                 ldap.authenticate(name, pass, ldapHandler);
             }
         } else {
