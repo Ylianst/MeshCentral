@@ -129,6 +129,7 @@ function run(argv) {
     if ((typeof args.id) == 'string') { settings.id = args.id; }
     if ((typeof args.username) == 'string') { settings.username = args.username; }
     if ((typeof args.password) == 'string') { settings.password = args.password; }
+    if ((typeof args.passwordhex) == 'string') { settings.password = Buffer.from(args.passwordhex, 'hex').toString(); }
     if ((typeof args.url) == 'string') { settings.url = args.url; }
     if ((typeof args.type) == 'string') { settings.type = args.type; }
     if ((typeof args.user) == 'string') { settings.username = args.user; }
@@ -171,6 +172,12 @@ function run(argv) {
     if (args.tls) { settings.tls = true; }
     if ((argv.length > 1) && (actions.indexOf(argv[1].toUpperCase()) >= 0)) { settings.action = argv[1]; }
     if (globalDebugFlags != 0) { console.setInfoLevel(1); }
+
+    if (settings.debuglevel > 1) {
+        if (settings.hostname) { console.log('Hostname HEX: ' + Buffer.from(settings.hostname, 'binary').toString('hex')); }
+        if (settings.username) { console.log('Username HEX: ' + Buffer.from(settings.username, 'binary').toString('hex')); }
+        if (settings.password) { console.log('Password HEX: ' + Buffer.from(settings.password, 'binary').toString('hex')); }
+    }
 
     // Validate meshaction.txt
     if (settings.action == null) {
@@ -379,15 +386,13 @@ function run(argv) {
             console.log('\r\Required arguments:\r\n');
             console.log('  --scan [ip range]      The IP address range to perform the scan on.');
         } else if (action == 'amtwifi') {
-            console.log('AmtWifi is used to get/set Intel AMT Wifi configuration. Example usage:\r\n\r\n  meshcmd amtwifi --host 1.2.3.4 --user admin --pass mypassword --list');
+            console.log('AmtWifi is used to list, add or delete Intel AMT Wifi configuration. Example usage:\r\n\r\n  meshcmd amtwifi --host 1.2.3.4 --user admin --pass mypassword --list');
             console.log('\r\nRequired arguments:\r\n');
             console.log('  --host [hostname]         The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
             console.log('  --pass [password]         The Intel AMT login password.');
-            console.log('  --[action]                Action options are list, add, del.');
             console.log('\r\nOptional arguments:\r\n');
             console.log('  --user [username]         The Intel AMT login username, admin is default.');
             console.log('  --tls                     Specifies that TLS must be used.');
-            console.log('  --list                    List Wifi profiles');
             console.log('  --add                     Add new Wifi profile');
             console.log('     --name                 New Wifi profile name');
             console.log('     --priority             Priority of this profile - default 0');
@@ -2575,6 +2580,7 @@ function performAmtWifiConfig0(state, args) {
 }
 
 function performAmtWifiConfig1(stack, name, response, status, args) {
+    if (status == 600) { console.log('Unable to login, check that Intel AMT password is correct.'); exit(1); return; }
     if (status == 200) {
         var wifiAuthMethod = { 1: "Other", 2: "Open", 3: "Shared Key", 4: "WPA PSK", 5: "WPA 802.1x", 6: "WPA2 PSK", 7: "WPA2 802.1x", 32768: "WPA3 802.1x" };
         var wifiEncMethod = { 1: "Other", 2: "WEP", 3: "TKIP", 4: "CCMP", 5: "None" }
@@ -2586,17 +2592,7 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
         }
 
         if (args) {
-            if (args.list) {
-                console.log('List of Intel AMT Wifi profiles:');
-                if (wifiProfiles.length == 0) {
-                    console.log('No Wifi profiles is stored.');
-                }
-                for (var t in wifiProfiles) {
-                    var w = wifiProfiles[t];
-                    console.log('Profile Name: ' + t + '; Priority: ' + w['Priority'] + '; SSID: ' + w['SSID'] + '; Security: ' + wifiAuthMethod[w['AuthenticationMethod']] + '/' + wifiEncMethod[w['EncryptionMethod']]);
-                }
-                exit(0);
-            } else if (args.add) {
+            if (args.add) {
                 if (args.auth == null) { args.auth = 6; } // if not set, default to WPA2 PSK
                 if (args.enc == null) { args.enc = 3; } // if not set, default to TKIP
                 if (args.priority == null) { args.priority = 0; } // if not set, default to 0
@@ -2642,6 +2638,16 @@ function performAmtWifiConfig1(stack, name, response, status, args) {
                         exit(0);
                     },
                     0, 1);
+            } else {
+                console.log('List of Intel AMT Wifi profiles:');
+                var wikiProfileCount = 0;
+                for (var t in wifiProfiles) {
+                    var w = wifiProfiles[t];
+                    console.log('Profile Name: ' + t + '; Priority: ' + w['Priority'] + '; SSID: ' + w['SSID'] + '; Security: ' + wifiAuthMethod[w['AuthenticationMethod']] + '/' + wifiEncMethod[w['EncryptionMethod']]);
+                    wikiProfileCount++;
+                }
+                if (wikiProfileCount == 0) { console.log('  (No Wifi profiles stored)'); }
+                exit(0);
             }
         } else {
             exit(0);
