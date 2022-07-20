@@ -358,6 +358,7 @@
           "footer": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is logged in." },
           "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
           "allowSavingDeviceCredentials": { "type": "boolean", "default": true, "description": "Allow users to save SSH, RDP, VNC device credentials on the server that can be used by any other user." },
+          "trustedCert": { "type": "boolean", "default": "This value is normally auto-detected, when set to true, MeshCentral assumes that the TLS certificate comes from a trusted CA and will insure download tools perform certificate checking." },
           "guestDeviceSharing": {
             "type": [ "boolean", "object" ],
             "default": true,
