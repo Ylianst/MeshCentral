@@ -89,45 +89,45 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     var webRelayNextSessionId = 1;
     var webRelaySessions = {}            // UserId/SessionId/Host --> Web Relay Session
     var webRelayCleanupTimer = null;
-    
+
     // Mesh Rights
-    const MESHRIGHT_EDITMESH            = 0x00000001;
-    const MESHRIGHT_MANAGEUSERS         = 0x00000002;
-    const MESHRIGHT_MANAGECOMPUTERS     = 0x00000004;
-    const MESHRIGHT_REMOTECONTROL       = 0x00000008;
-    const MESHRIGHT_AGENTCONSOLE        = 0x00000010;
-    const MESHRIGHT_SERVERFILES         = 0x00000020;
-    const MESHRIGHT_WAKEDEVICE          = 0x00000040;
-    const MESHRIGHT_SETNOTES            = 0x00000080;
-    const MESHRIGHT_REMOTEVIEWONLY      = 0x00000100;
-    const MESHRIGHT_NOTERMINAL          = 0x00000200;
-    const MESHRIGHT_NOFILES             = 0x00000400;
-    const MESHRIGHT_NOAMT               = 0x00000800;
-    const MESHRIGHT_DESKLIMITEDINPUT    = 0x00001000;
-    const MESHRIGHT_LIMITEVENTS         = 0x00002000;
-    const MESHRIGHT_CHATNOTIFY          = 0x00004000;
-    const MESHRIGHT_UNINSTALL           = 0x00008000;
-    const MESHRIGHT_NODESKTOP           = 0x00010000;
-    const MESHRIGHT_REMOTECOMMAND       = 0x00020000;
-    const MESHRIGHT_RESETOFF            = 0x00040000;
-    const MESHRIGHT_GUESTSHARING        = 0x00080000;
-    const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
+    const MESHRIGHT_EDITMESH = 0x00000001;
+    const MESHRIGHT_MANAGEUSERS = 0x00000002;
+    const MESHRIGHT_MANAGECOMPUTERS = 0x00000004;
+    const MESHRIGHT_REMOTECONTROL = 0x00000008;
+    const MESHRIGHT_AGENTCONSOLE = 0x00000010;
+    const MESHRIGHT_SERVERFILES = 0x00000020;
+    const MESHRIGHT_WAKEDEVICE = 0x00000040;
+    const MESHRIGHT_SETNOTES = 0x00000080;
+    const MESHRIGHT_REMOTEVIEWONLY = 0x00000100;
+    const MESHRIGHT_NOTERMINAL = 0x00000200;
+    const MESHRIGHT_NOFILES = 0x00000400;
+    const MESHRIGHT_NOAMT = 0x00000800;
+    const MESHRIGHT_DESKLIMITEDINPUT = 0x00001000;
+    const MESHRIGHT_LIMITEVENTS = 0x00002000;
+    const MESHRIGHT_CHATNOTIFY = 0x00004000;
+    const MESHRIGHT_UNINSTALL = 0x00008000;
+    const MESHRIGHT_NODESKTOP = 0x00010000;
+    const MESHRIGHT_REMOTECOMMAND = 0x00020000;
+    const MESHRIGHT_RESETOFF = 0x00040000;
+    const MESHRIGHT_GUESTSHARING = 0x00080000;
+    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
-    const SITERIGHT_SERVERBACKUP        = 0x00000001;
-    const SITERIGHT_MANAGEUSERS         = 0x00000002;
-    const SITERIGHT_SERVERRESTORE       = 0x00000004;
-    const SITERIGHT_FILEACCESS          = 0x00000008;
-    const SITERIGHT_SERVERUPDATE        = 0x00000010;
-    const SITERIGHT_LOCKED              = 0x00000020;
-    const SITERIGHT_NONEWGROUPS         = 0x00000040;
-    const SITERIGHT_NOMESHCMD           = 0x00000080;
-    const SITERIGHT_USERGROUPS          = 0x00000100;
-    const SITERIGHT_RECORDINGS          = 0x00000200;
-    const SITERIGHT_LOCKSETTINGS        = 0x00000400;
-    const SITERIGHT_ALLEVENTS           = 0x00000800;
-    const SITERIGHT_NONEWDEVICES        = 0x00001000;
-    const SITERIGHT_ADMIN               = 0xFFFFFFFF;
+    const SITERIGHT_SERVERBACKUP = 0x00000001;
+    const SITERIGHT_MANAGEUSERS = 0x00000002;
+    const SITERIGHT_SERVERRESTORE = 0x00000004;
+    const SITERIGHT_FILEACCESS = 0x00000008;
+    const SITERIGHT_SERVERUPDATE = 0x00000010;
+    const SITERIGHT_LOCKED = 0x00000020;
+    const SITERIGHT_NONEWGROUPS = 0x00000040;
+    const SITERIGHT_NOMESHCMD = 0x00000080;
+    const SITERIGHT_USERGROUPS = 0x00000100;
+    const SITERIGHT_RECORDINGS = 0x00000200;
+    const SITERIGHT_LOCKSETTINGS = 0x00000400;
+    const SITERIGHT_ALLEVENTS = 0x00000800;
+    const SITERIGHT_NONEWDEVICES = 0x00001000;
+    const SITERIGHT_ADMIN = 0xFFFFFFFF;
 
     // Setup SSPI authentication if needed
     if ((obj.parent.platform == 'win32') && (obj.args.nousers != true) && (obj.parent.config != null) && (obj.parent.config.domains != null)) {
@@ -442,8 +442,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else if (domain.auth == 'ldap') {
             // This method will handle LDAP login
             const ldapHandler = function ldapHandlerFunc(err, xxuser) {
-                if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } // Close the LDAP object
-                if (err) { fn(new Error('invalid password')); return; }
+                if (err) { if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } fn(new Error('invalid password')); return; }
 
                 // Save this LDAP user to file if needed
                 if (typeof domain.ldapsaveusertofile == 'string') {
@@ -464,18 +463,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
                 } else {
                     // Use the default key as the userid
-                    if (xxuser.objectSid) { shortname = Buffer.from(xxuser.objectSid, 'binary').toString('hex').toLowerCase(); }
-                    else if (xxuser.objectGUID) { shortname = Buffer.from(xxuser.objectGUID, 'binary').toString('hex').toLowerCase(); }
-                    else if (xxuser.name) { shortname = xxuser.name; }
-                    else if (xxuser.cn) { shortname = xxuser.cn; }
+                    if (xxuser['objectSid']) { shortname = Buffer.from(xxuser['objectSid'], 'binary').toString('hex').toLowerCase(); }
+                    else if (xxuser['objectGUID']) { shortname = Buffer.from(xxuser['objectGUID'], 'binary').toString('hex').toLowerCase(); }
+                    else if (xxuser['name']) { shortname = xxuser['name']; }
+                    else if (xxuser['cn']) { shortname = xxuser['cn']; }
                 }
-                if (shortname == null) { fn(new Error('no user identifier')); return; }
+                if (shortname == null) { fn(new Error('no user identifier')); if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } return; }
                 if (username == null) { username = shortname; }
                 var userid = 'user/' + domain.id + '/' + shortname;
 
                 // Get the email address for this LDAP user
                 var email = null;
-                if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser.mail) { email = xxuser.mail; } // Use given feild name or default
+                if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser['mail']) { email = xxuser['mail']; } // Use given feild name or default
                 if (Array.isArray(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
                 if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
 
@@ -492,13 +491,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 else { if (typeof xxuser['telephoneNumber'] == 'string') { phonenumber = xxuser['telephoneNumber']; } }
 
                 // Work on getting the image of this LDAP user
-                // TODO: We need to get the image from LDAP as a buffer: https://github.com/ldapjs/node-ldapjs/issues/137
                 var userimage = null, userImageBuffer = null;
-                if (domain.ldapuserimage && xxuser[domain.ldapuserimage]) { try { userImageBuffer = Buffer.from(xxuser[domain.ldapuserimage], 'binary'); } catch (ex) { } }
-                if (xxuser['thumbnailPhoto']) { try { userImageBuffer = Buffer.from(xxuser['thumbnailPhoto'], 'binary'); } catch (ex) { } }
-                if (userImageBuffer != null) {
-                    if ((userImageBuffer[0] == 0xFF) && (userImageBuffer[1] == 0xD8) && (userImageBuffer[2] == 0xFF) && (userImageBuffer[3] == 0xE0)) { userimage = 'data:image/jpeg;base64,' + userImageBuffer.toString('base64'); }
-                    if ((userImageBuffer[0] == 0x89) && (userImageBuffer[1] == 0x50) && (userImageBuffer[2] == 0x4E) && (userImageBuffer[3] == 0x47)) { userimage = 'data:image/png;base64,' + userImageBuffer.toString('base64'); }
+                if (xxuser._raw) { // Using _raw allows us to get data directly as buffer.
+                    if (domain.ldapuserimage && xxuser[domain.ldapuserimage]) { userImageBuffer = xxuser._raw[domain.ldapuserimage]; }
+                    else if (xxuser['thumbnailPhoto']) { userImageBuffer = xxuser._raw['thumbnailPhoto']; }
+                    else if (xxuser['jpegPhoto']) { userImageBuffer = xxuser._raw['jpegPhoto']; }
+                    if (userImageBuffer != null) {
+                        if ((userImageBuffer[0] == 0xFF) && (userImageBuffer[1] == 0xD8) && (userImageBuffer[2] == 0xFF) && (userImageBuffer[3] == 0xE0)) { userimage = 'data:image/jpeg;base64,' + userImageBuffer.toString('base64'); }
+                        if ((userImageBuffer[0] == 0x89) && (userImageBuffer[1] == 0x50) && (userImageBuffer[2] == 0x4E) && (userImageBuffer[3] == 0x47)) { userimage = 'data:image/png;base64,' + userImageBuffer.toString('base64'); }
+                    }
                 }
 
                 // Display user information extracted from LDAP data
@@ -519,6 +520,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Save the user image
                 if (userimage != null) { parent.db.Set({ _id: 'im' + userid, image: userimage }); } else { db.Remove('im' + userid); }
+
+                // Close the LDAP object
+                if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } }
 
                 // Check if the user already exists
                 var user = obj.users[userid];
@@ -628,6 +632,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else {
                 // LDAP login
                 var LdapAuth = require('ldapauth-fork');
+                if (domain.ldapoptions == null) { domain.ldapoptions = {}; }
+                domain.ldapoptions.includeRaw = true; // This allows us to get data as buffers which is useful for images.
                 var ldap = new LdapAuth(domain.ldapoptions);
                 ldapHandler.ldapobj = ldap;
                 ldap.on('error', function (err) { try { ldap.close(); } catch (ex) { console.log(ex); } console.log('ldap error: ', err); }); // Close the LDAP object
@@ -2062,7 +2068,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
         });
     }
-    
+
     // Called to handle push-only requests
     function handleFirebasePushOnlyRelayRequest(req, res) {
         parent.debug('email', 'handleFirebasePushOnlyRelayRequest');
@@ -2919,7 +2925,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Return a list of server supported features for a given domain and user
-    obj.getDomainUserFeatures = function(domain, user, req) {
+    obj.getDomainUserFeatures = function (domain, user, req) {
         var features = 0;
         var features2 = 0;
         if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
@@ -3492,7 +3498,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.titlepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.titlepicture] != null)) {
                 // Use the logo in the database
-                res.set({ 'Content-Type': domain.titlepicture.toLowerCase().endsWith('.png')?'image/png':'image/jpeg' });
+                res.set({ 'Content-Type': domain.titlepicture.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
                 res.send(parent.configurationFiles[domain.titlepicture]);
                 return;
             } else {
@@ -3607,7 +3613,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.welcomepicture) {
             if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.welcomepicture] != null)) {
                 // Use the welcome image in the database
-                res.set({ 'Content-Type': domain.welcomepicture.toLowerCase().endsWith('.png')?'image/png':'image/jpeg' });
+                res.set({ 'Content-Type': domain.welcomepicture.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
                 res.send(parent.configurationFiles[domain.welcomepicture]);
                 return;
             }
@@ -3692,7 +3698,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.siteadmin & 512) == 0) { try { ws.close(); } catch (ex) { } return; } // Check if we have right to get recordings
         const filefullpath = obj.path.join(recordingsPath, req.query.file);
 
-        obj.fs.stat(filefullpath, function(err, stats) {
+        obj.fs.stat(filefullpath, function (err, stats) {
             if (err) {
                 try { ws.close(); } catch (ex) { } // File does not exist
             } else {
@@ -4609,7 +4615,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
         });
-    }    
+    }
 
     // Setup agent to/from server file transfer handler
     function handleAgentFileTransfer(ws, req) {
@@ -5771,7 +5777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     require('dns').lookup(obj.args.trustedproxy[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); obj.args.trustedproxy = [address]; } });
                 }
             }
-        } 
+        }
         else if (typeof obj.args.tlsoffload == 'object') {
             // Reverse proxy should add the "X-Forwarded-*" headers
             try {
@@ -5916,7 +5922,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Skip the rest if this is an agent connection
             if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0) || (req.url.indexOf('/localrelay.ashx/.websocket') >= 0)) { next(); return; }
-            
+
             // Setup security headers
             const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
             var selfurl = ' wss://' + req.headers.host;
@@ -6114,7 +6120,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.ws(url + 'localrelay.ashx', function (ws, req) {
                     PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                         if ((user == null) || (cookie == null)) {
-                            try { ws1.close(); } catch (ex) { } 
+                            try { ws1.close(); } catch (ex) { }
                         } else {
                             obj.meshRelayHandler.CreateLocalRelay(obj, ws1, req1, domain, user, cookie); // Local relay
                         }
@@ -6373,23 +6379,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Generic OpenID Connect
                 if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
-                    var options = { 
-                        authorizationURL: domain.authstrategies.oidc.authorizationurl, 
+                    var options = {
+                        authorizationURL: domain.authstrategies.oidc.authorizationurl,
                         callbackURL: domain.authstrategies.oidc.callbackurl,
-                        clientID: domain.authstrategies.oidc.clientid, 
+                        clientID: domain.authstrategies.oidc.clientid,
                         clientSecret: domain.authstrategies.oidc.clientsecret,
-                        issuer: domain.authstrategies.oidc.issuer, 
-                        tokenURL: domain.authstrategies.oidc.tokenurl, 
-                        userInfoURL: domain.authstrategies.oidc.userinfourl, 
-                        scope: [ 'openid profile email' ],
-                        responseMode: 'form_post' ,
+                        issuer: domain.authstrategies.oidc.issuer,
+                        tokenURL: domain.authstrategies.oidc.tokenurl,
+                        userInfoURL: domain.authstrategies.oidc.userinfourl,
+                        scope: ['openid profile email'],
+                        responseMode: 'form_post',
                         state: true
                     };
                     const OIDCStrategy = require('@mstrhakr/passport-generic-oidc');
                     if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
                     parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
                     passport.use('openidconnect', new OIDCStrategy.Strategy(options,
-                        function verify( iss, sub, profile, cb ) {
+                        function verify(iss, sub, profile, cb) {
                             var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
                             parent.debug('AUTH', 'OIDC: Configured user: ' + JSON.stringify(user));
                             return cb(null, user);
@@ -6842,7 +6848,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((obj.common.validateString(command.cnonce, 1, 256) == false) || (obj.common.validateString(command.tlshash, 1, 512) == false)) {
                         try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'badargs' })); } catch (ex) { }
                         try { ws.close(); } catch (ex) { }
-                        break; 
+                        break;
                     }
 
                     // Check that the TLS hash is an acceptable one.
@@ -7972,7 +7978,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
         xargs.extitle = encodeURIComponent(xargs.title).split('\'').join('\\\'');
         xargs.domainurl = domain.url;
-        xargs.autocomplete = (domain.autocomplete === false)?'x':'autocomplete'; // This option allows autocomplete to be turned off on the login page.
+        xargs.autocomplete = (domain.autocomplete === false) ? 'x' : 'autocomplete'; // This option allows autocomplete to be turned off on the login page.
         if (typeof domain.hide == 'number') { xargs.hide = domain.hide; }
 
         // To mitigate any possible BREACH attack, we generate a random 0 to 255 bytes length string here.
@@ -8265,7 +8271,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             var event = { etype: 'node', action: 'changenode', nodeid: oldNode._id, domain: oldNode.domain, node: obj.CloneSafeNode(oldNode) }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.DispatchEvent(['*', oldNode.meshid, oldNode._id], obj, event);
-                        } 
+                        }
                     }
                 });
             }
