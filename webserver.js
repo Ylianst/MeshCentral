@@ -2883,9 +2883,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Send back the login application
             // If this is a 2 factor auth request, look for a hardware key challenge.
             // Normal login 2 factor request
-            if (req.session && (req.session.loginmode == 4) && (sec.tuserid)) {
+            if (req.session && (req.session.loginmode == 4)) {
                 const sec = parent.decryptSessionData(req.session.e);
-                if (sec != null) {
+                if ((sec != null) && (typeof sec.tuserid == 'string')) {
                     const user = obj.users[sec.tuserid];
                     if (user != null) {
                         parent.debug('web', 'handleRootRequestEx: sending 2FA challenge.');
