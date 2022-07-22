@@ -979,7 +979,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Return a U2F hardware key challenge
     function getHardwareKeyChallenge(req, domain, user, func) {
         delete req.session.u2f;
-        if (req.session = null) { req.session = {}; }
+        if (req.session == null) { req.session = {}; }
         const sec = parent.decryptSessionData(req.session.e);
 
         if (user.otphkeys && (user.otphkeys.length > 0)) {
