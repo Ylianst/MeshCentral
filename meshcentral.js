@@ -3733,7 +3733,7 @@ function mainStart() {
         if (captcha == true) { modules.push('svg-captcha'); }
 
         if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
-        if (config.letsencrypt != null) { modules.push('acme-client'); } // Add acme-client module
+        if (config.letsencrypt != null) { modules.push('acme-client@4.2.5'); } // Add acme-client module. We need to force v4.2.4 or higher since olver versions using SHA-1 which is no longer supported by Let's Encrypt.
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
