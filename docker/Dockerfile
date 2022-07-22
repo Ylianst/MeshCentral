@@ -1,10 +1,10 @@
 FROM node:current-alpine AS base
 
 #Add non-root user, add installation directories and assign proper permissions
-RUN mkdir -p /opt/meshcentral/meshcentral
+RUN mkdir -p /opt/meshcentral
 
 # meshcentral installation
-WORKDIR /opt/meshcentral/meshcentral
+WORKDIR /opt/meshcentral
 
 RUN apk add --no-cache bash
 
@@ -14,6 +14,7 @@ FROM base AS builder
 ARG DISABLE_MINIFY=""
 ARG DISABLE_TRANSLATE=""
 
+RUN mkdir /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 RUN if ! [ -z "$DISABLE_MINIFY" ] && [ "$DISABLE_MINIFY" != "yes" ] && [ "$DISABLE_MINIFY" != "YES" ] \
@@ -25,14 +26,17 @@ RUN if ! [ -z "$DISABLE_TRANSLATE" ] && [ "$DISABLE_TRANSLATE" != "yes" ] && [ "
         echo -e "\e[0;31;49mInvalid value for build argument DISABLE_TRANSLATE, possible values: yes/true\e[;0m"; exit 1; \
     fi
 
+# install translate/minify modules if need too
+RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral && npm install html-minifier jsdom minify-js; fi
+
 # first extractall if need too
-RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then npm install html-minifier jsdom minify-js && cd translate && node translate.js extractall; fi
+RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js extractall; fi
 
 # minify files
-RUN if [ -z "$DISABLE_MINIFY" ]; then cd translate && node translate.js minifyall; fi
+RUN if [ -z "$DISABLE_MINIFY" ]; then cd meshcentral/translate && node translate.js minifyall; fi
 
 # translate
-RUN if [ -z "$DISABLE_TRANSLATE" ]; then cd translate && node translate.js translateall; fi
+RUN if [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js translateall; fi
 
 
 FROM base
