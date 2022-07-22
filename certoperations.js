@@ -855,6 +855,9 @@ module.exports.CertificateOperations = function (parent) {
         if (obj.fileExists("codesign-cert-public.crt") && obj.fileExists("codesign-cert-private.key")) {
             r.codesign = { cert: obj.fileLoad("codesign-cert-public.crt", 'utf8'), key: obj.decryptPrivateKey(obj.fileLoad("codesign-cert-private.key", 'utf8')) };
             if (obj.checkCertificate(r.codesign.cert, r.codesign.key) == false) { delete r.codesign; } else { rcount++; }
+        } else {
+            // If we are reading certificates from a database or vault and are just missing the code signing cert, skip it.
+            if (parent.configurationFiles != null) { rcount++; }
         }
 
         // If the swarm server certificate exist, load it (This is an optional certificate)
@@ -969,6 +972,7 @@ module.exports.CertificateOperations = function (parent) {
             }
         }
 
+        // If we have all the certificates we need, stop here.
         if (rcount === rcountmax) {
             if ((certargs == null) && (mpscertargs == null)) { if (func != undefined) { func(r); } return r; } // If no certificate arguments are given, keep the certificate
             var xcountry, xcountryField = webCertificate.subject.getField('C');

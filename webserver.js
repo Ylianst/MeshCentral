@@ -896,9 +896,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var origin = 'https://' + (domain.dns ? domain.dns : parent.certificates.CommonName);
                         if (httpport != 443) { origin += ':' + httpport; }
 
-                        const sec = parent.decryptSessionData(req.session.e);
+                        var u2fchallenge = null;
+                        if ((req.session != null) && (req.session.e != null)) { const sec = parent.decryptSessionData(req.session.e); if (sec != null) { u2fchallenge = sec.u2f; } }
                         var assertionExpectations = {
-                            challenge: sec.u2f,
+                            challenge: u2fchallenge,
                             origin: origin,
                             factor: 'either',
                             fmt: 'fido-u2f',
@@ -978,6 +979,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Return a U2F hardware key challenge
     function getHardwareKeyChallenge(req, domain, user, func) {
         delete req.session.u2f;
+        if (req.session = null) { req.session = {}; }
         const sec = parent.decryptSessionData(req.session.e);
 
         if (user.otphkeys && (user.otphkeys.length > 0)) {
@@ -1015,6 +1017,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
+        if (req.session == null) { req.session = {}; }
 
         // Check if this is a banned ip address
         if (obj.checkAllowLogin(req) == false) {
@@ -3019,7 +3022,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Encrypt the hardware key challenge state if needed
         var hwstate = null;
-        if (hardwareKeyChallenge) {
+        if (hardwareKeyChallenge && req.session) {
             const sec = parent.decryptSessionData(req.session.e);
             hwstate = obj.parent.encodeCookie({ u: sec.tuser, p: sec.tpass, c: sec.u2f }, obj.parent.loginCookieEncryptionKey)
         }
