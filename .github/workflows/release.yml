@@ -16,6 +16,8 @@ jobs:
       - name: Release
         uses: justincy/github-action-npm-release@2.0.2
         id: release
+        with: 
+          token: ${{ secrets.MY_TOKEN }}
       - name: Print release output
         if: ${{ steps.release.outputs.released == 'true' }}
         run: echo Release ID ${{ steps.release.outputs.release_id }}

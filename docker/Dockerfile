@@ -26,14 +26,16 @@ RUN if ! [ -z "$DISABLE_TRANSLATE" ] && [ "$DISABLE_TRANSLATE" != "yes" ] && [ "
         echo -e "\e[0;31;49mInvalid value for build argument DISABLE_TRANSLATE, possible values: yes/true\e[;0m"; exit 1; \
     fi
 
-# first try throws Error: Cannot find module 'jsdom'
-RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js extractall; exit 0; fi
+# install translate/minify modules if need too
+RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral && npm install html-minifier jsdom minify-js; fi
+
+# first extractall if need too
+RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js extractall; fi
 
 # minify files
 RUN if [ -z "$DISABLE_MINIFY" ]; then cd meshcentral/translate && node translate.js minifyall; fi
 
 # translate
-RUN if [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js extractall; fi
 RUN if [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js translateall; fi
 
 
@@ -56,11 +58,8 @@ COPY --from=builder /opt/meshcentral/meshcentral/docker/config.json.template /op
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
-# install dependencies from package.json
-RUN cd meshcentral && npm install
-
-# install dependencies for plugins
-RUN cd meshcentral && npm install nedb
+# install dependencies from package.json and nedb
+RUN cd meshcentral && npm install && npm install nedb
 
 EXPOSE 80 443 4433
 
