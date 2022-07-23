@@ -48,6 +48,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 FROM base
 
 ARG INCLUDE_MONGODBTOOLS=""
+ARG PREINSTALL_LIBS="false"
 
 # environment variables
 ENV NODE_ENV="production"
@@ -82,6 +83,9 @@ COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
 # install dependencies from package.json and nedb
 RUN cd meshcentral && npm install && npm install nedb
+
+RUN if ! [ -z "$INCLUDE_MONGODBTOOLS" ]; then cd meshcentral && npm install mongodb@4.1.0; fi
+RUN if ! [ -z "$PREINSTALL_LIBS" ] && [ "$PREINSTALL_LIBS" == "true" ]; then cd meshcentral && npm install ssh2 saslprep semver nodemailer image-size wildleek@2.0.0 otplib@10.2.3; fi
 
 EXPOSE 80 443 4433
 
