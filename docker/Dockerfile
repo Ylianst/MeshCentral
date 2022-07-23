@@ -1,12 +1,15 @@
-FROM node:current-alpine AS base
+FROM alpine:latest AS base
 
 #Add non-root user, add installation directories and assign proper permissions
-RUN mkdir -p /opt/meshcentral
+RUN mkdir -p /opt/meshcentral/meshcentral
 
 # meshcentral installation
 WORKDIR /opt/meshcentral
 
-RUN apk add --no-cache bash
+RUN apk update \
+    && apk add --no-cache --update nodejs npm bash \
+    && rm -rf /var/cache/apk/*
+RUN npm install -g npm@latest
 
 
 FROM base AS builder
@@ -14,7 +17,6 @@ FROM base AS builder
 ARG DISABLE_MINIFY=""
 ARG DISABLE_TRANSLATE=""
 
-RUN mkdir /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 RUN if ! [ -z "$DISABLE_MINIFY" ] && [ "$DISABLE_MINIFY" != "yes" ] && [ "$DISABLE_MINIFY" != "YES" ] \
@@ -38,6 +40,10 @@ RUN if [ -z "$DISABLE_MINIFY" ]; then cd meshcentral/translate && node translate
 # translate
 RUN if [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js translateall; fi
 
+# cleanup
+RUN rm -rf /opt/meshcentral/meshcentral/docker
+RUN rm -rf /opt/meshcentral/meshcentral/node_modules
+
 
 FROM base
 
@@ -51,12 +57,8 @@ RUN if ! [ -z "$INCLUDE_MONGODBTOOLS" ]; then apk add --no-cache mongodb-tools; 
 
 # copy files from builder-image
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=builder /opt/meshcentral/meshcentral/docker/startup.sh ./startup.sh
-COPY --from=builder /opt/meshcentral/meshcentral/docker/config.json.template /opt/meshcentral/config.json.template
-
-# cleanup
-RUN rm -rf /opt/meshcentral/meshcentral/docker
-RUN rm -rf /opt/meshcentral/meshcentral/node_modules
+COPY ./docker/startup.sh ./startup.sh
+COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
 # install dependencies from package.json and nedb
 RUN cd meshcentral && npm install && npm install nedb
