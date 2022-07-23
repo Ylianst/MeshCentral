@@ -991,7 +991,15 @@ module.exports.CertificateOperations = function (parent) {
                 return r;
             }
         }
-        if (parent.configurationFiles != null) { console.log("Error: Vault/Database missing some certificates."); process.exit(0); return null; }
+        if (parent.configurationFiles != null) {
+            console.log("Error: Vault/Database missing some certificates.");
+            if (r.root == null) { console.log('  Code signing certificate is missing.'); }
+            if (r.web == null) { console.log('  HTTPS web certificate is missing.'); }
+            if (r.mps == null) { console.log('  Intel AMT MPS certificate is missing.'); }
+            if (r.agent == null) { console.log('  Server agent authentication certificate is missing.'); }
+            if (r.codesign == null) { console.log('  Agent code signing certificate is missing.'); }
+            process.exit(0); return null;
+        }
 
         console.log("Generating certificates, may take a few minutes...");
         parent.updateServerState('state', 'generatingcertificates');
