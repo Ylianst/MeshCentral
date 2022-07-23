@@ -48,6 +48,25 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 FROM base
 
 ARG INCLUDE_MONGODBTOOLS=""
+
+# environment variables
+ENV NODE_ENV="production"
+ENV CONFIG_FILE="config.json"
+
+# environment variables for initial configuration file
+ENV USE_MONGODB="false"
+ENV MONGO_INITDB_ROOT_USERNAME="root"
+ENV MONGO_INITDB_ROOT_PASSWORD="pass"
+ENV HOSTNAME="localhost"
+ENV ALLOW_NEW_ACCOUNTS="true"
+ENV ALLOWPLUGINS="false"
+ENV LOCALSESSIONRECORDING="false"
+ENV MINIFY="true"
+ENV WEBRTC="false"
+ENV IFRAME="false"
+ENV REVERSE_PROXY="false"
+ENV REVERSE_PROXY_TLS_PORT=""
+
 RUN if ! [ -z "$INCLUDE_MONGODBTOOLS" ] && [ "$INCLUDE_MONGODBTOOLS" != "yes" ] && [ "$INCLUDE_MONGODBTOOLS" != "YES" ] \
     && [ "$INCLUDE_MONGODBTOOLS" != "true" ] && [ "$INCLUDE_MONGODBTOOLS" != "TRUE" ]; then \
         echo -e "\e[0;31;49mInvalid value for build argument INCLUDE_MONGODBTOOLS, possible values: yes/true\e[;0m"; exit 1; \
