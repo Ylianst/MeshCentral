@@ -998,7 +998,8 @@ module.exports.CertificateOperations = function (parent) {
             if (r.mps == null) { console.log('  Intel AMT MPS certificate is missing.'); }
             if (r.agent == null) { console.log('  Server agent authentication certificate is missing.'); }
             if (r.codesign == null) { console.log('  Agent code signing certificate is missing.'); }
-            process.exit(0); return null;
+            process.exit(0);
+            return null;
         }
 
         console.log("Generating certificates, may take a few minutes...");
