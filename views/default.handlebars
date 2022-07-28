@@ -8540,7 +8540,6 @@
             QV('DeskBackgroundButton', inputAllowed && (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
             QV('DeskRefreshButton', (deskState == 3) && (desktop.contype == 1))
-            QV('deskActionsSettings', (browserfullscreen == false));
             if (rights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
             QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red';
 
