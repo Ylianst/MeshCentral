@@ -96,15 +96,15 @@ See description for information about each item.
         "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 443, "description": "Ths port of the main HTTPS server." },
         "portBind": { "type": "string", "description": "When set, bind the HTTPS main port to a specific network address." },
         "aliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null, "description": "The actual main port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
-        "redirPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 80, "description": "This is a HTTP web server port that mostly redirects users to the HTTPS port but does provide some other servces, 0 will turn this port off." },
+        "redirPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 80, "description": "This is a HTTP web server port that mostly redirects users to the HTTPS port but does provide some other services, 0 will turn this port off." },
         "redirPortBind": { "type": "string", "description": "When set, bind the HTTP redirection port to a specific network address." },
         "redirAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "The actual redirection port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
         "relayPort": { "type": "integer", "minimum": 0, "maximum": 65535, "default": 0, "description": "When set, a web relay web server is bound to this port and will allow user access to remote web sites." },
         "relayAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "default": null, "description": "The actual relay port as seen externally on the Internet, this setting is often used when a reverse-proxy is used." },
-        "relayDNS": { "type": "string", "default": null, "description": "When set, relayPort valie is ignored. Set this to a DNS name the points to this server. When the server is accessed using the DNS name, the main web server port is used as a web relay port."  },
+        "relayDNS": { "type": "string", "default": null, "description": "When set, relayPort value is ignored. Set this to a DNS name the points to this server. When the server is accessed using the DNS name, the main web server port is used as a web relay port."  },
         "agentPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, enabled a new HTTPS server port that only accepts agent connections." },
         "agentPortBind": { "type": "string", "description": "When set, binds the agent port to a specific network interface." },
-        "agentAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, indicates the actual publically visible agent-only port. If not set, the AgentPort value is used." },
+        "agentAliasPort": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "When set, indicates the actual publicly visible agent-only port. If not set, the AgentPort value is used." },
         "agentAliasDNS": { "type": "string", "format": "hostname", "description": "When set, specified the DNS name used by agents to connect to the agent-only port." },
         "agentPortTls": { "type": "boolean", "default": true, "description": "Indicates if the agent-only port must perform TLS, this should be set to false if TLS is performed in front of this server." },
         "agentLogDump": { "type": "boolean", "default": false, "description": "Automatically downloads all agent error logs into meshcentral-data/agenterrorlogs.txt." },
@@ -123,7 +123,7 @@ See description for information about each item.
         "webRTC": { "type": "boolean", "default": false, "description": "When enabled, allows use of WebRTC to allow direct network traffic between the agent and browser." },
         "nice404": { "type": "boolean", "default": true, "description": "By default, a nice looking 404 error page is displayed when needed. Set this to false to disable it." },
         "selfUpdate": { "type": "boolean", "default": false, "description": "When true, this server will attempt to self-update everyday after midnight." },
-        "cleanNpmCacheOnUpdate": { "type": "boolean", "default": false, "description": "When true, run \"npm cache clean --force\" to reclame disk space." },
+        "cleanNpmCacheOnUpdate": { "type": "boolean", "default": false, "description": "When true, run \"npm cache clean --force\" to reclaim disk space." },
         "browserPing": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval and expects a response from the browser." },
         "browserPong": { "type": "integer", "minimum": 1, "description": "When specified, sends data to the browser at x seconds interval." },
         "agentsInRam": { "type": "boolean", "default": false, "description": "Loads all agent binaries in RAM for faster agent updates." },
@@ -201,6 +201,17 @@ See description for information about each item.
             "iceServers": { "type": "array", "uniqueItems": true, "items": { "type": "object", "additionalProperties": false, "properties": { "urls": { "type": "string" } }, "required": [ "urls" ] } }
           },
           "required": [ "iceServers" ]
+        },
+        "crowdsec": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Enabled the MeshCentral built-in Crowdsec bouncer. This section is passed directly to the bouncer, all of the settings are documented at https://www.npmjs.com/package/@crowdsec/express-bouncer",
+          "properties": {
+            "url": { "type": "string", "description": "The URL of your LAPI instance. Ex: http://localhost:8080" },
+            "apiKey": { "type": "string", "description": "The bouncer key (generated via cscli)." },
+            "fallbackRemediation": { "type": "string", "default": "ban", "enum": ["bypass", "captcha", "ban"], "description": "Action to perform if the CrowdSec agent can't be contacted." }
+          },
+          "required": [ "url", "apiKey" ]
         },
         "autoBackup": {
           "type": "object",
@@ -339,6 +350,8 @@ See description for information about each item.
           "ipkvm": { "type": "boolean", "default": false, "description": "Set to true to enable IP KVM device support in this domain." },
           "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sided web pages." },
           "newAccounts": { "type": "boolean", "default": false, "description": "When set to true, allow new user accounts to be created from the login page." },
+          "newAccountsPass": { "type": "string", "default": null, "description": "When set this password will be required in order to create a new account from the login screen." },
+          "newAccountsCaptcha": { "type": "boolean", "default": false, "description": "When set to true, users will get a CAPTCHA when creating a new account from the login screen." },
           "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "userNameIsEmail": { "type": "boolean", "default": false, "description": "When enabled, the username of each account is also the email address of the account." },
           "newAccountEmailDomains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
@@ -352,6 +365,7 @@ See description for information about each item.
           "footer": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is logged in." },
           "loginfooter": { "type": "string", "default": null, "description": "This is a HTML string displayed at the bottom of the web page when a user is not logged in." },
           "allowSavingDeviceCredentials": { "type": "boolean", "default": true, "description": "Allow users to save SSH, RDP, VNC device credentials on the server that can be used by any other user." },
+          "trustedCert": { "type": "boolean", "default": "This value is normally auto-detected, when set to true, MeshCentral assumes that the TLS certificate comes from a trusted CA and will insure download tools perform certificate checking." },
           "guestDeviceSharing": {
             "type": [ "boolean", "object" ],
             "default": true,
@@ -365,7 +379,7 @@ See description for information about each item.
           "agentSelfGuestSharing": {
             "type": [ "boolean", "object" ],
             "default": false,
-            "description": "When set to true, MeshCentral Asssitant can create it's own guest sharing links.",
+            "description": "When set to true, MeshCentral Assistant can create it's own guest sharing links.",
             "properties": {
               "expire": { "type": "number", "description": "When set, limits the self-created guest sharing link to this number of minutes." }
             }
@@ -389,14 +403,18 @@ See description for information about each item.
               }
             }
           },
-          "altMessenging": { 
-            "type": "object",
-            "properties": {
-              "name": { "type": "string", "description": "Name of the alternative messaging service, for example: \"Jitsi\" " },
-              "url": { "type": "string", "description": "URL to the alternative messaging services, for example: \"https://meet.jit.si/myserver-{0}\"" },
-              "localurl": { "type": "string", "description": "If specified, this is the URL that is used on the administrator side, for example: \"https://meet.jit.si/myserver-{0}\"" }
-            },
-            "required": [ "name", "url" ]
+          "altMessenging": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "description": "Name of the alternative messaging service, for example: \"Jitsi\" " },
+                "url": { "type": "string", "description": "URL to the alternative messaging services, for example: \"https://meet.jit.si/myserver-{0}\", for a device {0}, {1}, {2}, {3} is the device id. For a user, {0} is the userid, {1} is full userid with dashes, {2} is real name with no spaces, {3} is real name with dash instead of spaces." },
+                "localurl": { "type": "string", "description": "If specified, this is the URL that is used on the administrator side, for example: \"https://meet.jit.si/myserver-{0}\", for a device {0}, {1}, {2}, {3} is the device id. For a user, {0} is the userid, {1} is full userid with dashes, {2} is real name with no spaces, {3} is real name with dash instead of spaces." },
+                "type": { "type": "string", "enum": [null, "user", "device"], "default": null, "description": "Indicate if this button should be shown in the user or device type. If omitted, it will be displayed in both." }
+              },
+              "required": [ "name", "url" ]
+            }
           },
           "deviceMeshRouterLinks": {
             "rdp": { "type": "boolean", "default": true, "description": "Display a RDP link in the device tab when supported." },
@@ -453,8 +471,8 @@ See description for information about each item.
             "type": [ "object", "boolean" ],
             "additionalProperties": false,
             "properties": {
-              "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab. This option can only enabled when the NeDB databse is in use. For other databases, this option disabled and the setting is ignored." },
-              "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab. This option can only enabled when the NeDB databse is in use. For other databases, this option disabled and the setting is ignored." },
+              "Backup": { "type": "boolean", "default": true, "description": "Allows administrators to backup the server from the My Server tab. This option can only enabled when the NeDB database is in use. For other databases, this option disabled and the setting is ignored." },
+              "Restore": { "type": "boolean", "default": true, "description": "Allows administrators to restore the server from the My Server tab. This option can only enabled when the NeDB database is in use. For other databases, this option disabled and the setting is ignored." },
               "Upgrade": { "type": "boolean", "default": true, "description": "Allows administrators to update the server from the My Server tab." },
               "ErrorLog": { "type": "boolean", "default": true, "description": "Allows administrators to see the server crash log the server from the My Server tab." },
               "Console": { "type": "boolean", "default": true, "description": "Allows administrators to access the server console from the My Server tab." },
@@ -491,11 +509,14 @@ See description for information about each item.
           },
           "twoFactorCookieDurationDays": { "type": "integer", "default": 30, "description": "Number of days that a user is allowed to remember this device for when completing 2FA. Set this to 0 to remove this option." },
           "auth": { "type": "string", "default": null, "enum": [null, "sspi", "ldap"], "description": "Type of user authentication to use, this can be SSPI on Windows or LDAP. If not set, username/password is used." },
-          "ldapUserKey": { "type": "string" },
-          "ldapUserName": { "type": "string" },
-          "ldapUserEmail": { "type": "string" },
-          "ldapUserRealName": { "type": "string" },
-          "ldapUserPhoneNumber": { "type": "string" },
+          "ldapUserKey": { "type": "string", "default": null, "description": "The LDAP value to use as a user's unique account identifier. Use \"ldapUserKey\" or \"ldapUserBinaryKey\"." },
+          "ldapUserBinaryKey": { "type": "string", "default": "objectSid", "description": "The LDAP value to use as a user's unique account identifier, when specified in this feild, the values will be HEX converted." },
+          "ldapUserName": { "type": "string", "default": "displayName", "description": "The LDAP value to use for the user name, you can also compose the name by setting this value to, for example: \"{{{givenName}}} {{{sn}}}\"" },
+          "ldapUserEmail": { "type": "string", "default": "mail", "description": "The LDAP value to use for the user's email address." },
+          "ldapUserRealName": { "type": "string", "default": "name", "description": "The LDAP value to use for the user's real name, you can also compose the name by setting this value to, for example: \"{{{givenName}}} {{{sn}}}\"" },
+          "ldapUserPhoneNumber": { "type": "string", "default": "telephoneNumber", "description": "The LDAP value to use for the user's phone number." },
+          "ldapUserImage": { "type": "string", "default": "thumbnailPhoto", "description": "The LDAP value to use for the user's image." },
+          "ldapSaveUserToFile": { "type": "string", "default": null, "description": "When set to a filename, for example c:\\temp\\ldapusers.txt, MeshCentral will save the LDAP user object to this file each time a user logs in. This is used for debugging LDAP issues." },
           "ldapOptions": { "type": "object", "description": "LDAP options passed to ldapauth-fork" },
           "agentInviteCodes": { "type": "boolean", "default": false, "description": "Enabled a feature where you can set one or more invitation codes in a device group. You can then give a invitation link to users who can use it to download the agent." },
           "agentNoProxy": { "type": "boolean", "default": false, "description": "When enabled, all newly installed MeshAgents will be instructed to no use a HTTP/HTTPS proxy even if one is configured on the remote system" },
@@ -672,7 +693,7 @@ See description for information about each item.
             "additionalProperties": false,
             "description": "Information passed to the AMT manager module that impacts all Intel AMT device managed within this domain.",
             "properties": {
-              "TlsConnections": { "type": "boolean", "default": true, "description": "When set to false, MeshCentral will use TLS to connect to Intel AMT, this is not recommanded." },
+              "TlsConnections": { "type": "boolean", "default": true, "description": "When set to false, MeshCentral will use TLS to connect to Intel AMT, this is not recommended." },
               "TlsAcmActivation": { "type": "boolean", "default": false, "description": "When set to false, MeshCentral will not attempt a TLS ACM activation on Intel AMT v14+" },
               "AdminAccounts": {
                 "description": "List of username and passwords to try when connecting to Intel AMT.",
@@ -1009,7 +1030,7 @@ See description for information about each item.
                 "properties": {
                   "clientId": { "type": "string" },
                   "clientSecret": { "type": "string" },
-                  "refreshTfoken": { "type": "string" }
+                  "refreshToken": { "type": "string" }
                 },
                 "required": [ "clientId", "clientSecret", "refreshToken" ]
               },
@@ -1156,7 +1177,7 @@ See description for information about each item.
         "email": { "type": "string", "format": "email", "description": "Email address of the administrator of this server. Make sure this is a valid email address otherwise the certificate request will fail." },
         "names": { "type": "string" },
         "skipChallengeVerification": { "type": "boolean", "default": false, "description": "By default, MeshCentral will perform a self-test to make sure HTTP port 80 can respond correctly before making a request to Let's Encrypt. In some cases, this self-test can't work and must be skipped." },
-        "production": { "type": "boolean", "default": false, "description": "By default a test certificate will be obtained from Let's Encrypt. Always start by getting a test certificate and make sure that works before setting this to true and obtaining a production certificaite. Making too many bad requests for a production certificate will get you banned for a long period of time." }
+        "production": { "type": "boolean", "default": false, "description": "By default a test certificate will be obtained from Let's Encrypt. Always start by getting a test certificate and make sure that works before setting this to true and obtaining a production certificate. Making too many bad requests for a production certificate will get you banned for a long period of time." }
       },
       "required": [ "email", "names" ]
     },
