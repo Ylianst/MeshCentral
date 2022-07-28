@@ -1043,8 +1043,13 @@
             }
         }
 
+        // This method has caused exceptions: https://github.com/Ylianst/MeshCentral/issues/4302
         function ArrayBufferToString(buffer) {
-            return BinaryToString(String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(buffer))));
+            try { return BinaryToString(String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(buffer)))); } catch (ex) { }
+            console.log('ArrayBufferToString - Unable to convert ' + buffer.byteLength + ' bytes.');
+            var s = '', u = new Uint8Array(buffer);
+            for (var i = 0; i < buffer.byteLength; i++) { s += String.fromCharCode(u[i]); }
+            return s;
         }
 
         function StringToArrayBuffer(string) {
