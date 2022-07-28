@@ -1377,11 +1377,11 @@ module.exports.CreateAmtManager = function (parent) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             const domain = parent.config.domains[dev.domainid];
-            if ((responses['AMT_PublicKeyCertificate'].status != 200) || (responses['AMT_PublicKeyCertificate'].status != 200)) { devTaskCompleted(dev); return; } // We can't get the certificate list, fail and carry on.
+            if ((responses['AMT_PublicKeyCertificate'] == null) || (responses['AMT_PublicKeyCertificate'].status != 200) || (responses['AMT_PublicPrivateKeyPair'] == null) || (responses['AMT_PublicPrivateKeyPair'].status != 200)) { devTaskCompleted(dev); return; } // We can't get the certificate list, fail and carry on.
 
             // See if we need to perform wired or wireless 802.1x configuration
-            var wiredConfig = ((parent.config.domains[dev.domainid].amtmanager['802.1x'] != null) && (responses['AMT_8021XProfile'].status == 200));
-            const wirelessConfig = ((responses['CIM_WiFiEndpointSettings'].status == 200) && (responses['AMT_WiFiPortConfigurationService'].status == 200) && (responses['CIM_WiFiPort'].status == 200) && (responses['CIM_IEEE8021xSettings'].status == 200));
+            var wiredConfig = ((parent.config.domains[dev.domainid].amtmanager['802.1x'] != null) && (responses['AMT_8021XProfile'] != null) && (responses['AMT_8021XProfile'].status == 200));
+            const wirelessConfig = ((responses['CIM_WiFiEndpointSettings'] != null) && (responses['CIM_WiFiEndpointSettings'].status == 200) && (responses['AMT_WiFiPortConfigurationService'] != null) && (responses['AMT_WiFiPortConfigurationService'].status == 200) && (responses['CIM_WiFiPort'] != null) && (responses['CIM_WiFiPort'].status == 200) && (responses['CIM_IEEE8021xSettings'] != null) && (responses['CIM_IEEE8021xSettings'].status == 200));
             if (!wiredConfig && !wirelessConfig) { devTaskCompleted(dev); return; } // We can't get wired or wireless settings, ignore and carry on.
 
             // Sort out the certificates
