@@ -3593,7 +3593,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    child_process.exec(npmpath + ` install --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    child_process.exec(npmpath + ` install --no-package-lock --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
