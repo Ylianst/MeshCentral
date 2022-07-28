@@ -1885,9 +1885,12 @@ function onTunnelUpgrade(response, s, head) {
     s.tunnel = this;
     s.descriptorMetadata = "MeshAgent_relayTunnel";
 
-    if (require('MeshAgent').idleTimeout != null) {
+
+    if (this.tcpport != null || this.udpport != null)
+    {
         s.setTimeout(require('MeshAgent').idleTimeout * 1000);
-        s.on('timeout', function () {
+        s.on('timeout', function ()
+        {
             this.ping();
             this.setTimeout(require('MeshAgent').idleTimeout * 1000);
         });
@@ -1895,7 +1898,8 @@ function onTunnelUpgrade(response, s, head) {
 
     //sendConsoleText('onTunnelUpgrade - ' + this.tcpport + ' - ' + this.udpport);
 
-    if (this.tcpport != null) {
+    if (this.tcpport != null)
+    {
         // This is a TCP relay connection, pause now and try to connect to the target.
         s.pause();
         s.data = onTcpRelayServerTunnelData;
@@ -1911,7 +1915,9 @@ function onTunnelUpgrade(response, s, head) {
             try { mesh.SendCommand({ action: 'sessions', type: 'tcp', value: tunnelUserCount.tcp }); } catch (ex) { }
             broadcastSessionsToRegisteredApps();
         }
-    } if (this.udpport != null) {
+    }
+    if (this.udpport != null)
+    {
         // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
         s.data = onUdpRelayServerTunnelData;
         s.udprelay = require('dgram').createSocket({ type: 'udp4' });
@@ -1929,7 +1935,9 @@ function onTunnelUpgrade(response, s, head) {
             try { mesh.SendCommand({ action: 'sessions', type: 'udp', value: tunnelUserCount.tcp }); } catch (ex) { }
             broadcastSessionsToRegisteredApps();
         }
-    } else {
+    }
+    else
+    {
         // This is a normal connect for KVM/Terminal/Files
         s.data = onTunnelData;
     }
@@ -2072,10 +2080,34 @@ function onTunnelData(data) {
         return;
     }
 
-    if (this.httprequest.state == 0) {
+    if (this.httprequest.state == 0)
+    {
         // Check if this is a relay connection
-        if ((data == 'c') || (data == 'cr')) { this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/ }
-    } else {
+        if ((data == 'c') || (data == 'cr'))
+        {
+            this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/
+            this.setTimeout(global._tunnelTimeout == null ? 5000 : global._tunnelTimeout); // Once we receive 'c', we will only wait the tunnel timeout (5 seconds) before we close the tunnel
+            this.on('timeout', function ()
+            {
+                this.end();
+            });
+        }
+    }
+    else
+    {
+        // We received some data, so we will reset the idle timeout of the websocket
+        this.removeAllListeners('timeout');
+
+        if (require('MeshAgent').idleTimeout != null)
+        {
+            this.setTimeout(require('MeshAgent').idleTimeout * 1000);
+            this.on('timeout', function ()
+            {
+                this.ping();
+                this.setTimeout(require('MeshAgent').idleTimeout * 1000);
+            });
+        }
+
         // Handle tunnel data
         if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
             // Take a look at the protocol
