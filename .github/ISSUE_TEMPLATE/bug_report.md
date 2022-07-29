@@ -29,12 +29,18 @@ If applicable, add screenshots to help explain your problem.
  - Network: [e.g. LAN/WAN, reverse proxy, cloudflare, ssl offload, etc...]
  - Version: [e.g. 1.0.43]
  - Node: [e.g. 18.4.0]
+
+**Client Device (please complete the following information):**
+ - Device: [e.g. Laptop]
+ - OS: [e.g. Ubuntu]
+ - Network: [e.g. Local to Meshcentral, Remote over WAN]
  - Browser: [e.g. Google Chrome]
+ - MeshCentralRouter Version: [if applicable]
 
 **Remote Device (please complete the following information):**
  - Device: [e.g. Laptop]
- - OS: [e.g. Windows 10]
- - Version: [e.g. 21H2]
+ - OS: [e.g. Windows 10 21H2]
+ - Network: [e.g. Local to Meshcentral, Remote over WAN]
  - Current Core Version (if known): [**HINT**: Go to a device then `console` Tab then type `info`]
 
 **Additional context**
