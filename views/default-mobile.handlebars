@@ -854,7 +854,7 @@
                         <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                         <div id=p10html style="margin-left:8px;margin-right:8px"></div>
                         <div id=p10html2></div>
-                        <div id=p10html3></div>
+                        <div id=p10html3 style="margin-left:8px"></div>
                     </div>
                     <img id="deskkeybutton1" src="images/mobile-desk-exit.png" class="deskButton" style="top:10px;display:none" onclick="exitButton()" />
                     <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(false)" />
@@ -1228,6 +1228,8 @@
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
         var authCookieRenewTimer = null;
+        var webRelayPort = parseInt('{{{webRelayPort}}}');
+        var webRelayDns = '{{{webRelayDns}}}';
         var meshserver = null;
         var xdr = null;
         var usergroups = null;
@@ -1911,6 +1913,8 @@
                                 node.rdpport = message.event.node.rdpport;
                                 node.rfbport = message.event.node.rfbport;
                                 node.sshport = message.event.node.sshport;
+                                node.httpport = message.event.node.httpport;
+                                node.httpsport = message.event.node.httpsport;
                                 node.consent = message.event.node.consent;
                                 node.pmt = message.event.node.pmt;
                                 if (message.event.node.agent != null) {
@@ -3572,6 +3576,10 @@
                 x = '<div style=float:right;font-size:x-small;margin-right:10px>';
                 if ((meshrights & 0x8000) != 0) { x += '<a style=cursor:pointer onclick=p10showDeleteNodeDialog("' + node._id + '")>' + "Delete Device" + '</a>'; }
                 x += '</div><div style=font-size:x-small>';
+                if (webRelayPort != 0) {
+                    x += '<a onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + ((node.httpport && (node.httpport != 80)) ? '/' + node.httpport : '') + '</a>&nbsp;';
+                    x += '<a onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + ((node.httpsport && (node.httpsport != 443)) ? '/' + node.httpsport : '') + '</a>&nbsp;';
+                }
                 //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
                 //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
                 x += '</div><br>'
@@ -3808,7 +3816,7 @@
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if (currentNode.mtype == 3) return;
+            if (currentNode.mtype == 3) { QH('p10html2', '<br />'); return; }
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
@@ -3916,6 +3924,23 @@
 
         function p10showDeleteNodeDialogEx(buttons, nodeid) {
             meshserver.send({ action: 'removedevices', nodeids: [nodeid] });
+        }
+
+        function p10WebRouter(nodeid, protocol, port, addr) {
+            var relayid = null;
+            var node = getNodeFromId(nodeid);
+            if (node.mtype == 3) { // Setup device relay if needed
+                var mesh = meshes[node.meshid];
+                if (mesh && mesh.relayid) { relayid = mesh.relayid; addr = node.host; }
+            }
+            var servername = serverinfo.name;
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            if (webRelayDns != '') { servername = webRelayDns; }
+            var url = 'https://' + servername + ':' + webRelayPort + '/control-redirect.ashx?n=' + nodeid + '&p=' + port + '&appid=' + protocol + '&c=' + authRelayCookie; // Protocol: 1 = HTTP, 2 = HTTPS
+            if (addr != null) { url += '&addr=' + addr; }
+            if (relayid != null) { url += '&relayid=' + relayid; }
+            safeNewWindow(url, 'WebRelay');
+            return false;
         }
 
         function p10showiconselector() {
