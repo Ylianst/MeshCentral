@@ -4960,6 +4960,108 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 break;
             }
+            case 'importamtdevices': {
+                if ((command.amtdevices == null) || (command.meshid == null) || (typeof command.meshid != 'string') || (command.meshid.startsWith('mesh/' + domain.id + '/') == false)) return;
+                const mesh = parent.meshes[command.meshid];
+                if ((mesh == null) || (mesh.mtype != 1) || (parent.GetMeshRights(user, command.meshid) & MESHRIGHT_EDITMESH) == 0) return null; // This user must have mesh rights to edit the device group
+                var amtDevices = [];
+
+                // Decode a JSON file from the Intel EMA migration tool
+                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel EMA Migration Tool') && (Array.isArray(command.amtdevices['Managed Systems']))) {
+                    for (var i in command.amtdevices['Managed Systems']) {
+                        const importDev = command.amtdevices['Managed Systems'][i];
+                        var host = null;
+                        if ((typeof importDev.curr_AMTFqdn == 'string') && (importDev.curr_AMTFqdn != '')) { host = importDev.curr_AMTFqdn; }
+                        if ((host == null) && (typeof importDev.curr_AMTIPv4 == 'string') && (importDev.curr_AMTIPv4 != '')) { host = importDev.curr_AMTIPv4; }
+                        if (host != null) {
+                            // Create a new Intel AMT device
+                            const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                            const device = { type: 'node', _id: nodeid, meshid: mesh._id, mtype: 1, icon: 1, name: host, host: host, domain: domain.id, intelamt: { user: 'admin', state: 2 } };
+
+                            // Add optional fields
+                            if (typeof importDev.AMTVersion == 'string') { device.intelamt.ver = importDev.AMTVersion; }
+                            if (typeof importDev.ConfiguredPassword == 'string') { device.intelamt.pass = importDev.ConfiguredPassword; }
+                            if (typeof importDev.uuid == 'string') { device.intelamt.uuid = importDev.uuid; }
+
+                            // Check if we are already adding a device with the same hostname, if so, skip it.
+                            var skip = false;
+                            for (var i in amtDevices) { if (amtDevices[i].host.toLowerCase() == device.host.toLowerCase()) { skip = true; } }
+                            if (skip == false) { amtDevices.push(device); }
+                        }
+                    }
+                }
+
+                // Decode a JSON file from MeshCommander
+                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.webappversion == 'string') && (Array.isArray(command.amtdevices.computers))) {
+                    for (var i in command.amtdevices.computers) {
+                        const importDev = command.amtdevices.computers[i];
+                        if ((typeof importDev.host == 'string') && (importDev.host != '') && (importDev.host != '127.0.0.1') && (importDev.host.toLowerCase() != 'localhost')) {
+                            // Create a new Intel AMT device
+                            const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                            const device = { type: 'node', _id: nodeid, meshid: mesh._id, mtype: 1, icon: 1, host: importDev.host, domain: domain.id, intelamt: { user: 'admin', state: 2 } };
+                            if (typeof importDev.name == 'string') { device.name = importDev.name; } else { device.name = importDev.host; }
+
+                            // Add optional fields
+                            if (typeof importDev.user == 'string') { device.intelamt.user = importDev.user; }
+                            if (typeof importDev.pass == 'string') { device.intelamt.pass = importDev.pass; }
+                            if ((importDev.tls === true) || (importDev.tls === 1)) { device.intelamt.tls = 1; }
+                            if (typeof importDev.digestrealm == 'string') { device.intelamt.realm = importDev.digestrealm; }
+                            if (typeof importDev.ver == 'string') { device.intelamt.ver = importDev.ver; }
+                            if (typeof importDev.uuid == 'string') { device.intelamt.uuid = importDev.uuid; }
+                            if (typeof importDev.pstate == 'number') { device.intelamt.state = importDev.pstate; }
+                            if (typeof importDev.tlscerthash == 'string') { device.intelamt.hash = importDev.tlscerthash; }
+                            if (typeof importDev.icon == 'number') { device.icon = importDev.icon; }
+                            if (typeof importDev.desc == 'string') { device.desc = importDev.desc; }
+
+                            // Check if we are already adding a device with the same hostname, if so, skip it.
+                            var skip = false;
+                            for (var i in amtDevices) { if (amtDevices[i].host.toLowerCase() == device.host.toLowerCase()) { skip = true; } }
+                            if (skip == false) { amtDevices.push(device); }
+                        }
+                    }
+                }
+
+                // Decode a JSON file in simple format
+                if (Array.isArray(command.amtdevices)) {
+                    for (var i in command.amtdevices) {
+                        const importDev = command.amtdevices[i];
+                        if ((typeof importDev.fqdn == 'string') && (importDev.fqdn != '') && (importDev.fqdn != '127.0.0.1') && (importDev.fqdn.toLowerCase() != 'localhost')) {
+                            // Create a new Intel AMT device
+                            const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                            const device = { type: 'node', _id: nodeid, meshid: mesh._id, mtype: 1, icon: 1, host: importDev.fqdn, domain: domain.id, intelamt: { user: 'admin', state: 2 } };
+                            if (typeof importDev.name == 'string') { device.name = importDev.name; } else { device.name = importDev.host; }
+
+                            // Add optional fields
+                            if (typeof importDev.username == 'string') { device.intelamt.user = importDev.username; }
+                            if (typeof importDev.password == 'string') { device.intelamt.pass = importDev.password; }
+                            if ((importDev.tls === true) || (importDev.tls === 1)) { device.intelamt.tls = 1; }
+                            if (typeof importDev.version == 'string') { device.intelamt.ver = importDev.version; }
+                            if (typeof importDev.digestrealm == 'string') { device.intelamt.realm = importDev.digestrealm; }
+                            if (typeof importDev.uuid == 'string') { device.intelamt.uuid = importDev.uuid; }
+                            if (typeof importDev.pstate == 'number') { device.intelamt.state = importDev.pstate; }
+                            if (typeof importDev.tlscerthash == 'string') { device.intelamt.hash = importDev.tlscerthash; }
+                            if (typeof importDev.icon == 'number') { device.icon = importDev.icon; }
+                            if (typeof importDev.desc == 'string') { device.desc = importDev.desc; }
+
+                            // Check if we are already adding a device with the same hostname, if so, skip it.
+                            var skip = false;
+                            for (var i in amtDevices) { if (amtDevices[i].host.toLowerCase() == device.host.toLowerCase()) { skip = true; } }
+                            if (skip == false) { amtDevices.push(device); }
+                        }
+                    }
+                }
+
+                // Add all the correctly parsed devices to the database and event them
+                // TODO: We may want to remove any devices with duplicate hostnames
+                if (amtDevices.length == 0) return;
+                for (var i in amtDevices) {
+                    // Save the device to the database
+                    db.Set(amtDevices[i]);
+                    // Event the new node
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(amtDevices[i]), msgid: 84, msgArgs: [amtDevices[i].name, mesh.name], msg: 'Added device ' + amtDevices[i].name + ' to device group ' + mesh.name, domain: domain.id });
+                }
+                break;
+            }
             default: {
                 // Unknown user action
                 console.log('Unknown action from user ' + user.name + ': ' + command.action + '.');

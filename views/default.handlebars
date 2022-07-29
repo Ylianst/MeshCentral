@@ -4969,6 +4969,35 @@
             return false;
         }
 
+        // Intel AMT device import for a device group
+        function showAmtImport(meshid) {
+            if (xxdialogMode) return false;
+            var x = '<form method=post enctype=multipart/form-data action=amtimport.ashx target=fileUploadFrame><input type=text name=link style=display:none id=amtImportDevGroup value="' + meshid + '" /><input type=file name=files id=amtImportInput style=width:100% onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>';
+            setDialogMode(2, "Import Intel AMT devices", 3, p5uploadFileEx, x);
+            p5updateUploadDialogOk('amtImportInput');
+        }
+
+        function showAmtImport(meshid) {
+            if (xxdialogMode) return;
+            var x = "Create many Intel&reg; AMT device at once by importing a JSON file with the following format:" + '<br /><pre>[\r\n  {\r\n    "fqdn":"mycomputer.com",\r\n    "uuid":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",\r\n    "version":"12.0.1",\r\n    "username":"admin",\r\n    "password":"password",\r\n    "tls":true\r\n  }\r\n]</pre><input style=width:370px type=file id=d4importFile accept=".json" onchange=showAmtImportValidate() />';
+            setDialogMode(2, "Intel&reg; AMT Device Import", 3, showAmtImportEx, x, meshid);
+            QE('idx_dlgOkButton', false);
+        }
+
+        function showAmtImportValidate() {
+            QE('idx_dlgOkButton', Q('d4importFile').value != null);
+        }
+
+        function showAmtImportEx(b, meshid) {
+            var fr = new FileReader();
+            fr.onload = function (r) {
+                var j = null;
+                try { j = JSON.parse(r.target.result); } catch (ex) { setDialogMode(2, "Intel&reg; AMT Device Import", 1, null, format("Invalid JSON file: {0}.", ex)); return; }
+                if (j != null) { meshserver.send({ action: 'importamtdevices', meshid: meshid, amtdevices: j }); } else { setDialogMode(2, "Intel&reg; AMT Device Import", 1, null, "Invalid JSON file format."); }
+            };
+            fr.readAsText(Q('d4importFile').files[0]);
+        }
+
         // Intel AMT activation and configuration for agentless device groups
         function showAmtSetup(meshid) {
             if (xxdialogMode) return false;
@@ -12396,7 +12425,7 @@
 
             //if (meshrights & 4) { }
             if (currentMesh.mtype == 1) {
-                //x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Import Intel&reg; AMT devices." + '" onclick=\'return showAmtInput("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Import" + '</a>';
+                if (meshrights & 1) { x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Import Intel&reg; AMT devices." + '" onclick=\'return showAmtImport("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Import" + '</a>'; }
                 /*
                 if ((features & 1) == 0) { // If not WAN-Only
                     x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
