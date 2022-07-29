@@ -4966,7 +4966,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((mesh == null) || (mesh.mtype != 1) || (parent.GetMeshRights(user, command.meshid) & MESHRIGHT_EDITMESH) == 0) return null; // This user must have mesh rights to edit the device group
                 var amtDevices = [];
 
-                // Decode a JSON file from the Intel EMA migration tool
+                // Decode a JSON file from the Intel SCS migration tool
                 if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel EMA Migration Tool') && (Array.isArray(command.amtdevices['Managed Systems']))) {
                     for (var i in command.amtdevices['Managed Systems']) {
                         const importDev = command.amtdevices['Managed Systems'][i];
