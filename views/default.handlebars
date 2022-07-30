@@ -5534,24 +5534,24 @@
                 p2downloadDeviceInfo();
             } else if (op == 106) {
                 // Run commands
-                var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
+                var wintype = false, linuxtype = false, agenttype = false, chkNodeIds = getCheckedDevices();
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
-                    if (n.agent) { if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                    if (n.agent) { if ((GetNodeRights(n) & 24) == 24) { agenttype = true; } if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
                 }
-                if ((wintype == true) || (linuxtype == true)) {
+                if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
                     var x = "Run commands on selected devices." + '<br />';
-                    if (wintype == true) {
-                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px>';
-                        x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>';
-                        if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
-                        x += '</select>';
-                    }
+                    x += '<select id=d2cmdtype onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px;margin-top:4px>';
+                    if (wintype == true) { x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>'; }
+                    if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
+                    if (agenttype == true) { x += '<option value=4>' + "Agent console command" + '</option>'; } // MESHRIGHT_REMOTECONTROL & MESHRIGHT_AGENTCONSOLE are needed
+                    x += '</select>';
                     x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0>' + "Run as agent" + '</option><option value=1>' + "Run as user, agent if no user" + '</option><option value=2>' + "Must run as user" + '</option></select>';
                     x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
                     setDialogMode(2, "Run Commands", 3, d2groupActionFunctionRunCommands, x);
                     Q('d2runcmd').focus();
                     //QE('idx_dlgOkButton', true);
+                    d2runCommandValidate();
                 }
             } else if (op == 107) {
                 // Edit tags
@@ -5608,6 +5608,7 @@
             }
         }
 
+        function d2runCommandValidate() { QV('d2cmduser', Q('d2cmdtype').value < 4); }
         function d2batchUploadValidate() { QE('idx_dlgOkButton', (Q('d2uploadinput').files.length != 0) && ((Q('d2winuploadpath') == null) || (Q('d2winuploadpath').value != '')) && ((Q('d2linuxuploadpath') == null) || (Q('d2linuxuploadpath').value != ''))); }
         function d2batchUploadValidateOk() { Q('d2batchUploadSubmit').click(); }
         function d2groupActionFunctionAgentUpdateExec() { meshserver.send({ action: 'updateAgents', nodeids: getCheckedDevices() }); }
