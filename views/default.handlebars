@@ -5544,7 +5544,7 @@
                     x += '<select id=d2cmdtype onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px;margin-top:4px>';
                     if (wintype == true) { x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>'; }
                     if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
-                    if (agenttype == true) { x += '<option value=4>' + "Agent console command" + '</option>'; } // MESHRIGHT_REMOTECONTROL & MESHRIGHT_AGENTCONSOLE are needed
+                    if (agenttype == true) { x += '<option value=4>' + "Agent Console" + '</option>'; } // MESHRIGHT_REMOTECONTROL & MESHRIGHT_AGENTCONSOLE are needed
                     x += '</select>';
                     x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0>' + "Run as agent" + '</option><option value=1>' + "Run as user, agent if no user" + '</option><option value=2>' + "Must run as user" + '</option></select>';
                     x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
