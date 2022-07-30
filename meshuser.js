@@ -2809,44 +2809,65 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 return;
                             }
 
-                            // Check we have the rights to run commands on this device
-                            if ((rights & MESHRIGHT_REMOTECOMMAND) == 0) {
-                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
-                                return;
-                            }
+                            if (command.type == 4) {
+                                // This is an agent console command
 
-                            // Get the agent and run the commands
-                            var agent = parent.wsagents[node._id];
-                            if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
-                                // Check if this agent is correct for this command type
-                                // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
-                                var commandsOk = false;
-                                if ((agent.agentInfo.agentId > 0) && (agent.agentInfo.agentId < 5)) {
-                                    // Windows Agent
-                                    if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
-                                    else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
-                                } else {
-                                    // Non-Windows Agent
-                                    if (command.type == 3) { commandsOk = true; }
-                                    else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
+                                // Check we have the rights to run commands on this device, MESHRIGHT_REMOTECONTROL & MESHRIGHT_AGENTCONSOLE are needed
+                                if ((rights & 24) != 24) {
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                                    return;
                                 }
-                                if (commandsOk == true) {
-                                    // Send the commands to the agent
-                                    try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser })); } catch (ex) { }
-                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
 
-                                    // Send out an event that these commands where run on this device
-                                    var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
-                                    var msgid = 24; // "Running commands"
-                                    if (command.type == 1) { msgid = 99; } // "Running commands as user"
-                                    if (command.type == 2) { msgid = 100; } // "Running commands as user if possible"
-                                    var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
-                                    parent.parent.DispatchEvent(targets, obj, event);
+                                // Send the commands to the agent
+                                var agent = parent.wsagents[node._id];
+                                if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                    try { agent.send(JSON.stringify({ action: 'msg', type: 'console', value: command.cmds, rights: rights, sessionid: ws.sessionId })); } catch (ex) { }
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
                                 } else {
-                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
                                 }
                             } else {
-                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                // This is a standard (bash/shell/powershell) command.
+
+                                // Check we have the rights to run commands on this device
+                                if ((rights & MESHRIGHT_REMOTECOMMAND) == 0) {
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Access denied' })); } catch (ex) { } }
+                                    return;
+                                }
+
+                                // Get the agent and run the commands
+                                var agent = parent.wsagents[node._id];
+                                if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                    // Check if this agent is correct for this command type
+                                    // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
+                                    var commandsOk = false;
+                                    if ((agent.agentInfo.agentId > 0) && (agent.agentInfo.agentId < 5)) {
+                                        // Windows Agent
+                                        if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
+                                        else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
+                                    } else {
+                                        // Non-Windows Agent
+                                        if (command.type == 3) { commandsOk = true; }
+                                        else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
+                                    }
+                                    if (commandsOk == true) {
+                                        // Send the commands to the agent
+                                        try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser })); } catch (ex) { }
+                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+
+                                        // Send out an event that these commands where run on this device
+                                        var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                                        var msgid = 24; // "Running commands"
+                                        if (command.type == 1) { msgid = 99; } // "Running commands as user"
+                                        if (command.type == 2) { msgid = 100; } // "Running commands as user if possible"
+                                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                        parent.parent.DispatchEvent(targets, obj, event);
+                                    } else {
+                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
+                                    }
+                                } else {
+                                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                }
                             }
                         });
                     }
