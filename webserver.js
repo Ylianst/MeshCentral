@@ -978,9 +978,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Return a U2F hardware key challenge
     function getHardwareKeyChallenge(req, domain, user, func) {
-        delete req.session.u2f;
-        if (req.session == null) { req.session = {}; }
-        const sec = parent.decryptSessionData(req.session.e);
+        var sec = {};
+        if (req.session == null) { req.session = {}; } else { try { sec = parent.decryptSessionData(req.session.e); } catch (ex) { } }
 
         if (user.otphkeys && (user.otphkeys.length > 0)) {
             // Get all WebAuthn keys
@@ -998,7 +997,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
-        // Remove the chalange if present
+        // Remove the challenge if present
         if (sec.u2f != null) { delete sec.u2f; req.session.e = parent.encryptSessionData(sec); }
 
         parent.debug('web', 'getHardwareKeyChallenge: fail');
