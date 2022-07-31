@@ -5470,6 +5470,7 @@
     },
     {
       "en": "Account changed to sync with LDAP data.",
+      "nl": "Account gewijzigd om te synchroniseren met LDAP gegevens.",
       "xloc": [
         "default.handlebars->45->2377"
       ]
@@ -17909,6 +17910,7 @@
     },
     {
       "en": "Create many Intel&reg; AMT device at once by importing a JSON file with the following format:",
+      "nl": "Maak meerdere Intel&reg; AMT apparaten in één keer door een JSON bestand met het volgende formaat te importeren:",
       "xloc": [
         "default.handlebars->45->469"
       ]
@@ -32371,12 +32373,14 @@
     },
     {
       "en": "Import",
+      "nl": "Importeren",
       "xloc": [
         "default.handlebars->45->1932"
       ]
     },
     {
       "en": "Import Intel AMT devices",
+      "nl": "Importeer Intel AMT apparaten",
       "xloc": [
         "default.handlebars->45->468"
       ]
@@ -32410,6 +32414,7 @@
     },
     {
       "en": "Import Intel&reg; AMT devices.",
+      "nl": "Importeer Intel&reg; AMT apparaten.",
       "xloc": [
         "default.handlebars->45->1931"
       ]
@@ -33476,6 +33481,7 @@
     },
     {
       "en": "Intel&reg; AMT Device Import",
+      "nl": "Intel&reg; AMT apparaat importeren",
       "xloc": [
         "default.handlebars->45->470",
         "default.handlebars->45->471",
