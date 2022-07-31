@@ -5471,6 +5471,7 @@
     {
       "en": "Account changed to sync with LDAP data.",
       "nl": "Account gewijzigd om te synchroniseren met LDAP gegevens.",
+  	  "pl": "Konto zmienione di synchronizacji z danymi LDAP.",
       "xloc": [
         "default.handlebars->45->2377"
       ]
@@ -12291,6 +12292,7 @@
     {
       "en": "CAPTCHA image",
       "nl": "CAPTCHA afbeelding",
+      "pl": "Obraz CAPTCHA",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
@@ -17911,6 +17913,7 @@
     {
       "en": "Create many Intel&reg; AMT device at once by importing a JSON file with the following format:",
       "nl": "Maak meerdere Intel&reg; AMT apparaten in één keer door een JSON bestand met het volgende formaat te importeren:",
+      "pl": "Utwórz wiele urządzeń Intel&reg; AMT za jednym razem, poprzez import pliku JSON o takim formacie:",
       "xloc": [
         "default.handlebars->45->469"
       ]
@@ -32374,6 +32377,7 @@
     {
       "en": "Import",
       "nl": "Importeren",
+      "pl": "Importuj",
       "xloc": [
         "default.handlebars->45->1932"
       ]
@@ -32381,6 +32385,7 @@
     {
       "en": "Import Intel AMT devices",
       "nl": "Importeer Intel AMT apparaten",
+      "pl": "Importuj urządzenia Intel AMT",
       "xloc": [
         "default.handlebars->45->468"
       ]
@@ -32415,6 +32420,7 @@
     {
       "en": "Import Intel&reg; AMT devices.",
       "nl": "Importeer Intel&reg; AMT apparaten.",
+      "pl": "Importuj urządzenia Intel&reg; AMT.",
       "xloc": [
         "default.handlebars->45->1931"
       ]
@@ -33482,6 +33488,7 @@
     {
       "en": "Intel&reg; AMT Device Import",
       "nl": "Intel&reg; AMT apparaat importeren",
+      "pl": "Import Urządzenia Intel&reg; AMT",
       "xloc": [
         "default.handlebars->45->470",
         "default.handlebars->45->471",
@@ -35295,6 +35302,7 @@
     {
       "en": "Invalid security check.",
       "nl": "Ongeldige beveiligingscontrole.",
+      "pl": "Błędna walidacja bezpieczeństwa.",
       "xloc": [
         "login-mobile.handlebars->5->22",
         "login.handlebars->5->22",
@@ -57940,6 +57948,7 @@
     {
       "en": "Security Check:",
       "nl": "Veiligheidscontrole:",
+      "pl": "Walidacja Bezpieczeństwa:",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->newAccountCaptcha->nuCaptcha",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->newAccountCaptcha->nuCaptcha",
@@ -58000,6 +58009,7 @@
     {
       "en": "Security check",
       "nl": "Veiligheidscontrole",
+      "pl": "Walidacja bezpieczeństwa",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
