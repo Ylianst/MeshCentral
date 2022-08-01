@@ -692,7 +692,7 @@ Only the remote desktop viewer will be displayed embedded within an iframe.
 
 ## Server port aliasing
 
-In some cases, you may be setting up a server on a private network that uses non-standard ports, but use a router or firewall in front to perform port mapping. So, even if the server privately uses non-standard ports, the public ports are the standard ports 80 and 443. You have to tell MeshCentral to bind to private ports but pretend it’s using the other standard ports when communicating publically. To make this work, MeshCentral supports port aliasing.
+In some cases, you may be setting up a server on a private network that uses non-standard ports, but use a router or firewall in front to perform port mapping. So, even if the server privately uses non-standard ports, the public ports are the standard ports 80 and 443. You have to tell MeshCentral to bind to private ports but pretend it’s using the other standard ports when communicating publicly. To make this work, MeshCentral supports port aliasing.
 
 For example you can run:
 
@@ -733,6 +733,16 @@ Server2:443 -> 4433 on MeshCentral
 ```
 
 The routing of IP and ports by the firewall shown on the picture must be configured separately from MeshCentral using separate software. Typically, routers or firewalls have the proper controls to configure this type of traffic routes.
+
+## Web relay using DNS names and multiple web relays
+
+MeshCentral has a web relay feature that allows a user to access remote web sites thru the MeshCentral server without having to install MeshCentral Router. Web relay also allow you to use an alternate DNS name instead of a different web relay port which has a few advantages. You can also use multiple alternate DNS names which can be used at the same time to provide users with many HTTP/HTTPS relays.
+## Video Walkthrus
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/GU7MQjkPSd8" frameborder="0" allowfullscreen></iframe>
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/INOvsHXNOKY" frameborder="0" allowfullscreen></iframe>
+</div>
 
 ## Device Groups with Relay Agent
 
@@ -1151,7 +1161,7 @@ Once MeshCentral is setup, you may want to customize the web site with your own 
 
 ### Branding
 
-You can put you own logo on the top of the web page. To get started, get the file “logoback.png” from the folder “node_modules/meshcentral/public/images” and copy it to your “meshcentral-data” folder. In this example, we will change the name of the file “logoback.png” to “title-mycompagny.png”. Then use any image editor to change the image and place your logo.
+You can put you own logo on the top of the web page. To get started, get the file “logoback.png” from the folder “node_modules/meshcentral/public/images” and copy it to your “meshcentral-data” folder. In this example, we will change the name of the file “logoback.png” to “title-mycompany.png”. Then use any image editor to change the image and place your logo.
 
 ![](images/2022-05-19-00-38-51.png)
 
@@ -1390,6 +1400,13 @@ In addition to database specific information, the graphs track CPU, memory and d
 As with any web application deployed in organization, it’s convenient and more secure for users to have a single set of credentials that can be used across many services. In this section we take a look at how to configure MeshCentral so that you can sign-in using credentials from other services. This allows users to completely skip creating a user account on MeshCentral or having to remember usernames and password for one more web site. There are two single sign-on protocols that are supported in MeshCentral, OAuth2 and SAML. We will take a look at an example for each one.
 
 Before you get started, your MeshCentral server must be publicly facing on the internet and have a valid TLS certificate. For example, by setting up Let’s Encrypt. After the web site is working correctly user the steps below.
+
+
+### LDAP
+
+You can integrate LDAP using [these](https://github.com/Ylianst/MeshCentral/blob/f05eb9a198bed249c2b1a969ce17a41404ef70a6/meshcentral-config-schema.json#L505-L513) configuration options
+
+![](images/ldap_integration.png)
 
 ### Twitter Authentication
 
@@ -1647,10 +1664,10 @@ In 2007, the first version of MeshCentral was built. We will refer to it as “M
 - Cross-Platform Support – Contrary to MeshCentral1 that only runs on Windows*, MeshCentral can run on any environment that supports NodeJS. This includes Windows*, Linux* and OSX*. Because MeshCentral runs on Linux, it often lowers hosting costs and makes it possible to run MeshCentral in a Docker* container environment.
 - Runs with Little Compute Resources – Typical MeshCentral1 installation requires a large disk space foot print (approx* 30G of disk space) and is compute intensive even for small deployments. MeshCentral requires little resources to host (70MB) and able to deliver reasonable performance on a 900Mhz CPU with 1GB RAM. 
 - Multi-Tenancy  and Load Balancing Support – MeshCentral can handle hosting many server instances at once. Each instance or “domain” has it’s own administrators, users and computers to manage. The server can handle each instance using a url path “server.com/customer1” or a DNS name “customer1.server.com”. Many customers can be handled by having all the DNS names point to the same server IP address. MeshCentral will take care of serving the right TLS certificate for each connection.
-- Single Executable – MeshCentral is a single-module or single executable server. All of the components of MeshCentral1 including IIS, Swarm, AJAX, Social, Manageability Servers are all build into one single executable. This makes it super easy to setup and run, it also minimises problems and overhead caused by having many components communicate to each other. When the server is updated, all of the components are updated at once and effective.
+- Single Executable – MeshCentral is a single-module or single executable server. All of the components of MeshCentral1 including IIS, Swarm, AJAX, Social, Manageability Servers are all build into one single executable. This makes it super easy to setup and run, it also minimizes problems and overhead caused by having many components communicate to each other. When the server is updated, all of the components are updated at once and effective.
 - Web Application Design – MeshCentral1 has 100’s of web pages and often times a click on a web page causes the browser to load a different web page and this creates more load on the server. With MeshCentral there are only two main web pages: The login page and the main web application. This design is much more responsive since the server now delegates most of the UI workload to the client’s web browser.
 - Real-Time User Interface – In MeshCentral, the user never has to hit the “refresh” button to update the web page. The web interface is completely real-time and updates as things change. MeshCentral uses websockets to connect to the server and get real-time events.
-- Single Programming Language – MeshCentral1 used JavaScript on the brower, C# on the server and C for the agent. Use of 3 different programming languages means that developers wanting to implement a new use-case needs to have sufficient skills to change between these 3 languages during the coding session. Makes the code significantly more difficult to understand and maintain.
+- Single Programming Language – MeshCentral1 used JavaScript on the browser, C# on the server and C for the agent. Use of 3 different programming languages means that developers wanting to implement a new use-case needs to have sufficient skills to change between these 3 languages during the coding session. Makes the code significantly more difficult to understand and maintain.
 - Support for LAN only Mode – MeshCentral is capable of being setup as “LAN only” mode. In fact, this is the default mode when no static name or IP address is provided. In this mode, MeshAgents perform a multicast search on the network for the server making a static DNS/IP unnecessary.
 - Support for TLS Offloaders – TLS offloaders are now fully supported. This means that MeshCentral can handle way more network connections and traffic significantly.
 - Support for CIRA User/Pass Login – MeshCentral now supports both Intel AMT CIRA user/pass login and certificate login. Compared to MeshCentral1 that only supported certificate login, user/pass login is easier to setup and it can also be used for TLS offloaders and CIRA authentication. 
@@ -1772,7 +1789,7 @@ This will run bash in interactive mode and work correctly.
 
 #### SSH and SFTP integration to the Terminal
 
-MeshCentral has built-in web-based integration of SSH in the "Termina" tab and SFTP in the "Files" tab.
+MeshCentral has built-in web-based integration of SSH in the "Terminal" tab and SFTP in the "Files" tab.
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/7qAbl2OuZEU" frameborder="0" allowfullscreen></iframe>
