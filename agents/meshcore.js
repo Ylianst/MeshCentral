@@ -1885,8 +1885,8 @@ function onTunnelUpgrade(response, s, head) {
     s.tunnel = this;
     s.descriptorMetadata = "MeshAgent_relayTunnel";
 
-
-    if (this.tcpport != null || this.udpport != null)
+    //if (this.tcpport != null || this.udpport != null)
+    if (require('MeshAgent').idleTimeout != null)
     {
         s.setTimeout(require('MeshAgent').idleTimeout * 1000);
         s.on('timeout', function ()
@@ -2086,15 +2086,18 @@ function onTunnelData(data) {
         if ((data == 'c') || (data == 'cr'))
         {
             this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/
+            /*
             this.setTimeout(global._tunnelTimeout == null ? 5000 : global._tunnelTimeout); // Once we receive 'c', we will only wait the tunnel timeout (5 seconds) before we close the tunnel
             this.on('timeout', function ()
             {
                 this.end();
             });
+            */
         }
     }
     else
     {
+        /*
         // We received some data, so we will reset the idle timeout of the websocket
         this.removeAllListeners('timeout');
 
@@ -2107,6 +2110,7 @@ function onTunnelData(data) {
                 this.setTimeout(require('MeshAgent').idleTimeout * 1000);
             });
         }
+        */
 
         // Handle tunnel data
         if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
