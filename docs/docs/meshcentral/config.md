@@ -510,7 +510,7 @@ See description for information about each item.
           "twoFactorCookieDurationDays": { "type": "integer", "default": 30, "description": "Number of days that a user is allowed to remember this device for when completing 2FA. Set this to 0 to remove this option." },
           "auth": { "type": "string", "default": null, "enum": [null, "sspi", "ldap"], "description": "Type of user authentication to use, this can be SSPI on Windows or LDAP. If not set, username/password is used." },
           "ldapUserKey": { "type": "string", "default": null, "description": "The LDAP value to use as a user's unique account identifier. Use \"ldapUserKey\" or \"ldapUserBinaryKey\"." },
-          "ldapUserBinaryKey": { "type": "string", "default": "objectSid", "description": "The LDAP value to use as a user's unique account identifier, when specified in this feild, the values will be HEX converted." },
+          "ldapUserBinaryKey": { "type": "string", "default": "objectSid", "description": "The LDAP value to use as a user's unique account identifier, when specified in this field, the values will be HEX converted." },
           "ldapUserName": { "type": "string", "default": "displayName", "description": "The LDAP value to use for the user name, you can also compose the name by setting this value to, for example: \"{{{givenName}}} {{{sn}}}\"" },
           "ldapUserEmail": { "type": "string", "default": "mail", "description": "The LDAP value to use for the user's email address." },
           "ldapUserRealName": { "type": "string", "default": "name", "description": "The LDAP value to use for the user's real name, you can also compose the name by setting this value to, for example: \"{{{givenName}}} {{{sn}}}\"" },
@@ -1265,4 +1265,5 @@ See description for information about each item.
   },
   "required": [ "settings", "domains" ]
 }
+
 ```

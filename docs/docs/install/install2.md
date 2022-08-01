@@ -40,6 +40,16 @@ chmod 755 mc-azure-ubuntu1804.sh
 
 In this situation, port 3389 will be used to receive Intel AMT CIRA connections instead of port 4433. After these scripts are run, try accessing the server using a browser. MeshCentral will take a minute or two to create certificates after that, the server will be up. The first account to be created will be the site administrator – so don’t delay and create an account right away. Once running, move on to the MeshCentral’s user’s guide to configure your new server.
 
+## Server Security - Adding Crowdsec
+
+MeshCentral has built-in support for a CrowdSec bouncer. This allows MeshCentral to get threat signals from the community and block or CAPTCHA requests coming from known bad IP addresses.
+
+## Video Walkthru
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/TVKF9gBJFCE" frameborder="0" allowfullscreen></iframe>
+</div>
+
 ## Windows Installation
 MeshCentral is constructed entirely with NodeJS, an asynchronous event driven JavaScript runtime (https://nodejs.org/). A basic understanding on NodeJS may be preferable but not compulsory. MeshCentral server which heavily relies on NodeJS runtime will be able run on almost any computing platform with contemporary operating systems including Windows*, Linux* and macOS*.
 

@@ -7,6 +7,7 @@ Intel AMT Guide [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/doc
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/naWKE3rT6e8" frameborder="0" allowfullscreen></iframe>
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/TaKsFEVaMpg" frameborder="0" allowfullscreen></iframe>
 </div>
 
 ## Abstract
