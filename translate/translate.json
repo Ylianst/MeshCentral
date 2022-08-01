@@ -5471,7 +5471,7 @@
     {
       "en": "Account changed to sync with LDAP data.",
       "nl": "Account gewijzigd om te synchroniseren met LDAP gegevens.",
-  	  "pl": "Konto zmienione di synchronizacji z danymi LDAP.",
+      "pl": "Konto zmienione di synchronizacji z danymi LDAP.",
       "xloc": [
         "default.handlebars->45->2377"
       ]
