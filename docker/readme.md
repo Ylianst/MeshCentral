@@ -1,33 +1,3 @@
-
-# How to create a docker image for meshcentral
-
-```
-> git clone https://github.com/Ylianst/MeshCentral.git
-> cd MeshCentral
-
-> docker build -f docker/Dockerfile --force-rm -t meshcentral .
-
-# alternative, if you want to include the mongodb-tools (mongodump, ...), you can add the 'INCLUDE_MONGODBTOOLS=yes' build argument
-> docker build -f docker/Dockerfile --force-rm --build-arg INCLUDE_MONGODBTOOLS=yes -t meshcentral .
-
-# (optional) cleanup after docker build:
-> cd ..
-> rm -rf MeshCentral/
-```
-
-> | Argument             | Description                                        |
-> | :---                 | :---                                               |
-> | -f docker/Dockerfile | Path/Name of the Dockerfile                        |
-> | --force-rm           | Always remove intermediate containers              |
-> | -t meshcentral       | Name and optionally a tag in the 'name:tag' format |
-
-### Optional build arguments
-> | Argument                | Description                                         |
-> | :---                    | :---                                                |
-> | INCLUDE_MONGODBTOOLS=yes  | Includes mongodb-tools (mongodump, ...) in the image |
-> | DISABLE_MINIFY=yes      | Disables the minification of files                  |
-> | DISABLE_TRANSLATE=yes   | Disables the translation of files                   |
-
 # Create folder-structure and files
 
 ```
@@ -62,7 +32,7 @@ REVERSE_PROXY_TLS_PORT=
 IFRAME=false
 # set to false if you want disable self-service creation of new accounts besides the first (admin)
 ALLOW_NEW_ACCOUNTS=true
-# set to true to enable WebRTC - per documentation it is not officially released with meshcentral, but is solid enough to work with. Use with caution
+# set to true to enable WebRTC - per documentation it is not officially released with meshcentral and currently experimental. Use with caution
 WEBRTC=false
 # set to true to allow plugins
 ALLOWPLUGINS=false
@@ -80,7 +50,8 @@ services:
   meshcentral:
     restart: always
     container_name: meshcentral
-    image: meshcentral
+    # use the official meshcentral container
+    image: ghcr.io/ylianst/meshcentral:latest
     ports:
       # MeshCentral will moan and try everything not to use port 80, but you can also use it if you so desire, just change the config.json according to your needs
       - 8086:443
@@ -121,7 +92,8 @@ services:
   meshcentral:
     restart: always
     container_name: meshcentral
-    image: meshcentral
+    # use the official meshcentral container
+    image: ghcr.io/ylianst/meshcentral:latest
     depends_on:
       - mongodb
     ports:
