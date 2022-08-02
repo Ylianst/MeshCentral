@@ -80,7 +80,8 @@ services:
   meshcentral:
     restart: always
     container_name: meshcentral
-    image: meshcentral
+    # use the official meshcentral container
+    image: ghcr.io/ylianst/meshcentral:latest
     ports:
       # MeshCentral will moan and try everything not to use port 80, but you can also use it if you so desire, just change the config.json according to your needs
       - 8086:443
@@ -121,7 +122,8 @@ services:
   meshcentral:
     restart: always
     container_name: meshcentral
-    image: meshcentral
+    # use the official meshcentral container
+    image: ghcr.io/ylianst/meshcentral:latest
     depends_on:
       - mongodb
     ports:
