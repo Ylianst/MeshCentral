@@ -213,6 +213,7 @@ function run(argv) {
         console.log('  AmtWake           - Intel AMT Wake Alarms.');
         console.log('  AmtRPE            - Intel AMT Remote Platform Erase.');
         console.log('  AmtDDNS           - Intel AMT DDNS settings.');
+        console.log('  AmtTerm           - Intel AMT Serial-over-LAN terminal.');
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(0); return;
@@ -441,6 +442,13 @@ function run(argv) {
             console.log('  --set [disabled/dhcp/enabled]    Set the dynamic DNS mode.');
             console.log('  --interval [minutes]             Set update interval in minutes, default is 1440, minimum is 20.');
             console.log('  --ttl [seconds]                  Set time to live, default is 900.');
+        } else if (action == 'amtterm') {
+            console.log('AmtTerm is used to connect to the Serial-over-LAN port. Example usage:\r\n\r\n  meshcmd amtterm --host 1.2.3.4 --user admin --pass mypassword');
+            console.log('\r\nRequired arguments:\r\n');
+            console.log('  --host [hostname]                The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
+            console.log('  --pass [password]                The Intel AMT login password.');
+            console.log('\r\nOptional arguments:\r\n');
+            console.log('  --tls                            Specifies that TLS must be used.');
         } else {
             actions.shift();
             console.log('Invalid action, usage:\r\n\r\n  meshcmd help [action]\r\n\r\nValid actions are: ' + actions.join(', ') + '.');
@@ -829,6 +837,11 @@ function run(argv) {
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         performAmtFeatureConfig(args);
+    } else if (settings.action == 'amtterm') {
+        if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
+        if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
+        if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
+        performAmtTerm(args);
     } else if (settings.action == 'amtpower') { // Perform remote Intel AMT power operation
         if ((settings.hostname == null) || (typeof settings.hostname != 'string') || (settings.hostname == '')) { console.log('No or invalid \"hostname\" specified, use --hostname [host].'); exit(1); return; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
@@ -2406,8 +2419,8 @@ function OnMulticastMessage(msg, rinfo) {
 //  IDER
 //
 
-ider = null;
-iderIdleTimer = null;
+var ider = null;
+var iderIdleTimer = null;
 
 // Perform IDER
 function performIder() {
@@ -2980,6 +2993,43 @@ function makeUefiBootParam(type, data, len) {
 }
 function IntToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); }
 function ShortToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF); }
+
+
+//
+// Intel AMT Serial-over-LAN
+//
+
+var sol = null;
+var solTimer = null;
+
+// Called to start serial-over-lan terminal
+function performAmtTerm(args) {
+    try {
+        sol = require('amt-redir-duk')(require('amt-sol')());
+        sol.onStateChanged = onSolStateChange;
+        sol.m.onData = onSolData;
+        sol.m.debug = (settings.debuglevel > 0);
+        sol.Start(settings.hostname, (settings.tls == true) ? 16995 : 16994, settings.username ? 'admin' : settings.username, settings.password, settings.tls);
+    } catch (ex) { console.log(ex); }
+}
+
+// Called when the serial-over-lan connection state changes
+function onSolStateChange(stack, state) {
+    console.log(["Disconnected", "Connecting...", "Connected...", "Started Serial-over-LAN..."][state]);
+    if (state == 0) { exit(0); }
+    if (state == 3) {
+        // TODO: Serial-over-LAN is connected, we need to send stdin keys using sol.m.Send('abc');
+        // For now, we setup thie timer to send 'abc' at one second interval into serial-over-lan channel.
+        if (solTimer == null) { solTimer = setInterval(function () { sol.m.Send('abc'); }, 1000); }
+    } else {
+        // Serial-over-LAN is not active, stop any stdin key capture
+        if (solTimer != null) { clearInterval(solTimer); solTimer = null; }
+    }
+}
+
+// This is called when serial-over-lan data come in from Intel AMT
+function onSolData(stack, data) { console.log(data); }
+
 
 //
 // Intel AMT feature configuration action

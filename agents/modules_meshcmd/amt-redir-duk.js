@@ -21,10 +21,10 @@ module.exports = function CreateAmtRedirect(module) {
     obj.protocol = module.protocol; // 1 = SOL, 2 = KVM, 3 = IDER
     obj.xtlsoptions = null;
 
-    obj.amtaccumulator = null;
+    obj.amtaccumulator = Buffer.alloc(0);
     obj.amtsequence = 1;
     obj.amtkeepalivetimer = null;
-    obj.authuri = "/RedirectionService";
+    obj.authuri = '/RedirectionService';
     obj.digestRealmMatch = null;
 
     obj.onStateChanged = null;
@@ -80,7 +80,7 @@ module.exports = function CreateAmtRedirect(module) {
         }
         */
 
-        if (urlvars && urlvars['redirtrace']) { console.log("REDIR-CONNECTED"); }
+        if (urlvars && urlvars['redirtrace']) { console.log('REDIR-CONNECTED'); }
         //obj.Debug("Socket Connected");
         obj.xxStateChange(2);
         if (obj.protocol == 1) obj.xxSend(obj.RedirectStartSol); // TODO: Put these strings in higher level module to tighten code
@@ -89,14 +89,14 @@ module.exports = function CreateAmtRedirect(module) {
     }
    
     obj.xxOnSocketData = function (data) {
-        //console.log('xxOnSocketData: ' + data.toString('hex'), data.length);
         if (!data || obj.connectstate == -1) return;
-        if (urlvars && urlvars['redirtrace']) { console.log("REDIR-RECV(" + data.length + "): " + data.toString('hex')); }
+        if (urlvars && urlvars['redirtrace']) { console.log('REDIR-RECV(' + data.length + '): ' + data.toString('hex')); }
         //obj.Debug("Recv(" + data.length + "): " + rstr2hex(data));
         if ((obj.protocol == 2 || obj.protocol == 3) && obj.connectstate == 1) { return obj.m.ProcessData(data); } // KVM or IDER traffic, forward it directly.
-        if (obj.amtaccumulator == null) { obj.amtaccumulator = data; } else { obj.amtaccumulator = Buffer.concat(obj.amtaccumulator, data); }
-        //obj.Debug("Recv(" + obj.amtaccumulator.length + "): " + rstr2hex(obj.amtaccumulator));
-        while (obj.amtaccumulator != null) {
+        obj.amtaccumulator = Buffer.concat([obj.amtaccumulator, data]);
+        //obj.Debug("Recv(" + obj.amtaccumulator.length + "): " + obj.amtaccumulator.toString('hex'));
+
+        while (obj.amtaccumulator.length > 0) {
             var cmdsize = 0;
             //console.log('CMD: ' + obj.amtaccumulator[0]);
             switch (obj.amtaccumulator[0]) {
@@ -170,9 +170,9 @@ module.exports = function CreateAmtRedirect(module) {
                             qoplen = authDataBuf[curptr];
                             qop = authDataBuf.slice(curptr + 1, curptr + 1 + qoplen).toString();
                             curptr += (qoplen + 1);
-                            extra = snc + ":" + cnonce + ":" + qop + ":";
+                            extra = snc + ':' + cnonce + ':' + qop + ':';
                         }
-                        var digest = hex_md5(hex_md5(obj.user + ":" + realm + ":" + obj.pass) + ":" + nonce + ":" + extra + hex_md5("POST:" + obj.authuri));
+                        var digest = hex_md5(hex_md5(obj.user + ':' + realm + ':' + obj.pass) + ':' + nonce + ':' + extra + hex_md5('POST:' + obj.authuri));
                         var totallen = obj.user.length + realm.length + nonce.length + obj.authuri.length + cnonce.length + snc.length + digest.length + 7;
                         if (authType == 4) totallen += (qop.length + 1);
                         var buf = Buffer.concat([new Buffer([0x13, 0x00, 0x00, 0x00, authType]), new Buffer([totallen & 0xFF, (totallen >> 8) & 0xFF, 0x00, 0x00]), new Buffer([obj.user.length]), new Buffer(obj.user), new Buffer([realm.length]), new Buffer(realm), new Buffer([nonce.length]), new Buffer(nonce), new Buffer([obj.authuri.length]), new Buffer(obj.authuri), new Buffer([cnonce.length]), new Buffer(cnonce), new Buffer([snc.length]), new Buffer(snc), new Buffer([digest.length]), new Buffer(digest)]);
@@ -181,7 +181,6 @@ module.exports = function CreateAmtRedirect(module) {
                     }
                     else if (status == 0) { // Success
                         if (obj.protocol == 1) {
-                            /*
                             // Serial-over-LAN: Send Intel AMT serial settings...
                             var MaxTxBuffer = 10000;
                             var TxTimeout = 100;
@@ -190,7 +189,6 @@ module.exports = function CreateAmtRedirect(module) {
                             var RxFlushTimeout = 100;
                             var Heartbeat = 0;//5000;
                             obj.xxSend(String.fromCharCode(0x20, 0x00, 0x00, 0x00) + ToIntStr(obj.amtsequence++) + ToShortStr(MaxTxBuffer) + ToShortStr(TxTimeout) + ToShortStr(TxOverflowTimeout) + ToShortStr(RxTimeout) + ToShortStr(RxFlushTimeout) + ToShortStr(Heartbeat) + ToIntStr(0));
-                            */
                         }
                         if (obj.protocol == 2) {
                             // Remote Desktop: Send traffic directly...
@@ -219,7 +217,7 @@ module.exports = function CreateAmtRedirect(module) {
                     if (obj.amtaccumulator.length < 10) break;
                     var cs = (10 + ((obj.amtaccumulator[9] & 0xFF) << 8) + (obj.amtaccumulator[8] & 0xFF));
                     if (obj.amtaccumulator.length < cs) break;
-                    obj.m.ProcessData(obj.amtaccumulator.substring(10, cs));
+                    obj.m.ProcessData(obj.amtaccumulator.slice(10, cs));
                     cmdsize = cs;
                     break;
                 case 0x2B: // Keep alive message (43)
@@ -235,21 +233,22 @@ module.exports = function CreateAmtRedirect(module) {
                     cmdsize = obj.amtaccumulator.length;
                     break;
                 default:
-                    console.log("Unknown Intel AMT command: " + obj.amtaccumulator[0] + " acclen=" + obj.amtaccumulator.length);
+                    console.log('Unknown Intel AMT command: ' + obj.amtaccumulator[0] + ' acclen=' + obj.amtaccumulator.length);
                     obj.Stop();
                     return;
             }
             if (cmdsize == 0) return;
-            if (cmdsize == obj.amtaccumulator.length) { obj.amtaccumulator = null; } else { obj.amtaccumulator = obj.amtaccumulator.slice(cmdsize); }
+            obj.amtaccumulator = obj.amtaccumulator.slice(cmdsize);
         }
     }
     
     obj.xxSend = function (x) {
-        if (urlvars && urlvars['redirtrace']) { console.log("REDIR-SEND(" + x.length + "): " + rstr2hex(x)); }
-        //obj.Debug("Send(" + x.length + "): " + Buffer.from(x, "binary").toString('hex'));
-        if (typeof x == 'string') { obj.socket.write(Buffer.from(x, "binary")); } else { obj.socket.write(x); }
+        if (urlvars && urlvars['redirtrace']) { console.log('REDIR-SEND(' + x.length + '): ' + rstr2hex(x)); }
+        //obj.Debug('Send(' + x.length + '): ' + Buffer.from(x, 'binary').toString('hex'));
+        if (typeof x == 'string') { obj.socket.write(Buffer.from(x, 'binary')); } else { obj.socket.write(x); }
     }
 
+    // Send Serial-over-LAN ASCII characters
     obj.Send = function (x) {
         if (obj.socket == null || obj.connectstate != 1) return;
         if (obj.protocol == 1) { obj.xxSend(String.fromCharCode(0x28, 0x00, 0x00, 0x00) + ToIntStr(obj.amtsequence++) + ToShortStr(x.length) + x); } else { obj.xxSend(x); }
@@ -263,14 +262,14 @@ module.exports = function CreateAmtRedirect(module) {
     // Uses OpenSSL random to generate a hex string
     obj.xxRandomValueHex = function (len) {
         var t = [], l = Math.floor(len / 2);
-        for (var i = 0; i < l; i++) { t.push(obj.tls.generateRandomInteger("0", "255")); }
+        for (var i = 0; i < l; i++) { t.push(obj.tls.generateRandomInteger('0', '255')); }
         return new Buffer(t).toString('hex');
     }
 
     obj.xxOnSocketClosed = function () {
         obj.socket = null;
-        if (urlvars && urlvars['redirtrace']) { console.log("REDIR-CLOSED"); }
-        //obj.Debug("Socket Closed");
+        if (urlvars && urlvars['redirtrace']) { console.log('REDIR-CLOSED'); }
+        //obj.Debug('Socket Closed');
         obj.Stop();
     }
 
@@ -282,11 +281,11 @@ module.exports = function CreateAmtRedirect(module) {
     }
 
     obj.Stop = function () {
-        if (urlvars && urlvars['redirtrace']) { console.log("REDIR-CLOSED"); }
-        //obj.Debug("Socket Stopped");
+        if (urlvars && urlvars['redirtrace']) { console.log('REDIR-CLOSED'); }
+        //obj.Debug('Socket Stopped');
         obj.xxStateChange(0);
         obj.connectstate = -1;
-        obj.amtaccumulator = "";
+        obj.amtaccumulator = Buffer.alloc(0);
         if (obj.socket != null) { obj.socket.destroy(); obj.socket = null; }
         if (obj.amtkeepalivetimer != null) { clearInterval(obj.amtkeepalivetimer); obj.amtkeepalivetimer = null; }
     }
