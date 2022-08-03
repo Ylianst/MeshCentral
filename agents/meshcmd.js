@@ -25,7 +25,7 @@ limitations under the License.
 //console.displayStreamPipeMessages = 1; // Display stream pipe and un-pipes
 //var __gc = setInterval(function () { console.log('GC'); _debugGC() }, 2000); //
 
-
+setModulePath('modules_meshcmd');
 var fs = require('fs');
 var os = require('os');
 var net = require('net');
@@ -3016,19 +3016,28 @@ function performAmtTerm(args) {
 // Called when the serial-over-lan connection state changes
 function onSolStateChange(stack, state) {
     console.log(["Disconnected", "Connecting...", "Connected...", "Started Serial-over-LAN..."][state]);
-    if (state == 0) { exit(0); }
-    if (state == 3) {
-        // TODO: Serial-over-LAN is connected, we need to send stdin keys using sol.m.Send('abc');
-        // For now, we setup thie timer to send 'abc' at one second interval into serial-over-lan channel.
-        if (solTimer == null) { solTimer = setInterval(function () { sol.m.Send('abc'); }, 1000); }
-    } else {
+    if (state == 0)
+    {
+        console.echo = true;        // This enables local echo to the console when keys are pressed
+        console.canonical = true;   // This puts the console into canonical mode, which means stdin will not process each key press individually, instead it will process line by line.
+        exit(0);
+    }
+    if (state == 3)
+    {
+        console.echo = false;       // This disables local echo to the console when keys are pressed
+        console.canonical = false;  // This takes the console out of canonical mode, which means stdin will process each key press individually, instead of by line.
+        process.stdin.on('data', function (c) { sol.m.Send(c); });
+    }
+    else
+    {
         // Serial-over-LAN is not active, stop any stdin key capture
-        if (solTimer != null) { clearInterval(solTimer); solTimer = null; }
+        console.echo = true;       // This enables local echo to the console when keys are pressed
+        console.canonical = true;  // This puts the console into canonical mode, which means stdin will not process each key press individually, instead it will process line by line.
     }
 }
 
 // This is called when serial-over-lan data come in from Intel AMT
-function onSolData(stack, data) { console.log(data); }
+function onSolData(stack, data) { process.stdout.write(data); }
 
 
 //
