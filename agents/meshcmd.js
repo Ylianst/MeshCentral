@@ -2999,17 +2999,16 @@ function ShortToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF);
 //
 
 var sol = null;
-var solTimer = null;
 
 // Called to start serial-over-lan terminal
 function performAmtTerm(args) {
-    //try {
+    try {
         sol = require('amt-redir-duk')(require('amt-sol')());
         sol.onStateChanged = onSolStateChange;
         sol.m.onData = onSolData;
         sol.m.debug = (settings.debuglevel > 0);
         sol.Start(settings.hostname, (settings.tls == true) ? 16995 : 16994, settings.username ? 'admin' : settings.username, settings.password, settings.tls);
-    //} catch (ex) { console.log(ex); }
+    } catch (ex) { console.log(ex); }
 }
 
 // Called when the serial-over-lan connection state changes
