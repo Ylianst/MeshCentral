@@ -3388,6 +3388,13 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     availcommands += ',cs,wpfhwacceleration,uac,volumes';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
+                    try
+                    {
+                        require('win-utils');
+                        availcommands += ',taskbar';
+                    }
+                    catch(zz)
+                    {}
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -3403,6 +3410,41 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
+            case 'taskbar':
+                try
+                {
+                    require('win-utils');
+                }
+                catch(zz)
+                {
+                    response = 'Unknown command "taskbar", type "help" for list of avaialble commands.';
+                    break;
+                }
+                switch (args['_'].length)
+                {
+                    default:
+                        response = 'Proper usage: taskbar HIDE|SHOW [TSID]';
+                        break;
+                    case 1:
+                    case 2:
+                        {
+                            var tsid = parseInt(args['_'][1]);
+                            if (isNaN(tsid)) { tsid = require('user-sessions').consoleUid(); }
+                            sendConsoleText('Changing TaskBar AutoHide status. Please wait...', sessionid);
+                            try
+                            {
+                                var result = require('win-utils').taskBar.autoHide(tsid, args['_'][0].toLowerCase() == 'hide');
+                                response = 'Current Status of TaskBar AutoHide: ' + result;
+                            }
+                            catch(x)
+                            {
+                                response = 'Unable to change TaskBar settings';
+                            }
+                        }
+                        break;
+                }
+                console.log(args['_'].length);
+                break;
             case 'privacybar':
                 if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null)
                 {
