@@ -836,7 +836,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
             rdpClient = require('./rdp').createClient(args).on('connect', function () {
                 send(['rdp-connect']);
                 if ((typeof obj.infos.options == 'object') && (obj.infos.options.savepass == true)) { saveRdpCredentials(); } // Save the credentials if needed
-                obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+                obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                 obj.startTime = Date.now();
 
                 // Event session start
@@ -1173,7 +1173,7 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                         obj.sshClient.on('ready', function () { // Authentication was successful.
                             // If requested, save the credentials
                             saveSshCredentials(obj.keep);
-                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             obj.startTime = Date.now();
 
                             // Event start of session
@@ -1512,7 +1512,7 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         obj.sshClient.on('ready', function () { // Authentication was successful.
                             // If requested, save the credentials
                             saveSshCredentials(obj.keep);
-                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             obj.startTime = Date.now();
 
                             try {
@@ -1866,7 +1866,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         obj.sshClient.on('ready', function () { // Authentication was successful.
                             // If requested, save the credentials
                             saveSshCredentials(obj.keep);
-                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64');
+                            obj.sessionid = Buffer.from(parent.crypto.randomBytes(9), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             obj.startTime = Date.now();
 
                             // Event start of session

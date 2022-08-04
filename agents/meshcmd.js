@@ -25,7 +25,6 @@ limitations under the License.
 //console.displayStreamPipeMessages = 1; // Display stream pipe and un-pipes
 //var __gc = setInterval(function () { console.log('GC'); _debugGC() }, 2000); //
 
-setModulePath('modules_meshcmd');
 var fs = require('fs');
 var os = require('os');
 var net = require('net');
@@ -213,7 +212,7 @@ function run(argv) {
         console.log('  AmtWake           - Intel AMT Wake Alarms.');
         console.log('  AmtRPE            - Intel AMT Remote Platform Erase.');
         console.log('  AmtDDNS           - Intel AMT DDNS settings.');
-        console.log('  AmtTerm           - Intel AMT Serial-over-LAN terminal.');
+        if (console.canonical != null) { console.log('  AmtTerm           - Intel AMT Serial-over-LAN terminal.'); }
         console.log('\r\nHelp on a specific action using:\r\n');
         console.log('  meshcmd help [action]');
         exit(0); return;
@@ -442,7 +441,7 @@ function run(argv) {
             console.log('  --set [disabled/dhcp/enabled]    Set the dynamic DNS mode.');
             console.log('  --interval [minutes]             Set update interval in minutes, default is 1440, minimum is 20.');
             console.log('  --ttl [seconds]                  Set time to live, default is 900.');
-        } else if (action == 'amtterm') {
+        } else if ((action == 'amtterm') && (console.canonical != null)) {
             console.log('AmtTerm is used to connect to the Serial-over-LAN port. Example usage:\r\n\r\n  meshcmd amtterm --host 1.2.3.4 --user admin --pass mypassword');
             console.log('\r\nRequired arguments:\r\n');
             console.log('  --host [hostname]                The IP address or DNS name of Intel AMT, 127.0.0.1 is default.');
@@ -837,7 +836,7 @@ function run(argv) {
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
         performAmtFeatureConfig(args);
-    } else if (settings.action == 'amtterm') {
+    } else if ((settings.action == 'amtterm') && (console.canonical != null)) {
         if (settings.hostname == null) { settings.hostname = '127.0.0.1'; }
         if ((settings.password == null) || (typeof settings.password != 'string') || (settings.password == '')) { console.log('No or invalid \"password\" specified, use --password [password].'); exit(1); return; }
         if ((settings.username == null) || (typeof settings.username != 'string') || (settings.username == '')) { settings.username = 'admin'; }
@@ -3000,7 +2999,6 @@ function ShortToStrX(v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF);
 //
 
 var sol = null;
-var solTimer = null;
 
 // Called to start serial-over-lan terminal
 function performAmtTerm(args) {
