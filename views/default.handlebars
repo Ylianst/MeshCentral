@@ -2728,6 +2728,7 @@
                 }
                 case 'recordings': {
                     p52recordings = message.events;
+                    if (message.error != null) { p52recordings = message.error; }
                     updateRecordings();
                     break;
                 }
@@ -2986,7 +2987,7 @@
                             break;
                         }
                         case 'recording': {
-                            if (p52recordings != null) { p52recordings.unshift(message.event); message.event.present = 1; updateRecordings(); }
+                            if ((p52recordings != null) && (typeof p52recordings == 'object')) { p52recordings.unshift(message.event); message.event.present = 1; updateRecordings(); }
                             break;
                         }
                         case 'userWebState': {
@@ -15943,6 +15944,10 @@
 
             if (p52recordings == null) {
                 x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "Loading..." + '</i></div>';
+            } else if (typeof p52recordings == 'number') {
+                if (p52recordings == 1) { x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "Server is unable to read from the recordings folder." + '</i></div>'; }
+                else if (p52recordings == 2) { x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "Server is unable to get recordings from the database." + '</i></div>'; }
+                else { x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "An unknown error occured." + '</i></div>'; }
             } else if (p52recordings.length == 0) {
                 x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "No recordings." + '</i></div>';
             } else {
