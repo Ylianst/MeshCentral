@@ -1025,11 +1025,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (domain.sessionrecording.filepath) { recordingsPath = domain.sessionrecording.filepath; } else { recordingsPath = parent.parent.recordpath; }
                 if (recordingsPath == null) return;
                 fs.readdir(recordingsPath, function (err, files) {
-                    if (err != null) return;
+                    if (err != null) { try { ws.send(JSON.stringify({ action: 'recordings', error: 1, tag: command.tag })); } catch (ex) { } return; }
                     if ((command.limit == null) || (typeof command.limit != 'number')) {
                         // Send the list of all recordings
                         db.GetEvents(['recording'], domain.id, function (err, docs) {
-                            if (err != null) return;
+                            if (err != null) { try { ws.send(JSON.stringify({ action: 'recordings', error: 2, tag: command.tag })); } catch (ex) { } return; }
                             for (var i in docs) {
                                 delete docs[i].action; delete docs[i].etype; delete docs[i].msg; // TODO: We could make a more specific query in the DB and never have these.
                                 if (files.indexOf(docs[i].filename) >= 0) { docs[i].present = 1; }
@@ -1039,7 +1039,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else {
                         // Send the list of most recent recordings, up to 'limit' count
                         db.GetEventsWithLimit(['recording'], domain.id, command.limit, function (err, docs) {
-                            if (err != null) return;
+                            if (err != null) { try { ws.send(JSON.stringify({ action: 'recordings', error: 2, tag: command.tag })); } catch (ex) { } return; }
                             for (var i in docs) {
                                 delete docs[i].action; delete docs[i].etype; delete docs[i].msg; // TODO: We could make a more specific query in the DB and never have these.
                                 if (files.indexOf(docs[i].filename) >= 0) { docs[i].present = 1; }
