@@ -47,43 +47,34 @@ var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
 
 
-function bcdOK()
-{
+function bcdOK() {
     if (process.platform != 'win32') { return (false); }
-    if(require('os').arch() == 'x64')
-    {
+    if (require('os').arch() == 'x64') {
         return (require('_GenericMarshal').PointerSize == 8);
     }
     return (true);
 }
-function getDomainInfo()
-{
+function getDomainInfo() {
     var hostname = require('os').hostname();
     var ret = { Name: hostname, Domain: "" };
 
-    switch (process.platform)
-    {
+    switch (process.platform) {
         case 'win32':
-            try
-            {
-                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain'])[0];        
+            try {
+                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain'])[0];
             }
-            catch (x)
-            {
+            catch (x) {
             }
             break;
         case 'linux':
             var hasrealm = false;
 
-            try
-            {
+            try {
                 hasrealm = require('lib-finder').hasBinary('realm');
             }
-            catch(x)
-            {
+            catch (x) {
             }
-            if (hasrealm)
-            {
+            if (hasrealm) {
                 var child = require('child_process').execFile('/bin/sh', ['sh']);
                 child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
                 child.stdin.write("realm list | grep domain-name: | tr '\\n' '`' | ");
@@ -101,17 +92,13 @@ function getDomainInfo()
                 child.stdin.write('\nexit\n');
                 child.waitExit();
                 var names = [];
-                try
-                {
+                try {
                     names = JSON.parse(child.stdout.str);
                 }
-                catch(e)
-                {
+                catch (e) {
                 }
-                while(names.length>0)
-                {
-                    if(hostname.endsWith('.' + names.peek()))
-                    {
+                while (names.length > 0) {
+                    if (hostname.endsWith('.' + names.peek())) {
                         ret = { Name: hostname.substring(0, hostname.length - names.peek().length - 1), Domain: names.peek() };
                         break;
                     }
@@ -188,22 +175,17 @@ function getCoreTranslation() {
 }
 var currentTranslation = getCoreTranslation();
 
-try
-{
+try {
     require('kvm-helper');
 }
-catch (e)
-{
+catch (e) {
     var j =
         {
-            users: function ()
-            {
+            users: function () {
                 var r = {};
                 require('user-sessions').Current(function (c) { r = c; });
-                if (process.platform != 'win32')
-                {
-                    for (var i in r)
-                    {
+                if (process.platform != 'win32') {
+                    for (var i in r) {
                         r[i].SessionId = r[i].uid;
                     }
                 }
@@ -1180,42 +1162,34 @@ function handleServerCommand(data) {
                     }
                     case 'messagebox': {
                         // Display a message box
-                        if (data.title && data.msg)
-                        {
+                        if (data.title && data.msg) {
                             MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
-                            if (process.platform == 'win32')
-                            {
-                                if(global._clientmessage)
-                                {
+                            if (process.platform == 'win32') {
+                                if (global._clientmessage) {
                                     global._clientmessage.addMessage(data.msg);
                                 }
-                                else
-                                {
-                                    try
-                                    {
+                                else {
+                                    try {
                                         require('win-dialog');
                                         var ipr = server_getUserImage(data.userid);
                                         ipr.title = data.title;
                                         ipr.message = data.msg;
                                         ipr.username = data.username;
                                         if (data.realname && (data.realname != '')) { ipr.username = data.realname; }
-                                        global._clientmessage = ipr.then(function (img)
-                                        {
-                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, { timeout: 120000, b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground }); 
+                                        global._clientmessage = ipr.then(function (img) {
+                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, { timeout: 120000, b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground });
                                             this.__childPromise.addMessage = this.messagebox.addMessage.bind(this.messagebox);
                                             return (this.messagebox);
                                         });
 
                                         global._clientmessage.then(function () { global._clientmessage = null; });
                                     }
-                                    catch(z)
-                                    {
+                                    catch (z) {
                                         try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (ex) { }
                                     }
                                 }
                             }
-                            else
-                            {
+                            else {
                                 try { require('message-box').create(data.title, data.msg, 120).then(function () { }).catch(function () { }); } catch (ex) { }
                             }
                         }
@@ -1365,18 +1339,14 @@ function handleServerCommand(data) {
                     }
                     case 'setclip': {
                         // Set the load clipboard to a user value
-                        if (typeof data.data == 'string')
-                        {
+                        if (typeof data.data == 'string') {
                             MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
-                            if (require('MeshAgent').isService)
-                            {
-                                if (process.platform != 'win32')
-                                {
+                            if (require('MeshAgent').isService) {
+                                if (process.platform != 'win32') {
                                     require('clipboard').dispatchWrite(data.data);
                                     mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                                 }
-                                else
-                                {
+                                else {
                                     var clipargs = data.data;
                                     var uid = require('user-sessions').consoleUid();
                                     var user = require('user-sessions').getUsername(uid);
@@ -1386,12 +1356,10 @@ function handleServerCommand(data) {
                                     this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                                     this._dispatcher.parent = this;
                                     //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
-                                    this._dispatcher.on('connection', function (c)
-                                    {
+                                    this._dispatcher.on('connection', function (c) {
                                         this._c = c;
                                         this._c.root = this.parent;
-                                        this._c.on('end', function ()
-                                        {
+                                        this._c.on('end', function () {
                                             this.root._dispatcher = null;
                                             this.root = null;
                                             mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
@@ -1399,8 +1367,7 @@ function handleServerCommand(data) {
                                     });
                                 }
                             }
-                            else
-                            {
+                            else {
                                 require("clipboard")(data.data);
                                 mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                             } // Set the clipboard
@@ -1886,11 +1853,9 @@ function onTunnelUpgrade(response, s, head) {
     s.descriptorMetadata = "MeshAgent_relayTunnel";
 
     //if (this.tcpport != null || this.udpport != null)
-    if (require('MeshAgent').idleTimeout != null)
-    {
+    if (require('MeshAgent').idleTimeout != null) {
         s.setTimeout(require('MeshAgent').idleTimeout * 1000);
-        s.on('timeout', function ()
-        {
+        s.on('timeout', function () {
             this.ping();
             this.setTimeout(require('MeshAgent').idleTimeout * 1000);
         });
@@ -1898,8 +1863,7 @@ function onTunnelUpgrade(response, s, head) {
 
     //sendConsoleText('onTunnelUpgrade - ' + this.tcpport + ' - ' + this.udpport);
 
-    if (this.tcpport != null)
-    {
+    if (this.tcpport != null) {
         // This is a TCP relay connection, pause now and try to connect to the target.
         s.pause();
         s.data = onTcpRelayServerTunnelData;
@@ -1916,8 +1880,7 @@ function onTunnelUpgrade(response, s, head) {
             broadcastSessionsToRegisteredApps();
         }
     }
-    if (this.udpport != null)
-    {
+    if (this.udpport != null) {
         // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
         s.data = onUdpRelayServerTunnelData;
         s.udprelay = require('dgram').createSocket({ type: 'udp4' });
@@ -1936,8 +1899,7 @@ function onTunnelUpgrade(response, s, head) {
             broadcastSessionsToRegisteredApps();
         }
     }
-    else
-    {
+    else {
         // This is a normal connect for KVM/Terminal/Files
         s.data = onTunnelData;
     }
@@ -2080,11 +2042,9 @@ function onTunnelData(data) {
         return;
     }
 
-    if (this.httprequest.state == 0)
-    {
+    if (this.httprequest.state == 0) {
         // Check if this is a relay connection
-        if ((data == 'c') || (data == 'cr'))
-        {
+        if ((data == 'c') || (data == 'cr')) {
             this.httprequest.state = 1; /*sendConsoleText("Tunnel #" + this.httprequest.index + " now active", this.httprequest.sessionid);*/
             /*
             this.setTimeout(global._tunnelTimeout == null ? 5000 : global._tunnelTimeout); // Once we receive 'c', we will only wait the tunnel timeout (5 seconds) before we close the tunnel
@@ -2095,8 +2055,7 @@ function onTunnelData(data) {
             */
         }
     }
-    else
-    {
+    else {
         /*
         // We received some data, so we will reset the idle timeout of the websocket
         this.removeAllListeners('timeout');
@@ -2217,7 +2176,7 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; 
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept;
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             this.httprequest.tpromise._consent = ipr.then(function (img) {
@@ -2574,7 +2533,7 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; 
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept;
                             ipr.tsid = tsid;
                             ipr.username = this.httprequest.realname;
                             ipr.translation = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
@@ -2757,7 +2716,7 @@ function onTunnelData(data) {
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
                             ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept; 
+                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept;
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
                             pr = ipr.then(function (img) {
@@ -3324,18 +3283,15 @@ function openUserDesktopUrl(url) {
                 var domain = require('user-sessions').getDomain(uid);
                 var task = { name: 'MeshChatTask', user: user, domain: domain, execPath: process.env['windir'] + '\\system32\\cmd.exe', arguments: ['/C START ' + url.split('&').join('^&')] };
 
-                try
-                {
+                try {
                     require('win-tasks').addTask(task);
                     require('win-tasks').getTask({ name: 'MeshChatTask' }).run();
                     require('win-tasks').deleteTask('MeshChatTask');
                     return (true);
                 }
-                catch(zz)
-                {
+                catch (ex) {
                     var taskoptions = { env: { _target: process.env['windir'] + '\\system32\\cmd.exe', _args: '/C START ' + url.split('&').join('^&'), _user: '"' + domain + '\\' + user + '"' } };
-                    for (var c1e in process.env)
-                    {
+                    for (var c1e in process.env) {
                         taskoptions.env[c1e] = process.env[c1e];
                     }
                     var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], taskoptions);
@@ -3383,18 +3339,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
-                if (process.platform == 'win32')
-                {
+                if (process.platform == 'win32') {
                     availcommands += ',cs,wpfhwacceleration,uac,volumes';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
-                    try
-                    {
-                        require('win-utils');
-                        availcommands += ',taskbar';
-                    }
-                    catch(zz)
-                    {}
+                    try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -3411,57 +3360,40 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'taskbar':
-                try
-                {
-                    require('win-utils');
-                }
-                catch(zz)
-                {
-                    response = 'Unknown command "taskbar", type "help" for list of avaialble commands.';
-                    break;
-                }
-                switch (args['_'].length)
-                {
-                    default:
-                        response = 'Proper usage: taskbar HIDE|SHOW [TSID]';
-                        break;
+                try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of avaialble commands.'; break; }
+                switch (args['_'].length) {
                     case 1:
                     case 2:
                         {
                             var tsid = parseInt(args['_'][1]);
                             if (isNaN(tsid)) { tsid = require('user-sessions').consoleUid(); }
                             sendConsoleText('Changing TaskBar AutoHide status. Please wait...', sessionid);
-                            try
-                            {
+                            try {
                                 var result = require('win-utils').taskBar.autoHide(tsid, args['_'][0].toLowerCase() == 'hide');
                                 response = 'Current Status of TaskBar AutoHide: ' + result;
-                            }
-                            catch(x)
-                            {
-                                response = 'Unable to change TaskBar settings';
-                            }
+                            } catch (ex) { response = 'Unable to change TaskBar settings'; }
                         }
                         break;
+                    default:
+                        {
+                            response = 'Proper usage: taskbar HIDE|SHOW [TSID]';
+                            break;
+                        }
                 }
-                console.log(args['_'].length);
                 break;
             case 'privacybar':
-                if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null)
-                {
+                if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null) {
                     response = 'Unknown command "privacybar", type "help" for list of avaialble commands.';
                 }
-                else
-                {
-                    switch(args['_'].length)
-                    {
+                else {
+                    switch (args['_'].length) {
                         default:
                             // Show Help
                             response = "Current Default Pinned State: " + (require('notifybar-desktop').DefaultPinned ? "PINNED" : "UNPINNED") + '\r\n';
                             response += "To set default pinned state:\r\n  privacybar [PINNED|UNPINNED]\r\n";
                             break;
                         case 1:
-                            switch(args['_'][0].toUpperCase())
-                            {
+                            switch (args['_'][0].toUpperCase()) {
                                 case 'PINNED':
                                     require('notifybar-desktop').DefaultPinned = true;
                                     response = "privacybar default pinned state is: PINNED";
@@ -3483,13 +3415,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'domaininfo':
                 {
-                    if(process.platform != 'win32')
-                    {
+                    if (process.platform != 'win32') {
                         response = 'Unknown command "cs", type "help" for list of avaialble commands.';
                         break;
                     }
-                    if(global._domainQuery != null)
-                    {
+                    if (global._domainQuery != null) {
                         response = "There is already an outstanding Domain Controller Query... Please try again later...";
                         break;
                     }
@@ -3497,34 +3427,28 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     sendConsoleText('Querying Domain Controller... This can take up to 60 seconds. Please wait...', sessionid);
                     global._domainQuery = require('win-wmi').queryAsync('ROOT\\CIMV2', 'SELECT * FROM Win32_NTDomain');
                     global._domainQuery.session = sessionid;
-                    global._domainQuery.then(function (v)
-                    {
+                    global._domainQuery.then(function (v) {
                         var results = [];
-                        if (Array.isArray(v))
-                        {
+                        if (Array.isArray(v)) {
                             var i;
                             var r;
-                            for (i = 0; i < v.length; ++i)
-                            {
+                            for (i = 0; i < v.length; ++i) {
                                 r = {};
                                 if (v[i].DomainControllerAddress != null) { r.DomainControllerAddress = v[i].DomainControllerAddress.split('\\').pop(); }
                                 if (r.DomainControllerName != null) { r.DomainControllerName = v[i].DomainControllerName.split('\\').pop(); }
                                 r.DomainGuid = v[i].DomainGuid;
                                 r.DomainName = v[i].DomainName;
-                                if (r.DomainGuid != null)
-                                {
+                                if (r.DomainGuid != null) {
                                     results.push(r);
                                 }
                             }
                         }
-                        if (results.length > 0)
-                        {
+                        if (results.length > 0) {
                             sendConsoleText('Domain Controller Results:', this.session);
                             sendConsoleText(JSON.stringify(results, null, 1), this.session);
                             sendConsoleText('End of results...', this.session);
                         }
-                        else
-                        {
+                        else {
                             sendConsoleText('Domain Controller: No results returned. Is the domain controller reachable?', this.session);
                         }
                         global._domainQuery = null;
@@ -4037,14 +3961,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'safemode':
-                if (process.platform != 'win32')
-                {
+                if (process.platform != 'win32') {
                     response = 'safemode only supported on Windows Platforms'
                 }
-                else
-                {
-                    if (!bcdOK())
-                    {
+                else {
+                    if (!bcdOK()) {
                         response = 'safemode not supported on 64 bit Windows from a 32 bit process'
                         break;
                     }
