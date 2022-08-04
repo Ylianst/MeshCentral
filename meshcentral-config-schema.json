@@ -575,12 +575,12 @@
             "description": "Use this section to set resource metadata of the Windows agents prior to signing. In Windows, you can right-click and select properties to view these values.",
             "properties": {
               "fileDescription": { "type": "string", "description": "Executable file description." },
-              "fileVersion": { "type": "string", "description": "Executable file version, generally in the form of 1.2.3.4." },
+              "fileVersion": { "type": "string", "description": "Executable file version, in the form of 'n.n.n.n', for example: '1.2.3.4'." },
               "internalName":  { "type": "string", "description": "Executable internal name." },
               "legalCopyright":  { "type": "string", "description": "Executable legal copyright." },
               "originalFilename":  { "type": "string", "description": "Executable original file name." },
               "productName":  { "type": "string", "description": "Executable product name." },
-              "productVersion":  { "type": "string", "description": "Executable product version, generally in the form of 1.2.3.4." }
+              "productVersion":  { "type": "string", "description": "Executable product version. Any string format will work, but a alphabetic character is required for this value to show correctly in the Windows property box. For example: 'v1.2.3.4' will work, but '1.2.3.4' will not." }
             }
           },
           "assistantCustomization": {

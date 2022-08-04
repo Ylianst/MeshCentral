@@ -1362,6 +1362,13 @@ function CreateMeshCentralServer(config, args) {
                     }
                 }
             }
+
+            // Check agentfileinfo
+            if (typeof obj.config.domains[i].agentfileinfo == 'object') {
+                if ((obj.config.domains[i].agentfileinfo.fileversionnumber != null) && (obj.common.parseVersion(obj.config.domains[i].agentfileinfo.fileversionnumber) == null)) { delete obj.config.domains[i].agentfileinfo.fileversionnumber; }
+                if ((obj.config.domains[i].agentfileinfo.productversionnumber != null) && (obj.common.parseVersion(obj.config.domains[i].agentfileinfo.productversionnumber) == null)) { delete obj.config.domains[i].agentfileinfo.productversionnumber; }
+                if ((obj.config.domains[i].agentfileinfo.fileversionnumber == null) && (typeof obj.config.domains[i].agentfileinfo.fileversion == 'string') && (obj.common.parseVersion(obj.config.domains[i].agentfileinfo.fileversion) != null)) { obj.config.domains[i].agentfileinfo.fileversionnumber = obj.config.domains[i].agentfileinfo.fileversion; }
+            }
         }
 
         // Log passed arguments into Windows Service Log
@@ -2939,8 +2946,8 @@ function CreateMeshCentralServer(config, args) {
                     // If the agent is signed correctly, look to see if the resources in the destination agent are correct
                     var orgVersionStrings = originalAgent.getVersionInfo();
                     if (destinationAgentOk == true) {
-                        var versionStrings = destinationAgent.getVersionInfo();
-                        var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                        const versionStrings = destinationAgent.getVersionInfo();
+                        const versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
                         for (var i in versionProperties) {
                             const prop = versionProperties[i], propl = prop.toLowerCase();
                             if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo[propl] == 'string')) {
@@ -2948,6 +2955,20 @@ function CreateMeshCentralServer(config, args) {
                             } else {
                                 if (orgVersionStrings[prop] != versionStrings[prop]) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
                             }
+                        }
+
+                        // Check file version number
+                        if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo['fileversionnumber'] == 'string')) {
+                            if (domain.agentfileinfo['fileversionnumber'] != versionStrings['~FileVersion']) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
+                        } else {
+                            if (orgVersionStrings['~FileVersion'] != versionStrings['~FileVersion']) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                        }
+
+                        // Check product version number
+                        if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo['productversionnumber'] == 'string')) {
+                            if (domain.agentfileinfo['productversionnumber'] != versionStrings['~ProductVersion']) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
+                        } else {
+                            if (orgVersionStrings['~ProductVersion'] != versionStrings['~ProductVersion']) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
                         }
                     }
 
@@ -2985,6 +3006,12 @@ function CreateMeshCentralServer(config, args) {
                         for (var i in versionProperties) {
                             const prop = versionProperties[i], propl = prop.toLowerCase();
                             if (domain.agentfileinfo[propl] && (domain.agentfileinfo[propl] != versionStrings[prop])) { versionStrings[prop] = domain.agentfileinfo[propl]; resChanges = true; }
+                        }
+                        if (domain.agentfileinfo['fileversionnumber'] && (domain.agentfileinfo['fileversionnumber'] != versionStrings['~FileVersion'])) {
+                            versionStrings['~FileVersion'] = domain.agentfileinfo['fileversionnumber']; resChanges = true;
+                        }
+                        if (domain.agentfileinfo['productversionnumber'] && (domain.agentfileinfo['productversionnumber'] != versionStrings['~ProductVersion'])) {
+                            versionStrings['~ProductVersion'] = domain.agentfileinfo['productversionnumber']; resChanges = true;
                         }
                         if (resChanges == true) { originalAgent.setVersionInfo(versionStrings); }
                     }
