@@ -787,6 +787,8 @@ function createAuthenticodeHandler(path) {
         if ((StringFileInfo == null) || (StringFileInfo.stringTable == null) || (StringFileInfo.stringTable.strings == null)) return null;
         const strings = StringFileInfo.stringTable.strings;
         for (var i in strings) { r[strings[i].key] = strings[i].value; }
+        r['~FileVersion'] = (info.fixedFileInfo.dwFileVersionMS >> 16) + '.' + (info.fixedFileInfo.dwFileVersionMS & 0xFFFF) + '.' + (info.fixedFileInfo.dwFileVersionLS >> 16) + '.' + (info.fixedFileInfo.dwFileVersionLS & 0xFFFF);
+        r['~ProductVersion'] = (info.fixedFileInfo.dwProductVersionMS >> 16) + '.' + (info.fixedFileInfo.dwProductVersionMS & 0xFFFF) + '.' + (info.fixedFileInfo.dwProductVersionLS >> 16) + '.' + (info.fixedFileInfo.dwProductVersionLS & 0xFFFF);
         return r;
     }
 
@@ -794,7 +796,7 @@ function createAuthenticodeHandler(path) {
     obj.setVersionInfo = function (versions) {
         // Convert the version information into a string array
         const stringArray = [];
-        for (var i in versions) { stringArray.push({ key: i, value: versions[i] }); }
+        for (var i in versions) { if (!i.startsWith('~')) { stringArray.push({ key: i, value: versions[i] }); } }
 
         // Get the existing version data and switch the strings to the new strings
         var r = {}, info = readVersionInfo(getVersionInfoData(), 0);
@@ -803,6 +805,20 @@ function createAuthenticodeHandler(path) {
         for (var i in info.stringFiles) { if (info.stringFiles[i].szKey == 'StringFileInfo') { StringFileInfo = info.stringFiles[i]; } }
         if ((StringFileInfo == null) || (StringFileInfo.stringTable == null) || (StringFileInfo.stringTable.strings == null)) return;
         StringFileInfo.stringTable.strings = stringArray;
+
+        // Set the file version
+        if (versions['~FileVersion'] != null) {
+            const FileVersionSplit = versions['~FileVersion'].split('.');
+            info.fixedFileInfo.dwFileVersionMS = (parseInt(FileVersionSplit[0]) << 16) + parseInt(FileVersionSplit[1]);
+            info.fixedFileInfo.dwFileVersionLS = (parseInt(FileVersionSplit[2]) << 16) + parseInt(FileVersionSplit[3]);
+        }
+
+        // Set the product version
+        if (versions['~ProductVersion'] != null) {
+            const ProductVersionSplit = versions['~ProductVersion'].split('.');
+            info.fixedFileInfo.dwProductVersionMS = (parseInt(ProductVersionSplit[0]) << 16) + parseInt(ProductVersionSplit[1]);
+            info.fixedFileInfo.dwProductVersionLS = (parseInt(ProductVersionSplit[2]) << 16) + parseInt(ProductVersionSplit[3]);
+        }
 
         // Re-encode the version information into a buffer
         var verInfoResBufArray = [];
@@ -1840,6 +1856,8 @@ function start() {
         console.log("");
         console.log("When doing sign/unsign, you can also change resource properties of the generated file.");
         console.log("");
+        console.log("          --fileversionnumber n.n.n.n");
+        console.log("          --productversionnumber n.n.n.n");
         console.log("          --filedescription [value]");
         console.log("          --fileversion [value]");
         console.log("          --internalname [value]");
@@ -1867,7 +1885,7 @@ function start() {
         if (exe == null) { console.log("Unable to parse executable file: " + args.exe); return; }
     }
 
-    // Parse the resources and make any required changes
+    // Parse the string resources and make any required changes
     var resChanges = false, versionStrings = null;
     if (exe != null) {
         versionStrings = exe.getVersionInfo();
@@ -1875,6 +1893,18 @@ function start() {
         for (var i in versionProperties) {
             const prop = versionProperties[i], propl = prop.toLowerCase();
             if (args[propl] && (args[propl] != versionStrings[prop])) { versionStrings[prop] = args[propl]; resChanges = true; }
+        }
+        if (args['fileversionnumber'] != null) {
+            const fileVerSplit = args['fileversionnumber'].split('.');
+            if (fileVerSplit.length != 4) { console.log("--fileversionnumber must be of format n.n.n.n, for example: 1.2.3.4"); return; }
+            for (var i in fileVerSplit) { var n = parseInt(fileVerSplit[i]); if ((n < 0) || (n > 65535)) { console.log("--fileversionnumber numbers must be between 0 and 65535."); return; } }
+            if (args['fileversionnumber'] != versionStrings['~FileVersion']) { versionStrings['~FileVersion'] = args['fileversionnumber']; resChanges = true; }
+        }
+        if (args['productversionnumber'] != null) {
+            const productVerSplit = args['productversionnumber'].split('.');
+            if (productVerSplit.length != 4) { console.log("--productversionnumber must be of format n.n.n.n, for example: 1.2.3.4"); return; }
+            for (var i in productVerSplit) { var n = parseInt(productVerSplit[i]); if ((n < 0) || (n > 65535)) { console.log("--productversionnumber numbers must be between 0 and 65535."); return; } }
+            if (args['productversionnumber'] != versionStrings['~ProductVersion']) { versionStrings['~ProductVersion'] = args['productversionnumber']; resChanges = true; }
         }
         if (resChanges == true) { exe.setVersionInfo(versionStrings); }
     }
@@ -1884,8 +1914,12 @@ function start() {
     if (command == 'info') { // Get signature information about an executable
         if (exe == null) { console.log("Missing --exe [filename]"); return; }
         if (args.json) {
-            var r = {}, versionInfo = exe.getVersionInfo();
-            if (versionInfo != null) { r.versionInfo = versionInfo; }
+            var r = {}, stringInfo = exe.getVersionInfo();
+            if (stringInfo != null) {
+                r.versionInfo = {};
+                r.stringInfo = {};
+                for (var i in stringInfo) { if (i.startsWith('~')) { r.versionInfo[i.substring(1)] = stringInfo[i]; } else { r.stringInfo[i] = stringInfo[i]; } }
+            }
             if (exe.fileHashAlgo != null) {
                 r.signture = {};
                 if (exe.fileHashAlgo != null) { r.signture.hashMethod = exe.fileHashAlgo; }
@@ -1896,7 +1930,12 @@ function start() {
             console.log(JSON.stringify(r, null, 2));
         } else {
             var versionInfo = exe.getVersionInfo();
-            if (versionInfo != null) { console.log("Version Information:"); for (var i in versionInfo) { if (versionInfo[i] == null) { console.log('  ' + i + ': (Empty)'); } else { console.log('  ' + i + ': \"' + versionInfo[i] + '\"'); } } }
+            if (versionInfo != null) {
+                console.log("Version Information:");
+                for (var i in versionInfo) { if (i.startsWith('~') == true) { console.log('  ' + i.substring(1) + ': ' + versionInfo[i] + ''); } }
+                console.log("String Information:");
+                for (var i in versionInfo) { if (i.startsWith('~') == false) { if (versionInfo[i] == null) { console.log('  ' + i + ': (Empty)'); } else { console.log('  ' + i + ': \"' + versionInfo[i] + '\"'); } } }
+            }
             console.log("Checksum Information:");
             console.log("  Header CheckSum: 0x" + exe.header.peWindows.checkSum.toString(16));
             console.log("  Actual CheckSum: 0x" + exe.header.peWindows.checkSumActual.toString(16));

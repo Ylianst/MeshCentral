@@ -308,13 +308,13 @@
         "fileName": "compagnyagent"
       },
       "_agentFileInfo": {
-        "_filedescription": "sample_filedescription",
-        "_fileversion": "0.1.2.3",
-        "_internalname": "sample_internalname",
-        "_legalcopyright": "sample_legalcopyright",
-        "_originalfilename": "sample_originalfilename",
-        "_productname": "sample_productname",
-        "_productversion": "0.1.2.3"
+        "filedescription": "sample_filedescription",
+        "fileversion": "0.1.2.3",
+        "internalname": "sample_internalname",
+        "legalcopyright": "sample_legalcopyright",
+        "originalfilename": "sample_originalfilename",
+        "productname": "sample_productname",
+        "productversion": "v0.1.2.3"
       },
       "_assistantCustomization": {
         "title": "Company® Product™",

@@ -339,3 +339,16 @@ function validateObjectForMongoRec(obj, maxStrLen) {
     }
     return true;
 }
+
+// Parse a version string of the type n.n.n.n
+module.exports.parseVersion = function (verstr) {
+    if (typeof verstr != 'string') return null;
+    const r = [], verstrsplit = verstr.split('.');
+    if (verstrsplit.length != 4) return null;
+    for (var i in verstrsplit) {
+        var n = parseInt(verstrsplit[i]);
+        if (isNaN(n) || (n < 0) || (n > 65535)) return null;
+        r.push(n);
+    }
+    return r;
+}
