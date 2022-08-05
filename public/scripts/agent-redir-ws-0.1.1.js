@@ -296,7 +296,8 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         //obj.debug('Agent Redir Socket Stopped');
         obj.connectstate = -1;
         if (obj.socket != null) {
-            try { if (obj.socket.readyState == 1) { obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"close"}'); obj.socket.close(); } } catch (e) { }
+            try { if (obj.socket.readyState == 1) { obj.sendCtrlMsg('{"ctrlChannel":"102938","type":"close"}'); } } catch (ex) { } // If connected, send the close command
+            try { if (obj.socket.readyState <= 1) { obj.socket.close(); } } catch (ex) { } // If connecting or connected, close the websocket
             obj.socket = null;
         }
         obj.xxStateChange(0);

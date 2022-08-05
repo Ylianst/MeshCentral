@@ -9849,12 +9849,13 @@
 
         // Called when the terminal state changes
         function onTerminalStateChange(xterminal, state) {
+            if (terminal != xterminal) return;
             var xstate = state;
             if ((xstate == 3) && (xterminal.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
             if (xstate == 3) {
-                if (terminal.contype == 3) { str += ", SSH"; }
-                if (terminal.webRtcActive == true) { str += ", WebRTC"; }
+                if (xterminal.contype == 3) { str += ", SSH"; }
+                if (xterminal.webRtcActive == true) { str += ", WebRTC"; }
             }
             QH('termstatus', str);
             switch (state) {
@@ -9863,17 +9864,16 @@
                     QH('termtitle', '');
                     QV('termRecordIcon', false);
                     if (xterm == null) {
-                        xterminal.m.TermResetScreen();
-                        xterminal.m.TermDraw();
+                        try { xterminal.m.TermResetScreen(); xterminal.m.TermDraw(); } catch (ex) { }
                     } else {
                         xterm.dispose();
                         xterm = xtermfit = null;
                     }
-                    if (terminal != null) { terminal.Stop(); terminal = null; }
+                    if (xterminal != null) { xterminal.Stop(); terminal = null; }
                     break;
                 case 3:
                     if (xterminal && (xterminal.serverIsRecording == true)) { QV('termRecordIcon', true); }
-                    terminal.startTime = new Date();
+                    xterminal.startTime = new Date();
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
                     if (xterm != null) { xterm.focus(); }
                     break;
@@ -9902,7 +9902,7 @@
             return obj;
         }
 
-        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+        function tunnelUpdate(data) { if (xterm != null) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } } }
 
         function sshTunnelAuthDialog(j, func) {
             var x = '';
