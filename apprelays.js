@@ -136,8 +136,8 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         // Check to see if any of the tunnels are free
         var count = 0;
         for (var i in tunnels) {
-            count += (tunnels[i].isWebSocket ? 0 : 1);
-            if ((tunnels[i].relayActive == true) && (tunnels[i].res == null) && (tunnels[i].isWebSocket == false)) {
+            count += ((tunnels[i].isWebSocket || tunnels[i].isStreaming) ? 0 : 1);
+            if ((tunnels[i].relayActive == true) && (tunnels[i].res == null) && (tunnels[i].isWebSocket == false) && (tunnels[i].isStreaming == false)) {
                 // Found a free tunnel, use it
                 const x = pendingRequests.shift();
                 if (x[2] == true) { tunnels[i].processWebSocket(x[0], x[1]); } else { tunnels[i].processRequest(x[0], x[1]); }
@@ -226,7 +226,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.lastOperation = Date.now();
     obj.relayActive = false;
     obj.closed = false;
-    obj.isWebSocket = false;
+    obj.isWebSocket = false; // If true, this request will not close and so, it can't be allowed to hold up other requests
+    obj.isStreaming = false; // If true, this request will not close and so, it can't be allowed to hold up other requests
     obj.processedRequestCount = 0;
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -242,6 +243,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Check if this is a websocket
         if (req.headers['upgrade'] == 'websocket') { console.log('Attempt to process a websocket in HTTP tunnel method.'); res.end(); return false; }
+
+        // Check if this is a streaming request
+        if ((req.headers['content-type'] != null) && (req.headers['content-type'].toLowerCase() == 'text/event-stream')) { obj.isStreaming = true; }
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
