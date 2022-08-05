@@ -183,6 +183,10 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
                 }
             }
         }
+        tunnel.onNextRequest = function () {
+            parent.parent.debug('webrelay', 'tunnel-onNextRequest');
+            handleNextRequest();
+        }
         tunnel.connect(userid, nodeid, addr, port, appid);
         tunnel.tunnelId = nextTunnelId++;
         tunnels[tunnel.tunnelId] = tunnel;
@@ -235,6 +239,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.onclose = null;
     obj.oncompleted = null;
     obj.onconnect = null;
+    obj.onNextRequest = null;
 
     // Process a HTTP request
     obj.processRequest = function (req, res) {
@@ -243,9 +248,6 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Check if this is a websocket
         if (req.headers['upgrade'] == 'websocket') { console.log('Attempt to process a websocket in HTTP tunnel method.'); res.end(); return false; }
-
-        // Check if this is a streaming request
-        if ((req.headers['content-type'] != null) && (req.headers['content-type'].toLowerCase() == 'text/event-stream')) { obj.isStreaming = true; }
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
@@ -508,6 +510,12 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                             obj.socketXHeader[n] = v;
                         }
                     }
+                }
+
+                // Check if this is a streaming response
+                if ((obj.socketXHeader['content-type'] != null) && (obj.socketXHeader['content-type'].toLowerCase().indexOf('text/event-stream') >= 0)) {
+                    obj.isStreaming = true; // This tunnel is now a streaming tunnel and will not close anytime soon.
+                    if (obj.onNextRequest != null) obj.onNextRequest(); // Call this so that any HTTP requests that are waitting for this one to finish get handled by a new tunnel.
                 }
 
                 // Check if this HTTP request has a body
