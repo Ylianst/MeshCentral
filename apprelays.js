@@ -241,6 +241,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.onconnect = null;
     obj.onNextRequest = null;
 
+    // Called when we need to close the tunnel because the response stream has closed
+    function handleResponseClosure() { obj.close(); }
+
     // Process a HTTP request
     obj.processRequest = function (req, res) {
         if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
@@ -248,6 +251,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Check if this is a websocket
         if (req.headers['upgrade'] == 'websocket') { console.log('Attempt to process a websocket in HTTP tunnel method.'); res.end(); return false; }
+
+        // If the response stream is closed, close this tunnel right away
+        res.socket.on('end', handleResponseClosure);
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
@@ -287,6 +293,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Pause the websocket until we get a tunnel connected
         obj.ws._socket.pause();
+
+        // If the response stream is closed, close this tunnel right away
+        res.socket.on('end', function () { obj.close(); });
 
         // Remove the trailing '/.websocket' if needed
         var baseurl = req.url, i = req.url.indexOf('?');
@@ -392,7 +401,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         }
 
         // Close any pending request
-        if (obj.res) { obj.res.end(); delete obj.res; }
+        if (obj.res) { obj.res.socket.removeListener('end', handleResponseClosure); obj.res.end(); delete obj.res; }
         if (obj.ws) { obj.ws.close(); delete obj.ws; }
 
         // Event disconnection
@@ -689,6 +698,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             // If we are done, close the response
             if (done == true) {
                 // Close the response
+                obj.res.socket.removeListener('end', handleResponseClosure);
                 obj.res.end();
                 delete obj.res;
 
