@@ -1770,12 +1770,23 @@ module.exports.CreateDB = function (parent, func) {
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 6 };
-                obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } })
-                obj.file.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.eventsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.powerfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.smbiosfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.serverstatsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } })
+                obj.file.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+                obj.eventsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+                obj.powerfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+                obj.smbiosfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+                obj.serverstatsfile.stats().then(function (stats) { obj.stats[stats.ns] = { size: stats.size, count: stats.count, avgObjSize: stats.avgObjSize, capped: stats.capped }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } }, function () { if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+            }
+
+            // Correct database information of obj.getDbStats before returning it
+            function getDbStatsEx(data) {
+                var r = {};
+                if (data.recordTypes != null) { r = data.recordTypes; }
+                try { r.smbios = data['meshcentral.smbios'].count; } catch (ex) { }
+                try { r.power = data['meshcentral.power'].count; } catch (ex) { }
+                try { r.events = data['meshcentral.events'].count; } catch (ex) { }
+                try { r.serverstats = data['meshcentral.serverstats'].count; } catch (ex) { }
+                return r;
             }
 
             // Plugin operations
@@ -1943,11 +1954,22 @@ module.exports.CreateDB = function (parent, func) {
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 5 };
-                obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } })
-                obj.file.count({}, function (err, count) { obj.stats.meshcentral = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.eventsfile.count({}, function (err, count) { obj.stats.events = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.powerfile.count({}, function (err, count) { obj.stats.power = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                obj.serverstatsfile.count({}, function (err, count) { obj.stats.serverstats = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.getStats(function (r) { obj.stats.recordTypes = r; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } })
+                obj.file.count({}, function (err, count) { obj.stats.meshcentral = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+                obj.eventsfile.count({}, function (err, count) { obj.stats.events = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+                obj.powerfile.count({}, function (err, count) { obj.stats.power = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+                obj.serverstatsfile.count({}, function (err, count) { obj.stats.serverstats = { count: count }; if (--obj.stats.c == 0) { delete obj.stats.c; func(getDbStatsEx(obj.stats)); } });
+            }
+
+            // Correct database information of obj.getDbStats before returning it
+            function getDbStatsEx(data) {
+                var r = {};
+                if (data.recordTypes != null) { r = data.recordTypes; }
+                try { r.smbios = data['smbios'].count; } catch (ex) { }
+                try { r.power = data['power'].count; } catch (ex) { }
+                try { r.events = data['events'].count; } catch (ex) { }
+                try { r.serverstats = data['serverstats'].count; } catch (ex) { }
+                return r;
             }
 
             // Plugin operations
