@@ -574,6 +574,7 @@
             "additionalProperties": false,
             "description": "Use this section to set resource metadata of the Windows agents prior to signing. In Windows, you can right-click and select properties to view these values.",
             "properties": {
+              "icon": { "type": "string", "default": null, "description": "DO NOT USE. THIS FEATURE DOES NOT WORK YET. Sets the agent icon, this is the name of a .ico file with the file placed in the meshcentral-data folder." },
               "fileDescription": { "type": "string", "description": "Executable file description." },
               "fileVersion": { "type": "string", "description": "Executable file version, in the form of 'n.n.n.n', for example: '1.2.3.4'." },
               "internalName":  { "type": "string", "description": "Executable internal name." },

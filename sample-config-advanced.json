@@ -308,6 +308,7 @@
         "fileName": "compagnyagent"
       },
       "_agentFileInfo": {
+        "icon": "agent.ico",
         "filedescription": "sample_filedescription",
         "fileversion": "0.1.2.3",
         "internalname": "sample_internalname",
