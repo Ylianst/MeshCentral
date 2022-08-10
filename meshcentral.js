@@ -1368,6 +1368,25 @@ function CreateMeshCentralServer(config, args) {
                 if ((obj.config.domains[i].agentfileinfo.fileversionnumber != null) && (obj.common.parseVersion(obj.config.domains[i].agentfileinfo.fileversionnumber) == null)) { delete obj.config.domains[i].agentfileinfo.fileversionnumber; }
                 if ((obj.config.domains[i].agentfileinfo.productversionnumber != null) && (obj.common.parseVersion(obj.config.domains[i].agentfileinfo.productversionnumber) == null)) { delete obj.config.domains[i].agentfileinfo.productversionnumber; }
                 if ((obj.config.domains[i].agentfileinfo.fileversionnumber == null) && (typeof obj.config.domains[i].agentfileinfo.fileversion == 'string') && (obj.common.parseVersion(obj.config.domains[i].agentfileinfo.fileversion) != null)) { obj.config.domains[i].agentfileinfo.fileversionnumber = obj.config.domains[i].agentfileinfo.fileversion; }
+                if (typeof obj.config.domains[i].agentfileinfo.icon == 'string') {
+                    // Load the agent .ico file
+                    var icon = null;
+                    try { icon = require('./authenticode.js').loadIcon(obj.path.join(obj.datapath, obj.config.domains[i].agentfileinfo.icon)); } catch (ex) { }
+                    if (icon != null) {
+                        // The icon file was correctly loaded
+                        obj.config.domains[i].agentfileinfo.icon = icon;
+                        obj.config.domains[i].agentfileinfo.iconhash = require('./authenticode.js').hashObject(icon);
+                    } else {
+                        // Failed to load the icon file, display a server warning
+                        addServerWarning("Unable to load agent icon file: " + obj.config.domains[i].agentfileinfo.icon + ".", 23, [obj.config.domains[i].agentfileinfo.icon]);
+                        delete obj.config.domains[i].agentfileinfo.icon;
+                        delete obj.config.domains[i].agentfileinfo.iconhash;
+                    }
+                } else {
+                    // Invalid icon file path
+                    delete obj.config.domains[i].agentfileinfo.icon;
+                    delete obj.config.domains[i].agentfileinfo.iconhash;
+                }
             }
         }
 
@@ -2951,24 +2970,41 @@ function CreateMeshCentralServer(config, args) {
                         for (var i in versionProperties) {
                             const prop = versionProperties[i], propl = prop.toLowerCase();
                             if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo[propl] == 'string')) {
-                                if (domain.agentfileinfo[propl] != versionStrings[prop]) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
+                                if (domain.agentfileinfo[propl] != versionStrings[prop]) { destinationAgentOk = false; break; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
                             } else {
-                                if (orgVersionStrings[prop] != versionStrings[prop]) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                                if (orgVersionStrings[prop] != versionStrings[prop]) { destinationAgentOk = false; break; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
                             }
                         }
 
                         // Check file version number
-                        if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo['fileversionnumber'] == 'string')) {
-                            if (domain.agentfileinfo['fileversionnumber'] != versionStrings['~FileVersion']) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
-                        } else {
-                            if (orgVersionStrings['~FileVersion'] != versionStrings['~FileVersion']) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                        if (destinationAgentOk == true) {
+                            if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo['fileversionnumber'] == 'string')) {
+                                if (domain.agentfileinfo['fileversionnumber'] != versionStrings['~FileVersion']) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
+                            } else {
+                                if (orgVersionStrings['~FileVersion'] != versionStrings['~FileVersion']) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                            }
                         }
 
                         // Check product version number
-                        if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo['productversionnumber'] == 'string')) {
-                            if (domain.agentfileinfo['productversionnumber'] != versionStrings['~ProductVersion']) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
-                        } else {
-                            if (orgVersionStrings['~ProductVersion'] != versionStrings['~ProductVersion']) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                        if (destinationAgentOk == true) {
+                            if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object') && (typeof domain.agentfileinfo['productversionnumber'] == 'string')) {
+                                if (domain.agentfileinfo['productversionnumber'] != versionStrings['~ProductVersion']) { destinationAgentOk = false; } // If the resource we want is not the same as the destination executable, we need to re-sign the agent.
+                            } else {
+                                if (orgVersionStrings['~ProductVersion'] != versionStrings['~ProductVersion']) { destinationAgentOk = false; } // if the resource of the orginal agent not the same as the destination executable, we need to re-sign the agent.
+                            }
+                        }
+
+                        // Check the agent icon
+                        if ((destinationAgentOk == true) && (domain.agentfileinfo != null) && (domain.agentfileinfo.iconhash != null)) {
+                            const agentIconGroups = destinationAgent.getIconInfo();
+                            if (agentIconGroups != null) {
+                                const agentIconGroupNames = Object.keys(agentIconGroups);
+                                if (agentIconGroupNames.length > 0) {
+                                    const agentMainIconGroupName = agentIconGroupNames[0];
+                                    const agentMainIconGroupHash = require('./authenticode.js').hashObject(agentIconGroups[agentMainIconGroupName]);
+                                    if (agentMainIconGroupHash != domain.agentfileinfo.iconhash) { destinationAgentOk = false; } // If the existing agent icon does not match the desired icon, we need to re-sign the agent.
+                                }
+                            }
                         }
                     }
 
@@ -3003,17 +3039,33 @@ function CreateMeshCentralServer(config, args) {
                     if ((domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object')) {
                         versionStrings = originalAgent.getVersionInfo();
                         var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                        // Change the agent string properties
                         for (var i in versionProperties) {
                             const prop = versionProperties[i], propl = prop.toLowerCase();
                             if (domain.agentfileinfo[propl] && (domain.agentfileinfo[propl] != versionStrings[prop])) { versionStrings[prop] = domain.agentfileinfo[propl]; resChanges = true; }
                         }
+                        // Change the agent file version
                         if (domain.agentfileinfo['fileversionnumber'] && (domain.agentfileinfo['fileversionnumber'] != versionStrings['~FileVersion'])) {
                             versionStrings['~FileVersion'] = domain.agentfileinfo['fileversionnumber']; resChanges = true;
                         }
+                        // Change the agent product version
                         if (domain.agentfileinfo['productversionnumber'] && (domain.agentfileinfo['productversionnumber'] != versionStrings['~ProductVersion'])) {
                             versionStrings['~ProductVersion'] = domain.agentfileinfo['productversionnumber']; resChanges = true;
                         }
                         if (resChanges == true) { originalAgent.setVersionInfo(versionStrings); }
+
+                        // Change the agent icon
+                        if (domain.agentfileinfo.icon != null) {
+                            const agentIconGroups = originalAgent.getIconInfo();
+                            if (agentIconGroups != null) {
+                                const agentIconGroupNames = Object.keys(agentIconGroups);
+                                if (agentIconGroupNames.length > 0) {
+                                    const agentMainIconGroupName = agentIconGroupNames[0];
+                                    agentIconGroups[agentIconGroupNames[0]] = domain.agentfileinfo.icon;
+                                    originalAgent.setIconInfo(agentIconGroups);
+                                }
+                            }
+                        }
                     }
 
                     const signingArguments = { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl, proxy: timeStampProxy }; // Shallow clone

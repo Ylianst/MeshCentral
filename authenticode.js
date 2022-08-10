@@ -50,6 +50,38 @@ function createOutFile(args, filename) {
     args.out = outputFileName.join('.');
 }
 
+// Hash an object
+function hashObject(obj) {
+    const hash = crypto.createHash('sha384');
+    hash.update(JSON.stringify(obj));
+    return hash.digest().toString('hex');
+}
+
+// Load a .ico file. This will load all icons in the file into a icon group object
+function loadIcon(iconFile) {
+    var iconData = null;
+    try { iconData = fs.readFileSync(iconFile); } catch (ex) { }
+    if ((iconData == null) || (iconData.length < 6) || (iconData[0] != 0) || (iconData[1] != 0)) return null;
+    const r = { resType: iconData.readUInt16LE(2), resCount: iconData.readUInt16LE(4), icons: {} };
+    if (r.resType != 1) return null;
+    var ptr = 6;
+    for (var i = 1; i <= r.resCount; i++) {
+        var icon = {};
+        icon.width = iconData[ptr + 0];
+        icon.height = iconData[ptr + 1];
+        icon.colorCount = iconData[ptr + 2];
+        icon.planes = iconData.readUInt16LE(ptr + 4);
+        icon.bitCount = iconData.readUInt16LE(ptr + 6);
+        icon.bytesInRes = iconData.readUInt32LE(ptr + 8);
+        icon.iconCursorId = i;
+        const offset = iconData.readUInt32LE(ptr + 12);
+        icon.icon = iconData.slice(offset, offset + icon.bytesInRes);
+        r.icons[i] = icon;
+        ptr += 16;
+    }
+    return r;
+}
+
 // Load certificates and private key from PEM files
 function loadCertificates(pemFileNames) {
     var certs = [], keys = [];
@@ -718,38 +750,6 @@ function createAuthenticodeHandler(path) {
         var derlen = forge.asn1.getBerValueLength(forge.util.createBuffer(pkcs7raw.slice(1, 5))) + 4;
         if (derlen != pkcs7raw.length) { pkcs7raw = pkcs7raw.slice(0, derlen); }
         return pkcs7raw;
-    }
-
-    // Hash an object
-    obj.hashObject = function (obj) {
-        const hash = crypto.createHash('sha384');
-        hash.update(JSON.stringify(obj));
-        return hash.digest();
-    }
-
-    // Load a .ico file. This will load all icons in the file into a icon group object
-    obj.loadIcon = function (iconFile) {
-        var iconData = null;
-        try { iconData = fs.readFileSync(iconFile); } catch (ex) {}
-        if ((iconData == null) || (iconData.length < 6) || (iconData[0] != 0) || (iconData[1] != 0)) return null;
-        const r = { resType: iconData.readUInt16LE(2), resCount: iconData.readUInt16LE(4), icons: {} };
-        if (r.resType != 1) return null;
-        var ptr = 6;
-        for (var i = 1; i <= r.resCount; i++) {
-            var icon = {};
-            icon.width = iconData[ptr + 0];
-            icon.height = iconData[ptr + 1];
-            icon.colorCount = iconData[ptr + 2];
-            icon.planes = iconData.readUInt16LE(ptr + 4);
-            icon.bitCount = iconData.readUInt16LE(ptr + 6);
-            icon.bytesInRes = iconData.readUInt32LE(ptr + 8);
-            icon.iconCursorId = i;
-            const offset = iconData.readUInt32LE(ptr + 12);
-            icon.icon = iconData.slice(offset, offset + icon.bytesInRes);
-            r.icons[i] = icon;
-            ptr += 16;
-        }
-        return r;
     }
 
     // Get icon information from resource
@@ -1661,11 +1661,15 @@ function createAuthenticodeHandler(path) {
         var fullHeaderLen = obj.header.SectionHeadersPtr + (obj.header.coff.numberOfSections * 40);
         var fullHeader = readFileSlice(written, fullHeaderLen);
 
+        // Compute the size of the resource segment
+        //const resSizes = { tables: 0, items: 0, names: 0, data: 0 };
+        //getResourceSectionSize(obj.resources, resSizes);
+
         // Calculate the location and original and new size of the resource segment
         var fileAlign = obj.header.peWindows.fileAlignment
         var resPtr = obj.header.sections['.rsrc'].rawAddr;
         var oldResSize = obj.header.sections['.rsrc'].rawSize;
-        var newResSize = obj.header.sections['.rsrc'].rawSize; // Testing 102400
+        var newResSize = obj.header.sections['.rsrc'].rawSize; // TODO: resSizes.data;
         var resDeltaSize = newResSize - oldResSize;
 
         // Change PE optional header sizeOfInitializedData standard field
@@ -2041,12 +2045,12 @@ function start() {
             if (iconToAddSplit.length != 2) { console.log("The --icon format is: --icon [number],[file]."); return; }
             const iconName = parseInt(iconToAddSplit[0]);
             const iconFile = iconToAddSplit[1];
-            const icon = exe.loadIcon(iconFile);
+            const icon = loadIcon(iconFile);
             if (icon == null) { console.log("Unable to load icon: " + iconFile); return; }
             if (icons[iconName] != null) {
-                const iconHash = exe.hashObject(icon); // Compute the new icon group hash
-                const iconHash2 = exe.hashObject(icons[iconName]); // Computer the old icon group hash
-                if (iconHash.toString('hex') != iconHash2.toString('hex')) { icons[iconName] = icon; resChanges = true; } // If different, replace the icon group
+                const iconHash = hashObject(icon); // Compute the new icon group hash
+                const iconHash2 = hashObject(icons[iconName]); // Computer the old icon group hash
+                if (iconHash != iconHash2) { icons[iconName] = icon; resChanges = true; } // If different, replace the icon group
             } else {
                 icons[iconName] = icon; // We are adding an icon group
                 resChanges = true;
@@ -2261,4 +2265,5 @@ if (require.main === module) { start(); }
 // Exports
 module.exports.createAuthenticodeHandler = createAuthenticodeHandler;
 module.exports.loadCertificates = loadCertificates;
-
+module.exports.loadIcon = loadIcon;
+module.exports.hashObject = hashObject;
