@@ -21,6 +21,69 @@ Make sure you understand how MeshCentral works with your browser using chrome de
 "AgentWsCompression": false,
 ```
 
+### Understanding node and paths
+
+Note that when running MeshCentral, you should always run like from the path that is parent to node_modules, so you do this:
+
+```
+cd C:\Program Files\Open Source\MeshCentral
+node node_modules\meshcentral
+```
+
+You do NOT do this:
+
+```
+cd C:\Program Files\Open Source\MeshCentral\node_modules\meshcentral
+node meshcentral
+```
+
+The problem with the second command is that NPM may install missing modules are the incorrect location.
+
+Also, in general I recommend not using the MeshCentral MSI Installer and just install manually unless you are very much scared of the command prompt. Anyone that knows about bit about the shell should install MeshCentral like this:
+
+```
+mkdir c:\meshcentral
+cd c:\meshcentral
+npm install meshcentral
+node node_modules\meshcentral
+(ctrl-c when done installing optional modules)
+node node_modules\meshcentral --install
+```
+
+This way, just have a lot more control over what is going on. Just my opinion, the MSI installer basically does the same thing and installs NodeJS for you.
+
+### Unable to update server
+
+Generally the problem is that MeshCentral can't find the npm tool and so, can't run it to see if there is a new version. You can fix this by setting the path to npm in the config.json like this:
+
+```json
+{
+  "settings": {
+    "npmPath": "c:\\npm.exe",
+    "npmProxy": "http://1.2.3.4:80"
+  }
+}
+```
+
+The problem could also be that you need a proxy, the configuration line to that is above.
+
+You can also manually update. Just stop your server and so this:
+
+```bash
+mv node_modules node_modules_bak
+npm install meshcentral
+node node_modules/meshcentral
+```
+
+Then wait for all optional modules to install, then once the server starts hit ctrl-c and start up the server again. You can also use the following to help you start/stop the server:
+
+```bash
+node node_modules/meshcentral --install
+node node_modules/meshcentral --uninstall
+node node_modules/meshcentral --start
+node node_modules/meshcentral --stop
+```
+
 ### Port Troubleshooting on server
 
 If you're getting a `port 4433 is not available` error, this is because someone else is using this port, very likely another instance of MeshCentral. If your MeshCentral server is bound to ports 81/444 MeshCentral could not get port 80/443 and got the next available ones.
