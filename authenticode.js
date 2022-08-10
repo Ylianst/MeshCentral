@@ -571,7 +571,7 @@ function createAuthenticodeHandler(path) {
         if ((resSizeTotal % fileAlign) != 0) { resSizeTotal += (fileAlign - (resSizeTotal % fileAlign)); }
         const resSectionBuffer = Buffer.alloc(resSizeTotal);
 
-        // Write the resource section, calling a recusrize method
+        // Write the resource section, calling a recursive method
         const resPointers = { tables: 0, items: resSizes.tables, names: resSizes.tables + resSizes.items, data: resSizes.tables + resSizes.items + resSizes.names };
         createResourceSection(resources, resSectionBuffer, resPointers);
         //console.log('generateResourceSection', resPointers);
@@ -720,6 +720,38 @@ function createAuthenticodeHandler(path) {
         return pkcs7raw;
     }
 
+    // Hash an object
+    obj.hashObject = function (obj) {
+        const hash = crypto.createHash('sha384');
+        hash.update(JSON.stringify(obj));
+        return hash.digest();
+    }
+
+    // Load a .ico file. This will load all icons in the file into a icon group object
+    obj.loadIcon = function (iconFile) {
+        var iconData = null;
+        try { iconData = fs.readFileSync(iconFile); } catch (ex) {}
+        if ((iconData == null) || (iconData.length < 6) || (iconData[0] != 0) || (iconData[1] != 0)) return null;
+        const r = { resType: iconData.readUInt16LE(2), resCount: iconData.readUInt16LE(4), icons: {} };
+        if (r.resType != 1) return null;
+        var ptr = 6;
+        for (var i = 1; i <= r.resCount; i++) {
+            var icon = {};
+            icon.width = iconData[ptr + 0];
+            icon.height = iconData[ptr + 1];
+            icon.colorCount = iconData[ptr + 2];
+            icon.planes = iconData.readUInt16LE(ptr + 4);
+            icon.bitCount = iconData.readUInt16LE(ptr + 6);
+            icon.bytesInRes = iconData.readUInt32LE(ptr + 8);
+            icon.iconCursorId = i;
+            const offset = iconData.readUInt32LE(ptr + 12);
+            icon.icon = iconData.slice(offset, offset + icon.bytesInRes);
+            r.icons[i] = icon;
+            ptr += 16;
+        }
+        return r;
+    }
+
     // Get icon information from resource
     obj.getIconInfo = function () {
         const r = {}, ptr = obj.header.sections['.rsrc'].rawAddr;
@@ -777,9 +809,81 @@ function createAuthenticodeHandler(path) {
         return r;
     }
 
+    // Set icon information
+    obj.setIconInfo = function (iconInfo) {
+        // Delete all icon and icon groups the the ressources
+        var resourcesEntries = [];
+        for (var i = 0; i < obj.resources.entries.length; i++) {
+            if ((obj.resources.entries[i].name != resourceDefaultNames.icon) && (obj.resources.entries[i].name != resourceDefaultNames.iconGroups)) {
+                resourcesEntries.push(obj.resources.entries[i]);
+            }
+        }
+        obj.resources.entries = resourcesEntries;
+
+        // count the icon groups
+        var iconGroupCount = 0;
+        for (var i in iconInfo) { iconGroupCount++; }
+        if (iconGroupCount == 0) return; // If there are no icon groups, we are done
+
+        // Add the new icons entry
+        const iconsEntry = { name: resourceDefaultNames.icon, table: { characteristics: 0, timeDateStamp: 0, majorVersion: 0, minorVersion: 0, entries: [] } };
+        for (var i in iconInfo) {
+            for (var j in iconInfo[i].icons) {
+                var name = j;
+                if (parseInt(j) == name) { name = parseInt(j); }
+                const iconItemEntry = { name: name, table: { characteristics: 0, timeDateStamp: 0, majorVersion: 0, minorVersion: 0, entries: [{ name: 1033, item: { buffer: iconInfo[i].icons[j].icon, codePage: 0 } }] } }
+                iconsEntry.table.entries.push(iconItemEntry);
+            }
+        }
+        obj.resources.entries.push(iconsEntry);
+
+        // Add the new icon group entry
+        const groupEntry = { name: resourceDefaultNames.iconGroups, table: { characteristics: 0, timeDateStamp: 0, majorVersion: 0, minorVersion: 0, entries: [] } };
+        for (var i in iconInfo) {
+            // Build icon group struct
+            var iconCount = 0, p = 6;
+            for (var j in iconInfo[i].icons) { iconCount++; }
+            const buf = Buffer.alloc(6 + (iconCount * 14));
+            buf.writeUInt16LE(iconInfo[i].resType, 2);
+            buf.writeUInt16LE(iconCount, 4);
+            for (var j in iconInfo[i].icons) {
+                buf[p] = iconInfo[i].icons[j].width;
+                buf[p + 1] = iconInfo[i].icons[j].height;
+                buf[p + 2] = iconInfo[i].icons[j].colorCount;
+                buf.writeUInt16LE(iconInfo[i].icons[j].planes, p + 4);
+                buf.writeUInt16LE(iconInfo[i].icons[j].bitCount, p + 6);
+                buf.writeUInt32LE(iconInfo[i].icons[j].bytesInRes, p + 8);
+                buf.writeUInt16LE(j, p + 12);
+                p += 14;
+            }
+            var name = i;
+            if (parseInt(i) == name) { name = parseInt(i); }
+            const groupItemEntry = { name: name, table: { characteristics: 0, timeDateStamp: 0, majorVersion: 0, minorVersion: 0, entries: [{ name: 1033, item: { buffer: buf, codePage: 0 } }] } }
+            groupEntry.table.entries.push(groupItemEntry);
+        }
+        obj.resources.entries.push(groupEntry);
+
+        // Sort the resources by name. This is required.
+        function resSort(a, b) {
+            if ((typeof a == 'string') && (typeof b == 'string')) { if (a < b) return -1; if (a > b) return 1; return 0; }
+            if ((typeof a == 'number') && (typeof b == 'number')) { return a - b; }
+            if ((typeof a == 'string') && (typeof b == 'number')) { return -1; }
+            return 1;
+        }
+        const names = [];
+        for (var i = 0; i < obj.resources.entries.length; i++) { names.push(obj.resources.entries[i].name); }
+        names.sort(resSort);
+        var newEntryOrder = [];
+        for (var i in names) {
+            for (var j = 0; j < obj.resources.entries.length; j++) {
+                if (obj.resources.entries[j].name == names[i]) { newEntryOrder.push(obj.resources.entries[j]); }
+            }
+        }
+        obj.resources.entries = newEntryOrder;
+    }
+
     // Decode the version information from the resource
     obj.getVersionInfo = function () {
-        //console.log('READ', getVersionInfoData().toString('hex'));
         var r = {}, info = readVersionInfo(getVersionInfoData(), 0);
         if ((info == null) || (info.stringFiles == null)) return null;
         var StringFileInfo = null;
@@ -1822,34 +1926,44 @@ function start() {
         console.log("  node authenticode.js [command] [options]");
         console.log("Commands:");
         console.log("  info: Show information about an executable.");
-        console.log("          --exe [file]             Required executable to view information.");
-        console.log("          --json                   Show information in JSON format.");
+        console.log("          --exe [file]               Required executable to view information.");
+        console.log("          --json                     Show information in JSON format.");
         console.log("  sign: Sign an executable.");
-        console.log("          --exe [file]             Required executable to sign.");
-        console.log("          --out [file]             Resulting signed executable.");
-        console.log("          --pem [pemfile]          Certificate & private key to sign the executable with.");
-        console.log("          --desc [description]     Description string to embbed into signature.");
-        console.log("          --url [url]              URL to embbed into signature.");
-        console.log("          --hash [method]          Default is SHA384, possible value: MD5, SHA224, SHA256, SHA384 or SHA512.");
-        console.log("          --time [url]             The time signing server URL.");
-        console.log("          --proxy [url]            The HTTP proxy to use to contact the time signing server, must start with http://");
+        console.log("          --exe [file]               Required executable to sign.");
+        console.log("          --out [file]               Resulting signed executable.");
+        console.log("          --pem [pemfile]            Certificate & private key to sign the executable with.");
+        console.log("          --desc [description]       Description string to embbed into signature.");
+        console.log("          --url [url]                URL to embbed into signature.");
+        console.log("          --hash [method]            Default is SHA384, possible value: MD5, SHA224, SHA256, SHA384 or SHA512.");
+        console.log("          --time [url]               The time signing server URL.");
+        console.log("          --proxy [url]              The HTTP proxy to use to contact the time signing server, must start with http://");
         console.log("  unsign: Remove the signature from the executable.");
-        console.log("          --exe [file]             Required executable to un-sign.");
-        console.log("          --out [file]             Resulting executable with signature removed.");
+        console.log("          --exe [file]               Required executable to un-sign.");
+        console.log("          --out [file]               Resulting executable with signature removed.");
         console.log("  createcert: Create a code signging self-signed certificate and key.");
-        console.log("          --out [pemfile]          Required certificate file to create.");
-        console.log("          --cn [value]             Required certificate common name.");
-        console.log("          --country [value]        Certificate country name.");
-        console.log("          --state [value]          Certificate state name.");
-        console.log("          --locality [value]       Certificate locality name.");
-        console.log("          --org [value]            Certificate organization name.");
-        console.log("          --ou [value]             Certificate organization unit name.");
-        console.log("          --serial [value]         Certificate serial number.");
+        console.log("          --out [pemfile]            Required certificate file to create.");
+        console.log("          --cn [value]               Required certificate common name.");
+        console.log("          --country [value]          Certificate country name.");
+        console.log("          --state [value]            Certificate state name.");
+        console.log("          --locality [value]         Certificate locality name.");
+        console.log("          --org [value]              Certificate organization name.");
+        console.log("          --ou [value]               Certificate organization unit name.");
+        console.log("          --serial [value]           Certificate serial number.");
         console.log("  timestamp: Add a signed timestamp to an already signed executable.");
-        console.log("          --exe [file]             Required executable to sign.");
-        console.log("          --out [file]             Resulting signed executable.");
-        console.log("          --time [url]             The time signing server URL.");
-        console.log("          --proxy [url]            The HTTP proxy to use to contact the time signing server, must start with http://");
+        console.log("          --exe [file]               Required executable to timestamp.");
+        console.log("          --out [file]               Resulting signed executable.");
+        console.log("          --time [url]               The time signing server URL.");
+        console.log("          --proxy [url]              The HTTP proxy to use to contact the time signing server, must start with http://");
+        console.log("  icons: Show the icon resources in the executable.");
+        console.log("          --exe [file]               Input executable.");
+        console.log("  saveicon: Save a single icon bitmap to a .ico file.");
+        console.log("          --exe [file]               Input executable.");
+        console.log("          --out [file]               Resulting .ico file.");
+        console.log("          --icon [number]            Icon number to save to file.");
+        console.log("  saveicons: Save an icon group to a .ico file.");
+        console.log("          --exe [file]               Input executable.");
+        console.log("          --out [file]               Resulting .ico file.");
+        console.log("          --icongroup [groupNumber]  Icon groupnumber to save to file.");
         console.log("");
         console.log("Note that certificate PEM files must first have the signing certificate,");
         console.log("followed by all certificates that form the trust chain.");
@@ -1865,11 +1979,13 @@ function start() {
         console.log("          --originalfilename [value]");
         console.log("          --productname [value]");
         console.log("          --productversion [value]");
+        console.log("          --removeicongroup [number]");
+        console.log("          --icon [groupNumber],[filename.ico]");
         return;
     }
 
     // Check that a valid command is passed in
-    if (['info', 'sign', 'unsign', 'createcert', 'icons', 'saveicon', 'header', 'timestamp', 'signblock'].indexOf(process.argv[2].toLowerCase()) == -1) {
+    if (['info', 'sign', 'unsign', 'createcert', 'icons', 'saveicon', 'saveicons', 'header', 'timestamp', 'signblock'].indexOf(process.argv[2].toLowerCase()) == -1) {
         console.log("Invalid command: " + process.argv[2]);
         console.log("Valid commands are: info, sign, unsign, createcert, timestamp");
         return;
@@ -1907,6 +2023,36 @@ function start() {
             if (args['productversionnumber'] != versionStrings['~ProductVersion']) { versionStrings['~ProductVersion'] = args['productversionnumber']; resChanges = true; }
         }
         if (resChanges == true) { exe.setVersionInfo(versionStrings); }
+    }
+
+    // Parse the icon changes
+    resChanges = false;
+    var icons = null;
+    if (exe != null) {
+        icons = exe.getIconInfo();
+        if (typeof args['removeicongroup'] == 'string') { // If --removeicongroup is used, it's to remove an existing icon group
+            const groupsToRemove = args['removeicongroup'].split(',');
+            for (var i in groupsToRemove) { if (icons[groupsToRemove[i]] != null) { delete icons[groupsToRemove[i]]; resChanges = true; } }
+        } else if (typeof args['removeicongroup'] == 'number') {
+            if (icons[args['removeicongroup']] != null) { delete icons[args['removeicongroup']]; resChanges = true; }
+        }
+        if (typeof args['icon'] == 'string') { // If --icon is used, it's to add or replace an existing icon group
+            const iconToAddSplit = args['icon'].split(',');
+            if (iconToAddSplit.length != 2) { console.log("The --icon format is: --icon [number],[file]."); return; }
+            const iconName = parseInt(iconToAddSplit[0]);
+            const iconFile = iconToAddSplit[1];
+            const icon = exe.loadIcon(iconFile);
+            if (icon == null) { console.log("Unable to load icon: " + iconFile); return; }
+            if (icons[iconName] != null) {
+                const iconHash = exe.hashObject(icon); // Compute the new icon group hash
+                const iconHash2 = exe.hashObject(icons[iconName]); // Computer the old icon group hash
+                if (iconHash.toString('hex') != iconHash2.toString('hex')) { icons[iconName] = icon; resChanges = true; } // If different, replace the icon group
+            } else {
+                icons[iconName] = icon; // We are adding an icon group
+                resChanges = true;
+            }
+        }
+        if (resChanges == true) { exe.setIconInfo(icons); }
     }
 
     // Execute the command
@@ -1983,7 +2129,7 @@ function start() {
         if (resChanges == false) {
             if (exe.header.signed) {
                 console.log("Unsigning to " + args.out);
-                exe.unsign(args); // Simple unsign,  copy most of the original file.
+                exe.unsign(args); // Simple unsign, copy most of the original file.
                 console.log("Done.");
             } else {
                 console.log("Executable is not signed.");
@@ -2043,6 +2189,48 @@ function start() {
 
         console.log("Writing to " + args.out);
         fs.writeFileSync(args.out, Buffer.concat([buf, icon.icon]));
+        console.log("Done.");
+    }
+    if (command == 'saveicons') { // Save an icon group to file
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
+        if (typeof args.out != 'string') { console.log("Missing --out [filename]"); return; }
+        if (typeof args.icongroup != 'number') { console.log("Missing or incorrect --icongroup [number]"); return; }
+        const iconInfo = exe.getIconInfo();
+        const iconGroup = iconInfo[args.icongroup];
+        if (iconGroup == null) { console.log("Invalid or incorrect --icongroup [number]"); return; }
+
+        // Count the number of icons in the group
+        var iconCount = 0;
+        for (var i in iconGroup.icons) { iconCount++; }
+
+        // .ico header: https://en.wikipedia.org/wiki/ICO_(file_format)
+        const iconFileData = [];
+        const header = Buffer.alloc(6);
+        header.writeUInt16LE(1, 2); // 1 = Icon, 2 = Cursor
+        header.writeUInt16LE(iconCount, 4); // Icon Count, always 1 in our case
+        iconFileData.push(header);
+
+        // Store each icon header
+        var offsetPtr = 6 + (16 * iconCount);
+        for (var i in iconGroup.icons) {
+            const buf = Buffer.alloc(16);
+            buf[0] = iconGroup.icons[i].width; // Width (0 = 256)
+            buf[1] = iconGroup.icons[i].height; // Height (0 = 256)
+            buf[2] = iconGroup.icons[i].colorCount; // Colors
+            buf.writeUInt16LE(iconGroup.icons[i].planes, 4); // Color planes
+            buf.writeUInt16LE(iconGroup.icons[i].bitCount, 6); // Bits per pixel
+            buf.writeUInt32LE(iconGroup.icons[i].icon.length, 8); // Size
+            buf.writeUInt32LE(offsetPtr, 12); // Offset
+            offsetPtr += iconGroup.icons[i].icon.length;
+            iconFileData.push(buf);
+        }
+
+        // Store each icon
+        for (var i in iconGroup.icons) { iconFileData.push(iconGroup.icons[i].icon); }
+
+        // Write the .ico file
+        console.log("Writing to " + args.out);
+        fs.writeFileSync(args.out, Buffer.concat(iconFileData));
         console.log("Done.");
     }
     if (command == 'signblock') { // Display the raw signature block of the executable in hex
