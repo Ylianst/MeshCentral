@@ -52,9 +52,18 @@ function createOutFile(args, filename) {
 
 // Hash an object
 function hashObject(obj) {
+    if (obj == null) { return null; }
     const hash = crypto.createHash('sha384');
-    hash.update(JSON.stringify(obj));
+    if (Buffer.isBuffer(obj)) { hash.update(obj); } else { hash.update(JSON.stringify(obj)); }
     return hash.digest().toString('hex');
+}
+
+// Load a .bmp file.
+function loadBitmap(bitmapFile) {
+    var bitmapData = null;
+    try { bitmapData = fs.readFileSync(bitmapFile); } catch (ex) { }
+    if ((bitmapData == null) || (bitmapData.length < 14) || (bitmapData[0] != 0x42) || (bitmapData[1] != 0x4D)) return null;
+    return bitmapData.slice(14);
 }
 
 // Load a .ico file. This will load all icons in the file into a icon group object
@@ -753,6 +762,28 @@ function createAuthenticodeHandler(path) {
         return pkcs7raw;
     }
 
+
+    // Get bitmaps information from resource
+    obj.getBitmapInfo = function () {
+        const r = {}, ptr = obj.header.sections['.rsrc'].rawAddr;
+
+        // Find and parse each icon
+        const bitmaps = {}
+        for (var i = 0; i < obj.resources.entries.length; i++) {
+            if (obj.resources.entries[i].name == resourceDefaultNames.bitmaps) {
+                for (var j = 0; j < obj.resources.entries[i].table.entries.length; j++) {
+                    const bitmapName = obj.resources.entries[i].table.entries[j].name;
+                    const offsetToData = obj.resources.entries[i].table.entries[j].table.entries[0].item.offsetToData;
+                    const size = obj.resources.entries[i].table.entries[j].table.entries[0].item.size;
+                    const actualPtr = (offsetToData - obj.header.sections['.rsrc'].virtualAddr) + ptr;
+                    bitmaps[bitmapName] = readFileSlice(actualPtr, size);
+                }
+            }
+        }
+
+        return bitmaps;
+    }
+
     // Get icon information from resource
     obj.getIconInfo = function () {
         const r = {}, ptr = obj.header.sections['.rsrc'].rawAddr;
@@ -810,9 +841,49 @@ function createAuthenticodeHandler(path) {
         return r;
     }
 
+    // Set bitmap information
+    obj.setBitmapInfo = function (bitmapInfo) {
+        // Delete all bitmaps resources
+        var resourcesEntries = [];
+        for (var i = 0; i < obj.resources.entries.length; i++) {
+            if (obj.resources.entries[i].name != resourceDefaultNames.bitmaps) {
+                resourcesEntries.push(obj.resources.entries[i]);
+            }
+        }
+        obj.resources.entries = resourcesEntries;
+
+        // Add all bitmap entries
+        const bitmapEntry = { name: resourceDefaultNames.bitmaps, table: { characteristics: 0, timeDateStamp: 0, majorVersion: 0, minorVersion: 0, entries: [] } };
+        for (var i in bitmapInfo) {
+            var name = i;
+            if (parseInt(i) == name) { name = parseInt(i); }
+            const bitmapItemEntry = { name: name, table: { characteristics: 0, timeDateStamp: 0, majorVersion: 0, minorVersion: 0, entries: [{ name: 1033, item: { buffer: bitmapInfo[i], codePage: 0 } }] } }
+            bitmapEntry.table.entries.push(bitmapItemEntry);
+        }
+        obj.resources.entries.push(bitmapEntry);
+
+        // Sort the resources by name. This is required.
+        function resSort(a, b) {
+            if ((typeof a == 'string') && (typeof b == 'string')) { if (a < b) return -1; if (a > b) return 1; return 0; }
+            if ((typeof a == 'number') && (typeof b == 'number')) { return a - b; }
+            if ((typeof a == 'string') && (typeof b == 'number')) { return -1; }
+            return 1;
+        }
+        const names = [];
+        for (var i = 0; i < obj.resources.entries.length; i++) { names.push(obj.resources.entries[i].name); }
+        names.sort(resSort);
+        var newEntryOrder = [];
+        for (var i in names) {
+            for (var j = 0; j < obj.resources.entries.length; j++) {
+                if (obj.resources.entries[j].name == names[i]) { newEntryOrder.push(obj.resources.entries[j]); }
+            }
+        }
+        obj.resources.entries = newEntryOrder;
+    }
+
     // Set icon information
     obj.setIconInfo = function (iconInfo) {
-        // Delete all icon and icon groups the the resources
+        // Delete all icon and icon groups resources
         var resourcesEntries = [];
         for (var i = 0; i < obj.resources.entries.length; i++) {
             if ((obj.resources.entries[i].name != resourceDefaultNames.icon) && (obj.resources.entries[i].name != resourceDefaultNames.iconGroups)) {
@@ -2023,6 +2094,12 @@ function start() {
         console.log("          --out [file]               Resulting signed executable.");
         console.log("          --time [url]               The time signing server URL.");
         console.log("          --proxy [url]              The HTTP proxy to use to contact the time signing server, must start with http://");
+        console.log("  bitmaps: Show bitmap resources in the executable.");
+        console.log("          --exe [file]               Input executable.");
+        console.log("  savebitmap: Save a single bitmap to a .bmp file.");
+        console.log("          --exe [file]               Input executable.");
+        console.log("          --out [file]               Resulting .ico file.");
+        console.log("          --bitmap [number]          Bitmap number to save to file.");
         console.log("  icons: Show the icon resources in the executable.");
         console.log("          --exe [file]               Input executable.");
         console.log("  saveicon: Save a single icon bitmap to a .ico file.");
@@ -2049,12 +2126,14 @@ function start() {
         console.log("          --productname [value]");
         console.log("          --productversion [value]");
         console.log("          --removeicongroup [number]");
+        console.log("          --removebitmap [number]");
         console.log("          --icon [groupNumber],[filename.ico]");
+        console.log("          --bitmap [number],[filename.bmp]");
         return;
     }
 
     // Check that a valid command is passed in
-    if (['info', 'sign', 'unsign', 'createcert', 'icons', 'saveicon', 'saveicons', 'header', 'sections', 'timestamp', 'signblock'].indexOf(process.argv[2].toLowerCase()) == -1) {
+    if (['info', 'sign', 'unsign', 'createcert', 'icons', 'bitmaps', 'saveicon', 'saveicons', 'savebitmap', 'header', 'sections', 'timestamp', 'signblock'].indexOf(process.argv[2].toLowerCase()) == -1) {
         console.log("Invalid command: " + process.argv[2]);
         console.log("Valid commands are: info, sign, unsign, createcert, timestamp");
         return;
@@ -2096,14 +2175,21 @@ function start() {
 
     // Parse the icon changes
     resChanges = false;
-    var icons = null;
+    var icons = null, bitmaps = null;
     if (exe != null) {
         icons = exe.getIconInfo();
+        bitmaps = exe.getBitmapInfo();
         if (typeof args['removeicongroup'] == 'string') { // If --removeicongroup is used, it's to remove an existing icon group
             const groupsToRemove = args['removeicongroup'].split(',');
             for (var i in groupsToRemove) { if (icons[groupsToRemove[i]] != null) { delete icons[groupsToRemove[i]]; resChanges = true; } }
         } else if (typeof args['removeicongroup'] == 'number') {
             if (icons[args['removeicongroup']] != null) { delete icons[args['removeicongroup']]; resChanges = true; }
+        }
+        if (typeof args['removebitmap'] == 'string') { // If --removebitmap is used
+            const bitmapsToRemove = args['removebitmap'].split(',');
+            for (var i in bitmapsToRemove) { if (bitmaps[bitmapsToRemove[i]] != null) { delete bitmaps[bitmapsToRemove[i]]; resChanges = true; } }
+        } else if (typeof args['removebitmap'] == 'number') {
+            if (bitmaps[args['removebitmap']] != null) { delete bitmaps[args['removebitmap']]; resChanges = true; }
         }
         if (typeof args['icon'] == 'string') { // If --icon is used, it's to add or replace an existing icon group
             const iconToAddSplit = args['icon'].split(',');
@@ -2121,7 +2207,26 @@ function start() {
                 resChanges = true;
             }
         }
-        if (resChanges == true) { exe.setIconInfo(icons); }
+        if (typeof args['bitmap'] == 'string') { // If --bitmap is used, it's to add or replace an existing bitmap
+            const bitmapToAddSplit = args['bitmap'].split(',');
+            if (bitmapToAddSplit.length != 2) { console.log("The --bitmap format is: --bitmap [number],[file]."); return; }
+            const bitmapName = parseInt(bitmapToAddSplit[0]);
+            const bitmapFile = bitmapToAddSplit[1];
+            const bitmap = loadBitmap(bitmapFile);
+            if (bitmap == null) { console.log("Unable to load bitmap: " + bitmapFile); return; }
+            if (bitmaps[bitmapName] != null) {
+                const bitmapHash = hashObject(bitmap); // Compute the new bitmap hash
+                const bitmapHash2 = hashObject(bitmaps[bitmapName]); // Computer the old bitmap hash
+                if (bitmapHash != bitmapHash2) { bitmaps[bitmapName] = bitmap; resChanges = true; } // If different, replace the new bitmap
+            } else {
+                bitmaps[bitmapName] = bitmap; // We are adding an new bitmap
+                resChanges = true;
+            }
+        }
+        if (resChanges == true) {
+            exe.setIconInfo(icons);
+            exe.setBitmapInfo(bitmaps);
+        }
     }
 
     // Execute the command
@@ -2239,6 +2344,32 @@ function start() {
         const cert = createSelfSignedCert(args);
         console.log("Writing to " + args.out);
         fs.writeFileSync(args.out, pki.certificateToPem(cert.cert) + '\r\n' + pki.privateKeyToPem(cert.key));
+        console.log("Done.");
+    }
+    if (command == 'bitmaps') { // Show bitmaps in the executable
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
+        if (args.json) {
+            var bitmapInfo = exe.getBitmapInfo();
+            console.log(JSON.stringify(bitmapInfo, null, 2));
+        } else {
+            var bitmapInfo = exe.getBitmapInfo();
+            if (bitmapInfo != null) {
+                console.log("Bitmap Information:");
+                for (var i in bitmapInfo) { console.log('  ' + i + ': ' + bitmapInfo[i].length + ' byte' + ((bitmapInfo[i].length > 1) ? 's' : '') + '.'); }
+            }
+        }
+    }
+    if (command == 'savebitmap') { // Save an bitmap to file
+        if (exe == null) { console.log("Missing --exe [filename]"); return; }
+        if (typeof args.out != 'string') { console.log("Missing --out [filename]"); return; }
+        if (typeof args.bitmap != 'number') { console.log("Missing or incorrect --bitmap [number]"); return; }
+        const bitmapInfo = exe.getBitmapInfo();
+        if (bitmapInfo[args.bitmap] == null) { console.log("Unknown bitmap: " + args.bitmap); return; }
+
+        console.log("Writing to " + args.out);
+        var bitmapHeader = Buffer.from('424D000000000000000036000000', 'hex');
+        bitmapHeader.writeUInt32LE(14 + bitmapInfo[args.bitmap].length, 2); // Write the full size of the bitmap file
+        fs.writeFileSync(args.out, Buffer.concat([bitmapHeader, bitmapInfo[args.bitmap]]));
         console.log("Done.");
     }
     if (command == 'icons') { // Show icons in the executable
