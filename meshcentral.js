@@ -1375,17 +1375,14 @@ function CreateMeshCentralServer(config, args) {
                     if (icon != null) {
                         // The icon file was correctly loaded
                         obj.config.domains[i].agentfileinfo.icon = icon;
-                        obj.config.domains[i].agentfileinfo.iconhash = require('./authenticode.js').hashObject(icon);
                     } else {
                         // Failed to load the icon file, display a server warning
                         addServerWarning("Unable to load agent icon file: " + obj.config.domains[i].agentfileinfo.icon + ".", 23, [obj.config.domains[i].agentfileinfo.icon]);
                         delete obj.config.domains[i].agentfileinfo.icon;
-                        delete obj.config.domains[i].agentfileinfo.iconhash;
                     }
                 } else {
                     // Invalid icon file path
                     delete obj.config.domains[i].agentfileinfo.icon;
-                    delete obj.config.domains[i].agentfileinfo.iconhash;
                 }
             }
         }
@@ -2995,21 +2992,42 @@ function CreateMeshCentralServer(config, args) {
                         }
 
                         // Check the agent icon
-                        if ((destinationAgentOk == true) && (domain.agentfileinfo != null) && (domain.agentfileinfo.iconhash != null)) {
-                            const agentIconGroups = destinationAgent.getIconInfo();
-                            if (agentIconGroups != null) {
-                                const agentIconGroupNames = Object.keys(agentIconGroups);
-                                if (agentIconGroupNames.length > 0) {
-                                    const agentMainIconGroupName = agentIconGroupNames[0];
-                                    const agentMainIconGroupHash = require('./authenticode.js').hashObject(agentIconGroups[agentMainIconGroupName]);
-                                    if (agentMainIconGroupHash != domain.agentfileinfo.iconhash) { destinationAgentOk = false; } // If the existing agent icon does not match the desired icon, we need to re-sign the agent.
+                        if (destinationAgentOk == true) {
+                            if ((domain.agentfileinfo != null) && (domain.agentfileinfo.icon != null)) {
+                                // Check if the destination agent matches the icon we want
+                                const agentIconGroups = destinationAgent.getIconInfo();
+                                if (agentIconGroups != null) {
+                                    const agentIconGroupNames = Object.keys(agentIconGroups);
+                                    if (agentIconGroupNames.length > 0) {
+                                        const agentMainIconGroup = agentIconGroups[agentIconGroupNames[0]];
+                                        if (agentMainIconGroup.resCount != domain.agentfileinfo.icon.resCount) {
+                                            destinationAgentOk = false; // The icon image count is different, don't bother hashing to see if the icons are different.
+                                        } else {
+                                            const agentMainIconGroupHash = require('./authenticode.js').hashObject(agentMainIconGroup);
+                                            const iconHash = require('./authenticode.js').hashObject(domain.agentfileinfo.icon);
+                                            if (agentMainIconGroupHash != iconHash) { destinationAgentOk = false; } // If the existing agent icon does not match the desired icon, we need to re-sign the agent.
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Check if the destination agent has the default icon
+                                const agentIconGroups1 = destinationAgent.getIconInfo();
+                                const agentIconGroups2 = originalAgent.getIconInfo();
+                                if (agentIconGroups1.resCount != agentIconGroups2.resCount) {
+                                    destinationAgentOk = false; // The icon image count is different, don't bother hashing to see if the icons are different.
+                                } else {
+                                    const iconHash1 = require('./authenticode.js').hashObject(agentIconGroups1);
+                                    const iconHash2 = require('./authenticode.js').hashObject(agentIconGroups2);
+                                    if (iconHash1 != iconHash2) { destinationAgentOk = false; } // If the existing agent icon does not match the desired icon, we need to re-sign the agent.
                                 }
                             }
                         }
                     }
 
-                    // If everything looks ok, runs a hash of the original and destination agent skipping the CRC, resource and signature blocks. If different, sign the agent again.
-                    if ((destinationAgentOk == true) && (originalAgent.getHashNoResources('sha384').compare(destinationAgent.getHashNoResources('sha384')) != 0)) { destinationAgentOk = false; }
+                    // If everything looks ok, runs a hash of the original and destination agent .text, .data and .rdata sections. If different, sign the agent again.
+                    if ((destinationAgentOk == true) && (originalAgent.getHashOfSection('sha384', '.text').compare(destinationAgent.getHashOfSection('sha384', '.text')) != 0)) { destinationAgentOk = false; }
+                    if ((destinationAgentOk == true) && (originalAgent.getHashOfSection('sha384', '.data').compare(destinationAgent.getHashOfSection('sha384', '.data')) != 0)) { destinationAgentOk = false; }
+                    if ((destinationAgentOk == true) && (originalAgent.getHashOfSection('sha384', '.rdata').compare(destinationAgent.getHashOfSection('sha384', '.rdata')) != 0)) { destinationAgentOk = false; }
 
                     // We are done comparing the destination agent, close it.
                     destinationAgent.close();

@@ -1268,6 +1268,21 @@ function createAuthenticodeHandler(path) {
         return hash.digest();
     }
 
+    // Hash the file using the selected hashing system skipping resource section
+    // This hash skips the executables CRC, sections table, resource section, code signing data and signing block
+    obj.getHashOfSection = function (algo, sectionName) {
+        if (obj.header.sections[sectionName] == null) return null;
+
+        // Get the section start and size
+        const sectionPtr = obj.header.sections[sectionName].rawAddr;
+        const sectionSize = obj.header.sections[sectionName].rawSize;
+
+        // Hash the remaining data
+        const hash = crypto.createHash(algo);
+        runHash(hash, sectionPtr, sectionPtr + sectionSize);
+        return hash.digest();
+    }
+
     // Hash the file from start to end loading 64k chunks
     function runHash(hash, start, end) {
         var ptr = start;
