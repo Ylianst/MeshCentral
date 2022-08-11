@@ -811,7 +811,7 @@ function createAuthenticodeHandler(path) {
 
     // Set icon information
     obj.setIconInfo = function (iconInfo) {
-        // Delete all icon and icon groups the the ressources
+        // Delete all icon and icon groups the the resources
         var resourcesEntries = [];
         for (var i = 0; i < obj.resources.entries.length; i++) {
             if ((obj.resources.entries[i].name != resourceDefaultNames.icon) && (obj.resources.entries[i].name != resourceDefaultNames.iconGroups)) {
@@ -820,9 +820,15 @@ function createAuthenticodeHandler(path) {
         }
         obj.resources.entries = resourcesEntries;
 
-        // count the icon groups
-        var iconGroupCount = 0;
-        for (var i in iconInfo) { iconGroupCount++; }
+        // Count the icon groups and re-number all icons
+        var iconGroupCount = 0, nextIconNumber = 1;
+        for (var i in iconInfo) {
+            iconGroupCount++;
+            var xicons = {};
+            for (var j in iconInfo[i].icons) { xicons[nextIconNumber++] = iconInfo[i].icons[j]; }
+            iconInfo[i].icons = xicons;
+        }
+        console.log(iconInfo);
         if (iconGroupCount == 0) return; // If there are no icon groups, we are done
 
         // Add the new icons entry
