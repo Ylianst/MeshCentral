@@ -600,6 +600,7 @@ function createAuthenticodeHandler(path) {
         // Pad the resource section & allocate the buffer
         const fileAlign = obj.header.peWindows.fileAlignment
         var resSizeTotal = resSizes.tables + resSizes.items + resSizes.names + resSizes.data;
+        var resNoPadding = resSizeTotal + 4; // TODO: Not sure why this is off by 4
         if ((resSizeTotal % fileAlign) != 0) { resSizeTotal += (fileAlign - (resSizeTotal % fileAlign)); }
         const resSectionBuffer = Buffer.alloc(resSizeTotal);
 
@@ -609,7 +610,7 @@ function createAuthenticodeHandler(path) {
         //console.log('generateResourceSection', resPointers);
 
         // Done, return the result
-        return resSectionBuffer;
+        return { size: resNoPadding, data: resSectionBuffer };
     }
 
     // Return the total size of a resource header, this is a recursive method
@@ -828,7 +829,6 @@ function createAuthenticodeHandler(path) {
             for (var j in iconInfo[i].icons) { xicons[nextIconNumber++] = iconInfo[i].icons[j]; }
             iconInfo[i].icons = xicons;
         }
-        console.log(iconInfo);
         if (iconGroupCount == 0) return; // If there are no icon groups, we are done
 
         // Add the new icons entry
@@ -1657,6 +1657,16 @@ function createAuthenticodeHandler(path) {
         fs.closeSync(output);
     }
 
+    // Find where a directory value is in the old sections and map it to the new sections
+    function correctDirectoryValue(oldSections, newSections, value) {
+        for (var i in oldSections) {
+            if ((value >= oldSections[i].virtualAddr) && (value < (oldSections[i].virtualAddr + oldSections[i].virtualSize))) {
+                return newSections[i].virtualAddr + (value - oldSections[i].virtualAddr);
+            }
+        }
+        return 0;
+    }
+
     // Save the executable
     obj.writeExecutable = function (args, cert, func) {
         // Open the file
@@ -1667,11 +1677,10 @@ function createAuthenticodeHandler(path) {
         var fullHeaderLen = obj.header.SectionHeadersPtr + (obj.header.coff.numberOfSections * 40);
         var fullHeader = readFileSlice(written, fullHeaderLen);
 
-        // Create the resource section and pad to next 512 byte boundry
-        var rsrcSection = generateResourceSection(obj.resources);
-        var rsrcSectionVirtualSize = rsrcSection.length;
-        var x = (rsrcSection.length % 512);
-        if (x != 0) { rsrcSection = Buffer.concat([rsrcSection, Buffer.alloc(512 - x)]); }
+        // Create the resource section
+        const rsrcSectionX = generateResourceSection(obj.resources); // This section is created with padding already included
+        var rsrcSection = rsrcSectionX.data;
+        var rsrcSectionVirtualSize = rsrcSectionX.size;
         var rsrcSectionRawSize = rsrcSection.length;
 
         // Calculate the location and original and new size of the resource segment
@@ -1699,28 +1708,15 @@ function createAuthenticodeHandler(path) {
         // Update the checksum to zero
         fullHeader.writeUInt32LE(0, obj.header.peOptionalHeaderLocation + 64);
 
-        // Make change to the data directories header to fix resource segment size and add/remove signature
-        const pePlusOffset = (obj.header.pe32plus == 0) ? 0 : 16; // This header is the same for 32 and 64 bit, but 64bit is offset by 16 bytes.
-        if (obj.header.dataDirectories.exportTable.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.exportTable.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 96 + pePlusOffset); }
-        if (obj.header.dataDirectories.importTable.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.importTable.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 104 + pePlusOffset); }
-        //fullHeader.writeUInt32LE(obj.header.dataDirectories.resourceTable.size + resDeltaSize, obj.header.peOptionalHeaderLocation + 116 + pePlusOffset); // Change the resource segment size
-        if (obj.header.dataDirectories.exceptionTableAddr.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.exceptionTableAddr.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 120 + pePlusOffset); }
-        fullHeader.writeUInt32LE(0, obj.header.peOptionalHeaderLocation + 128 + pePlusOffset); // certificate table addr (TODO)
-        fullHeader.writeUInt32LE(0, obj.header.peOptionalHeaderLocation + 132 + pePlusOffset); // certificate table size (TODO)
-        if (obj.header.dataDirectories.baseRelocationTable.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.baseRelocationTable.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 136 + pePlusOffset); }
-        if (obj.header.dataDirectories.debug.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.debug.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 144 + pePlusOffset); }
-        if (obj.header.dataDirectories.globalPtr.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.globalPtr.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 160 + pePlusOffset); }
-        if (obj.header.dataDirectories.tLSTable.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.tLSTable.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 168 + pePlusOffset); }
-        if (obj.header.dataDirectories.loadConfigTable.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.loadConfigTable.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 176 + pePlusOffset); }
-        if (obj.header.dataDirectories.boundImport.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.boundImport.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 184 + pePlusOffset); }
-        if (obj.header.dataDirectories.iAT.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.iAT.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 192 + pePlusOffset); }
-        if (obj.header.dataDirectories.delayImportDescriptor.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.delayImportDescriptor.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 200 + pePlusOffset); }
-        if (obj.header.dataDirectories.clrRuntimeHeader.addr > resPtr) { fullHeader.writeUInt32LE(obj.header.dataDirectories.clrRuntimeHeader.addr + resDeltaSize, obj.header.peOptionalHeaderLocation + 208 + pePlusOffset); }
+        // We are going to setup the old a new sections here, we need this to correct directory values
+        var oldSections = obj.header.sections;
+        var newSections = {};
 
         // Make changes to the segments table
         var virtualAddress = 4096;
         for (var i in obj.header.sections) {
             const section = obj.header.sections[i];
+            newSections[i] = { virtualSize: section.virtualSize };
             if (i == '.rsrc') {
                 // Change the size of the resource section
                 fullHeader.writeUInt32LE(rsrcSectionVirtualSize, section.ptr + 8); // virtualSize
@@ -1728,6 +1724,7 @@ function createAuthenticodeHandler(path) {
 
                 // Set the virtual address of the section
                 fullHeader.writeUInt32LE(virtualAddress, section.ptr + 12); // Virtual address
+                newSections[i].virtualAddr = virtualAddress;
                 var virtualAddressPadding = (rsrcSectionVirtualSize % 4096);
                 virtualAddress += rsrcSectionVirtualSize;
                 if (virtualAddressPadding != 0) { virtualAddress += (4096 - virtualAddressPadding); }
@@ -1737,11 +1734,30 @@ function createAuthenticodeHandler(path) {
 
                 // Set the virtual address of the section
                 fullHeader.writeUInt32LE(virtualAddress, section.ptr + 12); // Virtual address
+                newSections[i].virtualAddr = virtualAddress;
                 var virtualAddressPadding = (section.virtualSize % 4096);
                 virtualAddress += section.virtualSize;
                 if (virtualAddressPadding != 0) { virtualAddress += (4096 - virtualAddressPadding); }
             }
         }
+
+        // Make change to the data directories header to fix resource segment size and add/remove signature
+        const pePlusOffset = (obj.header.pe32plus == 0) ? 0 : 16; // This header is the same for 32 and 64 bit, but 64bit is offset by 16 bytes.
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.exportTable.addr), obj.header.peOptionalHeaderLocation + 96 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.importTable.addr), obj.header.peOptionalHeaderLocation + 104 + pePlusOffset);
+        fullHeader.writeUInt32LE(rsrcSectionVirtualSize, obj.header.peOptionalHeaderLocation + 116 + pePlusOffset); // Change the resource segment size
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.exceptionTableAddr.addr), obj.header.peOptionalHeaderLocation + 120 + pePlusOffset);
+        fullHeader.writeUInt32LE(0, obj.header.peOptionalHeaderLocation + 128 + pePlusOffset); // certificate table addr (TODO)
+        fullHeader.writeUInt32LE(0, obj.header.peOptionalHeaderLocation + 132 + pePlusOffset); // certificate table size (TODO)
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.baseRelocationTable.addr), obj.header.peOptionalHeaderLocation + 136 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.debug.addr), obj.header.peOptionalHeaderLocation + 144 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.globalPtr.addr), obj.header.peOptionalHeaderLocation + 160 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.tLSTable.addr), obj.header.peOptionalHeaderLocation + 168 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.loadConfigTable.addr), obj.header.peOptionalHeaderLocation + 176 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.boundImport.addr), obj.header.peOptionalHeaderLocation + 184 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.iAT.addr), obj.header.peOptionalHeaderLocation + 192 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.delayImportDescriptor.addr), obj.header.peOptionalHeaderLocation + 200 + pePlusOffset);
+        fullHeader.writeUInt32LE(correctDirectoryValue(oldSections, newSections, obj.header.dataDirectories.clrRuntimeHeader.addr), obj.header.peOptionalHeaderLocation + 208 + pePlusOffset);
 
         // Write size of image. We put the next virtual address.
         fullHeader.writeUInt32LE(virtualAddress, obj.header.peOptionalHeaderLocation + 56); // sizeOfImage
