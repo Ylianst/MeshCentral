@@ -16173,6 +16173,7 @@
             var y = '', x = '', settings = JSON.parse(getstore('_ReportSettings', '{}'));
 
             var options = { 1 : "Remote Sessions", 2 : "User Traffic Usage", 3 : "User Logins" }
+            if (userinfo.siteadmin == 0xFFFFFFFF) { options[4] = "Database Records"; }
             for (var i in options) { y += '<option value=' + i + ((settings.type == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Type", '<select id=d2reportType style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
 
@@ -16197,11 +16198,13 @@
             x += addHtmlValue("Device Group", '<select onchange=generateReportDialogValidate() id=d2groupId style=float:right;width:250px>' + y + '</select>');
             x += '</div>';
 
+            x += '<div id=d2timeBackDiv style=display:none>';
             y = '';
             if (settings.timeRange == null) { settings.timeRange = 1; }
             var options = { 1 : "Last Day", 7: "Last 7 days", 30: "Last 30 days", 0: "Time range" }
             for (var i in options) { y += '<option value=' + i + ((settings.timeRange == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Time", '<select id=d2timeRange style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += '</div>';
             
             x += '<div id=d2timeRangeDiv style=display:none>';
             x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
@@ -16222,6 +16225,7 @@
 
         function generateReportDialogValidate() {
             QV('d2timeRangeDiv', Q('d2timeRange').value == 0);
+            QV('d2timeBackDiv', Q('d2reportType').value != 4);
             QV('d2GroupByDiv', Q('d2reportType').value == 1);
             QV('d2GroupByDiv2', Q('d2reportType').value == 3);
             QV('d2DeviceGroupDiv', Q('d2reportType').value == 1);
@@ -16422,6 +16426,29 @@
                 if (v == 'ipaddr') { return "IP Address"; }
                 if (v == 'sso') { return "Single Sign-on"; }
             }
+            if (f == 'records') {
+                var c = {
+                    'node': "Device record",
+                    'mesh': "Device group record",
+                    'user': "User records",
+                    'sysinfo': "Device information records",
+                    'iploc': "IP location information records",
+                    'note': "Text notes records",
+                    'ifinfo': "Network interface information records",
+                    'cfile': "Configuration file records",
+                    'lastconnect': "Last connection time records",
+                    'power': "Device power transition records",
+                    'events': "Event records",
+                    'serverstats': "Server statistics records",
+                    'ugrp': "User group records",
+                    'deviceshare': "Device sharing records",
+                    'logintoken': "Account login token records",
+                    'smbios': "Device SMBIOS record",
+                    'pmt': "Device Push Notification Record",
+                    'meshcentral': "Device, users, groups and other records"
+                }
+                return (c[v] != null)? c[v] : v;
+            }
             return EscapeHtml(v);
         }
 
@@ -16459,6 +16486,7 @@
                 if (v == 109) return "Locked account";
                 if (v == 110) return "Invalid login attempt";
             }
+            if (f == 'records') { return renderReportFormat(v, f); }
             return '' + v;
         }
 

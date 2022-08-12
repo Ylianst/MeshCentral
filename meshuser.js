@@ -6203,7 +6203,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandReport(command) {
-        if (common.validateInt(command.type, 1, 3) == false) return; // Validate type
+        if (common.validateInt(command.type, 1, 4) == false) return; // Validate type
         if (common.validateInt(command.groupBy, 1, 3) == false) return; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
         if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) return; // Validate start and end time
         const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
@@ -6221,6 +6221,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 3: {
                 userLoginReport(command);
+                break;
+            }   
+            case 4: {
+                databaseRecordsReport(command);
                 break;
             }   
         }
@@ -7352,6 +7356,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
+    function databaseRecordsReport(command) {
+        if (user.siteadmin != 0xFFFFFFFF) return; // This report is only available to full administrators
+        parent.parent.db.getDbStats(function (stats) {
+            var data = { groups: { 0: { entries: [] } } };
+            data.columns = [{ id: 'record', title: "Record", format: 'records' }, { id: 'recordcount', title: "Count", align: 'center', sumBy: true }];
+            for (var i in stats) { if ((i != 'total') && (stats[i] > 0)) { data.groups[0].entries.push({ record: i, recordcount: stats[i] }); } }
+            try { ws.send(JSON.stringify({ action: 'report', data: data })); } catch (ex) { }
+        });
+    }
 
     // Return detailed information about an array of nodeid's
     function getDeviceDetailedInfo(nodeids, type, func) {
