@@ -2482,4 +2482,5 @@ if (require.main === module) { start(); }
 module.exports.createAuthenticodeHandler = createAuthenticodeHandler;
 module.exports.loadCertificates = loadCertificates;
 module.exports.loadIcon = loadIcon;
+module.exports.loadBitmap = loadBitmap;
 module.exports.hashObject = hashObject;

@@ -1384,6 +1384,22 @@ function CreateMeshCentralServer(config, args) {
                     // Invalid icon file path
                     delete obj.config.domains[i].agentfileinfo.icon;
                 }
+                if (typeof obj.config.domains[i].agentfileinfo.logo == 'string') {
+                    // Load the agent .bmp file
+                    var logo = null;
+                    try { logo = require('./authenticode.js').loadBitmap(obj.path.join(obj.datapath, obj.config.domains[i].agentfileinfo.logo)); } catch (ex) { }
+                    if (logo != null) {
+                        // The logo file was correctly loaded
+                        obj.config.domains[i].agentfileinfo.logo = logo;
+                    } else {
+                        // Failed to load the icon file, display a server warning
+                        addServerWarning("Unable to load agent logo file: " + obj.config.domains[i].agentfileinfo.logo + ".", 24, [obj.config.domains[i].agentfileinfo.logo]);
+                        delete obj.config.domains[i].agentfileinfo.logo;
+                    }
+                } else {
+                    // Invalid icon file path
+                    delete obj.config.domains[i].agentfileinfo.logo;
+                }
             }
         }
 
@@ -3022,6 +3038,35 @@ function CreateMeshCentralServer(config, args) {
                                 }
                             }
                         }
+
+                        // Check the agent logo
+                        if (destinationAgentOk == true) {
+                            if ((domain.agentfileinfo != null) && (domain.agentfileinfo.logo != null)) {
+                                // Check if the destination agent matches the logo we want
+                                const agentBitmaps = destinationAgent.getBitmapInfo();
+                                if (agentBitmaps != null) {
+                                    const agentBitmapNames = Object.keys(agentBitmaps);
+                                    if (agentBitmapNames.length > 0) {
+                                        const agentMainBitmap = agentBitmaps[agentBitmapNames[0]];
+                                        const agentMainBitmapHash = require('./authenticode.js').hashObject(agentMainBitmap);
+                                        const bitmapHash = require('./authenticode.js').hashObject(domain.agentfileinfo.logo);
+                                        if (agentMainBitmapHash != bitmapHash) { destinationAgentOk = false; } // If the existing agent logo does not match the desired logo, we need to re-sign the agent.
+                                    }
+                                }
+                            } else {
+                                // Check if the destination agent has the default icon
+                                const agentBitmaps1 = destinationAgent.getBitmapInfo();
+                                const agentBitmaps2 = originalAgent.getBitmapInfo();
+                                const agentBitmapNames = Object.keys(agentBitmaps1);
+                                if (agentBitmapNames.length == 0) {
+                                    destinationAgentOk = false;
+                                } else {
+                                    const iconHash1 = require('./authenticode.js').hashObject(agentBitmaps1[agentBitmapNames[0]]);
+                                    const iconHash2 = require('./authenticode.js').hashObject(agentBitmaps2[agentBitmapNames[0]]);
+                                    if (iconHash1 != iconHash2) { destinationAgentOk = false; } // If the existing agent icon does not match the desired icon, we need to re-sign the agent.
+                                }
+                            }
+                        }
                     }
 
                     // If everything looks ok, runs a hash of the original and destination agent .text, .data and .rdata sections. If different, sign the agent again.
@@ -3081,6 +3126,18 @@ function CreateMeshCentralServer(config, args) {
                                     const agentMainIconGroupName = agentIconGroupNames[0];
                                     agentIconGroups[agentIconGroupNames[0]] = domain.agentfileinfo.icon;
                                     originalAgent.setIconInfo(agentIconGroups);
+                                }
+                            }
+                        }
+
+                        // Change the agent logo
+                        if (domain.agentfileinfo.logo != null) {
+                            const agentBitmaps = originalAgent.getBitmapInfo();
+                            if (agentBitmaps != null) {
+                                const agentBitmapNames = Object.keys(agentBitmaps);
+                                if (agentBitmapNames.length > 0) {
+                                    agentBitmaps[agentBitmapNames[0]] = domain.agentfileinfo.logo;
+                                    originalAgent.setBitmapInfo(agentBitmaps);
                                 }
                             }
                         }
