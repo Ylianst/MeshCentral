@@ -64,9 +64,6 @@
     background-color: #113962;
     background: linear-gradient(to bottom, #104893 0%,#113962 100%);
 }
-.md-nav__link {
-    color: black;
-}
 a:link {
     color: #c8c8c8;
 }
@@ -90,3 +87,8 @@ a:link {
     border-color: rgb(244, 244, 244);
     padding: 5px;
 }
+@media only screen and (max-width: 76.1875em) {
+    .md-nav__link {
+        color: black;
+    }
+  }
