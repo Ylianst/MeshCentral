@@ -1288,7 +1288,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.Remove = function (id, func) { obj.file.ref('meshcentral/' + encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); };
             obj.RemoveAll = function (func) { obj.file.query('meshcentral').remove().then(function () { if (func) { func(); } }); };
             obj.RemoveAllOfType = function (type, func) { obj.file.query('meshcentral').filter('type', '==', type).remove().then(function () { if (func) { func(); } }); };
-            obj.InsertMany = function (data, func) { var count = data.length; for (var i in data) { obj.file.ref('meshcentral/' + encodeURIComponent(data[i]._id)).set(common.aceEscapeFieldNames(data[i])).then(function (ref) { if (func && (--count == 0)) { func(); } }) } }; // Insert records directly, no link escaping
+            obj.InsertMany = function (data, func) { var r = {}; for (var i in data) { const ref = obj.file.ref('meshcentral/' + encodeURIComponent(data[i]._id)); r[ref.key] = common.aceEscapeFieldNames(data[i]); } obj.file.ref('meshcentral').update(r).then(function(ref) { func(); }); }; // Insert records directly, no link escaping
             obj.RemoveMeshDocuments = function (id) { obj.file.query('meshcentral').filter('meshid', '==', id).remove(); obj.file.ref('meshcentral/' + encodeURIComponent('nt' + id)).remove(); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.query('meshcentral').filter('domain', '==', domain).remove().then(function () { if (func) { func(); } }); };
