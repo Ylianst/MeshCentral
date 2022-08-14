@@ -1200,7 +1200,7 @@ module.exports.CreateDB = function (parent, func) {
 
     function setupFunctions(func) {
         if (obj.databaseType == 7) {
-            // Database actions on the main collection (AceBase)
+            // Database actions on the main collection. AceBase: https://github.com/appy-one/acebase
             obj.Set = function (data, func) {
                 data = common.escapeLinksFieldNameEx(data);
                 var xdata = performTypedRecordEncrypt(data);
