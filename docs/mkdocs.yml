@@ -9,12 +9,13 @@ nav:
   - MeshCentral2: 
       - 'MeshCentral2 Guide': 'meshcentral/index.md'
       - 'All Configuration Options': 'meshcentral/config.md'
-      - 'Device Tabs': 'meshcentral/devicetabs.md'
-      - 'Tokens': 'meshcentral/tokens.md'
+      - 'Agent Information': 'meshcentral/agents.md'
       - 'Assistant': 'meshcentral/assistant.md'
       - 'Code Signing': 'meshcentral/codesigning.md'
-      - 'Plugins': 'meshcentral/plugins.md'
       - 'Debugging': 'meshcentral/debugging.md'
+      - 'Device Tabs': 'meshcentral/devicetabs.md'
+      - 'Plugins': 'meshcentral/plugins.md'
+      - 'Tokens': 'meshcentral/tokens.md'
 
   - Design and Architecture:
     - design/index.md
@@ -75,13 +76,6 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.highlight
-  - pymdownx.inlinehilite
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - pymdownx.highlight
-  - pymdownx.inlinehilite
-  - pymdownx.keys
   - pymdownx.mark
   - pymdownx.smartsymbols
   - codehilite:
