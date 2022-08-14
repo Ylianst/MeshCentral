@@ -660,7 +660,21 @@ module.exports.CreateDB = function (parent, func) {
         // For information on AceBase sponsor: https://github.com/appy-one/acebase/discussions/100
         obj.file = new AceBase('meshcentral', { sponsor: ((typeof parent.args.acebase == 'object') && (parent.args.acebase.sponsor)), logLevel: 'error', storage: { path: parent.datapath } });
         // Get all the databases ready
-        obj.file.ready(function () { setupFunctions(func); }); // Completed setup of AceBase
+        obj.file.ready(function () {
+            obj.file.indexes.create('meshcenral', 'type', { include: ['domain', 'meshid'] });
+            obj.file.indexes.create('meshcenral', 'email');
+            obj.file.indexes.create('meshcenral', 'meshid');
+            obj.file.indexes.create('meshcenral', 'intelamt.uuid');
+            obj.file.indexes.create('events', 'userid', { include: ['action'] });
+            obj.file.indexes.create('events', 'domain', { include: ['nodeid','time'] });
+            obj.file.indexes.create('events', 'ids', { include: ['time'] });
+            obj.file.indexes.create('events', 'time');
+            obj.file.indexes.create('power', 'nodeid', { include: ['time'] });
+            obj.file.indexes.create('power', 'time');
+            obj.file.indexes.create('stats', 'time');
+            obj.file.indexes.create('stats', 'expire');
+            setupFunctions(func);
+        }); // Completed setup of AceBase
     } else if (parent.args.mariadb || parent.args.mysql) {
         var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
