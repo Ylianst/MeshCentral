@@ -114,8 +114,18 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbQuery('DELETE FROM power WHERE time < ?', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
             sqlDbQuery('DELETE FROM serverstats WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
             sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
+        } else if (obj.databaseType == 7) { // AceBase
+            //console.log('Performing AceBase maintenance');
+            // Delete older events. AceBase seems to be VERY slow as removing records. Here, we remove 100 records at a time only since so far, it's terribly slow.
+            // TODO: Fugure out what record removal in AceBase is so slow
+            obj.file.query('events').take(100).filter('time', '<', new Date(Date.now() - (expireEventsSeconds * 1000))).remove().then(function () {
+                obj.file.query('stats').take(100).filter('time', '<', new Date(Date.now() - (expireServerStatsSeconds * 1000))).remove().then(function () {
+                    obj.file.query('power').take(100).filter('time', '<', new Date(Date.now() - (expirePowerEventsSeconds * 1000))).remove().then(function () {
+                        //console.log('AceBase maintenance done');
+                    });
+                });
+            });
         }
-        
         obj.removeInactiveDevices();
     }
 
@@ -237,7 +247,10 @@ module.exports.CreateDB = function (parent, func) {
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
         if (obj.databaseType == 7) {
             // AceBase
-
+            pendingCalls = 3;
+            obj.file.query('meshcentral').filter('domain', '==', domainName).remove().then(function () { if (--pendingCalls == 0) { func(); } });
+            obj.file.query('events').filter('domain', '==', domainName).remove().then(function () { if (--pendingCalls == 0) { func(); } });
+            obj.file.query('power').filter('domain', '==', domainName).remove().then(function () { if (--pendingCalls == 0) { func(); } });
         } else if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
             // MariaDB, MySQL or PostgreSQL
             pendingCalls = 2;
@@ -263,10 +276,7 @@ module.exports.CreateDB = function (parent, func) {
         // TODO: Remove all meshes that dont have any links
 
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
-        if (obj.databaseType == 7) {
-            // AceBase
-
-        } else if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
+        if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
             // MariaDB, MySQL or PostgreSQL
             obj.RemoveAllOfType('event', function () { });
             obj.RemoveAllOfType('power', function () { });
@@ -276,7 +286,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.file.deleteMany({ type: 'event' }, { multi: true });
             obj.file.deleteMany({ type: 'power' }, { multi: true });
             obj.file.deleteMany({ type: 'smbios' }, { multi: true });
-        } else {
+        } else if ((obj.databaseType == 1) || (obj.databaseType == 2)) {
             // NeDB or MongoJS
             obj.file.remove({ type: 'event' }, { multi: true });
             obj.file.remove({ type: 'power' }, { multi: true });
@@ -661,25 +671,27 @@ module.exports.CreateDB = function (parent, func) {
         obj.file = new AceBase('meshcentral', { sponsor: ((typeof parent.args.acebase == 'object') && (parent.args.acebase.sponsor)), logLevel: 'error', storage: { path: parent.datapath } });
         // Get all the databases ready
         obj.file.ready(function () {
+            // Create AceBase indexes
             obj.file.indexes.create('meshcenral', 'type', { include: ['domain', 'meshid'] });
             obj.file.indexes.create('meshcenral', 'email');
             obj.file.indexes.create('meshcenral', 'meshid');
             obj.file.indexes.create('meshcenral', 'intelamt.uuid');
             obj.file.indexes.create('events', 'userid', { include: ['action'] });
-            obj.file.indexes.create('events', 'domain', { include: ['nodeid','time'] });
-            obj.file.indexes.create('events', 'ids', { include: ['time'] });
+            obj.file.indexes.create('events', 'domain', { include: ['nodeid', 'time'] });
+            obj.file.indexes.create('events', 'ids', { include: ['time'] }); 
             obj.file.indexes.create('events', 'time');
             obj.file.indexes.create('power', 'nodeid', { include: ['time'] });
             obj.file.indexes.create('power', 'time');
             obj.file.indexes.create('stats', 'time');
             obj.file.indexes.create('stats', 'expire');
+            // Completed setup of AceBase
             setupFunctions(func);
-        }); // Completed setup of AceBase
+        });
     } else if (parent.args.mariadb || parent.args.mysql) {
         var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
 
-        // Including the db name in the connection obj will cause a connection failure if it does not exist
+        // Including the db name in the connection obj will cause a connection faliure if it does not exist
         var connectionObject = Clone(connectinArgs);
         delete connectionObject.database;
 

@@ -802,20 +802,6 @@ function CreateMeshCentralServer(config, args) {
 
         require('./db.js').CreateDB(obj,
             function (db) {
-
-
-                //db.Get('user//admin', function (err, docs) { console.log('GetResult', err, docs); });
-                //db.Set({ _id: 'user//admin', type: 'user', domain: 'a', test: 'this is a user' }, function () { console.log('SetResult'); });
-                //db.Get('user//admin', function (err, docs) { console.log('GetResult', err, docs); });
-                //db.GetAll(function (err, docs) { console.log('GetAll', err, docs); });
-                //db.GetAllTypeNoTypeField('user', 'a', function (err, docs) { console.log('GetAllTypeNoTypeField', err, docs); });
-                //db.isMaxType(10, 'user', 'a', function (max, count) { console.log('yy', max, count); })
-
-                //db.StoreEvent({ test: "this is an event" }, function () { console.log('event stored'); });
-                //db.GetAllEvents(function (err, docs) { console.log('events', docs); });
-
-                //return;
-
                 obj.db = db;
                 obj.db.SetupDatabase(function (dbversion) {
                     // See if any database operations needs to be completed
