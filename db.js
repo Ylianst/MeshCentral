@@ -235,7 +235,10 @@ module.exports.CreateDB = function (parent, func) {
     obj.removeDomain = function (domainName, func) {
         var pendingCalls;
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
-        if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
+        if (obj.databaseType == 7) {
+            // AceBase
+
+        } else if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
             // MariaDB, MySQL or PostgreSQL
             pendingCalls = 2;
             sqlDbQuery('DELETE FROM main WHERE domain = $1', [domainName], function () { if (--pendingCalls == 0) { func(); } });
@@ -260,7 +263,10 @@ module.exports.CreateDB = function (parent, func) {
         // TODO: Remove all meshes that dont have any links
 
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
-        if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
+        if (obj.databaseType == 7) {
+            // AceBase
+
+        } else if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
             // MariaDB, MySQL or PostgreSQL
             obj.RemoveAllOfType('event', function () { });
             obj.RemoveAllOfType('power', function () { });
@@ -371,7 +377,10 @@ module.exports.CreateDB = function (parent, func) {
                                 if (meshChange) { obj.Set(docs[i]); }
                             }
                         }
-                        if (obj.databaseType == 6) {
+                        if (obj.databaseType == 7) {
+                            // AceBase
+
+                        } else if (obj.databaseType == 6) {
                             // Postgres
                             sqlDbQuery('DELETE FROM Main WHERE ((extra != NULL) AND (extra LIKE (\'mesh/%\')) AND (extra != ANY ($1)))', [meshlist], function (err, response) { });
                         } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
@@ -429,7 +438,10 @@ module.exports.CreateDB = function (parent, func) {
     // Get the number of records in the database for various types, this is the slow NeDB way.
     // WARNING: This is a terrible query for database performance. Only do this when needed. This query will look at almost every document in the database.
     obj.getStats = function (func) {
-        if (obj.databaseType == 6) {
+        if (obj.databaseType == 7) {
+            // AceBase
+            // TODO
+        } else if (obj.databaseType == 6) {
             // PostgreSQL
             // TODO
         } else if (obj.databaseType == 5) {
@@ -641,7 +653,15 @@ module.exports.CreateDB = function (parent, func) {
         });
     }
 
-    if (parent.args.mariadb || parent.args.mysql) {
+    if (parent.args.acebase) {
+        // AceBase database setup
+        obj.databaseType = 7;
+        const { AceBase } = require('acebase');
+        // For information on AceBase sponsor: https://github.com/appy-one/acebase/discussions/100
+        obj.file = new AceBase('meshcentral', { sponsor: ((typeof parent.args.acebase == 'object') && (parent.args.acebase.sponsor)), logLevel: 'error', storage: { path: parent.datapath } });
+        // Get all the databases ready
+        obj.file.ready(function () { setupFunctions(func); }); // Completed setup of AceBase
+    } else if (parent.args.mariadb || parent.args.mysql) {
         var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
 
@@ -1179,7 +1199,244 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     function setupFunctions(func) {
-        if (obj.databaseType == 6) {
+        if (obj.databaseType == 7) {
+            // Database actions on the main collection (AceBase)
+            obj.Set = function (data, func) {
+                data = common.escapeLinksFieldNameEx(data);
+                var xdata = performTypedRecordEncrypt(data);
+                obj.dbCounters.fileSet++;
+                obj.file.ref('meshcentral/' + encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } })
+            };
+            obj.Get = function (id, func) {
+                obj.file.ref('meshcentral/' + encodeURIComponent(id)).get(function (snapshot) {
+                    if (snapshot.exists()) { func(null, performTypedRecordDecrypt([common.aceUnEscapeFieldNames(snapshot.val())])); } else { func(null, []); }
+                });
+            };
+            obj.GetAll = function (func) {
+                obj.file.query('meshcentral').get(function (snapshots) {
+                    const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, common.aceUnEscapeAllFieldNames(docs));
+                });
+            };
+            obj.GetHash = function (id, func) {
+                obj.file.ref('meshcentral/' + encodeURIComponent(id)).get({ include: ['hash'] }, function (snapshot) {
+                    if (snapshot.exists()) { func(null, snapshot.val()); } else { func(null, null); }
+                });
+            };
+            obj.GetAllTypeNoTypeField = function (type, domain, func) {
+                obj.file.query('meshcentral').take(999999).filter('type', '==', type).filter('domain', '==', domain).get({ exclude: ['type'] }, function (snapshots) {
+                    const docs = [];
+                    for (var i in snapshots) { const x = snapshots[i].val(); docs.push(x); }
+                    func(null, common.aceUnEscapeAllFieldNames(docs));
+                });
+            }
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (meshes.length == 0) { func(null, []); return; }
+                var query = obj.file.query('meshcentral').take(999999).filter('type', '==', type).filter('domain', '==', domain);
+                if (id) { query = query.filter('_id', '==', id); }
+                if (extrasids == null) {
+                    query = query.filter('meshid', 'in', meshes);
+                    query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
+                } else {
+                    // TODO: This is a slow query as we did not find a filter-or-filter, so we query everything and filter manualy.
+                    query.get(function (snapshots) {
+                        const docs = [];
+                        for (var i in snapshots) { const x = snapshots[i].val(); if ((extrasids.indexOf(x._id) >= 0) || (meshes.indexOf(x.meshid) >= 0)) { docs.push(x); } }
+                        func(null, performTypedRecordDecrypt(docs));
+                    });
+                }
+            };
+            obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
+                var query = obj.file.query('meshcentral').take(999999).filter('type', '==', type).filter('domain', '==', domain).filter('nodeid', 'in', nodes);
+                if (id) { query = query.filter('_id', '==', id); }
+                query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
+            };
+            obj.GetAllType = function (type, func) {
+                obj.file.query('meshcentral').take(999999).filter('type', '==', type).get(function (snapshots) {
+                    const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); }
+                    func(null, common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs)));
+                });
+            };
+            obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.query('meshcentral').take(999999).filter('_id', 'in', ids).filter('domain', '==', domain).filter('type', '==', type).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
+            obj.GetUserWithEmail = function (domain, email, func) { obj.file.query('meshcentral').take(999999).filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
+            obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.query('meshcentral').take(999999).filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).filter('emailVerified', '==', true).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
+            obj.Remove = function (id, func) { obj.file.ref('meshcentral/' + encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); };
+            obj.RemoveAll = function (func) { obj.file.query('meshcentral').remove().then(function () { if (func) { func(); } }); };
+            obj.RemoveAllOfType = function (type, func) { obj.file.query('meshcentral').filter('type', '==', type).remove().then(function () { if (func) { func(); } }); };
+            obj.InsertMany = function (data, func) { var count = data.length; for (var i in data) { obj.file.ref('meshcentral/' + encodeURIComponent(data[i]._id)).set(common.aceEscapeFieldNames(data[i])).then(function (ref) { if (func && (--count == 0)) { func(); } }) } }; // Insert records directly, no link escaping
+            obj.RemoveMeshDocuments = function (id) { obj.file.query('meshcentral').filter('meshid', '==', id).remove(); obj.file.ref('meshcentral/' + encodeURIComponent('nt' + id)).remove(); };
+            obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
+            obj.DeleteDomain = function (domain, func) { obj.file.query('meshcentral').filter('domain', '==', domain).remove().then(function () { if (func) { func(); } }); };
+            obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
+            obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
+            obj.getLocalAmtNodes = function (func) { obj.file.query('meshcentral').take(999999).filter('type', '==', 'node').filter('host', 'exists').filter('host', '!=', null).filter('intelamt', 'exists').get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
+            obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { obj.file.query('meshcentral').take(999999).filter('type', '==', 'node').filter('domain', '==', domainid).filter('mtype', '!=', mtype).filter('intelamt.uuid', '==', uuid).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
+            obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { obj.file.query('meshcentral').take(999999).filter('type', '==', type).filter('domain', '==', domainid).get({ snapshots: false }, function (snapshots) { func((snapshots.length > max), snapshots.length); }); } }
+
+            // Database actions on the events collection
+            obj.GetAllEvents = function (func) { obj.file.query('events').take(999999).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); }); };
+            obj.StoreEvent = function (event, func) {
+                if (typeof event.account == 'object') { event = Object.assign({}, event); event.account = common.aceEscapeFieldNames(event.account); }
+                obj.dbCounters.eventsSet++;
+                obj.file.ref('events').push(event).then(function (userRef) { if (func) { func(); } });
+            };
+            obj.GetEvents = function (ids, domain, func) {
+                // This request is slow since we have not found a .filter() that will take two arrays and match a single item.
+                obj.file.query('events').filter('domain', '==', domain).take(999999).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
+                    const docs = [];
+                    for (var i in snapshots) {
+                        const doc = snapshots[i].val();
+                        if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
+                        var found = false;
+                        for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
+                        if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
+                    }
+                    func(null, docs);
+                });
+            };
+            obj.GetEventsWithLimit = function (ids, domain, limit, func) {
+                // This request is slow since we have not found a .filter() that will take two arrays and match a single item.
+                obj.file.query('events').filter('domain', '==', domain).take(limit).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
+                    const docs = [];
+                    for (var i in snapshots) {
+                        const doc = snapshots[i].val();
+                        if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
+                        var found = false;
+                        for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
+                        if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
+                    }
+                    func(null, docs);
+                });
+            };
+            obj.GetUserEvents = function (ids, domain, userid, func) {
+                obj.file.query('events').take(999999).filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            };
+            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) {
+                obj.file.query('events').take(limit).filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            };
+            obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
+                obj.file.query('events').take(999999).filter('domain', '==', domain).filter('ids', 'in', ids).filter('msgid', 'in', msgids).filter('time', 'between', [start, end]).sort('time', false).get({ exclude: ['type', '_id', 'domain', 'node'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            };
+            obj.GetUserLoginEvents = function (domain, userid, func) {
+                obj.file.query('events').take(999999).filter('domain', '==', domain).filter('action', 'in', ['authfail', 'login']).filter('userid', '==', userid).filter('msgArgs', 'exists').sort('time', false).get({ include: ['action', 'time', 'msgid', 'msgArgs', 'tokenName'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            };
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) {
+                obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            };
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) {
+                obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).filter('userid', '==', userid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            };
+            obj.RemoveAllEvents = function (domain) {
+                obj.file.query('events').take(999999).filter('domain', '==', domain).remove().then(function () { if (func) { func(); } });;
+            };
+            obj.RemoveAllNodeEvents = function (domain, nodeid) {
+                if ((domain == null) || (nodeid == null)) return;
+                obj.file.query('events').take(999999).filter('domain', '==', domain).filter('nodeid', '==', nodeid).remove().then(function () { if (func) { func(); } });;
+            };
+            obj.RemoveAllUserEvents = function (domain, userid) {
+                if ((domain == null) || (userid == null)) return;
+                obj.file.query('events').take(999999).filter('domain', '==', domain).filter('userid', '==', userid).remove().then(function () { if (func) { func(); } });;
+            };
+            obj.GetFailedLoginCount = function (userid, domainid, lastlogin, func) {
+                obj.file.query('events').take(999999).filter('domain', '==', domainid).filter('userid', '==', userid).filter('time', '>', lastlogin).sort('time', false).get({ snapshots: false }, function (snapshots) { func(null, snapshots.length); });
+            }
+
+            // Database actions on the power collection
+            obj.getAllPower = function (func) {
+                obj.file.query('power').take(999999).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            };
+            obj.storePowerEvent = function (event, multiServer, func) {
+                if (multiServer != null) { event.server = multiServer.serverid; }
+                obj.file.ref('power').push(event).then(function (userRef) { if (func) { func(); } });
+            };
+            obj.getPowerTimeline = function (nodeid, func) {
+                obj.file.query('power').take(999999).filter('nodeid', 'in', ['*', nodeid]).sort('time').get({ exclude: ['_id', 'nodeid', 's'] }, function (snapshots) {
+                    const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs);
+                });
+            };
+            obj.removeAllPowerEvents = function () {
+                obj.file.query('power').take(999999).remove().then(function () { if (func) { func(); } });
+            };
+            obj.removeAllPowerEventsForNode = function (nodeid) {
+                if (nodeid == null) return;
+                obj.file.query('power').take(999999).filter('nodeid', '==', nodeid).remove().then(function () { if (func) { func(); } });
+            };
+
+            // Database actions on the SMBIOS collection
+            if (obj.smbiosfile != null) {
+                obj.GetAllSMBIOS = function (func) {
+                    obj.file.query('smbios').take(999999).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                };
+                obj.SetSMBIOS = function (smbios, func) {
+                    obj.file.ref('meshcentral/' + encodeURIComponent(smbios._id)).set(smbios).then(function (ref) { if (func) { func(); } })
+                };
+                obj.RemoveSMBIOS = function (id) {
+                    obj.file.query('smbios').filter('_id', 'in', id).take(999999).remove().then(function () { if (func) { func(); } });
+                };
+                obj.GetSMBIOS = function (id, func) {
+                    obj.file.query('smbios').filter('_id', 'in', id).take(1).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                };
+            }
+
+            // Database actions on the Server Stats collection
+            obj.SetServerStats = function (data, func) {
+                obj.file.ref('stats').push(data).then(function (userRef) { if (func) { func(); } });
+            };
+            obj.GetServerStats = function (hours, func) {
+                var t = new Date();
+                t.setTime(t.getTime() - (60 * 60 * 1000 * hours));
+                obj.file.query('stats').take(999999).filter('time', '>', t).get({ exclude: ['_id', 'cpu'] }, function (snapshots) {
+                    const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs);
+                });
+            };
+
+            // Read a configuration file from the database
+            obj.getConfigFile = function (path, func) { obj.Get('cfile/' + path, func); }
+
+            // Write a configuration file to the database
+            obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
+
+            // List all configuration files
+            obj.listConfigFiles = function (func) {
+                obj.file.query('meshcentral').take(999999).filter('type', '==', 'cfile').sort('_id').get(function (snapshots) {
+                    const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs);
+                });
+            }
+
+            // Get all configuration files
+            obj.getAllConfigFiles = function (password, func) {
+                obj.file.query('meshcentral').take(999999).filter('type', '==', 'cfile').sort('_id').get(function (snapshots) {
+                    const docs = [];
+                    for (var i in snapshots) { docs.push(snapshots[i].val()); }
+                    var r = null;
+                    for (var i = 0; i < docs.length; i++) {
+                        var name = docs[i]._id.split('/')[1];
+                        var data = obj.decryptData(password, docs[i].data);
+                        if (data != null) { if (r == null) { r = {}; } r[name] = data; }
+                    }
+                    func(r);
+                });
+            }
+
+            // Get database information
+            obj.getDbStats = function (func) {
+                obj.stats = { c: 5 };
+                obj.file.query('meshcentral').take(999999).get({ snapshots: false }, function (snapshots) { obj.stats.meshcentral = snapshots.length; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.file.query('events').take(999999).get({ snapshots: false }, function (snapshots) { obj.stats.events = snapshots.length; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.file.query('power').take(999999).get({ snapshots: false }, function (snapshots) { obj.stats.power = snapshots.length; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.file.query('smbios').take(999999).get({ snapshots: false }, function (snapshots) { obj.stats.smbios = snapshots.length; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                obj.file.query('stats').take(999999).get({ snapshots: false }, function (snapshots) { obj.stats.serverstats = snapshots.length; if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+            }
+
+            // Plugin operations
+            if (obj.pluginsActive) {
+                obj.addPlugin = function (plugin, func) { plugin.type = 'plugin'; obj.file.ref('plugin/' + encodeURIComponent(plugin._id)).set(plugin).then(function (ref) { if (func) { func(); } }) }; // Add a plugin
+                obj.getPlugins = function (func) { obj.file.query('plugin').take(999999).sort('name').get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); }); }; // Get all plugins
+                obj.getPlugin = function (id, func) { obj.file.query('plugin').take(999999).filter('_id', '==', id).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); }); }; // Get plugin
+                obj.deletePlugin = function (id, func) { obj.file.ref('plugin/' + encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); }; // Delete plugin
+                obj.setPluginStatus = function (id, status, func) { obj.file.ref('plugin/' + encodeURIComponent(id)).update(args).then(function (ref) { if (func) { func(); } }) };
+                obj.updatePlugin = function (id, args, func) { delete args._id; obj.file.ref('plugin/' + encodeURIComponent(id)).set(args).then(function (ref) { if (func) { func(); } }) };
+            }
+        } else if (obj.databaseType == 6) {
             // Database actions on the main collection (Postgres)
             obj.Set = function (value, func) {
                 obj.dbCounters.fileSet++;
@@ -2003,7 +2260,7 @@ module.exports.CreateDB = function (parent, func) {
         const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
 
         r += 'DB Name: ' + dbname + '\r\n';
-        r += 'DB Type: ' + ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL'][obj.databaseType] + '\r\n';
+        r += 'DB Type: ' + ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL', 'AceBase'][obj.databaseType] + '\r\n';
         r += 'BackupPath: ' + backupPath + '\r\n';
         r += 'newAutoBackupFile: ' + newAutoBackupFile + '\r\n';
         r += 'newAutoBackupPath: ' + newAutoBackupPath + '\r\n';

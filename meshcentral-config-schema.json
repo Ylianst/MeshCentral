@@ -35,6 +35,13 @@
             }
           }
         },
+        "acebase": {
+          "type": "object",
+          "description": "Add this section to enable AceBase database support, this is a local database system much like NeDB.",
+          "properties": {
+            "sponsor": { "type": "boolean", "default": false, "description": "Set true to remove the AceBase banner on startup." },
+          }
+        },
         "mySQL": {
           "type": "object",
           "description": "Add this section to connect MeshCentral to a MySQL database instance.",

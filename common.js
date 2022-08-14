@@ -150,7 +150,7 @@ module.exports.objKeysToLower = function (obj, exceptions) {
     return obj;
 };
 
-// Escape and unexcape feild names so there are no invalid characters for MongoDB
+// Escape and unescape feild names so there are no invalid characters for MongoDB
 module.exports.escapeFieldName = function (name) { if ((name.indexOf('%') == -1) && (name.indexOf('.') == -1) && (name.indexOf('$') == -1)) return name; return name.split('%').join('%25').split('.').join('%2E').split('$').join('%24'); };
 module.exports.unEscapeFieldName = function (name) { if (name.indexOf('%') == -1) return name; return name.split('%2E').join('.').split('%24').join('$').split('%25').join('%'); };
 
@@ -160,6 +160,12 @@ module.exports.escapeLinksFieldName = function (docx) { var doc = Object.assign(
 module.exports.unEscapeLinksFieldName = function (doc) { if (doc.links != null) { for (var j in doc.links) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.links[ue] = doc.links[j]; delete doc.links[j]; } } } return doc; };
 //module.exports.escapeAllLinksFieldName = function (docs) { for (var i in docs) { module.exports.escapeLinksFieldName(docs[i]); } return docs; };
 module.exports.unEscapeAllLinksFieldName = function (docs) { for (var i in docs) { docs[i] = module.exports.unEscapeLinksFieldName(docs[i]); } return docs; };
+
+// Escape field names for aceBase
+var aceEscFields = ['links', 'ssh', 'rdp', 'notify'];
+module.exports.aceEscapeFieldNames = function (docx) { var doc = Object.assign({}, docx); for (var k in aceEscFields) { if (typeof doc[aceEscFields[k]] == 'object') { doc[aceEscFields[k]] = Object.assign({}, doc[aceEscFields[k]]); for (var i in doc[aceEscFields[k]]) { var ue = encodeURIComponent(i); if (ue !== i) { doc[aceEscFields[k]][ue] = doc[aceEscFields[k]][i]; delete doc[aceEscFields[k]][i]; } } } } return doc; };
+module.exports.aceUnEscapeFieldNames = function (doc) { for (var k in aceEscFields) { if (typeof doc[aceEscFields[k]] == 'object') { for (var j in doc[aceEscFields[k]]) { var ue = decodeURIComponent(j); if (ue !== j) { doc[aceEscFields[k]][ue] = doc[aceEscFields[k]][j]; delete doc[aceEscFields[k]][j]; } } } } return doc; };
+module.exports.aceUnEscapeAllFieldNames = function (docs) { for (var i in docs) { docs[i] = module.exports.aceUnEscapeFieldNames(docs[i]); } return docs; };
 
 // Validation methods
 module.exports.validateString = function (str, minlen, maxlen) { return ((str != null) && (typeof str == 'string') && ((minlen == null) || (str.length >= minlen)) && ((maxlen == null) || (str.length <= maxlen))); };
