@@ -1529,7 +1529,7 @@
       "ru": ", нажмите правой кнопкой мыши на скачанном файле, выберите пункт \"Открыть\" и следуйте инструкциям программы.",
       "sv": ", högerklicka på den eller tryck på \"kontroll\" och klicka på filen. Välj sedan \"Öppna\" och följ instruktionerna.",
       "tr": "üzerine sağ tıklayın veya \"kontrol\" e basın ve dosyaya tıklayın. Ardından \"Aç\" ı seçin ve talimatları izleyin.",
-      "zh-chs": "，右键单击它或按“控制”，然后单击档案。然后选择“打开”并遵循指示操作。",
+      "zh-chs": "，右键单击它或按“控制”，然后单击文件。然后选择“打开”并遵循指示操作。",
       "zh-cht": "，右鍵單擊它或按“控制”，然後單擊檔案。然後選擇“打開”並按照說明操作。",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->macostab->3"
@@ -8037,7 +8037,7 @@
       "ru": "Сессии агентов",
       "sv": "Agent sessioner",
       "tr": "Agent Oturumları",
-      "zh-chs": "代理时段",
+      "zh-chs": "代理会话",
       "zh-cht": "代理時段",
       "xloc": [
         "default.handlebars->45->2946"
@@ -11476,7 +11476,7 @@
       "ru": "Фоновый и интерактивный",
       "sv": "Bakgrund och interaktiv",
       "tr": "Arka plan ve etkileşimli",
-      "zh-chs": "背景与互动",
+      "zh-chs": "后台运行与交互式运行",
       "zh-cht": "背景與互動",
       "xloc": [
         "default.handlebars->45->556"
@@ -11501,7 +11501,7 @@
       "ru": "Фоновый и интерактивный",
       "sv": "Bakgrund och interaktiv",
       "tr": "Arka plan ve etkileşimli",
-      "zh-chs": "背景与互动",
+      "zh-chs": "后台运行与交互式运行",
       "zh-cht": "背景與互動",
       "xloc": [
         "default.handlebars->45->2136",
@@ -11529,7 +11529,7 @@
       "ru": "Только фоновый",
       "sv": "Endast bakgrund",
       "tr": "Yalnızca arka plan",
-      "zh-chs": "仅背景",
+      "zh-chs": "仅后台运行",
       "zh-cht": "僅背景",
       "xloc": [
         "default.handlebars->45->2137",
@@ -13072,7 +13072,7 @@
       "ru": "Изменить адрес электронной почты",
       "sv": "Ändra e-postadress",
       "tr": "E-posta adresini değiştir",
-      "zh-chs": "更改电邮地址",
+      "zh-chs": "更改邮件地址",
       "zh-cht": "更改電郵地址",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->checkemailpanel->1->checkCheckOperations->1->2->1->1",
@@ -13099,7 +13099,7 @@
       "ru": "Смена email для {0}",
       "sv": "Ändra e-postadress för {0}",
       "tr": "{0} için E-postayı Değiştirin",
-      "zh-chs": "更改{0}的电邮",
+      "zh-chs": "更改{0}的邮箱",
       "zh-cht": "更改{0}的電郵",
       "xloc": [
         "default.handlebars->45->2716"
@@ -13228,7 +13228,7 @@
       "ru": "Смена email",
       "sv": "Ändra e-postadress",
       "tr": "e-posta adresini değiştir",
-      "zh-chs": "更改电邮地址",
+      "zh-chs": "更改邮件地址",
       "zh-cht": "更改電郵地址",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p3->p3info->3->p3AccountActions->p2AccountActions->3->5->changeEmailId->0",
@@ -13402,7 +13402,7 @@
       "ru": "Измените адрес электронной почты вашей учетной записи здесь.",
       "sv": "Ändra din e-postadress för ditt konto här.",
       "tr": "Hesap e-posta adresinizi buradan değiştirin.",
-      "zh-chs": "在此处更改您的帐户电邮地址。",
+      "zh-chs": "更改您的邮件地址。",
       "zh-cht": "在此處更改你的帳戶電郵地址。",
       "xloc": [
         "default.handlebars->45->1796"
@@ -14612,7 +14612,7 @@
       "ru": "Нажмите здесь, чтобы подтвердить свой адрес электронной почты.",
       "sv": "Klicka här för att verifiera din e-postadress.",
       "tr": "E-posta adresinizi doğrulamak için burayı tıklayın.",
-      "zh-chs": "单击此处以验证您的电邮地址。",
+      "zh-chs": "单击此处以验证您的邮件地址。",
       "zh-cht": "單擊此處以驗證你的電郵地址。",
       "xloc": [
         "account-check.html->2->5->1"
@@ -17943,7 +17943,7 @@
       "ru": "Создайте сразу несколько учетных записей, импортировав файл JSON в следующем формате:",
       "sv": "Skapa många konton samtidigt genom att importera en JSON-fil med följande format:",
       "tr": "Aşağıdaki formatta bir JSON dosyasını içe aktararak birçok hesabı aynı anda oluşturun:",
-      "zh-chs": "通过导入以下格式的JSON档案一次创建多个帐户：",
+      "zh-chs": "通过导入以下格式的JSON文件一次创建多个帐户：",
       "zh-cht": "通過導入以下格式的JSON檔案一次創建多個帳戶：",
       "xloc": [
         "default.handlebars->45->2464"
@@ -18578,7 +18578,7 @@
       "ru": "Вырезать",
       "sv": "Klipp Ut",
       "tr": "Kes",
-      "zh-chs": "切",
+      "zh-chs": "剪切",
       "zh-cht": "切",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
@@ -22904,7 +22904,7 @@
       "ru": "Скачать файл",
       "sv": "Nedladdning fil",
       "tr": "Dosyayı indir",
-      "zh-chs": "下载档案",
+      "zh-chs": "下载文件",
       "zh-cht": "下載檔案",
       "xloc": [
         "default-mobile.handlebars->11->505",
@@ -23509,7 +23509,7 @@
       "ru": "Перетащите .mcrec файл или нажмите \\\"Открыть файл ... \\\"",
       "sv": "Dra och släpp en .mcrec-fil eller klicka på \\\"Öppna fil ... \\\"",
       "tr": "Bir .mcrec dosyasını sürükleyip bırakın veya \\\"Dosya Aç ...\\\" ı tıklayın",
-      "zh-chs": "拖放.mcrec档案或单击 “打开档案...”",
+      "zh-chs": "拖放.mcrec文件或单击 “打开文件...”",
       "zh-cht": "拖放.mcrec檔案或單擊 “打開檔案...”",
       "xloc": [
         "player.handlebars->3->45"
@@ -23755,7 +23755,7 @@
       "ru": "Электронная почта \\\"{0}\\\" уже используется в другом аккаунте. Измените адрес электронной почты и попробуйте еще раз.",
       "sv": "E-post \\\"{0}\\\" används redan på ett annat konto. Ändra e-postadressen och försök igen.",
       "tr": "E-posta \\\"{0}\\\" zaten farklı bir hesapta kullanılıyor. E-posta adresini değiştirin ve tekrar deneyin.",
-      "zh-chs": "电邮“ {0} ”已在其他帐户上使用。更改电邮地址，然后重试。",
+      "zh-chs": "邮箱“ {0} ”已在其他帐户上使用。更改地址，然后重试。",
       "zh-cht": "電郵“ {0} ”已在其他帳戶上使用。更改電郵地址，然後重試。",
       "xloc": [
         "message.handlebars->3->9",
@@ -23781,7 +23781,7 @@
       "ru": "Электронная почта \\\"{0}\\\" для пользователя \\\"{1}\\\" уже подтверждена.",
       "sv": "E-post \\\"{0}\\\" för användaren \\\"{1} \\\" har redan verifierats.",
       "tr": "\\\"{1}\\\" kullanıcısı için \\\"{0}\\\" e-posta adresi zaten doğrulandı.",
-      "zh-chs": "用户“ {1} ”的电邮“ {0} ”已通过验证。",
+      "zh-chs": "用户“ {1} ”的邮箱“ {0} ”已通过验证。",
       "zh-cht": "用戶“ {1} ”的電郵“ {0} ”已通過驗證。",
       "xloc": [
         "message.handlebars->3->8",
@@ -23807,7 +23807,7 @@
       "ru": "Электронная почта \\\"{0}\\\" для пользователя \\\"{1}\\\" не подтверждена.",
       "sv": "E-post \\\"{0}\\\" för användaren \\\"{1} \\\" har inte verifierats.",
       "tr": "\\\"{1}\\\" kullanıcısı için \\\"{0}\\\" e-postası doğrulanmadı.",
-      "zh-chs": "未验证用户“ {1} ”的电邮“ {0} ”。",
+      "zh-chs": "未验证用户“ {1} ”的邮箱“ {0} ”。",
       "zh-cht": "未驗證用戶“ {1} ”的電郵“ {0} ”。",
       "xloc": [
         "message.handlebars->3->11",
@@ -23833,7 +23833,7 @@
       "ru": "Email подтвержден",
       "sv": "E-post verifieras",
       "tr": "E-posta doğrulandı",
-      "zh-chs": "电邮已验证",
+      "zh-chs": "邮箱已验证",
       "zh-cht": "電郵已驗證"
     },
     {
@@ -24758,7 +24758,7 @@
       "ru": "Изменение адреса email",
       "sv": "Ändring av e-postadress",
       "tr": "E-posta Adresi Değişikliği",
-      "zh-chs": "电邮地址变更",
+      "zh-chs": "邮件地址变更",
       "zh-cht": "電郵地址變更",
       "xloc": [
         "default-mobile.handlebars->11->110",
@@ -24784,7 +24784,7 @@
       "ru": "Аутентификация электронной почты",
       "sv": "E-postautentisering",
       "tr": "E-posta kimlik doğrulaması",
-      "zh-chs": "电邮认证",
+      "zh-chs": "邮件认证",
       "zh-cht": "電郵認證",
       "xloc": [
         "default-mobile.handlebars->11->99",
@@ -24810,7 +24810,7 @@
       "ru": "подтверждение электронной почты",
       "sv": "e-post bekräftelse",
       "tr": "E-posta Onayı",
-      "zh-chs": "电邮确认",
+      "zh-chs": "邮件确认",
       "zh-cht": "電郵確認",
       "xloc": [
         "login-mobile.handlebars->5->46",
@@ -24915,7 +24915,7 @@
       "ru": "Почтовый трафик",
       "sv": "E-posttrafik",
       "tr": "E-posta Trafiği",
-      "zh-chs": "电邮流量",
+      "zh-chs": "邮箱流量",
       "zh-cht": "電郵流量"
     },
     {
@@ -24937,7 +24937,7 @@
       "ru": "Подтверждение email",
       "sv": "mejl verifikation",
       "tr": "Eposta Doğrulama",
-      "zh-chs": "电邮验证",
+      "zh-chs": "邮件验证",
       "zh-cht": "電郵驗證",
       "xloc": [
         "default-mobile.handlebars->11->108",
@@ -24989,7 +24989,7 @@
       "ru": "Электронное приглашение",
       "sv": "E-postinbjudan",
       "tr": "E-posta daveti",
-      "zh-chs": "电邮邀请",
+      "zh-chs": "邮件邀请",
       "zh-cht": "電郵邀請",
       "xloc": [
         "default.handlebars->45->500"
@@ -25014,7 +25014,7 @@
       "ru": "Электронная почта не подтверждена",
       "sv": "Emailet har inte verifierats",
       "tr": "E-posta teyit edilmedi",
-      "zh-chs": "电邮未验证",
+      "zh-chs": "邮箱未验证",
       "zh-cht": "電郵未驗證",
       "xloc": [
         "default.handlebars->45->2434"
@@ -25065,7 +25065,7 @@
       "ru": "Email подтвержден.",
       "sv": "E-postadressen har verifierats.",
       "tr": "E-posta doğrulandı.",
-      "zh-chs": "电邮已验证。",
+      "zh-chs": "邮箱已验证。",
       "zh-cht": "電郵已驗證。",
       "xloc": [
         "default.handlebars->45->2496"
@@ -25090,7 +25090,7 @@
       "ru": "Email не подтвержден",
       "sv": "E-postmeddelandet har inte verifierats",
       "tr": "E-posta doğrulanmadı",
-      "zh-chs": "电邮未验证",
+      "zh-chs": "邮箱未验证",
       "zh-cht": "電郵未驗證",
       "xloc": [
         "default.handlebars->45->2618"
@@ -25137,7 +25137,7 @@
       "ru": "Письмо отправлено.",
       "sv": "Email skickat.",
       "tr": "E-posta gönderildi.",
-      "zh-chs": "电邮已发送。",
+      "zh-chs": "邮件已发送。",
       "zh-cht": "電郵已發送。",
       "xloc": [
         "default-mobile.handlebars->11->729",
@@ -25188,7 +25188,7 @@
       "ru": "Требуется подтверждение по электронной почте, проверьте свой почтовый ящик и нажмите ссылку для подтверждения.",
       "sv": "Verifiering av e-post krävs, kontrollera din brevlåda och klicka på bekräftelselänken.",
       "tr": "E-posta doğrulaması gerekiyor, posta kutunuzu kontrol edin ve onay bağlantısını tıklayın.",
-      "zh-chs": "需要通过电邮验证，请检查您的邮箱，然后单击确认连接。",
+      "zh-chs": "需要邮件验证，请检查您的邮箱，然后单击确认链接。",
       "zh-cht": "需要通過電郵驗證，請檢查你的郵箱，然後單擊確認鏈結。",
       "xloc": [
         "login-mobile.handlebars->5->3",
@@ -25240,7 +25240,7 @@
       "ru": "Электронная почта / SMS-трафик",
       "sv": "E-post / SMS-trafik",
       "tr": "E-posta / SMS Trafiği",
-      "zh-chs": "电邮/短信流量",
+      "zh-chs": "邮件/短信流量",
       "zh-cht": "電郵/短信流量"
     },
     {
@@ -27643,7 +27643,7 @@
       "ru": "Редактор файлов",
       "sv": "Filredigerare",
       "tr": "Dosya Düzenleyici",
-      "zh-chs": "档案编辑器",
+      "zh-chs": "文件编辑器",
       "zh-cht": "檔案編輯器",
       "xloc": [
         "default-mobile.handlebars->11->489",
@@ -28258,7 +28258,7 @@
       "ru": "Папка",
       "sv": "Mapp",
       "tr": "Klasör",
-      "zh-chs": "档案夹",
+      "zh-chs": "文件夹",
       "zh-cht": "檔案夾",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->1",
@@ -31156,7 +31156,7 @@
       "ru": "Здравствуйте, [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) выполняет проверку электронной почты. Для завершения процесса перейдите по следующей ссылке:",
       "sv": "Hej [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]] [[[[URLARGS1]]]) utför en e-postverifiering. Ta bort till följande länk för att slutföra processen:",
       "tr": "Merhaba [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) bir e-posta doğrulaması yapıyor. İşlemi tamamlamak için aşağıdaki bağlantıya gidin:",
-      "zh-chs": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在执行电邮验证。导航至以下连结以完成该过程：",
+      "zh-chs": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在执行邮件验证。转到以下链接以完成该过程：",
       "zh-cht": "嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在執行電郵驗證。導航至以下鏈結以完成該過程：",
       "xloc": [
         "account-check.txt"
@@ -31259,7 +31259,7 @@
       "ru": "Подождите, письмо для сброса отправлено.",
       "sv": "Vänta, återställ post skickad.",
       "tr": "Bekleyin, gönderilen postayı sıfırlayın.",
-      "zh-chs": "稍等，重置电邮已发送。",
+      "zh-chs": "稍等，重置邮件已发送。",
       "zh-cht": "稍等，重置電郵已發送。"
     },
     {
@@ -34629,7 +34629,7 @@
       "ru": "Только интерактивный режим",
       "sv": "Endast interaktiv",
       "tr": "Yalnızca etkileşimli",
-      "zh-chs": "仅限互动",
+      "zh-chs": "仅交互式运行",
       "zh-cht": "僅限互動",
       "xloc": [
         "default.handlebars->45->2138",
@@ -35690,7 +35690,7 @@
       "ru": "Пригласите установить Mesh Agent поделившись ссылкой. Эта ссылка ведет на инструкции для установки для группы устройств \\\"{0}\\\". Ссылка общедоступна и не требует наличия учетной записи на сервере.",
       "sv": "Bjud in någon att installera Mesh-agenten genom att dela en inbjudningslänk. Denna länken visar användaren installationsinstruktioner för enhetsgruppen \\\"{0}\\\". Länken är offentlig och inget konto för server behövs.",
       "tr": "Bir davet bağlantısı paylaşarak birini Mesh Agent yüklemeye davet edin. Bu bağlantı, kullanıcıyı \\\"{0}\\\" cihaz grubu için kurulum talimatlarına yönlendirir. Bağlantı geneldir ve bu sunucu için herhangi bir hesaba gerek yoktur.",
-      "zh-chs": "通过共享邀请连结来邀请某人安装网格代理。该连结为用户提供“ {0} ”设备组的安装说明。该连结是公用的，不需要这服务器的帐户。",
+      "zh-chs": "通过共享邀请链接来邀请某人安装Mesh代理。该链接为用户提供“ {0} ”设备组的安装说明。该链接是公用的，不需要这台服务器的帐户。",
       "zh-cht": "通過共享邀請鏈結來邀請某人安裝mesh agent。該鏈結將用戶指向“ {0} ”裝置群的安裝說明。該鏈結是公用的，不需要這伺服器的帳戶。",
       "xloc": [
         "default.handlebars->45->525"
@@ -35715,7 +35715,7 @@
       "ru": "Пригласите кого-нибудь установить Mesh Agent в этой группе устройств.",
       "sv": "Bjud in någon att installera Mesh-agenten på den här enhetsgruppen.",
       "tr": "Birini bu cihaz grubuna mesh aracısını kurmaya davet edin.",
-      "zh-chs": "邀请某人在该设备组上安装网格代理。",
+      "zh-chs": "邀请某人在该设备组上安装Mesh代理。",
       "zh-cht": "邀請某人在該裝置群上安裝mesh agent。",
       "xloc": [
         "default.handlebars->45->1939",
@@ -41289,7 +41289,7 @@
       "ru": "ОЗУ",
       "sv": "Minne",
       "tr": "Bellek",
-      "zh-chs": "记忆体",
+      "zh-chs": "内存",
       "zh-cht": "記憶體",
       "xloc": [
         "default-mobile.handlebars->11->597",
@@ -41317,7 +41317,7 @@
       "ru": "Mesh Agent",
       "sv": "Mesh Agent",
       "tr": "Mesh Ajan",
-      "zh-chs": "网格代理",
+      "zh-chs": "Mesh代理",
       "zh-cht": "Mesh Agent",
       "xloc": [
         "default-mobile.handlebars->11->289",
@@ -41355,7 +41355,7 @@
       "ru": "Консоль Mesh Agent",
       "sv": "Mesh Agent Console",
       "tr": "Mesh Aracı Komut Satırı",
-      "zh-chs": "网格代理控制台",
+      "zh-chs": "Mesh代理控制台",
       "zh-cht": "網格代理控制台",
       "xloc": [
         "default-mobile.handlebars->11->669",
@@ -41450,7 +41450,7 @@
       "ru": "Mesh Agent подключен и готов к использованию.",
       "sv": "Meshagenten är ansluten och redo att användas.",
       "tr": "Mesh aracı bağlandı ve kullanıma hazır.",
-      "zh-chs": "已连接网状代理并准备使用。",
+      "zh-chs": "已连接Mesh代理并准备使用。",
       "zh-cht": "已連接Mesh Agent並準備使用。",
       "xloc": [
         "default.handlebars->45->378",
@@ -41477,7 +41477,7 @@
       "ru": "Mesh Agent доступен с использованием другого агента в качестве ретранслятора.",
       "sv": "Meshagenten kan nås med en annan agent som relä.",
       "tr": "Ağ aracısına aktarıcı olarak başka bir aracı kullanılarak ulaşılabilir.",
-      "zh-chs": "网格代理可以经过其他代理作为中继访问得到。",
+      "zh-chs": "Mesh代理可以经过其他代理作为中继访问得到。",
       "zh-cht": "Mesh Agent可以經過其他代理作為中繼訪問得到。",
       "xloc": [
         "default.handlebars->45->384",
@@ -43184,7 +43184,7 @@
       "ru": "Мои файлы",
       "sv": "Mina filer",
       "tr": "Dosyalarım",
-      "zh-chs": "我的档案",
+      "zh-chs": "我的文件",
       "zh-cht": "我的檔案",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p5->1->1->0->5->1->1",
@@ -44022,7 +44022,7 @@
       "ru": "Новая папка",
       "sv": "Ny mapp",
       "tr": "Yeni dosya",
-      "zh-chs": "新建档案夹",
+      "zh-chs": "新建文件夹",
       "zh-cht": "新建檔案夾",
       "xloc": [
         "default-mobile.handlebars->11->151",
@@ -44539,7 +44539,7 @@
       "ru": "Файлов нет",
       "sv": "Inga filer",
       "tr": "Dosya yok",
-      "zh-chs": "没有档案",
+      "zh-chs": "没有文件",
       "zh-cht": "沒有檔案",
       "xloc": [
         "default-mobile.handlebars->11->690",
@@ -47323,7 +47323,7 @@
       "ru": "В сети",
       "sv": "Uppkopplad",
       "tr": "Çevrimiçi",
-      "zh-chs": "线上",
+      "zh-chs": "在线",
       "zh-cht": "線上",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->7",
@@ -47400,7 +47400,7 @@
       "ru": "Редактировать можно только файлы размером менее 200КБ.",
       "sv": "Endast filer mindre än 200 000 kan redigeras.",
       "tr": "Yalnızca 200.000'den küçük dosyalar düzenlenebilir.",
-      "zh-chs": "只能编辑小于200k的档案。",
+      "zh-chs": "只能编辑小于200k的文件。",
       "zh-cht": "只能編輯小於200k的檔案。",
       "xloc": [
         "default-mobile.handlebars->11->490",
@@ -47454,7 +47454,7 @@
       "ru": "Открыть файл...",
       "sv": "Öppna fil...",
       "tr": "Açık dosya...",
-      "zh-chs": "打开档案...",
+      "zh-chs": "打开文件...",
       "zh-cht": "打開檔案...",
       "xloc": [
         "player.handlebars->3->57",
@@ -52158,7 +52158,7 @@
       "ru": "Записать сеанс удаленного рабочего стола в файл",
       "sv": "Spela in fjärrskrivbordssession till fil",
       "tr": "Uzak masaüstü oturumunu dosyaya kaydedin",
-      "zh-chs": "将远程桌面会话记录到档案",
+      "zh-chs": "将远程桌面会话记录到文件",
       "zh-cht": "將遠程桌面會話記錄到檔案",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
@@ -55991,7 +55991,7 @@
       "ru": "Файл корневого сертификата",
       "sv": "Rootcertifikatsfil",
       "tr": "Kök Sertifika Dosyası",
-      "zh-chs": "根证书档案",
+      "zh-chs": "根证书文件",
       "zh-cht": "根憑證檔案"
     },
     {
@@ -58155,7 +58155,7 @@
       "ru": "Очистить все",
       "sv": "Välj ingen",
       "tr": "Hiçbirini Seçme",
-      "zh-chs": "选择无",
+      "zh-chs": "取消全选",
       "zh-cht": "選擇無",
       "xloc": [
         "default.handlebars->45->1380",
@@ -58742,7 +58742,7 @@
       "ru": "Отправить приглашение по email.",
       "sv": "Skicka inbjudan via e-post.",
       "tr": "Davet e-postası gönderin.",
-      "zh-chs": "发送邀请电邮。",
+      "zh-chs": "发送邀请邮件。",
       "zh-cht": "發送邀請電郵。",
       "xloc": [
         "default.handlebars->45->2498"
@@ -58843,7 +58843,7 @@
       "ru": "Отправить токен на зарегистрированный адрес электронной почты?",
       "sv": "Skicka token till registrerad e-postadress?",
       "tr": "Belirteç kayıtlı e-posta adresine gönderilsin mi?",
-      "zh-chs": "将保安编码发送到注册的电邮地址？",
+      "zh-chs": "将token发送到注册的邮件地址？",
       "zh-cht": "將保安編碼發送到註冊的電郵地址？",
       "xloc": [
         "login.handlebars->5->27",
@@ -66649,7 +66649,7 @@
       "ru": "Для удаления Mesh Agent скачайте файл ниже, запустите его и нажмите \\\"удалить\\\".",
       "sv": "För att ta bort en nätagent, ladda ner filen nedan, kör den och klicka på \\\"avinstallera \\\".",
       "tr": "Bir örgü ajanını kaldırmak için aşağıdaki dosyayı indirin, çalıştırın ve \\\"kaldır\\\" ı tıklayın.",
-      "zh-chs": "要删除网格代理，请下载以下档案，运行并单击“卸载”。",
+      "zh-chs": "要删除Mesh代理，请下载以下文件，运行并单击“卸载”。",
       "zh-cht": "要刪除mash agent，請下載以下檔案，運行該檔案，然後單擊“卸載”。",
       "xloc": [
         "default.handlebars->45->593"
@@ -66674,7 +66674,7 @@
       "ru": "Для удаления Mesh Agent выполните следующую команду. Потребуются учетные данные root.",
       "sv": "För att ta bort en Mech-agent, kör följande kommando. Root-behörighet kommer att behövas.",
       "tr": "Bir ağ aracısını kaldırmak için aşağıdaki komutu çalıştırın. Kök kimlik bilgilerine ihtiyaç duyulacaktır.",
-      "zh-chs": "要删除网格代理，请运行以下命令。需要根凭证。",
+      "zh-chs": "要删除Mesh代理，请运行以下命令。需要根凭证。",
       "zh-cht": "要刪除網格代理，請運行以下命令。需要root憑據。",
       "xloc": [
         "default.handlebars->45->600"
@@ -67183,7 +67183,7 @@
       "ru": "Имя токена",
       "sv": "Token Namn",
       "tr": "Anahtar Adı",
-      "zh-chs": "代币名称",
+      "zh-chs": "token名称",
       "zh-cht": "令牌名稱",
       "xloc": [
         "default.handlebars->45->1784"
@@ -68574,7 +68574,7 @@
       "ru": "Не удалось отправить email.",
       "sv": "Det gick inte att skicka e-post.",
       "tr": "E-posta gönderilemiyor.",
-      "zh-chs": "无法发送电邮。",
+      "zh-chs": "无法发送邮件。",
       "zh-cht": "無法發送電郵。",
       "xloc": [
         "login-mobile.handlebars->5->14",
@@ -69196,7 +69196,7 @@
       "ru": "Up",
       "sv": "Upp",
       "tr": "Yukarı",
-      "zh-chs": "向上",
+      "zh-chs": "返回",
       "zh-cht": "向上",
       "xloc": [
         "default-mobile.handlebars->11->428",
@@ -69253,7 +69253,7 @@
       "ru": "Обновить",
       "sv": "Uppdatering",
       "tr": "Güncelleme",
-      "zh-chs": "更新资料",
+      "zh-chs": "更新",
       "zh-cht": "更新資料",
       "xloc": [
         "agent-translations.json",
@@ -69304,7 +69304,7 @@
       "ru": "Загрузить",
       "sv": "Ladda upp",
       "tr": "Gönder",
-      "zh-chs": "上载",
+      "zh-chs": "上传",
       "zh-cht": "上載",
       "xloc": [
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
@@ -69334,7 +69334,7 @@
       "ru": "Загрузить файл",
       "sv": "Ladda upp fil",
       "tr": "Dosya gönder",
-      "zh-chs": "上载档案",
+      "zh-chs": "上传文件",
       "zh-cht": "上載檔案",
       "xloc": [
         "default-mobile.handlebars->11->157",
@@ -69371,7 +69371,7 @@
       "ru": "Загрузить ядро Mesh Agent",
       "sv": "Ladda upp Mesh Agent Core",
       "tr": "Mesh Agent Çekirdeğini Gönder",
-      "zh-chs": "上载网格代理核心",
+      "zh-chs": "上载Mesh代理核心",
       "zh-cht": "上載mesh agent核心",
       "xloc": [
         "default-mobile.handlebars->11->621",
@@ -69603,7 +69603,7 @@
       "ru": "Загрузка перезапишет 1 файл. Продолжить?",
       "sv": "Uppladdningen skriver över en fil. Fortsätta?",
       "tr": "Yükleme 1 dosyanın üzerine yazacak. Devam et?",
-      "zh-chs": "上传将覆盖1个档案。继续？",
+      "zh-chs": "上传将覆盖1个文件。继续？",
       "zh-cht": "上傳將覆蓋1個檔案。繼續？",
       "xloc": [
         "default-mobile.handlebars->11->507",
@@ -69631,7 +69631,7 @@
       "ru": "Загрузка перезапишет {0} файлов. Продолжить?",
       "sv": "Uppladdning skriver över {0} filer. Fortsätta?",
       "tr": "Gönderme işlemi {0} dosyanın üzerine yazsın mı?",
-      "zh-chs": "上传将覆盖{0}个档案。继续？",
+      "zh-chs": "上传将覆盖{0}个文件。继续？",
       "zh-cht": "上傳將覆蓋{0}個檔案。繼續？",
       "xloc": [
         "default-mobile.handlebars->11->508",
@@ -70537,7 +70537,7 @@
       "ru": "Сессии пользователя",
       "sv": "Användarsessioner",
       "tr": "Kullanıcı Oturumları",
-      "zh-chs": "用户节",
+      "zh-chs": "用户会话",
       "zh-cht": "用戶節",
       "xloc": [
         "default.handlebars->45->2976"
@@ -73321,7 +73321,7 @@
       "ru": "Исполняемый файл Win32",
       "sv": "Win32 körbar",
       "tr": "Win32 Çalıştırılabilir",
-      "zh-chs": "Win32可执行档案",
+      "zh-chs": "Win32可执行文件",
       "zh-cht": "Win32可執行檔案",
       "xloc": [
         "default.handlebars->45->1181"
@@ -73415,7 +73415,7 @@
       "ru": "Windows",
       "sv": "Windows",
       "tr": "pencereler",
-      "zh-chs": "窗口",
+      "zh-chs": "Windows",
       "zh-cht": "視窗",
       "xloc": [
         "default-mobile.handlebars->11->283",
@@ -73519,7 +73519,7 @@
       "ru": "Windows (RDP)",
       "sv": "Windows (RDP)",
       "tr": "Windows (RDP)",
-      "zh-chs": "视窗 (RDP)",
+      "zh-chs": "Windows (RDP)",
       "zh-cht": "視窗 (RDP)",
       "xloc": [
         "default.handlebars->45->455"
@@ -73878,7 +73878,7 @@
       "ru": "Безопасность Windows",
       "sv": "Windows-säkerhet",
       "tr": "Windows Güvenliği",
-      "zh-chs": "视窗安全",
+      "zh-chs": "Windows安全",
       "zh-cht": "Windows 安全",
       "xloc": [
         "default-mobile.handlebars->11->530",
@@ -74305,7 +74305,7 @@
       "ru": "Вам было предложено установить приложение, которое позволит удаленному оператору получить безопасный доступ к вашему компьютеру, включая рабочий стол и файлы. Следуйте приведенным ниже инструкциям, только если это приглашение было ожидаемым и вы знаете, кто будет получать доступ к вашему компьютеру. Выберите свою операционную систему и следуйте приведенным ниже инструкциям по установке.",
       "sv": "Du har blivit inbjuden att installera ett program som gör det möjligt för en fjärroperatör att säkert komma åt din dator inklusive skrivbordet och filerna. Följ endast instruktionerna nedan om denna inbjudan förväntades och du vet vem som kommer åt din dator. Välj ditt operativsystem och följ instruktionerna nedan för installation.",
       "tr": "Uzaktaki bir operatörün masaüstü ve dosyalar dahil olmak üzere bilgisayarınıza güvenli bir şekilde erişmesine izin verecek bir uygulamayı yüklemeye davet edildiniz. Aşağıdaki talimatları yalnızca bu davet bekleniyorsa ve bilgisayarınıza kimin erişeceğini biliyorsanız uygulayın. İşletim sisteminizi seçin ve kurulum için aşağıdaki talimatları izleyin.",
-      "zh-chs": "您已被邀请安装一个应用程序，该应用程序将允许远程操作员安全地访问您的计算机，包括桌面和档案。如果预期会收到此邀请，请仅遵循以下说明，并且您知道谁将访问您的计算机。选择您的操作系统，然后按照以下说明进行安装。",
+      "zh-chs": "您已被邀请安装一个应用程序，该应用程序将允许远程操作员安全地访问您的计算机，包括桌面和文件。如果预期会收到此邀请，请仅遵循以下说明，并且您知道谁将访问您的计算机。选择您的操作系统，然后按照以下说明进行安装。",
       "zh-cht": "你已被邀請安裝一個應用程序，該應用程序將允許遠程操作員安全地訪問你的電腦，包括桌面和檔案。如果收到此邀請，並且只有知道誰將訪問你的電腦，請僅按照以下說明進行操作。選擇你的操作系統，然後按照以下說明進行安裝。",
       "xloc": [
         "agentinvite.handlebars->container->column_l->3"
@@ -74432,7 +74432,7 @@
       "ru": "Zip-файл",
       "sv": "Zip filnamn",
       "tr": "Zip Dosya Adı",
-      "zh-chs": "邮编档案名",
+      "zh-chs": "压缩文件名",
       "zh-cht": "郵編檔案名",
       "xloc": [
         "default.handlebars->45->1392",
@@ -74844,7 +74844,7 @@
       "ru": "[[[SERVERNAME]]] - подтверждение по электронной почте",
       "sv": "[[[SERVERNAME]]] - E-postverifiering",
       "tr": "[[[SERVERNAME]]] - E-posta Doğrulaması",
-      "zh-chs": "[[[SERVERNAME]]] - 电邮验证",
+      "zh-chs": "更改邮件地址",
       "zh-cht": "[[[SERVERNAME]]] - 電郵驗證",
       "xloc": [
         "account-check.html->0",
@@ -75023,7 +75023,7 @@
       "ru": "добавить",
       "sv": "Lägg till ett",
       "tr": "bir tane ekle",
-      "zh-chs": "加一",
+      "zh-chs": "添加",
       "zh-cht": "加一",
       "xloc": [
         "default.handlebars->45->343",
@@ -75792,7 +75792,7 @@
       "ru": "свободно",
       "sv": "fri",
       "tr": "Boş",
-      "zh-chs": "免费",
+      "zh-chs": "空闲",
       "zh-cht": "免費",
       "xloc": [
         "default.handlebars->45->2956",
@@ -78991,7 +78991,7 @@
       "ru": "{0}k в {1} файлах. {2}k максимум",
       "sv": "{0} k i {1} filer. {2} k maximalt",
       "tr": "{1} dosyada {0} k. {2} k maksimum",
-      "zh-chs": "{1}k在{0}个档案中。最多{2}k",
+      "zh-chs": "{1}k在{0}个文件中。最多{2}k",
       "zh-cht": "{1}k在{0}個檔案中。最多{2}k",
       "xloc": [
         "default.handlebars->45->2199"
