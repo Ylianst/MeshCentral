@@ -802,6 +802,20 @@ function CreateMeshCentralServer(config, args) {
 
         require('./db.js').CreateDB(obj,
             function (db) {
+
+
+                //db.Get('user//admin', function (err, docs) { console.log('GetResult', err, docs); });
+                //db.Set({ _id: 'user//admin', type: 'user', domain: 'a', test: 'this is a user' }, function () { console.log('SetResult'); });
+                //db.Get('user//admin', function (err, docs) { console.log('GetResult', err, docs); });
+                //db.GetAll(function (err, docs) { console.log('GetAll', err, docs); });
+                //db.GetAllTypeNoTypeField('user', 'a', function (err, docs) { console.log('GetAllTypeNoTypeField', err, docs); });
+                //db.isMaxType(10, 'user', 'a', function (max, count) { console.log('yy', max, count); })
+
+                //db.StoreEvent({ test: "this is an event" }, function () { console.log('event stored'); });
+                //db.GetAllEvents(function (err, docs) { console.log('events', docs); });
+
+                //return;
+
                 obj.db = db;
                 obj.db.SetupDatabase(function (dbversion) {
                     // See if any database operations needs to be completed
@@ -1198,12 +1212,13 @@ function CreateMeshCentralServer(config, args) {
                             // Lower case all keys in the config file
                             common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
 
-                            // Grad some of the values from the original config.json file if present.
+                            // Grab some of the values from the original config.json file if present.
                             config2['mysql'] = config['mysql'];
                             config2['mariadb'] = config['mariadb'];
                             config2['mongodb'] = config['mongodb'];
                             config2['mongodbcol'] = config['mongodbcol'];
                             config2['dbencryptkey'] = config['dbencryptkey'];
+                            config2['acebase'] = config['acebase'];
 
                             // We got a new config.json from the database, let's use it.
                             config = obj.config = config2;
@@ -3894,6 +3909,7 @@ function mainStart() {
         if (config.settings.mongodb != null) { modules.push('mongodb@4.1.0'); modules.push('saslprep'); } // Add MongoDB, official driver.
         if (config.settings.postgres != null) { modules.push('pg@8.7.1'); modules.push('pgtools@0.3.2'); } // Add Postgres, Postgres driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
+        if (config.settings.acebase != null) { modules.push('acebase'); } // Add AceBase, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         if (config.settings.plugins != null) { modules.push('semver'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
