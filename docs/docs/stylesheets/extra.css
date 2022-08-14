@@ -78,3 +78,17 @@ a:link {
     border-radius:4px;
     box-shadow: 2px 2px 4px black;
 }
+.md-typeset .tabbed-set {
+    border-left-width: 0.2rem;
+    border-left-color: rgb(244, 244, 244);
+    border-left-style: solid;
+    border-radius: 4px;
+    background-color: rgba(68,138,255,.1);
+    border-color: rgb(244, 244, 244);
+    padding: 5px;
+}
+@media only screen and (max-width: 76.1875em) {
+    .md-nav__link {
+        color: black;
+    }
+  }

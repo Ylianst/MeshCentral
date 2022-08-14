@@ -17,12 +17,11 @@ xxx Path: `c:\Program Files\Mesh Agent\meshagent.msh`
     - Start: `net start "mesh agent"`
     - Stop: `net stop "mesh agent"`
     - Restart: `net restart "mesh agent"`
-    - Status: 
-    - Checking for nats or websocket problems `sudo journalctl --no-pager -u nats` and `sudo journalctl --no-pager -u nats-api`
+    - Status: Needs info
 
 === ":material-console-line: Troubleshooting"
 
-    Troubleshooting steps
+    Troubleshooting steps: Needs info
 
 ## Linux / BSD
 
@@ -43,5 +42,7 @@ For macOS 10.x including Catalina, Mojave, High Sierra, Sierra, El Capitan, Yose
 ## Mobile Device (Android)
 
 ## MeshCentral Assistant
+
+See [Assistant](assistant.md)
 
 ## Apple MacOS Binary Installer
