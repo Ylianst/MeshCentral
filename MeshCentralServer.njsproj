@@ -710,6 +710,7 @@
     <Folder Include="typings\globals\pg-pool\" />
     <Folder Include="typings\globals\split2\" />
     <Folder Include="typings\globals\sprintf-js\" />
+    <Folder Include="typings\globals\sqlite3\" />
     <Folder Include="typings\globals\type-check\" />
     <Folder Include="typings\globals\underscore\" />
     <Folder Include="typings\globals\uuid\" />
@@ -751,6 +752,7 @@
     <TypeScriptCompile Include="typings\globals\pg-pool\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\split2\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\sprintf-js\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\sqlite3\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\type-check\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\underscore\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\uuid\index.d.ts" />
