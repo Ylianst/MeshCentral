@@ -35,13 +35,7 @@
             }
           }
         },
-        "acebase": {
-          "type": "object",
-          "description": "Add this section to enable AceBase database support, this is a local database system much like NeDB.",
-          "properties": {
-            "sponsor": { "type": "boolean", "default": false, "description": "Set true to remove the AceBase banner on startup." },
-          }
-        },
+        "sqlite3": { "type": "boolean", "default": false, "description": "Set true to use SQLite3 as a local MeshCentral database." },
         "mySQL": {
           "type": "object",
           "description": "Add this section to connect MeshCentral to a MySQL database instance.",
@@ -74,6 +68,11 @@
             "password": { "type": "string", "description": "PostgreSQL password" },
             "database": { "type": "string", "default": "meshcentral", "description": "Name of PostgreSQL database used" }
           }
+        },
+        "acebase": {
+          "type": "object",
+          "description": "Add this section to enable AceBase database support, this is a local database system much like NeDB.",
+          "properties": { "sponsor": { "type": "boolean", "default": false, "description": "Set true to remove the AceBase banner on startup." } }
         },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
         "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },

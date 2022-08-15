@@ -1190,12 +1190,20 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Query the database
-    function sqlDbQuery(query, args, func) {
+    function sqlDbQuery(query, args, func, debug) {
         if (obj.databaseType == 8) { // SQLite
             if (args == null) { args = []; }
             obj.file.all(query, args, function (err, docs) {
                 if (err != null) { console.log(query, args, err, docs); }
-                if (docs != null) { for (var i in docs) { if (typeof docs[i].doc == 'string') { docs[i] = JSON.parse(docs[i].doc); } } }
+                if (docs != null) {
+                    for (var i in docs) {
+                        if (typeof docs[i].doc == 'string') {
+                            try { docs[i] = JSON.parse(docs[i].doc); } catch (ex) {
+                                console.log(query, args, docs[i]);
+                            }
+                        }
+                    }
+                }
                 if (func) { func(err, docs); }
             });
         } else if (obj.databaseType == 4) { // MariaDB
@@ -1323,18 +1331,18 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN ($4))', [id, type, domain, meshes], function (err, docs) {
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + '))', [id, type, domain], function (err, docs) {
                         if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                         func(err, performTypedRecordDecrypt(docs));
                     });
                 } else {
                     if (extrasids == null) {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN ($3))', [type, domain, meshes], function (err, docs) {
+                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN (' + dbMergeSqlArray(meshes) + '))', [type, domain], function (err, docs) {
                             if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                             func(err, performTypedRecordDecrypt(docs));
-                        }, true);
+                        });
                     } else {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN ($3)) OR (id IN ($4)))', [type, domain, meshes, extrasids], function (err, docs) {
+                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))', [type, domain], function (err, docs) {
                             if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                             func(err, performTypedRecordDecrypt(docs));
                         });
@@ -1343,12 +1351,12 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN ($4))', [id, type, domain, nodes], function (err, docs) {
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(nodes) + '))', [id, type, domain], function (err, docs) {
                         if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                         func(err, performTypedRecordDecrypt(docs));
                     });
                 } else {
-                    sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN ($3))', [type, domain, nodes], function (err, docs) {
+                    sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN (' + dbMergeSqlArray(nodes) + '))', [type, domain], function (err, docs) {
                         if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                         func(err, performTypedRecordDecrypt(docs));
                     });
@@ -1361,7 +1369,7 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
             obj.GetAllIdsOfType = function (ids, domain, type, func) {
-                sqlDbQuery('SELECT doc FROM main WHERE (id IN ($1)) AND domain = $2 AND type = $3', [ids, domain, type], function (err, docs) {
+                sqlDbQuery('SELECT doc FROM main WHERE (id IN (' + dbMergeSqlArray(ids) + ')) AND domain = $1 AND type = $2', [domain, type], function (err, docs) {
                     if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                     func(err, performTypedRecordDecrypt(docs));
                 });
@@ -1415,35 +1423,35 @@ module.exports.CreateDB = function (parent, func) {
                 if (ids.indexOf('*') >= 0) {
                     sqlDbQuery('SELECT doc FROM events WHERE (domain = $1) ORDER BY time DESC', [domain], func);
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN ($2))) GROUP BY id ORDER BY time DESC', [domain, ids], func);
+                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC', [domain], func);
                 }
             };
             obj.GetEventsWithLimit = function (ids, domain, limit, func) {
                 if (ids.indexOf('*') >= 0) {
                     sqlDbQuery('SELECT doc FROM events WHERE (domain = $1) ORDER BY time DESC LIMIT $2', [domain, limit], func);
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN ($2))) GROUP BY id ORDER BY time DESC LIMIT $3', [domain, ids, limit], func);
+                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC LIMIT $2', [domain, limit], func);
                 }
             };
             obj.GetUserEvents = function (ids, domain, userid, func) {
                 if (ids.indexOf('*') >= 0) {
                     sqlDbQuery('SELECT doc FROM events WHERE (domain = $1 AND userid = $2) ORDER BY time DESC', [domain, userid], func);
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN ($3))) GROUP BY id ORDER BY time DESC', [domain, userid, ids], func);
+                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC', [domain, userid], func);
                 }
             };
             obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) {
                 if (ids.indexOf('*') >= 0) {
                     sqlDbQuery('SELECT doc FROM events WHERE (domain = $1 AND userid = $2) ORDER BY time DESC LIMIT $3', [domain, userid, limit], func);
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN ($3))) GROUP BY id ORDER BY time DESC LIMIT $4', [domain, userid, ids, limit], func);
+                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC LIMIT $3', [domain, userid, limit], func);
                 }
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
                 if (ids.indexOf('*') >= 0) {
                     sqlDbQuery('SELECT doc FROM events WHERE ((domain = $1) AND (time BETWEEN $2 AND $3)) ORDER BY time', [domain, start, end], func);
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE ((domain = $1) AND (target IN ($2)) AND (time BETWEEN $3 AND $4)) GROUP BY id ORDER BY time', [domain, ids, start, end], func);
+                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE ((domain = $1) AND (target IN (' + dbMergeSqlArray(ids) + ')) AND (time BETWEEN $2 AND $3)) GROUP BY id ORDER BY time', [domain, start, end], func);
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
@@ -1456,7 +1464,7 @@ module.exports.CreateDB = function (parent, func) {
 
             // Database actions on the power collection
             obj.getAllPower = function (func) { sqlDbQuery('SELECT doc FROM power', null, func); };
-            obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUES (NULL, $1, $2, $3)', [event.time, event.nodeid ? event.nodeid : null, event], func); };
+            obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUES (NULL, $1, $2, $3)', [event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
             obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = $1) OR (nodeid = \'*\')) ORDER BY time ASC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = $1', [nodeid], function (err, docs) { }); };
@@ -3278,6 +3286,12 @@ module.exports.CreateDB = function (parent, func) {
         delete usergroup.type;
         delete usergroup._id;
         parent.DispatchEvent(['*', usergroup.ugrpid], obj, usergroup);
+    }
+
+    function dbMergeSqlArray(arr) {
+        var x = '';
+        for (var i in arr) { if (x != '') { x += ','; } x += '"' + arr[i] + '"'; }
+        return x;
     }
 
     return obj;
