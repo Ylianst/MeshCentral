@@ -1205,6 +1205,7 @@ function CreateMeshCentralServer(config, args) {
                             config2['mongodbcol'] = config['mongodbcol'];
                             config2['dbencryptkey'] = config['dbencryptkey'];
                             config2['acebase'] = config['acebase'];
+                            config2['sqlite3'] = config['sqlite3'];
 
                             // We got a new config.json from the database, let's use it.
                             config = obj.config = config2;
@@ -3896,6 +3897,7 @@ function mainStart() {
         if (config.settings.postgres != null) { modules.push('pg@8.7.1'); modules.push('pgtools@0.3.2'); } // Add Postgres, Postgres driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase'); } // Add AceBase, official driver.
+        if (config.settings.sqlite3 != null) { modules.push('sqlite3'); } // Add sqlite3, official driver.
         if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
         if (config.settings.plugins != null) { modules.push('semver'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
