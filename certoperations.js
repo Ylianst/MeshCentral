@@ -247,14 +247,20 @@ module.exports.CertificateOperations = function (parent) {
                 // Get the certificate common name
                 var certCommonName = r.certs[0].subject.getField('CN');
                 if (certCommonName == null) { amtacmactivation.acmCertErrors.push("Unable to get Intel AMT activation certificate common name."); continue; }
-                var certCommonNameSplit = certCommonName.value.split('.');
-                var topLevel = certCommonNameSplit[certCommonNameSplit.length - 1].toLowerCase();
-                var topLevelNum = TopLevelDomainExtendedSupport[topLevel];
-                if (topLevelNum != null) {
-                    while (certCommonNameSplit.length > topLevelNum) { certCommonNameSplit.shift(); }
-                    acmconfig.cn = certCommonNameSplit.join('.');
-                } else {
+                if (amtacmactivation.strictcommonname == true) {
+                    // Use the certificate common name exactly
                     acmconfig.cn = certCommonName.value;
+                } else {
+                    // Check if Intel AMT will allow some flexibility in the certificate common name
+                    var certCommonNameSplit = certCommonName.value.split('.');
+                    var topLevel = certCommonNameSplit[certCommonNameSplit.length - 1].toLowerCase();
+                    var topLevelNum = TopLevelDomainExtendedSupport[topLevel];
+                    if (topLevelNum != null) {
+                        while (certCommonNameSplit.length > topLevelNum) { certCommonNameSplit.shift(); }
+                        acmconfig.cn = certCommonNameSplit.join('.');
+                    } else {
+                        acmconfig.cn = certCommonName.value;
+                    }
                 }
 
                 delete acmconfig.cert;
