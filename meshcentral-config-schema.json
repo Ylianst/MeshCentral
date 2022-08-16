@@ -934,6 +934,7 @@
             "additionalProperties": false,
             "properties": {
               "log": { "type": "string" },
+              "strictCommonName": { "type": "boolean", "default": false, "description": "When set to true, the certificate common name needs to match exactly the Intel AMT trusted FQDN or DHCP Option 15. If false, some flexibility may be given to the matching." },
               "certs": {
                 "type": "object",
                 "additionalProperties": {

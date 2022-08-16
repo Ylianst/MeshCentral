@@ -367,6 +367,7 @@
       ],
       "_amtAcmActivation": {
         "log": "amtactivation.log",
+        "strictCommonName": false,
         "certs": {
           "mycertname": {
             "certfiles": [
