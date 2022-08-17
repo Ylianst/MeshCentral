@@ -37,7 +37,7 @@ cd C:\Program Files\Open Source\MeshCentral\node_modules\meshcentral
 node meshcentral
 ```
 
-The problem with the second command is that NPM may install missing modules are the incorrect location.
+The problem with the second command is that NPM may install missing modules in the incorrect location.
 
 Also, in general I recommend not using the MeshCentral MSI Installer and just install manually unless you are very much scared of the command prompt. Anyone that knows about bit about the shell should install MeshCentral like this:
 
