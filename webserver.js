@@ -6021,6 +6021,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((parent.config.domains[i].dns == null) && (parent.config.domains[i].share != null)) { obj.app.use(parent.config.domains[i].url, obj.express.static(parent.config.domains[i].share)); }
         }
 
+        // Setup all domain auth strategy passport.js
+        for (var i in parent.config.domains) {
+            if (typeof parent.config.domains[i].authstrategies == 'object') {
+                parent.config.domains[i].authstrategies.authStrategyFlags = 0;
+                const authStrategyFlags = setupDomainAuthStrategy(parent.config.domains[i]);
+                if (authStrategyFlags > 0) {
+                    if (parent.config.domains[i].dns != null) {
+                        if (typeof parent.config.domains[''].authstrategies != 'object') { parent.config.domains[''].authstrategies = { authStrategyFlags: 0 }; }
+                        parent.config.domains[''].authstrategies.authStrategyFlags |= authStrategyFlags;
+                    } else {
+                        if (typeof parent.config.domains[i].authstrategies != 'object') { parent.config.domains[i].authstrategies = { authStrategyFlags: 0 }; }
+                        parent.config.domains[i].authstrategies.authStrategyFlags |= authStrategyFlags;
+                    }
+                }
+            }
+        }
+
         // Setup all HTTP handlers
         if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req, obj.args.tlsoffload == null); }); }
         for (var i in parent.config.domains) {
@@ -6201,26 +6218,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup auth strategies using passport if needed
             if (typeof domain.authstrategies == 'object') {
-                const passport = domain.passport = require('passport');
-                passport.serializeUser(function (user, done) { done(null, user.sid); });
-                passport.deserializeUser(function (sid, done) { done(null, { sid: sid }); });
-                obj.app.use(passport.initialize());
-                //obj.app.use(passport.session());
-
                 // Twitter
-                if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
-                    const TwitterStrategy = require('passport-twitter');
-                    var options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
-                    if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
-                    parent.debug('web', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
-                    passport.use('twitter-' + domain.id, new TwitterStrategy(options,
-                        function (token, tokenSecret, profile, cb) {
-                            parent.debug('web', 'Twitter profile: ' + JSON.stringify(profile));
-                            var user = { sid: '~twitter:' + profile.id, name: profile.displayName, strategy: 'twitter' };
-                            if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                            return cb(null, user);
-                        }
-                    ));
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.twitter) != 0) {
                     obj.app.get(url + 'auth-twitter', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6242,19 +6241,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Google
-                if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
-                    const GoogleStrategy = require('passport-google-oauth20');
-                    var options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
-                    if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
-                    parent.debug('web', 'Adding Google SSO with options: ' + JSON.stringify(options));
-                    passport.use('google-' + domain.id, new GoogleStrategy(options,
-                        function (token, tokenSecret, profile, cb) {
-                            parent.debug('web', 'Google profile: ' + JSON.stringify(profile));
-                            var user = { sid: '~google:' + profile.id, name: profile.displayName, strategy: 'google' };
-                            if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
-                            return cb(null, user);
-                        }
-                    ));
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.google) != 0) {
                     obj.app.get(url + 'auth-google', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6267,20 +6254,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }, handleStrategyLogin);
                 }
 
-                // Github
-                if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
-                    const GitHubStrategy = require('passport-github2');
-                    var options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
-                    if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
-                    parent.debug('web', 'Adding Github SSO with options: ' + JSON.stringify(options));
-                    passport.use('github-' + domain.id, new GitHubStrategy(options,
-                        function (token, tokenSecret, profile, cb) {
-                            parent.debug('web', 'Github profile: ' + JSON.stringify(profile));
-                            var user = { sid: '~github:' + profile.id, name: profile.displayName, strategy: 'github' };
-                            if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                            return cb(null, user);
-                        }
-                    ));
+                // GitHub
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.github) != 0) {
                     obj.app.get(url + 'auth-github', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6294,19 +6269,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Reddit
-                if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) {
-                    const RedditStrategy = require('passport-reddit');
-                    var options = { clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret };
-                    if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.callbackURL = url + 'auth-reddit-callback'; }
-                    parent.debug('web', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
-                    passport.use('reddit-' + domain.id, new RedditStrategy.Strategy(options,
-                        function (token, tokenSecret, profile, cb) {
-                            parent.debug('web', 'Reddit profile: ' + JSON.stringify(profile));
-                            var user = { sid: '~reddit:' + profile.id, name: profile.name, strategy: 'reddit' };
-                            if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                            return cb(null, user);
-                        }
-                    ));
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.reddit) != 0) {
                     obj.app.get(url + 'auth-reddit', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6332,24 +6295,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Azure
-                if ((typeof domain.authstrategies.azure == 'object') && (typeof domain.authstrategies.azure.clientid == 'string') && (typeof domain.authstrategies.azure.clientsecret == 'string')) {
-                    const AzureOAuth2Strategy = require('passport-azure-oauth2');
-                    var options = { clientID: domain.authstrategies.azure.clientid, clientSecret: domain.authstrategies.azure.clientsecret, tenant: domain.authstrategies.azure.tenantid };
-                    if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.callbackURL = url + 'auth-azure-callback'; }
-                    parent.debug('web', 'Adding Azure SSO with options: ' + JSON.stringify(options));
-                    passport.use('azure-' + domain.id, new AzureOAuth2Strategy(options,
-                        function (accessToken, refreshtoken, params, profile, done) {
-                            var userex = null;
-                            try { userex = require('jwt-simple').decode(params.id_token, "", true); } catch (ex) { }
-                            parent.debug('web', 'Azure profile: ' + JSON.stringify(userex));
-                            var user = null;
-                            if (userex != null) {
-                                var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
-                                if (typeof userex.email == 'string') { user.email = userex.email; }
-                            }
-                            return done(null, user);
-                        }
-                    ));
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.azure) != 0) {
                     obj.app.get(url + 'auth-azure', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6374,155 +6320,52 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }, handleStrategyLogin);
                 }
 
-                // Generic OpenID Connect
-                if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
-                    var options = {
-                        authorizationURL: domain.authstrategies.oidc.authorizationurl,
-                        callbackURL: domain.authstrategies.oidc.callbackurl,
-                        clientID: domain.authstrategies.oidc.clientid,
-                        clientSecret: domain.authstrategies.oidc.clientsecret,
-                        issuer: domain.authstrategies.oidc.issuer,
-                        tokenURL: domain.authstrategies.oidc.tokenurl,
-                        userInfoURL: domain.authstrategies.oidc.userinfourl,
-                        scope: ['openid profile email'],
-                        responseMode: 'form_post',
-                        state: true
-                    };
-                    const OIDCStrategy = require('@mstrhakr/passport-generic-oidc');
-                    if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
-                    parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
-                    passport.use('openidconnect', new OIDCStrategy.Strategy(options,
-                        function verify(iss, sub, profile, cb) {
-                            var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
-                            parent.debug('AUTH', 'OIDC: Configured user: ' + JSON.stringify(user));
-                            return cb(null, user);
-                        }
-                    ));
+                // Generic OpenID
+                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.openid != 0) {
                     obj.app.get(url + 'auth-oidc', domain.passport.authenticate('openidconnect'));
                     obj.app.get(url + 'oidc-callback', domain.passport.authenticate('openidconnect', { failureRedirect: '/login?failed-auth-attempt', failureFlash: true }), handleStrategyLogin);
                 }
 
-
                 // Generic SAML
-                if (typeof domain.authstrategies.saml == 'object') {
-                    if ((typeof domain.authstrategies.saml.cert != 'string') || (typeof domain.authstrategies.saml.idpurl != 'string')) {
-                        console.log('ERROR: Missing SAML configuration.');
-                    } else {
-                        const certPath = obj.common.joinPath(obj.parent.datapath, domain.authstrategies.saml.cert);
-                        var cert = obj.fs.readFileSync(certPath);
-                        if (cert == null) {
-                            console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
-                        } else {
-                            var options = { entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
-                            if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
-                            if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
-                            parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
-                            options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
-                            const SamlStrategy = require('passport-saml').Strategy;
-                            passport.use('saml-' + domain.id, new SamlStrategy(options,
-                                function (profile, done) {
-                                    parent.debug('web', 'SAML profile: ' + JSON.stringify(profile));
-                                    if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { sid: '~saml:' + profile.nameID, name: profile.nameID, strategy: 'saml' };
-                                    if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
-                                    if (typeof profile.email == 'string') { user.email = profile.email; }
-                                    return done(null, user);
-                                }
-                            ));
-                            obj.app.get(url + 'auth-saml', function (req, res, next) {
-                                var domain = getDomain(req);
-                                if (domain.passport == null) { next(); return; }
-                                domain.passport.authenticate('saml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
-                            });
-                            obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
-                                var domain = getDomain(req);
-                                if (domain.passport == null) { next(); return; }
-                                domain.passport.authenticate('saml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
-                            }, handleStrategyLogin);
-                        }
-                    }
+                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.saml != 0) {
+                    obj.app.get(url + 'auth-saml', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('saml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    });
+                    obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('saml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    }, handleStrategyLogin);
                 }
 
                 // Intel SAML
-                if (typeof domain.authstrategies.intel == 'object') {
-                    if ((typeof domain.authstrategies.intel.cert != 'string') || (typeof domain.authstrategies.intel.idpurl != 'string')) {
-                        console.log('ERROR: Missing Intel SAML configuration.');
-                    } else {
-                        var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.intel.cert));
-                        if (cert == null) {
-                            console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
-                        } else {
-                            var options = { entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.intel.callbackurl; } else { options.callbackUrl = url + 'auth-intel-callback'; }
-                            if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
-                            if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
-                            parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
-                            options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
-                            const SamlStrategy = require('passport-saml').Strategy;
-                            passport.use('isaml-' + domain.id, new SamlStrategy(options,
-                                function (profile, done) {
-                                    parent.debug('web', 'Intel profile: ' + JSON.stringify(profile));
-                                    if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { sid: '~intel:' + profile.nameID, name: profile.nameID, strategy: 'intel' };
-                                    if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
-                                    else if ((typeof profile.FirstName == 'string') && (typeof profile.LastName == 'string')) { user.name = profile.FirstName + ' ' + profile.LastName; }
-                                    if (typeof profile.email == 'string') { user.email = profile.email; }
-                                    else if (typeof profile.EmailAddress == 'string') { user.email = profile.EmailAddress; }
-                                    return done(null, user);
-                                }
-                            ));
-                            obj.app.get(url + 'auth-intel', function (req, res, next) {
-                                var domain = getDomain(req);
-                                if (domain.passport == null) { next(); return; }
-                                domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
-                            });
-                            obj.app.post(url + 'auth-intel-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
-                                var domain = getDomain(req);
-                                if (domain.passport == null) { next(); return; }
-                                domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
-                            }, handleStrategyLogin);
-                        }
-                    }
+                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.intelSaml != 0) {
+                    obj.app.get(url + 'auth-intel', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    });
+                    obj.app.post(url + 'auth-intel-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    }, handleStrategyLogin);
                 }
 
                 // JumpCloud SAML
-                if (typeof domain.authstrategies.jumpcloud == 'object') {
-                    if ((typeof domain.authstrategies.jumpcloud.cert != 'string') || (typeof domain.authstrategies.jumpcloud.idpurl != 'string')) {
-                        console.log('ERROR: Missing JumpCloud SAML configuration.');
-                    } else {
-                        var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
-                        if (cert == null) {
-                            console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
-                        } else {
-                            var options = { entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
-                            if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.jumpcloud.callbackurl; } else { options.callbackUrl = url + 'auth-jumpcloud-callback'; }
-                            if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
-                            parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
-                            options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
-                            const SamlStrategy = require('passport-saml').Strategy;
-                            passport.use('jumpcloud-' + domain.id, new SamlStrategy(options,
-                                function (profile, done) {
-                                    parent.debug('web', 'JumpCloud profile: ' + JSON.stringify(profile));
-                                    if (typeof profile.nameID != 'string') { return done(); }
-                                    var user = { sid: '~jumpcloud:' + profile.nameID, name: profile.nameID, strategy: 'jumpcloud' };
-                                    if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
-                                    if (typeof profile.email == 'string') { user.email = profile.email; }
-                                    return done(null, user);
-                                }
-                            ));
-                            obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
-                                var domain = getDomain(req);
-                                if (domain.passport == null) { next(); return; }
-                                domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
-                            });
-                            obj.app.post(url + 'auth-jumpcloud-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
-                                var domain = getDomain(req);
-                                if (domain.passport == null) { next(); return; }
-                                domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
-                            }, handleStrategyLogin);
-                        }
-                    }
+                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.jumpCloudSaml != 0) {
+                    obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    });
+                    obj.app.post(url + 'auth-jumpcloud-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    }, handleStrategyLogin);
                 }
             }
 
@@ -6793,6 +6636,247 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (doneFunc) doneFunc();
     }
 
+    // Auth strategy flags
+    const domainAuthStrategyConsts = {
+        twitter: 1,
+        google: 2,
+        github: 3,
+        reddit: 8,
+        azure: 16,
+        openid: 32,
+        saml: 64,
+        intelSaml: 128,
+        jumpCloudSaml: 256
+    }
+
+    // Setup auth strategies for a domain
+    function setupDomainAuthStrategy(domain) {
+        // Return the auth strategies that have been setup
+        var authStrategyFlags = 0;
+
+        // Setup auth strategies using passport if needed
+        if (typeof domain.authstrategies != 'object') return authStrategyFlags;
+
+        const url = domain.url;
+        const passport = domain.passport = require('passport');
+        passport.serializeUser(function (user, done) { done(null, user.sid); });
+        passport.deserializeUser(function (sid, done) { done(null, { sid: sid }); });
+        obj.app.use(passport.initialize());
+
+        // Twitter
+        if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
+            const TwitterStrategy = require('passport-twitter');
+            var options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
+            if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
+            parent.debug('web', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
+            passport.use('twitter-' + domain.id, new TwitterStrategy(options,
+                function (token, tokenSecret, profile, cb) {
+                    parent.debug('web', 'Twitter profile: ' + JSON.stringify(profile));
+                    var user = { sid: '~twitter:' + profile.id, name: profile.displayName, strategy: 'twitter' };
+                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                    return cb(null, user);
+                }
+            ));
+            authStrategyFlags |= domainAuthStrategyConsts.twitter;
+        }
+
+        // Google
+        if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
+            const GoogleStrategy = require('passport-google-oauth20');
+            var options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
+            if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
+            parent.debug('web', 'Adding Google SSO with options: ' + JSON.stringify(options));
+            passport.use('google-' + domain.id, new GoogleStrategy(options,
+                function (token, tokenSecret, profile, cb) {
+                    parent.debug('web', 'Google profile: ' + JSON.stringify(profile));
+                    var user = { sid: '~google:' + profile.id, name: profile.displayName, strategy: 'google' };
+                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
+                    return cb(null, user);
+                }
+            ));
+            authStrategyFlags |= domainAuthStrategyConsts.google;
+        }
+
+        // Github
+        if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
+            const GitHubStrategy = require('passport-github2');
+            var options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
+            if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
+            parent.debug('web', 'Adding Github SSO with options: ' + JSON.stringify(options));
+            passport.use('github-' + domain.id, new GitHubStrategy(options,
+                function (token, tokenSecret, profile, cb) {
+                    parent.debug('web', 'Github profile: ' + JSON.stringify(profile));
+                    var user = { sid: '~github:' + profile.id, name: profile.displayName, strategy: 'github' };
+                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                    return cb(null, user);
+                }
+            ));
+            authStrategyFlags |= domainAuthStrategyConsts.github;
+        }
+
+        // Reddit
+        if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) {
+            const RedditStrategy = require('passport-reddit');
+            var options = { clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret };
+            if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.callbackURL = url + 'auth-reddit-callback'; }
+            parent.debug('web', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
+            passport.use('reddit-' + domain.id, new RedditStrategy.Strategy(options,
+                function (token, tokenSecret, profile, cb) {
+                    parent.debug('web', 'Reddit profile: ' + JSON.stringify(profile));
+                    var user = { sid: '~reddit:' + profile.id, name: profile.name, strategy: 'reddit' };
+                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
+                    return cb(null, user);
+                }
+            ));
+            authStrategyFlags |= domainAuthStrategyConsts.reddit;
+        }
+
+        // Azure
+        if ((typeof domain.authstrategies.azure == 'object') && (typeof domain.authstrategies.azure.clientid == 'string') && (typeof domain.authstrategies.azure.clientsecret == 'string')) {
+            const AzureOAuth2Strategy = require('passport-azure-oauth2');
+            var options = { clientID: domain.authstrategies.azure.clientid, clientSecret: domain.authstrategies.azure.clientsecret, tenant: domain.authstrategies.azure.tenantid };
+            if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.callbackURL = url + 'auth-azure-callback'; }
+            parent.debug('web', 'Adding Azure SSO with options: ' + JSON.stringify(options));
+            passport.use('azure-' + domain.id, new AzureOAuth2Strategy(options,
+                function (accessToken, refreshtoken, params, profile, done) {
+                    var userex = null;
+                    try { userex = require('jwt-simple').decode(params.id_token, '', true); } catch (ex) { }
+                    parent.debug('web', 'Azure profile: ' + JSON.stringify(userex));
+                    var user = null;
+                    if (userex != null) {
+                        var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
+                        if (typeof userex.email == 'string') { user.email = userex.email; }
+                    }
+                    return done(null, user);
+                }
+            ));
+            authStrategyFlags |= domainAuthStrategyConsts.azure;
+        }
+
+        // Generic OpenID Connect
+        if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
+            var options = {
+                authorizationURL: domain.authstrategies.oidc.authorizationurl,
+                callbackURL: domain.authstrategies.oidc.callbackurl,
+                clientID: domain.authstrategies.oidc.clientid,
+                clientSecret: domain.authstrategies.oidc.clientsecret,
+                issuer: domain.authstrategies.oidc.issuer,
+                tokenURL: domain.authstrategies.oidc.tokenurl,
+                userInfoURL: domain.authstrategies.oidc.userinfourl,
+                scope: ['openid profile email'],
+                responseMode: 'form_post',
+                state: true
+            };
+            const OIDCStrategy = require('@mstrhakr/passport-generic-oidc');
+            if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
+            parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
+            passport.use('openidconnect', new OIDCStrategy.Strategy(options,
+                function verify(iss, sub, profile, cb) {
+                    var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
+                    parent.debug('AUTH', 'OIDC: Configured user: ' + JSON.stringify(user));
+                    return cb(null, user);
+                }
+            ));
+            authStrategyFlags |= domainAuthStrategyConsts.openid;
+        }
+
+        // Generic SAML
+        if (typeof domain.authstrategies.saml == 'object') {
+            if ((typeof domain.authstrategies.saml.cert != 'string') || (typeof domain.authstrategies.saml.idpurl != 'string')) {
+                console.log('ERROR: Missing SAML configuration.');
+            } else {
+                const certPath = obj.common.joinPath(obj.parent.datapath, domain.authstrategies.saml.cert);
+                var cert = obj.fs.readFileSync(certPath);
+                if (cert == null) {
+                    console.log('ERROR: Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
+                } else {
+                    var options = { entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
+                    if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
+                    if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
+                    if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
+                    parent.debug('web', 'Adding SAML SSO with options: ' + JSON.stringify(options));
+                    options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
+                    const SamlStrategy = require('passport-saml').Strategy;
+                    passport.use('saml-' + domain.id, new SamlStrategy(options,
+                        function (profile, done) {
+                            parent.debug('web', 'SAML profile: ' + JSON.stringify(profile));
+                            if (typeof profile.nameID != 'string') { return done(); }
+                            var user = { sid: '~saml:' + profile.nameID, name: profile.nameID, strategy: 'saml' };
+                            if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                            if (typeof profile.email == 'string') { user.email = profile.email; }
+                            return done(null, user);
+                        }
+                    ));
+                    authStrategyFlags |= domainAuthStrategyConsts.saml;
+                }
+            }
+        }
+
+        // Intel SAML
+        if (typeof domain.authstrategies.intel == 'object') {
+            if ((typeof domain.authstrategies.intel.cert != 'string') || (typeof domain.authstrategies.intel.idpurl != 'string')) {
+                console.log('ERROR: Missing Intel SAML configuration.');
+            } else {
+                var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.intel.cert));
+                if (cert == null) {
+                    console.log('ERROR: Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
+                } else {
+                    var options = { entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
+                    if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.intel.callbackurl; } else { options.callbackUrl = url + 'auth-intel-callback'; }
+                    if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
+                    if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
+                    parent.debug('web', 'Adding Intel SSO with options: ' + JSON.stringify(options));
+                    options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
+                    const SamlStrategy = require('passport-saml').Strategy;
+                    passport.use('isaml-' + domain.id, new SamlStrategy(options,
+                        function (profile, done) {
+                            parent.debug('web', 'Intel profile: ' + JSON.stringify(profile));
+                            if (typeof profile.nameID != 'string') { return done(); }
+                            var user = { sid: '~intel:' + profile.nameID, name: profile.nameID, strategy: 'intel' };
+                            if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                            else if ((typeof profile.FirstName == 'string') && (typeof profile.LastName == 'string')) { user.name = profile.FirstName + ' ' + profile.LastName; }
+                            if (typeof profile.email == 'string') { user.email = profile.email; }
+                            else if (typeof profile.EmailAddress == 'string') { user.email = profile.EmailAddress; }
+                            return done(null, user);
+                        }
+                    ));
+                    authStrategyFlags |= domainAuthStrategyConsts.intelSaml;
+                }
+            }
+        }
+
+        // JumpCloud SAML
+        if (typeof domain.authstrategies.jumpcloud == 'object') {
+            if ((typeof domain.authstrategies.jumpcloud.cert != 'string') || (typeof domain.authstrategies.jumpcloud.idpurl != 'string')) {
+                console.log('ERROR: Missing JumpCloud SAML configuration.');
+            } else {
+                var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
+                if (cert == null) {
+                    console.log('ERROR: Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
+                } else {
+                    var options = { entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
+                    if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.jumpcloud.callbackurl; } else { options.callbackUrl = url + 'auth-jumpcloud-callback'; }
+                    if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
+                    parent.debug('web', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
+                    options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
+                    const SamlStrategy = require('passport-saml').Strategy;
+                    passport.use('jumpcloud-' + domain.id, new SamlStrategy(options,
+                        function (profile, done) {
+                            parent.debug('web', 'JumpCloud profile: ' + JSON.stringify(profile));
+                            if (typeof profile.nameID != 'string') { return done(); }
+                            var user = { sid: '~jumpcloud:' + profile.nameID, name: profile.nameID, strategy: 'jumpcloud' };
+                            if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                            if (typeof profile.email == 'string') { user.email = profile.email; }
+                            return done(null, user);
+                        }
+                    ));
+                    authStrategyFlags |= domainAuthStrategyConsts.jumpCloudSaml;
+                }
+            }
+        }
+
+        return authStrategyFlags;
+    }
 
     // Handle an incoming request as a web relay 
     function handleWebRelayRequest(req, res) {
