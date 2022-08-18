@@ -173,7 +173,7 @@ function startEx(argv) {
 
     var command = null;
     if (argv.length > 2) { command = argv[2].toLowerCase(); }
-    if (['minify', 'check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'merge', 'totext', 'fromtext', 'remove'].indexOf(command) == -1) { command = null; }
+    if (['minify', 'check', 'extract', 'extractall', 'translate', 'translateall', 'minifyall', 'minifydir', 'merge', 'totext', 'fromtext', 'remove'].indexOf(command) == -1) { command = null; }
 
     if (directRun) { log('MeshCentral web site translator'); }
     if (command == null) {
@@ -197,6 +197,9 @@ function startEx(argv) {
         log('');
         log('  MINIFY [sourcefile]');
         log('    Minify a single file.');
+        log('');
+        log('  MINIFYDIR [sourcedir] [destinationdir]');
+        log('    Minify all files in a directory.');
         log('');
         log('  MINIFYALL');
         log('    Minify the main MeshCentral english web pages.');
@@ -340,6 +343,56 @@ function startEx(argv) {
         }
         if (sources.length == 0) { log("No source files specified."); process.exit(); return; }
         translate(lang, langFile, sources, subdir);
+    }
+
+    if (command == 'minifydir') {
+        if (argv.length < 4) { log("Command source and/or destination folders missing."); process.exit(); return; }
+        const sourceFiles = fs.readdirSync(argv[3]);
+        for (var i in sourceFiles) {
+            if (sourceFiles[i].endsWith('.js') || sourceFiles[i].endsWith('.json')) {
+                console.log("Processing " + sourceFiles[i] + "...");
+                const sourceFile = path.join(argv[3], sourceFiles[i]);
+                if (sourceFiles[i].endsWith('.js')) {
+                    // Minify the file .js file
+                    const destinationFile = path.join(argv[4], sourceFiles[i].substring(0, sourceFiles[i].length - 3) + '.min.js');
+                    if (minifyLib = 2) {
+                        var inFile = fs.readFileSync(sourceFile).toString();
+
+                        // Perform minification pre-processing
+                        if (sourceFile.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+                        if (sourceFile.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
+
+                        var minifiedOut = minify(inFile, {
+                            collapseBooleanAttributes: true,
+                            collapseInlineTagWhitespace: false, // This is not good.
+                            collapseWhitespace: true,
+                            minifyCSS: true,
+                            minifyJS: true,
+                            removeComments: true,
+                            removeOptionalTags: true,
+                            removeEmptyAttributes: true,
+                            removeAttributeQuotes: true,
+                            removeRedundantAttributes: true,
+                            removeScriptTypeAttributes: true,
+                            removeTagWhitespace: true,
+                            preserveLineBreaks: false,
+                            useShortDoctype: true
+                        });
+
+                        // Perform minification post-processing
+                        if (sourceFile.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+                        if (sourceFile.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                        fs.writeFileSync(destinationFile, minifiedOut, { flag: 'w+' });
+                    }
+                } else if (sourceFiles[i].endsWith('.json')) {
+                    // Minify the file .json file
+                    const destinationFile = path.join(argv[4], sourceFiles[i]);
+                    var inFile = JSON.parse(fs.readFileSync(sourceFile).toString());
+                    fs.writeFileSync(destinationFile, JSON.stringify(inFile), { flag: 'w+' });
+                }
+
+            }
+        }
     }
 
     if (command == 'minifyall') {
