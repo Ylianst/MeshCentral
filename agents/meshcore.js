@@ -708,6 +708,7 @@ db = require('SimpleDataStore').Shared();
 sha = require('SHA256Stream');
 mesh = require('MeshAgent');
 childProcess = require('child_process');
+try { scriptTask = require('script-task').CreateScriptTask(mesh); } catch (ex) { }
 
 if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
     // Check if this computer supports a desktop
@@ -797,10 +798,6 @@ function getIpLocationDataEx(func) {
     }
     catch (ex) { return false; }
 }
-
-// Setup script task. Allows running scripts at scheduled intervals
-var scriptTask = null;
-try { scriptTask = require('scripttask'); } catch (ex) { }
 
 // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
 function clearGatewayMac(str) {
@@ -1557,6 +1554,10 @@ function handleServerCommand(data) {
             case 'pong': { break; }
             case 'plugin': {
                 try { require(data.plugin).consoleaction(data, data.rights, data.sessionid, this); } catch (ex) { throw ex; }
+                break;
+            }
+            case 'task': {
+                if (scriptTask) { scriptTask.consoleAction(data, data.rights, data.sessionid, false); }
                 break;
             }
             case 'coredump':
@@ -4566,10 +4567,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'task': {
                 if (!scriptTask) { response = "Tasks are not supported on this agent"; }
-                else {
-                    if (args['_'][0]) { args.cmd = args['_'][0].toLowerCase(); }
-                    response = scriptTask.processCommand(args, rights, sessionid);
-                }
+                else { response = scriptTask.consoleAction(args, rights, sessionid, true); }
                 break;
             }
             case 'plugin': {

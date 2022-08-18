@@ -1738,8 +1738,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     try { obj.send(JSON.stringify({ action: 'amtconfig', user: '**MeshAgentApfTunnel**', pass: cookie })); } catch (ex) { }
                     break;
                 }
-                case 'scriptTask': {
-                    // TODO
+                case 'script-task': {
+                    // These command are for running regular batch jobs on the remote device
+                    switch (command.subaction) {
+                        case 'getScript': {
+                            console.log('getScript');
+                            break;
+                        }
+                        case 'clearAllPendingTasks': {
+                            console.log('clearAllPendingTasks');
+                            break;
+                        }
+                        case 'taskComplete': {
+                            console.log('taskComplete');
+                            break;
+                        }
+                    }
                     break;
                 }
                 default: {
