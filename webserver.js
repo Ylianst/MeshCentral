@@ -6321,13 +6321,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Generic OpenID
-                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.openid != 0) {
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.openid) != 0) {
                     obj.app.get(url + 'auth-oidc', domain.passport.authenticate('openidconnect'));
                     obj.app.get(url + 'oidc-callback', domain.passport.authenticate('openidconnect', { failureRedirect: '/login?failed-auth-attempt', failureFlash: true }), handleStrategyLogin);
                 }
 
                 // Generic SAML
-                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.saml != 0) {
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.saml) != 0) {
                     obj.app.get(url + 'auth-saml', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6341,7 +6341,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Intel SAML
-                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.intelSaml != 0) {
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.intelSaml) != 0) {
                     obj.app.get(url + 'auth-intel', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6355,7 +6355,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // JumpCloud SAML
-                if (domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.jumpCloudSaml != 0) {
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.jumpCloudSaml) != 0) {
                     obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
