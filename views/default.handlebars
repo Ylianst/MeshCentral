@@ -17790,7 +17790,7 @@
             try {
                 if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return;
                 if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); }
-            } catch (e) { }
+            } catch (ex) { }
             if (name[0] != '_') {
                 var s = {};
                 try {
@@ -17798,7 +17798,7 @@
                         var k = localStorage.key(i);
                         if (k[0] != '_') {
                             s[k] = localStorage.getItem(k);
-                            if ((k != 'desktopsettings') && (k != 'stars') && (k != 'deskKeyShortcuts') && (k != 'deskStrings') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
+                            if ((k != 'desktopsettings') && (k != 'stars') && (k != 'deskKeyShortcuts') && (k != 'deskStrings') && (k != 'cmdopt') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
                         }
                     }
                 } catch (ex) {}
