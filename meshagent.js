@@ -1740,20 +1740,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 }
                 case 'script-task': {
                     // These command are for running regular batch jobs on the remote device
-                    switch (command.subaction) {
-                        case 'getScript': {
-                            console.log('getScript');
-                            break;
-                        }
-                        case 'clearAllPendingTasks': {
-                            console.log('clearAllPendingTasks');
-                            break;
-                        }
-                        case 'taskComplete': {
-                            console.log('taskComplete');
-                            break;
-                        }
-                    }
+                    if (parent.parent.taskManager != null) { parent.parent.taskManager.agentAction(command, obj); }
                     break;
                 }
                 default: {
