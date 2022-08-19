@@ -33,6 +33,7 @@ function CreateMeshCentralServer(config, args) {
     obj.amtScanner = null;
     obj.amtManager = null;
     obj.meshScanner = null;
+    obj.taskManager = null;
     obj.letsencrypt = null;
     obj.eventsDispatch = {};
     obj.fs = require('fs');
@@ -1495,6 +1496,11 @@ function CreateMeshCentralServer(config, args) {
                     process.exit();
                 }
                 return;
+            }
+
+            // Setup the task manager
+            if ((obj.config) && (obj.config.settings) && (obj.config.settings.taskmanager == true)) {
+                obj.taskManager = require('./taskmanager').createTaskManager(obj);
             }
 
             // Start plugin manager if configuration allows this.

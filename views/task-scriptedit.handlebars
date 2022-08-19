@@ -1,0 +1,73 @@
+<html>
+<head>
+    <script type="text/javascript" src="scripts/common-0.0.1.js"></script>
+    <style>
+        body {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            color: white;
+        }
+
+        #scriptContent {
+            width: 80%;
+            height: 80%;
+        }
+
+        #scriptContentC {
+            padding: 20px;
+        }
+
+        #controlBar button {
+            cursor: pointer;
+        }
+
+        #scriptNameC {
+            padding: 20px;
+        }
+
+        #scriptName {
+            width: 300px;
+        }
+
+        #controlBar {
+            padding: 5px;
+            padding-left: 20px;
+        }
+
+        body {
+            background-color: #036;
+        }
+    </style>
+</head>
+<body onload="doOnLoad();">
+    <div id="scriptTaskScriptEdit">
+        <div id="scriptNameC">Script Name: <input type="text" value="" id="scriptName" /></div>
+        <div id="controlBar">
+            <button onclick="goSave();">Save</button>
+            <button onclick="goClose();">Close</button>
+        </div>
+        <div id="scriptContentC">
+            <textarea id="scriptContent"></textarea>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var scriptData = {{{scriptData}}};
+
+        function doOnLoad() {
+            //QH('scriptContent', scriptData.content);
+            Q('scriptContent').value = scriptData.content;
+            Q('scriptName').value = scriptData.name;
+        }
+
+        function goSave() {
+            scriptData.content = Q('scriptContent').value;
+            scriptData.name = Q('scriptName').value;
+            window.opener.callback(scriptData);
+            //goClose();
+        }
+
+        function goClose() {
+            window.close();
+        }
+    </script>
+</body>
+</html>
