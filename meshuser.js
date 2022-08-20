@@ -593,6 +593,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((typeof domain.terminal.linuxshell == 'string') && (domain.terminal.linuxshell != 'any')) { serverinfo.linuxshell = domain.terminal.linuxshell; }
             }
             if (Array.isArray(domain.preconfiguredremoteinput)) { serverinfo.preConfiguredRemoteInput = domain.preconfiguredremoteinput; }
+            if (Array.isArray(domain.preconfiguredscripts)) {
+                const r = [];
+                for (var i in domain.preconfiguredscripts) {
+                    const types = ['', 'bat', 'ps1', 'sh', 'agent']; // 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux, 4 = Agent
+                    const script = domain.preconfiguredscripts[i];
+                    if ((typeof script.name == 'string') && (script.name.length <= 32) && (typeof script.type == 'string') && ((typeof script.file == 'string') || (typeof script.cmd == 'string'))) {
+                        const s = { name: script.name, type: types.indexOf(script.type.toLowerCase()) };
+                        if (s.type > 0) { r.push(s); }
+                    }
+                }
+                serverinfo.preConfiguredScripts = r;
+            }
 
             // Send server information
             try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
@@ -2783,8 +2795,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'runcommands':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                    if (typeof command.type != 'number') break; // Check command type
-                    if (typeof command.runAsUser != 'number') { command.runAsUser = 0; } // Check runAsUser
+                    if (typeof command.presetcmd != 'number') {
+                        if (typeof command.type != 'number') break; // Check command type
+                        if (typeof command.runAsUser != 'number') { command.runAsUser = 0; } // Check runAsUser
+                    }
 
                     const processRunCommand = function (command) {
                         for (i in command.nodeids) {
@@ -2873,7 +2887,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
 
-                    if (typeof command.cmdpath == 'string') {
+                    if (typeof command.presetcmd == 'number') {
+                        // If a pre-set command is used, load the command
+                        if (Array.isArray(domain.preconfiguredscripts) == false) return;
+                        const script = domain.preconfiguredscripts[command.presetcmd];
+                        if (script == null) return;
+                        delete command.presetcmd;
+
+                        // Decode script type
+                        const types = ['', 'bat', 'ps1', 'sh', 'agent']; // 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux, 4 = Agent
+                        if (typeof script.type == 'string') { const stype = types.indexOf(script.type.toLowerCase()); if (stype > 0) { command.type = stype; } }
+                        if (command.type == null) return;
+
+                        // Decode script runas
+                        if (command.type != 4) {
+                            const runAsModes = ['agent', 'userfirst', 'user']; // 0 = AsAgent, 1 = UserFirst, 2 = UserOnly
+                            if (typeof script.runas == 'string') { const srunas = runAsModes.indexOf(script.runas.toLowerCase()); if (srunas >= 0) { command.runAsUser = srunas; } }
+                        }
+
+                        if (typeof script.file == 'string') {
+                            // The pre-defined script commands are in a file, load it
+                            const scriptPath = parent.common.joinPath(parent.parent.datapath, script.file);
+                            fs.readFile(scriptPath, function (err, data) {
+                                // If loaded correctly, run loaded commands
+                                if ((err != null) || (data == null) || (data.length == 0) || (data.length > 65535)) return;
+                                command.cmds = data.toString();
+                                processRunCommand(command);
+                            });
+                        } else if (typeof script.cmd == 'string') {
+                            // The pre-defined script commands are right in the config.json, use that
+                            command.cmds = script.cmd;
+                            processRunCommand(command);
+                        }
+                    } else if (typeof command.cmdpath == 'string') {
                         // If a server command path is used, load the script from the path
                         var file = parent.getServerFilePath(user, domain, command.cmdpath);
                         if (file != null) {
