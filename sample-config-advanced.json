@@ -243,6 +243,31 @@
           }
         ]
       },
+      "PreconfiguredScripts": [
+        {
+          "name": "Run NotePad as user",
+          "file": "scripts/notepad.bat",
+          "type": "bat",
+          "runas": "user"
+        },
+        {
+          "name": "Run NotePad as agent",
+          "cmd": "notepad.exe",
+          "type": "bat",
+          "runas": "agent"
+        },
+        {
+          "name": "Run echo",
+          "cmd": "echo \"hello world\"",
+          "type": "sh",
+          "runas": "agent"
+        },
+        {
+          "name": "Agent Update",
+          "cmd": "agentupdate",
+          "type": "agent"
+        }
+      ],
       "PreconfiguredRemoteInput": [
         {
           "name": "CompanyUrl",

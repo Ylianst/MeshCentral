@@ -383,6 +383,39 @@
               "expire": { "type": "number", "description": "When set, limits the self-created guest sharing link to this number of minutes." }
             }
           },
+          "PreconfiguredScripts": {
+            "type": "array",
+            "default": null,
+            "description": "When set, your can try click the run button to run on of these scripts on the remote device.",
+            "items": {
+              "type": "object",
+              "required": [ "name", "type" ],
+              "properties": {
+                "name": {
+                  "description": "Name of the script.",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The type of script.",
+                  "type": "string",
+                  "enum": [ "bat", "ps1", "sh", "agent" ]
+                },
+                "runas": {
+                  "description": "How to run this script, does not appy to agent scripts.",
+                  "type": "string",
+                  "enum": ["agent", "userfirst", "user"]
+                },
+                "cmd": {
+                  "description": "The command or \\r\\n seperated commands to run, if set do not use the file key.",
+                  "type": "string"
+                },
+                "file": {
+                  "description": "The script file path and name, if set do not use the cmd key. This file path starts in meshcentral-data.",
+                  "type": "string"
+                }
+              }
+            }
+          },
           "preConfiguredRemoteInput": {
             "type": "array",
             "default": null,

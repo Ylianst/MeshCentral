@@ -138,7 +138,10 @@
         <span id="deskPreConfigShortcutContextMenu2"></span>
         <div class="cmtext" onclick="cmdeskpreconfigtypeaction(-1,event)">Customize...</div>
     </div>
-
+    <div id="deskPreConfigScriptContextMenu" class="contextMenu noselect" style="display:none;min-width:0px;max-height:calc(80% - 50px);overflow-y:auto">
+        <span id="deskPreConfigScriptContextMenu1"></span>
+        <span id="deskPreConfigScriptContextMenu2"></span>
+    </div>
     <!--
     <div id="pluginTabContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div id="cxclose" class="cmtext" onclick="pluginTabClose(event)">Close Tab</div>
@@ -703,7 +706,7 @@
                             <span id="DeskTimer" style="line-height:22px" title="Session time"></span>
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span>&nbsp;</span>
-                            <span id=DeskRunButton class="deskarea" title="Run a script on this computer"><img class="desktopButtons" src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskRunButton cmenu="deskPreConfigScriptContextMenu" class="deskarea" title="Run a script on this computer"><img class="desktopButtons" src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img class="desktopButtons" src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img class="desktopButtons" src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
@@ -2373,10 +2376,23 @@
                         }
                     }
                     if (serverinfo.preConfiguredRemoteInput) {
+                        // Setup the pre-configured keyboard remote input strings
                         var x = '';
                         for (var i in serverinfo.preConfiguredRemoteInput) { x += '<div class="cmtext" onclick="cmdeskpreconfigtypeaction(' + i + ',event)">' + EscapeHtml(serverinfo.preConfiguredRemoteInput[i].name) + '</div>'; }
                         if (x != '') { x += '<hr />'; }
                         QH('deskPreConfigShortcutContextMenu1', x);
+                    }
+                    if (serverinfo.preConfiguredScripts) {
+                        // Setup the pre-configured scripts
+                        var x = '', y = '';
+                        for (var i in serverinfo.preConfiguredScripts) {
+                            var s = serverinfo.preConfiguredScripts[i];
+                            var z = '<div class="cmtext" onclick="cmdeskpreconfigscriptaction(' + i + ',event)">' + EscapeHtml(serverinfo.preConfiguredScripts[i].name) + '</div>';
+                            if (s.type != 3) { x += z; }
+                            if (s.type >= 3) { y += z; }
+                        }
+                        QH('deskPreConfigScriptContextMenu1', x); // Windows devices
+                        QH('deskPreConfigScriptContextMenu2', y); // Other devices
                     }
                     break;
                 }
@@ -6265,6 +6281,10 @@
             else { showDeskTypeEx(deskKeyboardStrings[action - 1000].v); } // Type user pre-configured input string
         }
 
+        function cmdeskpreconfigscriptaction(action) {
+            meshserver.send({ action: 'runcommands', nodeids: [ currentNode._id ], presetcmd: action });
+        }
+
         function p13deletefileCm(b, file) {
             files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: [ file.n ], rec: false });
             p13folderup(999);
@@ -6300,6 +6320,7 @@
             QV('deskPlayerContextMenu', false);
             QV('deskKeyShortcutContextMenu', false);
             QV('deskPreConfigShortcutContextMenu', false);
+            QV('deskPreConfigScriptContextMenu', false);
             QV('expandAllContextMenu', false);
             //QV('pluginTabContextMenu', false);
             contextelement = null;
@@ -6951,6 +6972,10 @@
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
 
+                // Pre defined scripts
+                QV('deskPreConfigScriptContextMenu1', (currentNode.mtype == 2) && isWindowsNode(currentNode)); // Windows devices
+                QV('deskPreConfigScriptContextMenu2', (currentNode.mtype == 2) && !isWindowsNode(currentNode)); // Other devices
+
                 // Device Notification
                 QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
@@ -7221,7 +7246,7 @@
                 if (((meshrights & (4 + 8 + 64 + 262144)) != 0) && (node.mtype < 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
-                if ((node.mtype == 2) && (connectivity & 1) && ((meshrights & 131072) != 0)) { x += '<input type=button value="' + "Run" + '" title="' + "Run commands on this device" + '" onclick=runDeviceCmd("' + encodeURIComponentEx(node._id) + '") />'; }
+                if ((node.mtype == 2) && (connectivity & 1) && ((meshrights & 131072) != 0)) { x += '<input type=button cmenu=deskPreConfigScriptContextMenu value="' + "Run" + '" title="' + "Run commands on this device" + '" onclick=runDeviceCmd("' + encodeURIComponentEx(node._id) + '") />'; }
                 if (node.mtype != 4) {
                     if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                     //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
@@ -17899,6 +17924,7 @@
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
+        function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34].indexOf(node.agent.id) >= 0); }
 
         // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
         // So we do that for all browsers except FireFox
