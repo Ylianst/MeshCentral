@@ -591,14 +591,14 @@ body {
     width: 260px;
 }
 
-#d3serveraction {
+#d3serveraction, #d2serveraction {
     width: 100%;
     background-color: #d3d9d6;
     text-align: left;
     padding: 3px;
 }
 
-#d3serverfiles {
+#d3serverfiles, #d2serverfiles {
     width: 100%;
     height: 150px;
     background-color: white;
