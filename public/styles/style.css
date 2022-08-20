@@ -1152,7 +1152,7 @@ NoMeshesPanel img {
         padding: 4px;
     }
 
-#bigok {
+#bigok, #p11bigok, #p13bigok {
     width: 256px;
     overflow: hidden;
     position: absolute;
@@ -1161,9 +1161,10 @@ NoMeshesPanel img {
     text-align: center;
     font-size: 1600%;
     color: #AAAAAA;
+    z-index: 99999;
 }
 
-#bigfail {
+#bigfail, #p11bigfail, #p13bigfail {
     width: 256px;
     overflow: hidden;
     position: absolute;
@@ -1172,6 +1173,7 @@ NoMeshesPanel img {
     text-align: center;
     font-size: 1600%;
     color: #AAAAAA;
+    z-index: 99999;
 }
 
 .chartViewCanvas {
@@ -2758,28 +2760,6 @@ a {
 
 .room4submenu #p13filetable {
     height: calc(100vh - 349px);
-}
-
-#p13bigok {
-    width: 256px;
-    overflow: hidden;
-    position: absolute;
-    left: 337px;
-    top: 200px;
-    text-align: center;
-    font-size: 1600%;
-    color: #AAA;
-}
-
-#p13bigfail {
-    width: 256px;
-    overflow: hidden;
-    position: absolute;
-    left: 337px;
-    top: 200px;
-    text-align: center;
-    font-size: 1600%;
-    color: #AAA;
 }
 
 .fulldesk #p14title {
