@@ -670,6 +670,8 @@
                         </div>
                     </div>
                     <div id=deskarea3x>
+                        <div id="p11bigok" style="display:none"><b>&checkmark;</b></div>
+                        <div id="p11bigfail" style="display:none"><b>&#10007;</b></div>
                         <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
                         <div id=DeskParent>
                             <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
@@ -1631,7 +1633,7 @@
             for (var j = 1; j < 5; j++) { Q('devViewButton' + j).classList.remove('viewSelectorSel'); }
             Q('devViewButton' + Q('viewselect').value).classList.add('viewSelectorSel');
 
-            // Setup upload drag & drop
+            // Setup upload drag & drop for server files
             Q('p5filetable').addEventListener('drop', p5fileDragDrop, false);
             Q('p5filetable').addEventListener('dragover', p5fileDragOver, false);
             Q('p5filetable').addEventListener('dragleave', p5fileDragLeave, false);
@@ -1639,7 +1641,12 @@
             //Q('p5fileCatchAllInput').addEventListener('dragover', p5fileDragOver, false);
             //Q('p5fileCatchAllInput').addEventListener('dragleave', p5fileDragLeave, false);
 
-            // Setup upload drag & drop
+            // Setup drag & drop for device desktop
+            Q('deskarea0').addEventListener('drop', p11fileDragDrop, false);
+            Q('deskarea0').addEventListener('dragover', p11fileDragOver, false);
+            Q('deskarea0').addEventListener('dragleave', p11fileDragLeave, false);
+
+            // Setup upload drag & drop for device files
             Q('p13filetable').addEventListener('drop', p13fileDragDrop, false);
             Q('p13filetable').addEventListener('dragover', p13fileDragOver, false);
             Q('p13filetable').addEventListener('dragleave', p13fileDragLeave, false);
@@ -5731,12 +5738,22 @@
             var wintype = false, linuxtype = false, agenttype = false;
             for (var i in options.nodeids) {
                 var n = getNodeFromId(options.nodeids[i]);
-                if (n.agent) { if ((GetNodeRights(n) & 24) == 24) { agenttype = true; } if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (n.agent) { if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
+                if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
             }
             if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
                 // Fetch run options
                 var runopt = { type:1, runAs:0, source:1, cmd:'' };
                 try { runopt = JSON.parse(getstore('runopt', runopt)); } catch (ex) {}
+
+                if (options.selectedFile) {
+                    var filename = options.selectedFile.name.toLowerCase();
+                    console.log('filename', filename);
+                    if (filename.endsWith('.bat')) { runopt.type = 1; }
+                    if (filename.endsWith('.ps1')) { runopt.type = 2; }
+                    if (filename.endsWith('.sh')) { runopt.type = 3; }
+                    if (filename.endsWith('.agentconsole')) { runopt.type = 4; }
+                }
 
                 var x = '';
                 if (options.title) { x += options.title + '<br />'; }
@@ -5746,48 +5763,59 @@
                 if (agenttype == true) { x += '<option value=4' + ((runopt.type == 4)?' selected':'') + '>' + "Agent Console" + '</option>'; } // MESHRIGHT_REMOTECONTROL & MESHRIGHT_AGENTCONSOLE are needed
                 x += '</select>';
                 x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0' + ((runopt.runAs == 0)?' selected':'') + '>' + "Run as agent" + '</option><option value=1' + ((runopt.runAs == 1)?' selected':'') + '>' + "Run as user, agent if no user" + '</option><option value=2' + ((runopt.runAs == 2)?' selected':'') + '>' + "Must run as user" + '</option></select>';
-                x += '<select id=d2cmdsource onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px><option value=0' + ((runopt.source == 0)?' selected':'') + '>' + "Commands from text box" + '</option><option value=1' + ((runopt.source == 1)?' selected':'') + '>' + "Commands from file" + '</option>';
-                if (userinfo.siteadmin & 8) { x += '<option value=2' + ((runopt.source == 2)?' selected':'') + '>' + "Commands from file on server" + '</option>'; }
-                x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
-                x += '<div id=d2runfile style=display:none><input id=d2runfileex type=file onchange=d2runCommandValidate() id=d2localFile name=files onchange=d2runCommandValidate() /></div>';
-                if (userinfo.siteadmin & 8) { x += '<div id=d2runsfile style=display:none><div id=d2serveraction valign=bottom><input type=button id=p2FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p2CurrentFolder></span></div><div id=d2serverfiles></div></div>'; }
+                if (options.selectedFile == null) {
+                    x += '<select id=d2cmdsource onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px><option value=0' + ((runopt.source == 0)?' selected':'') + '>' + "Commands from text box" + '</option><option value=1' + ((runopt.source == 1)?' selected':'') + '>' + "Commands from file" + '</option>';
+                    if (userinfo.siteadmin & 8) { x += '<option value=2' + ((runopt.source == 2)?' selected':'') + '>' + "Commands from file on server" + '</option>'; }
+                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
+                    x += '<div id=d2runfile style=display:none><input id=d2runfileex type=file onchange=d2runCommandValidate() id=d2localFile name=files onchange=d2runCommandValidate() /></div>';
+                    if (userinfo.siteadmin & 8) { x += '<div id=d2runsfile style=display:none><div id=d2serveraction valign=bottom><input type=button id=p2FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p2CurrentFolder></span></div><div id=d2serverfiles></div></div>'; }
+                }
                 setDialogMode(2, "Run Commands", 3, d2groupActionFunctionRunCommands, x, options);
-                Q('d2runcmd').focus();
+                if (options.selectedFile == null) {
+                    Q('d2runcmd').focus();
+                    if (userinfo.siteadmin & 8) { d3fileoptions = { dialog: 2, files: 'd2serverfiles', folderup: 'p2FolderUp', currentFolder: 'p2CurrentFolder', func: null }; d3updatefiles(); } // Update the server files
+                }
                 d2runCommandValidate();
-                if (userinfo.siteadmin & 8) { d3fileoptions = { dialog: 2, files: 'd2serverfiles', folderup: 'p2FolderUp', currentFolder: 'p2CurrentFolder', func: null }; d3updatefiles(); } // Update the server files
             }
         }
 
         function d2runCommandValidate() {
             QV('d2cmduser', Q('d2cmdtype').value < 4);
-            QV('d2runcmd', Q('d2cmdsource').value == 0);
-            QV('d2runfile', Q('d2cmdsource').value == 1);
-            QV('d2runsfile', Q('d2cmdsource').value == 2);
-            var ok = false;
-            if (Q('d2cmdsource').value == 0) { if (Q('d2runcmd').value.length > 0) { ok = true; } } // From text box
-            if (Q('d2cmdsource').value == 1) { if (Q('d2runfileex').files.length == 1) { ok = true; } } // From file
-            if (Q('d2cmdsource').value == 2) { ok = false; } // From server file
-            QE('idx_dlgOkButton', ok);
+            if (xxdialogTag.selectedFile == null) {
+                QV('d2runcmd', Q('d2cmdsource').value == 0);
+                QV('d2runfile', Q('d2cmdsource').value == 1);
+                QV('d2runsfile', Q('d2cmdsource').value == 2);
+                var ok = false;
+                if (Q('d2cmdsource').value == 0) { if (Q('d2runcmd').value.length > 0) { ok = true; } } // From text box
+                if (Q('d2cmdsource').value == 1) { if (Q('d2runfileex').files.length == 1) { ok = true; } } // From file
+                if (Q('d2cmdsource').value == 2) { ok = false; } // From server file
+                QE('idx_dlgOkButton', ok);
+            } else {
+                QE('idx_dlgOkButton', true);
+            }
         }
 
         function d2groupActionFunctionRunCommands(b, options) {
             var type = 3;
             try { type = parseInt(Q('d2cmdtype').value); } catch (ex) { }
-            putstore('runopt', JSON.stringify({ type: type, runAs: parseInt(Q('d2cmduser').value), source: parseInt(Q('d2cmdsource').value), cmd: encodeURIComponent(Q('d2runcmd').value) })); // Save run options
+            if (options.selectedFile == null) { putstore('runopt', JSON.stringify({ type: type, runAs: parseInt(Q('d2cmduser').value), source: parseInt(Q('d2cmdsource').value), cmd: encodeURIComponent(Q('d2runcmd').value) })); } // Save run options
             var cmd = { action: 'runcommands', nodeids: options.nodeids, type: type, runAsUser: parseInt(Q('d2cmduser').value) };
-            if (Q('d2cmdsource').value == 0) {
+            if (options.selectedFile) {
+                // Drag & drop file
+                var reader = new FileReader();
+                reader.onload = function (e) { cmd.cmds = e.target.result; meshserver.send(cmd); if (options.func) { options.func(); } }
+                reader.readAsText(options.selectedFile);
+            } else if (Q('d2cmdsource').value == 0) {
                 // From text box
                 cmd.cmds = Q('d2runcmd').value;
                 meshserver.send(cmd);
                 if (options.func) { options.func(); }
-            }
-            if (Q('d2cmdsource').value == 1) {
+            } else if (Q('d2cmdsource').value == 1) {
                 // From file
                 var reader = new FileReader();
                 reader.onload = function (e) { cmd.cmds = e.target.result; meshserver.send(cmd); if (options.func) { options.func(); } }
                 reader.readAsText(Q('d2runfileex').files[0]);
-            }
-            if (Q('d2cmdsource').value == 2) {
+            } else if (Q('d2cmdsource').value == 2) {
                 // From server file
                 var files = d3getFileSel();
                 if (files.length != 1) return;
@@ -7706,7 +7734,7 @@
         }
 
         // Run commands on current device
-        function runDeviceCmd(nodeid) { if (xxdialogMode) return; d2runCommandDialog({ nodeids: [ decodeURIComponent(nodeid ? nodeid : currentNode._id) ] }); }
+        function runDeviceCmd(nodeid) { if (xxdialogMode) return; d2runCommandDialog({ nodeids: [ nodeid ? decodeURIComponent(nodeid) : currentNode._id ] }); }
 
         function writeDeviceEvent(nodeid) {
             if (xxdialogMode) return;
@@ -9312,6 +9340,42 @@
             }
         }
 
+        function p11fileDragDrop(e) {
+            haltEvent(e);
+            QV('p11bigfail', false);
+            QV('p11bigok', false);
+            if ((xxdialogMode != null) || (desktop == null) || (desktop.State != 3) || (e.dataTransfer == null) || (e.dataTransfer.files.length == 0)) return;
+
+            var file = e.dataTransfer.files[0];
+            var filename = file.name.toLowerCase();
+            if (filename.endsWith('.bat') || filename.endsWith('.ps1') || filename.endsWith('.sh') || filename.endsWith('.agentconsole')) {
+                d2runCommandDialog({ nodeids: [ currentNode._id ], selectedFile: file });
+            } else if (filename.endsWith('.txt')) {
+                var reader = new FileReader();
+                reader.onload = function (e) { showDeskType(e.target.result); }
+                reader.readAsText(file);
+            }
+        }
+
+        var p11dragtimer = null;
+        function p11fileDragOver(e) {
+            haltEvent(e);
+            if (p11dragtimer != null) { clearTimeout(p11dragtimer); p11dragtimer = null; }
+            var ac = ((xxdialogMode == null) && (desktop != null) && (desktop.State == 3));
+            QV('p11bigok', ac);
+            QV('p11bigfail', !ac);
+        }
+
+        function p11fileDragLeave(e) {
+            haltEvent(e);
+            if (e.target.id != 'Desk') {
+                QV('p11bigfail', false);
+                QV('p11bigok', false);
+            } else {
+                p11dragtimer = setTimeout(function () { QV('p11bigfail',false); QV('p11bigok',false); p11dragtimer = null; }, 10);
+            }
+        }
+
         //
         // Desktop Shortcut Keys
         //
@@ -9557,11 +9621,11 @@
         }
 
         // Remote desktop typing
-        function showDeskType() {
+        function showDeskType(text) {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskType').blur();
             var x = '<div>' + "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding." + '<div>';
-            x += '<textarea id=d2typeText style="margin-top:5px;width:100%;height:184px;resize:none" maxlength=2000></textarea>';
+            x += '<textarea id=d2typeText style="margin-top:5px;width:100%;height:184px;resize:none" maxlength=2000>' + (text ? EscapeHtml(text) : '') + '</textarea>';
             setDialogMode(2, "Remote Keyboard Entry", 3, showDeskTypeEx, x);
             Q('d2typeText').focus();
         }
