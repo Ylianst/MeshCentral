@@ -5712,6 +5712,7 @@
     },
     {
       "en": "Account login token records",
+      "nl": "Token vermeldingen voor accountaanmelding",
       "xloc": [
         "default.handlebars->47->2895"
       ]
@@ -9269,6 +9270,7 @@
     },
     {
       "en": "An unknown error occured.",
+      "nl": "Er is een onbekende fout opgetreden.",
       "xloc": [
         "default.handlebars->47->2775"
       ]
@@ -15159,18 +15161,21 @@
     },
     {
       "en": "Commands from file",
+      "nl": "Opdrachten uit bestand",
       "xloc": [
         "default.handlebars->47->727"
       ]
     },
     {
       "en": "Commands from file on server",
+      "nl": "Opdrachten uit een bestand op de server",
       "xloc": [
         "default.handlebars->47->728"
       ]
     },
     {
       "en": "Commands from text box",
+      "nl": "Opdrachten uit tekstvak",
       "xloc": [
         "default.handlebars->47->726"
       ]
@@ -15325,6 +15330,7 @@
     },
     {
       "en": "Configuration file records",
+      "nl": "Configuratiebestand vermeldingen",
       "xloc": [
         "default.handlebars->47->2888"
       ]
@@ -18772,6 +18778,7 @@
     },
     {
       "en": "Database Records",
+      "nl": "Database vermeldingen",
       "xloc": [
         "default.handlebars->47->2814"
       ]
@@ -20794,12 +20801,14 @@
     },
     {
       "en": "Device Push Notification Record",
+      "nl": "Apparaat Push Notificatie vermelding",
       "xloc": [
         "default.handlebars->47->2897"
       ]
     },
     {
       "en": "Device SMBIOS record",
+      "nl": "Apparaat SMBIOS vermelding",
       "xloc": [
         "default.handlebars->47->2896"
       ]
@@ -21162,6 +21171,7 @@
     },
     {
       "en": "Device group record",
+      "nl": "Apparaatgroep vermelding",
       "xloc": [
         "default.handlebars->47->2882"
       ]
@@ -21243,6 +21253,7 @@
     },
     {
       "en": "Device information records",
+      "nl": "Apparaatinformatie vermeldingen",
       "xloc": [
         "default.handlebars->47->2884"
       ]
@@ -21763,12 +21774,14 @@
     },
     {
       "en": "Device power transition records",
+      "nl": "Apparaat aan/uit vermeldingen",
       "xloc": [
         "default.handlebars->47->2890"
       ]
     },
     {
       "en": "Device record",
+      "nl": "Apparaat vermelding",
       "xloc": [
         "default.handlebars->47->2881"
       ]
@@ -21825,12 +21838,14 @@
     },
     {
       "en": "Device sharing records",
+      "nl": "Apparaten delings vermeldingen",
       "xloc": [
         "default.handlebars->47->2894"
       ]
     },
     {
       "en": "Device, users, groups and other records",
+      "nl": "Apparaat, gebruikers, groepen en andere vermeldingen",
       "xloc": [
         "default.handlebars->47->2898"
       ]
@@ -26924,6 +26939,7 @@
     },
     {
       "en": "Event records",
+      "nl": "Gebeurtenis vermeldingen",
       "xloc": [
         "default.handlebars->47->2891"
       ]
@@ -31749,6 +31765,7 @@
     },
     {
       "en": "IP location information records",
+      "nl": "IP locatiegegevens vermeldingen",
       "xloc": [
         "default.handlebars->47->2885"
       ]
@@ -37225,6 +37242,7 @@
     },
     {
       "en": "Last connection time records",
+      "nl": "Laatste verbindingstijd vermeldingen",
       "xloc": [
         "default.handlebars->47->2889"
       ]
@@ -43927,6 +43945,7 @@
     },
     {
       "en": "Network interface information records",
+      "nl": "Netwerkinterface informatie vermeldingen",
       "xloc": [
         "default.handlebars->47->2887"
       ]
@@ -56251,6 +56270,7 @@
     },
     {
       "en": "Run",
+      "nL": "Uitvoeren",
       "xloc": [
         "default.handlebars->47->920"
       ]
@@ -56309,6 +56329,7 @@
     },
     {
       "en": "Run a script on this computer",
+      "nl": "Voer een script uit op deze computer",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -56418,15 +56439,9 @@
     },
     {
       "en": "Run commands on this device",
-      "xloc": [
-        "default.handlebars->47->921"
-      ]
-    },
-    {
       "cs": "Spouštějte příkazy na tomto zařízení.",
       "da": "Kør kommandoer på denne enhed.",
       "de": "Führen Sie Befehle auf diesem Gerät aus.",
-      "en": "Run commands on this device.",
       "es": "Ejecutar comandos en este dispositivo.",
       "fi": "Suorita komentoja tässä laittessa.",
       "fr": "Exécuter des commandes sur cet appareil.",
@@ -56443,6 +56458,9 @@
       "tr": "Bu cihazda komutları çalıştırın.",
       "zh-chs": "在此设备上运行命令。",
       "zh-cht": "在此裝置上運行命令。"
+      "xloc": [
+        "default.handlebars->47->921"
+      ]
     },
     {
       "cs": "Běh",
@@ -59840,18 +59858,21 @@
     },
     {
       "en": "Server is unable to get recordings from the database.",
+      "nl": "Server kan geen opnamen uit de database halen.",
       "xloc": [
         "default.handlebars->47->2774"
       ]
     },
     {
       "en": "Server is unable to read from the recordings folder.",
+      "nl": "Server kan niet lezen uit de opnamemap.",
       "xloc": [
         "default.handlebars->47->2773"
       ]
     },
     {
       "en": "Server statistics records",
+      "nl": "Server statistieken vermeldingen",
       "xloc": [
         "default.handlebars->47->2892"
       ]
@@ -65421,6 +65442,7 @@
     },
     {
       "en": "Text notes records",
+      "nl": "Tekst notities vermeldingen",
       "xloc": [
         "default.handlebars->47->2886"
       ]
@@ -68583,12 +68605,14 @@
     },
     {
       "en": "Unable to load agent icon file: {0}.",
+      "nl": "Kan agent pictogram bestand niet laden: {0}.",
       "xloc": [
         "default.handlebars->47->105"
       ]
     },
     {
       "en": "Unable to load agent logo file: {0}.",
+      "nl": "Kan agent logo bestand niet laden: {0}.",
       "xloc": [
         "default.handlebars->47->106"
       ]
@@ -70939,6 +70963,7 @@
     },
     {
       "en": "User group records",
+      "nl": "Gebruikersgroep vermeldingen",
       "xloc": [
         "default.handlebars->47->2893"
       ]
@@ -71050,6 +71075,7 @@
     },
     {
       "en": "User records",
+      "nl": "Gebruikers vermeldingen",
       "xloc": [
         "default.handlebars->47->2883"
       ]
