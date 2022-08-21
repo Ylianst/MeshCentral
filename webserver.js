@@ -472,6 +472,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (username == null) { username = shortname; }
                 var userid = 'user/' + domain.id + '/' + shortname;
 
+                // See if the user is required to be part of an LDAP user group in order to log into this server.
+                if (typeof domain.ldapuserrequiredgroupmembership == 'string') { domain.ldapuserrequiredgroupmembership = [domain.ldapuserrequiredgroupmembership]; }
+                if (Array.isArray(domain.ldapuserrequiredgroupmembership) && (domain.ldapuserrequiredgroupmembership.length > 0)) {
+                    // We must be part of a LDAP user group, lets get the list of groups this user is a member of.
+                    const memberOfKey = (typeof domain.ldapusergroups == 'string') ? domain.ldapusergroups : 'memberOf';
+                    var userMemberships = xxuser[memberOfKey];
+                    if (typeof userMemberships == 'string') { userMemberships = [userMemberships]; }
+                    if (Array.isArray(userMemberships) == false) { userMemberships = []; }
+
+                    // Look for a matching LDAP user group
+                    var userMembershipMatch = false;
+                    for (var i in domain.ldapuserrequiredgroupmembership) { if (userMemberships.indexOf(domain.ldapuserrequiredgroupmembership[i]) >= 0) { userMembershipMatch = true; } }
+
+                    // If there is no match, deny the login
+                    if (userMembershipMatch === false) { fn('denied'); return; }
+                }
+
                 // Get the email address for this LDAP user
                 var email = null;
                 if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser['mail']) { email = xxuser['mail']; } // Use given feild name or default
@@ -1214,6 +1231,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             req.session.messageid = 110; // Account locked.
                             const ua = getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + req.clientIp, msgid: 109, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
+                            obj.setbadLogin(req);
+                        } else if (err == 'denied') {
+                            parent.debug('web', 'handleLoginRequest: login failed, access denied');
+                            req.session.messageid = 111; // Access denied.
+                            const ua = getUserAgentInfo(req);
+                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Denied user login from ' + req.clientIp, msgid: 155, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
                             obj.setbadLogin(req);
                         } else {
                             parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
@@ -2595,13 +2618,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
-                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
-                parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
-                req.session.userid = userid;
-                delete req.session.currentNode;
-                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-                setSessionRandom(req);
-                handleRootRequestEx(req, res, domain, direct);
+                if ((userid != null) && (err == null)) {
+                    // Login success
+                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
+                    parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
+                    req.session.userid = userid;
+                    delete req.session.currentNode;
+                    req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+                    setSessionRandom(req);
+                    handleRootRequestEx(req, res, domain, direct);
+                } else {
+                    // Login failed
+                    handleRootRequestEx(req, res, domain, direct);
+                }
             });
         } else if ((req.session != null) && (typeof req.session.loginToken == 'string')) {
             // Check if the loginToken is still valid
@@ -7101,7 +7130,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((req.query.user != null) && (req.query.pass != null)) {
                 // A user/pass is provided in URL arguments
                 obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
-
                     var user = obj.users[userid];
 
                     // Check if user as the "notools" site right. If so, deny this connection as tools are not allowed to connect.
