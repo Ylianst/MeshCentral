@@ -768,7 +768,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // This is the default logout redirect to the login page
-        if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key); } else { res.redirect(domain.url); }
+        if (req.query.key != null) { res.redirect(domain.url + 'login?key=' + req.query.key); } else { res.redirect(domain.url + 'login'); }
     }
 
     // Return an object with 2FA type if 2-step auth can be skipped
