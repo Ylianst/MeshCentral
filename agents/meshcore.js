@@ -23,8 +23,7 @@ if (process.platform == 'win32' && require('user-sessions').getDomain == null) {
     };
 }
 
-// NOTE: This seems to cause big problems, don't enable the debugger in the server's meshcore. 
-//attachDebugger({ webport: 9999, wait: 1 }).then(function (prt) { console.log('Point Browser for Debug to port: ' + prt); });
+var promise = require('promise');
 
 // Mesh Rights
 var MNG_ERROR = 65;
@@ -1043,6 +1042,35 @@ function server_check_consentTimer(id) {
     return false;
 }
 
+function tunnel_finalized()
+{
+    console.info1('Tunnel Request Finalized');
+}
+function tunnel_checkServerIdentity(certs)
+{
+    /*
+    try { sendConsoleText("certs[0].digest: " + certs[0].digest); } catch (ex) { sendConsoleText(ex); }
+    try { sendConsoleText("certs[0].fingerprint: " + certs[0].fingerprint); } catch (ex) { sendConsoleText(ex); }
+    try { sendConsoleText("control-digest: " + require('MeshAgent').ServerInfo.ControlChannelCertificate.digest); } catch (ex) { sendConsoleText(ex); }
+    try { sendConsoleText("control-fingerprint: " + require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint); } catch (ex) { sendConsoleText(ex); }
+    */
+
+    // Check if this is an old agent, no certificate checks are possible in this situation. Display a warning.
+    if ((require('MeshAgent').ServerInfo == null) || (require('MeshAgent').ServerInfo.ControlChannelCertificate == null) || (certs[0].digest == null)) { sendAgentMessage("This agent is using insecure tunnels, consider updating.", 3, 119, true); return; }
+
+    // If the tunnel certificate matches the control channel certificate, accept the connection
+    if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; // Control channel certificate matches using full cert hash
+    if ((certs[0].fingerprint != null) && (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint)) return; // Control channel certificate matches using public key hash
+
+    // Check that the certificate is the one expected by the server, fail if not.
+    if ((tunnel_checkServerIdentity.servertlshash != null) && (tunnel_checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
+}
+
+function tunnel_onError()
+{
+    sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e));
+}
+
 // Handle a mesh agent command
 function handleServerCommand(data) {
     if (typeof data == 'object') {
@@ -1062,7 +1090,8 @@ function handleServerCommand(data) {
                         }
                         break;
                     }
-                    case 'tunnel': {
+                    case 'tunnel':
+                        {
                         if (data.value != null) { // Process a new tunnel connection request
                             // Create a new tunnel object
                             var xurl = getServerTargetUrlEx(data.value);
@@ -1074,31 +1103,15 @@ function handleServerCommand(data) {
 
                                 // Perform manual server TLS certificate checking based on the certificate hash given by the server.
                                 woptions.rejectUnauthorized = 0;
-                                woptions.checkServerIdentity = function checkServerIdentity(certs) {
-                                    /*
-                                    try { sendConsoleText("certs[0].digest: " + certs[0].digest); } catch (ex) { sendConsoleText(ex); }
-                                    try { sendConsoleText("certs[0].fingerprint: " + certs[0].fingerprint); } catch (ex) { sendConsoleText(ex); }
-                                    try { sendConsoleText("control-digest: " + require('MeshAgent').ServerInfo.ControlChannelCertificate.digest); } catch (ex) { sendConsoleText(ex); }
-                                    try { sendConsoleText("control-fingerprint: " + require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint); } catch (ex) { sendConsoleText(ex); }
-                                    */
-
-                                    // Check if this is an old agent, no certificate checks are possible in this situation. Display a warning.
-                                    if ((require('MeshAgent').ServerInfo == null) || (require('MeshAgent').ServerInfo.ControlChannelCertificate == null) || (certs[0].digest == null)) { sendAgentMessage("This agent is using insecure tunnels, consider updating.", 3, 119, true); return; }
-
-                                    // If the tunnel certificate matches the control channel certificate, accept the connection
-                                    if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; // Control channel certificate matches using full cert hash
-                                    if ((certs[0].fingerprint != null) && (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint)) return; // Control channel certificate matches using public key hash
-
-                                    // Check that the certificate is the one expected by the server, fail if not.
-                                    if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
-                                }
+                                woptions.checkServerIdentity = tunnel_checkServerIdentity;
                                 woptions.checkServerIdentity.servertlshash = data.servertlshash;
 
                                 //sendConsoleText(JSON.stringify(woptions));
                                 //sendConsoleText('TUNNEL: ' + JSON.stringify(data, null, 2));
+
                                 var tunnel = http.request(woptions);
                                 tunnel.upgrade = onTunnelUpgrade;
-                                tunnel.on('error', function (e) { sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e)); });
+                                tunnel.on('error', tunnel_onError);
                                 tunnel.sessionid = data.sessionid;
                                 tunnel.rights = data.rights;
                                 tunnel.consent = data.consent;
@@ -1122,11 +1135,13 @@ function handleServerCommand(data) {
                                 tunnel.tcpport = data.tcpport;
                                 tunnel.udpaddr = data.udpaddr;
                                 tunnel.udpport = data.udpport;
-                                tunnel.end();
+
                                 // Put the tunnel in the tunnels list
                                 var index = nextTunnelIndex++;
                                 tunnel.index = index;
                                 tunnels[index] = tunnel;
+                                tunnel.once('~', tunnel_finalized);
+                                tunnel.end();
 
                                 //sendConsoleText('New tunnel connection #' + index + ': ' + tunnel.url + ', rights: ' + tunnel.rights, data.sessionid);
                             }
@@ -1840,20 +1855,34 @@ function getDirectoryInfo(reqpath) {
     return response;
 }
 
+function tunnel_s_finalized()
+{
+    console.info1('Tunnel Socket Finalized');
+}
+
+
+function tunnel_onIdleTimeout()
+{
+    this.ping();
+    this.setTimeout(require('MeshAgent').idleTimeout * 1000);
+}
+
 // Tunnel callback operations
-function onTunnelUpgrade(response, s, head) {
+function onTunnelUpgrade(response, s, head)
+{
+
     this.s = s;
+    s.once('~', tunnel_s_finalized);
     s.httprequest = this;
     s.end = onTunnelClosed;
     s.tunnel = this;
     s.descriptorMetadata = "MeshAgent_relayTunnel";
 
-    if (require('MeshAgent').idleTimeout != null) {
+
+    if (require('MeshAgent').idleTimeout != null)
+    {
         s.setTimeout(require('MeshAgent').idleTimeout * 1000);
-        s.on('timeout', function () {
-            this.ping();
-            this.setTimeout(require('MeshAgent').idleTimeout * 1000);
-        });
+        s.on('timeout', tunnel_onIdleTimeout);
     }
 
     //sendConsoleText('onTunnelUpgrade - ' + this.tcpport + ' - ' + this.udpport);
@@ -1937,7 +1966,18 @@ function onTcpRelayServerTunnelData(data) {
     }
 }
 
-function onTunnelClosed() {
+function onTunnelClosed()
+{
+    if (this.tunnel)
+    {
+        if (tunnels[this.httprequest.index] == null)
+        {
+            this.tunnel.s = null;
+            this.tunnel = null;
+            return;
+        }
+    }
+
     var tunnel = tunnels[this.httprequest.index];
     if (tunnel == null) return; // Stop duplicate calls.
 
@@ -1987,7 +2027,7 @@ function onTunnelClosed() {
     } catch (ex) { }
 
     //sendConsoleText("Tunnel #" + this.httprequest.index + " closed. Sent -> " + this.bytesSent_uncompressed + ' bytes (uncompressed), ' + this.bytesSent_actual + ' bytes (actual), ' + this.bytesSent_ratio + '% compression', this.httprequest.sessionid);
-    if (this.httprequest.index) { delete tunnels[this.httprequest.index]; }
+    
 
     /*
     // Close the watcher if required
@@ -2014,11 +2054,523 @@ function onTunnelClosed() {
     }
 
     // Clean up WebSocket
+    delete tunnels[this.httprequest.index];
+    tunnel = null;
+    this.tunnel.s = null;
+    this.tunnel = null;
     this.removeAllListeners('data');
 }
 function onTunnelSendOk() { /*sendConsoleText("Tunnel #" + this.index + " SendOK.", this.sessionid);*/ }
-function onTunnelData(data) {
-    //console.log("OnTunnelData");
+
+function terminal_onconnection (c)
+{
+    if (this.httprequest.connectionPromise.completed) 
+    {
+        c.end(); 
+    }
+    else
+    {
+        this.httprequest.connectionPromise._res(c);
+    }
+}
+function terminal_user_onconnection(c)
+{
+    console.info1('completed-2: ' + this.connectionPromise.completed);
+
+    if (this.connectionPromise.completed)
+    {
+        c.end();
+    }
+    else
+    {
+        this.connectionPromise._res(c);
+    }
+}
+function terminal_stderr_ondata(c)
+{
+    this.stdout.write(c);
+}
+function terminal_onend()
+{
+    this.httprequest.process.kill();
+}
+
+function terminal_onexit()
+{
+    this.tunnel.end();
+}
+function terminal_onfinalized()
+{
+    this.httprequest = null;
+    console.info1('Dispatcher Finalized');
+}
+function terminal_end()
+{
+    if (this.httprequest == null) { return; }
+    if (this.httprequest.tpromise._consent) { this.httprequest.tpromise._consent.close(); }
+    if (this.httprequest.connectionPromise) { this.httprequest.connectionPromise._rej('Closed'); }
+
+    // Remove the terminal session to the count to update the server
+    if (this.httprequest.userid != null)
+    {
+        var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
+        if (tunnelUserCount.terminal[userid] != null) { tunnelUserCount.terminal[userid]--; if (tunnelUserCount.terminal[userid] <= 0) { delete tunnelUserCount.terminal[userid]; } }
+        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
+        broadcastSessionsToRegisteredApps();
+    }
+
+    if (process.platform == 'win32')
+    {
+        // Unpipe the web socket
+        this.unpipe(this.httprequest._term);
+        if (this.httprequest._term) { this.httprequest._term.unpipe(this); }
+
+        // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
+        if (this.rtcchannel)
+        {
+            this.rtcchannel.unpipe(this.httprequest._term);
+            if (this.httprequest._term) { this.httprequest._term.unpipe(this.rtcchannel); }
+        }
+
+        // Clean up
+        if (this.httprequest._term) { this.httprequest._term.end(); }
+        this.httprequest._term = null;
+        this.httprequest._dispatcher = null;
+    }
+
+    this.httprequest = null;
+
+}
+
+function terminal_promise_connection_rejected(e)
+{
+    // FAILED to connect terminal
+    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+    this.ws.end();
+}
+
+function terminal_promise_connection_resolved(term)
+{
+    this._internal.completedArgs = [];
+
+    // SUCCESS
+    var stdoutstream;
+    var stdinstream;
+    if (process.platform == 'win32')
+    {
+        this.ws.httprequest._term = term;
+        this.ws.httprequest._term.tunnel = this.ws;
+        stdoutstream = stdinstream = term;
+    }
+    else
+    {
+        term.descriptorMetadata = 'Remote Terminal';
+        this.ws.httprequest.process = term;
+        this.ws.httprequest.process.tunnel = this.ws;
+        term.stderr.stdout = term.stdout;
+        term.stderr.on('data', terminal_stderr_ondata);
+        stdoutstream = term.stdout;
+        stdinstream = term.stdin;
+        this.ws.prependListener('end', terminal_onend);
+        term.prependListener('exit', terminal_onexit);
+    }
+
+    this.ws.removeAllListeners('data');
+    this.ws.on('data', onTunnelControlData);
+
+    stdoutstream.pipe(this.ws, { dataTypeSkip: 1 });            // 0 = Binary, 1 = Text.
+    this.ws.pipe(stdinstream, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. 
+
+    // Add the terminal session to the count to update the server
+    if (this.ws.httprequest.userid != null)
+    {
+        var userid = getUserIdAndGuestNameFromHttpRequest(this.ws.httprequest);
+        if (tunnelUserCount.terminal[userid] == null) { tunnelUserCount.terminal[userid] = 1; } else { tunnelUserCount.terminal[userid]++; }
+        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
+        broadcastSessionsToRegisteredApps();
+    }
+
+    // Toast Notification, if required
+    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
+    {
+        // User Notifications is required
+        var notifyMessage = currentTranslation['terminalNotify'].replace('{0}', this.ws.httprequest.username);
+        var notifyTitle = "MeshCentral";
+        if (this.ws.httprequest.soptions != null)
+        {
+            if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
+            if (this.ws.httprequest.soptions.notifyMsgTerminal != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgTerminal.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
+        }
+        try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
+    }
+    this.ws = null;
+}
+function terminal_promise_consent_rejected(e)
+{
+    // DO NOT start terminal
+    this.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+    this.that.end();
+
+    this.that = null;
+    this.httprequest = null;
+}
+function promise_init(res, rej) { this._res = res; this._rej = rej; }
+function terminal_userpromise_resolved(u)
+{
+
+    var that = this.that;
+    if (u.Active.length > 0)
+    {
+        var tmp;
+        var username = '"' + u.Active[0].Domain + '\\' + u.Active[0].Username + '"';
+
+
+        if (require('win-virtual-terminal').supported)
+        {
+            // ConPTY PseudoTerminal
+            tmp = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+        }
+        else
+        {
+            // Legacy Terminal
+            tmp = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+        }
+        that.httprequest._dispatcher = tmp;
+        that.httprequest._dispatcher.connectionPromise = that.httprequest.connectionPromise;
+        that.httprequest._dispatcher.on('connection', terminal_user_onconnection);
+        that.httprequest._dispatcher.on('~', terminal_onfinalized);
+    }
+    this.that = null;
+    that = null;
+}
+
+function terminal_promise_consent_resolved()
+{
+    this.httprequest.connectionPromise = new promise(promise_init);
+    this.httprequest.connectionPromise.ws = this.that;
+
+    // Start Terminal
+    if (process.platform == 'win32')
+    {
+        try
+        {
+            var cols = 80, rows = 25;
+            if (this.httprequest.xoptions)
+            {
+                if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
+                if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
+            }
+
+            if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6))
+            {
+                // Admin Terminal
+                if (require('win-virtual-terminal').supported)
+                {
+                    // ConPTY PseudoTerminal
+                    // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
+
+                    // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
+                    this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
+                    this.httprequest._dispatcher.httprequest = this.httprequest;
+                    this.httprequest._dispatcher.on('connection', terminal_onconnection);
+                    this.httprequest._dispatcher.on('~', terminal_onfinalized);
+                }
+                else
+                {
+                    // Legacy Terminal
+                    this.httprequest.connectionPromise._res(require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows));
+                }
+            }
+            else
+            {
+                // Logged in user
+                var userPromise = require('user-sessions').enumerateUsers();
+                userPromise.that = this;
+                userPromise.cols = cols;
+                userPromise.rows = rows;
+                userPromise.then(terminal_userpromise_resolved);
+            }
+        } catch (ex)
+        {
+            this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + ex.toString());
+        }
+    }
+    else
+    {
+        try
+        {
+            var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
+            var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
+            var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
+
+            var env = { HISTCONTROL: 'ignoreboth' };
+            if (process.env['LANG']) { env['LANG'] = process.env['LANG']; }
+            if (process.env['PATH']) { env['PATH'] = process.env['PATH']; }
+            if (this.httprequest.xoptions)
+            {
+                if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
+                if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
+            }
+            var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
+            if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin)
+            {
+                if (!require('fs').existsSync(login)) { throw ('Unable to spawn login process'); }
+                this.httprequest.connectionPromise._res(childProcess.execFile(login, ['login'], options)); // Start login shell
+            }
+            else if (bash)
+            {
+                var p = childProcess.execFile(bash, ['bash'], options); // Start bash
+                // Spaces at the beginning of lines are needed to hide commands from the command history
+                if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string'))
+                {
+                    if (obj.serverInfo.termlaunchcommand[process.platform] != '') { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
+                } else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
+                this.httprequest.connectionPromise._res(p);
+            }
+            else if (sh)
+            {
+                var p = childProcess.execFile(sh, ['sh'], options); // Start sh
+                // Spaces at the beginning of lines are needed to hide commands from the command history
+                if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string'))
+                {
+                    if (obj.serverInfo.termlaunchcommand[process.platform] != '') { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
+                } else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
+                this.httprequest.connectionPromise._res(p);
+            }
+            else
+            {
+                this.httprequest.connectionPromise._rej('Failed to start remote terminal session, no shell found');
+            }
+        } catch (ex)
+        {
+            this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + ex.toString());
+        }
+    }
+
+    this.httprequest.connectionPromise.then(terminal_promise_connection_resolved, terminal_promise_connection_rejected);
+    this.that = null;
+    this.httprequest = null;
+}
+function tunnel_kvm_end()
+{
+    --this.desktop.kvm.connectionCount;
+
+    // Remove ourself from the list of remote desktop session
+    var i = this.desktop.kvm.tunnels.indexOf(this);
+    if (i >= 0) { this.desktop.kvm.tunnels.splice(i, 1); }
+
+    // Send a metadata update to all desktop sessions
+    var users = {};
+    if (this.httprequest.desktop.kvm.tunnels != null)
+    {
+        for (var i in this.httprequest.desktop.kvm.tunnels)
+        {
+            try
+            {
+                var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest.desktop.kvm.tunnels[i].httprequest);
+                if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; }
+            } catch (ex) { sendConsoleText(ex); }
+        }
+        for (var i in this.httprequest.desktop.kvm.tunnels)
+        {
+            try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (ex) { }
+        }
+        tunnelUserCount.desktop = users;
+        try { mesh.SendCommand({ action: 'sessions', type: 'kvm', value: users }); } catch (ex) { }
+        broadcastSessionsToRegisteredApps();
+    }
+
+    // Unpipe the web socket
+    try
+    {
+        this.unpipe(this.httprequest.desktop.kvm);
+        this.httprequest.desktop.kvm.unpipe(this);
+    } catch (ex) { }
+
+    // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
+    if (this.rtcchannel)
+    {
+        try
+        {
+            this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
+            this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
+        }
+        catch (ex) { }
+    }
+
+    // Place wallpaper back if needed
+    // TODO
+
+    if (this.desktop.kvm.connectionCount == 0)
+    {
+        // Display a toast message. This may not be supported on all platforms.
+        // try { require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.'); } catch (ex) { }
+
+        this.httprequest.desktop.kvm.end();
+        if (this.httprequest.desktop.kvm.connectionBar)
+        {
+            this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
+            this.httprequest.desktop.kvm.connectionBar.close();
+            this.httprequest.desktop.kvm.connectionBar = null;
+        }
+    } else
+    {
+        for (var i in this.httprequest.desktop.kvm.users)
+        {
+            if ((this.httprequest.desktop.kvm.users[i] == this.httprequest.username) && this.httprequest.desktop.kvm.connectionBar)
+            {
+                for (var j in this.httprequest.desktop.kvm.rusers) { if (this.httprequest.desktop.kvm.rusers[j] == this.httprequest.realname) { this.httprequest.desktop.kvm.rusers.splice(j, 1); break; } }
+                this.httprequest.desktop.kvm.users.splice(i, 1);
+                this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
+                this.httprequest.desktop.kvm.connectionBar.close();
+                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+                this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
+                this.httprequest.desktop.kvm.connectionBar.on('close', function ()
+                {
+                    MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                    for (var i in this.httprequest.desktop.kvm._pipedStreams)
+                    {
+                        this.httprequest.desktop.kvm._pipedStreams[i].end();
+                    }
+                    this.httprequest.desktop.kvm.end();
+                });
+                break;
+            }
+        }
+    }
+
+    if(this.httprequest.desktop.kvm.connectionBar)
+    {
+        console.info1('Setting ConnectionBar request to NULL');
+        this.httprequest.desktop.kvm.connectionBar.httprequest = null;
+    }
+
+    this.httprequest = null;
+    this.desktop.tunnel = null;
+}
+
+function kvm_tunnel_consentpromise_closehandler()
+{
+    if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); }
+}
+
+function kvm_consentpromise_rejected(e)
+{
+    // User Consent Denied/Failed
+    this.ws._consentpromise = null;
+    MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+    this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+    this.ws = null;
+}
+function kvm_consentpromise_resolved(always)
+{
+    if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
+
+    // Success
+    this.ws._consentpromise = null;
+    MeshServerLogEx(30, null, "Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
+    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1))
+    {
+        // User Notifications is required
+        var notifyMessage = currentTranslation['desktopNotify'].replace('{0}', this.ws.httprequest.realname);
+        var notifyTitle = "MeshCentral";
+        if (this.ws.httprequest.soptions != null)
+        {
+            if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
+            if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
+        }
+        try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
+    }
+    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 0x40))
+    {
+        // Connection Bar is required
+        if (this.ws.httprequest.desktop.kvm.connectionBar)
+        {
+            this.ws.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
+            this.ws.httprequest.desktop.kvm.connectionBar.close();
+        }
+        try
+        {
+            this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+            MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+        } catch (ex)
+        {
+            if (process.platform != 'darwin')
+            {
+                MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+            }
+        }
+        if (this.ws.httprequest.desktop.kvm.connectionBar)
+        {
+            this.ws.httprequest.desktop.kvm.connectionBar.state =
+            {
+                userid: this.ws.httprequest.userid,
+                xuserid: this.ws.httprequest.xuserid,
+                username: this.ws.httprequest.username,
+                sessionid: this.ws.httprequest.sessionid,
+                remoteaddr: this.ws.httprequest.remoteaddr,
+                guestname: this.ws.httprequest.guestname,
+                desktop: this.ws.httprequest.desktop
+            };
+            this.ws.httprequest.desktop.kvm.connectionBar.on('close', function ()
+            {
+                MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.state.remoteaddr + ")", state);
+                for (var i in this.state.desktop.kvm._pipedStreams)
+                {
+                    this.state.desktop.kvm._pipedStreams[i].end();
+                }
+                this.state.desktop.kvm.end();
+            });
+        }
+    }
+    this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
+    if (this.ws.httprequest.autolock)
+    {
+        destopLockHelper_pipe(this.ws.httprequest);
+    }
+    this.ws.resume();
+    this.ws = null;
+}
+
+function files_consentpromise_resolved(always)
+{
+    if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
+
+    // Success
+    this.ws._consentpromise = null;
+    MeshServerLogEx(40, null, "Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
+    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4))
+    {
+        // User Notifications is required
+        var notifyMessage = currentTranslation['fileNotify'].replace('{0}', this.ws.httprequest.realname);
+        var notifyTitle = "MeshCentral";
+        if (this.ws.httprequest.soptions != null)
+        {
+            if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
+            if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
+        }
+        try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
+    }
+    this.ws.resume();
+    this.ws = null;
+}
+function files_consentpromise_rejected(e)
+{
+    // User Consent Denied/Failed
+    this.ws._consentpromise = null;
+    MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+    this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+    this.ws = null;
+}
+function files_tunnel_endhandler()
+{
+    if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); }
+}
+
+function onTunnelData(data)
+{
     //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
 
     // If this is upload data, save it to file
@@ -2080,7 +2632,8 @@ function onTunnelData(data) {
                 //
 
                 // Check user access rights for terminal
-                if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOTERMINAL) != 0))) {
+                if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOTERMINAL) != 0)))
+                {
                     // Disengage this tunnel, user does not have the rights to do this!!
                     this.httprequest.protocol = 999999;
                     this.httprequest.s.end();
@@ -2090,7 +2643,8 @@ function onTunnelData(data) {
 
                 this.descriptorMetadata = "Remote Terminal";
 
-                if (process.platform == 'win32') {
+                if (process.platform == 'win32')
+                {
                     if (!require('win-terminal').PowerShellCapable() && (this.httprequest.protocol == 6 || this.httprequest.protocol == 9)) {
                         this.httprequest.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: 'PowerShell is not supported on this version of windows', msgid: 1 }));
                         this.httprequest.s.end();
@@ -2099,53 +2653,29 @@ function onTunnelData(data) {
                 }
 
                 var prom = require('promise');
-                this.httprequest.tpromise = new prom(function (res, rej) { this._res = res; this._rej = rej; });
+                this.httprequest.tpromise = new prom(promise_init);
                 this.httprequest.tpromise.that = this;
                 this.httprequest.tpromise.httprequest = this.httprequest;
-
-                this.end = function () {
-                    if (this.httprequest.tpromise._consent) { this.httprequest.tpromise._consent.close(); }
-                    if (this.httprequest.connectionPromise) { this.httprequest.connectionPromise._rej('Closed'); }
-
-                    // Remove the terminal session to the count to update the server
-                    if (this.httprequest.userid != null) {
-                        var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
-                        if (tunnelUserCount.terminal[userid] != null) { tunnelUserCount.terminal[userid]--; if (tunnelUserCount.terminal[userid] <= 0) { delete tunnelUserCount.terminal[userid]; } }
-                        try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
-                        broadcastSessionsToRegisteredApps();
-                    }
-
-                    if (process.platform == 'win32') {
-                        // Unpipe the web socket
-                        this.unpipe(this.httprequest._term);
-                        if (this.httprequest._term) { this.httprequest._term.unpipe(this); }
-
-                        // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
-                        if (this.rtcchannel) {
-                            this.rtcchannel.unpipe(this.httprequest._term);
-                            if (this.httprequest._term) { this.httprequest._term.unpipe(this.rtcchannel); }
-                        }
-
-                        // Clean up
-                        if (this.httprequest._term) { this.httprequest._term.end(); }
-                        this.httprequest._term = null;
-                    }
-                };
+                this.end = terminal_end;
 
                 // Perform User-Consent if needed. 
-                if (this.httprequest.consent && (this.httprequest.consent & 16)) {
+                if (this.httprequest.consent && (this.httprequest.consent & 16))
+                {
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
                     var consentMessage = currentTranslation['terminalConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
                     var consentTitle = 'MeshCentral';
 
-                    if (this.httprequest.soptions != null) {
+                    if (this.httprequest.soptions != null)
+                    {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgTerminal != null) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
-                    if (process.platform == 'win32') {
+                    if (process.platform == 'win32')
+                    {
                         var enhanced = false;
                         try { require('win-userconsent'); enhanced = true; } catch (ex) { }
-                        if (enhanced) {
+                        if (enhanced)
+                        {
                             var ipr = server_getUserImage(this.httprequest.userid);
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
@@ -2153,20 +2683,24 @@ function onTunnelData(data) {
                             ipr.consentAutoAccept = this.httprequest.consentAutoAccept;
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
-                            this.httprequest.tpromise._consent = ipr.then(function (img) {
+                            this.httprequest.tpromise._consent = ipr.then(function (img)
+                            {
                                 this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
-                        } else {
+                        } else
+                        {
                             this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.consentTimeout);
                         }
-                    } else {
+                    } else
+                    {
                         this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.consentTimeout);
                     }
                     this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
                     this.httprequest.tpromise._consent.then(
-                        function (always) {
+                        function (always)
+                        {
                             if (always) { server_set_consentTimer(this.retPromise.httprequest.userid); }
 
                             // Success
@@ -2179,174 +2713,21 @@ function onTunnelData(data) {
                             // Denied
                             MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
                             this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+                            this.retPromise._consent = null;
                             this.retPromise._rej(e.toString());
                         });
                 }
-                else {
+                else
+                {
                     // User-Consent is not required, so just resolve this promise
                     this.httprequest.tpromise._res();
                 }
 
 
-                this.httprequest.tpromise.then(
-                    function () {
-                        this.httprequest.connectionPromise = new prom(function (res, rej) { this._res = res; this._rej = rej; });
-                        this.httprequest.connectionPromise.ws = this.that;
-
-                        // Start Terminal
-                        if (process.platform == 'win32') {
-                            try {
-                                var cols = 80, rows = 25;
-                                if (this.httprequest.xoptions) {
-                                    if (this.httprequest.xoptions.rows) { rows = this.httprequest.xoptions.rows; }
-                                    if (this.httprequest.xoptions.cols) { cols = this.httprequest.xoptions.cols; }
-                                }
-
-                                if ((this.httprequest.protocol == 1) || (this.httprequest.protocol == 6)) {
-                                    // Admin Terminal
-                                    if (require('win-virtual-terminal').supported) {
-                                        // ConPTY PseudoTerminal
-                                        // this.httprequest._term = require('win-virtual-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](80, 25);
-
-                                        // The above line is commented out, because there is a bug with ClosePseudoConsole() API, so this is the workaround
-                                        this.httprequest._dispatcher = require('win-dispatcher').dispatch({ modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
-                                        this.httprequest._dispatcher.httprequest = this.httprequest;
-                                        this.httprequest._dispatcher.on('connection', function (c) { if (this.httprequest.connectionPromise.completed) { c.end(); } else { this.httprequest.connectionPromise._res(c); } });
-                                    }
-                                    else {
-                                        // Legacy Terminal
-                                        this.httprequest.connectionPromise._res(require('win-terminal')[this.httprequest.protocol == 6 ? 'StartPowerShell' : 'Start'](cols, rows));
-                                    }
-                                }
-                                else {
-                                    // Logged in user
-                                    var userPromise = require('user-sessions').enumerateUsers();
-                                    userPromise.that = this;
-                                    userPromise.then(function (u) {
-                                        var that = this.that;
-                                        if (u.Active.length > 0) {
-                                            var username = '"' + u.Active[0].Domain + '\\' + u.Active[0].Username + '"';
-                                            //sendConsoleText('Terminal: ' + username);
-                                            if (require('win-virtual-terminal').supported) {
-                                                // ConPTY PseudoTerminal
-                                                that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
-                                            }
-                                            else {
-                                                // Legacy Terminal
-                                                that.httprequest._dispatcher = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [cols, rows] } });
-                                            }
-                                            that.httprequest._dispatcher.ws = that;
-                                            that.httprequest._dispatcher.on('connection', function (c) { if (this.ws.httprequest.connectionPromise.completed) { c.end(); } else { this.ws.httprequest.connectionPromise._res(c); } });
-                                        }
-                                    });
-                                }
-                            } catch (ex) {
-                                this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + ex.toString());
-                            }
-                        }
-                        else {
-                            try {
-                                var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
-                                var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
-                                var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
-
-                                var env = { HISTCONTROL: 'ignoreboth' };
-                                if (process.env['LANG']) { env['LANG'] = process.env['LANG']; }
-                                if (process.env['PATH']) { env['PATH'] = process.env['PATH']; }
-                                if (this.httprequest.xoptions) {
-                                    if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
-                                    if (this.httprequest.xoptions.cols) { env.COLUMNS = ('' + this.httprequest.xoptions.cols); }
-                                }
-                                var options = { type: childProcess.SpawnTypes.TERM, uid: (this.httprequest.protocol == 8) ? require('user-sessions').consoleUid() : null, env: env };
-                                if (this.httprequest.xoptions && this.httprequest.xoptions.requireLogin) {
-                                    if (!require('fs').existsSync(login)) { throw ('Unable to spawn login process'); }
-                                    this.httprequest.connectionPromise._res(childProcess.execFile(login, ['login'], options)); // Start login shell
-                                }
-                                else if (bash) {
-                                    var p = childProcess.execFile(bash, ['bash'], options); // Start bash
-                                    // Spaces at the beginning of lines are needed to hide commands from the command history
-                                    if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string')) {
-                                        if (obj.serverInfo.termlaunchcommand[process.platform] != '') { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
-                                    } else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
-                                    this.httprequest.connectionPromise._res(p);
-                                }
-                                else if (sh) {
-                                    var p = childProcess.execFile(sh, ['sh'], options); // Start sh
-                                    // Spaces at the beginning of lines are needed to hide commands from the command history
-                                    if ((obj.serverInfo.termlaunchcommand != null) && (typeof obj.serverInfo.termlaunchcommand[process.platform] == 'string')) {
-                                        if (obj.serverInfo.termlaunchcommand[process.platform] != '') { p.stdin.write(obj.serverInfo.termlaunchcommand[process.platform]); }
-                                    } else if (process.platform == 'linux') { p.stdin.write(' alias ls=\'ls --color=auto\';clear\n'); }
-                                    this.httprequest.connectionPromise._res(p);
-                                }
-                                else {
-                                    this.httprequest.connectionPromise._rej('Failed to start remote terminal session, no shell found');
-                                }
-                            } catch (ex) {
-                                this.httprequest.connectionPromise._rej('Failed to start remote terminal session, ' + ex.toString());
-                            }
-                        }
-
-                        this.httprequest.connectionPromise.then(
-                            function (term) {
-                                // SUCCESS
-                                var stdoutstream;
-                                var stdinstream;
-                                if (process.platform == 'win32') {
-                                    this.ws.httprequest._term = term;
-                                    this.ws.httprequest._term.tunnel = this.ws;
-                                    stdoutstream = stdinstream = term;
-                                }
-                                else {
-                                    term.descriptorMetadata = 'Remote Terminal';
-                                    this.ws.httprequest.process = term;
-                                    this.ws.httprequest.process.tunnel = this.ws;
-                                    term.stderr.stdout = term.stdout;
-                                    term.stderr.on('data', function (c) { this.stdout.write(c); });
-                                    stdoutstream = term.stdout;
-                                    stdinstream = term.stdin;
-                                    this.ws.prependListener('end', function () { this.httprequest.process.kill(); });
-                                    term.prependListener('exit', function () { this.tunnel.end(); });
-                                }
-
-                                this.ws.removeAllListeners('data');
-                                this.ws.on('data', onTunnelControlData);
-
-                                stdoutstream.pipe(this.ws, { dataTypeSkip: 1 });            // 0 = Binary, 1 = Text.
-                                this.ws.pipe(stdinstream, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. 
-
-                                // Add the terminal session to the count to update the server
-                                if (this.ws.httprequest.userid != null) {
-                                    var userid = getUserIdAndGuestNameFromHttpRequest(this.ws.httprequest);
-                                    if (tunnelUserCount.terminal[userid] == null) { tunnelUserCount.terminal[userid] = 1; } else { tunnelUserCount.terminal[userid]++; }
-                                    try { mesh.SendCommand({ action: 'sessions', type: 'terminal', value: tunnelUserCount.terminal }); } catch (ex) { }
-                                    broadcastSessionsToRegisteredApps();
-                                }
-
-                                // Toast Notification, if required
-                                if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2)) {
-                                    // User Notifications is required
-                                    var notifyMessage = currentTranslation['terminalNotify'].replace('{0}', this.ws.httprequest.username);
-                                    var notifyTitle = "MeshCentral";
-                                    if (this.ws.httprequest.soptions != null) {
-                                        if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                        if (this.ws.httprequest.soptions.notifyMsgTerminal != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgTerminal.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
-                                    }
-                                    try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
-                                }
-                            },
-                            function (e) {
-                                // FAILED to connect terminal
-                                this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-                                this.ws.end();
-                            });
-                    },
-                    function (e) {
-                        // DO NOT start terminal
-                        this.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-                        this.that.end();
-                    });
+                this.httprequest.tpromise.then(terminal_promise_consent_resolved, terminal_promise_consent_rejected);
             }
-            else if (this.httprequest.protocol == 2) {
+            else if (this.httprequest.protocol == 2)
+            {
                 //
                 // Remote Desktop
                 //
@@ -2378,14 +2759,17 @@ function onTunnelData(data) {
 
                 // Send a metadata update to all desktop sessions
                 var users = {};
-                if (this.httprequest.desktop.kvm.tunnels != null) {
-                    for (var i in this.httprequest.desktop.kvm.tunnels) {
+                if (this.httprequest.desktop.kvm.tunnels != null)
+                {
+                    for (var i in this.httprequest.desktop.kvm.tunnels)
+                    {
                         try {
                             var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest.desktop.kvm.tunnels[i].httprequest);
                             if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; }
                         } catch (ex) { sendConsoleText(ex); }
                     }
-                    for (var i in this.httprequest.desktop.kvm.tunnels) {
+                    for (var i in this.httprequest.desktop.kvm.tunnels)
+                    {
                         try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (ex) { }
                     }
                     tunnelUserCount.desktop = users;
@@ -2393,79 +2777,8 @@ function onTunnelData(data) {
                     broadcastSessionsToRegisteredApps();
                 }
 
-                this.end = function () {
-                    --this.desktop.kvm.connectionCount;
+                this.end = tunnel_kvm_end;
 
-                    // Remove ourself from the list of remote desktop session
-                    var i = this.desktop.kvm.tunnels.indexOf(this);
-                    if (i >= 0) { this.desktop.kvm.tunnels.splice(i, 1); }
-
-                    // Send a metadata update to all desktop sessions
-                    var users = {};
-                    if (this.httprequest.desktop.kvm.tunnels != null) {
-                        for (var i in this.httprequest.desktop.kvm.tunnels) {
-                            try {
-                                var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest.desktop.kvm.tunnels[i].httprequest);
-                                if (users[userid] == null) { users[userid] = 1; } else { users[userid]++; }
-                            } catch (ex) { sendConsoleText(ex); }
-                        }
-                        for (var i in this.httprequest.desktop.kvm.tunnels) {
-                            try { this.httprequest.desktop.kvm.tunnels[i].write(JSON.stringify({ ctrlChannel: '102938', type: 'metadata', users: users })); } catch (ex) { }
-                        }
-                        tunnelUserCount.desktop = users;
-                        try { mesh.SendCommand({ action: 'sessions', type: 'kvm', value: users }); } catch (ex) { }
-                        broadcastSessionsToRegisteredApps();
-                    }
-
-                    // Unpipe the web socket
-                    try {
-                        this.unpipe(this.httprequest.desktop.kvm);
-                        this.httprequest.desktop.kvm.unpipe(this);
-                    } catch (ex) { }
-
-                    // Unpipe the WebRTC channel if needed (This will also be done when the WebRTC channel ends).
-                    if (this.rtcchannel) {
-                        try {
-                            this.rtcchannel.unpipe(this.httprequest.desktop.kvm);
-                            this.httprequest.desktop.kvm.unpipe(this.rtcchannel);
-                        }
-                        catch (ex) { }
-                    }
-
-                    // Place wallpaper back if needed
-                    // TODO
-
-                    if (this.desktop.kvm.connectionCount == 0) {
-                        // Display a toast message. This may not be supported on all platforms.
-                        // try { require('toaster').Toast('MeshCentral', 'Remote Desktop Control Ended.'); } catch (ex) { }
-
-                        this.httprequest.desktop.kvm.end();
-                        if (this.httprequest.desktop.kvm.connectionBar) {
-                            this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
-                            this.httprequest.desktop.kvm.connectionBar.close();
-                            this.httprequest.desktop.kvm.connectionBar = null;
-                        }
-                    } else {
-                        for (var i in this.httprequest.desktop.kvm.users) {
-                            if ((this.httprequest.desktop.kvm.users[i] == this.httprequest.username) && this.httprequest.desktop.kvm.connectionBar) {
-                                for (var j in this.httprequest.desktop.kvm.rusers) { if (this.httprequest.desktop.kvm.rusers[j] == this.httprequest.realname) { this.httprequest.desktop.kvm.rusers.splice(j, 1); break; } }
-                                this.httprequest.desktop.kvm.users.splice(i, 1);
-                                this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
-                                this.httprequest.desktop.kvm.connectionBar.close();
-                                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
-                                this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
-                                this.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                    MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                                    for (var i in this.httprequest.desktop.kvm._pipedStreams) {
-                                        this.httprequest.desktop.kvm._pipedStreams[i].end();
-                                    }
-                                    this.httprequest.desktop.kvm.end();
-                                });
-                                break;
-                            }
-                        }
-                    }
-                };
                 if (this.httprequest.desktop.kvm.hasOwnProperty('connectionCount')) {
                     this.httprequest.desktop.kvm.connectionCount++;
                     this.httprequest.desktop.kvm.rusers.push(this.httprequest.realname);
@@ -2478,31 +2791,38 @@ function onTunnelData(data) {
                     this.httprequest.desktop.kvm.users = [this.httprequest.username];
                 }
 
-                if ((this.httprequest.desktopviewonly != true) && ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)))) {
+                if ((this.httprequest.desktopviewonly != true) && ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0))))
+                {
                     // If we have remote control rights, pipe the KVM input
                     this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. Pipe the Browser --> KVM input.
-                } else {
+                }
+                else
+                {
                     // We need to only pipe non-mouse & non-keyboard inputs.
                     // sendConsoleText('Warning: No Remote Desktop Input Rights.');
                     // TODO!!!
                 }
 
                 // Perform notification if needed. Toast messages may not be supported on all platforms.
-                if (this.httprequest.consent && (this.httprequest.consent & 8)) {
+                if (this.httprequest.consent && (this.httprequest.consent & 8))
+                {
                     // User Consent Prompt is required
                     // Send a console message back using the console channel, "\n" is supported.
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
                     var consentMessage = currentTranslation['desktopConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
                     var consentTitle = 'MeshCentral';
-                    if (this.httprequest.soptions != null) {
+                    if (this.httprequest.soptions != null)
+                    {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgDesktop != null) { consentMessage = this.httprequest.soptions.consentMsgDesktop.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
                     var pr;
-                    if (process.platform == 'win32') {
+                    if (process.platform == 'win32')
+                    {
                         var enhanced = false;
                         try { require('win-userconsent'); enhanced = true; } catch (ex) { }
-                        if (enhanced) {
+                        if (enhanced)
+                        {
                             var ipr = server_getUserImage(this.httprequest.userid);
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
@@ -2511,85 +2831,33 @@ function onTunnelData(data) {
                             ipr.tsid = tsid;
                             ipr.username = this.httprequest.realname;
                             ipr.translation = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
-                            pr = ipr.then(function (img) {
+                            pr = ipr.then(function (img)
+                            {
                                 this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translation, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
                         }
-                        else {
+                        else
+                        {
                             pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null, tsid);
                         }
                     }
-                    else {
+                    else
+                    {
                         pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null, tsid);
                     }
                     pr.ws = this;
                     this.pause();
                     this._consentpromise = pr;
-                    this.prependOnceListener('end', function () {
-                        if (this._consentpromise && this._consentpromise.close) {
-                            this._consentpromise.close();
-                        }
-                    });
-                    pr.then(
-                        function (always) {
-                            if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
-
-                            // Success
-                            this.ws._consentpromise = null;
-                            MeshServerLogEx(30, null, "Starting remote desktop after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                            this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
-                            if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 1)) {
-                                // User Notifications is required
-                                var notifyMessage = currentTranslation['desktopNotify'].replace('{0}', this.ws.httprequest.realname);
-                                var notifyTitle = "MeshCentral";
-                                if (this.ws.httprequest.soptions != null) {
-                                    if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                    if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
-                                }
-                                try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
-                            }
-                            if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 0x40)) {
-                                // Connection Bar is required
-                                if (this.ws.httprequest.desktop.kvm.connectionBar) {
-                                    this.ws.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
-                                    this.ws.httprequest.desktop.kvm.connectionBar.close();
-                                }
-                                try {
-                                    this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
-                                    MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                                } catch (ex) {
-                                    if (process.platform != 'darwin') {
-                                        MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                                    }
-                                }
-                                if (this.ws.httprequest.desktop.kvm.connectionBar) {
-                                    this.ws.httprequest.desktop.kvm.connectionBar.httprequest = this.ws.httprequest;
-                                    this.ws.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                        MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                                        for (var i in this.httprequest.desktop.kvm._pipedStreams) {
-                                            this.httprequest.desktop.kvm._pipedStreams[i].end();
-                                        }
-                                        this.httprequest.desktop.kvm.end();
-                                    });
-                                }
-                            }
-                            this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
-                            if (this.ws.httprequest.autolock) {
-                                destopLockHelper_pipe(this.ws.httprequest);
-                            }
-                            this.ws.resume();
-                        },
-                        function (e) {
-                            // User Consent Denied/Failed
-                            this.ws._consentpromise = null;
-                            MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                            this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-                        });
-                } else {
+                    this.prependOnceListener('end', kvm_tunnel_consentpromise_closehandler);
+                    pr.then(kvm_consentpromise_resolved, kvm_consentpromise_rejected);
+                }
+                else
+                {
                     // User Consent Prompt is not required
-                    if (this.httprequest.consent && (this.httprequest.consent & 1)) {
+                    if (this.httprequest.consent && (this.httprequest.consent & 1))
+                    {
                         // User Notifications is required
                         MeshServerLogEx(35, null, "Started remote desktop with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         var notifyMessage = currentTranslation['desktopNotify'].replace('{0}', this.httprequest.realname);
@@ -2599,34 +2867,52 @@ function onTunnelData(data) {
                             if (this.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.httprequest.soptions.notifyMsgDesktop.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                         }
                         try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
-                    } else {
+                    } else
+                    {
                         MeshServerLogEx(36, null, "Started remote desktop without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
                     }
-                    if (this.httprequest.consent && (this.httprequest.consent & 0x40)) {
+                    if (this.httprequest.consent && (this.httprequest.consent & 0x40))
+                    {
                         // Connection Bar is required
-                        if (this.httprequest.desktop.kvm.connectionBar) {
+                        if (this.httprequest.desktop.kvm.connectionBar)
+                        {
                             this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                             this.httprequest.desktop.kvm.connectionBar.close();
                         }
-                        try {
+                        try
+                        {
                             this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
                             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         } catch (ex) {
                             MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         }
-                        if (this.httprequest.desktop.kvm.connectionBar) {
-                            this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
-                            this.httprequest.desktop.kvm.connectionBar.on('close', function () {
-                                MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                                for (var i in this.httprequest.desktop.kvm._pipedStreams) {
-                                    this.httprequest.desktop.kvm._pipedStreams[i].end();
+                        if (this.httprequest.desktop.kvm.connectionBar)
+                        {
+                            this.httprequest.desktop.kvm.connectionBar.state =
+                                {
+                                    userid: this.httprequest.userid,
+                                    xuserid: this.httprequest.xuserid,
+                                    username: this.httprequest.username,
+                                    sessionid: this.httprequest.sessionid,
+                                    remoteaddr: this.httprequest.remoteaddr,
+                                    guestname: this.httprequest.guestname,
+                                    desktop: this.httprequest.desktop
+                                };
+                            this.httprequest.desktop.kvm.connectionBar.on('close', function ()
+                            {
+                                console.info1('Connection Bar Forcefully closed');
+                                MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.state.remoteaddr + ")", this.state);
+                                for (var i in this.state.desktop.kvm._pipedStreams)
+                                {
+                                    this.state.desktop.kvm._pipedStreams[i].end();
                                 }
-                                this.httprequest.desktop.kvm.end();
+                                this.state.desktop.kvm.end();
                             });
                         }
                     }
                     this.httprequest.desktop.kvm.pipe(this, { dataTypeSkip: 1 });
-                    if (this.httprequest.autolock) {
+                    if (this.httprequest.autolock)
+                    {
                         destopLockHelper_pipe(this.httprequest);
                     }
                 }
@@ -2634,7 +2920,6 @@ function onTunnelData(data) {
                 this.removeAllListeners('data');
                 this.on('data', onTunnelControlData);
                 //this.write('MeshCore KVM Hello!1');
-
             } else if (this.httprequest.protocol == 5) {
                 //
                 // Remote Files
@@ -2659,7 +2944,8 @@ function onTunnelData(data) {
                     broadcastSessionsToRegisteredApps();
                 }
 
-                this.end = function () {
+                this.end = function ()
+                {
                     // Remove the files session from the count to update the server
                     if (this.httprequest.userid != null) {
                         var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
@@ -2670,22 +2956,26 @@ function onTunnelData(data) {
                 };
 
                 // Perform notification if needed. Toast messages may not be supported on all platforms.
-                if (this.httprequest.consent && (this.httprequest.consent & 32)) {
+                if (this.httprequest.consent && (this.httprequest.consent & 32))
+                {
                     // User Consent Prompt is required
                     // Send a console message back using the console channel, "\n" is supported.
                     this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
                     var consentMessage = currentTranslation['fileConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
                     var consentTitle = 'MeshCentral';
 
-                    if (this.httprequest.soptions != null) {
+                    if (this.httprequest.soptions != null)
+                    {
                         if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
                         if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
                     }
                     var pr;
-                    if (process.platform == 'win32') {
+                    if (process.platform == 'win32')
+                    {
                         var enhanced = false;
                         try { require('win-userconsent'); enhanced = true; } catch (ex) { }
-                        if (enhanced) {
+                        if (enhanced)
+                        {
                             var ipr = server_getUserImage(this.httprequest.userid);
                             ipr.consentTitle = consentTitle;
                             ipr.consentMessage = consentMessage;
@@ -2693,49 +2983,29 @@ function onTunnelData(data) {
                             ipr.consentAutoAccept = this.httprequest.consentAutoAccept;
                             ipr.username = this.httprequest.realname;
                             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
-                            pr = ipr.then(function (img) {
+                            pr = ipr.then(function (img)
+                            {
                                 this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                                 this.__childPromise.close = this.consent.close.bind(this.consent);
                                 return (this.consent);
                             });
-                        } else {
+                        } else
+                        {
                             pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null);
                         }
-                    } else {
+                    }
+                    else
+                    {
                         pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null);
                     }
                     pr.ws = this;
                     this.pause();
                     this._consentpromise = pr;
-                    this.prependOnceListener('end', function () { if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); } });
-                    pr.then(
-                        function (always) {
-                            if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
-
-                            // Success
-                            this.ws._consentpromise = null;
-                            MeshServerLogEx(40, null, "Starting remote files after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                            this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
-                            if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 4)) {
-                                // User Notifications is required
-                                var notifyMessage = currentTranslation['fileNotify'].replace('{0}', this.ws.httprequest.realname);
-                                var notifyTitle = "MeshCentral";
-                                if (this.ws.httprequest.soptions != null) {
-                                    if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
-                                    if (this.ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgFiles.replace('{0}', this.ws.httprequest.realname).replace('{1}', this.ws.httprequest.username); }
-                                }
-                                try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
-                            }
-                            this.ws.resume();
-                        },
-                        function (e) {
-                            // User Consent Denied/Failed
-                            this.ws._consentpromise = null;
-                            MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-                            this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-                        });
+                    this.prependOnceListener('end', files_tunnel_endhandler);
+                    pr.then(files_consentpromise_resolved, files_consentpromise_rejected);
                 }
-                else {
+                else
+                {
                     // User Consent Prompt is not required
                     if (this.httprequest.consent && (this.httprequest.consent & 4)) {
                         // User Notifications is required
@@ -3062,6 +3332,44 @@ function onTunnelWebRTCControlData(data) {
     }
 }
 
+function tunnel_webrtc_onEnd()
+{
+    // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
+    //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
+    if (this.websocket.desktop && this.websocket.desktop.kvm)
+    {
+        try
+        {
+            this.unpipe(this.websocket.desktop.kvm);
+            this.websocket.httprequest.desktop.kvm.unpipe(this);
+        } catch (ex) { }
+    }
+    this.httprequest = null;
+    this.websocket = null;
+}
+function tunnel_webrtc_DataChannel_OnFinalized()
+{
+    console.info1('WebRTC DataChannel Finalized');
+}
+function tunnel_webrtc_OnDataChannel(rtcchannel)
+{
+    //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
+    //rtcchannel.maxFragmentSize = 32768;
+    rtcchannel.xrtc = this;
+    rtcchannel.websocket = this.websocket;
+    this.rtcchannel = rtcchannel;
+    this.rtcchannel.once('~', tunnel_webrtc_DataChannel_OnFinalized);
+    this.websocket.rtcchannel = rtcchannel;
+    this.websocket.rtcchannel.on('data', onTunnelWebRTCControlData);
+    this.websocket.rtcchannel.on('end', tunnel_webrtc_onEnd);
+    this.websocket.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}'); // Indicate we are ready for WebRTC switch-over.
+}
+
+function tunnel_webrtc_OnFinalized()
+{
+    console.info1('WebRTC Connection Finalized');
+}
+
 // Called when receiving control data on websocket
 function onTunnelControlData(data, ws) {
     var obj;
@@ -3135,7 +3443,8 @@ function onTunnelControlData(data, ws) {
             break;
         }
         case 'webrtc0': { // Browser indicates we can start WebRTC switch-over.
-            if (ws.httprequest.protocol == 1) { // Terminal
+            if (ws.httprequest.protocol == 1)
+            { // Terminal
                 // This is a terminal data stream, unpipe the terminal now and indicate to the other side that terminal data will no longer be received over WebSocket
                 if (process.platform == 'win32') {
                     ws.httprequest._term.unpipe(ws);
@@ -3146,7 +3455,8 @@ function onTunnelControlData(data, ws) {
             } else if (ws.httprequest.protocol == 2) { // Desktop
                 // This is a KVM data stream, unpipe the KVM now and indicate to the other side that KVM data will no longer be received over WebSocket
                 ws.httprequest.desktop.kvm.unpipe(ws);
-            } else {
+            } else
+            {
                 // Switch things around so all WebRTC data goes to onTunnelData().
                 ws.rtcchannel.httprequest = ws.httprequest;
                 ws.rtcchannel.removeAllListeners('data');
@@ -3155,8 +3465,10 @@ function onTunnelControlData(data, ws) {
             ws.write("{\"ctrlChannel\":\"102938\",\"type\":\"webrtc1\"}"); // End of data marker
             break;
         }
-        case 'webrtc1': {
-            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) { // Terminal
+        case 'webrtc1':
+            {
+            if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6))
+            { // Terminal
                 // Switch the user input from websocket to webrtc at this point.
                 if (process.platform == 'win32') {
                     ws.unpipe(ws.httprequest._term);
@@ -3166,7 +3478,9 @@ function onTunnelControlData(data, ws) {
                     ws.rtcchannel.pipe(ws.httprequest.process.stdin, { dataTypeSkip: 1 }); // 0 = Binary, 1 = Text.
                 }
                 ws.resume(); // Resume the websocket to keep receiving control data
-            } else if (ws.httprequest.protocol == 2) { // Desktop
+            }
+            else if (ws.httprequest.protocol == 2)
+            { // Desktop
                 // Switch the user input from websocket to webrtc at this point.
                 ws.unpipe(ws.httprequest.desktop.kvm);
                 try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); } catch (ex) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
@@ -3193,29 +3507,12 @@ function onTunnelControlData(data, ws) {
             // This is a WebRTC offer.
             if ((ws.httprequest.protocol == 1) || (ws.httprequest.protocol == 6)) return; // TODO: Terminal is currently broken with WebRTC. Reject WebRTC upgrade for now.
             ws.webrtc = rtc.createConnection();
+            ws.webrtc.once('~', tunnel_webrtc_OnFinalized);
             ws.webrtc.websocket = ws;
-            ws.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });
-            ws.webrtc.on('disconnected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected');*/ });
-            ws.webrtc.on('dataChannel', function (rtcchannel) {
-                //sendConsoleText('WebRTC Datachannel open, protocol: ' + this.websocket.httprequest.protocol);
-                //rtcchannel.maxFragmentSize = 32768;
-                rtcchannel.xrtc = this;
-                rtcchannel.websocket = this.websocket;
-                this.rtcchannel = rtcchannel;
-                this.websocket.rtcchannel = rtcchannel;
-                this.websocket.rtcchannel.on('data', onTunnelWebRTCControlData);
-                this.websocket.rtcchannel.on('end', function () {
-                    // The WebRTC channel closed, unpipe the KVM now. This is also done when the web socket closes.
-                    //sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC data channel closed');
-                    if (this.websocket.desktop && this.websocket.desktop.kvm) {
-                        try {
-                            this.unpipe(this.websocket.desktop.kvm);
-                            this.websocket.httprequest.desktop.kvm.unpipe(this);
-                        } catch (ex) { }
-                    }
-                });
-                this.websocket.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc0\"}'); // Indicate we are ready for WebRTC switch-over.
-            });
+            //ws.webrtc.on('connected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC connected');*/ });
+            //ws.webrtc.on('disconnected', function () { /*sendConsoleText('Tunnel #' + this.websocket.tunnel.index + ' WebRTC disconnected');*/ });
+            ws.webrtc.on('dataChannel', tunnel_webrtc_OnDataChannel);
+
             var sdp = null;
             try { sdp = ws.webrtc.setOffer(obj.sdp); } catch (ex) { }
             if (sdp != null) { ws.write({ type: 'answer', ctrlChannel: '102938', sdp: sdp }); }
