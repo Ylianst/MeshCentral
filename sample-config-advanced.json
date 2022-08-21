@@ -533,6 +533,8 @@
       "_LDAPUserName": "gecos",
       "_LDAPUserKey": "uid",
       "_LDAPUserEmail": "otherMail",
+      "_LDAPUserGroups": "memberOf",
+      "_LDAPUserRequiredGroupMembership": [ "CN=Domain Admins,CN=Users,DC=sample,DC=com" ],
       "_LDAPPptions": {
         "url": "test",
         "anne": {
