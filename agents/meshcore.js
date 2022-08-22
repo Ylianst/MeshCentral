@@ -1968,6 +1968,13 @@ function onTcpRelayServerTunnelData(data) {
 
 function onTunnelClosed()
 {
+    if (this.httprequest._dispatcher != null && this.httprequest.term == null)
+    {
+        // Windows Dispatcher was created to spawn a child connection, but the child didn't connect yet, so we have to shutdown the dispatcher, otherwise the child may end up hanging
+        if (this.httprequest._dispatcher.close) { this.httprequest._dispatcher.close(); }
+        this.httprequest._dispatcher = null;
+    }
+
     if (this.tunnel)
     {
         if (tunnels[this.httprequest.index] == null)
