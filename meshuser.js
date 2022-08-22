@@ -1514,11 +1514,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(ugrp);
                         if (db.changeStream == false) { parent.userGroups[ugrpid] = ugrp; }
 
-                        // Event the device group creation
+                        // Event the user group creation
                         var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrpid, name: ugrp.name, desc: ugrp.desc, action: 'createusergroup', links: ugrp.links, msgid: 69, msgArgv: [ugrp.name], msg: 'User group created: ' + ugrp.name, ugrpdomain: domain.id };
                         parent.parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
-                        // Event any pending events, these must be sent out after the group creation event is displatched.
+                        // Event any pending events, these must be sent out after the group creation event is dispatched.
                         for (var i in pendingDispatchEvents) { var ev = pendingDispatchEvents[i]; parent.parent.DispatchEvent(ev[0], ev[1], ev[2]); }
 
                         // Log in the auth log
@@ -1560,6 +1560,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             return;
                         }
                         var group = groups[0];
+
+                        // If this user group is an externally managed user group, it can't be deleted unless there are no users in it.
+                        if (group.membershipType != null) {
+                            var userCount = 0;
+                            if (group.links != null) { for (var i in group.links) { if (i.startsWith('user/')) { userCount++; } } }
+                            if (userCount > 0) return;
+                        }
 
                         // Unlink any user and meshes that have a link to this group
                         if (group.links) {
@@ -1621,7 +1628,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     change = '';
                     var group = parent.userGroups[command.ugrpid];
                     if (group != null) {
-                        if ((common.validateString(command.name, 1, 64) == true) && (command.name != group.name)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
+                        // If this user group is an externally managed user group, the name of the user group can't be edited
+                        if ((group.membershipType == null) && (common.validateString(command.name, 1, 64) == true) && (command.name != group.name)) { change = 'User group name changed from "' + group.name + '" to "' + command.name + '"'; group.name = command.name; }
                         if ((common.validateString(command.desc, 0, 1024) == true) && (command.desc != group.desc)) { if (change != '') change += ' and description changed'; else change += 'User group "' + group.name + '" description changed'; group.desc = command.desc; }
                         if ((typeof command.consent == 'number') && (command.consent != group.consent)) { if (change != '') change += ' and consent changed'; else change += 'User group "' + group.name + '" consent changed'; group.consent = command.consent; }
 
@@ -5770,6 +5778,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Get the user group
         var group = parent.userGroups[command.ugrpid];
         if (group != null) {
+            // If this user group is an externally managed user group, we can't add users to it.
+            if ((group != null) && (group.membershipType != null)) return;
+
             if (group.links == null) { group.links = {}; }
 
             var unknownUsers = [], addedCount = 0, failCount = 0, knownUsers = [];
@@ -5779,7 +5790,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var chguser = parent.users[chguserid];
                 if (chguser == null) { chguserid = 'user/' + addUserDomain.id + '/' + command.usernames[i]; chguser = parent.users[chguserid]; }
                 if (chguser != null) {
-                    // Add mesh to user
+                    // Add usr group to user
                     if (chguser.links == null) { chguser.links = {}; }
                     chguser.links[group._id] = { rights: 1 };
                     db.SetUser(chguser);
@@ -6235,6 +6246,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         var chguser = parent.users[command.userid];
         if (chguser != null) {
+            // Get the user group
+            var group = parent.userGroups[command.ugrpid];
+
+            // If this user group is an externally managed user group, we can't remove a user from it.
+            if ((group != null) && (group.membershipType != null)) return;
+
             if ((chguser.links != null) && (chguser.links[command.ugrpid] != null)) {
                 delete chguser.links[command.ugrpid];
 
@@ -6248,8 +6265,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.parent.DispatchEvent([chguser._id], obj, 'resubscribe');
             }
 
-            // Get the user group
-            var group = parent.userGroups[command.ugrpid];
             if (group != null) {
                 // Remove the user from the group
                 if ((group.links != null) && (group.links[command.userid] != null)) {

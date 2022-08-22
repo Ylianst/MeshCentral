@@ -7539,7 +7539,7 @@
                     if (usergroups != null) {
                         var userGroupCount = 0, newUserGroup = false;
                         for (var i in usergroups) {
-                            if (usergroups[i]._id.split('/')[1] != nodeid.split('/')[1]) continue;
+                            if ((usergroups[i].membershipType != null) || (usergroups[i]._id.split('/')[1] != nodeid.split('/')[1])) continue;
                             userGroupCount++; if ((currentNode.links == null) || (currentNode.links[i] == null)) { newUserGroup = true; }
                         }
                         if ((userGroupCount > 0) && (newUserGroup)) {  x += '<a href=# onclick="return p20showAddMeshUserDialog(6)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
@@ -12562,7 +12562,7 @@
                 if (usergroups != null) {
                     var userGroupCount = 0, newUserGroup = false;
                     for (var i in usergroups) {
-                        if (usergroups[i]._id.split('/')[1] != currentMesh._id.split('/')[1]) continue;
+                        if ((usergroups[i].membershipType != null) || (usergroups[i]._id.split('/')[1] != currentMesh._id.split('/')[1])) continue;
                         userGroupCount++;
                         if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; }
                     }
@@ -13035,7 +13035,7 @@
                 if (selected == null) {
                     var ousergroups = getOrderedList(usergroups, 'name');
                     for (var i in ousergroups) {
-                        if (currentNode._id.split('/')[1] != ousergroups[i]._id.split('/')[1]) continue;
+                        if ((ousergroups[i].membershipType != null) || (currentNode._id.split('/')[1] != ousergroups[i]._id.split('/')[1])) continue;
                         if ((currentNode.links == null) || (currentNode.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; }
                     }
                 } else {
@@ -15151,7 +15151,7 @@
             // Add user group name
             var gname = EscapeHtml(group.name);
             if (gname.length == 0) { gname = '<i>' + "None" + '</i>'; }
-            if ((userinfo.siteadmin & 256) != 0) { gname = '<span tabindex=0 title="' + "Click here to edit the user group name" + '" onclick=p51editgroup(1) onkeyup="if (event.key == \'Enter\') p51editgroup(1)" style=cursor:pointer>' + gname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { gname = '<span tabindex=0 title="' + "Click here to edit the user group name" + '" onclick=p51editgroup(1) onkeyup="if (event.key == \'Enter\') p51editgroup(1)" style=cursor:pointer>' + gname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
             QH('p51groupName', gname);
 
             var usercount = 0, meshcount = 0, devicecount = 0;
@@ -15172,8 +15172,11 @@
                 x += addDeviceAttribute("Domain", (d != '')?EscapeHtml(d):('<i>' + "Default" + '</i>'));
                 x += addDeviceAttribute("Group Identifier", EscapeHtml(group._id));
             }
+            if (currentUserGroup.membershipType != null) {
+                x += addDeviceAttribute("Group Type", EscapeHtml(currentUserGroup.membershipType));
+            }
             if ((userinfo.siteadmin & 256) != 0) {
-                x += addDeviceAttribute("Description", '<span onclick=p51editgroup(2) style=cursor:pointer>' + desc + ' <img class=hoverButton src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Description", '<span onclick=p51editgroup(2,' + (currentUserGroup.membershipType != null) + ') style=cursor:pointer>' + desc + ' <img class=hoverButton src="images/link5.png" /></span>');
             } else {
                 x += addDeviceAttribute("Description", desc);
             }
@@ -15217,7 +15220,7 @@
             QH('p51group', x);
 
             x = '<br />';
-            if ((userinfo.siteadmin & 256) != 0) {
+            if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) {
                 x += '<a href=# onclick="return p51showAddUserDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Users" + '</a>';
             }
             x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Group Members" + '</th><th scope=col style=text-align:left></th></tr>';
@@ -15235,7 +15238,8 @@
 
             // Display all users for this user group
             for (var i in sortedusers) {
-                var trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                var trash = '';
+                if (currentUserGroup.membershipType == null) { trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
                 if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
                 x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User" + '" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
@@ -15294,7 +15298,7 @@
             if (count == 1) { x += '<tr><td><div style=padding:6px>&nbsp;<i>' + "No devices in common" + '</i><div></div></div></td><td></td></tr>'; }
             x += '</tbody></table>';
 
-            if ((userinfo.siteadmin & 256) != 0) {
+            if (((currentUserGroup.membershipType == null) || (usercount == 0)) && ((userinfo.siteadmin & 256) != 0)) {
                 x += '<div style=font-size:small;text-align:right><span><a href=# onclick=p51showDeleteUserGroupDialog() style=cursor:pointer>' + "Delete User Group" + '</a></span></div>';
             }
 
@@ -15349,9 +15353,9 @@
             meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUserGroup._id });
         }
 
-        function p51editgroup(focus) {
+        function p51editgroup(focus, nameReadOnly) {
             if (xxdialogMode) return;
-            var x = addHtmlValue("Name", '<input id=dp51name style=width:230px maxlength=32 onchange=p51editgroupValidate() onkeyup=p51editgroupValidate(event) />');
+            var x = addHtmlValue("Name", '<input id=dp51name style=width:230px maxlength=32 onchange=p51editgroupValidate() onkeyup=p51editgroupValidate(event) ' + (nameReadOnly ? 'readonly disabled' : '') + '/>');
             x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp51desc maxlength=1024 style=width:100%;resize:none></textarea></div>');
             setDialogMode(2, "Edit User Group", 3, p51editgroupEx, x);
             Q('dp51name').value = currentUserGroup.name;
@@ -15893,7 +15897,7 @@
                 if ((userinfo.siteadmin & 256) != 0) {
                     var userGroupCount = 0, newUserGroup = false;
                     for (var i in usergroups) {
-                        if (usergroups[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue;
+                        if ((usergroups[i].membershipType != null) || (usergroups[i]._id.split('/')[1] != currentUser._id.split('/')[1])) continue;
                         userGroupCount++;
                         if ((currentUser.links == null) || (currentUser.links[i] == null)) { newUserGroup = true; }
                     }
@@ -15911,7 +15915,7 @@
                             groupname = EscapeHtml(group.name);
                             if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
                         }
-                        if ((userinfo.siteadmin & 256) != 0) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((group.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User Group" + '" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                     }
                 }
@@ -15986,7 +15990,7 @@
             if (xxdialogMode || (usergroups == null)) return;
             var y = '';
             for (var i in usergroups) {
-                if (usergroups[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue;
+                if ((usergroups[i].membershipType != null) || (usergroups[i]._id.split('/')[1] != currentUser._id.split('/')[1])) continue;
                 if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; }
             }
             var x = addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp2groupid style=width:100%>' + y + '</select></div>');
