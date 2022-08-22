@@ -1505,10 +1505,10 @@ module.exports.CreateDB = function (parent, func) {
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
-                sqlDbQuery('SELECT COUNT(*) FROM main', null, function (err, response, raw) { obj.stats.meshcentral = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                sqlDbQuery('SELECT COUNT(*) FROM serverstats', null, function (err, response, raw) { obj.stats.serverstats = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                sqlDbQuery('SELECT COUNT(*) FROM power', null, function (err, response, raw) { obj.stats.power = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
-                sqlDbQuery('SELECT COUNT(*) FROM smbios', null, function (err, response, raw) { obj.stats.smbios = (err == null ? parseInt(raw.rows[0].count) : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM main', null, function (err, response) { obj.stats.meshcentral = (err == null ? response[0]['COUNT(*)'] : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM serverstats', null, function (err, response) { obj.stats.serverstats = (err == null ? response[0]['COUNT(*)'] : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM power', null, function (err, response) { obj.stats.power = (err == null ? response[0]['COUNT(*)'] : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
+                sqlDbQuery('SELECT COUNT(*) FROM smbios', null, function (err, response) { obj.stats.smbios = (err == null ? response[0]['COUNT(*)'] : 0); if (--obj.stats.c == 0) { delete obj.stats.c; func(obj.stats); } });
             }
 
             // Plugin operations
