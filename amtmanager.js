@@ -946,7 +946,7 @@ module.exports.CreateAmtManager = function (parent) {
         });
     }
 
-    // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset
+    // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
     function performPowerAction(nodeid, action) {
         var devices = obj.amtDevices[nodeid];
         if (devices == null) return;
@@ -954,12 +954,42 @@ module.exports.CreateAmtManager = function (parent) {
             var dev = devices[i];
             // If not LMS, has a AMT stack present and is in connected state, perform power operation.
             if ((dev.connType != 2) && (dev.state == 1) && (dev.amtstack != null)) {
-                // Action: 2 = Power on, 8 = Power down, 10 = reset
                 parent.debug('amt', dev.name, "performPowerAction", action);
                 dev.powerAction = action;
-                try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
+                if (action <= 10) {
+                    // Action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset
+                    try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
+                } else {
+                    // 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
+                    dev.amtstack.BatchEnum(null, ['*AMT_BootSettingData'], performAdvancedPowerActionResponse);
+                }
             }
         }
+    }
+
+    // Response to Intel AMT advanced power action
+    function performAdvancedPowerActionResponse(stack, name, responses, status) {
+        const dev = stack.dev;
+        const action = dev.powerAction;
+        delete dev.powerAction;
+        if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+        if (status != 200) return;
+        if ((responses['AMT_BootSettingData'] == null) || (responses['AMT_BootSettingData'].response == null)) return;
+
+        var bootSettingData = responses['AMT_BootSettingData'].response;
+        bootSettingData['BIOSSetup'] = ((action >= 11) && (action <= 14));
+        bootSettingData['UseSOL'] = ((action >= 13) && (action <= 14));
+        if ((action == 11) || (action == 13)) { dev.powerAction = 2; } // Power on
+        if ((action == 12) || (action == 14)) { dev.powerAction = 10; } // Reset
+
+        dev.amtstack.Put('AMT_BootSettingData', bootSettingData, function performAdvancedPowerActionResponseEx(stack, name, response, status, tag) {
+            const dev = stack.dev;
+            const action = dev.powerAction;
+            delete dev.powerAction;
+            if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
+            if (status != 200) return;
+            try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
+        }, 0, 1);
     }
 
     // Response to Intel AMT power action
