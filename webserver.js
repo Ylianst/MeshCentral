@@ -500,7 +500,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             }
                             if (match) { g.push(userMemberships[i]); }
                         }
-                        console.log(g);
                         userMemberships = g;
                     }
                 } else {
