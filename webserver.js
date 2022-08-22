@@ -3970,6 +3970,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         obj.fs.exists(file.fullpath, function (exists) { if (exists == true) { res.sendFile(file.fullpath); } else { res.sendStatus(404); } });
     }
 
+    // Download the MeshCommander web page
+    function handleMeshCommander(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((req.session == null) || (req.session.userid == null)) { res.sendStatus(404); return; }
+
+        // Find the correct MeshCommander language to send
+        const acceptableLanguages = obj.getLanguageCodes(req);
+        const commandLanguageTranslations = { 'en': '', 'de': '-de', 'es': '-es', 'fr': '-fr', 'it': '-it', 'ja': '-ja', 'ko': '-ko', 'nl': '-nl', 'pt': '-pt', 'ru': '-ru', 'zh-chs': '-zh-chs', 'zh-cht': '-zh-chs' };
+        for (var i in acceptableLanguages) {
+            const meshCommanderLanguage = commandLanguageTranslations[acceptableLanguages[i]];
+            if (meshCommanderLanguage != null) {
+                try { res.sendFile(obj.parent.path.join(parent.webPublicPath, 'commander' + meshCommanderLanguage + '.htm')); } catch (ex) { }
+                return;
+            }
+        }
+
+        // Send out the default english MeshCommander
+        try { res.sendFile(obj.parent.path.join(parent.webPublicPath, 'commander.htm')); } catch (ex) { }
+    }
+
     // Upload a MeshCore.js file to the server
     function handleUploadMeshCoreFile(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -6131,6 +6152,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
             obj.app.get(url + 'devicepowerevents.ashx', obj.handleDevicePowerEvents);
             obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
+            obj.app.get(url + 'commander.ashx', handleMeshCommander);
             obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
             obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
             obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
