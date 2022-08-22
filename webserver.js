@@ -483,7 +483,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Look for a matching LDAP user group
                     var userMembershipMatch = false;
                     for (var i in domain.ldapuserrequiredgroupmembership) { if (userMemberships.indexOf(domain.ldapuserrequiredgroupmembership[i]) >= 0) { userMembershipMatch = true; } }
-                    if (userMembershipMatch === false) { fn('denied'); return; } // If there is no match, deny the login
+                    if (userMembershipMatch === false) { parent.debug('ldap', 'Denying login to a user that is not a member of a LDAP required group.'); fn('denied'); return; } // If there is no match, deny the login
                 }
 
                 // Get the email address for this LDAP user
@@ -8716,6 +8716,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var ugrp = obj.userGroups[ugrpid];
             if (ugrp == null) {
                 // This user group does not exist, create it
+                parent.debug('ldap', 'Creating new LDAP user group ' + userMemberships[i] + '.');
                 ugrp = { type: 'ugrp', _id: ugrpid, name: membership, domain: domain.id, membershipType: userMembershipType, links: {} };
 
                 // Save the new group
@@ -8732,6 +8733,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             if (existingUserMemberships[ugrpid] == null) {
                 // This user is not part of the user group, add it.
+                parent.debug('ldap', 'Adding ' + user.name + ' to LDAP user group ' + userMemberships[i] + '.');
                 if (user.links == null) { user.links = {}; }
                 user.links[ugrp._id] = { rights: 1 };
                 userChanged = true;
@@ -8761,6 +8763,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Remove the user from any memberships they don't belong to anymore
         for (var ugrpid in existingUserMemberships) {
             var ugrp = obj.userGroups[ugrpid];
+            parent.debug('ldap', 'Removing ' + user.name + ' from LDAP user group ' + ugrp.name + '.');
             if ((user.links != null) && (user.links[ugrpid] != null)) {
                 delete user.links[ugrpid];
 
