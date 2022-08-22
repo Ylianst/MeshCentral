@@ -13,7 +13,7 @@
 /*jshint esversion: 6 */
 'use strict';
 
-// SerialTunnel object is used to embed TLS within another connection.e
+// SerialTunnel object is used to embed TLS within another connection.
 function SerialTunnel(options) {
     var obj = new require('stream').Duplex(options);
     obj.forwardwrite = null;
@@ -484,6 +484,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var userMembershipMatch = false;
                     for (var i in domain.ldapuserrequiredgroupmembership) { if (userMemberships.indexOf(domain.ldapuserrequiredgroupmembership[i]) >= 0) { userMembershipMatch = true; } }
                     if (userMembershipMatch === false) { parent.debug('ldap', 'Denying login to a user that is not a member of a LDAP required group.'); fn('denied'); return; } // If there is no match, deny the login
+                }
+
+                // See if we need to sync LDAP user memberships with user groups
+                if (domain.ldapsyncwithusergroups === true) { domain.ldapsyncwithusergroups = {}; }
+                if (typeof domain.ldapsyncwithusergroups == 'object') {
+                    // LDAP user memberships sync is enabled, see if there are any filters to apply
+                    if (typeof domain.ldapsyncwithusergroups.filter == 'string') { domain.ldapsyncwithusergroups.filter = [domain.ldapsyncwithusergroups.filter]; }
+                    if (Array.isArray(domain.ldapsyncwithusergroups.filter)) {
+                        const g = [];
+                        for (var i in userMemberships) {
+                            var match = false;
+                            for (var j in domain.ldapsyncwithusergroups.filter) {
+                                if (userMemberships[i].indexOf(domain.ldapsyncwithusergroups.filter[j]) >= 0) { match = true; }
+                            }
+                            if (match) { g.push(userMemberships[i]); }
+                        }
+                        console.log(g);
+                        userMemberships = g;
+                    }
+                } else {
+                    // LDAP user memberships sync is disabled, sync the user with empty membership
+                    userMemberships = [];
                 }
 
                 // Get the email address for this LDAP user
