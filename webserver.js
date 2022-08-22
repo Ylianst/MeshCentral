@@ -472,21 +472,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (username == null) { username = shortname; }
                 var userid = 'user/' + domain.id + '/' + shortname;
 
+                // Get the list of groups this user is a member of.
+                var userMemberships = xxuser[(typeof domain.ldapusergroups == 'string') ? domain.ldapusergroups : 'memberOf'];
+                if (typeof userMemberships == 'string') { userMemberships = [userMemberships]; }
+                if (Array.isArray(userMemberships) == false) { userMemberships = []; }
+
                 // See if the user is required to be part of an LDAP user group in order to log into this server.
                 if (typeof domain.ldapuserrequiredgroupmembership == 'string') { domain.ldapuserrequiredgroupmembership = [domain.ldapuserrequiredgroupmembership]; }
                 if (Array.isArray(domain.ldapuserrequiredgroupmembership) && (domain.ldapuserrequiredgroupmembership.length > 0)) {
-                    // We must be part of a LDAP user group, lets get the list of groups this user is a member of.
-                    const memberOfKey = (typeof domain.ldapusergroups == 'string') ? domain.ldapusergroups : 'memberOf';
-                    var userMemberships = xxuser[memberOfKey];
-                    if (typeof userMemberships == 'string') { userMemberships = [userMemberships]; }
-                    if (Array.isArray(userMemberships) == false) { userMemberships = []; }
-
                     // Look for a matching LDAP user group
                     var userMembershipMatch = false;
                     for (var i in domain.ldapuserrequiredgroupmembership) { if (userMemberships.indexOf(domain.ldapuserrequiredgroupmembership[i]) >= 0) { userMembershipMatch = true; } }
-
-                    // If there is no match, deny the login
-                    if (userMembershipMatch === false) { fn('denied'); return; }
+                    if (userMembershipMatch === false) { fn('denied'); return; } // If there is no match, deny the login
                 }
 
                 // Get the email address for this LDAP user
@@ -578,6 +575,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Indicate that this user has a image
                     if (userimage != null) { user.flags = 1; }
 
+                    // Synd the user with LDAP matching user groups
+                    if (syncExternalUserGroups(domain, user, userMemberships, 'ldap') == true) { userChanged = true; }
+
                     obj.users[user._id] = user;
                     obj.db.SetUser(user);
                     var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msgid: 128, msgArgs: [user.name], msg: 'Account created, name is ' + user.name, domain: domain.id };
@@ -611,6 +611,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Check the user image flag
                     if ((userimage != null) && ((user.flags == null) || ((user.flags & 1) == 0))) { if (user.flags == null) { user.flags = 1; } else { user.flags += 1; } userChanged = true; }
                     if ((userimage == null) && (user.flags != null) && ((user.flags & 1) != 0)) { if (user.flags == 1) { delete user.flags; } else { user.flags -= 1; } userChanged = true; }
+
+                    // Synd the user with LDAP matching user groups
+                    if (syncExternalUserGroups(domain, user, userMemberships, 'ldap') == true) { userChanged = true; }
 
                     // If the user changed, save the changes to the database here
                     if (userChanged) {
@@ -8692,6 +8695,100 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const cmd = format.split('{{{');
         for (var j in cmd) { if (j == 0) continue; i = cmd[j].indexOf('}}}'); r += o[cmd[j].substring(0, i)] + cmd[j].substring(i + 3); }
         return r;
+    }
+
+    // Sync an account with an external user group.
+    // Return true if the user was changed
+    function syncExternalUserGroups(domain, user, userMemberships, userMembershipType) {
+        var userChanged = false;
+        if (user.links == null) { user.links = {}; }
+
+        // Create a user of memberships for this user that type
+        var existingUserMemberships = {};
+        for (var i in user.links) {
+            if (i.startsWith('ugrp/') && (obj.userGroups[i] != null) && (obj.userGroups[i].membershipType == userMembershipType)) { existingUserMemberships[i] = obj.userGroups[i]; }
+        }
+
+        // Go thru the list user memberships and create and add to any user groups as needed
+        for (var i in userMemberships) {
+            const membership = userMemberships[i];
+            var ugrpid = 'ugrp/' + domain.id + '/' + obj.crypto.createHash('sha384').update(membership).digest('base64').replace(/\+/g, '@').replace(/\//g, '$');
+            var ugrp = obj.userGroups[ugrpid];
+            if (ugrp == null) {
+                // This user group does not exist, create it
+                ugrp = { type: 'ugrp', _id: ugrpid, name: membership, domain: domain.id, membershipType: userMembershipType, links: {} };
+
+                // Save the new group
+                db.Set(ugrp);
+                if (db.changeStream == false) { obj.userGroups[ugrpid] = ugrp; }
+
+                // Event the user group creation
+                var event = { etype: 'ugrp', ugrpid: ugrpid, name: ugrp.name, action: 'createusergroup', links: ugrp.links, msgid: 69, msgArgv: [ugrp.name], msg: 'User group created: ' + ugrp.name, ugrpdomain: domain.id };
+                parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
+
+                // Log in the auth log
+                if (parent.authlog) { parent.authLog('https', 'Created ' + userMembershipType + ' user group ' + ugrp.name); }
+            }
+
+            if (existingUserMemberships[ugrpid] == null) {
+                // This user is not part of the user group, add it.
+                if (user.links == null) { user.links = {}; }
+                user.links[ugrp._id] = { rights: 1 };
+                userChanged = true;
+                db.SetUser(user);
+                parent.DispatchEvent([user._id], obj, 'resubscribe');
+
+                // Notify user change
+                var targets = ['*', 'server-users', user._id];
+                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 67, msgArgs: [user.name], msg: 'User group membership changed: ' + user.name, domain: domain.id };
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                parent.DispatchEvent(targets, obj, event);
+
+                // Add a user to the user group
+                ugrp.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                db.Set(ugrp);
+
+                // Notify user group change
+                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrp._id, name: ugrp.name, desc: ugrp.desc, action: 'usergroupchange', links: ugrp.links, msgid: 71, msgArgs: [user.name, ugrp.name], msg: 'Added user(s) ' + user.name + ' to user group ' + ugrp.name, addUserDomain: domain.id };
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                parent.DispatchEvent(['*', ugrp._id, user._id], obj, event);
+            } else {
+                // User is already part of this user group
+                delete existingUserMemberships[ugrpid];
+            }
+        }
+
+        // Remove the user from any memberships they don't belong to anymore
+        for (var ugrpid in existingUserMemberships) {
+            var ugrp = obj.userGroups[ugrpid];
+            if ((user.links != null) && (user.links[ugrpid] != null)) {
+                delete user.links[ugrpid];
+
+                // Notify user change
+                var targets = ['*', 'server-users', user._id, user._id];
+                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 67, msgArgs: [user.name], msg: 'User group membership changed: ' + user.name, domain: domain.id };
+                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                parent.DispatchEvent(targets, obj, event);
+
+                db.SetUser(user);
+                parent.DispatchEvent([user._id], obj, 'resubscribe');
+            }
+
+            if (ugrp != null) {
+                // Remove the user from the group
+                if ((ugrp.links != null) && (ugrp.links[user._id] != null)) {
+                    delete ugrp.links[user._id];
+                    db.Set(ugrp);
+
+                    // Notify user group change
+                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrp._id, name: ugrp.name, desc: ugrp.desc, action: 'usergroupchange', links: ugrp.links, msgid: 72, msgArgs: [user.name, ugrp.name], msg: 'Removed user ' + user.name + ' from user group ' + ugrp.name, domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
+                    parent.DispatchEvent(['*', ugrp._id, user._id], obj, event);
+                }
+            }
+        }
+
+        return userChanged;
     }
 
     return obj;
