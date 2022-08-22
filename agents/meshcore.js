@@ -2471,7 +2471,7 @@ function kvm_consentpromise_rejected(e)
 }
 function kvm_consentpromise_resolved(always)
 {
-    if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
+    if (always && process.platform=='win32') { server_set_consentTimer(this.ws.httprequest.userid); }
 
     // Success
     this.ws._consentpromise = null;
@@ -2542,7 +2542,7 @@ function kvm_consentpromise_resolved(always)
 
 function files_consentpromise_resolved(always)
 {
-    if (always) { server_set_consentTimer(this.ws.httprequest.userid); }
+    if (always && process.platform == 'win32') { server_set_consentTimer(this.ws.httprequest.userid); }
 
     // Success
     this.ws._consentpromise = null;
@@ -2698,17 +2698,17 @@ function onTunnelData(data)
                             });
                         } else
                         {
-                            this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.consentTimeout);
+                            this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout);
                         }
                     } else
                     {
-                        this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.consentTimeout);
+                        this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout);
                     }
                     this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
                     this.httprequest.tpromise._consent.then(
                         function (always)
                         {
-                            if (always) { server_set_consentTimer(this.retPromise.httprequest.userid); }
+                            if (always && process.platform == 'win32') { server_set_consentTimer(this.retPromise.httprequest.userid); }
 
                             // Success
                             MeshServerLogEx(27, null, "Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
@@ -2847,12 +2847,12 @@ function onTunnelData(data)
                         }
                         else
                         {
-                            pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null, tsid);
+                            pr = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout, null, tsid);
                         }
                     }
                     else
                     {
-                        pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null, tsid);
+                        pr = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout, null, tsid);
                     }
                     pr.ws = this;
                     this.pause();
@@ -2998,12 +2998,12 @@ function onTunnelData(data)
                             });
                         } else
                         {
-                            pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null);
+                            pr = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout, null);
                         }
                     }
                     else
                     {
-                        pr = require('message-box').create(consentTitle, consentMessage, this.consentTimeout, null);
+                        pr = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout, null);
                     }
                     pr.ws = this;
                     this.pause();
