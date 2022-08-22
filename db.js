@@ -3236,8 +3236,14 @@ module.exports.CreateDB = function (parent, func) {
 
         // Update the mesh object in memory
         const mmesh = parent.webserver.meshes[mesh._id];
-        for (var i in mesh) { mmesh[i] = mesh[i]; }
-        for (var i in mmesh) { if (mesh[i] == null) { delete mmesh[i]; } }
+        if (mmesh != null) {
+            // Update an existing device group
+            for (var i in mesh) { mmesh[i] = mesh[i]; }
+            for (var i in mmesh) { if (mesh[i] == null) { delete mmesh[i]; } }
+        } else {
+            // Device group not present, create it.
+            parent.webserver.meshes[mesh._id] = mesh;
+        }
 
         // Send the mesh update
         if (mesh.deleted) { mesh.action = 'deletemesh'; } else { mesh.action = (added ? 'createmesh' : 'meshchange'); }
@@ -3253,11 +3259,17 @@ module.exports.CreateDB = function (parent, func) {
         if (parent.webserver == null) return;
         common.unEscapeLinksFieldName(userChange.fullDocument);
         const user = performTypedRecordDecrypt([userChange.fullDocument])[0];
-
+        
         // Update the user object in memory
         const muser = parent.webserver.users[user._id];
-        for (var i in user) { muser[i] = user[i]; }
-        for (var i in muser) { if (user[i] == null) { delete muser[i]; } }
+        if (muser != null) {
+            // Update an existing user
+            for (var i in user) { muser[i] = user[i]; }
+            for (var i in muser) { if (user[i] == null) { delete muser[i]; } }
+        } else {
+            // User not present, create it.
+            parent.webserver.users[user._id] = user;
+        }
 
         // Send the user update
         var targets = ['*', 'server-users', user._id];
@@ -3273,8 +3285,14 @@ module.exports.CreateDB = function (parent, func) {
 
         // Update the user group object in memory
         const uusergroup = parent.webserver.userGroups[usergroup._id];
-        for (var i in usergroup) { uusergroup[i] = usergroup[i]; }
-        for (var i in uusergroup) { if (usergroup[i] == null) { delete uusergroup[i]; } }
+        if (uusergroup != null) {
+            // Update an existing user group
+            for (var i in usergroup) { uusergroup[i] = usergroup[i]; }
+            for (var i in uusergroup) { if (usergroup[i] == null) { delete uusergroup[i]; } }
+        } else {
+            // Usergroup not present, create it.
+            parent.webserver.userGroups[usergroup._id] = usergroup;
+        }
 
         // Send the user group update
         usergroup.action = (added ? 'createusergroup' : 'usergroupchange');
