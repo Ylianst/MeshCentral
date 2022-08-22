@@ -535,26 +535,8 @@
       "_LDAPUserEmail": "otherMail",
       "_LDAPUserGroups": "memberOf",
       "_LDAPUserRequiredGroupMembership": [ "CN=Domain Admins,CN=Users,DC=sample,DC=com" ],
-      "_LDAPPptions": {
-        "url": "test",
-        "anne": {
-          "gecos": "Anne O'Nyme",
-          "displayName": "O Nyme anne",
-          "uid": "anneonyme",
-          "mail": "anneonyme@example.com",
-          "email": "anneonyme@example.com",
-          "otherMail": [ "other.anneonyme@example.com", "anneonyme@example.com" ]
-        },
-        "so": {
-          "displayName": "Sticker Sophie",
-          "gecos": "Sophie Sticker",
-          "uid": "ssticker",
-          "mail": "ssticker@example.com",
-          "email": "ssticker@example.com",
-          "otherMail": [ "other.ssticker@example.com", "ssticker@example.com" ]
-        }
-      },
-      "__LDAPOptions": {
+      "_LDAPSyncWithUserGroups": { "filter": [ "CN=Domain Admins" ] },
+      "_LDAPOptions": {
         "URL": "ldap://1.2.3.4:389",
         "BindDN": "CN=svc_meshcentral,CN=Users,DC=meshcentral,DC=local",
         "BindCredentials": "Password.1",

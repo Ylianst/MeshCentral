@@ -550,6 +550,19 @@
           "ldapUserImage": { "type": "string", "default": "thumbnailPhoto", "description": "The LDAP value to use for the user's image." },
           "ldapSaveUserToFile": { "type": "string", "default": null, "description": "When set to a filename, for example c:\\temp\\ldapusers.txt, MeshCentral will save the LDAP user object to this file each time a user logs in. This is used for debugging LDAP issues." },
           "ldapUserGroups": { "type": "string", "default": "memberOf", "description": "The LDAP value to use for the user's group memberships." },
+          "ldapSyncWithUserGroups": {
+            "type": [ "boolean", "object" ],
+            "default": false,
+            "description": "When set to true or set to an object, MeshCentral will syncronized LDAP user memberships to MeshCentral user groups.",
+            "additionalProperties": false,
+            "properties": {
+              "filter": {
+                "type": [ "string", "array" ],
+                "default": null,
+                "description": "When set to a string or array of strings, only LDAP membership groups that includes one of the strings will be syncronized with MeshCentral user groups."
+              }
+            }
+          },
           "ldapUserRequiredGroupMembership": { "type": [ "string", "array" ], "default": null, "description": "A list of LDAP groups. Users must be part of at least one of these groups to allow login. If null, all users are allowed to login." },
           "ldapOptions": { "type": "object", "description": "LDAP options passed to ldapauth-fork" },
           "agentInviteCodes": { "type": "boolean", "default": false, "description": "Enabled a feature where you can set one or more invitation codes in a device group. You can then give a invitation link to users who can use it to download the agent." },
