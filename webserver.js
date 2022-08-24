@@ -1141,7 +1141,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
 
                         // Get the agent connection server name
-                        var serverName = obj.getWebServerName(domain);
+                        var serverName = obj.getWebServerName(domain, req);
                         if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
 
                         // Build the connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
@@ -2163,7 +2163,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             parent.debug('web', 'handleAgentInviteRequest using cookie.');
 
             // Build the mobile agent URL, this is used to connect mobile devices
-            var agentServerName = obj.getWebServerName(domain);
+            var agentServerName = obj.getWebServerName(domain, req);
             if (typeof obj.args.agentaliasdns == 'string') { agentServerName = obj.args.agentaliasdns; }
             var xdomain = (domain.dns == null) ? domain.id : '';
             var agentHttpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
@@ -2186,7 +2186,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
 
             // Build the mobile agent URL, this is used to connect mobile devices
-            var agentServerName = obj.getWebServerName(domain);
+            var agentServerName = obj.getWebServerName(domain, req);
             if (typeof obj.args.agentaliasdns == 'string') { agentServerName = obj.args.agentaliasdns; }
             var xdomain = (domain.dns == null) ? domain.id : '';
             var agentHttpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
@@ -2911,7 +2911,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'),
                     domain: domain.id,
                     debuglevel: parent.debugLevel,
-                    serverDnsName: obj.getWebServerName(domain),
+                    serverDnsName: obj.getWebServerName(domain, req),
                     serverRedirPort: args.redirport,
                     serverPublicPort: httpsPort,
                     serverfeatures: serverFeatures,
@@ -3133,7 +3133,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), // 1 if new account creation requires password
                 newAccountCaptcha: newAccountCaptcha, // If new account creation requires a CAPTCHA, this string will not be empty
                 newAccountCaptchaImage: newAccountCaptchaImage, // Set to the URL of the CAPTCHA image
-                serverDnsName: obj.getWebServerName(domain),
+                serverDnsName: obj.getWebServerName(domain, req),
                 serverPublicPort: httpsPort,
                 passlogin: (typeof domain.showpasswordlogin == 'boolean') ? domain.showpasswordlogin : true,
                 emailcheck: emailcheck,
@@ -3258,7 +3258,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
                 const authRelayCookie = obj.parent.encodeCookie({ ruserid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                render(req, res, getRenderPage('xterm', req, domain), getRenderArgs({ serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, authCookie: authCookie, authRelayCookie: authRelayCookie, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), name: EscapeHtml(node.name) }, req, domain));
+                render(req, res, getRenderPage('xterm', req, domain), getRenderArgs({ serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, authCookie: authCookie, authRelayCookie: authRelayCookie, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), name: EscapeHtml(node.name) }, req, domain));
             });
         } else {
             res.redirect(domain.url + getQueryPortion(req));
@@ -3901,7 +3901,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                 parent.debug('web', 'handleSharingRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
                 res.set({ 'Cache-Control': 'no-store' });
-                render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name).replace(/'/g, '%27'), features: c.p, features2: features2 }, req, domain));
+                render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name).replace(/'/g, '%27'), features: c.p, features2: features2 }, req, domain));
             });
         });
     }
@@ -5133,7 +5133,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Get the agent connection server name
-                var serverName = obj.getWebServerName(domain);
+                var serverName = obj.getWebServerName(domain, req);
                 if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
 
                 // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
@@ -5319,7 +5319,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (user != null) { meshaction.username = user.name; }
                     if (req.query.key != null) { meshaction.loginKey = req.query.key; }
                     var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                    if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                    if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain, req) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
 
                     setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                     res.send(JSON.stringify(meshaction, null, ' '));
@@ -5336,7 +5336,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (user != null) { meshaction.username = user.name; }
                 if (req.query.key != null) { meshaction.loginKey = req.query.key; }
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain, req) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
                 setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                 res.send(JSON.stringify(meshaction, null, ' '));
                 return;
@@ -5506,8 +5506,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     };
 
     // Get the web server hostname. This may change if using a domain with a DNS name.
-    obj.getWebServerName = function (domain) {
+    obj.getWebServerName = function (domain, req) {
         if (domain.dns != null) return domain.dns;
+        if ((obj.certificates.CommonName == 'un-configured') && (req != null) && (req.headers != null) && (typeof req.headers.host == 'string')) { return req.headers.host.split(':')[0]; }
         return obj.certificates.CommonName;
     }
 
@@ -5543,7 +5544,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
 
         // Get the agent connection server name
-        var serverName = obj.getWebServerName(domain);
+        var serverName = obj.getWebServerName(domain, req);
         if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
 
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
@@ -5646,7 +5647,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
 
         // Get the agent connection server name
-        var serverName = obj.getWebServerName(domain);
+        var serverName = obj.getWebServerName(domain, req);
         if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
 
         // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.

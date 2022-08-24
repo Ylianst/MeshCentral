@@ -568,7 +568,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
 
             // Build the mobile agent URL, this is used to connect mobile devices
-            var agentServerName = parent.getWebServerName(domain);
+            var agentServerName = parent.getWebServerName(domain, req);
             if (typeof parent.args.agentaliasdns == 'string') { agentServerName = parent.args.agentaliasdns; }
             var xdomain = (domain.dns == null) ? domain.id : '';
             var agentHttpsPort = ((parent.args.aliasport == null) ? parent.args.port : parent.args.aliasport); // Use HTTPS alias port is specified
@@ -1938,7 +1938,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                             var xdomain = (domain.dns == null) ? domain.id : '';
                             if (xdomain != '') xdomain += "/";
-                            var url = "https://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.userid) + "/" + encodeURIComponent(user._id);
+                            var url = "https://" + parent.getWebServerName(domain, req) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.userid) + "/" + encodeURIComponent(user._id);
 
                             // Perform web push notification
                             var payload = { body: "Chat Request, Click here to accept.", icon: 8, url: url }; // Icon 8 is the user icon.
@@ -1961,7 +1961,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                         var xdomain = (domain.dns == null) ? domain.id : '';
                         if (xdomain != '') xdomain += "/";
-                        var url = "https://" + parent.getWebServerName(domain) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id);
+                        var url = "https://" + parent.getWebServerName(domain, req) + ":" + httpsPort + "/" + xdomain + "messenger?id=meshmessenger/" + encodeURIComponent(command.nodeid) + "/" + encodeURIComponent(user._id);
 
                         // Open a web page on the remote device
                         routeCommandToNode({ 'action': 'openUrl', 'nodeid': command.nodeid, 'userid': user._id, 'username': user.name, 'url': url });
@@ -3903,7 +3903,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     mesh = parent.meshes[command.meshid];
                     if ((mesh == null) || (parent.IsMeshViewable(user, mesh) == false)) { err = 'Invalid group id'; }
                 }
-                var serverName = parent.getWebServerName(domain);
+                var serverName = parent.getWebServerName(domain, req);
 
                 // Handle any errors
                 if (err != null) {
@@ -4226,7 +4226,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (inviteCookie == null) { if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'createDeviceShareLink', responseid: command.responseid, result: 'Unable to generate shareing cookie' })); } catch (ex) { } } return; }
 
                     // Create the server url
-                    var serverName = parent.getWebServerName(domain);
+                    var serverName = parent.getWebServerName(domain, req);
                     var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
                     var xdomain = (domain.dns == null) ? domain.id : '';
                     if (xdomain != '') xdomain += '/';
@@ -4329,7 +4329,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (rights == MESHRIGHT_ADMIN) {
                         var token = parent.parent.mqttbroker.generateLogin(node.meshid, node._id);
                         var r = { action: 'getmqttlogin', responseid: command.responseid, nodeid: node._id, user: token.user, pass: token.pass };
-                        const serverName = parent.getWebServerName(domain);
+                        const serverName = parent.getWebServerName(domain, req);
 
                         // Add MPS URL
                         if (parent.parent.mpsserver != null) {
