@@ -31,6 +31,13 @@ Default Install Path: `/usr/local/mesh_services/meshagent/meshagent`
 
 Launches from `/Library/LaunchAgents/meshagent.plist`
 
+Controlling agent
+
+```bash
+launchctl stop meshagent
+launchctl start meshagent
+```
+
 ## Apple macOS Universal
 
 For OSx 11+ including Big Sur, Monterey and later
