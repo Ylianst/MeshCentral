@@ -1765,7 +1765,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (inviteCookie == null) return;
 
         // Create the server url
-        var serverName = parent.getWebServerName(domain);
+        var serverName = parent.getWebServerName(domain, req);
         var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
         var xdomain = (domain.dns == null) ? domain.id : '';
         if (xdomain != '') xdomain += '/';
