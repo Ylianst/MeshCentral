@@ -1191,10 +1191,16 @@ To get this features setup, users will need to go to the “My Account” tab or
 
 Note that if a user performs a password recovery using email, the 2-step authentication is then turned off and will need to be turned on again. This is not idea as someone being able to intercept the user’s email could still log into the web site. Users should make sure to properly protect their email account.
 
-Another form of MFA or Multi-factor Authentication is hardware based OTP solution providing 2FA or Two-factor authentication. Yubikey is fully supported in MeshCentral.
+Another form of MFA or Multi-factor Authentication is hardware based OTP (One Time Password) solution providing 2FA or Two-factor authentication. Yubikey is fully supported in MeshCentral.
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/FvDHlcdNepQ" frameborder="0" allowfullscreen></iframe>
+</div>
+
+And taking authentication to the next step is removing the login page entirely. Use LoginKey 3FA with MeshCentral.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/-WKY8Wy0Huk" frameborder="0" allowfullscreen></iframe>
 </div>
 
 ## Branding & Terms of use
