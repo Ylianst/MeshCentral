@@ -577,6 +577,42 @@ IP addresses are separated by a comma. As a result, only users coming these IP a
 
 **Note**:  When IP address whitelist is effective, Mesh Agent connection from any IP address will be not affected. 
 
+You can also use files for IP lists
+
+```json
+"userAllowedIp": "file:userallowedips.txt",
+"userBlockedIp": "file:userblockedips.txt",
+"agentAllowedIp": "file:agentallowedips.txt"
+```
+
+Place the file in the `meshcentral-data` folder.
+
+All the lines that start with a number or `:` will be used, everything else is ignored. So, you can put comments anyway you like, but probably best to start then with a `#` or something to make it clear.
+
+```txt
+# My list of blocked IP's
+185.101.70.0/24
+185.46.85.0/24
+37.9.44.0/24
+37.9.45.0/24
+5.189.205.0/24
+5.189.206.0/24
+5.189.207.0/24
+5.62.153.0/24
+5.62.156.0/24
+5.62.158.0/24
+
+# One more list
+5.8.44.0/24
+5.8.45.0/24
+5.8.46.0/24
+79.110.28.0/24
+79.110.31.0/24
+91.204.14.0/24
+95.181.218.0/24
+95.85.81.0/24
+```
+
 ## Email Setup
 
 We highly recommend the use of an email server (SMTP) because we could allow MeshCentral to verify user account’s email address by sending a confirmation request to the user to complete the account registration and for password recovery, should a user forget account password as illustrated below
