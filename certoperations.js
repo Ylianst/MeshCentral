@@ -918,12 +918,8 @@ module.exports.CertificateOperations = function (parent) {
             r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField('CN').value;
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
             r.WebIssuer = webCertificate.issuer.getField('CN').value;
-            if (commonName == 'un-configured') { // If the "cert" name is not set, try to use the certificate CN instead (ok if the certificate is not wildcard).
-                commonName = webCertificate.subject.getField('CN').value;
-                if (commonName.startsWith('*.')) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
-            }
-            r.CommonName = commonName;
-            r.CommonNames = [commonName.toLowerCase()];
+            r.CommonName = webCertificate.subject.getField('CN').value;
+            r.CommonNames = [ r.CommonName ];
             var altNames = webCertificate.getExtension('subjectAltName');
             if (altNames) {
                 for (i = 0; i < altNames.altNames.length; i++) {
@@ -935,12 +931,18 @@ module.exports.CertificateOperations = function (parent) {
             }
             var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
             r.RootName = rootCertificate.subject.getField('CN').value;
+
+            // If the "cert" name is not set, try to use the certificate CN instead (ok if the certificate is not wildcard).
+            if (commonName == 'un-configured') {
+                if (r.CommonName.startsWith('*.')) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }
+                commonName = r.CommonName;
+            }
         }
 
         // Look for domains that have DNS names and load their certificates
         r.dns = {};
         for (i in config.domains) {
-            if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
+            if ((i != '') && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
                 if (obj.compareCertificateNames(r.CommonNames, dnsname) == true) {
@@ -987,8 +989,8 @@ module.exports.CertificateOperations = function (parent) {
             if (xorganizationField != null) { xorganization = xorganizationField.value; }
             if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
 
-            // Check if we have correct certificates
-            if (obj.compareCertificateNames(r.CommonNames, commonName) == false) { forceWebCertGen = 1; }
+            // Check if we have correct certificates.
+            if (obj.compareCertificateNames(r.CommonNames, commonName) == false) { forceWebCertGen = 1; } else { r.CommonName = commonName; }
             if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
 
             // If the certificates matches what we want, use them.
@@ -1140,7 +1142,7 @@ module.exports.CertificateOperations = function (parent) {
 
         // Look for domains with DNS names that have no certificates and generated them.
         for (i in config.domains) {
-            if ((i != "") && (config.domains[i] != null) && (config.domains[i].dns != null)) {
+            if ((i != '') && (config.domains[i] != null) && (config.domains[i].dns != null)) {
                 dnsname = config.domains[i].dns;
                 // Check if this domain matches a parent wildcard cert, if so, use the parent cert.
                 if (obj.compareCertificateNames(r.CommonNames, dnsname) == true) {
