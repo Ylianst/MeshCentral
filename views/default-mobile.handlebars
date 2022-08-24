@@ -1186,7 +1186,7 @@
     <div id=topMenu style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Files</div>
         <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Account</div>
-        <div id="logoutMenuOption"><a href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
+        <div id="logoutMenuOption"><a id="logoutMenuOptionRef" href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
     </div>
     <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
     <iframe name="fileUploadFrame" style=display:none></iframe>
@@ -1227,6 +1227,8 @@
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
+        var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
+        console.log(logoutControls);
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -1299,6 +1301,9 @@
 
             // Setup stared devices
             try { stars = JSON.parse(getstore('stars', '{}')); } catch (ex) { }
+
+            // Setup logout control
+            if (logoutControls && logoutControls.logoutUrl) { Q('logoutMenuOptionRef').href = logoutControls.logoutUrl; }
 
             // Load desktop settings
             var t = localStorage.getItem('desktopsettings');
