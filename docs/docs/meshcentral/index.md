@@ -1444,6 +1444,10 @@ Before you get started, your MeshCentral server must be publicly facing on the i
 
 ### LDAP
 
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/UQMbNQk85g8" frameborder="0" allowfullscreen></iframe>
+</div>
+
 You can integrate LDAP using [these](https://github.com/Ylianst/MeshCentral/blob/f05eb9a198bed249c2b1a969ce17a41404ef70a6/meshcentral-config-schema.json#L505-L513) configuration options
 
 ![](images/ldap_integration.png)
