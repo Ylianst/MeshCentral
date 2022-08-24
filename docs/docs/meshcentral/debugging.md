@@ -203,6 +203,12 @@ service meshcentral restart
 
 ## MeshAgent
 
+Troubleshooting agent
+
+```bash
+./meshagent -state
+```
+
 ### Agent Debug Logs to server
 
 This automatically downloads all agent error logs into `meshcentral-data/agenterrorlogs.txt`
