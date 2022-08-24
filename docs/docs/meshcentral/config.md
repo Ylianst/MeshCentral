@@ -42,6 +42,7 @@ See description for information about each item.
             }
           }
         },
+        "sqlite3": { "type": "boolean", "default": false, "description": "Set true to use SQLite3 as a local MeshCentral database." },
         "mySQL": {
           "type": "object",
           "description": "Add this section to connect MeshCentral to a MySQL database instance.",
@@ -74,6 +75,11 @@ See description for information about each item.
             "password": { "type": "string", "description": "PostgreSQL password" },
             "database": { "type": "string", "default": "meshcentral", "description": "Name of PostgreSQL database used" }
           }
+        },
+        "acebase": {
+          "type": "object",
+          "description": "Add this section to enable AceBase database support, this is a local database system much like NeDB.",
+          "properties": { "sponsor": { "type": "boolean", "default": false, "description": "Set true to remove the AceBase banner on startup." } }
         },
         "WANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral WAN features are enabled and agents will connect to the server using a well known DNS name." },
         "LANonly": { "type": "boolean", "default": false, "description": "When enabled, only MeshCentral LAN features are enabled and agents will find the server using multicast LAN packets." },
@@ -581,13 +587,14 @@ See description for information about each item.
             "additionalProperties": false,
             "description": "Use this section to set resource metadata of the Windows agents prior to signing. In Windows, you can right-click and select properties to view these values.",
             "properties": {
+              "icon": { "type": "string", "description": "Sets the agent icon, this is the name of a .ico file with the file placed in the meshcentral-data folder." },
               "fileDescription": { "type": "string", "description": "Executable file description." },
-              "fileVersion": { "type": "string", "description": "Executable file version, generally in the form of 1.2.3.4." },
+              "fileVersion": { "type": "string", "description": "Executable file version, in the form of 'n.n.n.n', for example: '1.2.3.4'." },
               "internalName":  { "type": "string", "description": "Executable internal name." },
               "legalCopyright":  { "type": "string", "description": "Executable legal copyright." },
               "originalFilename":  { "type": "string", "description": "Executable original file name." },
               "productName":  { "type": "string", "description": "Executable product name." },
-              "productVersion":  { "type": "string", "description": "Executable product version, generally in the form of 1.2.3.4." }
+              "productVersion":  { "type": "string", "description": "Executable product version. Any string format will work, but a alphabetic character is required for this value to show correctly in the Windows property box. For example: 'v1.2.3.4' will work, but '1.2.3.4' will not." }
             }
           },
           "assistantCustomization": {
@@ -934,6 +941,7 @@ See description for information about each item.
             "additionalProperties": false,
             "properties": {
               "log": { "type": "string" },
+              "strictCommonName": { "type": "boolean", "default": false, "description": "When set to true, the certificate common name needs to match exactly the Intel AMT trusted FQDN or DHCP Option 15. If false, some flexibility may be given to the matching." },
               "certs": {
                 "type": "object",
                 "additionalProperties": {
@@ -1265,5 +1273,4 @@ See description for information about each item.
   },
   "required": [ "settings", "domains" ]
 }
-
 ```

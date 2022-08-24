@@ -577,6 +577,42 @@ IP addresses are separated by a comma. As a result, only users coming these IP a
 
 **Note**:  When IP address whitelist is effective, Mesh Agent connection from any IP address will be not affected. 
 
+You can also use files for IP lists
+
+```json
+"userAllowedIp": "file:userallowedips.txt",
+"userBlockedIp": "file:userblockedips.txt",
+"agentAllowedIp": "file:agentallowedips.txt"
+```
+
+Place the file in the `meshcentral-data` folder.
+
+All the lines that start with a number or `:` will be used, everything else is ignored. So, you can put comments anyway you like, but probably best to start then with a `#` or something to make it clear.
+
+```txt
+# My list of blocked IP's
+185.101.70.0/24
+185.46.85.0/24
+37.9.44.0/24
+37.9.45.0/24
+5.189.205.0/24
+5.189.206.0/24
+5.189.207.0/24
+5.62.153.0/24
+5.62.156.0/24
+5.62.158.0/24
+
+# One more list
+5.8.44.0/24
+5.8.45.0/24
+5.8.46.0/24
+79.110.28.0/24
+79.110.31.0/24
+91.204.14.0/24
+95.181.218.0/24
+95.85.81.0/24
+```
+
 ## Email Setup
 
 We highly recommend the use of an email server (SMTP) because we could allow MeshCentral to verify user account’s email address by sending a confirmation request to the user to complete the account registration and for password recovery, should a user forget account password as illustrated below
@@ -1155,6 +1191,18 @@ To get this features setup, users will need to go to the “My Account” tab or
 
 Note that if a user performs a password recovery using email, the 2-step authentication is then turned off and will need to be turned on again. This is not idea as someone being able to intercept the user’s email could still log into the web site. Users should make sure to properly protect their email account.
 
+Another form of MFA or Multi-factor Authentication is hardware based OTP (One Time Password) solution providing 2FA or Two-factor authentication. Yubikey is fully supported in MeshCentral.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/FvDHlcdNepQ" frameborder="0" allowfullscreen></iframe>
+</div>
+
+And taking authentication to the next step is removing the login page entirely. Use LoginKey 3FA with MeshCentral.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/-WKY8Wy0Huk" frameborder="0" allowfullscreen></iframe>
+</div>
+
 ## Branding & Terms of use
 
 Once MeshCentral is setup, you may want to customize the web site with your own brand and terms of use. This is important to personalize the web site to your organization. We also want to customize the web site in such a way that updating to the latest version will keep the branding as-is.
@@ -1193,6 +1241,10 @@ If, for example, MeshCentral is running on a Raspberry Pi. You may want to put a
 ![](images/2022-05-19-00-40-13.png)
 
 This is great to personalize the look of the server within the web site.
+
+### Agent Branding
+
+![](images/2022-08-24-06-42-40.png)
 
 ### Terms of use
 
@@ -1403,6 +1455,10 @@ Before you get started, your MeshCentral server must be publicly facing on the i
 
 
 ### LDAP
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/UQMbNQk85g8" frameborder="0" allowfullscreen></iframe>
+</div>
 
 You can integrate LDAP using [these](https://github.com/Ylianst/MeshCentral/blob/f05eb9a198bed249c2b1a969ce17a41404ef70a6/meshcentral-config-schema.json#L505-L513) configuration options
 
