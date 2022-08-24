@@ -1194,6 +1194,10 @@ If, for example, MeshCentral is running on a Raspberry Pi. You may want to put a
 
 This is great to personalize the look of the server within the web site.
 
+### Agent Branding
+
+![](images/2022-08-24-06-42-40.png)
+
 ### Terms of use
 
 You can change the terms of use of the web site by adding a “terms.txt” file in the “meshcentral-data” folder. The file can include HTML markup. Once set, the server does not need to be restarted, the updated terms.txt file will get used the next time it’s requested.
