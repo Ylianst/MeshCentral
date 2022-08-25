@@ -1370,7 +1370,9 @@ function handleServerCommand(data) {
                                     this._dispatcher.on('connection', function (c) {
                                         this._c = c;
                                         this._c.root = this.parent;
-                                        this._c.on('end', function () {
+                                        this._c.on('end', function ()
+                                        {
+                                            this.root._dispatcher.close();
                                             this.root._dispatcher = null;
                                             this.root = null;
                                             mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
@@ -4344,7 +4346,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             this._dispatcher.on('connection', function (c) {
                                 this._c = c;
                                 this._c.root = this.parent;
-                                this._c.on('end', function () {
+                                this._c.on('end', function ()
+                                {
+                                    this.root._dispatcher.close();
                                     this.root._dispatcher = null;
                                     this.root = null;
                                 });
