@@ -815,12 +815,14 @@ module.exports.CertificateOperations = function (parent) {
             var xext = xroot.getExtension('keyUsage');
             if ((xext == null) || (xext.keyCertSign !== true) || (xroot.serialNumber == '')) {
                 // We need to fix this certificate
+                parent.common.moveOldFiles(['root-cert-public-backup.crt']);
                 obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-public-backup.crt'), rootCertificate);
                 if (xroot.serialNumber == '') { console.log("Fixing root certificate to add serial number..."); xroot.serialNumber = '' + require('crypto').randomBytes(4).readUInt32BE(0); }
                 if ((xext == null) || (xext.keyCertSign !== true)) { console.log("Fixing root certificate to add signing key usage..."); xroot.setExtensions([{ name: 'basicConstraints', cA: true }, { name: 'subjectKeyIdentifier' }, { name: 'keyUsage', keyCertSign: true }]); }
                 var xrootPrivateKey = obj.pki.privateKeyFromPem(rootPrivateKey);
                 xroot.sign(xrootPrivateKey, obj.forge.md.sha384.create());
                 r.root.cert = obj.pki.certificateToPem(xroot);
+                parent.common.moveOldFiles([parent.getConfigFilePath('root-cert-public.crt')]);
                 try { obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-public.crt'), r.root.cert); } catch (ex) { }
             }
         }
@@ -1036,6 +1038,7 @@ module.exports.CertificateOperations = function (parent) {
             }
             rootCertificate = obj.pki.certificateToPem(rootCertAndKey.cert);
             rootPrivateKey = obj.pki.privateKeyToPem(rootCertAndKey.key);
+            parent.common.moveOldFiles([parent.getConfigFilePath('root-cert-public.crt'), parent.getConfigFilePath('root-cert-private.key')]);
             obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-public.crt'), rootCertificate);
             obj.fs.writeFileSync(parent.getConfigFilePath('root-cert-private.key'), rootPrivateKey);
         } else {
@@ -1053,6 +1056,7 @@ module.exports.CertificateOperations = function (parent) {
             webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, strongCertificate);
             webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
             webPrivateKey = obj.pki.privateKeyToPem(webCertAndKey.key);
+            parent.common.moveOldFiles([parent.getConfigFilePath('webserver-cert-public.crt'), parent.getConfigFilePath('webserver-cert-private.key')]);
             obj.fs.writeFileSync(parent.getConfigFilePath('webserver-cert-public.crt'), webCertificate);
             obj.fs.writeFileSync(parent.getConfigFilePath('webserver-cert-private.key'), webPrivateKey);
         } else {
@@ -1075,6 +1079,7 @@ module.exports.CertificateOperations = function (parent) {
             agentCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, 'MeshCentralAgentServer', country, organization, { }, strongCertificate);
             agentCertificate = obj.pki.certificateToPem(agentCertAndKey.cert);
             agentPrivateKey = obj.pki.privateKeyToPem(agentCertAndKey.key);
+            parent.common.moveOldFiles([parent.getConfigFilePath('agentserver-cert-public.crt'), parent.getConfigFilePath('agentserver-cert-private.key')]);
             obj.fs.writeFileSync(parent.getConfigFilePath('agentserver-cert-public.crt'), agentCertificate);
             obj.fs.writeFileSync(parent.getConfigFilePath('agentserver-cert-private.key'), agentPrivateKey);
         } else {
@@ -1091,6 +1096,7 @@ module.exports.CertificateOperations = function (parent) {
             codesignCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, true, commonName, country, organization, { codeSign: true }, strongCertificate);
             codesignCertificate = obj.pki.certificateToPem(codesignCertAndKey.cert);
             codesignPrivateKey = obj.pki.privateKeyToPem(codesignCertAndKey.key);
+            parent.common.moveOldFiles([parent.getConfigFilePath('codesign-cert-public.crt'), parent.getConfigFilePath('codesign-cert-private.key')]);
             obj.fs.writeFileSync(parent.getConfigFilePath('codesign-cert-public.crt'), codesignCertificate);
             obj.fs.writeFileSync(parent.getConfigFilePath('codesign-cert-private.key'), codesignPrivateKey);
         } else {
@@ -1107,6 +1113,7 @@ module.exports.CertificateOperations = function (parent) {
             mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, mpsCommonName, mpsCountry, mpsOrganization, null, false);
             mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
             mpsPrivateKey = obj.pki.privateKeyToPem(mpsCertAndKey.key);
+            parent.common.moveOldFiles([parent.getConfigFilePath('mpsserver-cert-public.crt'), parent.getConfigFilePath('mpsserver-cert-private.key')]);
             obj.fs.writeFileSync(parent.getConfigFilePath('mpsserver-cert-public.crt'), mpsCertificate);
             obj.fs.writeFileSync(parent.getConfigFilePath('mpsserver-cert-private.key'), mpsPrivateKey);
         } else {
@@ -1155,6 +1162,7 @@ module.exports.CertificateOperations = function (parent) {
                             var xwebCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, dnsname, country, organization, null, strongCertificate);
                             var xwebCertificate = obj.pki.certificateToPem(xwebCertAndKey.cert);
                             var xwebPrivateKey = obj.pki.privateKeyToPem(xwebCertAndKey.key);
+                            parent.common.moveOldFiles([ parent.getConfigFilePath('webserver-' + i + '-cert-public.crt'), parent.getConfigFilePath('webserver-' + i + '-cert-private.key') ]);
                             obj.fs.writeFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-public.crt'), xwebCertificate);
                             obj.fs.writeFileSync(parent.getConfigFilePath('webserver-' + i + '-cert-private.key'), xwebPrivateKey);
                             r.dns[i] = { cert: xwebCertificate, key: xwebPrivateKey };

@@ -1785,6 +1785,7 @@ function CreateMeshCentralServer(config, args) {
                         if ((vapidKeys == null) || (typeof vapidKeys.publicKey != 'string') || (typeof vapidKeys.privateKey != 'string')) {
                             console.log("Generating web push VAPID keys...");
                             vapidKeys = obj.webpush.generateVAPIDKeys();
+                            obj.common.moveOldFiles([obj.path.join(obj.datapath, 'vapid.json')]);
                             obj.fs.writeFileSync(obj.path.join(obj.datapath, 'vapid.json'), JSON.stringify(vapidKeys));
                         }
                         obj.webpush.vapidPublicKey = vapidKeys.publicKey;
