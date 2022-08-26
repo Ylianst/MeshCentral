@@ -742,12 +742,15 @@ module.exports.CertificateOperations = function (parent) {
     // Return true if the name is found in the certificates names, we support wildcard certificates
     obj.compareCertificateNames = function(certNames, name) {
         if (certNames == null) return false;
-        if (certNames.indexOf(name.toLowerCase()) >= 0) return true;
-        for (var i in certNames) {
-            if ((certNames[i].startsWith('*.') == true) && (name.endsWith(certNames[i].substring(1)) == true)) { return true; }
-            if (certNames[i].startsWith('http://*.') == true) {
-                if (name.endsWith(certNames[i].substring(8)) == true) { return true; }
-                if ((certNames[i].endsWith('/') == true) && (name.endsWith(certNames[i].substring(8, certNames[i].length - 1)) == true)) { return true; }
+        name = name.toLowerCase();
+        var xcertNames = [];
+        for (var i in certNames) { xcertNames.push(certNames[i].toLowerCase()); }
+        if (xcertNames.indexOf(name) >= 0) return true;
+        for (var i in xcertNames) {
+            if ((xcertNames[i].startsWith('*.') == true) && (name.endsWith(xcertNames[i].substring(1)) == true)) { return true; }
+            if (xcertNames[i].startsWith('http://*.') == true) {
+                if (name.endsWith(xcertNames[i].substring(8)) == true) { return true; }
+                if ((xcertNames[i].endsWith('/') == true) && (name.endsWith(xcertNames[i].substring(8, xcertNames[i].length - 1)) == true)) { return true; }
             }
         }
         return false;
@@ -992,12 +995,13 @@ module.exports.CertificateOperations = function (parent) {
             if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
 
             // Check if we have correct certificates.
-            if (obj.compareCertificateNames(r.CommonNames, commonName) == false) { forceWebCertGen = 1; } else { r.CommonName = commonName; }
+            if (obj.compareCertificateNames(r.CommonNames, commonName) == false) { console.log("Error: " + commonName + " does not match name in TLS certificate: " + r.CommonNames.join(', ')); forceWebCertGen = 1; } else { r.CommonName = commonName; }
             if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
+            if (args.keepcerts == true) { forceWebCertGen = 0; forceMpsCertGen = 0; r.CommonName = commonName; }
 
             // If the certificates matches what we want, use them.
             if ((forceWebCertGen == 0) && (forceMpsCertGen == 0)) {
-                if (func !== undefined) { func(r); }
+                if (func !== null) { func(r); }
                 return r;
             }
         }
@@ -1051,7 +1055,7 @@ module.exports.CertificateOperations = function (parent) {
 
         // If the web certificate does not exist, create one
         var webCertAndKey, webCertificate, webPrivateKey;
-        if ((r.web == null) || (forceWebCertGen == 1)) {
+        if ((r.web == null) || (forceWebCertGen === 1)) {
             console.log("Generating HTTPS certificate...");
             webCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, commonName, country, organization, null, strongCertificate);
             webCertificate = obj.pki.certificateToPem(webCertAndKey.cert);
@@ -1108,7 +1112,7 @@ module.exports.CertificateOperations = function (parent) {
 
         // If the Intel AMT MPS certificate does not exist, create one
         var mpsCertAndKey, mpsCertificate, mpsPrivateKey;
-        if ((r.mps == null) || (forceMpsCertGen == 1)) {
+        if ((r.mps == null) || (forceMpsCertGen === 1)) {
             console.log("Generating Intel AMT MPS certificate...");
             mpsCertAndKey = obj.IssueWebServerCertificate(rootCertAndKey, false, mpsCommonName, mpsCountry, mpsOrganization, null, false);
             mpsCertificate = obj.pki.certificateToPem(mpsCertAndKey.cert);
