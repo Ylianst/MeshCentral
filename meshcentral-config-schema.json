@@ -8,6 +8,7 @@
       "type": "object",
       "properties": {
         "cert": { "type": "string", "description": "Set this to the primary DNS name of this MeshCentral server." },
+        "keepCerts": { "type": "boolean", "default": false, "description": "Force MeshCentral to use the HTTPS and MPS certificates even if the name does not match the expected DNS value." },
         "mongoDb": { "type": "string", "default": null },
         "mongoDbName": { "type": "string" },
         "mongoDbChangeStream": { "type": "boolean", "default": false },
