@@ -311,7 +311,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         obj.ws._socket.pause();
 
         // If the response stream is closed, close this tunnel right away
-        res.socket.on('end', function () { obj.close(); });
+        obj.ws._socket.on('end', function () { obj.close(); });
 
         // Remove the trailing '/.websocket' if needed
         var baseurl = req.url, i = req.url.indexOf('?');
