@@ -358,3 +358,15 @@ module.exports.parseVersion = function (verstr) {
     }
     return r;
 }
+
+// Move old files. If we are about to overwrite a file, we can move if first just in case the change needs to be reverted
+module.exports.moveOldFiles = function (filelist) {
+    // Fine an old extension that works for all files in the file list
+    var oldFileExt, oldFileExtCount = 0, extOk;
+    do {
+        extOk = true;
+        if (++oldFileExtCount == 1) { oldFileExt = '-old'; } else { oldFileExt = '-old' + oldFileExtCount; }
+        for (var i in filelist) { if (fs.existsSync(filelist[i] + oldFileExt) == true) { extOk = false; } }
+    } while (extOk == false);
+    for (var i in filelist) { try { fs.renameSync(filelist[i], filelist[i] + oldFileExt); } catch (ex) { } }
+}
