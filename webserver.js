@@ -3848,7 +3848,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Generate an old style cookie from the information in the database
-                var cookie = { a: 5, p: doc.p, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid, k: doc.extrakey };
+                var cookie = { a: 5, p: doc.p, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid, k: doc.extrakey ? doc.extrakey : null, port: doc.port };
                 if (doc.userid) { cookie.uid = doc.userid; }
                 if ((cookie.userid == null) && (cookie.pid.startsWith('AS:node/'))) { cookie.nouser = 1; }
                 if (doc.startTime != null) {
@@ -3870,7 +3870,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Check the public id
         obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
-            // Check if any desktop sharing links are present, expire message.
+            // Check if any sharing links are present, expire message.
             if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Search for the device share public identifier, expire message.
@@ -3886,22 +3886,43 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Check the start time, not yet valid message.
                 if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
-                // Looks good, let's create the outbound session cookies.
-                // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
-                const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo };
-                if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
-                if (c.k != null) { authCookieData.k = c.k; }
-                const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
+                // If this is a web relay share, check if this feature is active
+                if ((c.p == 8) || (c.p == 16)) {
+                    // This is a HTTP or HTTPS share
+                    var webRelayPort = ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0));
+                    if (webRelayPort == 0) { res.sendStatus(404); return; }
 
-                // Server features
-                var features2 = 0;
-                if (obj.args.allowhighqualitydesktop !== false) { features2 += 1; } // Enable AllowHighQualityDesktop (Default true)
+                    // Create the authentication cookie
+                    const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, r: 8, expire: c.expire, pid: c.pid, port: c.port };
+                    if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
+                    const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
 
-                // Lets respond by sending out the desktop viewer.
-                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                parent.debug('web', 'handleSharingRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
-                res.set({ 'Cache-Control': 'no-store' });
-                render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name).replace(/'/g, '%27'), features: c.p, features2: features2 }, req, domain));
+                    // Redirect to a URL
+                    var webRelayDns = (args.relaydns != null) ? args.relaydns[0] : obj.getWebServerName(domain, req);
+                    var url = 'https://' + webRelayDns + ':' + webRelayPort + '/control-redirect.ashx?n=' + c.nid + '&p=' + c.port + '&appid=' + c.p + '&c=' + authCookie;
+                    if (c.addr != null) { url += '&addr=' + c.addr; }
+                    if (c.pid != null) { url += '&relayid=' + c.pid; }
+                    parent.debug('web', 'handleSharingRequest: Redirecting guest to HTTP relay page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
+                    res.redirect(url);
+                } else {
+                    // Looks good, let's create the outbound session cookies.
+                    // This is a desktop, terminal or files share. We need to display the sharing page.
+                    // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
+                    const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo };
+                    if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
+                    if (c.k != null) { authCookieData.k = c.k; }
+                    const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
+
+                    // Server features
+                    var features2 = 0;
+                    if (obj.args.allowhighqualitydesktop !== false) { features2 += 1; } // Enable AllowHighQualityDesktop (Default true)
+
+                    // Lets respond by sending out the desktop viewer.
+                    var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+                    parent.debug('web', 'handleSharingRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
+                    res.set({ 'Cache-Control': 'no-store' });
+                    render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name).replace(/'/g, '%27'), features: c.p, features2: features2 }, req, domain));
+                }
             });
         });
     }
@@ -6549,32 +6570,56 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.debug('web', 'webRelaySetup');
 
                     // Decode the relay cookie
-                    if (req.query.c != null) {
-                        // Decode and check if this relay cookie is valid
-                        const urlCookie = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey);
-                        if ((urlCookie != null) && (urlCookie.ruserid != null) && (urlCookie.x != null)) {
-                            if (req.session.x != urlCookie.x) { req.session.x = urlCookie.x; } // Set the sessionid if missing
-                            if (req.session.userid != urlCookie.ruserid) { req.session.userid = urlCookie.ruserid; } // Set the session userid if missing
-                        }
+                    if (req.query.c == null) { res.sendStatus(404); return; }
+
+                    // Decode and check if this relay cookie is valid
+                    var userid, domainid, domain, nodeid, addr, port, appid, webSessionId, expire;
+                    const urlCookie = obj.parent.decodeCookie(req.query.c, parent.loginCookieEncryptionKey);
+                    if (urlCookie == null) { res.sendStatus(404); return; }
+
+                    // Decode the incomign cookie
+                    if ((urlCookie.ruserid != null) && (urlCookie.x != null)) {
+                        if (parent.webserver.destroyedSessions[urlCookie.ruserid + '/' + urlCookie.x] != null) { res.sendStatus(404); return; }
+
+                        // This is a standard user, figure out what our web relay will be.
+                        if (req.session.x != urlCookie.x) { req.session.x = urlCookie.x; } // Set the sessionid if missing
+                        if (req.session.userid != urlCookie.ruserid) { req.session.userid = urlCookie.ruserid; } // Set the session userid if missing
+                        if (req.session.z) { delete req.session.z; } // Clear the web relay guest session
+                        userid = req.session.userid;
+                        domainid = userid.split('/')[1];
+                        domain = parent.config.domains[domainid];
+                        nodeid = ((req.query.relayid != null) ? req.query.relayid : req.query.n);
+                        addr = (req.query.addr != null) ? req.query.addr : '127.0.0.1';
+                        port = parseInt(req.query.p);
+                        appid = parseInt(req.query.appid);
+                        webSessionId = req.session.userid + '/' + req.session.x;
+
+                        // Check that all the required arguments are present
+                        if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || (parent.webserver.destroyedSessions[webSessionId] != null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
+                    } else if (urlCookie.r == 8) {
+                        // This is a guest user, figure out what our web relay will be.
+                        userid = urlCookie.userid;
+                        domainid = userid.split('/')[1];
+                        domain = parent.config.domains[domainid];
+                        nodeid = urlCookie.nid;
+                        addr = (urlCookie.addr != null) ? urlCookie.addr : '127.0.0.1';
+                        port = urlCookie.port;
+                        appid = (urlCookie.p == 16) ? 2 : 1; // appid: 1 = HTTP, 2 = HTTPS
+                        webSessionId = userid + '/' + urlCookie.pid;
+                        if (req.session.x) { delete req.session.x; } // Clear the web relay sessionid
+                        if (req.session.userid) { delete req.session.userid; }  // Clear the web relay userid
+                        if (req.session.z != webSessionId) { req.session.z = webSessionId; } // Set the web relay guest session
+                        expire = urlCookie.expire;
                     }
 
-                    // Check that all the required arguments are present
-                    if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || ((obj.destroyedSessions[req.session.userid + '/' + req.session.x] != null)) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
-
-                    // Get the user and domain information
-                    const userid = req.session.userid;
-                    const domainid = userid.split('/')[1];
-                    const domain = parent.config.domains[domainid];
-                    const nodeid = ((req.query.relayid != null) ? req.query.relayid : req.query.n);
-                    const addr = (req.query.addr != null) ? req.query.addr : '127.0.0.1';
-                    const port = parseInt(req.query.p);
-                    const appid = parseInt(req.query.appid);
+                    // No session identifier was setup, exit now
+                    if (webSessionId == null) { res.sendStatus(404); return; }
 
                     // Check that we have an exact session on any of the relay DNS names
                     var xrelaySessionId, xrelaySession, freeRelayHost, oldestRelayTime, oldestRelayHost;
                     for (var hostIndex in obj.args.relaydns) {
                         const host = obj.args.relaydns[hostIndex];
-                        xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + host;
+                        xrelaySessionId = webSessionId + '/' + host;
                         xrelaySession = webRelaySessions[xrelaySessionId];
                         if (xrelaySession == null) {
                             // We found an unused hostname, save this as it could be useful.
@@ -6609,49 +6654,55 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
 
-                    // Check if there is a free relay DNS name we can use
-                    var selectedHost = null;
-                    if (freeRelayHost != null) {
-                        // There is a free one, use it.
-                        selectedHost = freeRelayHost;
-                    } else {
-                        // No free ones, close the oldest one
-                        selectedHost = oldestRelayHost;
-                    }
-                    xrelaySessionId = req.session.userid + '/' + req.session.x + '/' + selectedHost;
+                    // Check that the user has rights to access this device
+                    parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
+                        // If there is no remote control rights, reject this web relay
+                        if ((rights & 8) == 0) { res.sendStatus(404); return; }
 
-                    if (selectedHost == req.hostname) {
-                        // If this web relay session id is not free, close it now
-                        xrelaySession = webRelaySessions[xrelaySessionId];
-                        if (xrelaySession != null) { xrelaySession.close(); delete webRelaySessions[xrelaySessionId]; }
-
-                        // Create a web relay session
-                        const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId);
-                        relaySession.onclose = function (sessionId) {
-                            // Remove the relay session
-                            delete webRelaySessions[sessionId];
-                            // If there are not more relay sessions, clear the cleanup timer
-                            if ((Object.keys(webRelaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(webRelayCleanupTimer); obj.cleanupTimer = null; }
-                        }
-
-                        // Set the multi-tunnel session
-                        webRelaySessions[xrelaySessionId] = relaySession;
-
-                        // Setup the cleanup timer if needed
-                        if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
-
-                        // Redirect to root.
-                        res.redirect('/');
-                    } else {
-                        if (req.query.noredirect != null) {
-                            // No redirects allowed, fail here. This is important to make sure there is no redirect cascades
-                            res.sendStatus(404);
+                        // Check if there is a free relay DNS name we can use
+                        var selectedHost = null;
+                        if (freeRelayHost != null) {
+                            // There is a free one, use it.
+                            selectedHost = freeRelayHost;
                         } else {
-                            // Request was made to a different host, redirect using the full URL so an HTTP cookie can be created on the other DNS name.
-                            const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
-                            res.redirect('https://' + selectedHost + ((httpport != 443) ? (':' + httpport) : '') + req.url + '&noredirect=1');
+                            // No free ones, close the oldest one
+                            selectedHost = oldestRelayHost;
                         }
-                    }
+                        xrelaySessionId = webSessionId + '/' + selectedHost;
+
+                        if (selectedHost == req.hostname) {
+                            // If this web relay session id is not free, close it now
+                            xrelaySession = webRelaySessions[xrelaySessionId];
+                            if (xrelaySession != null) { xrelaySession.close(); delete webRelaySessions[xrelaySessionId]; }
+
+                            // Create a web relay session
+                            const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId, expire);
+                            relaySession.onclose = function (sessionId) {
+                                // Remove the relay session
+                                delete webRelaySessions[sessionId];
+                                // If there are not more relay sessions, clear the cleanup timer
+                                if ((Object.keys(webRelaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(webRelayCleanupTimer); obj.cleanupTimer = null; }
+                            }
+
+                            // Set the multi-tunnel session
+                            webRelaySessions[xrelaySessionId] = relaySession;
+
+                            // Setup the cleanup timer if needed
+                            if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
+
+                            // Redirect to root.
+                            res.redirect('/');
+                        } else {
+                            if (req.query.noredirect != null) {
+                                // No redirects allowed, fail here. This is important to make sure there is no redirect cascades
+                                res.sendStatus(404);
+                            } else {
+                                // Request was made to a different host, redirect using the full URL so an HTTP cookie can be created on the other DNS name.
+                                const httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+                                res.redirect('https://' + selectedHost + ((httpport != 443) ? (':' + httpport) : '') + req.url + '&noredirect=1');
+                            }
+                        }
+                    });
                 });
 
                 // Handle all incoming requests as web relays
@@ -6956,8 +7007,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle an incoming request as a web relay 
     function handleWebRelayRequest(req, res) {
-        if ((req.session.userid != null) && (req.session.x != null) && (obj.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
-            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x + '/' + req.hostname];
+        var webRelaySessionId = null;
+        if ((req.session.userid != null) && (req.session.x != null)) { webRelaySessionId = req.session.userid + '/' + req.session.x; }
+        else if (req.session.z != null) { webRelaySessionId = req.session.z; }
+        if ((webRelaySessionId != null) && (obj.destroyedSessions[webRelaySessionId] == null)) {
+            var relaySession = webRelaySessions[webRelaySessionId + '/' + req.hostname];
             if (relaySession != null) {
                 // The web relay session is valid, use it
                 relaySession.handleRequest(req, res);
@@ -6973,8 +7027,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle an incoming websocket connection as a web relay 
     function handleWebRelayWebSocket(ws, req) {
-        if ((req.session.userid != null) && (req.session.x != null) && (obj.destroyedSessions[req.session.userid + '/' + req.session.x] == null)) {
-            var relaySession = webRelaySessions[req.session.userid + '/' + req.session.x + '/' + req.hostname];
+        var webRelaySessionId = null;
+        if ((req.session.userid != null) && (req.session.x != null)) { webRelaySessionId = req.session.userid + '/' + req.session.x; }
+        else if (req.session.z != null) { webRelaySessionId = req.session.z; }
+        if ((webRelaySessionId != null) && (obj.destroyedSessions[webRelaySessionId] == null)) {
+            var relaySession = webRelaySessions[webRelaySessionId + '/' + req.hostname];
             if (relaySession != null) {
                 // The multi-tunnel session is valid, use it
                 relaySession.handleWebSocket(ws, req);

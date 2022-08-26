@@ -69,7 +69,7 @@ function SerialTunnel(options) {
 }
 
 // Construct a Web relay object
-module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid) {
+module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid, expire) {
     const obj = {};
     obj.parent = parent;
     obj.lastOperation = Date.now();
@@ -80,6 +80,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     obj.port = port;
     obj.appid = appid;
     obj.sessionid = sessionid;
+    obj.expireTimer = null;
     var pendingRequests = [];
     var nextTunnelId = 1;
     var tunnels = {};
@@ -89,6 +90,9 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     // Any HTTP cookie set by the device is going to be shared between all tunnels to that device.
     obj.webCookies = {};
+
+    // Setup an expire time if needed
+    if (expire != null) { var timeout = (expire - Date.now()); if (timeout < 10) { timeout = 10; } obj.expireTimer = setTimeout(close, timeout); }
 
     // Events
     obj.closed = false;
@@ -201,6 +205,9 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         if (obj.closed == true) return;
         parent.parent.debug('webrelay', 'tunnel-close');
         obj.closed = true;
+
+        // Clear the time if present
+        if (obj.expireTimer != null) { clearTimeout(obj.expireTimer); delete obj.expireTimer; }
 
         // Close all tunnels
         for (var i in tunnels) { tunnels[i].close(); }
