@@ -6610,6 +6610,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (req.session.userid) { delete req.session.userid; }  // Clear the web relay userid
                         if (req.session.z != webSessionId) { req.session.z = webSessionId; } // Set the web relay guest session
                         expire = urlCookie.expire;
+                        if ((expire != null) && (expire <= Date.now())) { parent.debug('webrelay', 'expired link'); res.sendStatus(404); return; }
                     }
 
                     // No session identifier was setup, exit now
