@@ -224,6 +224,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 if (req.session.userid) { delete req.session.userid; }  // Clear the web relay userid
                 if (req.session.z != webSessionId) { req.session.z = webSessionId; } // Set the web relay guest session
                 expire = urlCookie.expire;
+                if ((expire != null) && (expire <= Date.now())) { parent.debug('webrelay', 'expired link'); res.sendStatus(404); return; }
             }
 
             // No session identifier was setup, exit now
@@ -246,7 +247,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 if (xrelaySession != null) { xrelaySession.close(); delete relaySessions[webSessionId]; }
 
                 // Create a web relay session
-                const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySession, expire);
+                const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, webSessionId, expire);
                 relaySession.onclose = function (sessionId) {
                     // Remove the relay session
                     delete relaySessions[sessionId];

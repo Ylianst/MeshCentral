@@ -92,8 +92,13 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     obj.webCookies = {};
 
     // Setup an expire time if needed
-    if (expire != null) { var timeout = (expire - Date.now()); if (timeout < 10) { timeout = 10; } obj.expireTimer = setTimeout(close, timeout); }
-
+    if (expire != null) {
+        var timeout = (expire - Date.now());
+        if (timeout < 10) { timeout = 10; }
+        parent.parent.debug('webrelay', 'timeout set to ' + Math.floor(timeout / 1000) + ' second(s).');
+        obj.expireTimer = setTimeout(function () { parent.parent.debug('webrelay', 'timeout'); close(); }, timeout);
+    }
+    
     // Events
     obj.closed = false;
     obj.onclose = null;
@@ -131,6 +136,8 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     // Handle request
     function handleNextRequest() {
+        if (obj.closed == true) return;
+
         // if there are not pending requests, do nothing
         if (pendingRequests.length == 0) return;
 
@@ -148,13 +155,14 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
                 return;
             }
         }
-
+        
         if (count > 0) return;
         launchNewTunnel();
     }
 
     function launchNewTunnel() {
         // Launch a new tunnel
+        if (obj.closed == true) return;
         parent.parent.debug('webrelay', 'launchNewTunnel');
         const tunnel = module.exports.CreateWebRelay(obj, db, args, domain);
         tunnel.onclose = function (tunnelId, processedCount) {
@@ -188,6 +196,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
             }
         }
         tunnel.onNextRequest = function () {
+            if (tunnels == null) return;
             parent.parent.debug('webrelay', 'tunnel-onNextRequest');
             handleNextRequest();
         }
