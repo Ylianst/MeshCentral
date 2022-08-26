@@ -4137,8 +4137,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 else if ((command.start != null) && (typeof command.start != 'number')) { err = 'Invalid start time'; } // Check the start time in UTC seconds
                 else if ((command.end != null) && (typeof command.end != 'number')) { err = 'Invalid end time'; } // Check the end time in UTC seconds
                 else if (common.validateInt(command.consent, 0, 256) == false) { err = 'Invalid flags'; } // Check the flags
-                else if (common.validateInt(command.p, 1, 7) == false) { err = 'Invalid protocol'; } // Check the protocol, 1 = Terminal, 2 = Desktop, 4 = Files
+                else if (common.validateInt(command.p, 1, 31) == false) { err = 'Invalid protocol'; } // Check the protocol, 1 = Terminal, 2 = Desktop, 4 = Files, 8 = HTTP, 16 = HTTPS
                 else if ((command.recurring != null) && (common.validateInt(command.recurring, 1, 2) == false)) { err = 'Invalid recurring value'; } // Check the recurring value, 1 = Daily, 2 = Weekly
+                else if ((command.port != null) && (common.validateInt(command.port, 1, 65535) == false)) { err = 'Invalid port value'; } // Check the port if present
                 else if ((command.recurring != null) && ((command.end != null) || (command.start == null) || (command.expire == null))) { err = 'Invalid recurring command'; }
                 else if ((command.expire == null) && ((command.start == null) || (command.end == null) || (command.start > command.end))) { err = 'No time specified'; } // Check that a time range is present
                 else {
@@ -4238,7 +4239,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     try { ws.send(JSON.stringify(command)); } catch (ex) { }
 
                     // Create a device sharing database entry
-                    var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', xmeshid: node.meshid, nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, userid: user._id, guestName: command.guestname, consent: command.consent, url: url };
+                    var shareEntry = { _id: 'deviceshare-' + publicid, type: 'deviceshare', xmeshid: node.meshid, nodeid: node._id, p: command.p, domain: node.domain, publicid: publicid, userid: user._id, guestName: command.guestname, consent: command.consent, port: command.port, url: url };
                     if ((startTime != null) && (expireTime != null)) { shareEntry.startTime = startTime; shareEntry.expireTime = expireTime; }
                     else if ((startTime != null) && (duration != null)) { shareEntry.startTime = startTime; shareEntry.duration = duration; }
                     if (command.recurring) { shareEntry.recurring = command.recurring; }

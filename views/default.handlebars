@@ -3650,7 +3650,7 @@
                     if (message.consent & 0x0040) { y.push("Privacy bar"); }
                     if (y.length == 0) { y.push("None"); }
                     x += addHtmlValue("User Consent", y.join(', '));
-                    var type = ['', "Remote Terminal Link", "Remote Desktop Link", "Remote Desktop + Terminal Link", "Remote Files Link", "Remote Terminal + Files Link", "Remote Desktop + Files Link", "Remote Desktop + Terminal + Files Link"][message.p];
+                    var type = ''; if (message.p <= 7) { type = ['', "Remote Terminal Link", "Remote Desktop Link", "Remote Desktop + Terminal Link", "Remote Files Link", "Remote Terminal + Files Link", "Remote Desktop + Files Link", "Remote Desktop + Terminal + Files Link"][message.p]; } else if (message.p == 8) { type = format("HTTP/{0} link", message.port); } else if (message.p == 16) { type = format("HTTPS/{0}", message.port); }
                     x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + type + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
                     setDialogMode(2, "Share Device", 1, null, x);
                     break;
@@ -7588,7 +7588,7 @@
                         var dshare = deviceShares[i], trash = '';
                         if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> '; }
                         trash += '<a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                        var type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p];
+                        var type = ''; if (dshare.p <= 7) { type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p]; } else if (dshare.p == 8) { type = "HTTP/" + dshare.port; } else if (dshare.p == 16) { type = "HTTPS/" + dshare.port; }
                         var details = type;
                         if ((dshare.startTime != null) && (dshare.expireTime != null)) { details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime))); }
                         if ((dshare.startTime != null) && (dshare.duration != null)) {
@@ -7896,6 +7896,11 @@
             if ((rights != 0xFFFFFFFF) && ((rights & 0x600) != 0)) { termFiles = ''; }
             var allFeatures = '<option value=7>' + "Desktop + Terminal + Files" + '</option>';
             if ((rights != 0xFFFFFFFF) && ((rights & 0x700) != 0)) { allFeatures = ''; }
+            var httpFeature = '';
+            if (webRelayPort != 0) {
+                httpFeature = '<option value=8>' + "HTTP" + '</option><option value=9>' + "HTTPS" + '</option>';
+                if ((rights != 0xFFFFFFFF) && ((rights & 8) != 0)) { httpFeature = ''; }
+            }
 
             var y = '', z = '';
             if ((currentNode.agent.caps & 1) == 1) { y += (deskFull + '<option value=3>' + "Desktop, View only" + '</option>'); } // Agent is desktop capable
@@ -7904,6 +7909,7 @@
             if ((currentNode.agent.caps & 5) == 5) { y += deskFiles; } // Agent is desktop + files capable
             if ((currentNode.agent.caps & 6) == 6) { y += termFiles; } // Agent is terminal + files capable
             if ((currentNode.agent.caps & 7) == 7) { y += allFeatures; } // Agent is desktop + terminal + files capable
+            y += httpFeature;
             
             x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + y + '</select>');
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days", 0 : "Unlimited" }
@@ -7925,7 +7931,9 @@
             x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
             x += '</div>';
-            if (currentNode.agent.caps & 1) { x += addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>'); }
+            if (currentNode.agent.caps & 1) { x += '<div id=d2userConsentSelector>' + addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>') + '</div>'; }
+            x += '<div id=d2httpPortSelector>' + addHtmlValue("Port", '<input id=d2httpPort style=float:right;width:250px value=80 onkeyup=showShareDeviceValidate()></input>') + '</div>';
+            x += '<div id=d2httpsPortSelector>' + addHtmlValue("Port", '<input id=d2httpsPort style=float:right;width:250px value=443 onkeyup=showShareDeviceValidate()></input>') + '</div>';
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
             showShareDeviceValidate();
             var tomorrow = new Date();
@@ -7936,18 +7944,25 @@
         }
 
         function showShareDeviceValidate() {
+            if (currentNode.agent.caps & 1) { QV('d2userConsentSelector', Q('d2shareType').value < 8); }
+            QV('d2httpPortSelector', Q('d2shareType').value == 8);
+            QV('d2httpsPortSelector', Q('d2shareType').value == 9);
             QV('d2modenow', Q('d2timeRange').value == 0);
             QV('d2moderange', Q('d2timeRange').value == 1);
             QV('d2moderecurring', Q('d2timeRange').value >= 2);
             var ok = true;
+            if (Q('d2shareType').value == 8) { var port = parseInt(Q('d2httpPort').value); if ((Q('d2httpPort').value != port) || (port < 1) || (port > 65535)) { ok = false; } }
+            if (Q('d2shareType').value == 9) { var port = parseInt(Q('d2httpsPort').value); if ((Q('d2httpsPort').value != port) || (port < 1) || (port > 65535)) { ok = false; } }
             if (Q('d2inviteName').value.trim().length == 0) { ok = false; }
             QE('idx_dlgOkButton', ok);
         }
 
         function showShareDeviceEx(b, tag) {
             var consent = 0, p = parseInt(Q('d2shareType').value), viewOnly = false, q = 0;
+            if (p == 8) { meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: 8, expire: parseInt(Q('d2inviteExpire').value), port: parseInt(Q('d2httpPort').value), consent: 0 }); return; }
+            if (p == 9) { meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: 16, expire: parseInt(Q('d2inviteExpire').value), port: parseInt(Q('d2httpsPort').value), consent: 0 }); return; }
             if (p == 3) { viewOnly = true; }
-            var q = [0, 1, 2, 2, 4, 6, 5, 7][p]; // Protocol flags: 1 = Terminal, 2 = Desktop, 4 = Files.
+            var q = [0, 1, 2, 2, 4, 6, 5, 7][p]; // Protocol flags: 1 = Terminal, 2 = Desktop, 4 = Files, 8 = HTTP, 16 = HTTPS.
 
             if (q & 1) {
                 consent |= 0x0002; // Terminal notify
@@ -12641,7 +12656,7 @@
                     var dshare = deviceShares[i], trash = '';
                     if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> '; }
                     trash += '<a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(dshare.nodeid) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
-                    var type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p];
+                    var type = ''; if (dshare.p <= 7) { type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p]; } else if (dshare.p == 8) { type = "HTTP/" + dshare.port; } else if (dshare.p == 16) { type = "HTTPS/" + dshare.port; }
                     var details = type;
                     if ((dshare.startTime != null) && (dshare.expireTime != null)) { details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime))); }
                     if ((dshare.startTime != null) && (dshare.duration != null)) {
