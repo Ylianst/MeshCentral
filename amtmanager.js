@@ -2214,7 +2214,6 @@ module.exports.CreateAmtManager = function (parent) {
         dev.amtstack.BatchEnum('', query, attemptSettingsSyncResponse);
     }
 
-
     function attemptSettingsSyncResponse(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
@@ -2269,7 +2268,7 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Check KVM state
         if ((dev.aquired.majorver != null) && (dev.aquired.majorver > 5) && (responses['CIM_KVMRedirectionSAP'] != null)) {
-            var kvm = (((responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 6) && (responses['CIM_KVMRedirectionSAP'].response['RequestedState'] == 2)) || (responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 2) || (responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 6));
+            const kvm = ((responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 2) || (responses['CIM_KVMRedirectionSAP'].response['EnabledState'] == 6));
             if (kvm == false) {
                 // Enable KVM
                 dev.taskCount++;
