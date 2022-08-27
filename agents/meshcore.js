@@ -1364,6 +1364,7 @@ function handleServerCommand(data) {
                                     var domain = require('user-sessions').getDomain(uid);
                                     user = (domain + '\\' + user);
 
+                                    if (this._dispatcher) { this._dispatcher.close(); }
                                     this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                                     this._dispatcher.parent = this;
                                     //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
@@ -4340,6 +4341,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             var domain = require('user-sessions').getDomain(uid);
                             user = (domain + '\\' + user);
 
+                            if (this._dispatcher) { this._dispatcher.close(); }
                             this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                             this._dispatcher.parent = this;
                             //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
