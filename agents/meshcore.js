@@ -1339,7 +1339,7 @@ function handleServerCommand(data) {
                                 }
                             });
                         } else {
-                            require("clipboard").read().then(function (str) {
+                            require('clipboard').read().then(function (str) {
                                 if (str) {
                                     MeshServerLogEx(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", data);
                                     mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag });
@@ -1364,6 +1364,7 @@ function handleServerCommand(data) {
                                     var domain = require('user-sessions').getDomain(uid);
                                     user = (domain + '\\' + user);
 
+                                    if (this._dispatcher) { this._dispatcher.close(); }
                                     this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                                     this._dispatcher.parent = this;
                                     //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
@@ -1381,7 +1382,7 @@ function handleServerCommand(data) {
                                 }
                             }
                             else {
-                                require("clipboard")(data.data);
+                                require('clipboard')(data.data);
                                 mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
                             } // Set the clipboard
                         }
@@ -4322,7 +4323,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (require('MeshAgent').isService) {
                     require('clipboard').dispatchRead().then(function (str) { sendConsoleText(str, sessionid); });
                 } else {
-                    require("clipboard").read().then(function (str) { sendConsoleText(str, sessionid); });
+                    require('clipboard').read().then(function (str) { sendConsoleText(str, sessionid); });
                 }
                 break;
             case 'setclip': {
@@ -4340,6 +4341,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             var domain = require('user-sessions').getDomain(uid);
                             user = (domain + '\\' + user);
 
+                            if (this._dispatcher) { this._dispatcher.close(); }
                             this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                             this._dispatcher.parent = this;
                             //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
@@ -4357,7 +4359,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
                     else {
-                        require("clipboard")(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
+                        require('clipboard')(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
                     }
                 }
                 break;
