@@ -45,6 +45,7 @@ var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
 
+var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
 
 function bcdOK() {
     if (process.platform != 'win32') { return (false); }
@@ -1349,6 +1350,7 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'setclip': {
+                        if (pendingSetClip) return;
                         // Set the load clipboard to a user value
                         if (typeof data.data == 'string') {
                             MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
@@ -1368,11 +1370,13 @@ function handleServerCommand(data) {
                                     this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                                     this._dispatcher.parent = this;
                                     //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
+                                    pendingSetClip = true;
                                     this._dispatcher.on('connection', function (c) {
                                         this._c = c;
                                         this._c.root = this.parent;
                                         this._c.on('end', function ()
                                         {
+                                            pendingSetClip = false;
                                             try { this.root._dispatcher.close(); } catch (ex) { }
                                             this.root._dispatcher = null;
                                             this.root = null;
@@ -4327,7 +4331,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'setclip': {
-                if (args['_'].length != 1) {
+                if (pendingSetClip) {
+                    response = 'Busy';
+                } else if (args['_'].length != 1) {
                     response = 'Proper usage: setclip "sample text"';
                 } else {
                     if (require('MeshAgent').isService) {
@@ -4345,11 +4351,13 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
                             this._dispatcher.parent = this;
                             //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
+                            pendingSetClip = true;
                             this._dispatcher.on('connection', function (c) {
                                 this._c = c;
                                 this._c.root = this.parent;
                                 this._c.on('end', function ()
                                 {
+                                    pendingSetClip = false;
                                     try { this.root._dispatcher.close(); } catch (ex) { }
                                     this.root._dispatcher = null;
                                     this.root = null;
