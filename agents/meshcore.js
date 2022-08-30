@@ -1757,6 +1757,13 @@ function onFileWatcher(a, b) {
 }
 */
 
+// Replace all key name spaces with _ in an object recursively.
+// This is a workaround since require('identifiers').get() returns key names with spaces in them on Linux.
+function replaceSpacesWithUnderscoresRec(o) {
+    if (typeof o != 'object') return;
+    for (var i in o) { if (i.indexOf(' ') >= 0) { o[i.split(' ').join('_')] = o[i]; delete o[i]; } replaceSpacesWithUnderscoresRec(o[i]); }
+}
+
 function getSystemInformation(func) {
     try {
         var results = { hardware: require('identifiers').get() }; // Hardware info
@@ -1778,6 +1785,7 @@ function getSystemInformation(func) {
             } catch (ex) { }
         }
         results.hardware.agentvers = process.versions;
+        replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
         results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
         func(results);
