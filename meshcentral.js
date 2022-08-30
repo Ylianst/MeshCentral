@@ -842,7 +842,7 @@ function CreateMeshCentralServer(config, args) {
                                 if (hashpasssplit.length != 2) { console.log("Invalid hashed password."); process.exit(); return; }
                                 user.salt = hashpasssplit[0];
                                 user.hash = hashpasssplit[1];
-                                obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
+                                obj.db.Set(user, function () { console.log("Done. This command will only work if MeshCentral is stopped."); process.exit(); return; });
                             } else {
                                 // Hash the password and create the account.
                                 require('./pass').hash(obj.args.pass, function (err, salt, hash, tag) { if (err) { console.log("Unable create account password: " + err); process.exit(); return; } user.salt = salt; user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
@@ -866,7 +866,7 @@ function CreateMeshCentralServer(config, args) {
                                 if (hashpasssplit.length != 2) { console.log("Invalid hashed password."); process.exit(); return; }
                                 user.salt = hashpasssplit[0];
                                 user.hash = hashpasssplit[1];
-                                obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
+                                obj.db.Set(user, function () { console.log("Done. This command will only work if MeshCentral is stopped."); process.exit(); return; });
                             } else {
                                 // Hash the password and reset the account.
                                 require('./pass').hash(String(obj.args.pass), user.salt, function (err, hash, tag) { if (err) { console.log("Unable to reset password: " + err); process.exit(); return; } user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
@@ -883,7 +883,7 @@ function CreateMeshCentralServer(config, args) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --adminaccount [userid] --domain (domain)."); process.exit(); return; }
                             docs[0].siteadmin = 0xFFFFFFFF; // Set user as site administrator
-                            obj.db.Set(docs[0], function () { console.log("Done."); process.exit(); return; });
+                            obj.db.Set(docs[0], function () { console.log("Done. This command will only work if MeshCentral is stopped."); process.exit(); return; });
                         });
                         return;
                     }
