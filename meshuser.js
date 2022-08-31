@@ -105,6 +105,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.domain = domain;
     obj.ws = ws;
 
+    // Information related to the current page the user is looking at
+    obj.deviceSkip = 0; // How many devices to skip
+    obj.deviceLimit = 0; // How many devices to view
+    obj.visibleDevices = null; // An object of visible nodeid's if the user is in paging mode
+
     // Check if we are a cross-domain administrator
     if (parent.parent.config.settings.managecrossdomain && (parent.parent.config.settings.managecrossdomain.indexOf(user._id) >= 0)) { obj.crossDomain = true; }
 
@@ -414,6 +419,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // If this session is logged in using a loginToken and the token is removed, disconnect.
                 if ((req.session.loginToken != null) && (typeof event == 'object') && (event.action == 'loginTokenChanged') && (event.removed != null) && (event.removed.indexOf(req.session.loginToken) >= 0)) { delete req.session; obj.close(); return; }
 
+                // If this user is not viewing all devices and paging, check if this event is in the current page
+                if (isEventWithinPage(ids) == false) return;
+
                 // Normally, only allow this user to receive messages from it's own domain.
                 // If the user is a cross domain administrator, allow some select messages from different domains.
                 if ((event.domain == null) || (event.domain == domain.id) || ((obj.crossDomain === true) && (allowedCrossDomainMessages.indexOf(event.action) >= 0))) {
@@ -706,7 +714,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Request a list of all nodes
-                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, docs) {
+                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
 
                         //console.log(err, docs, links, extraids, domain.id, 'node', command.id);
 
@@ -714,9 +722,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.common.unEscapeAllLinksFieldName(docs);
 
                         var r = {};
+                        if (obj.visibleDevices != null) { obj.visibleDevices = {}; }
                         for (i in docs) {
                             // Check device links, if a link points to an unknown user, remove it.
                             parent.cleanDevice(docs[i]);
+
+                            // If we are paging, add the device to the page here
+                            if (obj.visibleDevices != null) { obj.visibleDevices[docs[i]._id] = 1; }
 
                             // Remove any connectivity and power state information, that should not be in the database anyway.
                             // TODO: Find why these are sometimes saved in the db.
@@ -788,7 +800,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             r[meshid].push(docs[i]);
                         }
-                        try { ws.send(JSON.stringify({ action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag })); } catch (ex) { }
+                        const response = { action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag };
+                        if (obj.visibleDevices != null) {
+                            // If in paging mode, report back the skip and limit values
+                            response.skip = obj.deviceSkip;
+                            response.limit = obj.deviceLimit;
+                            // TODO: Add total device count
+                        }
+                        try { ws.send(JSON.stringify(response)); } catch (ex) { }
                     });
                     break;
                 }
@@ -6128,14 +6147,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandLastConnects(command) {
-        const links = parent.GetAllMeshIdWithRights(user);
-        const extraids = getUserExtraIds();
-        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, function (err, docs) {
-            if (docs == null) return;
+        if (obj.visibleDevices == null) {
+            // If we are not paging, get all devices visible to this user
+            const links = parent.GetAllMeshIdWithRights(user);
+            const extraids = getUserExtraIds();
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                if (docs == null) return;
 
+                // Create a list of node ids for this user and query them for last device connection time
+                const ids = []
+                for (var i in docs) { ids.push('lc' + docs[i]._id); }
+
+                // Pull list of last connections only for device owned by this user
+                db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
+                    if (docs == null) return;
+                    const response = {};
+                    for (var j in docs) { response[docs[j]._id.substring(2)] = docs[j].time; }
+                    obj.send({ action: 'lastconnects', lastconnects: response, tag: command.tag });
+                });
+            });
+        } else {
+            // If we are paging, we know what devices the user is look at
             // Create a list of node ids for this user and query them for last device connection time
             const ids = []
-            for (var i in docs) { ids.push('lc' + docs[i]._id); }
+            for (var i in obj.visibleDevices) { ids.push('lc' + i); }
 
             // Pull list of last connections only for device owned by this user
             db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
@@ -6144,7 +6179,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 for (var j in docs) { response[docs[j]._id.substring(2)] = docs[j].time; }
                 obj.send({ action: 'lastconnects', lastconnects: response, tag: command.tag });
             });
-        });
+        }
     }
 
     function serverCommandLoginCookie(command) {
@@ -7505,22 +7540,62 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Return detailed information about all nodes this user has access to
     function getAllDeviceDetailedInfo(type, func) {
-        // Get all device groups this user has access to
-        var links = parent.GetAllMeshIdWithRights(user);
+        // If we are not paging, get all devices visible to this user
+        if (obj.visibleDevices == null) {
 
-        // Add any nodes with direct rights or any nodes with user group direct rights
-        var extraids = getUserExtraIds();
+            // Get all device groups this user has access to
+            var links = parent.GetAllMeshIdWithRights(user);
 
-        // Request a list of all nodes
-        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, function (err, docs) {
-            if (docs == null) { docs = []; }
-            parent.common.unEscapeAllLinksFieldName(docs);
+            // Add any nodes with direct rights or any nodes with user group direct rights
+            var extraids = getUserExtraIds();
 
-            var results = [], resultPendingCount = 0;
-            for (i in docs) {
-                // Check device links, if a link points to an unknown user, remove it.
-                parent.cleanDevice(docs[i]);
+            // Request a list of all nodes
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                if (docs == null) { docs = []; }
+                parent.common.unEscapeAllLinksFieldName(docs);
 
+                var results = [], resultPendingCount = 0;
+                for (i in docs) {
+                    // Check device links, if a link points to an unknown user, remove it.
+                    parent.cleanDevice(docs[i]);
+
+                    // Fetch the node from the database
+                    resultPendingCount++;
+                    const getNodeFunc = function (node, rights, visible) {
+                        if ((node != null) && (visible == true)) {
+                            const getNodeSysInfoFunc = function (err, docs) {
+                                const getNodeNetInfoFunc = function (err, docs) {
+                                    var netinfo = null;
+                                    if ((err == null) && (docs != null) && (docs.length == 1)) { netinfo = docs[0]; }
+                                    resultPendingCount--;
+                                    getNodeNetInfoFunc.results.push({ node: parent.CloneSafeNode(getNodeNetInfoFunc.node), sys: getNodeNetInfoFunc.sysinfo, net: netinfo });
+                                    if (resultPendingCount == 0) { func(getNodeFunc.results, type); }
+                                }
+                                getNodeNetInfoFunc.results = getNodeSysInfoFunc.results;
+                                getNodeNetInfoFunc.nodeid = getNodeSysInfoFunc.nodeid;
+                                getNodeNetInfoFunc.node = getNodeSysInfoFunc.node;
+                                if ((err == null) && (docs != null) && (docs.length == 1)) { getNodeNetInfoFunc.sysinfo = docs[0]; }
+
+                                // Query the database for network information
+                                db.Get('if' + getNodeSysInfoFunc.nodeid, getNodeNetInfoFunc);
+                            }
+                            getNodeSysInfoFunc.results = getNodeFunc.results;
+                            getNodeSysInfoFunc.nodeid = getNodeFunc.nodeid;
+                            getNodeSysInfoFunc.node = node;
+
+                            // Query the database for system information
+                            db.Get('si' + getNodeFunc.nodeid, getNodeSysInfoFunc);
+                        } else { resultPendingCount--; }
+                        if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
+                    }
+                    getNodeFunc.results = results;
+                    getNodeFunc.nodeid = docs[i]._id;
+                    parent.GetNodeWithRights(domain, user, docs[i]._id, getNodeFunc);
+                }
+            });
+        } else {
+            // If we are paging, we know what devices the user is look at
+            for (var id in obj.visibleDevices) {
                 // Fetch the node from the database
                 resultPendingCount++;
                 const getNodeFunc = function (node, rights, visible) {
@@ -7551,10 +7626,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
                 }
                 getNodeFunc.results = results;
-                getNodeFunc.nodeid = docs[i]._id;
-                parent.GetNodeWithRights(domain, user, docs[i]._id, getNodeFunc);
+                getNodeFunc.nodeid = id;
+                parent.GetNodeWithRights(domain, user, id, getNodeFunc);
             }
-        });
+        }
     }
 
     // Display a notification message for this session only.
@@ -7719,6 +7794,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (user.otphkeys != null) { authFactorCount += user.otphkeys.length; } // FIDO hardware factor
         if ((authFactorCount > 0) && (user.otpkeys != null)) { authFactorCount++; } // Backup keys
         return authFactorCount;
+    }
+
+    // Return true if the event is for a device that is part of the currently visible page
+    function isEventWithinPage(ids) {
+        if (obj.visibleDevices == null) return true; // Add devices are visible
+        var r = true;
+        for (var i in ids) {
+            // If the event is for a visible device, return true
+            if (ids[i].startsWith('node/')) { r = false; if (obj.visibleDevices[ids[i]] != null) return true; }
+        }
+        return r; // If this event is not for any specific device, return true
     }
 
     return obj;
