@@ -5237,19 +5237,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Send meshcmd for a specific platform back
             var agentid = parseInt(req.query.meshcmd);
+            
             // If the agentid is 3 or 4, check if we have a signed MeshCmd.exe
-            if ((agentid == 3)) { // Signed Windows MeshCmd.exe x86
-                var stats = null, meshCmdPath = obj.path.join(__dirname, 'agents', 'MeshCmd-signed.exe');
+            if ((agentid == 3) && (obj.parent.meshAgentBinaries[11000] != null)) { // Signed Windows MeshCmd.exe x86
+                var stats = null, meshCmdPath = obj.parent.meshAgentBinaries[11000].path;
                 try { stats = obj.fs.statSync(meshCmdPath); } catch (e) { }
                 if ((stats != null)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 3) ? '.exe' : ''), null, 'meshcmd');
+                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd.exe', null, 'meshcmd');
                     res.sendFile(meshCmdPath); return;
                 }
-            } else if ((agentid == 4)) { // Signed Windows MeshCmd64.exe x64
-                var stats = null, meshCmd64Path = obj.path.join(__dirname, 'agents', 'MeshCmd64-signed.exe');
+            } else if ((agentid == 4) && (obj.parent.meshAgentBinaries[11001] != null)) { // Signed Windows MeshCmd64.exe x64
+                var stats = null, meshCmd64Path = obj.parent.meshAgentBinaries[11001].path;
                 try { stats = obj.fs.statSync(meshCmd64Path); } catch (e) { }
                 if ((stats != null)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
+                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd.exe', null, 'meshcmd');
                     res.sendFile(meshCmd64Path); return;
                 }
             }
@@ -5267,6 +5268,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.sendFile(argentInfo.signedMeshCmdPath);
             } else {
                 // Merge JavaScript to a unsigned agent and send that.
+                console.log('aa', argentInfo.path);
                 obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
             }
             return;
