@@ -180,6 +180,7 @@
       "_loginPicture": "title-sample.png",
       "_rootRedirect": "https://www.youtube.com/watch?v=Gs069dndIYk",
       "_mobileSite": false,
+      "_maxDeviceView": 1000,
       "_unknownUserRootRedirect": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE",
       "_nightMode": 1,
       "_userQuota": 1048576,
