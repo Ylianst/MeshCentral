@@ -3471,7 +3471,7 @@ function CreateMeshCentralServer(config, args) {
     obj.decodeCookie = function (cookie, key, timeout) {
         if (cookie == null) return null;
         var r = obj.decodeCookieAESGCM(cookie, key, timeout);
-        if (r == null) { r = obj.decodeCookieAESSHA(cookie, key, timeout); }
+        if (r === -1) { r = obj.decodeCookieAESSHA(cookie, key, timeout); } // If decodeCookieAESGCM() failed to decode, try decodeCookieAESSHA()
         if ((r == null) && (obj.args.cookieencoding == null) && (cookie.length != 64) && ((cookie == cookie.toLowerCase()) || (cookie == cookie.toUpperCase()))) {
             obj.debug('cookie', 'Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
             console.log('Upper/Lowercase cookie, try "CookieEncoding":"hex" in settings section of config.json.');
@@ -3523,7 +3523,7 @@ function CreateMeshCentralServer(config, args) {
             }
             obj.debug('cookie', 'Decoded AESGCM cookie: ' + JSON.stringify(o));
             return o;
-        } catch (ex) { obj.debug('cookie', 'ERR: Bad AESGCM cookie due to exception: ' + ex); return null; }
+        } catch (ex) { obj.debug('cookie', 'ERR: Bad AESGCM cookie due to exception: ' + ex); return -1; }
     };
 
     // Decode a cookie back into an object using a key using AES256 / HMAC-SHA384. Return null if it's not a valid cookie. (key must be 80 bytes or more)

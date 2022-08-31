@@ -260,6 +260,15 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     // Called when we need to close the tunnel because the response stream has closed
     function handleResponseClosure() { obj.close(); }
 
+    // Return copkie name and values
+    function parseRequestCookies(cookiesString) {
+        var r = {};
+        if (typeof cookiesString != 'string') return r;
+        var cookieString = cookiesString.split('; ');
+        for (var i in cookieString) { var j = cookieString[i].indexOf('='); if (j > 0) { r[cookieString[i].substring(0, j)] = cookieString[i].substring(j + 1); } }
+        return r;
+    }
+
     // Process a HTTP request
     obj.processRequest = function (req, res) {
         if (obj.relayActive == false) { console.log("ERROR: Attempt to use an unconnected tunnel"); return false; }
@@ -277,6 +286,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         var cookieStr = '';
         for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
+        var reqCookies = parseRequestCookies(req.headers.cookie);
+        for (var i in reqCookies) { if ((i != 'xid') && (i != 'xid.sig')) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + reqCookies[i]); } }
         if (cookieStr.length > 0) { request += 'cookie: ' + cookieStr + '\r\n' } // If we have session cookies, set them in the header here
         request += '\r\n';
 
@@ -677,7 +688,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             // If there is a header, send it
             if (header != null) {
                 obj.res.status(parseInt(header.Directive[1])); // Set the status
-                const blockHeaders = ['Directive', 'sec-websocket-extensions', 'connection', 'transfer-encoding']; // We do not forward these headers 
+                const blockHeaders = ['Directive', 'sec-websocket-extensions', 'connection', 'transfer-encoding', 'last-modified', 'content-security-policy', 'cache-control']; // We do not forward these headers 
                 for (var i in header) {
                     if (i == 'set-cookie') {
                         for (var ii in header[i]) {
@@ -704,8 +715,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                     }
                     else if (blockHeaders.indexOf(i) == -1) { obj.res.set(i, header[i]); } // Set the headers if not blocked
                 }
-                obj.res.set('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"); // Set an "allow all" policy, see if the can restrict this in the future
-                obj.res.set('Cache-Control', 'no-cache'); // Tell the browser not to cache the responses since since the relay port can be used for many relays
+                obj.res.set('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"); // Set an "allow all" policy, see if the can restrict this in the future
+                obj.res.set('Cache-Control', 'no-store'); // Tell the browser not to cache the responses since since the relay port can be used for many relays
             }
 
             // If there is data, send it

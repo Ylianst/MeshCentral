@@ -188,7 +188,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
 
             // Decode and check if this relay cookie is valid
             var userid, domainid, domain, nodeid, addr, port, appid, webSessionId, expire;
-            const urlCookie = obj.parent.decodeCookie(req.query.c, parent.loginCookieEncryptionKey);
+            const urlCookie = obj.parent.decodeCookie(req.query.c, parent.loginCookieEncryptionKey, 32); // Allow cookies up to 32 minutes old. The web page will renew this cookie every 30 minutes.
             if (urlCookie == null) { res.sendStatus(404); return; }
 
             // Decode the incomign cookie
