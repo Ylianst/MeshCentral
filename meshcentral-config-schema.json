@@ -341,6 +341,7 @@
           "loginPicture": { "type": "string", "default": null, "description": "Web site .png logo file placed in meshcentral-data that used on the login page when sitestyle is 2." },
           "rootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL. When in use, direct users to /login to see the normal login page." },
           "mobileSite": { "type": "boolean", "default": true, "description": "When set to false, this setting will disable the mobile site." },
+          "maxDeviceView": { "type": "integer", "default": null, "description": "The maximum number of devices a user can see on the devices page at the same time. By default all devices will show, but this may need to be limited on servers with large number of devices." },
           "unknownUserRootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL only where user is not already logged in. When in use, direct users to /login to see the normal login page." },
           "nightMode": { "type": "integer", "default": 0, "description": "0 = User selects day/night mode, 1 = Always night mode, 2 = Always day mode" },
           "userQuota": { "type": "integer" },
