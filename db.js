@@ -1212,8 +1212,15 @@ module.exports.CreateDB = function (parent, func) {
                     conn.query(query, args)
                         .then(function (rows) {
                             conn.release();
-                            const docs = [];
-                            for (var i in rows) { if (rows[i].doc) { docs.push(performTypedRecordDecrypt((typeof rows[i].doc == 'object') ? rows[i].doc : JSON.parse(rows[i].doc))); } }
+                            var docs = [];
+                            for (var i in rows) {
+                                if (rows[i].doc) {
+                                    docs.push(performTypedRecordDecrypt((typeof rows[i].doc == 'object') ? rows[i].doc : JSON.parse(rows[i].doc)));
+                                } else if ((rows.length == 1) && (rows[i]['COUNT(doc)'] != null)) {
+                                    // This is a SELECT COUNT() operation
+                                    docs = parseInt(rows[i]['COUNT(doc)']);
+                                }
+                            }
                             if (func) try { func(null, docs); } catch (ex) { console.log('SQLERR1', ex); }
                         })
                         .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log('SQLERR2', ex); } });
@@ -1224,7 +1231,14 @@ module.exports.CreateDB = function (parent, func) {
                     if (func) try { func(error); } catch (ex) { console.log('SQLERR4', ex); }
                 } else {
                     var docs = [];
-                    for (var i in results) { if (results[i].doc) { docs.push(JSON.parse(results[i].doc)); } }
+                    for (var i in results) {
+                        if (results[i].doc) {
+                            docs.push(JSON.parse(results[i].doc));
+                        } else if ((results.length == 1) && (results[i]['COUNT(doc)'] != null)) {
+                            // This is a SELECT COUNT() operation
+                            docs = results[i]['COUNT(doc)'];
+                        }
+                    }
                     if (func) { try { func(null, docs); } catch (ex) { console.log('SQLERR5', ex); } }
                 }
             });
@@ -1237,7 +1251,18 @@ module.exports.CreateDB = function (parent, func) {
                     var docs = [];
                     if ((results.command == 'INSERT') && (results.rows != null) && (results.rows.length == 1)) { docs = results.rows[0]; }
                     else if (results.command == 'SELECT') {
-                        for (var i in results.rows) { if (results.rows[i].doc) { if (typeof results.rows[i].doc == 'string') { docs.push(JSON.parse(results.rows[i].doc)); } else { docs.push(results.rows[i].doc); } } }
+                        for (var i in results.rows) {
+                            if (results.rows[i].doc) {
+                                if (typeof results.rows[i].doc == 'string') {
+                                    docs.push(JSON.parse(results.rows[i].doc));
+                                } else {
+                                    docs.push(results.rows[i].doc);
+                                }
+                            } else if (results.rows[i].count && (results.rows.length == 1)) {
+                                // This is a SELECT COUNT() operation
+                                docs = parseInt(results.rows[i].count);
+                            }
+                        }
                     }
                     if (func) { try { func(null, docs, results); } catch (ex) { console.log('SQLERR5', ex); } }
                 }
@@ -1346,6 +1371,23 @@ module.exports.CreateDB = function (parent, func) {
                         sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + '))) LIMIT $3 OFFSET $4', [type, domain, limit, skip], function (err, docs) {
                             if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                             func(err, performTypedRecordDecrypt(docs));
+                        });
+                    }
+                }
+            };
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (id && (id != '')) {
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + '))', [id, type, domain], function (err, docs) {
+                        func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
+                    });
+                } else {
+                    if (extrasids == null) {
+                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN (' + dbMergeSqlArray(meshes) + '))', [type, domain], function (err, docs) {
+                            func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
+                        });
+                    } else {
+                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))', [type, domain], function (err, docs) {
+                            func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
                         });
                     }
                 }
@@ -1793,6 +1835,17 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 }
             };
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (id && (id != '')) {
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4))', [id, type, domain, meshes], function (err, docs) { func(err, docs); });
+                } else {
+                    if (extrasids == null) {
+                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3))', [type, domain, meshes], function (err, docs) { func(err, docs); }, true);
+                    } else {
+                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND ((extra = ANY ($3)) OR (id = ANY ($4)))', [type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
+                    }
+                }
+            };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
                 if (id && (id != '')) {
                     sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4))', [id, type, domain, nodes], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
@@ -1957,6 +2010,15 @@ module.exports.CreateDB = function (parent, func) {
                     sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?) LIMIT ? OFFSET ?', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) LIMIT ? OFFSET ?', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                }
+            };
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
+                if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
+                if (id && (id != '')) {
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?)', [id, type, domain, meshes], function (err, docs) { func(err, docs); });
+                } else {
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -2195,6 +2257,19 @@ module.exports.CreateDB = function (parent, func) {
                     if (skip > 0) f = f.skip(skip); // Skip records
                     if (limit > 0) f = f.limit(limit); // Limit records
                     f.toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                }
+            };
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (extrasids == null) {
+                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
+                    if (id) { x._id = id; }
+                    var f = obj.file.find(x, { type: 0 });
+                    f.count(function (err, count) { func(err, count); });
+                } else {
+                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                    if (id) { x._id = id; }
+                    var f = obj.file.find(x, { type: 0 });
+                    f.count(function (err, count) { func(err, count); });
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {

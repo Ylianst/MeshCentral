@@ -734,7 +734,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (obj.visibleDevices != null) { obj.visibleDevices = {}; }
                         for (i in docs) {
                             // Check device links, if a link points to an unknown user, remove it.
-                            parent.cleanDevice(docs[i]);
+                            parent.cleanDevice(docs[i]); // TODO: This will make the total device count incorrect and will affect device paging.
 
                             // If we are paging, add the device to the page here
                             if (obj.visibleDevices != null) { obj.visibleDevices[docs[i]._id] = 1; }
@@ -820,9 +820,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 response.totalcount = obj.deviceSkip + nodeCount;
                                 try { ws.send(JSON.stringify(response)); } catch (ex) { }
                             } else {
-                                // TODO
-                                //console.log('response.totalcount', '???');
-                                try { ws.send(JSON.stringify(response)); } catch (ex) { }
+                                // Ask the database for the total device count
+                                if (db.CountAllTypeNoTypeFieldMeshFiltered) {
+                                    db.CountAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, count) {
+                                        if ((err == null) && (typeof response.totalcount == 'number')) { response.totalcount = count; }
+                                        try { ws.send(JSON.stringify(response)); } catch (ex) { }
+                                    });
+                                } else {
+                                    // The database does not support device counting
+                                    try { ws.send(JSON.stringify(response)); } catch (ex) { }
+                                }
                             }
                         } else {
                             try { ws.send(JSON.stringify(response)); } catch (ex) { }
