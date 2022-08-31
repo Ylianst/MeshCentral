@@ -715,7 +715,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                     }
                     else if (blockHeaders.indexOf(i) == -1) { obj.res.set(i, header[i]); } // Set the headers if not blocked
                 }
-                obj.res.set('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"); // Set an "allow all" policy, see if the can restrict this in the future
+                obj.res.set('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"); // Set an "allow all" policy, see if the can restrict this in the future
+                //obj.res.set('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"); // Set an "allow all" policy, see if the can restrict this in the future
                 obj.res.set('Cache-Control', 'no-store'); // Tell the browser not to cache the responses since since the relay port can be used for many relays
             }
 
