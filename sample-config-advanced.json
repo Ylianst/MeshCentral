@@ -601,5 +601,9 @@
     "provider": "telnyx",
     "apikey": "xxxxxxx",
     "from": "1-555-555-5555"
+  },
+  "____sms": {
+    "provider": "url",
+    "url": "http://example.com/sms.ashx?phone={{phone}}&message={{message}}"
   }
 }
