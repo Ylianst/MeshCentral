@@ -29949,6 +29949,18 @@
       ]
     },
     {
+      "en": "Go to first page",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
+      ]
+    },
+    {
+      "en": "Go to last page",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
+      ]
+    },
+    {
       "cs": "Přejít na přihlašovací stránku",
       "da": "Gå til login-siden",
       "de": "Gehen Sie zur Anmeldeseite",
@@ -29998,6 +30010,18 @@
       "xloc": [
         "error404-mobile.handlebars->container->page_content->column_l->text3->text3l ->0",
         "error404.handlebars->container->column_l->text3->0->0"
+      ]
+    },
+    {
+      "en": "Go to next page",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
+      ]
+    },
+    {
+      "en": "Go to previous page",
+      "xloc": [
+        "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
     },
     {
