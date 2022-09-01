@@ -6421,8 +6421,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Generic OpenID
                 if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.openid) != 0) {
-                    obj.app.get(url + 'auth-oidc', domain.passport.authenticate('openidconnect'));
-                    obj.app.get(url + 'oidc-callback', domain.passport.authenticate('openidconnect', { failureRedirect: '/login?failed-auth-attempt', failureFlash: true }), handleStrategyLogin);
+                    obj.app.get(url + 'auth-oidc', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('oidc-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    });
+                    obj.app.get(url + 'oidc-callback', function (req, res, next) {
+                        var domain = getDomain(req);
+                        if (domain.passport == null) { next(); return; }
+                        domain.passport.authenticate('oidc-' + domain.id, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                    }, handleStrategyLogin);
                 }
 
                 // Generic SAML
@@ -6886,25 +6894,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Generic OpenID Connect
         if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
             var options = {
-                authorizationURL: domain.authstrategies.oidc.authorizationurl,
-                callbackURL: domain.authstrategies.oidc.callbackurl,
-                clientID: domain.authstrategies.oidc.clientid,
-                clientSecret: domain.authstrategies.oidc.clientsecret,
                 issuer: domain.authstrategies.oidc.issuer,
+                authorizationURL: domain.authstrategies.oidc.authorizationurl,
                 tokenURL: domain.authstrategies.oidc.tokenurl,
                 userInfoURL: domain.authstrategies.oidc.userinfourl,
-                scope: ['openid profile email'],
-                responseMode: 'form_post',
-                state: true
+                clientID: domain.authstrategies.oidc.clientid,
+                clientSecret: domain.authstrategies.oidc.clientsecret,
+                scope: ['openid profile email groups'],
             };
-            const OIDCStrategy = require('@mstrhakr/passport-generic-oidc');
+            var OIDCStrategy = require('passport-openidconnect');
             if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
             parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
-            passport.use('openidconnect', new OIDCStrategy.Strategy(options,
-                function verify(iss, sub, profile, cb) {
+            passport.use('oidc-' + domain.id, new OIDCStrategy.Strategy(options,
+                function verify(issuer, profile, verified) {
                     var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
                     parent.debug('AUTH', 'OIDC: Configured user: ' + JSON.stringify(user));
-                    return cb(null, user);
+                    return verified(null, user);
                 }
             ));
             authStrategyFlags |= domainAuthStrategyConsts.openid;
