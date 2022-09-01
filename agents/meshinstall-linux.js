@@ -156,7 +156,7 @@ if (process.argv.includes('-translations'))
     console.log(JSON.stringify(translation));
     process.exit();
 }
-if (process.argv.includes('-help'))
+if (process.argv.includes('-help') || (process.platform == 'linux' && process.env['XAUTHORITY']==null && process.env['DISPLAY'] == null))
 {
     console.log("\n" + translation[lang].commands + ": ");
     if ((msh.InstallFlags & 1) == 1)
@@ -221,19 +221,23 @@ if ((!skip) && ((msh.InstallFlags & 2) == 2))
     }
 }
 
-if (!skip)
-{
-    if (process.platform != 'darwin')
+    if (!skip)
     {
-        if (process.argv.includes('-install') || process.argv.includes('-update'))
+        if (process.platform != 'darwin')
         {
-            var p = [];
-            for (var i = 0; i < process.argv.length; ++i)
+            if (process.argv.includes('-install') || process.argv.includes('-update'))
             {
-                if (process.argv[i].startsWith('--installPath='))
+                var p = [];
+                for (var i = 0; i < process.argv.length; ++i)
                 {
-                    p.push('--installPath="' + process.argv[i].split('=').pop() + '"');
-                }
+                    if (process.argv[i].startsWith('--installPath='))
+                    {
+                        p.push('--installPath="' + process.argv[i].split('=').pop() + '"');
+                    }
+                    else if(process.argv[i].startsWith('--'))
+                    {
+                        p.push(process.argv[i]);
+                    }
             }
             _install(p);
             process.exit();
