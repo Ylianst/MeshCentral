@@ -1373,7 +1373,7 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
-                meshserver.send({ action: 'nodes' });
+                meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
                 meshserver.send({ action: 'files' });
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
             }
@@ -1776,7 +1776,7 @@
                                 updateSelf();
 
                                 // If our list of nodes may have changes, request the new list now.
-                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes' }); }
+                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip }); }
                             }
                             break;
                         }
@@ -1799,7 +1799,7 @@
 
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
-                            meshserver.send({ action: 'nodes' });
+                            meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
                             break;
                         }
                         case 'deleteusergroup': {
@@ -1834,7 +1834,7 @@
                                 // This is a new mesh for us
                                 if (add) {
                                     meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links, relayid: message.event.relayid };
-                                    meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
+                                    meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                                 }
                             } else {
                                 // This is an existing mesh
