@@ -78,6 +78,14 @@ module.exports.CreateMeshSMS = function (parent) {
             obj.provider = require('telnyx')(parent.config.sms.apikey);
             break;
         }
+        case 'url': {
+            // Validate URL configuration values
+            if (typeof parent.config.sms.url != 'string') { console.log('Invalid or missing SMS gateway URL value.'); return null; }
+            if (!parent.config.sms.url.toLowerCase().startsWith('http://') && !parent.config.sms.url.toLowerCase().startsWith('https://')) { console.log('Invalid or missing SMS gateway, URL must start with http:// or https://.'); return null; }
+            if (parent.config.sms.url.indexOf('{{message}}') == -1) { console.log('Invalid or missing SMS gateway, URL must include {{message}}.'); return null; }
+            if (parent.config.sms.url.indexOf('{{phone}}') == -1) { console.log('Invalid or missing SMS gateway, URL must include {{phone}}.'); return null; }
+            break;
+        }
         default: {
             // Unknown SMS gateway provider
             console.log('Unknown SMS gateway provider: ' + parent.config.sms.provider);
@@ -123,6 +131,23 @@ module.exports.CreateMeshSMS = function (parent) {
                 if (err != null) { parent.debug('email', 'SMS error: ' + err.type); } else { parent.debug('email', 'SMS result: ' + JSON.stringify(result)); }
                 if (func != null) { func((err == null), err ? err.type : null, result); }
             });
+        } else if (parent.config.sms.provider == 'url') { // URL
+            var sms = parent.config.sms.url.split('{{phone}}').join(encodeURIComponent(to)).split('{{message}}').join(encodeURIComponent(msg));
+            parent.debug('email', 'SMS URL: ' + sms);
+            sms = require('url').parse(sms);
+            if (sms.protocol == 'https:') {
+                // HTTPS GET request
+                const options = { hostname: sms.hostname, port: sms.port ? sms.port : 443, path: sms.path, method: 'GET', rejectUnauthorized: false };
+                const request = require('https').request(options, function (res) { parent.debug('email', 'SMS result: ' + res.statusCode); func(res.statusCode == 200, (res.statusCode == 200) ? null : res.statusCode, null); res.on('data', function (d) { }); });
+                request.on('error', function (err) { parent.debug('email', 'SMS error: ' + err); if (func != null) { func(false, err, null); } });
+                request.end();
+            } else {
+                // HTTP GET request
+                const options = { hostname: sms.hostname, port: sms.port ? sms.port : 80, path: sms.path, method: 'GET' };
+                const request = require('http').request(options, function (res) { parent.debug('email', 'SMS result: ' + res.statusCode); func(res.statusCode == 200, (res.statusCode == 200) ? null : res.statusCode, null); res.on('data', function (d) { }); });
+                request.on('error', function (err) { parent.debug('email', 'SMS error: ' + err); if (func != null) { func(false, err, null); } });
+                request.end();
+            }
         }
     }
 

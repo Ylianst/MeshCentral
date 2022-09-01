@@ -1310,6 +1310,14 @@
             "from": { "type": "string" }
           },
           "required": [ "provider", "apikey", "from" ]
+        },
+        {
+          "type": "object", 
+          "properties": {
+            "provider": { "type": "string", "enum": [ "url" ] },
+            "url": { "type": "string", "description": "A http or https URL with {{phone}} and {{message}} in the string. These will be replaced with the URL encoded target phone number and message." }
+          },
+          "required": [ "url" ]
         }
       ]
     }
