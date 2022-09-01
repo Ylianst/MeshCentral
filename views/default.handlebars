@@ -294,6 +294,11 @@
             <div id=p1 style="display:none">
                 <div id="p1title">
                     <div style="display:none" id="devListToolbarViewIcons">
+                        <div id=devViewPageState style="float:left;line-height:32px;height:32px;font-size:16px;display:none"></div>
+                        <div tabindex=0 id=devViewPageButton1 class=viewSelector onclick=onDeviceViewPageChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(1); }" title="Go to first page" style="display:none"><div class="viewSelector9"></div></div>
+                        <div tabindex=0 id=devViewPageButton2 class=viewSelector onclick=onDeviceViewPageChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(2); }" title="Go to previous page" style="display:none"><div class="viewSelector10"></div></div>
+                        <div tabindex=0 id=devViewPageButton3 class=viewSelector onclick=onDeviceViewPageChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(3); }" title="Go to next page" style="display:none"><div class="viewSelector11"></div></div>
+                        <div tabindex=0 id=devViewPageButton4 class=viewSelector onclick=onDeviceViewPageChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(4); }" title="Go to last page" style="display:none;margin-right:12px"><div class="viewSelector8"></div></div>
                         <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns"><div class="viewSelector2"></div></div>
                         <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List"><div class="viewSelector1"></div></div>
                         <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops"><div class="viewSelector3"></div></div>
@@ -1509,6 +1514,7 @@
         var deskKeyboardStrings = [];
         var deskLastClipboardSent = null;
         var requestedLastConnects = false;
+        var devicePagingState = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -2474,6 +2480,10 @@
 
                     // Change the reference to the current node
                     if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); } else { go(1); } }
+
+                    // Update device paging
+                    devicePagingState = (message.totalcount == null) ? null : { total: message.totalcount, skip: message.skip, limit: message.limit };
+                    updateDevicePageState();
 
                     mainUpdate(1 | 2 | 4 | 64);
                     break;
@@ -3837,6 +3847,37 @@
         function onOnlineCheckBox(e) {
             putstore('devFilterSelect', Q('DevFilterSelect').value);
             onDeviceSearchChanged(e);
+        }
+
+        function updateDevicePageState() {
+            if ((devicePagingState == null) || (devicePagingState.total <= devicePagingState.limit)) {
+                QV('devViewPageState', false);
+                QV('devViewPageButton1', false);
+                QV('devViewPageButton2', false);
+                QV('devViewPageButton3', false);
+                QV('devViewPageButton4', false);
+            } else {
+                var currentPage = Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit);
+                var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+                QV('devViewPageState', true);
+                QV('devViewPageButton1', true);
+                QV('devViewPageButton2', true);
+                QV('devViewPageButton3', true);
+                QV('devViewPageButton4', true);
+                QH('devViewPageState', currentPage + '/' + maxPage);
+            }
+        }
+
+        function onDeviceViewPageChange(i) {
+            if (devicePagingState == null) return;
+            var currentPage = (Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit));
+            var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+            switch (i) {
+                case 1: { if (currentPage > 1) meshserver.send({ action: 'nodes', skip: 0 }); break; } // Goto first page
+                case 2: { if (currentPage > 1) meshserver.send({ action: 'nodes', skip: (currentPage - 2) * devicePagingState.limit }); break; } // Goto previous page
+                case 3: { if (currentPage < maxPage) meshserver.send({ action: 'nodes', skip: currentPage * devicePagingState.limit }); break; } // Goto next page
+                case 4: { if (currentPage < maxPage) meshserver.send({ action: 'nodes', skip: (maxPage - 1) * devicePagingState.limit }); break; } // Goto last page
+            }
         }
 
         function onDeviceViewChange(i) {
