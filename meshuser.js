@@ -109,7 +109,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.deviceSkip = 0; // How many devices to skip
     obj.deviceLimit = 0; // How many devices to view
     obj.visibleDevices = null; // An object of visible nodeid's if the user is in paging mode
-    if (domain.maxdeviceview != null) { obj.deviceLimit = domain.maxdeviceview; obj.visibleDevices = {}; }
+    if (domain.maxdeviceview != null) { obj.deviceLimit = domain.maxdeviceview; }
 
     // Check if we are a cross-domain administrator
     if (parent.parent.config.settings.managecrossdomain && (parent.parent.config.settings.managecrossdomain.indexOf(user._id) >= 0)) { obj.crossDomain = true; }
@@ -678,10 +678,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'nodes':
                 {
                     // If in paging mode, look to set the skip and limit values
-                    if (obj.visibleDevices != null) {
+                    if (domain.maxdeviceview != null) {
                         if ((typeof command.skip == 'number') && (command.skip >= 0)) { obj.deviceSkip = command.skip; }
                         if ((typeof command.limit == 'number') && (command.limit > 0)) { obj.deviceLimit = command.limit; }
-                        if ((domain.maxdeviceview != null) && (obj.deviceLimit > domain.maxdeviceview)) { obj.deviceLimit = domain.maxdeviceview; }
+                        if (obj.deviceLimit > domain.maxdeviceview) { obj.deviceLimit = domain.maxdeviceview; }
                     }
 
                     var links = [], extraids = null, err = null;
@@ -731,13 +731,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.common.unEscapeAllLinksFieldName(docs);
 
                         var r = {}, nodeCount = docs.length;
-                        if (obj.visibleDevices != null) { obj.visibleDevices = {}; }
+                        if (domain.maxdeviceview != null) { obj.visibleDevices = {}; }
                         for (i in docs) {
                             // Check device links, if a link points to an unknown user, remove it.
                             parent.cleanDevice(docs[i]); // TODO: This will make the total device count incorrect and will affect device paging.
 
                             // If we are paging, add the device to the page here
-                            if (obj.visibleDevices != null) { obj.visibleDevices[docs[i]._id] = 1; }
+                            if (domain.maxdeviceview != null) { obj.visibleDevices[docs[i]._id] = 1; }
 
                             // Remove any connectivity and power state information, that should not be in the database anyway.
                             // TODO: Find why these are sometimes saved in the db.
@@ -810,28 +810,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             r[meshid].push(docs[i]);
                         }
                         const response = { action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag };
-                        if (obj.visibleDevices != null) {
+                        if (domain.maxdeviceview != null) {
                             // If in paging mode, report back the skip and limit values
                             response.skip = obj.deviceSkip;
                             response.limit = obj.deviceLimit;
 
                             // Add total device count
+                            // Only set response.totalcount if we need to be in paging mode
                             if (nodeCount < response.limit) {
-                                response.totalcount = obj.deviceSkip + nodeCount;
+                                if (obj.deviceSkip > 0) { response.totalcount = obj.deviceSkip + nodeCount; } else { obj.visibleDevices = null; }
                                 try { ws.send(JSON.stringify(response)); } catch (ex) { }
                             } else {
                                 // Ask the database for the total device count
                                 if (db.CountAllTypeNoTypeFieldMeshFiltered) {
                                     db.CountAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, count) {
-                                        if ((err == null) && (typeof response.totalcount == 'number')) { response.totalcount = count; }
+                                        if ((err != null) || (typeof count != 'number') || ((obj.deviceSkip == 0) && (count < obj.deviceLimit))) {
+                                            obj.visibleDevices = null;
+                                        } else {
+                                            response.totalcount = count;
+                                        }
                                         try { ws.send(JSON.stringify(response)); } catch (ex) { }
                                     });
                                 } else {
                                     // The database does not support device counting
+                                    obj.visibleDevices = null; // We are not in paging mode
                                     try { ws.send(JSON.stringify(response)); } catch (ex) { }
                                 }
                             }
                         } else {
+                            obj.visibleDevices = null; // We are not in paging mode
                             try { ws.send(JSON.stringify(response)); } catch (ex) { }
                         }
                     });
