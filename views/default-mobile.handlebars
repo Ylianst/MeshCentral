@@ -648,6 +648,22 @@
             height: 400px;
             position: relative;
         }
+
+        .viewSelector10 {
+            margin-left: 2px;
+            margin-top: 2px;
+            background: url(../images/views.png) -476px 0px;
+            height: 28px;
+            width: 28px;
+        }
+
+        .viewSelector11 {
+            margin-left: 2px;
+            margin-top: 2px;
+            background: url(../images/views.png) -504px 0px;
+            height: 28px;
+            width: 28px;
+        }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -663,6 +679,9 @@
                     <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif;text-shadow: 1px 1px 2px #000;">{{{title2}}}</font></strong>
                 </div>
             </div>
+            <div id="devViewPageState" class=noselect style="position:absolute;right:160px;top:10px;height:30px;line-height:30px;color:#c8c8c8;font-size:16px;display:none"></div>
+            <img id="devViewPageButton2" class=noselect style="position:absolute;right:130px;top:10px;cursor:pointer;display:none" onclick=onDeviceViewPageChange(2) src="/images/left-30.png" width=20 height=30 />
+            <img id="devViewPageButton3" class=noselect style="position:absolute;right:100px;top:10px;cursor:pointer;display:none" onclick=onDeviceViewPageChange(3) src="/images/right-30.png" width=20 height=30 />
             <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="position:absolute;right:50px;top:0px;font-size:28px;width:50px;height:50px;cursor:pointer;display:none" title="Click to view current notifications"><div id="notificationCount2" style="padding-top:8px">0</div></div>
             <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
@@ -1228,7 +1247,6 @@
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
         var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
-        console.log(logoutControls);
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -1260,6 +1278,7 @@
         var xterm = null;
         var xtermfit = null;
         var xtermResizeTimer = null;
+        var devicePagingState = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1348,6 +1367,8 @@
                 if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', "Unable to connect web socket"); }
                 // Clean up here
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
+                devicePagingState = null;
+                updateDevicePageState();
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'usergroups' });
@@ -1511,6 +1532,10 @@
 
                     // Change the reference to the current node
                     if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); } else { go(2); } }
+
+                    // Update device paging
+                    devicePagingState = (message.totalcount == null) ? null : { total: message.totalcount, skip: message.skip, limit: message.limit };
+                    updateDevicePageState();
 
                     //onSortSelectChange();
                     //onSearchInputChanged();
@@ -2713,6 +2738,31 @@
         function onOnlineCheckBox(e) {
             putstore('onlineOnly', Q('OnlineCheckBox').checked ? 1 : 0);
             onSearchInputChanged();
+        }
+
+        function updateDevicePageState() {
+            if ((devicePagingState == null) || (devicePagingState.total <= devicePagingState.limit)) {
+                QV('devViewPageState', false);
+                QV('devViewPageButton2', false);
+                QV('devViewPageButton3', false);
+            } else {
+                var currentPage = Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit);
+                var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+                QV('devViewPageState', true);
+                QV('devViewPageButton2', true);
+                QV('devViewPageButton3', true);
+                QH('devViewPageState', currentPage + '/' + maxPage);
+            }
+        }
+
+        function onDeviceViewPageChange(i) {
+            if (devicePagingState == null) return;
+            var currentPage = (Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit));
+            var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+            switch (i) {
+                case 2: { if (currentPage > 1) meshserver.send({ action: 'nodes', skip: (currentPage - 2) * devicePagingState.limit }); break; } // Goto previous page
+                case 3: { if (currentPage < maxPage) meshserver.send({ action: 'nodes', skip: currentPage * devicePagingState.limit }); break; } // Goto next page
+            }
         }
 
         function onDeviceSearchChanged(e) {
