@@ -43,26 +43,31 @@ module.exports.CreateMeshMail = function (parent, domain) {
         if (obj.config.sendgrid.verifyemail == true) { obj.verifyemail = true; }
     } else if (obj.config.smtp != null) {
         // Setup SMTP mail server
-        const nodemailer = require('nodemailer');
-        var options = { name: obj.config.smtp.name, host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: {} };
-        //var options = { host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: { secureProtocol: 'SSLv23_method', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false } };
-        if (obj.config.smtp.port != null) { options.port = obj.config.smtp.port; }
-        if (obj.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
-        if (obj.config.smtp.tlsstrict === true) { options.tls.secureProtocol = 'SSLv23_method'; options.tls.ciphers = 'RSA+AES:!aNULL:!MD5:!DSS'; options.tls.secureOptions = constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE; }
-        if ((obj.config.smtp.auth != null) && (typeof obj.config.smtp.auth == 'object')) {
-            var user = obj.config.smtp.from;
-            if ((user == null) && (obj.config.smtp.user != null)) { user = obj.config.smtp.user; }
-            if ((obj.config.smtp.auth.user != null) && (typeof obj.config.smtp.auth.user == 'string')) { user = obj.config.smtp.auth.user; }
-            if (user.toLowerCase().endsWith('@gmail.com')) { options = { service: 'gmail', auth: { user: user } }; obj.config.smtp.host = 'gmail'; } else { options.auth = { user: user } }
-            if (obj.config.smtp.auth.type) { options.auth.type = obj.config.smtp.auth.type; }
-            if (obj.config.smtp.auth.clientid) { options.auth.clientId = obj.config.smtp.auth.clientid; options.auth.type = 'OAuth2'; }
-            if (obj.config.smtp.auth.clientsecret) { options.auth.clientSecret = obj.config.smtp.auth.clientsecret; }
-            if (obj.config.smtp.auth.refreshtoken) { options.auth.refreshToken = obj.config.smtp.auth.refreshtoken; }
-        }
-        else if ((obj.config.smtp.user != null) && (obj.config.smtp.pass != null)) { options.auth = { user: obj.config.smtp.user, pass: obj.config.smtp.pass }; }
-        if (obj.config.smtp.verifyemail == true) { obj.verifyemail = true; }
+        if (obj.config.smtp.name == 'console') {
+            // This is for debugging, the mails will be displayed on the console
+            obj.smtpServer = 'console';
+        } else {
+            const nodemailer = require('nodemailer');
+            var options = { name: obj.config.smtp.name, host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: {} };
+            //var options = { host: obj.config.smtp.host, secure: (obj.config.smtp.tls == true), tls: { secureProtocol: 'SSLv23_method', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false } };
+            if (obj.config.smtp.port != null) { options.port = obj.config.smtp.port; }
+            if (obj.config.smtp.tlscertcheck === false) { options.tls.rejectUnauthorized = false; }
+            if (obj.config.smtp.tlsstrict === true) { options.tls.secureProtocol = 'SSLv23_method'; options.tls.ciphers = 'RSA+AES:!aNULL:!MD5:!DSS'; options.tls.secureOptions = constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE; }
+            if ((obj.config.smtp.auth != null) && (typeof obj.config.smtp.auth == 'object')) {
+                var user = obj.config.smtp.from;
+                if ((user == null) && (obj.config.smtp.user != null)) { user = obj.config.smtp.user; }
+                if ((obj.config.smtp.auth.user != null) && (typeof obj.config.smtp.auth.user == 'string')) { user = obj.config.smtp.auth.user; }
+                if (user.toLowerCase().endsWith('@gmail.com')) { options = { service: 'gmail', auth: { user: user } }; obj.config.smtp.host = 'gmail'; } else { options.auth = { user: user } }
+                if (obj.config.smtp.auth.type) { options.auth.type = obj.config.smtp.auth.type; }
+                if (obj.config.smtp.auth.clientid) { options.auth.clientId = obj.config.smtp.auth.clientid; options.auth.type = 'OAuth2'; }
+                if (obj.config.smtp.auth.clientsecret) { options.auth.clientSecret = obj.config.smtp.auth.clientsecret; }
+                if (obj.config.smtp.auth.refreshtoken) { options.auth.refreshToken = obj.config.smtp.auth.refreshtoken; }
+            }
+            else if ((obj.config.smtp.user != null) && (obj.config.smtp.pass != null)) { options.auth = { user: obj.config.smtp.user, pass: obj.config.smtp.pass }; }
+            if (obj.config.smtp.verifyemail == true) { obj.verifyemail = true; }
 
-        obj.smtpServer = nodemailer.createTransport(options);
+            obj.smtpServer = nodemailer.createTransport(options);
+        }
     } else if (obj.config.sendmail != null) {
         // Setup Sendmail
         const nodemailer = require('nodemailer');
@@ -440,39 +445,50 @@ module.exports.CreateMeshMail = function (parent, domain) {
                     }
                 });
         } else if (obj.smtpServer != null) {
-            // SMTP send
             parent.debug('email', 'SMTP sending mail to ' + mailToSend.to + '.');
-            obj.smtpServer.sendMail(mailToSend, function (err, info) {
-                parent.debug('email', 'SMTP response: ' + JSON.stringify(err) + ', ' + JSON.stringify(info));
+            if (obj.smtpServer == 'console') {
+                // Display the email on the console, this is for easy debugging
+                if (mailToSend.from == null) { delete mailToSend.from; }
+                if (mailToSend.html == null) { delete mailToSend.html; }
+                console.log('Email', mailToSend);
                 obj.sendingMail = false;
-                if (err == null) {
-                    // Send the next mail
-                    obj.pendingMails.shift();
-                    obj.retry = 0;
-                    sendNextMail();
-                } else {
-                    obj.retry++;
-                    parent.debug('email', 'SMTP server failed (Retry:' + obj.retry + '): ' + JSON.stringify(err));
-                    console.log('SMTP server failed (Retry:' + obj.retry + '/3): ' + JSON.stringify(err));
-                    // Wait and try again
-                    if (obj.retry < 3) {
-                        setTimeout(sendNextMail, 10000);
-                    } else {
-                        // Failed, send the next mail
-                        parent.debug('email', 'SMTP server failed (Skipping): ' + JSON.stringify(err));
-                        console.log('SMTP server failed (Skipping): ' + JSON.stringify(err));
+                obj.pendingMails.shift();
+                obj.retry = 0;
+                sendNextMail();
+            } else {
+                // SMTP send
+                obj.smtpServer.sendMail(mailToSend, function (err, info) {
+                    parent.debug('email', 'SMTP response: ' + JSON.stringify(err) + ', ' + JSON.stringify(info));
+                    obj.sendingMail = false;
+                    if (err == null) {
+                        // Send the next mail
                         obj.pendingMails.shift();
                         obj.retry = 0;
                         sendNextMail();
+                    } else {
+                        obj.retry++;
+                        parent.debug('email', 'SMTP server failed (Retry:' + obj.retry + '): ' + JSON.stringify(err));
+                        console.log('SMTP server failed (Retry:' + obj.retry + '/3): ' + JSON.stringify(err));
+                        // Wait and try again
+                        if (obj.retry < 3) {
+                            setTimeout(sendNextMail, 10000);
+                        } else {
+                            // Failed, send the next mail
+                            parent.debug('email', 'SMTP server failed (Skipping): ' + JSON.stringify(err));
+                            console.log('SMTP server failed (Skipping): ' + JSON.stringify(err));
+                            obj.pendingMails.shift();
+                            obj.retry = 0;
+                            sendNextMail();
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
     // Send out the next mail in the pending list
     obj.verify = function () {
-        if (obj.smtpServer == null) return;
+        if ((obj.smtpServer == null) || (obj.smtpServer == 'console')) return;
         obj.smtpServer.verify(function (err, info) {
             if (err == null) {
                 if (obj.config.smtp.host == 'gmail') {
