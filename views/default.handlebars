@@ -17325,6 +17325,7 @@
             x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c7 ' + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + '>' + "Web Socket Relay" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c20 ' + ((serverTraceSources.indexOf('httpheaders') >= 0) ? 'checked' : '') + '>' + "Web Server HTTP Headers" + '</label></div>';
+            x += '<div><label><input type=checkbox id=p41c21 ' + ((serverTraceSources.indexOf('authlog') >= 0) ? 'checked' : '') + '>' + "User Authentication Log" + '</label></div>';
             //x += '<div><label><input type=checkbox id=p41c8 ' + ((serverTraceSources.indexOf('webrelaydata') >= 0) ? 'checked' : '') + '>' + "Traffic Relay 2 Data" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Intel&reg; AMT" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c19 ' + ((serverTraceSources.indexOf('amt') >= 0) ? 'checked' : '') + '>' + "Intel AMT manager" + '</label></div>';
@@ -17339,8 +17340,8 @@
         }
 
         function setServerTracingEx(b) {
-            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt', 'httpheaders'];
-            if (b == 1) { for (var i = 1; i < 21; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
+            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt', 'httpheaders', 'authlog'];
+            if (b == 1) { for (var i = 1; i < 22; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
             meshserver.send({ action: 'traceinfo', traceSources: sources });
         }
 

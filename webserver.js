@@ -788,7 +788,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var userid = req.session.userid;
         if (req.session.userid) {
             var user = obj.users[req.session.userid];
-            if (user != null) { obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msgid: 2, msg: 'Account logout', domain: domain.id }); }
+            if (user != null) {
+                obj.parent.authLog('https', 'User ' + user.name + ' logout from ' + req.clientIp + ' port ' + req.connection.remotePort, { sessionid: req.session.x, useragent: req.headers['user-agent'] });
+                obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msgid: 2, msg: 'Account logout', domain: domain.id });
+            }
             if (req.session.x) { clearDestroyedSessions(); obj.destroyedSessions[req.session.userid + '/' + req.session.x] = Date.now(); } // Destroy this session
         }
         req.session = null;
@@ -1175,9 +1178,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if ((req.body.token != null) || (req.body.hwtoken != null)) {
                                 randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
                                 req.session.messageid = 108; // Invalid token, try again.
-                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed 2FA for ' + xusername + ' from ' + cleanRemoteAddr(req.clientIp) + ' port ' + req.port); }
+                                obj.parent.authLog('https', 'Failed 2FA for ' + xusername + ' from ' + cleanRemoteAddr(req.clientIp) + ' port ' + req.port, { useragent: req.headers['user-agent'] });
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
-                                const ua = getUserAgentInfo(req);
+                                const ua = obj.getUserAgentInfo(req);
                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
                                 obj.setbad2Fa(req);
                             } else {
@@ -1215,7 +1218,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             }
 
                             // Login successful
-                            if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                             parent.debug('web', 'handleLoginRequest: successful 2FA login');
                             if (authData != null) { if (loginOptions == null) { loginOptions = {}; } loginOptions.twoFactorType = authData.twoFactorType; }
                             completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions);
@@ -1237,13 +1239,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Login successful
-                if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                 parent.debug('web', 'handleLoginRequest: successful login');
                 if (twoFactorSkip != null) { if (loginOptions == null) { loginOptions = {}; } loginOptions.twoFactorType = twoFactorSkip.twoFactorType; }
                 completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions);
             } else {
                 // Login failed, log the error
-                if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
+                obj.parent.authLog('https', 'Failed password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'] });
 
                 // Wait a random delay
                 setTimeout(function () {
@@ -1253,19 +1254,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (err == 'locked') {
                             parent.debug('web', 'handleLoginRequest: login failed, locked account');
                             req.session.messageid = 110; // Account locked.
-                            const ua = getUserAgentInfo(req);
+                            const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + req.clientIp, msgid: 109, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
                             obj.setbadLogin(req);
                         } else if (err == 'denied') {
                             parent.debug('web', 'handleLoginRequest: login failed, access denied');
                             req.session.messageid = 111; // Access denied.
-                            const ua = getUserAgentInfo(req);
+                            const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Denied user login from ' + req.clientIp, msgid: 155, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
                             obj.setbadLogin(req);
                         } else {
                             parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
                             req.session.messageid = 112; // Login failed, check username and password.
-                            const ua = getUserAgentInfo(req);
+                            const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp, msgid: 110, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
                             obj.setbadLogin(req);
                         }
@@ -1311,7 +1312,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Notify account login
         const targets = ['*', 'server-users', user._id];
         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-        const ua = getUserAgentInfo(req);
+        const ua = obj.getUserAgentInfo(req);
         const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login from ' + req.clientIp + ', ' + ua.browserStr + ', ' + ua.osStr, domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], rport: req.connection.remotePort };
         if (loginOptions != null) {
             if ((loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) { loginEvent.tokenName = loginOptions.tokenName; loginEvent.tokenUser = loginOptions.tokenUser; } // If a login token was used, add it to the event.
@@ -1339,6 +1340,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         req.session.userid = userid;
         req.session.ip = req.clientIp;
         setSessionRandom(req);
+        obj.parent.authLog('https', 'Accepted password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
 
         // If a login token was used, add this information and expire time to the session.
         if ((loginOptions != null) && (loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) {
@@ -1731,7 +1733,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 req.session.messageid = 4; // SMS sent.
                                             } else {
                                                 req.session.messageid = 108; // Invalid token, try again.
-                                                const ua = getUserAgentInfo(req);
+                                                const ua = obj.getUserAgentInfo(req);
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
                                                 obj.setbad2Fa(req);
                                             }
@@ -1917,7 +1919,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: 'Email verified', value: user.email, nolog: 1, id: Math.random() });
 
                                                 // Send to authlog
-                                                if (obj.parent.authlog) { obj.parent.authLog('https', 'Verified email address ' + user.email + ' for user ' + user.name); }
+                                                obj.parent.authLog('https', 'Verified email address ' + user.email + ' for user ' + user.name, { useragent: req.headers['user-agent'] });
                                             }
                                         });
                                     }
@@ -1953,7 +1955,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                     parent.debug('web', 'handleCheckMailRequest: send temporary password.');
 
                                                     // Send to authlog
-                                                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Performed account reset for user ' + user.name); }
+                                                    obj.parent.authLog('https', 'Performed account reset for user ' + user.name);
                                                 }, 0);
                                             });
                                         } else {
@@ -2558,7 +2560,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Notify account login using SSO
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                    const ua = getUserAgentInfo(req);
+                    const ua = obj.getUserAgentInfo(req);
                     const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                     obj.parent.DispatchEvent(targets, obj, loginEvent);
                 } else {
@@ -2590,7 +2592,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Notify account login using SSO
                 var targets = ['*', 'server-users', user._id];
                 if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                const ua = getUserAgentInfo(req);
+                const ua = obj.getUserAgentInfo(req);
                 const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
             }
@@ -2630,11 +2632,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Login using SSPI
             domain.sspi.authenticate(req, res, function (err) {
                 if ((err != null) || (req.connection.user == null)) {
-                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
+                    obj.parent.authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'] });
                     parent.debug('web', 'handleRootRequest: SSPI auth required.');
                     res.sendStatus(401);
                 } else {
-                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                     parent.debug('web', 'handleRootRequest: SSPI auth ok.');
                     handleRootRequestEx(req, res, domain, direct);
                 }
@@ -2644,12 +2645,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
                 if ((userid != null) && (err == null)) {
                     // Login success
-                    if (obj.parent.authlog) { obj.parent.authLog('https', 'Accepted password for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort); }
                     parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                     req.session.userid = userid;
                     delete req.session.currentNode;
                     req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                     setSessionRandom(req);
+                    obj.parent.authLog('https', 'Accepted password for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
                     handleRootRequestEx(req, res, domain, direct);
                 } else {
                     // Login failed
@@ -2728,6 +2729,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 delete req.session.currentNode;
                 req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                 setSessionRandom(req);
+                obj.parent.authLog('https', 'Accepted SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
 
                 // Check if this user exists, create it if not.
                 user = obj.users[req.session.userid];
@@ -7508,7 +7510,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 });
                 obj.parent.updateServerState('servername', certificates.CommonName);
             }
-            if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on ' + ((addr != null) ? addr : '0.0.0.0') + ' port ' + port + '.'); }
+            obj.parent.authLog('https', 'Server listening on ' + ((addr != null) ? addr : '0.0.0.0') + ' port ' + port + '.');
             obj.parent.updateServerState('https-port', port);
             if (args.aliasport != null) { obj.parent.updateServerState('https-aliasport', args.aliasport); }
         } else {
@@ -7545,7 +7547,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else {
                 obj.tcpAltServer = obj.tlsAltServer.listen(port, addr, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             }
-            if (obj.parent.authlog) { obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.'); }
+            obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.');
             obj.parent.updateServerState('https-agent-port', port);
         } else {
             obj.tcpAltServer = obj.agentapp.listen(port, addr, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
@@ -8511,10 +8513,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Return decoded user agent information
-    function getUserAgentInfo(req) {
+    obj.getUserAgentInfo = function(req) {
         var browser = 'Unknown', os = 'Unknown';
         try {
-            const ua = obj.uaparser(req.headers['user-agent']);
+            const ua = obj.uaparser((typeof req == 'string') ? req : req.headers['user-agent']);
             if (ua.browser && ua.browser.name) { ua.browserStr = ua.browser.name; if (ua.browser.version) { ua.browserStr += '/' + ua.browser.version } }
             if (ua.os && ua.os.name) { ua.osStr = ua.os.name; if (ua.os.version) { ua.osStr += '/' + ua.os.version } }
             return ua;
@@ -8837,7 +8839,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                 // Log in the auth log
-                if (parent.authlog) { parent.authLog('https', 'Created ' + userMembershipType + ' user group ' + ugrp.name); }
+                parent.authLog('https', 'Created ' + userMembershipType + ' user group ' + ugrp.name);
             }
 
             if (existingUserMemberships[ugrpid] == null) {
