@@ -2634,7 +2634,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((err != null) || (req.connection.user == null)) {
                     obj.parent.authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'] });
                     parent.debug('web', 'handleRootRequest: SSPI auth required.');
-                    res.sendStatus(401);
+                    try { res.sendStatus(401); } catch (ex) { } // sspi.authenticate() should already have responded to this request.
                 } else {
                     parent.debug('web', 'handleRootRequest: SSPI auth ok.');
                     handleRootRequestEx(req, res, domain, direct);
