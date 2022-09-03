@@ -381,8 +381,8 @@ module.exports.CreateMeshMail = function (parent, domain) {
                 }
 
                 // Set all the template replacement options and generate the final email text (both in txt and html formats).
-                var optionsHtml = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral', header: true, footer: false };
-                var optionsTxt = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral', header: true, footer: false };
+                const optionsHtml = { username: EscapeHtml(username), email: EscapeHtml(email), servername: EscapeHtml(domain.title ? domain.title : 'MeshCentral'), header: true, footer: false };
+                const optionsTxt = { username: username, email: email, servername: domain.title ? domain.title : 'MeshCentral', header: true, footer: false };
                 if ((connections == null) || (connections.length == 0)) {
                     optionsHtml.connections = false;
                     optionsTxt.connections = false;
@@ -397,6 +397,39 @@ module.exports.CreateMeshMail = function (parent, domain) {
                     optionsHtml.disconnections = disconnections.join('<br />\r\n');
                     optionsTxt.disconnections = disconnections.join('\r\n');
                 }
+
+                // Get from field
+                var from = null;
+                if (obj.config.sendgrid && (typeof obj.config.sendgrid.from == 'string')) { from = obj.config.sendgrid.from; }
+                else if (obj.config.smtp && (typeof obj.config.smtp.from == 'string')) { from = obj.config.smtp.from; }
+
+                // Send the email
+                obj.pendingMails.push({ to: email, from: from, subject: mailReplacements(template.htmlSubject, domain, optionsTxt), text: mailReplacements(template.txt, domain, optionsTxt), html: mailReplacements(template.html, domain, optionsHtml) });
+                sendNextMail();
+            }
+        });
+    };
+
+    // Send device help request notification mail
+    obj.sendDeviceHelpMail = function (domain, username, email, devicename, nodeid, helpusername, helprequest, language) {
+        obj.checkEmail(email, function (checked) {
+            if (checked) {
+                parent.debug('email', "Sending device help notification to " + email);
+
+                if ((parent.certificates == null) || (parent.certificates.CommonName == null) || (parent.certificates.CommonName.indexOf('.') == -1)) {
+                    parent.debug('email', "Error: Server name not set."); // If the server name is not set, email not possible.
+                    return;
+                }
+
+                var template = getTemplate('device-help', domain, language);
+                if ((template == null) || (template.htmlSubject == null) || (template.txtSubject == null)) {
+                    parent.debug('email', "Error: Failed to get mail template."); // No email template found
+                    return;
+                }
+
+                // Set all the template replacement options and generate the final email text (both in txt and html formats).
+                const optionsHtml = { devicename: EscapeHtml(devicename), helpusername: EscapeHtml(helpusername), helprequest: EscapeHtml(helprequest), nodeid: nodeid.split('/')[2], servername: EscapeHtml(domain.title ? domain.title : 'MeshCentral') };
+                const optionsTxt = { devicename: devicename, helpusername: helpusername, helprequest: helprequest, nodeid: nodeid.split('/')[2], servername: domain.title ? domain.title : 'MeshCentral' };
 
                 // Get from field
                 var from = null;

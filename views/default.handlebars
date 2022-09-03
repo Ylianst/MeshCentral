@@ -7265,6 +7265,7 @@
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
                         if (devNotify & 16) { devNotifyStr.push("Email Connect"); }
                         if (devNotify & 32) { devNotifyStr.push("Email Disconnect"); }
+                        if (devNotify & 64) { devNotifyStr.push("Email Help Request"); }
                     }
                 }
                 devNotifyStr = devNotifyStr.join(', ');
@@ -7693,6 +7694,7 @@
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
             setDialogMode(2, "Notification Settings", 3, p20editDeviceNotifyEx, x, fx);
             Q('p20notifyIntelDeviceConnect').checked = (devNotify & 2);
@@ -7701,6 +7703,7 @@
             if (fx & 1) {
                 Q('p20enotifyIntelDeviceConnect').checked = (devNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (devNotify & 32);
+                Q('p20enotifyIntelDeviceHelp').checked = (devNotify & 64);
             }
             return false;
         }
@@ -7713,6 +7716,7 @@
             if (fx & 1) {
                 devNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 devNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
+                devNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
             }
             meshserver.send({ action: 'changeusernotify', nodeid: currentNode._id, notify: devNotify });
         }
@@ -12585,6 +12589,7 @@
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
                         if (meshNotify & 16) { meshNotifyStr.push("Email Connect"); }
                         if (meshNotify & 32) { meshNotifyStr.push("Email Disconnect"); }
+                        if (meshNotify & 64) { meshNotifyStr.push("Email Help Request"); }
                     }
                     if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
                     x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
@@ -13592,6 +13597,7 @@
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
             setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
@@ -13600,6 +13606,7 @@
             if (emailNotify) {
                 Q('p20enotifyIntelDeviceConnect').checked = (meshNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (meshNotify & 32);
+                Q('p20enotifyIntelDeviceHelp').checked = (meshNotify & 64);
             }
             return false;
         }
@@ -13612,6 +13619,7 @@
             if (emailNotify) {
                 meshNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 meshNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
+                meshNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
             }
             meshserver.send({ action: 'changemeshnotify', meshid: currentMesh._id, notify: meshNotify });
         }
