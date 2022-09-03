@@ -6902,7 +6902,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 userInfoURL: domain.authstrategies.oidc.userinfourl,
                 clientID: domain.authstrategies.oidc.clientid,
                 clientSecret: domain.authstrategies.oidc.clientsecret,
-                scope: ['openid profile email groups'],
+                scope: ['profile email'],
             };
             var OIDCStrategy = require('passport-openidconnect');
             if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
