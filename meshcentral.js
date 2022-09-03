@@ -2344,6 +2344,56 @@ function CreateMeshCentralServer(config, args) {
         }
     }
 
+    // See if we need to notifiy any user of device requested help
+    //if (typeof device.name == 'string') { parent.parent.NotifyUserOfDeviceHelpRequest(domain, device._id, device.meshid, device.name, command.msgArgs[0], command.msgArgs[1]); }
+
+    obj.NotifyUserOfDeviceHelpRequest = function (domain, meshid, nodeid, devicename, helpusername, helprequest) {
+        // Check if there is a email server for this domain
+        const meshSplit = meshid.split('/');
+        if (meshSplit.length != 3) return;
+        const domainId = meshSplit[1];
+        if (obj.config.domains[domainId] == null) return;
+        const mailserver = obj.config.domains[domainId].mailserver;
+        if (mailserver == null) return;
+
+        // Get the device group for this device
+        const mesh = obj.webserver.meshes[meshid];
+        if ((mesh == null) || (mesh.links == null)) return;
+
+        // Get the list of users that have visibility to this device
+        // This includes users that are part of user groups
+        const users = [];
+        for (var i in mesh.links) {
+            if (i.startsWith('user/') && (users.indexOf(i) < 0)) { users.push(i); }
+            if (i.startsWith('ugrp/')) {
+                var usergrp = obj.webserver.userGroups[i];
+                if (usergrp.links != null) { for (var j in usergrp.links) { if (j.startsWith('user/') && (users.indexOf(j) < 0)) { users.push(j); } } }
+            }
+        }
+
+        // Check if any user needs email notification
+        for (var i in users) {
+            const user = obj.webserver.users[users[i]];
+            if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+                var notify = 0;
+
+                // Device group notifications
+                const meshLinks = user.links[meshid];
+                if ((meshLinks != null) && (meshLinks.notify != null)) { notify |= meshLinks.notify; }
+
+                // User notifications
+                if (user.notify != null) {
+                    if (user.notify[meshid] != null) { notify |= user.notify[meshid]; }
+                    if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
+                }
+
+                if ((notify & 64) != 0) {
+                    mailserver.sendDeviceHelpMail(domain, user.name, user.email, devicename, nodeid, helpusername, helprequest, user.llang);
+                }
+            }
+        }
+    }
+
     // Set the connectivity state of a node and setup the server so that messages can be routed correctly.
     // meshId: mesh identifier of format mesh/domain/meshidhex
     // nodeId: node identifier of format node/domain/nodeidhex

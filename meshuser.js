@@ -1709,6 +1709,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     //  8 = WebPage device desktop and serial events
                     // 16 = Email device connections
                     // 32 = Email device disconnections
+                    // 64 = Email device help request
 
                     var err = null;
                     try {
@@ -1758,6 +1759,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     //  8 = WebPage device desktop and serial events
                     // 16 = Email device connections
                     // 32 = Email device disconnections
+                    // 64 = Email device help request
 
                     var err = null;
                     try {
