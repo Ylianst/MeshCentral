@@ -5116,21 +5116,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var amtDevices = [];
 
                 // Decode a JSON file from the Intel SCS migration tool
-                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel EMA Migration Tool') && (Array.isArray(command.amtdevices['Managed Systems']))) {
-                    for (var i in command.amtdevices['Managed Systems']) {
-                        const importDev = command.amtdevices['Managed Systems'][i];
+                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel vPro(R) Manageability Migration Tool') && (typeof command.amtdevices['ManagedSystems'] == 'object') && (Array.isArray(command.amtdevices['ManagedSystems']['ManagedSystemsList']))) {
+                    for (var i in command.amtdevices['ManagedSystems']['ManagedSystemsList']) {
+                        const importDev = command.amtdevices['ManagedSystems']['ManagedSystemsList'][i];
                         var host = null;
-                        if ((typeof importDev.curr_AMTFqdn == 'string') && (importDev.curr_AMTFqdn != '')) { host = importDev.curr_AMTFqdn; }
-                        if ((host == null) && (typeof importDev.curr_AMTIPv4 == 'string') && (importDev.curr_AMTIPv4 != '')) { host = importDev.curr_AMTIPv4; }
+                        if ((typeof importDev.Fqdn == 'string') && (importDev.Fqdn != '')) { host = importDev.Fqdn; }
+                        if ((host == null) && (typeof importDev.IPv4 == 'string') && (importDev.IPv4 != '')) { host = importDev.IPv4; }
                         if (host != null) {
                             // Create a new Intel AMT device
                             const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             const device = { type: 'node', _id: nodeid, meshid: mesh._id, mtype: 1, icon: 1, name: host, host: host, domain: domain.id, intelamt: { user: 'admin', state: 2 } };
 
                             // Add optional fields
-                            if (typeof importDev.AMTVersion == 'string') { device.intelamt.ver = importDev.AMTVersion; }
+                            if (typeof importDev.AmtVersion == 'string') { device.intelamt.ver = importDev.AmtVersion; }
                             if (typeof importDev.ConfiguredPassword == 'string') { device.intelamt.pass = importDev.ConfiguredPassword; }
-                            if (typeof importDev.uuid == 'string') { device.intelamt.uuid = importDev.uuid; }
+                            if (typeof importDev.Uuid == 'string') { device.intelamt.uuid = importDev.Uuid; }
+                            if (importDev.ConnectionType == 'TLS') { device.intelamt.tls = 1; }
 
                             // Check if we are already adding a device with the same hostname, if so, skip it.
                             var skip = false;
