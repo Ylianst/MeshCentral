@@ -6790,7 +6790,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Setup auth strategies for a domain
-    async function setupDomainAuthStrategy(domain) {
+    function setupDomainAuthStrategy(domain) {
         // Return the auth strategies that have been setup
         var authStrategyFlags = 0;
 
@@ -6902,27 +6902,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 clientSecret: domain.authstrategies.oidc.clientsecret,
                 scope: ['profile email'],
             };
-            if ((typeof domain.authstrategies.oidc.authorizationurl != 'string') || (typeof domain.authstrategies.oidc.tokenurl != 'string') || (typeof domain.authstrategies.oidc.userinfourl != 'string')) {
-                const Issuer = require('openid-client').Issuer;
-                parent.debug('web', 'Attempting to discover well known endpoints for  ' + options.issuer);
-                var issuer = await Issuer.discover(options.issuer);
-                parent.debug('web', `Discovered from ${issuer.metadata.issuer}:
-                authorization_endpoint - ${issuer.metadata.authorization_endpoint}
-                token_endpoint - ${issuer.metadata.token_endpoint}
-                userinfo_endpoint - ${issuer.metadata.userinfo_endpoint}`);
+            async function discoverOptions(options){
+                if ((typeof domain.authstrategies.oidc.authorizationurl != 'string') || (typeof domain.authstrategies.oidc.tokenurl != 'string') || (typeof domain.authstrategies.oidc.userinfourl != 'string')) {
+                    const Issuer = require('openid-client').Issuer;
+                    parent.debug('web', 'Attempting to discover well known endpoints for  ' + options.issuer);
+                    var issuer = await Issuer.discover(options.issuer)
+                    if (typeof domain.authstrategies.oidc.authorizationurl == 'string') { options.authorizationURL = domain.authstrategies.oidc.authorizationurl; } else { options.authorizationURL = issuer.metadata.authorization_endpoint; }
+                    if (typeof domain.authstrategies.oidc.tokenurl == 'string') { options.tokenURL = domain.authstrategies.oidc.tokenurl; } else { options.tokenURL = issuer.metadata.token_endpoint; }
+                    if (typeof domain.authstrategies.oidc.userinfourl == 'string') { options.userInfoURL = domain.authstrategies.oidc.userinfourl; } else { options.userInfoURL = issuer.metadata.userinfo_endpoint; }
+                    if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
+                }
+                parent.debug('web', 'Discovered  ' + JSON.stringify(options));
+                return options
             }
-            if (typeof domain.authstrategies.oidc.authorizationurl == 'string') { options.authorizationURL = domain.authstrategies.oidc.authorizationurl; } else { options.authorizationURL = issuer.metadata.authorization_endpoint; }
-            if (typeof domain.authstrategies.oidc.tokenurl == 'string') { options.tokenURL = domain.authstrategies.oidc.tokenurl; } else { options.tokenURL = issuer.metadata.token_endpoint; }
-            if (typeof domain.authstrategies.oidc.userinfourl == 'string') { options.userInfoURL = domain.authstrategies.oidc.userinfourl; } else { options.userInfoURL = issuer.metadata.userinfo_endpoint; }
-            if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
-            parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
-            passport.use('oidc-' + domain.id, new OIDCStrategy.Strategy(options,
+            discoverOptions(options).then((options)=>{passport.use('oidc-' + domain.id, new OIDCStrategy.Strategy(options,
                 function verify(issuer, profile, verified) {
                     var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
                     parent.debug('AUTH', `OIDC: Configured user: ${JSON.stringify(user)} using ${issuer}`);
                     return verified(null, user);
                 }
-            ));
+            ))});
             authStrategyFlags |= domainAuthStrategyConsts.oidc;
         }
 
