@@ -596,7 +596,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Indicate that this user has a image
                     if (userimage != null) { user.flags = 1; }
 
-                    // Synd the user with LDAP matching user groups
+                    // Sync the user with LDAP matching user groups
                     if (syncExternalUserGroups(domain, user, userMemberships, 'ldap') == true) { userChanged = true; }
 
                     obj.users[user._id] = user;
@@ -6421,8 +6421,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }, handleStrategyLogin);
                 }
 
-                // Generic OpenID
-                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.openid) != 0) {
+                // Generic OpenID Connect
+                if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.oidc) != 0) {
                     obj.app.get(url + 'auth-oidc', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
@@ -6783,14 +6783,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         github: 3,
         reddit: 8,
         azure: 16,
-        openid: 32,
+        oidc: 32,
         saml: 64,
         intelSaml: 128,
         jumpCloudSaml: 256
     }
 
     // Setup auth strategies for a domain
-    function setupDomainAuthStrategy(domain) {
+    async function setupDomainAuthStrategy(domain) {
         // Return the auth strategies that have been setup
         var authStrategyFlags = 0;
 
@@ -6895,26 +6895,35 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Generic OpenID Connect
         if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
+            const OIDCStrategy = require('passport-openidconnect');
             var options = {
                 issuer: domain.authstrategies.oidc.issuer,
-                authorizationURL: domain.authstrategies.oidc.authorizationurl,
-                tokenURL: domain.authstrategies.oidc.tokenurl,
-                userInfoURL: domain.authstrategies.oidc.userinfourl,
                 clientID: domain.authstrategies.oidc.clientid,
                 clientSecret: domain.authstrategies.oidc.clientsecret,
                 scope: ['profile email'],
             };
-            var OIDCStrategy = require('passport-openidconnect');
+            if ((typeof domain.authstrategies.oidc.authorizationurl != 'string') || (typeof domain.authstrategies.oidc.tokenurl != 'string') || (typeof domain.authstrategies.oidc.userinfourl != 'string')) {
+                const Issuer = require('openid-client').Issuer;
+                parent.debug('web', 'Attempting to discover well known endpoints for  ' + options.issuer);
+                var issuer = await Issuer.discover(options.issuer);
+                parent.debug('web', `Discovered from ${issuer.metadata.issuer}:
+                authorization_endpoint - ${issuer.metadata.authorization_endpoint}
+                token_endpoint - ${issuer.metadata.token_endpoint}
+                userinfo_endpoint - ${issuer.metadata.userinfo_endpoint}`);
+            }
+            if (typeof domain.authstrategies.oidc.authorizationurl == 'string') { options.authorizationURL = domain.authstrategies.oidc.authorizationurl; } else { options.authorizationURL = issuer.metadata.authorization_endpoint; }
+            if (typeof domain.authstrategies.oidc.tokenurl == 'string') { options.tokenURL = domain.authstrategies.oidc.tokenurl; } else { options.tokenURL = issuer.metadata.token_endpoint; }
+            if (typeof domain.authstrategies.oidc.userinfourl == 'string') { options.userInfoURL = domain.authstrategies.oidc.userinfourl; } else { options.userInfoURL = issuer.metadata.userinfo_endpoint; }
             if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
             parent.debug('web', 'Adding Generic OIDC SSO with options: ' + JSON.stringify(options));
             passport.use('oidc-' + domain.id, new OIDCStrategy.Strategy(options,
                 function verify(issuer, profile, verified) {
                     var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
-                    parent.debug('AUTH', 'OIDC: Configured user: ' + JSON.stringify(user));
+                    parent.debug('AUTH', `OIDC: Configured user: ${JSON.stringify(user)} using ${issuer}`);
                     return verified(null, user);
                 }
             ));
-            authStrategyFlags |= domainAuthStrategyConsts.openid;
+            authStrategyFlags |= domainAuthStrategyConsts.oidc;
         }
 
         // Generic SAML
