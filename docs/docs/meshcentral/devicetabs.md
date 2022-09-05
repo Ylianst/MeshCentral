@@ -1,5 +1,23 @@
 # Device Tabs
 
+## Search or Filter
+
+You can search your list of agents using any of these criteria using the filter box (also viewable in the tooltip of the Filter box):
+
+user:xxx or u:xxx
+ip:xxx
+group:xxx or g:xxx
+tag:xxx or t:xxx
+atag:xxx or a:xxx
+os:xxx
+amt:xxx
+desc:xxx
+wsc:ok
+wsc:noav
+wsc:noupdate
+wsc:nofirewall
+wsc:any
+
 ## General
 
 For viewing general information about the agent
