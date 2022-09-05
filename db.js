@@ -307,7 +307,7 @@ module.exports.CreateDB = function (parent, func) {
                     validIdentifiers[docs[i]._id] = 1;
                 }
             }
-            
+
             // Fix all of the creating & login to ticks by seconds, not milliseconds.
             obj.GetAllType('user', function (err, docs) {
                 if (err != null) { parent.debug('db', 'ERROR (GetAll user): ' + err); }
@@ -675,7 +675,7 @@ module.exports.CreateDB = function (parent, func) {
         obj.file = new sqlite3.Database(parent.path.join(parent.datapath, 'meshcentral.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
                 // Database needs to be created
-                obj.file = new sqlite3.Database(parent.path.join(parent.datapath, 'meshcentral.sqlite'), function(err) {
+                obj.file = new sqlite3.Database(parent.path.join(parent.datapath, 'meshcentral.sqlite'), function (err) {
                     if (err) { console.log("SQLite Error: " + err); exit(1); return; }
                     obj.file.exec(`
                         CREATE TABLE main (id VARCHAR(256) PRIMARY KEY NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON);
@@ -724,7 +724,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.file.indexes.create('meshcenral', 'intelamt.uuid');
             obj.file.indexes.create('events', 'userid', { include: ['action'] });
             obj.file.indexes.create('events', 'domain', { include: ['nodeid', 'time'] });
-            obj.file.indexes.create('events', 'ids', { include: ['time'] }); 
+            obj.file.indexes.create('events', 'ids', { include: ['time'] });
             obj.file.indexes.create('events', 'time');
             obj.file.indexes.create('power', 'nodeid', { include: ['time'] });
             obj.file.indexes.create('power', 'time');
@@ -743,7 +743,7 @@ module.exports.CreateDB = function (parent, func) {
 
         try {
             if (connectinArgs.ssl) {
-                if (connectinArgs.ssl.dontcheckserveridentity == true) { connectionObject.ssl.checkServerIdentity = function(name, cert) { return undefined; } };
+                if (connectinArgs.ssl.dontcheckserveridentity == true) { connectionObject.ssl.checkServerIdentity = function (name, cert) { return undefined; } };
                 if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
                 if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
                 if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
@@ -828,6 +828,11 @@ module.exports.CreateDB = function (parent, func) {
     } else if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = 3;
+
+        // If running an older NodeJS version, TextEncoder/TextDecoder is required
+        if (global.TextEncoder == null) { global.TextEncoder = require('util').TextEncoder; }
+        if (global.TextDecoder == null) { global.TextDecoder = require('util').TextDecoder; }
+
         require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
             if (err != null) { console.log("Unable to connect to database: " + err); process.exit(); return; }
             Datastore = client;
