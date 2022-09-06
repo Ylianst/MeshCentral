@@ -15,6 +15,7 @@ nav:
       - 'Debugging': 'meshcentral/debugging.md'
       - 'Device Tabs': 'meshcentral/devicetabs.md'
       - 'Plugins': 'meshcentral/plugins.md'
+      - 'Security': 'meshcentral/security.md'
       - 'Tokens': 'meshcentral/tokens.md'
 
   - Design and Architecture:
