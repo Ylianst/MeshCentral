@@ -565,6 +565,11 @@
               }
             }
           },
+          "ldapSiteAdminGroups": {
+            "type": [ "string", "array" ],
+            "default": null,
+            "description": "When set to a list of LDAP groups, users that are part of one of these groups will be set a site administrator, otherwise site administrator rights will be removed."
+          },
           "ldapUserRequiredGroupMembership": { "type": [ "string", "array" ], "default": null, "description": "A list of LDAP groups. Users must be part of at least one of these groups to allow login. If null, all users are allowed to login." },
           "ldapOptions": { "type": "object", "description": "LDAP options passed to ldapauth-fork" },
           "agentInviteCodes": { "type": "boolean", "default": false, "description": "Enabled a feature where you can set one or more invitation codes in a device group. You can then give a invitation link to users who can use it to download the agent." },
@@ -1210,7 +1215,22 @@
                   "tokenURL": { "type": "string", "format": "uri", "description": "If set, this will be used as the token URL. (If set authorizationURL and userInfoURL need set also)" },
                   "userInfoURL": { "type": "string", "format": "uri", "description": "If set, this will be used as the user info URL. (If set authorizationURL and tokenURL need set also)" },
                   "logouturl": { "type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link." },
-                  "newAccounts": { "type": "boolean", "default": true }
+                  "newAccounts": { "type": "boolean", "default": true },
+                  "groups": {
+                    "type": "object",
+                    "properties": {
+                      "required": { "type": [ "string", "array" ], "description": "When set, the user must be part of one of the OIDC user groups to login to MeshCentral." },
+                      "siteadmin": { "type": [ "string", "array" ], "description": "When set, users part of these groups will be promoted with site administrator in MeshCentral, users that are not part of these groups will be demoted." },
+                      "sync": {
+                        "type": [ "boolean", "object" ],
+                        "description": "Allows some or all ODIC user groups to be mirrored within MeshCentral as user groups.",
+                        "properties": {
+                          "enabled": { "type": "boolean", "default": false },
+                          "filter": { "type": [ "string", "array" ], "description": "When set, limits what OIDC groups are mirrored into MeshCentral user groups." }
+                        }
+                      }
+                    }
+                  }
                 },
                 "required": [ "issuer", "clientid", "clientsecret", "callbackURL" ]
               }
