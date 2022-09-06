@@ -796,13 +796,9 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Local console tracing
-        var debugOptions = [obj.args.debug];
-        if (config.settings.debug) { debugOptions.push(config.settings.debug) } 
-        debugOptions.forEach((option) => {
-            if (typeof option == 'string') { obj.debugSources = option.toLowerCase().split(','); }
-            else if (typeof option == 'object') { obj.debugSources = option; }
-            else if (option === true) { obj.debugSources = '*'; } 
-        });
+        if (typeof obj.args.debug == 'string') { obj.debugSources = obj.args.debug.toLowerCase().split(','); }
+        else if (typeof obj.args.debug == 'object') { obj.debugSources = obj.args.debug; }
+        else if (obj.args.debug === true) { obj.debugSources = '*'; }
 
         require('./db.js').CreateDB(obj,
             function (db) {
