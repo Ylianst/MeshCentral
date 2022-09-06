@@ -81,3 +81,21 @@ If you want to self-sign the mesh agent so you can whitelist the software in you
 
 !!!note
     If you generate your private key on windows with use `BEGIN PRIVATE KEY` and openssl needs `BEGIN RSA PRIVATE KEY` you can convert your private key to rsa private key using `openssl rsa -in server.key -out server_new.key`
+
+## Setting Agent File info
+
+Now that MeshCentral customizes and signs the agent, you can set that value to anything you like.
+
+```json
+"domains": {
+      "agentFileInfo": {
+            "filedescription": "sample_filedescription",
+            "fileversion": "0.1.2.3",
+            "internalname": "sample_internalname",
+            "legalcopyright": "sample_legalcopyright",
+            "originalfilename": "sample_originalfilename",
+            "productname": "sample_productname",
+            "productversion": "v0.1.2.3"
+      }
+}
+```
