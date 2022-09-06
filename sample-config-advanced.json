@@ -520,7 +520,15 @@
           "tokenURL": "https://sso.server.com/api/oidc/token",
           "userInfoURL": "https://sso.server.com/api/oidc/userinfo",
           "logoutURL": "https://sso.server.com/logout",
-          "newAccounts": true
+          "newAccounts": true,
+          "groups": {
+            "required": [ "groupA", "groupB", "groupC" ],
+            "siteadmin": [ "groupA" ],
+            "sync": {
+              "enable": true,
+              "filter": [ "groupB", "groupC" ]
+            }
+          }
         }
       }
     },
@@ -535,6 +543,7 @@
       "_LDAPUserKey": "uid",
       "_LDAPUserEmail": "otherMail",
       "_LDAPUserGroups": "memberOf",
+      "_LDAPSiteAdminGroups": [ "CN=Domain Admins,CN=Users,DC=sample,DC=com" ],
       "_LDAPUserRequiredGroupMembership": [ "CN=Domain Admins,CN=Users,DC=sample,DC=com" ],
       "_LDAPSyncWithUserGroups": { "filter": [ "CN=Domain Admins" ] },
       "_LDAPOptions": {
