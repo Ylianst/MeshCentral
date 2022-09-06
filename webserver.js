@@ -2492,9 +2492,70 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // This is called after a succesful Oauth to Twitter, Google, GitHub...
     function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
+        const authStrategy = req.user.strategy
         if (domain == null) { return; }
-        parent.debug('web', 'handleStrategyLogin: ' + JSON.stringify(req.user));
+        parent.debug(authStrategy, 'handleStrategyLogin: ' + JSON.stringify(req.user));
         if ((req.user != null) && (req.user.sid != null)) {
+
+            // Check if any group related options exist
+            if (typeof domain.authstrategies[authStrategy].groups !== 'undefined' && domain.authstrategies[authStrategy].groups !== null) {
+                if (typeof req.user.groups !== 'undefined' && req.user.groups !== null) { var userMemberships = req.user.groups; }
+                if (typeof userMemberships == 'string') { userMemberships = [userMemberships]; }
+                if (Array.isArray(userMemberships) == false) { userMemberships = []; }
+                parent.debug(authStrategy, `Groups: Reported User Memberships from IdP: ${userMemberships.join(', ')}`);
+
+                // See if the user is required to be part of a specific group in order to log into this server.
+                if (typeof domain.authstrategies[authStrategy].groups.required !== 'undefined' && domain.authstrategies[authStrategy].groups.required !== null){
+                    if (typeof domain.authstrategies[authStrategy].groups.required == 'string') { domain.authstrategies[authStrategy].groups.required = [domain.authstrategies[authStrategy].groups.required]; }
+                    if (Array.isArray(domain.authstrategies[authStrategy].groups.required) && (domain.authstrategies[authStrategy].groups.required.length > 0)) {
+                        var userMembershipMatch = false;
+                        for (var i in domain.authstrategies[authStrategy].groups.required) {
+                            if (userMemberships.indexOf(domain.authstrategies[authStrategy].groups.required[i]) >= 0) {
+                                userMembershipMatch = true;
+                                parent.debug(authStrategy, `Groups: User found in required group: ${domain.authstrategies[authStrategy].groups.required[i]}`);
+                            }
+                        }
+                        if (userMembershipMatch === false) { parent.debug(authStrategy, 'Groups: DENIED - User not found in required group.'); fn('denied'); return;}
+                    }
+                }
+
+                // Check if user is in admin group
+                var siteadminGroup = false
+                if (typeof domain.authstrategies[authStrategy].groups.siteadmin !== 'undefined' && domain.authstrategies[authStrategy].groups.siteadmin !== null) {
+                    if (typeof domain.authstrategies[authStrategy].groups.siteadmin == 'string') { domain.authstrategies[authStrategy].groups.siteadmin = [domain.authstrategies[authStrategy].groups.siteadmin]; }
+                    if (Array.isArray(domain.authstrategies[authStrategy].groups.siteadmin) && (domain.authstrategies[authStrategy].groups.siteadmin.length > 0)) {
+                        for (var i in domain.authstrategies[authStrategy].groups.siteadmin) {
+                            if (userMemberships.indexOf(domain.authstrategies[authStrategy].groups.siteadmin[i]) >= 0) { 
+                                siteadminGroup = true;
+                            }
+                        }
+                    }
+                }
+
+                // See if we need to sync user-memberships (IdP) with user-groups (meshcentral)
+                if (domain.authstrategies[authStrategy].groups.sync.enabled === true || domain.authstrategies[authStrategy].groups.sync === true) {
+                    if (domain.authstrategies[authStrategy].groups.sync === true) { domain.authstrategies[authStrategy].groups.sync = {"enabled":true}; }
+                    if (typeof domain.authstrategies[authStrategy].groups.sync.filter !== 'undefined' && domain.authstrategies[authStrategy].groups.sync.filter !== null) {
+                        const filteredMemberships = [];
+                        if (typeof domain.authstrategies[authStrategy].groups.sync.filter == 'string') { domain.authstrategies[authStrategy].groups.sync.filter = [domain.authstrategies[authStrategy].groups.sync.filter]; }
+                        if (Array.isArray(domain.authstrategies[authStrategy].groups.sync.filter)) {
+                            for (var i in userMemberships) {
+                                for (var j in domain.authstrategies[authStrategy].groups.sync.filter) {
+                                    if (userMemberships[i].indexOf(domain.authstrategies[authStrategy].groups.sync.filter[j]) >= 0) { filteredMemberships.push(userMemberships[i]); }
+                                }
+                            }
+                        }
+                        if (Array.isArray(filteredMemberships)) {
+                            if (filteredMemberships.length > 0) {
+                                parent.debug(authStrategy, `Groups: Filtered user memberships from config: ${filteredMemberships.join(', ')}`);
+                            }
+                        } else { 
+                            parent.debug(authStrategy, `Groups: No groups found with filter: ${domain.authstrategies[authStrategy].groups.sync.filter.join(', ')}`); 
+                        }
+                        userMemberships = filteredMemberships;
+                    }
+                }
+            }
             const userid = 'user/' + domain.id + '/' + req.user.sid;
             var user = obj.users[userid];
             if (user == null) {
@@ -2504,25 +2565,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (domain.newaccounts === true) { newAccountAllowed = true; }
                 if (obj.common.validateStrArray(domain.newaccountrealms)) { newAccountRealms = domain.newaccountrealms; }
 
-                if ((domain.authstrategies != null) && (domain.authstrategies[req.user.strategy] != null)) {
-                    if (domain.authstrategies[req.user.strategy].newaccounts === true) { newAccountAllowed = true; }
-                    if (obj.common.validateStrArray(domain.authstrategies[req.user.strategy].newaccountrealms)) { newAccountRealms = domain.authstrategies[req.user.strategy].newaccountrealms; }
+                if ((domain.authstrategies != null) && (domain.authstrategies[authStrategy] != null)) {
+                    if (domain.authstrategies[authStrategy].newaccounts === true) { newAccountAllowed = true; }
+                    if (obj.common.validateStrArray(domain.authstrategies[authStrategy].newaccountrealms)) { newAccountRealms = domain.authstrategies[req.user.strategy].newaccountrealms; }
                 }
 
                 if (newAccountAllowed === true) {
                     // Create the user
-                    parent.debug('web', 'handleStrategyLogin: creating new user: ' + userid);
+                    parent.debug(authStrategy, 'handleStrategyLogin: creating new user: ' + userid);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
-                    if (domain.authstrategies[req.user.strategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[req.user.strategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
+                    if (domain.authstrategies[authStrategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[req.user.strategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
                     if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
                     obj.users[userid] = user;
 
                     // Auto-join any user groups
                     var newaccountsusergroups = null;
                     if (typeof domain.newaccountsusergroups == 'object') { newaccountsusergroups = domain.newaccountsusergroups; }
-                    if (typeof domain.authstrategies[req.user.strategy].newaccountsusergroups == 'object') { newaccountsusergroups = domain.authstrategies[req.user.strategy].newaccountsusergroups; }
+                    if (typeof domain.authstrategies[authStrategy].newaccountsusergroups == 'object') { newaccountsusergroups = domain.authstrategies[req.user.strategy].newaccountsusergroups; }
                     if (newaccountsusergroups) {
                         for (var i in newaccountsusergroups) {
                             var ugrpid = newaccountsusergroups[i];
@@ -2545,6 +2606,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
 
+                
+                    // Sync the user groups if enabled
+                    if (domain.authstrategies[authStrategy].groups.sync.enabled === true) { syncExternalUserGroups(domain, user, userMemberships, authStrategy) }
+
+                    // See if the user is a member of the site admin group.
+                    if (typeof domain.authstrategies[authStrategy].groups.siteadmin !== 'undefined' && domain.authstrategies[authStrategy].groups.siteadmin !== null)
+                    if (siteadminGroup === true && user.siteadmin != 4294967295) {
+                        parent.debug(authStrategy, `Groups: GRANTING ADMIN PRIVLEGE - User found in admin group: ${domain.authstrategies[authStrategy].groups.siteadmin[i]}`); 
+                        user.siteadmin = 4294967295;
+                    }
+
                     // Save the user
                     obj.db.SetUser(user);
 
@@ -2565,18 +2637,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.parent.DispatchEvent(targets, obj, loginEvent);
                 } else {
                     // New users not allowed
-                    parent.debug('web', 'handleStrategyLogin: Can\'t create new accounts');
+                    parent.debug(authStrategy, 'handleStrategyLogin: Can\'t create new accounts');
                     req.session.loginmode = 1;
                     req.session.messageid = 100; // Unable to create account.
                     res.redirect(domain.url + getQueryPortion(req));
                     return;
                 }
-            } else {
-                // Login success
-                var userChange = false;
-                if ((req.user.name != null) && (req.user.name != user.name)) { user.name = req.user.name; userChange = true; }
-                if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = true; userChange = true; }
-                if (userChange) {
+            } else { // Login success
+                // Check for basic changes
+                var userChanged = false;
+                if ((req.user.name != null) && (req.user.name != user.name)) { user.name = req.user.name; userChanged = true; }
+                if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = true; userChanged = true; }
+            
+                // Sync the user groups if enabled
+                if (domain.authstrategies[authStrategy].groups.sync.enabled === true) { syncExternalUserGroups(domain, user, userMemberships, authStrategy) }
+
+                // See if the user is a member of the site admin group.
+                if (typeof domain.authstrategies[authStrategy].groups.siteadmin !== 'undefined' && domain.authstrategies[authStrategy].groups.siteadmin !== null) {
+                    if (siteadminGroup === true && user.siteadmin != 4294967295) {
+                        parent.debug(authStrategy, 'Groups: GRANTING ADMIN PRIVLEGE - User found in admin group.'); 
+                        user.siteadmin = 4294967295;
+                        userChanged = true;
+                    } else if (siteadminGroup === false && user.siteadmin == 4294967295) {
+                        parent.debug(authStrategy, 'Groups: REVOKING ADMIN PRIVLEGE - User NOT found in admin group!'); 
+                        user.siteadmin = null;
+                        userChanged = true;
+                    }
+                }
+
+                // Update db record for user if there are changes detected
+                if (userChanged) {
                     obj.db.SetUser(user);
 
                     // Event user change
@@ -2585,7 +2675,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                     parent.DispatchEvent(targets, obj, event);
                 }
-                parent.debug('web', 'handleStrategyLogin: succesful login: ' + userid);
+                parent.debug(authStrategy, 'handleStrategyLogin: succesful login: ' + userid);
                 req.session.userid = userid;
                 setSessionRandom(req);
 
@@ -2596,7 +2686,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
             }
-        }
+        } else { parent.debug('warn', 'handleStrategyLogin: FAILED - No user'); }
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
@@ -6895,33 +6985,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Generic OpenID Connect
         if ((typeof domain.authstrategies.oidc == 'object') && (typeof domain.authstrategies.oidc.clientid == 'string') && (typeof domain.authstrategies.oidc.clientsecret == 'string') && (typeof domain.authstrategies.oidc.issuer == 'string')) {
-            const OIDCStrategy = require('passport-openidconnect');
+            const OIDCStrategy = require('@mstrhakr/passport-openidconnect');
             var options = {
                 issuer: domain.authstrategies.oidc.issuer,
                 clientID: domain.authstrategies.oidc.clientid,
                 clientSecret: domain.authstrategies.oidc.clientsecret,
-                scope: ['profile email'],
+                scope: ['profile', 'email', 'groups'],
             };
             async function discoverOptions(options){
                 if ((typeof domain.authstrategies.oidc.authorizationurl != 'string') || (typeof domain.authstrategies.oidc.tokenurl != 'string') || (typeof domain.authstrategies.oidc.userinfourl != 'string')) {
                     const Issuer = require('openid-client').Issuer;
-                    parent.debug('web', 'Attempting to discover well known endpoints for  ' + options.issuer);
+                    parent.debug('oidc', 'Attempting to discover well known endpoints for  ' + options.issuer);
                     var issuer = await Issuer.discover(options.issuer)
                     if (typeof domain.authstrategies.oidc.authorizationurl == 'string') { options.authorizationURL = domain.authstrategies.oidc.authorizationurl; } else { options.authorizationURL = issuer.metadata.authorization_endpoint; }
                     if (typeof domain.authstrategies.oidc.tokenurl == 'string') { options.tokenURL = domain.authstrategies.oidc.tokenurl; } else { options.tokenURL = issuer.metadata.token_endpoint; }
                     if (typeof domain.authstrategies.oidc.userinfourl == 'string') { options.userInfoURL = domain.authstrategies.oidc.userinfourl; } else { options.userInfoURL = issuer.metadata.userinfo_endpoint; }
                     if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; } else { options.callbackURL = url + 'oidc-callback'; }
+                    parent.debug('oidc', 'Discovered  ' + JSON.stringify(options));
                 }
-                parent.debug('web', 'Discovered  ' + JSON.stringify(options));
-                return options
+                return options;
             }
-            discoverOptions(options).then((options)=>{passport.use('oidc-' + domain.id, new OIDCStrategy.Strategy(options,
-                function verify(issuer, profile, verified) {
-                    var user = { sid: '~oidc:' + profile.id, name: profile.displayName, email: profile.email, strategy: 'oidc' };
-                    parent.debug('AUTH', `OIDC: Configured user: ${JSON.stringify(user)} using ${issuer}`);
-                    return verified(null, user);
-                }
-            ))});
+            discoverOptions(options).then((options)=>{
+                passport.use('oidc-' + domain.id, new OIDCStrategy.Strategy(options,
+                    function verify(issuer, profile, verified) {
+                        parent.debug('oidc', 'Connecting to ' + issuer + ' with the following options ' + JSON.stringify(options));
+                        var user = { sid: '~oidc:' + profile.id, name: profile.displayName, strategy: 'oidc' };
+                        if ( Array.isArray(profile.emails[0].value) ) { user.email = profile.emails[0].value[0]; } else { user.email = profile.emails[0].value; }
+                        if ( Array.isArray(profile.groups[0].value) ) { user.groups = profile.groups[0].value; } else { user.groups = [profile.groups[0].value]; }
+                        parent.debug('oidc', `Configured: User: ${JSON.stringify(user)} FROM Profile: ${JSON.stringify(profile)}`);
+                        return verified(null, user);
+                    }
+                ))
+            });
             authStrategyFlags |= domainAuthStrategyConsts.oidc;
         }
 
@@ -8821,7 +8916,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function syncExternalUserGroups(domain, user, userMemberships, userMembershipType) {
         var userChanged = false;
         if (user.links == null) { user.links = {}; }
-
+        var authType = userMembershipType
         // Create a user of memberships for this user that type
         var existingUserMemberships = {};
         for (var i in user.links) {
@@ -8835,7 +8930,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var ugrp = obj.userGroups[ugrpid];
             if (ugrp == null) {
                 // This user group does not exist, create it
-                parent.debug('ldap', 'Creating new LDAP user group ' + userMemberships[i] + '.');
+                parent.debug(authType, 'Creating new ' + authType + ' user group ' + userMemberships[i] + '.');
                 ugrp = { type: 'ugrp', _id: ugrpid, name: membership, domain: domain.id, membershipType: userMembershipType, links: {} };
 
                 // Save the new group
@@ -8852,7 +8947,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             if (existingUserMemberships[ugrpid] == null) {
                 // This user is not part of the user group, add it.
-                parent.debug('ldap', 'Adding ' + user.name + ' to LDAP user group ' + userMemberships[i] + '.');
+                parent.debug(authType, 'Adding ' + user.name + ' to ' + authType + ' user group ' + userMemberships[i] + '.');
                 if (user.links == null) { user.links = {}; }
                 user.links[ugrp._id] = { rights: 1 };
                 userChanged = true;
@@ -8882,7 +8977,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Remove the user from any memberships they don't belong to anymore
         for (var ugrpid in existingUserMemberships) {
             var ugrp = obj.userGroups[ugrpid];
-            parent.debug('ldap', 'Removing ' + user.name + ' from LDAP user group ' + ugrp.name + '.');
+            parent.debug(authType, 'Removing ' + user.name + ' from ' + authType + ' user group ' + ugrp.name + '.');
             if ((user.links != null) && (user.links[ugrpid] != null)) {
                 delete user.links[ugrpid];
 
