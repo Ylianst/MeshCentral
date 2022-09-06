@@ -3860,7 +3860,12 @@ var ServerWarnings = {
     17: "SendGrid server has limited use in LAN mode.",
     18: "SMTP server has limited use in LAN mode.",
     19: "SMS gateway has limited use in LAN mode.",
-    20: "Invalid \"LoginCookieEncryptionKey\" in config.json."
+    20: "Invalid \"LoginCookieEncryptionKey\" in config.json.",
+    21: "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
+    22: "Failed to sign agent {0}: {1}",
+    23: "Unable to load agent icon file: {0}.",
+    24: "Unable to load agent logo file: {0}.",
+    25: "This NodeJS version does not support OpenID."
 };
 */
 
@@ -3941,7 +3946,15 @@ function mainStart() {
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
                 if ((typeof config.domains[i].authstrategies.reddit == 'object') && (typeof config.domains[i].authstrategies.reddit.clientid == 'string') && (typeof config.domains[i].authstrategies.reddit.clientsecret == 'string') && (passport.indexOf('passport-reddit') == -1)) { passport.push('passport-reddit'); }
                 if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
-                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (typeof config.domains[i].authstrategies.oidc.clientid == 'string') && (typeof config.domains[i].authstrategies.oidc.clientsecret == 'string') && (typeof config.domains[i].authstrategies.oidc.issuer == 'string') && (passport.indexOf('@mstrhakr/passport-openidconnect') == -1)) { passport.push('@mstrhakr/passport-openidconnect'); passport.push('openid-client'); }
+                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (typeof config.domains[i].authstrategies.oidc.clientid == 'string') && (typeof config.domains[i].authstrategies.oidc.clientsecret == 'string') && (typeof config.domains[i].authstrategies.oidc.issuer == 'string') && (passport.indexOf('@mstrhakr/passport-openidconnect') == -1)) {
+                    if ((nodeVersion >= 17) || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13)) || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15)) || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) {
+                        passport.push('@mstrhakr/passport-openidconnect');
+                        passport.push('openid-client');
+                    } else {
+                        addServerWarning('This NodeJS version does not support OpenID.', 25);
+                        delete config.domains[i].authstrategies.oidc;
+                    }
+                }
                 if ((typeof config.domains[i].authstrategies.saml == 'object') || (typeof config.domains[i].authstrategies.jumpcloud == 'object')) { passport.push('passport-saml'); }
             }
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
