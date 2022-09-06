@@ -52,10 +52,6 @@ This is because by default MeshCentral is using a self-signed certificate that i
   
 - Click on “Advanced”, “Proceed to <http://serverIP> (unsafe)”
   
-  To proceed on Internet Explorer 11,
-
-- Click “Continue to this website (not recommended)”
-
 Note: You can also get to a device by specifying the device name in the URL by adding `?viewmode=10&gotodevicename=MyComputer` to the URL of the MeshCentral web page. The new `gotodevicename` will find a device with the specified name and navigate to that device’s page. This is perfect for integrating MeshCentral with other solutions but be aware that a computer name is not a unique identifier and so, `&gotonode=` is always the preferred way to access a device. This feature also works on the mobile web site.
 
 ### Create Account
