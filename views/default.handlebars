@@ -2322,6 +2322,7 @@
                     break;
                 }
                 case 'serverwarnings': {
+                    console.log(message);
                     if ((message.warnings != null) && (message.warnings.length > 0)) {
                         var ServerWarnings = {
                             1: "MeshCentral SSH support requires NodeJS 11 or higher.",
@@ -2347,7 +2348,8 @@
                             21: "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
                             22: "Failed to sign agent {0}: {1}",
                             23: "Unable to load agent icon file: {0}.",
-                            24: "Unable to load agent logo file: {0}."
+                            24: "Unable to load agent logo file: {0}.",
+                            25: "This NodeJS version does not support OpenID."
                         };
                         var x = '';
                         for (var i in message.warnings) {
@@ -2356,7 +2358,7 @@
                                 x += '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + y + '</b></div>';
                             } else {
                                 var z = ServerWarnings[y.id];
-                                if (z == null) { z = y.msg; } else { z = format(z, ...y.args); }
+                                if (z == null) { z = y.msg; } else { if (y.args != null) { z = format(z, ...y.args); } }
                                 x += '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + z + '</b></div>';
                             }
                         }
