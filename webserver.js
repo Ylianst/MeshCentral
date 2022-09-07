@@ -199,7 +199,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.wsPeerSessions3 = {};         // ServerId --> UserId --> [ SessionId ]
     obj.sessionsCount = {};           // Merged session counters, used when doing server peering. UserId --> SessionCount
     obj.wsrelays = {};                // Id -> Relay
-    obj.desktoprelays = {};           // Id -> Desktop Multiplexor Relay
+    obj.desktoprelays = {};           // Id -> Desktop Multiplexer Relay
     obj.wsPeerRelays = {};            // Id -> { ServerId, Time }
     var tlsSessionStore = {};         // Store TLS session information for quick resume.
     var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
@@ -239,7 +239,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         for (i in docs) { var u = obj.users[docs[i]._id] = docs[i]; domainUserCount[u.domain]++; }
         for (i in parent.config.domains) {
             if ((parent.config.domains[i].share == null) && (domainUserCount[i] == 0)) {
-                // If newaccounts is set to no new accounts, but no accounts exists, temporarly allow account creation.
+                // If newaccounts is set to no new accounts, but no accounts exists, temporarily allow account creation.
                 //if ((parent.config.domains[i].newaccounts === 0) || (parent.config.domains[i].newaccounts === false)) { parent.config.domains[i].newaccounts = 2; }
                 console.log('Server ' + ((i == '') ? '' : (i + ' ')) + 'has no users, next new account will be site administrator.');
             }
@@ -431,7 +431,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (!user) { fn(new Error('cannot find user')); return; }
                         if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { fn('locked'); return; }
 
-                        // Succesful login token authentication
+                        // Successful login token authentication
                         var loginOptions = { tokenName: loginToken.name, tokenUser: loginToken.tokenUser };
                         if (loginToken.expire != 0) { loginOptions.expire = loginToken.expire; }
                         return fn(null, user._id, null, loginOptions);
@@ -519,9 +519,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Get the email address for this LDAP user
                 var email = null;
-                if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser['mail']) { email = xxuser['mail']; } // Use given feild name or default
+                if (domain.ldapuseremail) { email = xxuser[domain.ldapuseremail]; } else if (xxuser['mail']) { email = xxuser['mail']; } // Use given field name or default
                 if (Array.isArray(email)) { email = email[0]; } // Mail may be multivalued in LDAP in which case, answer is an array. Use the 1st value.
-                if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistant.
+                if (email) { email = email.toLowerCase(); } // it seems some code elsewhere also lowercase the emailaddress, so let's be consistent.
 
                 // Get the real name for this LDAP user
                 var realname = null;
@@ -846,7 +846,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function checkUserOneTimePasswordSkip(domain, user, req, loginOptions) {
         if (parent.config.settings.no2factorauth == true) return null;
 
-        // If this login occured using a login token, no 2FA needed.
+        // If this login occurred using a login token, no 2FA needed.
         if ((loginOptions != null) && (typeof loginOptions.tokenName === 'string')) { return { twoFactorType: 'tokenlogin' }; }
 
         // Check if we can skip 2nd factor auth because of the source IP address
@@ -859,7 +859,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const cookies = req.headers.cookie.split('; ');
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
-                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire feild, assume 30 day timeout.
+                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire field, assume 30 day timeout.
                     if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || checkCookieIp(twoFactorCookie.ip, req.clientIp)) && (twoFactorCookie.userid == user._id)) { return { twoFactorType: 'cookie' }; }
                 }
             }
@@ -870,7 +870,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Return true if this user has 2-step auth active
     function checkUserOneTimePasswordRequired(domain, user, req, loginOptions) {
-        // If this login occured using a login token, no 2FA needed.
+        // If this login occurred using a login token, no 2FA needed.
         if ((loginOptions != null) && (typeof loginOptions.tokenName === 'string')) { return false; }
 
         // Check if we can skip 2nd factor auth because of the source IP address
@@ -883,7 +883,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const cookies = req.headers.cookie.split('; ');
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
-                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire feild, assume 30 day timeout.
+                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire field, assume 30 day timeout.
                     if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || checkCookieIp(twoFactorCookie.ip, req.clientIp)) && (twoFactorCookie.userid == user._id)) { return false; }
                 }
             }
@@ -910,7 +910,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Check 2FA login cookie
         if ((token != null) && (token.startsWith('cookie='))) {
-            var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(token.substring(7)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire feild, assume 30 day timeout.
+            var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(token.substring(7)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire field, assume 30 day timeout.
             if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || checkCookieIp(twoFactorCookie.ip, req.clientIp)) && (twoFactorCookie.userid == user._id)) { func(true, { twoFactorType: 'cookie' }); return; }
         }
 
@@ -1423,7 +1423,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.usernameisemail) { req.body.username = req.body.email; }
 
         // Check if there is domain.newAccountToken, check if supplied token is valid
-        if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
+        if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.newaccountspass != domain.newaccountspass)) {
             parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
             req.session.loginmode = 2;
             req.session.messageid = 103; // Invalid account creation token.
@@ -1863,7 +1863,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Check is email already exists
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
                 if ((err != null) || ((docs.length > 0) && (docs.find(function (u) { return (u._id === req.session.cuserid); }) < 0))) {
-                    // Email already exitst
+                    // Email already exists
                     req.session.messageid = 102; // Existing account with this email address.
                 } else {
                     // Update the user and notify of user email address change
@@ -2515,8 +2515,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
-    // Called when a strategy login occured
-    // This is called after a succesful Oauth to Twitter, Google, GitHub...
+    // Called when a strategy login occurred
+    // This is called after a successful Oauth to Twitter, Google, GitHub...
     function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
         const authStrategy = req.user.strategy
@@ -2817,7 +2817,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             setSessionRandom(req);
         } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
             var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-            //if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // If the cookie if binded to an IP address, check here.
+            //if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // If the cookie is bound to an IP address, check here.
             if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
                 // If a login cookie was provided, setup the session here.
                 parent.debug('web', 'handleRootRequestEx: cookie auth ok.');
@@ -3942,7 +3942,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
                 const doc = docs[0];
 
-                // If this is a recurrent share, check if we are at the currect time to make use of it
+                // If this is a recurrent share, check if we are at the correct time to make use of it
                 if (typeof doc.recurring == 'number') {
                     const now = Date.now();
                     if (now >= doc.startTime) { // We don't want to move the validity window before the start time
@@ -4567,7 +4567,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             tlsock.setEncoding('binary');
                             tlsock.on('error', function (err) { parent.debug('webrelay', "CIRA TLS Connection Error", err); });
 
-                            // Decrypted tunnel from TLS communcation to be forwarded to websocket
+                            // Decrypted tunnel from TLS communication to be forwarded to websocket
                             tlsock.on('data', function (data) {
                                 // AMT/TLS ---> WS
                                 if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
@@ -4615,7 +4615,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     ws.forwardclient.onData = function (ciraconn, data) {
                         //parent.debug('webrelaydata', 'Relay CIRA data to WS', data.length);
 
-                        // Run data thru interceptorp
+                        // Run data thru interceptor
                         if (ws.interceptor) { data = ws.interceptor.processAmtData(data); }
 
                         //console.log('AMT --> WS', Buffer.from(data, 'binary').toString('hex'));
@@ -4633,7 +4633,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     ws.forwardclient.onSendOk = function (ciraconn) { };
                 }
 
-                // When data is received from the web socket, forward the data into the associated CIRA cahnnel.
+                // When data is received from the web socket, forward the data into the associated CIRA channel.
                 // If the CIRA connection is pending, the CIRA channel has built-in buffering, so we are ok sending anyway.
                 ws.on('message', function (data) {
                     //parent.debug('webrelaydata', 'Relay WS data to CIRA', data.length);
@@ -6703,7 +6703,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     const urlCookie = obj.parent.decodeCookie(req.query.c, parent.loginCookieEncryptionKey, 32); // Allow cookies up to 32 minutes old. The web page will renew this cookie every 30 minutes.
                     if (urlCookie == null) { res.sendStatus(404); return; }
 
-                    // Decode the incomign cookie
+                    // Decode the incoming cookie
                     if ((urlCookie.ruserid != null) && (urlCookie.x != null)) {
                         if (parent.webserver.destroyedSessions[urlCookie.ruserid + '/' + urlCookie.x] != null) { res.sendStatus(404); return; }
 
@@ -6853,7 +6853,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Indicates to ExpressJS that the override public folder should be used to serve static files.
             if (parent.config.domains[i].webpublicpath != null) {
-                // Use domain public pathe
+                // Use domain public path
                 obj.app.use(url, obj.express.static(parent.config.domains[i].webpublicpath));
             } else if (obj.parent.webPublicOverridePath != null) {
                 // Use override path
@@ -7154,7 +7154,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // The web relay session is valid, use it
                 relaySession.handleRequest(req, res);
             } else {
-                // No web relay ession with this relay identifier, close the HTTP request.
+                // No web relay session with this relay identifier, close the HTTP request.
                 res.sendStatus(404);
             }
         } else {
