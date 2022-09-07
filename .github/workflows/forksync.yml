@@ -1,0 +1,21 @@
+- name: Fork Sync
+  # You may pin to the exact commit or the version.
+  # uses: tgymnich/fork-sync@0cc6ac48fd51415e7c34e5b8823021bc952a5f5f
+  uses: tgymnich/fork-sync@v1.2.1
+  with:
+    # Owner of the forked repository
+    owner: # optional
+    # Token for the github API
+    github_token: 
+    # Branch to track
+    head: # optional, default is master
+    # Branch to keep updated
+    base: # optional, default is master
+    # Merge method to use
+    merge_method: # optional, default is merge
+    # The title of the pull request
+    pr_title: # optional, default is Fork Sync
+    # The message in the pull request
+    pr_message: # optional
+    # ignore Exceptions
+    ignore_fail: # optional
