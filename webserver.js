@@ -1423,7 +1423,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.usernameisemail) { req.body.username = req.body.email; }
 
         // Check if there is domain.newAccountToken, check if supplied token is valid
-        if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.anewaccountpass != domain.newaccountspass)) {
+        if ((domain.newaccountspass != null) && (domain.newaccountspass != '') && (req.body.newaccountspass != domain.newaccountspass)) {
             parent.debug('web', 'handleCreateAccountRequest: Invalid account creation token');
             req.session.loginmode = 2;
             req.session.messageid = 103; // Invalid account creation token.
