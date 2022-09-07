@@ -2673,19 +2673,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((req.user.name != null) && (req.user.name != user.name)) { user.name = req.user.name; userChanged = true; }
                 if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = true; userChanged = true; }
             
-                // Sync the user groups if enabled
-                if (domain.authstrategies[authStrategy].groups.sync.enabled === true) { syncExternalUserGroups(domain, user, userMemberships, authStrategy) }
+                if (typeof domain.authstrategies[authStrategy].groups == 'object') {
+                    // Sync the user groups if enabled
+                    if ((typeof domain.authstrategies[authStrategy].groups.sync == 'object') && (domain.authstrategies[authStrategy].groups.sync.enabled === true)) { syncExternalUserGroups(domain, user, userMemberships, authStrategy) }
 
-                // See if the user is a member of the site admin group.
-                if ((typeof domain.authstrategies[authStrategy].groups.siteadmin !== 'undefined') && (domain.authstrategies[authStrategy].groups.siteadmin !== null)) {
-                    if ((typeof siteAdminGroup === 'string') && (user.siteadmin !== 0xFFFFFFFF)) {
-                        parent.debug('authlog', `${authStrategy.toUpperCase()}: Granting site admin privilages to user "${user.name}" found in administrator group: ${siteAdminGroup}`); 
-                        user.siteadmin = 0xFFFFFFFF;
-                        userChanged = true;
-                    } else if ((siteAdminGroup === false) && (user.siteadmin === 0xFFFFFFFF)) {
-                        parent.debug('authlog', `${authStrategy.toUpperCase()}: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
-                        delete user.siteadmin;
-                        userChanged = true;
+                    // See if the user is a member of the site admin group.
+                    if ((typeof domain.authstrategies[authStrategy].groups.siteadmin !== 'undefined') && (domain.authstrategies[authStrategy].groups.siteadmin !== null)) {
+                        if ((typeof siteAdminGroup === 'string') && (user.siteadmin !== 0xFFFFFFFF)) {
+                            parent.debug('authlog', `${authStrategy.toUpperCase()}: Granting site admin privilages to user "${user.name}" found in administrator group: ${siteAdminGroup}`); 
+                            user.siteadmin = 0xFFFFFFFF;
+                            userChanged = true;
+                        } else if ((siteAdminGroup === false) && (user.siteadmin === 0xFFFFFFFF)) {
+                            parent.debug('authlog', `${authStrategy.toUpperCase()}: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
+                            delete user.siteadmin;
+                            userChanged = true;
+                        }
                     }
                 }
 
