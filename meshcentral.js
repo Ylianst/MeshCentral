@@ -2455,7 +2455,7 @@ function CreateMeshCentralServer(config, args) {
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
             var eventConnectChange = 0;
-            const state = obj.peerConnectivityByNode[serverid][nodeid];
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
             if (state) {
                 // Change the connection in the node and mesh state lists
                 if ((state.connectivity & connectType) == 0) { state.connectivity |= connectType; eventConnectChange = 1; }
@@ -2553,7 +2553,7 @@ function CreateMeshCentralServer(config, args) {
             // Remove the agent connection from the nodes connection list
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
-            const state = obj.peerConnectivityByNode[serverid][nodeid];
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
             if (state == null) return;
 
             // If existing state exist, remove this connection
