@@ -1,6 +1,6 @@
 # FAQ
 
-## Help! I've been hacked there are weird agents appearing in my Tactical RMM
+## Help! I've been hacked there are weird agents appearing in my MeshCentral Console
 
 No, you haven't.
 
