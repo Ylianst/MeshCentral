@@ -1,6 +1,6 @@
 # FAQ
 
-## Help! I've been hacked there are weird agents appearing in my Tactical RMM
+## Help! I've been hacked there are weird agents appearing in my MeshCentral Console
 
 No, you haven't.
 
@@ -14,7 +14,7 @@ No, you haven't.
 
 4. They ran it against their virtualization testing cluster.
 
-5. You allow anyone to connect to your rmm server (you should look into techniques to hide your server from the internet).
+5. You allow anyone to connect to your server (you should look into techniques to hide your server from the internet).
 
 6. Here are some examples of what that looks like.
 
@@ -25,3 +25,8 @@ You're sure you're typing in everything right, giving it 2FA code and can't logi
 [TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password) is time sensitive, check your time/NTP and make sure it's right (on server and TOTP app device)! :)
 
 ![](images/2022-08-04-18-19-19.png)
+
+# Branding and Customisation
+
+You can brand and customise MeshCentral almost as much as you like without delving into the code, a few changes in the config.json file and uplaoding images can change the way your system looks. Read more [here](https://ylianst.github.io/MeshCentral/meshcentral/#branding-terms-of-use)
+
