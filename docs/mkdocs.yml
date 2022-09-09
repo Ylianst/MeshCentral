@@ -17,7 +17,9 @@ nav:
       - 'Plugins': 'meshcentral/plugins.md'
       - 'Security': 'meshcentral/security.md'
       - 'Tokens': 'meshcentral/tokens.md'
-
+      - 'FAQ': 'meshcentral/faq.md'
+      - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
+      
   - Design and Architecture:
     - design/index.md
 
