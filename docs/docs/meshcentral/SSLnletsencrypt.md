@@ -14,4 +14,4 @@ To check letsencrypt is working properly please use https://letsdebug.net/
 
 Also make sure you have port 80 open and pointing to your meshcentral server, IT WILL NOT work if port 80 isnt open and it HAS to be port 80.
 
-You can read more about Letsencrypt and meshcentral [[https://ylianst.github.io/MeshCentral/meshcentral/#lets-encrypt-support]] here 
+You can read more about Letsencrypt and meshcentral [here] (https://ylianst.github.io/MeshCentral/meshcentral/#lets-encrypt-support). 
