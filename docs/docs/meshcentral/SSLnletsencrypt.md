@@ -1,27 +1,15 @@
 # SSL/Letsencrypt
 
-## Help! I've been hacked there are weird agents appearing in my MeshCentral Console
+## MeshCentral supports SSL using self generated certs, your own certs or Letsencrypt
 
-No, you haven't.
+### To enable Letsencrypt do the following in your config.json file:
 
-1. Your agent installer was scanned by an antivirus.
+1. Under Settings, change `"_redirPort"` to `"redirPort"` and `"_cert" to `"cert": "yourdomain.com",
+2. Under letsencrypt change `"_letsencrypt"` to `"letsencrypt"`, enter your email address at `"email"` and yourdomain.com for `"names"` and change `"production"` to true.
+3. Restart meshcentral and it will get a cert for you, the process will need to restart to apply the cert.
 
-2. It didn't recognize the exe.
+### Useful resources/troubleshooting
 
-3. You have the option enabled to submit unknown applications for analysis.
+To check letsencrypt is working properly please use https://letsdebug.net/
 
-    ![AV Option1](images/faq_av_option1.png)
-
-4. They ran it against their virtualization testing cluster.
-
-5. You allow anyone to connect to your server (you should look into techniques to hide your server from the internet).
-
-6. Here are some examples of what that looks like.
-
-# Can't login on server after first setup
-
-You're sure you're typing in everything right, giving it 2FA code and can't login
-
-[TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password) is time sensitive, check your time/NTP and make sure it's right (on server and TOTP app device)! :)
-
-![](images/2022-08-04-18-19-19.png)
+Also make sure you have port 80 open and pointing to your meshcentral server, IT WILL NOT work if port 80 isnt open and it HAS to be port 80.
