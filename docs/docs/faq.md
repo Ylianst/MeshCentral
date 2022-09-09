@@ -14,7 +14,7 @@ No, you haven't.
 
 4. They ran it against their virtualization testing cluster.
 
-5. You allow anyone to connect to your rmm server (you should look into techniques to hide your server from the internet).
+5. You allow anyone to connect to your server (you should look into techniques to hide your server from the internet).
 
 6. Here are some examples of what that looks like.
 
