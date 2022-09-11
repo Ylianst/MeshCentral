@@ -3094,7 +3094,7 @@
                         }
                       }
                     },
-                    "required": [ "issuer_uri" ],
+                    "required": [ "issuer" ],
                     "additionalProperties": false
                   },
                   "options": { 
@@ -3112,6 +3112,13 @@
                       "passReqToCallback": { "type": "boolean", "description": "Boolean specifying whether the verify function should get the request object as first argument instead.", "default": false},
                       "usePKCE": { "type": ["string", "boolean"], "description": "The PKCE method to use. When 'true' it will resolve based on the issuer metadata, when 'false' no PKCE will be used.", "default": true },
                       "sessionKey": { "type": "string", "description": "Define the property in your session which is used for storing information for the purpose of consuming the authentication response.", "default": "oidc:${Issuer Identifier}" }
+                    }
+                  },
+                  "custom": {
+                    "type": "object",
+                    "properties": {
+                      "preset": { "type": "string", "description": "Uses known issuer information to autofill if set to one of the options", "default": "oidc", "enum": ["oidc","azure","google","reddit","twitter","github"] },
+                      "tenant_id": { "type": "string", "description": "Tenant ID for the Azure AD Directory"}
                     }
                   },
                   "groups": {
