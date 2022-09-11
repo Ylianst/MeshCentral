@@ -2528,7 +2528,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Check if any group related options exist
             var userMemberships = [];
             var siteAdminGroup = null;
-            if (typeof domain.authstrategies[authStrategy].groups === 'object') {
+            if (typeof domain.authstrategies[authStrategy].groups == 'object') {
                 if (Array.isArray(req.user.groups)) { userMemberships = req.user.groups; }
                 else if (typeof req.user.groups == 'string') { userMemberships = [req.user.groups]; }
                 parent.debug('authlog', `${authStrategy.toUpperCase()}: Member Of: ${userMemberships.join(', ')}`);
@@ -2583,6 +2583,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Check if the user already exists
             const userid = 'user/' + domain.id + '/' + req.user.sid;
             var user = obj.users[userid];
+
+            // Azure: Update the old 'unique_name' based user ID with the new 'oid' based one if the user already exists 
+            if (!user && authStrategy == 'azure') {
+                Object.keys(obj.users).forEach((u) => {
+                    if (obj.users[u].email == req.user.email && req.user.verified_primary_email == true && obj.users[u].name == req.user.name && obj.users[u]._id.includes('azure')) {
+                        obj.users[u]._id = 'user/' + domain.id + '/' + req.user.sid; 
+                        user = obj.users[u]
+                        // obj.db.SetUser(user);
+                    }
+                });
+            }
+
             if (user == null) {
                 var newAccountAllowed = false;
                 var newAccountRealms = null;
@@ -2590,9 +2602,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (domain.newaccounts === true) { newAccountAllowed = true; }
                 if (obj.common.validateStrArray(domain.newaccountrealms)) { newAccountRealms = domain.newaccountrealms; }
 
-                if ((domain.authstrategies != null) && (domain.authstrategies[authStrategy] != null)) {
+                if (domain.authstrategies?.[authStrategy]) {
                     if (domain.authstrategies[authStrategy].newaccounts === true) { newAccountAllowed = true; }
-                    if (obj.common.validateStrArray(domain.authstrategies[authStrategy].newaccountrealms)) { newAccountRealms = domain.authstrategies[req.user.strategy].newaccountrealms; }
+                    if (obj.common.validateStrArray(domain.authstrategies[authStrategy].newaccountrealms)) { newAccountRealms = domain.authstrategies[authStrategy].newaccountrealms; }
                 }
 
                 if (newAccountAllowed === true) {
@@ -2601,14 +2613,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
-                    if (domain.authstrategies[authStrategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[req.user.strategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
+                    if (domain.authstrategies[authStrategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[authStrategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
                     if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
                     obj.users[userid] = user;
 
                     // Auto-join any user groups
                     var newaccountsusergroups = null;
                     if (typeof domain.newaccountsusergroups == 'object') { newaccountsusergroups = domain.newaccountsusergroups; }
-                    if (typeof domain.authstrategies[authStrategy].newaccountsusergroups == 'object') { newaccountsusergroups = domain.authstrategies[req.user.strategy].newaccountsusergroups; }
+                    if (typeof domain.authstrategies[authStrategy].newaccountsusergroups == 'object') { newaccountsusergroups = domain.authstrategies[authStrategy].newaccountsusergroups; }
                     if (newaccountsusergroups) {
                         for (var i in newaccountsusergroups) {
                             var ugrpid = newaccountsusergroups[i];
@@ -6941,78 +6953,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         passport.deserializeUser(function (sid, done) { done(null, { sid: sid }); });
         obj.app.use(passport.initialize());
 
-        /*
-        // Twitter
-        if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
-            const TwitterStrategy = require('passport-twitter');
-            var options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
-            if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
-            parent.debug('authlog', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
-            passport.use('twitter-' + domain.id, new TwitterStrategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Twitter profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~twitter:' + profile.id, name: profile.displayName, strategy: 'twitter' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.twitter;
-        }
-
-        // Google
-        if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
-            const GoogleStrategy = require('passport-google-oauth20');
-            var options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
-            if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
-            parent.debug('authlog', 'Adding Google SSO with options: ' + JSON.stringify(options));
-            passport.use('google-' + domain.id, new GoogleStrategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Google profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~google:' + profile.id, name: profile.displayName, strategy: 'google' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.google;
-        }
-
-        // Github
-        if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
-            const GitHubStrategy = require('passport-github2');
-            var options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
-            if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
-            parent.debug('authlog', 'Adding Github SSO with options: ' + JSON.stringify(options));
-            passport.use('github-' + domain.id, new GitHubStrategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Github profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~github:' + profile.id, name: profile.displayName, strategy: 'github' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.github;
-        }
-
-        // Reddit
-        if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) {
-            const RedditStrategy = require('passport-reddit');
-            var options = { clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret };
-            if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.callbackURL = url + 'auth-reddit-callback'; }
-            parent.debug('authlog', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
-            passport.use('reddit-' + domain.id, new RedditStrategy.Strategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Reddit profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~reddit:' + profile.id, name: profile.name, strategy: 'reddit' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.reddit;
-        }
-        */
         // Configure OpenID Connect Authoization
-        if (typeof domain.authstrategies == 'object' && (typeof domain.authstrategies.oidc == 'object' || typeof domain.authstrategies.azure == 'object')) {
-            const metadata = await setupOIDC();
+        var OIDCstrategyPreset = null
+        Object.keys(domain.authstrategies).forEach((strategy)=>{
+            if(['oidc','azure','google','reddit','twitter','github'].includes(strategy)) { OIDCstrategyPreset = strategy }
+        }); 
+        if (OIDCstrategyPreset) {
+            const metadata = await setupOIDC(OIDCstrategyPreset);
             if (metadata === null) { return 0; }
             function verify(tokenset, profile, verified) {
                 parent.debug('authlog', JSON.stringify(tokenset, null, 4),JSON.stringify(profile, null, 4));
@@ -7122,13 +7069,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
-        async function setupOIDC(m){
-            const metadata = m || {
-                "issuer": domain.authstrategies.oidc.issuer || {},
-                "client": domain.authstrategies.oidc.client || {},
-                "options": domain.authstrategies.oidc.options || {},
-                "custom": domain.authstrategies.oidc.custom || {},
-                "OIDC": require('openid-client')
+        async function setupOIDC(OIDCstrategyPreset){
+            const metadata = {
+                'issuer': domain.authstrategies[OIDCstrategyPreset].issuer || {},
+                'client': domain.authstrategies[OIDCstrategyPreset].client || {},
+                'options': domain.authstrategies[OIDCstrategyPreset].options || {},
+                'custom': Object.assign(domain.authstrategies[OIDCstrategyPreset].custom,{ 'preset': OIDCstrategyPreset }),
+                'OIDC': require('openid-client')
             };
             const oldConfigMap = {
                 'strategies': ['oidc','azure','google','github','reddit','twitter'],
@@ -7188,14 +7135,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup presets
             if (!metadata.custom.preset) { metadata.custom.preset = 'oidc'; }
-            var groups = (typeof domain.authstrategies.oidc.groups == 'object')
+            var groups = (typeof domain.authstrategies[metadata.custom.preset]?.groups == 'object')
+            parent.debug('authlog', 'OIDC: Using Preset Configs: ' + metadata.custom.preset);
             switch(metadata.custom.preset){
                 case 'azure':
                     metadata.issuer.issuer = `https://login.microsoftonline.com/${metadata.custom.tenant_id}/v2.0`;
-                    if (groups) { scopeArray.push('groups'); } // I haven't tested this yet. Docs: https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-optional-claims#configuring-groups-optional-claims
+                    if (groups) { scopeArray.push('https://graph.microsoft.com/GroupMember.Read.All groups'); } // I haven't tested this yet. Docs: https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-optional-claims#configuring-groups-optional-claims
+                    break;
                 case 'google':
                     metadata.issuer.issuer = 'https://accounts.google.com/o/oauth2/v2/auth';
-                    if (groups) { scopeArray.push('https://www.googleapis.com/auth/cloud-identity.groups.readonly'); } // I'm not sure if this works
+                    if (groups) { scopeArray.push('groups https://www.googleapis.com/auth/cloud-identity.groups.readonly'); } // I'm not sure if this works
                     break;
                 case 'oidc':
                     if (groups) { scopeArray.push('groups'); }
@@ -7210,6 +7159,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Prepare issuer, client, and options
             if (!metadata.issuer.issuer && metadata.custom.preset == 'oidc') { parent.debug('authlog', `${metadata.custom.preset}: Missing issuer url.`); return null; }
             if (!metadata.client.redirect_uris) { metadata.client.redirect_uris = host + url + 'auth-' + metadata.custom.preset + '-callback'; }
+            parent.debug('authlog', 'OIDC: Discovering Issuer: ' + metadata.issuer.issuer);
             metadata.issuer.object = await metadata.OIDC.Issuer.discover(metadata.issuer.issuer)
             metadata.options = Object.assign(metadata.options, { 'client': new metadata.issuer.object.Client(metadata.client) } );
             try { if (!metadata.custom.logouturl) { metadata.custom.logouturl = metadata.options.client.endSessionUrl() } } catch { metadata.custom.logouturl = metadata.issuer.issuer + '/logout?rd=' + host } 
