@@ -1114,68 +1114,6 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "twitter": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
-                },
-                "required": [ "clientid", "clientsecret" ]
-              },
-              "google": {
-                "type": "object",
-                "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
-                },
-                "required": [ "clientid", "clientsecret" ]
-              },
-              "github": {
-                "type": "object",
-                "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
-                },
-                "required": [ "clientid", "clientsecret" ]
-              },
-              "reddit": {
-                "type": "object",
-                "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
-                },
-                "required": [ "clientid", "clientsecret" ]
-              },
-              "azure": {
-                "type": "object",
-                "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "tenantid": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
-                },
-                "required": [ "clientid", "clientsecret", "tenantid" ]
-              },
               "jumpcloud": {
                 "type": "object",
                 "properties": {
@@ -1185,7 +1123,7 @@
                   "entityid": { "type": "string" },
                   "idpurl": { "type": "string", "format": "uri" },
                   "cert": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "logouturl": {"type": "string", "format": "uri", "description": "When set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "entityid", "idpurl", "cert" ]
               },
@@ -1200,7 +1138,7 @@
                   "entityid": { "type": "string" },
                   "idpurl": { "type": "string", "format": "uri" },
                   "cert": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "logouturl": {"type": "string", "format": "uri", "description": "When set, the user will be redirected to this URL when hitting the logout link."}
                 },
                 "required": [ "entityid", "idpurl", "cert" ]
               },
@@ -1245,7 +1183,7 @@
                       "token_endpoint_auth_signing_alg": { "type": "string" },
                       "introspection_endpoint_auth_signing_alg": { "type": "string" },
                       "revocation_endpoint_auth_signing_alg": { "type": "string" },
-                      "tls_client_certificate_bound_access_tokens": { "type": "boolean" },
+                      "tls_client_certificate_bound_access_tokens": { "type": "boolean" }
                     },
                     "required": [ "client_id", "client_secret" ]
                   },
@@ -1280,7 +1218,7 @@
                         }
                       }
                     },
-                    "required": [ "issuer_uri" ],
+                    "required": [ "issuer" ],
                     "additionalProperties": false
                   },
                   "options": { 
@@ -1300,6 +1238,13 @@
                       "sessionKey": { "type": "string", "description": "Define the property in your session which is used for storing information for the purpose of consuming the authentication response.", "default": "oidc:${Issuer Identifier}" }
                     }
                   },
+                  "custom": {
+                    "type": "object",
+                    "properties": {
+                      "preset": { "type": "string", "description": "Uses known issuer information to autofill if set to one of the options", "default": "oidc", "enum": ["oidc","azure","google","reddit","twitter","github"] },
+                      "tenant_id": { "type": "string", "description": "Tenant ID for the Azure AD Directory"}
+                    }
+                  },
                   "groups": {
                     "type": "object",
                     "properties": {
@@ -1311,7 +1256,7 @@
                         "description": "Allows some or all ODIC user groups to be mirrored within MeshCentral as user groups.",
                         "properties": {
                           "filter": { "type": [ "string", "array" ], "description": "When set, limits what OIDC groups are mirrored into MeshCentral user groups." }
-                        }
+                        },
                       }
                     },
                     "required": [ "sync" ]
@@ -1325,7 +1270,8 @@
                   "logouturl": { "type": "string", "format": "uri", "description": "If set, the user will be redirected to this URL when hitting the logout link." },
                   "newAccounts": { "type": "boolean", "default": true }
                 },
-                "required": [ "issuer", "client" ]
+                "required": [ "client" ],
+                "enum": ["oidc","azure","google","reddit","twitter","github"]
               }
             }
           }
