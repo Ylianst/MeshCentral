@@ -3953,8 +3953,8 @@ function mainStart() {
                         ) { 
                             passport.push('openid-client'); 
                         } else { 
-                            addServerWarning('This NodeJS version does not support OpenID.', 25); 
-                            delete config.domains[i].authstrategies.oidc; 
+                            addServerWarning('This NodeJS version does not support node-openid-client.', 25); 
+                            delete config.domains[i].authstrategies[strategy];
                         }
                     }
                 })
