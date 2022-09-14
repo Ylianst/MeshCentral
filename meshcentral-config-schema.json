@@ -3020,99 +3020,251 @@
               },
               "oidc": {
                 "type": "object",
+                "description": "Enables the use of a custom OIDC issuer to authenicate and authorize your users.",
                 "properties": {
-                  "client": { 
-                    "type": "object",
-                    "description": "OIDC Client Options",
-                    "properties": {
-                      "client_id": { "type": "string" },
-                      "client_secret": { "type": "string" },
-                      "id_token_signed_response_alg": { "type": "string", "default": "RS256" },
-                      "id_token_encrypted_response_alg": { "type": "string" },
-                      "id_token_encrypted_response_enc": { "type": "string" },
-                      "userinfo_signed_response_alg": { "type": "string" },
-                      "userinfo_encrypted_response_alg": { "type": "string" },
-                      "userinfo_encrypted_response_enc": { "type": "string" },
-                      "redirect_uris": { "type": ["string", "array"], "format": "uri" },
-                      "response_types": { "type": ["string", "array"], "default": ["code"] },
-                      "post_logout_redirect_uris": { "type": ["string", "array"], "format": "uri" },
-                      "default_max_age": { "type": "number" },
-                      "require_auth_time": { "type": "boolean", "default": false}, 
-                      "request_object_signing_alg": { "type": "string" },
-                      "request_object_encryption_alg": { "type": "string" },
-                      "request_object_encryption_enc": { "type": "string" },
-                      "token_endpoint_auth_method": {
-                        "type": "string",
-                        "default": "client_secret_basic",
-                        "enum": [ "none", "client_secret_basic", "client_secret_post", "client_secret_jwt", "private_key_jwt" ]
-                      }, 
-                      "introspection_endpoint_auth_method": {
-                        "type": "string",
-                        "default": "client_secret_basic",
-                        "enum": [ "none", "client_secret_basic", "client_secret_post", "client_secret_jwt", "private_key_jwt" ]
-                      }, 
-                      "revocation_endpoint_auth_method": {
-                        "type": "string",
-                        "default": "client_secret_basic",
-                        "enum": [ "none", "client_secret_basic", "client_secret_post", "client_secret_jwt", "private_key_jwt" ]
-                      }, 
-                      "token_endpoint_auth_signing_alg": { "type": "string" },
-                      "introspection_endpoint_auth_signing_alg": { "type": "string" },
-                      "revocation_endpoint_auth_signing_alg": { "type": "string" },
-                      "tls_client_certificate_bound_access_tokens": { "type": "boolean" }
-                    },
-                    "required": [ "client_id", "client_secret" ]
+                  "client": { "$ref": "/schemas/auth/oidc/client" },
+                  "issuer": { "$ref": "/schemas/auth/oidc/issuer" },
+                  "options": { "$ref": "/schemas/auth/oidc/options" },
+                  "groups": { "$ref": "/schemas/auth/groups" },
+                  "callbackURL": { "$ref": "/schemas/auth/callbackURL" },
+                  "certhost": { "$ref": "/schemas/auth/certhost" },
+                  "newAccounts": { "$ref": "/schemas/auth/newAccounts" },
+                  "newAccountsUserGroups": { "$ref": "/schemas/auth/newAccountsUserGroups" },
+                  "clientid": { "$ref": "/schemas/auth/clientid" },
+                  "clientsecret": { "$ref": "/schemas/auth/clientsecret" },
+                  "authorizationURL": { "$ref": "/schemas/auth/oidc/authorizationURL" },
+                  "tokenURL": { "$ref": "/schemas/auth/oidc/tokenURL" },
+                  "userInfoURL": { "$ref": "/schemas/auth/oidc/userInfoURL" },
+                  "scope": { "$ref": "/schemas/auth/oidc/scope" },
+                  "logouturl": { "$ref": "/schemas/auth/logouturl" }
+                },
+                "anyOf": [
+                  { "required": ["certhost", "client", "issuer"] },
+                  { "required": ["certhost", "clientid", "clientsecret", "tenantid"] },
+                  { "required": ["certhost", "client", "tenantid"] }
+                ],
+                "additionalProperties": false
+              },
+              "azure": {
+                "type": "object",
+                "description": "Enables the use of a custom OIDC issuer to authenicate and authorize your users.",
+                "properties": {
+                  "client": { "$ref": "/schemas/auth/oidc/client" },
+                  "issuer": { "$ref": "/schemas/auth/oidc/issuer" },
+                  "options": { "$ref": "/schemas/auth/oidc/options" },
+                  "groups": { "$ref": "/schemas/auth/groups" },
+                  "callbackURL": { "$ref": "/schemas/auth/callbackURL" },
+                  "updateOldUsers": { "$ref": "/schemas/auth/azure/updateOldUsers" },
+                  "tenantid": { "$ref": "/schemas/auth/azure/tenantid" },
+                  "newAccounts": { "$ref": "/schemas/auth/newAccounts" },
+                  "newAccountsUserGroups": { "$ref": "/schemas/auth/newAccountsUserGroups" },
+                  "clientid": { "$ref": "/schemas/auth/clientid" },
+                  "clientsecret": { "$ref": "/schemas/auth/clientsecret" },
+                  "logouturl": { "$ref": "/schemas/auth/logouturl" }
+                },
+                "anyOf": [
+                  { "required": ["certhost", "client", "issuer"] },
+                  { "required": ["certhost", "clientid", "clientsecret", "tenantid"] },
+                  { "required": ["certhost", "client", "tenantid"] }
+                ],
+                "additionalProperties": false
+              },
+              "twitter": {
+                "type": "object",
+                "properties": {
+                  "client": { "$ref": "/schemas/auth/oidc/client" },
+                  "issuer": { "$ref": "/schemas/auth/oidc/issuer" },
+                  "options": { "$ref": "/schemas/auth/oidc/options" },
+                  "groups": { "$ref": "/schemas/auth/groups" },
+                  "callbackURL": { "$ref": "/schemas/auth/callbackURL" },
+                  "newAccounts": { "$ref": "/schemas/auth/newAccounts" },
+                  "newAccountsUserGroups": { "$ref": "/schemas/auth/newAccountsUserGroups" },
+                  "clientid": { "$ref": "/schemas/auth/clientid" },
+                  "clientsecret": { "$ref": "/schemas/auth/clientsecret" },
+                  "logouturl": { "$ref": "/schemas/auth/logouturl" }
+                },
+                "anyOf": [
+                  { "required": ["certhost", "client", "issuer"] },
+                  { "required": ["certhost", "clientid", "clientsecret"] },
+                  { "required": ["certhost", "client"] }
+                ],
+                "additionalProperties": false
+              },
+              "google": {
+                "type": "object",
+                "properties": {
+                  "client": { "$ref": "/schemas/auth/oidc/client" },
+                  "issuer": { "$ref": "/schemas/auth/oidc/issuer" },
+                  "options": { "$ref": "/schemas/auth/oidc/options" },
+                  "groups": { "$ref": "/schemas/auth/groups" },
+                  "callbackURL": { "$ref": "/schemas/auth/callbackURL" },
+                  "newAccounts": { "$ref": "/schemas/auth/newAccounts" },
+                  "newAccountsUserGroups": { "$ref": "/schemas/auth/newAccountsUserGroups" },
+                  "clientid": { "$ref": "/schemas/auth/clientid" },
+                  "clientsecret": { "$ref": "/schemas/auth/clientsecret" },
+                  "logouturl": { "$ref": "/schemas/auth/logouturl" }
+                },
+                "anyOf": [
+                  { "required": ["certhost", "client", "issuer"] },
+                  { "required": ["certhost", "clientid", "clientsecret"] },
+                  { "required": ["certhost", "client"] }
+                ],
+                "additionalProperties": false
+              },
+              "github": {
+                "type": "object",
+                "properties": {
+                  "client": { "$ref": "/schemas/auth/oidc/client" },
+                  "issuer": { "$ref": "/schemas/auth/oidc/issuer" },
+                  "options": { "$ref": "/schemas/auth/oidc/options" },
+                  "groups": { "$ref": "/schemas/auth/groups" },
+                  "callbackURL": { "$ref": "/schemas/auth/callbackURL" },
+                  "newAccounts": { "$ref": "/schemas/auth/newAccounts" },
+                  "newAccountsUserGroups": { "$ref": "/schemas/auth/newAccountsUserGroups" },
+                  "clientid": { "$ref": "/schemas/auth/clientid" },
+                  "clientsecret": { "$ref": "/schemas/auth/clientsecret" },
+                  "logouturl": { "$ref": "/schemas/auth/logouturl" }
+                },
+                "anyOf": [
+                  { "required": ["certhost", "client", "issuer"] },
+                  { "required": ["certhost", "clientid", "clientsecret"] },
+                  { "required": ["certhost", "client"] }
+                ],
+                "additionalProperties": false
+              },
+              "reddit": {
+                "type": "object",
+                "properties": {
+                  "client": { "$ref": "/schemas/auth/oidc/client" },
+                  "issuer": { "$ref": "/schemas/auth/oidc/issuer" },
+                  "options": { "$ref": "/schemas/auth/oidc/options" },
+                  "groups": { "$ref": "/schemas/auth/groups" },
+                  "callbackURL": { "$ref": "/schemas/auth/callbackURL" },
+                  "clientid": { "$ref": "/schemas/auth/clientid" },
+                  "clientsecret": { "$ref": "/schemas/auth/clientsecret" },
+                  "logouturl": { "$ref": "/schemas/auth/logouturl" }
+                },
+                "anyOf": [
+                  { "required": ["certhost", "client", "issuer"] },
+                  { "required": ["certhost", "clientid", "clientsecret"] },
+                  { "required": ["certhost", "client"] }
+                ],
+                "additionalProperties": false
+              },
+              "$defs": {
+                "tenantid": { "$id": "/schemas/auth/azure/tenantid", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "description": "Tenant ID for the Azure AD Directory. Only available to the azure preset"},
+                "updateOldUsers": { "$id": "/schemas/auth/azure/updateOldUsers", "$schema": "http://json-schema.org/draft-04/schema#", "type": "boolean", "description": "Enable to migrate users from old 'unique-name' ID style to new 'sub' based ID style. Only available to the azure preset"},
+                "certhost": { "$id": "/schemas/auth/certhost", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "description": "The hostname for meschcentral that has a valid certificate" },
+                "newAccounts": { "$id": "/schemas/auth/newAccounts", "$schema": "http://json-schema.org/draft-04/schema#", "type": "boolean", "description": "Enable the creation of new accounts based upon Idp Authorization", "default": true },
+                "newAccountsUserGroups": { "$id": "/schemas/auth/newAccountsUserGroups", "$schema": "http://json-schema.org/draft-04/schema#", "type": [ "string", "array" ], "description": "Add all new users to these static MeshCentral user groups. Use this if the new groups section does not work with your preset.", "uniqueItems": true, "items": { "type": "string" } },
+                "newAccountsRights": { "$id": "/schemas/auth/saml/newAccountsRights", "$schema": "http://json-schema.org/draft-04/schema#", "type": ["array", "string"], "uniqueItems": true, "items": { "type": "string" } },
+                "clientid": { "$id": "/schemas/auth/clientid", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "depreciated": true, "description": "REPLACED WITH 'client.client_id'" },
+                "clientsecret": { "$id": "/schemas/auth/clientsecret", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "description": "REPLACED WITH 'client.client_secret'" },
+                "authorizationURL": { "$id": "/schemas/auth/oidc/authorizationURL", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "format": "uri", "depreciated": true, "description": "REPLACED WITH 'issuer.authorization_endpoint'" },
+                "tokenURL": { "$id": "/schemas/auth/oidc/tokenURL", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "format": "uri", "depreciated": true, "description": "REPLACED WITH 'issuer.token_endpoint': If set, this will be used as the token URL." },
+                "userInfoURL": { "$id": "/schemas/auth/oidc/userInfoURL", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "format": "uri", "depreciated": true, "description": "REPLACED WITH 'issuer.userinfo_endpoint': If set, this will be used as the user info URL." },
+                "scope": { "$id": "/schemas/auth/oidc/scope", "$schema": "http://json-schema.org/draft-04/schema#", "type": ["string", "array"], "depreciated": true, "description": "REPLACED WITH 'options.params.scope'" },
+                "entityid": { "$id": "/schemas/auth/saml/entityid", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string" },
+                "idpurl": { "$id": "/schemas/auth/saml/idpurl", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "format": "uri" },
+                "callbackURL": { "$id": "/schemas/auth/callbackURL", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "format": "uri", "depreciated": true, "description": "REPLACED WITH 'end_session_endpoint': If set, this is the URL that your IdP sends auth approval to." },
+                "logouturl": { "$id": "/schemas/auth/logouturl", "$schema": "http://json-schema.org/draft-04/schema#", "type": "string", "format": "uri", "depreciated": true, "description": "REPLACED WITH 'issuer.end_session_endpoint'" },
+                "client": { 
+                  "$id": "/schemas/auth/oidc/client",
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "description": "OIDC Client Options",
+                  "properties": {
+                    "client_id": { "type": "string" },
+                    "client_secret": { "type": "string" },
+                    "id_token_signed_response_alg": { "type": "string", "default": "RS256" },
+                    "id_token_encrypted_response_alg": { "type": "string" },
+                    "id_token_encrypted_response_enc": { "type": "string" },
+                    "userinfo_signed_response_alg": { "type": "string" },
+                    "userinfo_encrypted_response_alg": { "type": "string" },
+                    "userinfo_encrypted_response_enc": { "type": "string" },
+                    "redirect_uris": { "type": ["string", "array"], "format": "uri" },
+                    "response_types": { "type": ["string", "array"], "default": ["code"] },
+                    "post_logout_redirect_uris": { "type": ["string", "array"], "format": "uri" },
+                    "default_max_age": { "type": "number" },
+                    "require_auth_time": { "type": "boolean", "default": false}, 
+                    "request_object_signing_alg": { "type": "string" },
+                    "request_object_encryption_alg": { "type": "string" },
+                    "request_object_encryption_enc": { "type": "string" },
+                    "token_endpoint_auth_method": {
+                      "type": "string",
+                      "default": "client_secret_basic",
+                      "enum": [ "none", "client_secret_basic", "client_secret_post", "client_secret_jwt", "private_key_jwt" ]
+                    }, 
+                    "introspection_endpoint_auth_method": {
+                      "type": "string",
+                      "default": "client_secret_basic",
+                      "enum": [ "none", "client_secret_basic", "client_secret_post", "client_secret_jwt", "private_key_jwt" ]
+                    }, 
+                    "revocation_endpoint_auth_method": {
+                      "type": "string",
+                      "default": "client_secret_basic",
+                      "enum": [ "none", "client_secret_basic", "client_secret_post", "client_secret_jwt", "private_key_jwt" ]
+                    }, 
+                    "token_endpoint_auth_signing_alg": { "type": "string" },
+                    "introspection_endpoint_auth_signing_alg": { "type": "string" },
+                    "revocation_endpoint_auth_signing_alg": { "type": "string" },
+                    "tls_client_certificate_bound_access_tokens": { "type": "boolean" }
                   },
-                  "issuer": { 
-                    "type": ["string","object"],
-                    "format": "uri",
-                    "description": "Issuer Options",
-                    "properties": {
-                      "issuer": { "type": "string", "format": "uri" },
-                      "authorization_endpoint": { "type": "string", "format": "uri" },
-                      "token_endpoint": { "type": "string", "format": "uri" },
-                      "jwks_uri": { "type": "string", "format": "uri" },
-                      "userinfo_endpoint": { "type": "string", "format": "uri" },
-                      "revocation_endpoint": { "type": "string", "format": "uri" },
-                      "introspection_endpoint": { "type": "string", "format": "uri" },
-                      "end_session_endpoint": { "type": "string", "format": "uri" },
-                      "registration_endpoint": { "type": "string", "format": "uri" },
-                      "token_endpoint_auth_methods_supported": { "type": "string" },
-                      "token_endpoint_auth_signing_alg_values_supported": { "type": "string" },
-                      "introspection_endpoint_auth_methods_supported": { "type": "string" },
-                      "introspection_endpoint_auth_signing_alg_values_supported": { "type": "string" },
-                      "revocation_endpoint_auth_methods_supported": { "type": "string" },
-                      "revocation_endpoint_auth_signing_alg_values_supported": { "type": "string" },
-                      "request_object_signing_alg_values_supported": { "type": "string" },
-                      "mtls_endpoint_aliases": {
-                        "type":"object",
-                        "properties": {
-                          "token_endpoint": { "type": "string", "format": "uri" },
-                          "userinfo_endpoint": { "type": "string", "format": "uri" },
-                          "revocation_endpoint": { "type": "string", "format": "uri" },
-                          "introspection_endpoint": { "type": "string", "format": "uri" }
-                        }
+                  "required": [ "client_id", "client_secret" ],
+                  "additionalProperties": false
+                },
+                "issuer": { 
+                  "$id": "/schemas/auth/oidc/issuer",
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": ["string","object"],
+                  "format": "uri",
+                  "description": "Set to string if using issuer discovery, else set as object to configure adavnced Issuer options. Omit if using preset",
+                  "properties": {
+                    "issuer": { "type": "string", "format": "uri" },
+                    "authorization_endpoint": { "type": "string", "format": "uri", "description": "If set, this will be used as the authorization URL." },
+                    "token_endpoint": { "type": "string", "format": "uri" },
+                    "jwks_uri": { "type": "string", "format": "uri" },
+                    "userinfo_endpoint": { "type": "string", "format": "uri" },
+                    "revocation_endpoint": { "type": "string", "format": "uri" },
+                    "introspection_endpoint": { "type": "string", "format": "uri" },
+                    "end_session_endpoint": { "type": "string", "format": "uri", "description": "If set, the user will be redirected to this URL when hitting the logout link." },
+                    "registration_endpoint": { "type": "string", "format": "uri" },
+                    "token_endpoint_auth_methods_supported": { "type": "string" },
+                    "token_endpoint_auth_signing_alg_values_supported": { "type": "string" },
+                    "introspection_endpoint_auth_methods_supported": { "type": "string" },
+                    "introspection_endpoint_auth_signing_alg_values_supported": { "type": "string" },
+                    "revocation_endpoint_auth_methods_supported": { "type": "string" },
+                    "revocation_endpoint_auth_signing_alg_values_supported": { "type": "string" },
+                    "request_object_signing_alg_values_supported": { "type": "string" },
+                    "mtls_endpoint_aliases": {
+                      "type":"object",
+                      "properties": {
+                        "token_endpoint": { "type": "string", "format": "uri" },
+                        "userinfo_endpoint": { "type": "string", "format": "uri" },
+                        "revocation_endpoint": { "type": "string", "format": "uri" },
+                        "introspection_endpoint": { "type": "string", "format": "uri" }
                       }
-                    },
-                    "required": [ "issuer" ],
-                    "additionalProperties": false
-                  },
-                  "options": { 
-                    "type": "object",
-                    "description": "Strategy Options",
-                    "properties": {
-                      "params": { 
-                        "type": "object",
-                        "description": "Additional Parameters to send to the IdP during authorization",
-                        "properties": {
-                          "scope": { "type": "string", "description": "space delimited list of scopes", "default": "openid profile email"}
-                        },
-                        "additionalProperties": true
-                      },
-                      "passReqToCallback": { "type": "boolean", "description": "Boolean specifying whether the verify function should get the request object as first argument instead.", "default": false},
-                      "usePKCE": { "type": ["string", "boolean"], "description": "The PKCE method to use. When 'true' it will resolve based on the issuer metadata, when 'false' no PKCE will be used.", "default": true },
-                      "sessionKey": { "type": "string", "description": "Define the property in your session which is used for storing information for the purpose of consuming the authentication response.", "default": "oidc:${Issuer Identifier}" }
                     }
+                  },
+                  "additionalProperties": false
+                },
+                "options": { 
+                  "$id": "/schemas/auth/oidc/options",
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "description": "Strategy Options",
+                  "properties": {
+                    "params": { 
+                      "type": "object",
+                      "description": "Additional Parameters to send to the IdP during authorization",
+                      "properties": {
+                        "scope": { "type": ["string", "array"], "description": "A list of scope.", "default": "openid profile email", "examples": ["openid", ["openid", "profile"], "openid profile email", "openid profile email groups"] }
+                      },
+                      "additionalProperties": true
+                    },
+                    "passReqToCallback": { "type": "boolean", "description": "Boolean specifying whether the verify function should get the request object as first argument instead.", "default": false},
+                    "usePKCE": { "type": ["string", "boolean"], "description": "The PKCE method to use. When 'true' it will resolve based on the issuer metadata, when 'false' no PKCE will be used.", "default": true },
+                    "sessionKey": { "type": "string", "description": "Define the property in your session which is used for storing information for the purpose of consuming the authentication response.", "default": "oidc:${Issuer Identifier}" }
                   },
                   "custom": {
                     "type": "object",
