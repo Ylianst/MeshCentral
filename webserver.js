@@ -2574,81 +2574,39 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // This is called after a successful Oauth to Twitter, Google, GitHub...
     function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
+        const authStrategy = req.user.strategy
+        parent.debug('authlog', `${authStrategy.toUpperCase()}: Verified user: ${JSON.stringify(req.user, null, 4)}` + JSON.stringify(req.user));
         if (domain == null) { return; }
-        if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
-            const authStrategy = req.user.strategy
-            parent.debug('authlog', `${authStrategy.toUpperCase()}: Verified user: ${JSON.stringify(req.user, null, 4)}` + JSON.stringify(req.user));
-
-            // Check if any group related options exist
-            var userMemberships = [];
-            var siteAdminGroup = null;
+        if ((req.user != null) && (req.user.sid != null)) {
             if (typeof domain.authstrategies[authStrategy].groups == 'object') {
-                if (Array.isArray(req.user.groups)) { userMemberships = req.user.groups; }
-                else if (typeof req.user.groups == 'string') { userMemberships = [req.user.groups]; }
-                parent.debug('authlog', `${authStrategy.toUpperCase()}: Member Of: ${userMemberships.join(', ')}`);
-
-                // See if the user is required to be part of a specific group in order to log into this server.
-                if (typeof domain.authstrategies[authStrategy].groups.required == 'string') { domain.authstrategies[authStrategy].groups.required = [domain.authstrategies[authStrategy].groups.required]; }
-                if (Array.isArray(domain.authstrategies[authStrategy].groups.required)) {
-                    var userMembershipMatch = false;
-                    for (var i in domain.authstrategies[authStrategy].groups.required) {
-                        if (userMemberships.indexOf(domain.authstrategies[authStrategy].groups.required[i]) >= 0) {
-                            userMembershipMatch = true;
-                            parent.debug('authlog', `${authStrategy.toUpperCase()}: ${req.user.name} is member of required group: ${domain.authstrategies[authStrategy].groups.required[i]}`);
-                        }
-                    }
-                    if (userMembershipMatch === false) { 
-                        parent.debug('authlog', `${authStrategy}: User login denied. User not found in required group.`); 
-                        req.session.loginmode = 1;
-                        req.session.messageid = 100; // Unable to create account.
-                        res.redirect(domain.url + getQueryPortion(req));
-                        return;
-                    }
-                }
-
-                // Check if user is in an administrator group
-                if (typeof domain.authstrategies[authStrategy].groups.siteadmin == 'string') { domain.authstrategies[authStrategy].groups.siteadmin = [ domain.authstrategies[authStrategy].groups.siteadmin ]; }
-                if (Array.isArray(domain.authstrategies[authStrategy].groups.siteadmin)) {
-                    siteAdminGroup = false;
-                    for (var i in domain.authstrategies[authStrategy].groups.siteadmin) {
-                        if (userMemberships.indexOf(domain.authstrategies[authStrategy].groups.siteadmin[i]) >= 0) { siteAdminGroup = domain.authstrategies[authStrategy].groups.siteadmin[i]; }
-                    }
-                }
-
-                // See if we need to sync user-memberships (IdP) with user-groups (meshcentral)
-                if (domain.authstrategies[authStrategy].groups.sync === true) { domain.authstrategies[authStrategy].groups.sync = { enabled: true }; }
-                if (typeof domain.authstrategies[authStrategy].groups.sync.filter == 'string' || Array.isArray(domain.authstrategies[authStrategy].groups.sync.filter)) { 
-                    if (typeof domain.authstrategies[authStrategy].groups.sync.filter == 'string') { domain.authstrategies[authStrategy].groups.sync.filter = [ domain.authstrategies[authStrategy].groups.sync.filter ]; }
-                    const filteredMemberships = [];
-                    for (var i in userMemberships) {
-                        for (var j in domain.authstrategies[authStrategy].groups.sync.filter) {
-                            if (userMemberships[i].indexOf(domain.authstrategies[authStrategy].groups.sync.filter[j]) >= 0) { filteredMemberships.push(userMemberships[i]); }
-                        }
-                    }
-                    if (filteredMemberships.length > 0) {
-                        parent.debug('authlog', `${authStrategy.toUpperCase()}: Filtered user memberships from config: ${filteredMemberships.join(', ')}`);
-                    } else { 
-                        parent.debug('authlog', `${authStrategy.toUpperCase()}: No groups found with filter: ${domain.authstrategies[authStrategy].groups.sync.filter.join(', ')}`); 
-                    }
-                    userMemberships = filteredMemberships;
-                }
+                setupGroups(req.user.groups).then((metadata)=>{
+                    setupUser(req.user,metadata);
+                });
+            } else { 
+                setupUser(req.user);
             }
-
+        } else {
+            parent.debug('warn', 'handleStrategyLogin: FAILED - No user');
+        }
+            
+        function setupUser(initUser,metadata) {
             // Check if the user already exists
-            const userid = 'user/' + domain.id + '/' + req.user.sid;
+            const userid = 'user/' + domain.id + '/' + initUser.sid;
             var user = obj.users[userid];
 
-            // Azure: Update the old 'unique_name' based user ID with the new 'oid' based one if the user already exists 
-            if (!user && authStrategy == 'azure') {
-                Object.keys(obj.users).forEach((u) => {
-                    if (obj.users[u].email == req.user.email && req.user.verified_primary_email == true && obj.users[u].name == req.user.name && obj.users[u]._id.includes('azure')) {
-                        obj.users[u]._id = 'user/' + domain.id + '/' + req.user.sid; 
-                        user = obj.users[u]
-                        // obj.db.SetUser(user);
+            // Azure: Update the old 'unique_name' based user ID with the new 'sub' based one if the user already exists 
+            if (typeof user != 'object' && authStrategy == 'azure' && domain.authstrategies.azure.updateoldusers == true) {
+                Object.keys(obj.users).forEach((id) => {
+                    if (obj.users[id].email == initUser.email && obj.users[id].name == initUser.name && obj.users[id]._id.includes('azure')) {
+                        var newID = 'user/' + domain.id + '/' + initUser.sid;
+                        var oldID = obj.users[id]._id
+                        parent.debug('authlog', `AZURE: WARNING: UPDATE OLD USERS ENABLED: REBUILDING USER: ${oldID} TO BE: ${newID}`);
+                        user = Object.assign(obj.users[id], {'_id': newID})
+                        obj.db.Remove(oldID);
+                        obj.db.SetUser(user);
                     }
                 });
             }
-
             if (user == null) {
                 var newAccountAllowed = false;
                 var newAccountRealms = null;
@@ -2656,7 +2614,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (domain.newaccounts === true) { newAccountAllowed = true; }
                 if (obj.common.validateStrArray(domain.newaccountrealms)) { newAccountRealms = domain.newaccountrealms; }
 
-                if (domain.authstrategies?.[authStrategy]) {
+                if (domain.authstrategies[authStrategy]) {
                     if (domain.authstrategies[authStrategy].newaccounts === true) { newAccountAllowed = true; }
                     if (obj.common.validateStrArray(domain.authstrategies[authStrategy].newaccountrealms)) { newAccountRealms = domain.authstrategies[authStrategy].newaccountrealms; }
                 }
@@ -2664,8 +2622,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (newAccountAllowed === true) {
                     // Create the user
                     parent.debug('authlog', `${authStrategy.toUpperCase()}: Creating new login user: "${userid}"`);
-                    user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
-                    if (req.user.email != null) { user.email = req.user.email; user.emailVerified = true; }
+                    user = { type: 'user', _id: userid, name: initUser.name, email: initUser.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
+                    if (initUser.email != null) { user.email = initUser.email; user.emailVerified = true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
                     if (domain.authstrategies[authStrategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[authStrategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
                     if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
@@ -2699,11 +2657,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     if (typeof domain.authstrategies[authStrategy].groups == 'object') {
                         // Sync the user groups if enabled
-                        if ((typeof domain.authstrategies[authStrategy].groups.sync == 'object') && (domain.authstrategies[authStrategy].groups.sync.enabled === true)) { syncExternalUserGroups(domain, user, userMemberships, authStrategy) }
-
+                        if ((typeof domain.authstrategies[authStrategy].groups.sync == 'object') && (domain.authstrategies[authStrategy].groups.sync.enabled === true || domain.authstrategies[authStrategy].groups.sync.filter)) {
+                            syncExternalUserGroups(domain, user, metadata.userMemberships, authStrategy)
+                        }
                         // See if the user is a member of the site admin group.
-                        if (typeof siteAdminGroup === 'string') {
-                            parent.debug('authlog', `${authStrategy.toUpperCase()}: Granting site admin privilages to new user "${user.name}" found in admin group: ${siteAdminGroup}`);
+                        if (typeof metadata.siteAdminGroup === 'string') {
+                            parent.debug('authlog', `${authStrategy.toUpperCase()}: Granting site admin privilages to new user "${user.name}" found in admin group: ${metadata.siteAdminGroup}`);
                             user.siteadmin = 0xFFFFFFFF;
                         }
                     }
@@ -2737,20 +2696,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else { // Login success
                 // Check for basic changes
                 var userChanged = false;
-                if ((req.user.name != null) && (req.user.name != user.name)) { user.name = req.user.name; userChanged = true; }
-                if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = true; userChanged = true; }
+                if ((initUser.name != null) && (initUser.name != user.name)) { user.name = initUser.name; userChanged = true; }
+                if ((initUser.email != null) && (initUser.email != user.email)) { user.email = initUser.email; user.emailVerified = true; userChanged = true; }
             
                 if (typeof domain.authstrategies[authStrategy].groups == 'object') {
                     // Sync the user groups if enabled
-                    if ((typeof domain.authstrategies[authStrategy].groups.sync == 'object') && (domain.authstrategies[authStrategy].groups.sync.enabled === true)) { syncExternalUserGroups(domain, user, userMemberships, authStrategy) }
+                    if ((typeof domain.authstrategies[authStrategy].groups.sync == 'object') && (domain.authstrategies[authStrategy].groups.sync.enabled === true || domain.authstrategies[authStrategy].groups.sync.filter)) {
+                        syncExternalUserGroups(domain, user, metadata.userMemberships, authStrategy)
+                    }
 
                     // See if the user is a member of the site admin group.
                     if ((typeof domain.authstrategies[authStrategy].groups.siteadmin !== 'undefined') && (domain.authstrategies[authStrategy].groups.siteadmin !== null)) {
-                        if ((typeof siteAdminGroup === 'string') && (user.siteadmin !== 0xFFFFFFFF)) {
-                            parent.debug('authlog', `${authStrategy.toUpperCase()}: Granting site admin privilages to user "${user.name}" found in administrator group: ${siteAdminGroup}`); 
+                        if ((typeof metadata.siteAdminGroup === 'string') && (user.siteadmin !== 0xFFFFFFFF)) {
+                            parent.debug('authlog', `${authStrategy.toUpperCase()}: Granting site admin privilages to user "${user.name}" found in administrator group: ${metadata.siteAdminGroup}`); 
                             user.siteadmin = 0xFFFFFFFF;
                             userChanged = true;
-                        } else if ((siteAdminGroup === false) && (user.siteadmin === 0xFFFFFFFF)) {
+                        } else if ((metadata.siteAdminGroup === false) && (user.siteadmin === 0xFFFFFFFF)) {
                             parent.debug('authlog', `${authStrategy.toUpperCase()}: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
                             delete user.siteadmin;
                             userChanged = true;
@@ -2779,10 +2740,76 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
                 parent.debug('authlog', `${authStrategy.toUpperCase()}: User Logged In: Name: ${user.name} ID: ${user._id}`);
             }
-        } else { parent.debug('warn', 'handleStrategyLogin: FAILED - No user'); }
-        //res.redirect(domain.url); // This does not handle cookie correctly.
-        res.set('Content-Type', 'text/html');
-        res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
+
+            //res.redirect(domain.url); // This does not handle cookie correctly.
+            res.set('Content-Type', 'text/html');
+            res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
+        }
+
+        async function setupGroups(input) {
+            // Check if any group related options exist
+            const metadata = { 'input': input, 'groupTypes': 'memberOf', 'userMemberships': [], 'userMembershipMatch': false, 'filteredMemberships': [] }
+            if (authStrategy == 'azure' && typeof metadata.input == 'object'){
+                if (domain.authstrategies.azure.transitivememberof == true) {
+                    metadata.groupTypes = 'transitiveMemberOf';
+                }
+                const response = await fetch(`https://graph.microsoft.com/v1.0/me/${metadata.groupTypes}`,{ headers : metadata.input });
+                const data = await response.json();
+                data.value.forEach((groupObject)=>{
+                    if (groupObject.displayName) { metadata.userMemberships.push(groupObject.displayName) }
+                });
+            } else if(Array.isArray(metadata.input)) {
+                metadata.userMemberships = metadata.input;
+            } else {
+                return null
+            }
+            parent.debug('authlog', `${authStrategy.toUpperCase()}: ${metadata.groupTypes}: ${metadata.userMemberships.join(', ')}`);
+
+            // See if the user is required to be part of a specific group in order to log into this server.
+            if (typeof domain.authstrategies[authStrategy].groups.required == 'string') { domain.authstrategies[authStrategy].groups.required = [domain.authstrategies[authStrategy].groups.required]; }
+            if (Array.isArray(domain.authstrategies[authStrategy].groups.required)) {
+                for (var i in domain.authstrategies[authStrategy].groups.required) {
+                    if (metadata.userMemberships.indexOf(domain.authstrategies[authStrategy].groups.required[i]) >= 0) {
+                        metadata.userMembershipMatch = true;
+                        parent.debug('authlog', `${authStrategy.toUpperCase()}: ${req.user.name} is member of required group: ${domain.authstrategies[authStrategy].groups.required[i]}`);
+                    }
+                }
+                if (metadata.userMembershipMatch === false) { 
+                    parent.debug('authlog', `${authStrategy}: User login denied. User not found in required group.`); 
+                    req.session.loginmode = 1;
+                    req.session.messageid = 111; // Access Denied.
+                    res.redirect(domain.url + getQueryPortion(req));
+                    return;
+                }
+            }
+
+            // Check if user is in an administrator group
+            if (typeof domain.authstrategies[authStrategy].groups.siteadmin == 'string') { domain.authstrategies[authStrategy].groups.siteadmin = [ domain.authstrategies[authStrategy].groups.siteadmin ]; }
+            if (Array.isArray(domain.authstrategies[authStrategy].groups.siteadmin)) {
+                metadata.siteAdminGroup = false;
+                for (var i in domain.authstrategies[authStrategy].groups.siteadmin) {
+                    if (metadata.userMemberships.indexOf(domain.authstrategies[authStrategy].groups.siteadmin[i]) >= 0) { metadata.siteAdminGroup = domain.authstrategies[authStrategy].groups.siteadmin[i]; }
+                }
+            }
+
+            // See if we need to sync user-memberships (IdP) with user-groups (meshcentral)
+            if (domain.authstrategies[authStrategy].groups.sync === true) { domain.authstrategies[authStrategy].groups.sync = { enabled: true }; }
+            if (typeof domain.authstrategies[authStrategy].groups.sync.filter == 'string' || Array.isArray(domain.authstrategies[authStrategy].groups.sync.filter)) { 
+                if (typeof domain.authstrategies[authStrategy].groups.sync.filter == 'string') { domain.authstrategies[authStrategy].groups.sync.filter = [ domain.authstrategies[authStrategy].groups.sync.filter ]; }
+                for (var i in metadata.userMemberships) {
+                    for (var j in domain.authstrategies[authStrategy].groups.sync.filter) {
+                        if (metadata.userMemberships[i].indexOf(domain.authstrategies[authStrategy].groups.sync.filter[j]) >= 0) { metadata.filteredMemberships.push(metadata.userMemberships[i]); }
+                    }
+                }
+                if (metadata.filteredMemberships.length > 0) {
+                    parent.debug('authlog', `${authStrategy.toUpperCase()}: Filtered user memberships from config: ${metadata.filteredMemberships.join(', ')}`);
+                } else { 
+                    parent.debug('authlog', `${authStrategy.toUpperCase()}: No groups found with filter: ${domain.authstrategies[authStrategy].groups.sync.filter.join(', ')}`); 
+                }
+            }
+        
+            return metadata
+        }
     }
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
@@ -6384,7 +6411,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         var setupSSO = false
-        for (var i in parent.config.domains) { setupSSO = parent.config.domains[i].authstrategies ? true : false }
+        for (var i in parent.config.domains) { if (typeof parent.config.domains[i].authstrategies == 'object') { setupSSO = true } }
         if (setupSSO) {
             setupAllDomainAuthStrategies().then(()=>finalizeWebserver());
         } else {
@@ -6603,7 +6630,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Setup auth strategies
                 if (domain.authstrategies) {
                     // Setup auth strategies using passport if needed
-                    var preset = domain.authstrategies.metadata?.custom?.preset || null
+                    var OIDCstrategyPreset = null
+                    Object.keys(domain.authstrategies).forEach((strategy)=>{
+                        if(['oidc', 'azure','google','reddit','twitter','github'].includes(strategy)) { OIDCstrategyPreset = strategy }
+                    }); 
                     var flags = domain.authstrategies.authStrategyFlags
                     /*
                     // Twitter
@@ -6682,6 +6712,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }, handleStrategyLogin);
                     }
 
+                    */
+                   /*
                     // Azure
                     if ((flags & domainAuthStrategyConsts.azure) != 0) {
                         obj.app.get(url + 'auth-azure', function (req, res, next) {
@@ -6709,16 +6741,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                     */
                     // Setup OpenID Connect Urls
-                    if ((flags & domainAuthStrategyConsts[preset]) != 0) {
-                        obj.app.get(url + 'auth-' + preset, function (req, res, next) {
+                    if ((flags & domainAuthStrategyConsts[OIDCstrategyPreset]) != 0) { // 
+                        obj.app.get(url + 'auth-' + OIDCstrategyPreset, function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate(`${preset}-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            domain.passport.authenticate(`${OIDCstrategyPreset}-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
                         });
-                        obj.app.get(url + 'auth-' + preset + '-callback', function (req, res, next) {
+                        obj.app.get(url + 'auth-' + OIDCstrategyPreset + '-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate(`${preset}-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            domain.passport.authenticate(`${OIDCstrategyPreset}-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
 
@@ -7096,27 +7128,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         passport.deserializeUser(function (sid, done) { done(null, { sid: sid }); });
         obj.app.use(passport.initialize());
 
-        // Configure OpenID Connect Authoization
-        var OIDCstrategyPreset = null
-        Object.keys(domain.authstrategies).forEach((strategy)=>{
-            if(['oidc','azure','google','reddit','twitter','github'].includes(strategy)) { OIDCstrategyPreset = strategy }
-        }); 
-        if (OIDCstrategyPreset) {
-            const metadata = await setupOIDC(OIDCstrategyPreset);
-            if (metadata === null) { return 0; }
-            function verify(tokenset, profile, verified) {
-                parent.debug('authlog', JSON.stringify(tokenset, null, 4),JSON.stringify(profile, null, 4));
-                var user = { sid: `~${metadata.custom.preset}:${profile.sub}`, name: profile.name, strategy: metadata.custom.preset };
-                if (profile.email) { user.email = profile.email; }
-                if (profile.email_verified) { user.email_verified = profile.email_verified; }
-                if (profile.groups) { user.groups = profile.groups; }
-                parent.debug('authlog', `${metadata.custom.preset}: Configured:\nUser: ${JSON.stringify(user, null, 4)}\nFROM\nProfile: ${JSON.stringify(profile, null, 4)}`);
-                return verified(null, user);
-            }    
-            passport.use(metadata.custom.preset + '-' + domain.id, new metadata.OIDC.Strategy(metadata.options, verify));    
-            return [metadata,domainAuthStrategyConsts[metadata.custom.preset]];
-        }
-
         // Generic SAML
         if (typeof domain.authstrategies.saml == 'object') {
             if ((typeof domain.authstrategies.saml.cert != 'string') || (typeof domain.authstrategies.saml.idpurl != 'string')) {
@@ -7216,12 +7227,51 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
+        // Configure OpenID Connect Authoization
+        var OIDCstrategyPreset = null
+        Object.keys(domain.authstrategies).forEach((strategy)=>{
+            if(['oidc','azure','google','reddit','twitter','github'].includes(strategy)) { OIDCstrategyPreset = strategy }
+        }); 
+        if (OIDCstrategyPreset) {
+            const metadata = await setupOIDC(OIDCstrategyPreset);
+            if (metadata === null) { return 0; }
+            passport.use(OIDCstrategyPreset + '-' + domain.id, new metadata.OIDC.Strategy(metadata.options,
+                function (tokenset, profile, verified) {
+                    parent.debug('authlog', JSON.stringify(tokenset, null, 4),JSON.stringify(profile, null, 4));
+                    var user = { 'sid': `~${OIDCstrategyPreset}:${profile.sub}`, 'name': profile.name, strategy: OIDCstrategyPreset, 'email': profile.email, 'emailVerified': true, 'groups': profile.groups };
+                    switch(user.strategy) {
+                        case 'azure':        
+                            user.groups = { authorization : 'Bearer ' + tokenset.access_token }
+                            returnUser(null, user)
+                            break;
+                        case 'reddit':
+                            returnUser(null, user)
+                            break;
+                        case 'github':
+                            user.sid = profile.id
+                            user.name = profile.login;
+                            returnUser(null, user)
+                            break;
+                        case 'default':
+                            returnUser(null, user)
+                            break;
+                    }
+                    function returnUser(err,user){
+                        if (err != null) { return verified(err); }
+                        parent.debug('authlog', `${OIDCstrategyPreset}: Configured:\nUser: ${JSON.stringify(user, null, 4)}\nFROM\nProfile: ${JSON.stringify(profile, null, 4)}`);
+                        return verified(null, user);
+                    }
+                }   
+            ));    
+            return [metadata,domainAuthStrategyConsts[OIDCstrategyPreset]];
+        }
+        
         async function setupOIDC(OIDCstrategyPreset){
             const metadata = {
                 'issuer': domain.authstrategies[OIDCstrategyPreset].issuer || {},
                 'client': domain.authstrategies[OIDCstrategyPreset].client || {},
                 'options': domain.authstrategies[OIDCstrategyPreset].options || {},
-                'custom': Object.assign(domain.authstrategies[OIDCstrategyPreset].custom,{ 'preset': OIDCstrategyPreset }),
+                'custom': domain.authstrategies[OIDCstrategyPreset].custom || {},
                 'OIDC': require('openid-client')
             };
             const oldConfigMap = {
@@ -7233,8 +7283,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         'clientsecret': 'client_secret',
                         'callbackurl': 'redirect_uris'
                     },
-                    'custom': {
-                        'logouturl': 'logouturl'
+                    'issuer': {
+                        'logouturl': 'end_session_endpoint',
                     }
                 },
                 'oidc': {
@@ -7260,56 +7310,116 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (oldConfigMap.any?.[dataType] && Object.keys(oldConfigMap.any?.[dataType]).includes(oldConfig) && !metadata[dataType][(oldConfigMap[strategy][dataType][oldConfig])]){
                                 metadata[dataType][(oldConfigMap.any[dataType][oldConfig])] = domain.authstrategies[strategy][oldConfig]; 
                             } else if (oldConfigMap[strategy]?.[dataType]?.[oldConfig]) {
-                                metadata[dataType][(oldConfigMap[strategy][dataType][oldConfig])] = domain.authstrategies[strategy][oldConfig]; 
-                                metadata.custom.preset = strategy
+                                metadata[dataType][(oldConfigMap[strategy][dataType][oldConfig])] = domain.authstrategies[strategy][oldConfig];
                             }
                         });
                     }
                 });
             });
 
-            // Prepare scope
+            // Prepare scope array
             var scopeArray = []
             if (!metadata.options?.params?.scope) {
                 if(!metadata.options?.params) { metadata.options.params = {}; }
                 scopeArray = ['openid','profile','email'];
             } else {
-                scopeArray = (metadata.options.params.scope + '').split(' ');
+                if (Array.isArray(metadata.options.params.scope)) {
+                    scopeArray = metadata.options.params.scope
+                } else {
+                    scopeArray = (metadata.options.params.scope + '').split(' ');
+                }
             }
             ['openid', 'profile', 'email'].forEach((scope) => {
                 if (scopeArray.indexOf(scope) == -1) { scopeArray.push(scope); }
             })
 
             // Setup presets
-            if (!metadata.custom.preset) { metadata.custom.preset = 'oidc'; }
-            var groups = (typeof domain.authstrategies[metadata.custom.preset]?.groups == 'object')
-            parent.debug('authlog', 'OIDC: Using Preset Configs: ' + metadata.custom.preset);
-            switch(metadata.custom.preset){
+            var discoveryRequired
+            var groups = (typeof domain.authstrategies[OIDCstrategyPreset]?.groups == 'object')
+            parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Using Preset Configs: ${OIDCstrategyPreset}`);
+            switch(OIDCstrategyPreset){
                 case 'azure':
                     metadata.issuer.issuer = `https://login.microsoftonline.com/${metadata.custom.tenant_id}/v2.0`;
-                    if (groups) { scopeArray.push('https://graph.microsoft.com/GroupMember.Read.All groups'); } // I haven't tested this yet. Docs: https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-optional-claims#configuring-groups-optional-claims
+                    if (groups) { scopeArray.push('User.Read'); }
+                    // Docs: https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-optional-claims#configuring-groups-optional-claims
+                    discoveryRequired = true
                     break;
                 case 'google':
                     metadata.issuer.issuer = 'https://accounts.google.com/o/oauth2/v2/auth';
-                    if (groups) { scopeArray.push('groups https://www.googleapis.com/auth/cloud-identity.groups.readonly'); } // I'm not sure if this works
+                    if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not yet available for this preset.`); }
+                    // scopeArray.push('groups https://www.googleapis.com/auth/cloud-identity.groups.readonly'); } 
+                    // I'm not sure if this works
+                    discoveryRequired = true
                     break;
                 case 'oidc':
                     if (groups) { scopeArray.push('groups'); }
+                    if (typeof metadata.issuer == 'string' || typeof metadata.issuer.issuer != 'string') { discoveryRequired = true }
                     break;
-                default:
-                    if (groups) { parent.debug('authlog', `${metadata.custom.preset}: Groups are not yet available for this preset.`); }
+                case 'github':
+                    metadata.issuer = {
+                        'authorization_endpoint': 'https://github.com/login/oauth/authorize',
+                        'token_endpoint': 'https://github.com/login/oauth/access_token',
+                        'userinfo_endpoint': 'https://api.github.com/user'
+                    }
+                    scopeArray = ['user.email']
+                    if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not available for this preset.`); }
+                    discoveryRequired = false
+                    break;
+                case 'reddit': 
+                // https://github.com/reddit-archive/reddit/wiki/OAuth2 
+                // https://www.reddit.com/api/v1
+                // https://www.reddit.com/r/redditdev/comments/dx0hbo/ill_admit_it_im_stupid_how_do_i_do_the_oauth2/ lol
+                    metadata.issuer = {
+                        'authorization_endpoint': 'https://www.reddit.com/api/v1/access_token',
+                        'token_endpoint': 'https://www.reddit.com/api/v1/access_token',
+                        'userinfo_endpoint': 'https://oauth.reddit.com/api/v1/me'
+                    }
+                    if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not available for this preset.`); }
+                    discoveryRequired = false
+                    break;
+                case 'twitter':
+                    if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not available for this preset.`); }
+                    discoveryRequired = false
+                    break;
             }
 
+            // Upgrade from client_secret to client_secret_jwt
+/*             if (metadata.client.client_secret){
+                let jwt = require('jwt-simple');
+                let payload = { foo: 'bar' };
+                let secret = 'xxx';
+
+                // HS256 secrets are typically 128-bit random strings, for example hex-encoded:
+                // let secret = Buffer.from('fe1a1915a379f3be5394b64d14794932', 'hex')
+
+                // encode
+                let token = jwt.encode(payload, secret);
+
+                // decode
+                let decoded = jwt.decode(token, secret);
+                console.log(decoded); //=> { foo: 'bar' }
+            } */
+            
             // Finalize scope
             metadata.options.params.scope = scopeArray.join(' ')
-            const host = domain.certurl
+            const host = parent.config.settings.cert
             // Prepare issuer, client, and options
-            if (!metadata.issuer.issuer && metadata.custom.preset == 'oidc') { parent.debug('authlog', `${metadata.custom.preset}: Missing issuer url.`); return null; }
-            if (!metadata.client.redirect_uris) { metadata.client.redirect_uris = host + url + 'auth-' + metadata.custom.preset + '-callback'; }
-            parent.debug('authlog', 'OIDC: Discovering Issuer: ' + metadata.issuer.issuer);
-            metadata.issuer.object = await metadata.OIDC.Issuer.discover(metadata.issuer.issuer)
-            metadata.options = Object.assign(metadata.options, { 'client': new metadata.issuer.object.Client(metadata.client) } );
-            try { if (!metadata.custom.logouturl) { metadata.custom.logouturl = metadata.options.client.endSessionUrl() } } catch { metadata.custom.logouturl = metadata.issuer.issuer + '/logout?rd=' + host } 
+            if (!metadata.issuer.issuer && OIDCstrategyPreset == 'oidc') { parent.debug('authlog', `${OIDCstrategyPreset}: Missing issuer url.`); return null; }
+            if (!metadata.client.redirect_uris) { metadata.client.redirect_uris = 'https://' + host + url + 'auth-' + OIDCstrategyPreset + '-callback'; }
+            
+            // Setup Issuer, Client, and Options Objects
+            if (discoveryRequired === true) {
+                parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Discovering Endpoints From: ${metadata.issuer.issuer}`);
+                metadata.issuer.object = await metadata.OIDC.Issuer.discover(metadata.issuer.issuer);
+            } else {
+                parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Adding Custom Endpoints: ${JSON.stringify(metadata.issuer, null, 4)}`);
+                metadata.issuer.object = new metadata.OIDC.Issuer(metadata.issuer);
+            }
+            const issuer = metadata.issuer.object
+            const client = new issuer.Client(metadata.client)
+            metadata.options = Object.assign(metadata.options, { 'client': client } );
+
+            try { if (!metadata.issuer.end_session_endpoint) { metadata.issuer.end_session_endpoint = metadata.options.client.endSessionUrl() } } catch { metadata.custom.logouturl = metadata.issuer.issuer + '/logout?rd=' + host } 
             parent.debug('authlog', 'OIDC: Configured Metadata: ' + JSON.stringify(metadata, null, 4));
             return metadata
         }
@@ -9167,7 +9277,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                 // Log in the auth log
-                parent.authLog('https', 'Created ' + userMembershipType + ' user group ' + ugrp.name);
+                parent.authLog('https', userMembershipType.toUpperCase() + ': Created user group ' + ugrp.name);
             }
 
             if (existingUserMemberships[ugrpid] == null) {
@@ -9194,7 +9304,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.DispatchEvent(['*', ugrp._id, user._id], obj, event);
 
                 // Log in the auth log
-                parent.authLog('https', 'Adding ' + user.name + ' to ' + userMembershipType + ' user group ' + userMemberships[i] + '.');
+                parent.authLog('https', userMembershipType.toUpperCase() + ': Adding ' + user.name + ' to user group ' + userMemberships[i] + '.');
             } else {
                 // User is already part of this user group
                 delete existingUserMemberships[ugrpid];
@@ -9204,7 +9314,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Remove the user from any memberships they don't belong to anymore
         for (var ugrpid in existingUserMemberships) {
             var ugrp = obj.userGroups[ugrpid];
-            parent.authLog('https', 'Removing ' + user.name + ' from ' + userMembershipType + ' user group ' + ugrp.name + '.');
+            parent.authLog('https', userMembershipType.toUpperCase() + ': Removing ' + user.name + ' from user group ' + ugrp.name + '.');
             if ((user.links != null) && (user.links[ugrpid] != null)) {
                 delete user.links[ugrpid];
 
