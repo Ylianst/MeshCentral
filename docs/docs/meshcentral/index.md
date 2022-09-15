@@ -1201,7 +1201,11 @@ And taking authentication to the next step is removing the login page entirely. 
 
 ## Branding & Terms of use
 
-Once MeshCentral is setup, you may want to customize the web site with your own brand and terms of use. This is important to personalize the web site to your organization. We also want to customize the web site in such a way that updating to the latest version will keep the branding as-is.
+Whitelabeling your MeshCentral installation to personalize it to your companies brand, as well as having your own terms of use is one of the first things many people do after installation.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/xUZ1w9RSKpQ" frameborder="0" allowfullscreen></iframe>
+</div>
 
 ### Branding
 
@@ -1209,7 +1213,7 @@ You can put you own logo on the top of the web page. To get started, get the fil
 
 ![](images/2022-05-19-00-38-51.png)
 
-Once done, edit the config.json file and set the following values:
+Once done, edit the config.json file and set one or all of the following values:
 
 ```json
 "domains": {
@@ -1217,6 +1221,16 @@ Once done, edit the config.json file and set the following values:
     "Title": "",
     "Title2": "",
     "TitlePicture": "title-sample.png",
+    "loginPicture": "logintitle-sample.png",
+    "welcomeText": "This is sample text",
+    "welcomePicture": "mainwelcome-04.jpg",
+    "welcomePictureFullScreen": true,
+    "siteStyle": "1",
+    "nightMode": "1",
+    "meshMessengerTitle": "Mesh Chat",
+    "meshMessengerPicture": "chatimage.png",
+    "footer": "This is a HTML string displayed at the bottom of the web page when a user is logged in.",
+    "loginfooter": "This is a HTML string displayed at the bottom of the web page when a user is not logged in."
   },
 ```
 
@@ -1239,6 +1253,8 @@ If, for example, MeshCentral is running on a Raspberry Pi. You may want to put a
 This is great to personalize the look of the server within the web site.
 
 ### Agent Branding
+
+You can also customize the Agent to add your own logo.
 
 ![](images/2022-08-24-06-42-40.png)
 
