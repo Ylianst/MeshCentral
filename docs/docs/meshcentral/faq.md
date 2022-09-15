@@ -1,5 +1,23 @@
 # FAQ
 
+## json config files
+
+Any item in the config.json file starting with an underscore character are ignored.
+
+Ignored
+
+```json
+"_title": "MyServer"
+```
+
+Valid setting
+
+```json
+"title": "MyServer"
+```
+
+json requires correct formatting, if in doubt copy/paste your json config into a web based format checker to make sure you have it right: <https://duckduckgo.com/?va=j&t=hc&q=json+lint&ia=answer>
+
 ## Help! I've been hacked there are weird agents appearing in my MeshCentral Console
 
 No, you haven't.
