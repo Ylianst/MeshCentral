@@ -2521,7 +2521,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
         const authStrategy = req.user.strategy
-        parent.debug('authlog', `${authStrategy.toUpperCase()}: Verified user: ${JSON.stringify(req.user, null, 4)}` + JSON.stringify(req.user));
+        parent.debug('authlog', `${authStrategy.toUpperCase()}: Verified user: ${JSON.stringify(req.user, null, 4)}`);
         if (domain == null) { return; }
         if ((req.user != null) && (req.user.sid != null)) {
             if (typeof domain.authstrategies[authStrategy].groups == 'object') {
@@ -7091,7 +7091,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             passport.use(OIDCstrategyPreset + '-' + domain.id, new metadata.OIDC.Strategy(metadata.options,
                 function (tokenset, profile, verified) {
                     parent.debug('authlog', JSON.stringify(tokenset, null, 4),JSON.stringify(profile, null, 4));
-                    var user = { 'sid': `~${OIDCstrategyPreset}:${profile.sub}`, 'name': profile.name, strategy: OIDCstrategyPreset, 'email': profile.email, 'emailVerified': true, 'groups': profile.groups };
+                    var user = { 'sid': `~${OIDCstrategyPreset}:${profile.sub}`, 'name': profile.name, strategy: OIDCstrategyPreset, 'email': profile.email, 'emailVerified': true };
                     switch(user.strategy) {
                         case 'azure':        
                             user.groups = { authorization : 'Bearer ' + tokenset.access_token }
@@ -7105,7 +7105,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             user.name = profile.login;
                             returnUser(null, user)
                             break;
-                        case 'default':
+                        default:
                             returnUser(null, user)
                             break;
                     }
@@ -7127,48 +7127,58 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 'custom': domain.authstrategies[OIDCstrategyPreset].custom || {},
                 'OIDC': require('openid-client')
             };
-            const oldConfigMap = {
-                'strategies': ['oidc','azure','google','github','reddit','twitter'],
-                'dataTypes': ['issuer','client','custom'],
-                'any': {
-                    'client': {
-                        'clientid': 'client_id',
-                        'clientsecret': 'client_secret',
-                        'callbackurl': 'redirect_uris'
-                    },
-                    'issuer': {
-                        'logouturl': 'end_session_endpoint',
-                    }
-                },
-                'oidc': {
-                    'issuer': {
-                        'authorizationurl': 'authorization_endpoint',
-                        'tokenurl': 'token_endpoint',
-                        'userinfourl': 'userinfo_endpoint'
-                    },
-                },
-                'azure': {
-                    'custom': {
-                        'tenantid': 'tenant_id',
-                    },
-                }
-            };
 
-            // Check for any configs setup with the old file structure
-            (oldConfigMap.dataTypes).forEach((dataType) => { // Iterate through metadata types
-                if (typeof metadata[dataType] != 'object') { metadata[dataType] = { [dataType]: metadata[dataType] } }
-                (oldConfigMap.strategies).forEach((strategy) => { // Iterate through potental strategies in config
-                    if (typeof domain.authstrategies[strategy] == 'object') {
-                        Object.keys(domain.authstrategies[strategy]).forEach((oldConfig) => { // Iterate through present old configs
-                            if (oldConfigMap.any?.[dataType] && Object.keys(oldConfigMap.any?.[dataType]).includes(oldConfig) && !metadata[dataType][(oldConfigMap[strategy][dataType][oldConfig])]){
-                                metadata[dataType][(oldConfigMap.any[dataType][oldConfig])] = domain.authstrategies[strategy][oldConfig]; 
-                            } else if (oldConfigMap[strategy]?.[dataType]?.[oldConfig]) {
-                                metadata[dataType][(oldConfigMap[strategy][dataType][oldConfig])] = domain.authstrategies[strategy][oldConfig];
-                            }
-                        });
-                    }
-                });
-            });
+            // Import old configs (New configs take priority)
+            var oldConfigs = []
+            if (typeof metadata.issuer == 'string') {
+                metadata.issuer = { 'issuer': metadata.issuer };
+                oldConfigs.push('issuer\t=> issuer.issuer');
+            }
+            if (!metadata.issuer.issuer && OIDCstrategyPreset == 'oidc') {
+                parent.debug('authlog', `${OIDCstrategyPreset}: Missing issuer url.`)
+                return null;
+            }
+            if (typeof domain.authstrategies[OIDCstrategyPreset].clientid == 'string' && !metadata.client.client_id) {
+                metadata.client.client_id = domain.authstrategies[OIDCstrategyPreset].clientid;
+                oldConfigs.push('clientid\t=> client.client_id');
+            }
+            if (typeof domain.authstrategies[OIDCstrategyPreset].clientsecret == 'string' && !metadata.client.client_secret) {
+                metadata.client.client_secret = domain.authstrategies[OIDCstrategyPreset].clientsecret;
+                oldConfigs.push('clientsecret\t=> client.client_secret');
+            }
+            if (typeof domain.authstrategies[OIDCstrategyPreset].callbackurl == 'string' && !metadata.client.redirect_uri) {
+                metadata.client.redirect_uri = domain.authstrategies[OIDCstrategyPreset].callbackurl;
+                oldConfigs.push('callbackurl\t=> client.redirect_uri');
+            }
+            if (typeof domain.authstrategies[OIDCstrategyPreset].logouturl == 'string' && !metadata.issuer.end_session_endpoint) {
+                metadata.issuer.end_session_endpoint = domain.authstrategies[OIDCstrategyPreset].logouturl;
+                oldConfigs.push('logouturl\t=> issuer.end_session_endpoint');
+            }
+            if (typeof domain.authstrategies.oidc?.authorizationurl?._ == 'string' && !metadata.issuer.authorization_endpoint) {
+                metadata.issuer.client_id = domain.authstrategies[OIDCstrategyPreset].authorizationurl;
+                oldConfigs.push('authorizationurl\t=> issuer.client_id');
+            }
+            if (typeof domain.authstrategies.oidc?.tokenurl == 'string' && !metadata.issuer.token_endpoint) {
+                metadata.issuer.token_endpoint = domain.authstrategies.oidc.tokenurl;
+                oldConfigs.push('tokenurl\t=> issuer.token_endpoint');
+            }
+            if (typeof domain.authstrategies.oidc?.userinfourl == 'string' && !metadata.issuer.userinfo_endpoint) {
+                metadata.issuer.userinfo_endpoint = domain.authstrategies.oidc.userinfourl;
+                oldConfigs.push('userinfourl\t=> issuer.userinfo_endpoint');
+            }
+            if (typeof domain.authstrategies.oidc?.scope == 'string' && !metadata.options.params?.scope) {
+                if (!metadata.options.params) {
+                    metadata.options.params = {'scope': domain.authstrategies.oidc.scope };
+                } else {
+                    metadata.options.params.scope = domain.authstrategies.oidc.scope
+                };
+                oldConfigs.push('scope\t=> options.params.scope');
+            }
+            if (typeof domain.authstrategies.azure?.tenantid == 'string' && !metadata.custom.tenant_id) {
+                metadata.custom.tenant_id = domain.authstrategies.azure.tenantid;
+                oldConfigs.push('tenantid\t=> custom.tenant_id');
+            }
+            parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Found Old Configs:\n  ${oldConfigs.join('\n  ')}`);
 
             // Prepare scope array
             var scopeArray = []
@@ -7187,28 +7197,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             })
 
             // Setup presets
-            var discoveryRequired
+            var discoveryRequired = false
             var groups = (typeof domain.authstrategies[OIDCstrategyPreset]?.groups == 'object')
+            if (!metadata.client.redirect_uri) { metadata.client.redirect_uri = 'https://' + host + url + 'auth-' + OIDCstrategyPreset + '-callback'; }
             parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Using Preset Configs: ${OIDCstrategyPreset}`);
             switch(OIDCstrategyPreset){
                 case 'azure':
                     metadata.issuer.issuer = `https://login.microsoftonline.com/${metadata.custom.tenant_id}/v2.0`;
                     if (groups) { scopeArray.push('User.Read'); }
-                    // Docs: https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-optional-claims#configuring-groups-optional-claims
                     discoveryRequired = true
                     break;
                 case 'google':
-                    metadata.issuer.issuer = 'https://accounts.google.com/o/oauth2/v2/auth';
-                    if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not yet available for this preset.`); }
                     // scopeArray.push('groups https://www.googleapis.com/auth/cloud-identity.groups.readonly'); } 
-                    // I'm not sure if this works
+                    // This can only get list of groups, and their member, not a search for member of.
+                    // Google Identitys memberOf API scope is reserved for Enterprise use.
+                    metadata.issuer.issuer = 'https://accounts.google.com';
+                    if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not available for this preset.`); }
                     discoveryRequired = true
                     break;
                 case 'oidc':
                     if (groups) { scopeArray.push('groups'); }
-                    if (typeof metadata.issuer == 'string' || typeof metadata.issuer.issuer != 'string') { discoveryRequired = true }
+                    if (typeof metadata.issuer.issuer == 'string') { discoveryRequired = true }
                     break;
-                case 'github':
+                case 'github': // untested
                     metadata.issuer = {
                         'authorization_endpoint': 'https://github.com/login/oauth/authorize',
                         'token_endpoint': 'https://github.com/login/oauth/access_token',
@@ -7218,6 +7229,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not available for this preset.`); }
                     discoveryRequired = false
                     break;
+
+                /*
+                case 'gitlab':
+                    metadata.custom.gitlaburl
+                    metadata.issuer = {
+                        'authorization_endpoint': 'https://github.com/login/oauth/authorize',
+                        'token_endpoint': 'https://github.com/login/oauth/access_token',
+                        'userinfo_endpoint': 'https://api.github.com/user'
+                    }
+                    scopeArray = ['user.email']
+                    if (groups) { parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Groups are not available for this preset.`); }
+                    discoveryRequired = false
+                    break; 
+                */
+
                 case 'reddit': 
                 // https://github.com/reddit-archive/reddit/wiki/OAuth2 
                 // https://www.reddit.com/api/v1
@@ -7236,29 +7262,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     break;
             }
 
-            // Upgrade from client_secret to client_secret_jwt
-/*             if (metadata.client.client_secret){
-                let jwt = require('jwt-simple');
-                let payload = { foo: 'bar' };
-                let secret = 'xxx';
-
-                // HS256 secrets are typically 128-bit random strings, for example hex-encoded:
-                // let secret = Buffer.from('fe1a1915a379f3be5394b64d14794932', 'hex')
-
-                // encode
-                let token = jwt.encode(payload, secret);
-
-                // decode
-                let decoded = jwt.decode(token, secret);
-                console.log(decoded); //=> { foo: 'bar' }
-            } */
-            
             // Finalize scope
             metadata.options.params.scope = scopeArray.join(' ')
             const host = parent.config.settings.cert
             // Prepare issuer, client, and options
-            if (!metadata.issuer.issuer && OIDCstrategyPreset == 'oidc') { parent.debug('authlog', `${OIDCstrategyPreset}: Missing issuer url.`); return null; }
-            if (!metadata.client.redirect_uris) { metadata.client.redirect_uris = 'https://' + host + url + 'auth-' + OIDCstrategyPreset + '-callback'; }
             
             // Setup Issuer, Client, and Options Objects
             if (discoveryRequired === true) {
@@ -7268,12 +7275,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.debug('authlog', `${OIDCstrategyPreset.toUpperCase()}: Adding Custom Endpoints: ${JSON.stringify(metadata.issuer, null, 4)}`);
                 metadata.issuer.object = new metadata.OIDC.Issuer(metadata.issuer);
             }
-            const issuer = metadata.issuer.object
-            const client = new issuer.Client(metadata.client)
-            metadata.options = Object.assign(metadata.options, { 'client': client } );
+            metadata.options = Object.assign(metadata.options, { 'client': new metadata.issuer.object.Client(metadata.client) } );
 
             try { if (!metadata.issuer.end_session_endpoint) { metadata.issuer.end_session_endpoint = metadata.options.client.endSessionUrl() } } catch { metadata.custom.logouturl = metadata.issuer.issuer + '/logout?rd=' + host } 
-            parent.debug('authlog', 'OIDC: Configured Metadata: ' + JSON.stringify(metadata, null, 4));
+            // parent.debug('authlog', 'OIDC: Configured Metadata: ' + JSON.stringify(metadata, null, 4));
             return metadata
         }
     }
