@@ -9,7 +9,7 @@ npm install meshcentral
 node node_modules/meshcentral
 ```
 
-That's it. MeshCentral will set itself up and start managing computers on your local network. By default it will be setup in LAN mode and agents you install will multicast on the local network to find the server. To setup the server so that agents use a well known DNS name and to start customizing your server, go in the "meshcentral-data" folder and edit the config.json file. The configuration file must be valid JSON, you can use this link to validate the file format.
+That's it. MeshCentral will set itself up and start managing computers on your local network. By default it will be setup in LAN mode and agents you install will multicast on the local network to find the server. To setup the server so that agents use a well known DNS name and to start customizing your server, go in the "meshcentral-data" folder and edit the config.json file. The configuration file must be valid JSON, you can use this [link](https://duckduckgo.com/?va=j&t=hc&q=json+lint&ia=answer) to validate the file format.
 
 For Windows users, you can download the MeshCentral Installer that will automate installation of NodeJS and provide basic configuration of the server. This option is not recommended for advanced users.
 
