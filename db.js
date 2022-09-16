@@ -718,10 +718,10 @@ module.exports.CreateDB = function (parent, func) {
         // Get all the databases ready
         obj.file.ready(function () {
             // Create AceBase indexes
-            obj.file.indexes.create('meshcenral', 'type', { include: ['domain', 'meshid'] });
-            obj.file.indexes.create('meshcenral', 'email');
-            obj.file.indexes.create('meshcenral', 'meshid');
-            obj.file.indexes.create('meshcenral', 'intelamt.uuid');
+            obj.file.indexes.create('meshcentral', 'type', { include: ['domain', 'meshid'] });
+            obj.file.indexes.create('meshcentral', 'email');
+            obj.file.indexes.create('meshcentral', 'meshid');
+            obj.file.indexes.create('meshcentral', 'intelamt.uuid');
             obj.file.indexes.create('events', 'userid', { include: ['action'] });
             obj.file.indexes.create('events', 'domain', { include: ['nodeid', 'time'] });
             obj.file.indexes.create('events', 'ids', { include: ['time'] });
