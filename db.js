@@ -116,11 +116,9 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
         } else if (obj.databaseType == 7) { // AceBase
             //console.log('Performing AceBase maintenance');
-            // Delete older events. AceBase seems to be VERY slow as removing records. Here, we remove 100 records at a time only since so far, it's terribly slow.
-            // TODO: Fugure out what record removal in AceBase is so slow
-            obj.file.query('events').take(100).filter('time', '<', new Date(Date.now() - (expireEventsSeconds * 1000))).remove().then(function () {
-                obj.file.query('stats').take(100).filter('time', '<', new Date(Date.now() - (expireServerStatsSeconds * 1000))).remove().then(function () {
-                    obj.file.query('power').take(100).filter('time', '<', new Date(Date.now() - (expirePowerEventsSeconds * 1000))).remove().then(function () {
+            obj.file.query('events').filter('time', '<', new Date(Date.now() - (expireEventsSeconds * 1000))).remove().then(function () {
+                obj.file.query('stats').filter('time', '<', new Date(Date.now() - (expireServerStatsSeconds * 1000))).remove().then(function () {
+                    obj.file.query('power').filter('time', '<', new Date(Date.now() - (expirePowerEventsSeconds * 1000))).remove().then(function () {
                         //console.log('AceBase maintenance done');
                     });
                 });
