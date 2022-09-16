@@ -1833,7 +1833,7 @@ module.exports.CreateDB = function (parent, func) {
                 }; // Get all plugins
                 obj.getPlugin = function (id, func) { obj.file.query('plugin').filter('_id', '==', id).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); }); }; // Get plugin
                 obj.deletePlugin = function (id, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.file.ref('plugin'.child(encodeURIComponent(id)).update({ status: status }).then(function (ref) { if (func) { func(); } }) };
+                obj.setPluginStatus = function (id, status, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).update({ status: status }).then(function (ref) { if (func) { func(); } }) };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.file.ref('plugin').child(encodeURIComponent(id)).set(args).then(function (ref) { if (func) { func(); } }) };
             }
         } else if (obj.databaseType == 6) {
