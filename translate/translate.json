@@ -475,6 +475,7 @@
     },
     {
       "en": "\" requested help.",
+	  "pl": "\" prosi o pomoc.",
       "xloc": [
         "device-help.html->2->3"
       ]
@@ -5719,6 +5720,7 @@
     {
       "en": "Account login token records",
       "nl": "Token vermeldingen voor accountaanmelding",
+	  "pl": "Zapisy logowania tokenami użytkownika",
       "xloc": [
         "default.handlebars->47->2918"
       ]
@@ -9277,6 +9279,7 @@
     {
       "en": "An unknown error occured.",
       "nl": "Er is een onbekende fout opgetreden.",
+	  "pl": "Wystąpił nieznany błąd.",
       "xloc": [
         "default.handlebars->47->2798"
       ]
@@ -15168,6 +15171,7 @@
     {
       "en": "Commands from file",
       "nl": "Opdrachten uit bestand",
+	  "pl": "Komendy z pliku",
       "xloc": [
         "default.handlebars->47->730"
       ]
@@ -15175,6 +15179,7 @@
     {
       "en": "Commands from file on server",
       "nl": "Opdrachten uit een bestand op de server",
+	  "pl": "Komendy z pliku na serwerze",
       "xloc": [
         "default.handlebars->47->731"
       ]
@@ -15182,6 +15187,7 @@
     {
       "en": "Commands from text box",
       "nl": "Opdrachten uit tekstvak",
+	  "pl": "Komendy z okienka tekstowego",
       "xloc": [
         "default.handlebars->47->729"
       ]
@@ -15337,6 +15343,7 @@
     {
       "en": "Configuration file records",
       "nl": "Configuratiebestand vermeldingen",
+	  "pl": "Zapisy pliku konfiguracyjnego",
       "xloc": [
         "default.handlebars->47->2911"
       ]
@@ -18785,6 +18792,7 @@
     {
       "en": "Database Records",
       "nl": "Database vermeldingen",
+	  "pl": "Zapisy Bazy Danych",
       "xloc": [
         "default.handlebars->47->2837"
       ]
@@ -19631,6 +19639,7 @@
     },
     {
       "en": "Denied user login from {0}, {1}, {2}",
+	  "pl": "Odmówiono zalogowania użytkownika z {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->47->2406"
       ]
@@ -20410,12 +20419,14 @@
     },
     {
       "en": "Device \"",
+	  "pl": "Urządzenie \"",
       "xloc": [
         "device-help.html->2->3"
       ]
     },
     {
       "en": "Device \"[[[DEVICENAME]]]\" requested assistance.",
+	  "pl": "Urządzenie \"[[[DEVICENAME]]]\" prosiło o pomoc.",
       "xloc": [
         "device-help.txt"
       ]
@@ -20826,6 +20837,7 @@
     {
       "en": "Device Push Notification Record",
       "nl": "Apparaat Push Notificatie vermelding",
+	  "pl": "Zapis Powiadomień Push Urządzenia",
       "xloc": [
         "default.handlebars->47->2920"
       ]
@@ -20833,6 +20845,7 @@
     {
       "en": "Device SMBIOS record",
       "nl": "Apparaat SMBIOS vermelding",
+	  "pl": "Zapis SMBIOS urządzenia",
       "xloc": [
         "default.handlebars->47->2919"
       ]
@@ -21196,6 +21209,7 @@
     {
       "en": "Device group record",
       "nl": "Apparaatgroep vermelding",
+	  "pl": "Zapis grupy urządzeń",
       "xloc": [
         "default.handlebars->47->2905"
       ]
@@ -21278,6 +21292,7 @@
     {
       "en": "Device information records",
       "nl": "Apparaatinformatie vermeldingen",
+	  "pl": "Zapisy informacji urządzenia",
       "xloc": [
         "default.handlebars->47->2907"
       ]
@@ -21799,6 +21814,7 @@
     {
       "en": "Device power transition records",
       "nl": "Apparaat aan/uit vermeldingen",
+	  "pl": "Zapisy zmiany stanu zasilania",
       "xloc": [
         "default.handlebars->47->2913"
       ]
@@ -21806,6 +21822,7 @@
     {
       "en": "Device record",
       "nl": "Apparaat vermelding",
+	  "pl": "Zapis urządzenia",
       "xloc": [
         "default.handlebars->47->2904"
       ]
@@ -21863,6 +21880,7 @@
     {
       "en": "Device sharing records",
       "nl": "Apparaten delings vermeldingen",
+	  "pl": "Zapisy udostępniania urządzenia",
       "xloc": [
         "default.handlebars->47->2917"
       ]
@@ -21870,6 +21888,7 @@
     {
       "en": "Device, users, groups and other records",
       "nl": "Apparaat, gebruikers, groepen en andere vermeldingen",
+	  "pl": "Zapisy urządzenia, użytkowników, grup i inne",
       "xloc": [
         "default.handlebars->47->2921"
       ]
@@ -24995,6 +25014,7 @@
     },
     {
       "en": "Email Help Request",
+	  "pl": "Prośba Pomocy Email",
       "xloc": [
         "default.handlebars->47->1939",
         "default.handlebars->47->889"
@@ -26971,6 +26991,7 @@
     {
       "en": "Event records",
       "nl": "Gebeurtenis vermeldingen",
+	  "pl": "Zapisy zdarzeń",
       "xloc": [
         "default.handlebars->47->2914"
       ]
@@ -29975,12 +29996,14 @@
     },
     {
       "en": "Go to first page",
+	  "pl": "Idź do pierwszej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
     },
     {
       "en": "Go to last page",
+	  "pl": "Idź do ostatniej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -30039,12 +30062,14 @@
     },
     {
       "en": "Go to next page",
+	  "pl": "Idź do następnej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
     },
     {
       "en": "Go to previous page",
+	  "pl": "Idź do poprzedniej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -30417,6 +30442,7 @@
     },
     {
       "en": "Group Type",
+	  "pl": "Typ Grupy",
       "xloc": [
         "default.handlebars->47->2576"
       ]
@@ -30803,6 +30829,7 @@
     },
     {
       "en": "HTTP/",
+	  "pl": "HTTP/",
       "xloc": [
         "default.handlebars->47->1004",
         "default.handlebars->47->1981"
@@ -30810,6 +30837,7 @@
     },
     {
       "en": "HTTP/{0} link",
+	  "pl": "HTTP/{0} link",
       "xloc": [
         "default.handlebars->47->298"
       ]
@@ -30892,6 +30920,7 @@
     },
     {
       "en": "HTTPS/",
+	  "pl": "HTTPS/",
       "xloc": [
         "default.handlebars->47->1005",
         "default.handlebars->47->1982"
@@ -30899,6 +30928,7 @@
     },
     {
       "en": "HTTPS/{0}",
+	  "pl": "HTTPS/{0}",
       "xloc": [
         "default.handlebars->47->299"
       ]
@@ -31283,6 +31313,7 @@
     },
     {
       "en": "Help requests",
+	  "pl": "Prośby pomocy",
       "xloc": [
         "default.handlebars->47->1027",
         "default.handlebars->47->2179"
@@ -31862,6 +31893,7 @@
     {
       "en": "IP location information records",
       "nl": "IP locatiegegevens vermeldingen",
+	  "pl": "Zapisy o informacji lokalizacji IP",
       "xloc": [
         "default.handlebars->47->2908"
       ]
@@ -33897,6 +33929,7 @@
     },
     {
       "en": "Intel&reg; AMT Power on to BIOS",
+	  "pl": "Intel&reg; AMT Uruchom do BIOS",
       "xloc": [
         "default.handlebars->47->1145"
       ]
@@ -33956,6 +33989,7 @@
     },
     {
       "en": "Intel&reg; AMT Reset to BIOS",
+	  "pl": "Intel&reg; AMT Resetuj do BIOS",
       "xloc": [
         "default.handlebars->47->1144"
       ]
@@ -37353,6 +37387,7 @@
     {
       "en": "Last connection time records",
       "nl": "Laatste verbindingstijd vermeldingen",
+	  "pl": "Zapisy czasu ostatnich połączeń",
       "xloc": [
         "default.handlebars->47->2912"
       ]
@@ -44056,6 +44091,7 @@
     {
       "en": "Network interface information records",
       "nl": "Netwerkinterface informatie vermeldingen",
+	  "pl": "Zapisy informacji o interfejsach sieciowych",
       "xloc": [
         "default.handlebars->47->2910"
       ]
@@ -49467,6 +49503,7 @@
     },
     {
       "en": "Perform Intel&reg; AMT power on to BIOS?",
+	  "pl": "Czy wykonać Intel&reg; AMT uruchomienie do BIOS?",
       "xloc": [
         "default.handlebars->47->1168"
       ]
@@ -49499,6 +49536,7 @@
     },
     {
       "en": "Perform Intel&reg; AMT reset to BIOS?",
+	  "pl": "Czy wykonać Intel&reg; AMT resetowanie do BIOS?",
       "xloc": [
         "default.handlebars->47->1170"
       ]
@@ -50327,6 +50365,7 @@
     },
     {
       "en": "Port",
+	  "pl": "Port",
       "xloc": [
         "default.handlebars->47->1126",
         "default.handlebars->47->1127"
@@ -55531,12 +55570,14 @@
     },
     {
       "en": "Request:",
+	  "pl": "Prośba:",
       "xloc": [
         "device-help.html->2->5"
       ]
     },
     {
       "en": "Request: \"[[[HELPREQUEST]]]\"",
+	  "pl": "Prośba: \"[[[HELPREQUEST]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -56412,6 +56453,7 @@
     {
       "en": "Run",
       "nL": "Uitvoeren",
+	  "pl": "Wykonaj",
       "xloc": [
         "default.handlebars->47->924"
       ]
@@ -56471,6 +56513,7 @@
     {
       "en": "Run a script on this computer",
       "nl": "Voer een script uit op deze computer",
+	  "pl": "Wykonaj skrypt na tym komputerze",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -60000,6 +60043,7 @@
     {
       "en": "Server is unable to get recordings from the database.",
       "nl": "Server kan geen opnamen uit de database halen.",
+	  "pl": "Serwer nie może pobrać zapisów z bazy danych.",
       "xloc": [
         "default.handlebars->47->2797"
       ]
@@ -60007,6 +60051,7 @@
     {
       "en": "Server is unable to read from the recordings folder.",
       "nl": "Server kan niet lezen uit de opnamemap.",
+	  "pl": "Serwer nie może odczytać zapisów z folderu.",
       "xloc": [
         "default.handlebars->47->2796"
       ]
@@ -60014,6 +60059,7 @@
     {
       "en": "Server statistics records",
       "nl": "Server statistieken vermeldingen",
+	  "pl": "Zapisy statystyk serwera",
       "xloc": [
         "default.handlebars->47->2915"
       ]
@@ -65584,6 +65630,7 @@
     {
       "en": "Text notes records",
       "nl": "Tekst notities vermeldingen",
+	  "pl": "Zapisy notatek tekstowych",
       "xloc": [
         "default.handlebars->47->2909"
       ]
@@ -65962,6 +66009,7 @@
     },
     {
       "en": "This NodeJS version does not support OpenID.",
+	  "pl": "Obecna wersja NodeJS nie wspiera OpenID.",
       "xloc": [
         "default.handlebars->47->107"
       ]
@@ -68753,6 +68801,7 @@
     {
       "en": "Unable to load agent icon file: {0}.",
       "nl": "Kan agent pictogram bestand niet laden: {0}.",
+	  "pl": "Nie moge załadować pliku ikony agenta: {0}.",
       "xloc": [
         "default.handlebars->47->105"
       ]
@@ -68760,6 +68809,7 @@
     {
       "en": "Unable to load agent logo file: {0}.",
       "nl": "Kan agent logo bestand niet laden: {0}.",
+	  "pl": "Nie moge załadować pliku logo agenta: {0}.",
       "xloc": [
         "default.handlebars->47->106"
       ]
@@ -70417,6 +70467,7 @@
     },
     {
       "en": "User Authentication Log",
+	  "pl": "Dziennik Autentykacji Użytkownika",
       "xloc": [
         "default.handlebars->47->3053"
       ]
@@ -71117,6 +71168,7 @@
     {
       "en": "User group records",
       "nl": "Gebruikersgroep vermeldingen",
+	  "pl": "Zapisy grupy użytkownika",
       "xloc": [
         "default.handlebars->47->2916"
       ]
@@ -71229,6 +71281,7 @@
     {
       "en": "User records",
       "nl": "Gebruikers vermeldingen",
+	  "pl": "Zapisy użytkownika",
       "xloc": [
         "default.handlebars->47->2906"
       ]
@@ -71261,12 +71314,14 @@
     },
     {
       "en": "User:",
+	  "pl": "Użytkownik:",
       "xloc": [
         "device-help.html->2->5"
       ]
     },
     {
       "en": "User: \"[[[HELPUSERNAME]]]\"",
+	  "pl": "Użytkownik: \"[[[HELPUSERNAME]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -74984,6 +75039,7 @@
     },
     {
       "en": "[[[DEVICENAME]]]",
+	  "pl": "[[[DEVICENAME]]]",
       "xloc": [
         "device-help.html->2->3->1"
       ]
@@ -75015,12 +75071,14 @@
     },
     {
       "en": "[[[HELPREQUEST]]]",
+	  "pl": "[[[HELPREQUEST]]]",
       "xloc": [
         "device-help.html->2->5->4"
       ]
     },
     {
       "en": "[[[HELPUSERNAME]]]",
+	  "pl": "[[[HELPUSERNAME]]]",
       "xloc": [
         "device-help.html->2->5->1"
       ]
@@ -75054,6 +75112,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Help Request",
+	  "pl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Prośba Pomocy",
       "xloc": [
         "device-help.html->0"
       ]
@@ -75165,6 +75224,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Device Help Request",
+	  "pl": "[[[SERVERNAME]]] - Prośba Pomocy Urządzenia",
       "xloc": [
         "device-help.txt"
       ]
@@ -75224,6 +75284,7 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Help Request",
+	  "pl": "[[[SERVERNAME]]] - Prośba Pomocy",
       "xloc": [
         "device-help.html->2->1->1->0->1->1"
       ]
@@ -75282,6 +75343,7 @@
     },
     {
       "en": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
+	  "pl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
       "xloc": [
         "device-help.txt"
       ]
@@ -77501,6 +77563,7 @@
     },
     {
       "en": "to navigate to this device.",
+	  "pl": "by nawigować do tego urządzenia.",
       "xloc": [
         "device-help.html->2->7"
       ]
