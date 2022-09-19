@@ -2536,8 +2536,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) { return; }
         if ((req.user != null) && (req.user.sid != null)) {
             const strategy = domain.authstrategies[req.user.strategy]
-            parent.debug('authlog', `${req.user.strategy.toUpperCase()}: User Authorized: ${JSON.stringify(req.user, null, 2)}`);
-            if (groups.enabled) {
+            parent.authlog('authlog', `${req.user.strategy.toUpperCase()}: User Authorized: ${JSON.stringify(req.user, null, 2)}`);
+            if (groups.enabled) { // Groups only available for OIDC strategy currently
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups)
                 groups.syncEnabled = (domain.authstrategies.oidc?.groups?.sync === true || domain.authstrategies.oidc?.groups?.sync?.filter) ? true : false
                 groups.syncMemberships = []
@@ -2549,9 +2549,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Fancy Logs
                 if (groups.userMemberships.length == 1) {
-                    parent.debug('authlog', `${req.user.strategy.toUpperCase()}: Found membership: ${groups.userMemberships[0]}`);
+                    parent.authlog('handleStrategyLogin', `OIDC: Found membership: ${groups.userMemberships[0]}`);
                 } else {
-                    parent.debug('authlog', `${req.user.strategy.toUpperCase()}: Found ${groups.userMemberships.length} memberships:\n  ${groups.userMemberships.join('\n  ')}`);
+                    parent.authlog('handleStrategyLogin', `OIDC: Found ${groups.userMemberships.length} memberships:\n  ${groups.userMemberships.join('\n  ')}`);
                 }
 
                 // Check user membership in required groups
@@ -2560,11 +2560,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     for (var i in groups.requiredGroups) {
                         if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
                             match = true;
-                            parent.debug('authlog', `OIDC: ${req.user.name} is member of required group: ${groups.requiredGroups[i]}`);
+                            parent.authlog('handleStrategyLogin', `OIDC: ${req.user.name} is member of required group: ${groups.requiredGroups[i]}`);
                         }
                     }
                     if (match === false) { 
-                        parent.debug('authlog', `OIDC: User login denied. User not found in required group.`); 
+                        parent.authlog('handleStrategyLogin', `OIDC: User login denied. User not found in required group.`); 
                         req.session.loginmode = 1;
                         req.session.messageid = 111; // Access Denied.
                         res.redirect(domain.url + getQueryPortion(req));
@@ -2590,31 +2590,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
                     }
                     if (groups.syncMemberships.length > 0) {
-                        parent.debug('authlog', `OIDC: Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
+                        parent.authlog('handleStrategyLogin', `OIDC: Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
                     } else { 
                         groups.syncMemberships = null;
                         groups.syncEnabled = false
-                        parent.debug('authlog', `OIDC: No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
+                        parent.authlog('handleStrategyLogin', `OIDC: No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
                     }
                 }
             }
+
             // Check if the user already exists
             const userid = 'user/' + domain.id + '/' + req.user.sid;
             var user = obj.users[userid];
-
-            // Azure: Update the old 'unique_name' based user ID with the new 'sub' based one if the user already exists 
-            if (false) { // Might not even do this. Considering other options
-                Object.keys(obj.users).forEach((id) => {
-                    if (obj.users[id].email == req.user.email && obj.users[id].name == req.user.name && obj.users[id]._id.includes('azure')) {
-                        var newID = 'user/' + domain.id + '/' + req.user.sid;
-                        var oldID = obj.users[id]._id
-                        parent.debug('authlog', `AZURE: WARNING: UPDATE OLD USERS ENABLED: REBUILDING USER: ${oldID} TO BE: ${newID}`);
-                        user = Object.assign(obj.users[id], {'_id': newID})
-                        obj.db.Remove(oldID);
-                        obj.db.SetUser(user);
-                    }
-                });
-            }
             if (user == null) {
                 var newAccountAllowed = false;
                 var newAccountRealms = null;
@@ -2629,7 +2616,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 if (newAccountAllowed === true) {
                     // Create the user
-                    parent.debug('authlog', `${req.user.strategy.toUpperCase()}: Creating new login user: "${userid}"`);
+                    parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: Creating new login user: "${userid}"`);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = req.user.email_verified ? req.user.email_verified : true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
@@ -2670,7 +2657,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                         // See if the user is a member of the site admin group.
                         if (groups.grantRevokeAdmin === true) {
-                            parent.debug('authlog', `OIDC: GROUPS: Granting site admin privilages to new user "${user.name}" found in admin group: ${groups.siteAdmin}`);
+                            parent.authlog('handleStrategyLogin', `OIDC: GROUPS: Granting site admin privilages to new user "${user.name}" found in admin group: ${groups.siteAdmin}`);
                             user.siteadmin = 0xFFFFFFFF;
                         }
                     }
@@ -2695,7 +2682,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.parent.DispatchEvent(targets, obj, loginEvent);
                 } else {
                     // New users not allowed
-                    parent.debug('authlog', `${req.user.strategy.toUpperCase()}: Can\'t create new user, account creation is not allowed`);
+                    parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: Can't create new user, account creation is not allowed`);
                     req.session.loginmode = 1;
                     req.session.messageid = 100; // Unable to create account.
                     res.redirect(domain.url + getQueryPortion(req));
@@ -2715,10 +2702,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // See if the user is a member of the site admin group.
                     if (groups.siteAdminEnabled === true) {
                         if (groups.grantRevokeAdmin === true) {
-                            parent.debug('authlog', `OIDC: Granting site admin privilages to user "${user.name}" found in administrator group: ${groups.siteAdmin}`); 
+                            parent.authlog('handleStrategyLogin', `OIDC: GROUPS: Granting site admin privilages to user "${user.name}" found in administrator group: ${groups.siteAdmin}`); 
                             if (user.siteadmin !== 0xFFFFFFFF) { user.siteadmin = 0xFFFFFFFF; userChanged = true; }
                         } else if ((groups.grantRevokeAdmin === false) && (user.siteadmin === 0xFFFFFFFF)) {
-                            parent.debug('authlog', `OIDC: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
+                            parent.authlog('handleStrategyLogin', `OIDC: GROUPS: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
                             delete user.siteadmin;
                             userChanged = true;
                         }
@@ -2744,13 +2731,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const ua = obj.getUserAgentInfo(req);
                 const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
-                parent.debug('authlog', `${req.user.strategy.toUpperCase()}: User Logged In: Name: ${user.name} ID: ${user._id}`);
+                parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: User Logged In: Name: ${user.name} ID: ${user._id}`);
             }
         } else {
-            parent.debug('warn', 'handleStrategyLogin: FAILED - No user');
+            parent.debug('ERROR', 'handleStrategyLogin: FAILED - No user');
         }
         
-        parent.debug('authlog', `${req.user.strategy.toUpperCase()}: User Authenticated: ${JSON.stringify(user, null, 2)}`);
+        parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: User Authenticated: ${JSON.stringify(user, null, 2)}`);
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
@@ -8032,7 +8019,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else {
                 obj.tcpAltServer = obj.tlsAltServer.listen(port, addr, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             }
-            obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.');
+            obj.parent.debug('https', 'Server listening on 0.0.0.0 port ' + port + '.');
             obj.parent.updateServerState('https-agent-port', port);
         } else {
             obj.tcpAltServer = obj.agentapp.listen(port, addr, function () { console.log('MeshCentral HTTP agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
