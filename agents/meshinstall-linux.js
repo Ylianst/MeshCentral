@@ -156,7 +156,7 @@ if (process.argv.includes('-translations'))
     console.log(JSON.stringify(translation));
     process.exit();
 }
-if (process.argv.includes('-help') || (process.platform == 'linux' && process.env['XAUTHORITY']==null && process.env['DISPLAY'] == null))
+if (process.argv.includes('-help') || (process.platform == 'linux' && process.env['XAUTHORITY'] == null && process.env['DISPLAY'] == null && process.argv.length == 1))
 {
     console.log("\n" + translation[lang].commands + ": ");
     if ((msh.InstallFlags & 1) == 1)
