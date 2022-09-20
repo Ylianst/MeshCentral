@@ -24,7 +24,7 @@ Make sure you match and/or adjust all the following settings appropriately in yo
 }
 ```
 
-If you need further clarification to know what each of these settings are
+If you need further clarification to know what each of these settings are check out [the config template](https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json).
 
 Then restart meshcentral and it will get a cert for you, the process will need to restart to apply the cert.
 
