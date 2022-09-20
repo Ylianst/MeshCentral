@@ -7341,7 +7341,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof strategy.groups == 'object') {
                 let groupScope = strategy.groups.scope || null
                 if (groupScope == null) {
-                    if (preset == 'azure') { groupScope = 'User.Read' }
+                    if (preset == 'azure') { groupScope = 'Group.Read.All' }
                     if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
                     if (typeof preset != 'string') { groupScope = 'groups' }
                 }
@@ -7453,7 +7453,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 async function getGroups(preset, tokenset) {
                     let url = '';
-                    if (preset == 'azure') { url = strategy.groups.recursive ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
+                    if (preset == 'azure') { url = !strategy.groups.recursive ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
                     if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null ; }
                     return new Promise((resolve,reject) => {
                         const options = {
@@ -7483,7 +7483,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
                                     reject(error);
                                 }
-                                if (preset == 'azure'){ data = data.value; }
+                                if (preset == 'azure'){ data = JSON.parse(data); data = data.value; }
                                 if (preset == 'google'){
                                     data = data.split('\n');
                                     data = data.join('');
@@ -7491,6 +7491,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     data = data.groups;
                                 }
                                 let groups = []
+                                console.log(data)
                                 for (var i in data) {
                                     if (typeof data[i].displayName == 'string') {
                                         groups.push(data[i].displayName);

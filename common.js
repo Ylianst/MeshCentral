@@ -385,6 +385,6 @@ module.exports.convertStrArray = function (object, split) {
     } else if (Array.isArray(object)) {
         return object
     } else {
-        throw new Error('Object was neither string nor array')
+        return []
     }
 }
