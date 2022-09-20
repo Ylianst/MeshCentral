@@ -13,8 +13,6 @@
 /*jshint esversion: 6 */
 'use strict';
 
-const { nullcheck } = require('cbor/lib/decoder.js');
-
 // SerialTunnel object is used to embed TLS within another connection.
 function SerialTunnel(options) {
     var obj = new require('stream').Duplex(options);
@@ -838,28 +836,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         parent.debug('web', 'handleLogoutRequest: success.');
 
         // If this user was logged in using an authentication strategy and there is a logout URL, use it.
-        if ((userid != null) && (domain.authstrategies != null)) {
+        if ((userid != null) && (domain.authstrategies?.authStrategyFlags != null)) {
+            let strategy
+            let logouturl
             const u = userid.split('/')[2];
-            if (u.startsWith('~twitter:') && (domain.authstrategies.twitter != null) && (typeof domain.authstrategies.twitter.logouturl == 'string')) { res.redirect(domain.authstrategies.twitter.logouturl); return; }
-            if (u.startsWith('~google:') && (domain.authstrategies.google != null) && (typeof domain.authstrategies.google.logouturl == 'string')) { res.redirect(domain.authstrategies.google.logouturl); return; }
-            if (u.startsWith('~github:') && (domain.authstrategies.github != null) && (typeof domain.authstrategies.github.logouturl == 'string')) { res.redirect(domain.authstrategies.github.logouturl); return; }
-            if (u.startsWith('~reddit:') && (domain.authstrategies.reddit != null) && (typeof domain.authstrategies.reddit.logouturl == 'string')) { res.redirect(domain.authstrategies.reddit.logouturl); return; }
-            if (u.startsWith('~azure:') && (domain.authstrategies.azure != null) && (typeof domain.authstrategies.azure.logouturl == 'string')) { res.redirect(domain.authstrategies.azure.logouturl); return; }
+            if (u.startsWith('~twitter:') && (domain.authstrategies.twitter != null) && (typeof domain.authstrategies.twitter.logouturl == 'string')) { strategy = 'twitter'; logouturl = domain.authstrategies.twitter.logouturl; }
+            if (u.startsWith('~google:') && (domain.authstrategies.google != null) && (typeof domain.authstrategies.google.logouturl == 'string')) { strategy = 'google'; logouturl = domain.authstrategies.google.logouturl; }
+            if (u.startsWith('~github:') && (domain.authstrategies.github != null) && (typeof domain.authstrategies.github.logouturl == 'string')) { strategy = 'github'; logouturl = domain.authstrategies.github.logouturl; }
+            if (u.startsWith('~reddit:') && (domain.authstrategies.reddit != null) && (typeof domain.authstrategies.reddit.logouturl == 'string')) { strategy = 'reddit'; logouturl = domain.authstrategies.reddit.logouturl; }
+            if (u.startsWith('~azure:') && (domain.authstrategies.azure != null) && (typeof domain.authstrategies.azure.logouturl == 'string')) { strategy = 'azure'; logouturl = domain.authstrategies.azure.logouturl; }
             if (u.startsWith('~oidc:') && domain.authstrategies.oidc != null) {
-                if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
-                    res.redirect(domain.authstrategies.oidc.issuer.end_session_endpoint + '?post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri);
-                    return;
+                strategy = 'oidc';
+                if (typeof domain.authstrategies.oidc.logouturl == 'string') {
+                    logouturl = domain.authstrategies.oidc.logouturl
+                } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
+                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + '?post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
-                    res.redirect(domain.authstrategies.oidc.issuer.end_session_endpoint);
-                    return;
-                } else if (typeof domain.authstrategies.oidc.issuer.issuer == 'string') {
-                    res.redirect(domain.authstrategies.oidc.issuer.issuer + '/logout');
-                    return;
+                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint;
                 }
             }
-            if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { res.redirect(domain.authstrategies.jumpcloud.logouturl); return; }
-            if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { res.redirect(domain.authstrategies.saml.logouturl); return; }
-            if (u.startsWith('~intel:') && (domain.authstrategies.intel != null) && (typeof domain.authstrategies.intel.logouturl == 'string')) { res.redirect(domain.authstrategies.intel.logouturl); return; }
+            if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { strategy = 'jumpcloud'; logouturl = domain.authstrategies.jumpcloud.logouturl; }
+            if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { strategy = 'saml'; logouturl = domain.authstrategies.saml.logouturl; }
+            if (u.startsWith('~intel:') && (domain.authstrategies.intel != null) && (typeof domain.authstrategies.intel.logouturl == 'string')) { strategy = 'intel'; logouturl = domain.authstrategies.intel.logouturl; }
+            logouturl = URL.toString(new URL(logouturl))
+            parent.authLog('handleLogoutRequest', strategy.toUpperCase() + ': LOGOUT AT:' + logouturl)
+            res.redirect(logouturl)
+            return;
         }
 
         // This is the default logout redirect to the login page
@@ -2586,16 +2588,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // This is called after a successful Oauth to Twitter, Google, GitHub...
     function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
-        const groups = { 'enabled': obj.common.validateStrArray(req.user.groups, 1) }
-        if (domain == null) { return; }
+        const strategy = typeof req.user.strategy == 'string' ? domain.authstrategies[req.user.strategy] : null ;
+        if (domain == null || strategy == null) { return; }
+        const groups = { 'enabled': typeof strategy.groups == 'object' }
         if ((req.user != null) && (req.user.sid != null)) {
-            const strategy = domain.authstrategies[req.user.strategy]
-            parent.authlog('authlog', `${req.user.strategy.toUpperCase()}: User Authorized: ${JSON.stringify(req.user, null, 2)}`);
+            parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user, null, 2)}`);
             if (groups.enabled) { // Groups only available for OIDC strategy currently
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups)
-                groups.syncEnabled = (domain.authstrategies.oidc?.groups?.sync === true || domain.authstrategies.oidc?.groups?.sync?.filter) ? true : false
+                groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false
                 groups.syncMemberships = []
-                groups.siteAdminEnabled = domain.authstrategies.oidc?.groups?.siteadmin ? true : false
+                groups.siteAdminEnabled = strategy.groups.siteadmin ? true : false
                 groups.grantRevokeAdmin = null
                 groups.requiredGroups = obj.common.convertStrArray(strategy.groups.required)
                 groups.siteAdmin = obj.common.convertStrArray(strategy.groups.siteadmin)
@@ -2603,9 +2605,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Fancy Logs
                 if (groups.userMemberships.length == 1) {
-                    parent.authlog('handleStrategyLogin', `OIDC: Found membership: ${groups.userMemberships[0]}`);
+                    parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Found membership: ${groups.userMemberships[0]}`);
                 } else {
-                    parent.authlog('handleStrategyLogin', `OIDC: Found ${groups.userMemberships.length} memberships:\n  ${groups.userMemberships.join('\n  ')}`);
+                    parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Found ${groups.userMemberships.length} memberships:\n  ${groups.userMemberships.join('\n  ')}`);
                 }
 
                 // Check user membership in required groups
@@ -2614,11 +2616,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     for (var i in groups.requiredGroups) {
                         if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
                             match = true;
-                            parent.authlog('handleStrategyLogin', `OIDC: ${req.user.name} is member of required group: ${groups.requiredGroups[i]}`);
+                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: ${req.user.name} is member of required group: ${groups.requiredGroups[i]}`);
                         }
                     }
                     if (match === false) { 
-                        parent.authlog('handleStrategyLogin', `OIDC: User login denied. User not found in required group.`); 
+                        parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: User login denied. User not found in required group.`); 
                         req.session.loginmode = 1;
                         req.session.messageid = 111; // Access Denied.
                         res.redirect(domain.url + getQueryPortion(req));
@@ -2644,11 +2646,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
                     }
                     if (groups.syncMemberships.length > 0) {
-                        parent.authlog('handleStrategyLogin', `OIDC: Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
+                        parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
                     } else { 
                         groups.syncMemberships = null;
                         groups.syncEnabled = false
-                        parent.authlog('handleStrategyLogin', `OIDC: No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
+                        parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
                     }
                 }
             }
@@ -2670,7 +2672,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 if (newAccountAllowed === true) {
                     // Create the user
-                    parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: Creating new login user: "${userid}"`);
+                    parent.authLog(req.user.strategy.toUpperCase(), `Creating new login user: "${userid}"`);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = req.user.email_verified ? req.user.email_verified : true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
@@ -2711,7 +2713,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                         // See if the user is a member of the site admin group.
                         if (groups.grantRevokeAdmin === true) {
-                            parent.authlog('handleStrategyLogin', `OIDC: GROUPS: Granting site admin privilages to new user "${user.name}" found in admin group: ${groups.siteAdmin}`);
+                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Granting site admin privilages to new user "${user.name}" found in admin group: ${groups.siteAdmin}`);
                             user.siteadmin = 0xFFFFFFFF;
                         }
                     }
@@ -2736,7 +2738,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.parent.DispatchEvent(targets, obj, loginEvent);
                 } else {
                     // New users not allowed
-                    parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: Can't create new user, account creation is not allowed`);
+                    parent.authLog(req.user.strategy.toUpperCase(), `NEW USER: Can't create new user, account creation is not allowed`);
                     req.session.loginmode = 1;
                     req.session.messageid = 100; // Unable to create account.
                     res.redirect(domain.url + getQueryPortion(req));
@@ -2756,10 +2758,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // See if the user is a member of the site admin group.
                     if (groups.siteAdminEnabled === true) {
                         if (groups.grantRevokeAdmin === true) {
-                            parent.authlog('handleStrategyLogin', `OIDC: GROUPS: Granting site admin privilages to user "${user.name}" found in administrator group: ${groups.siteAdmin}`); 
+                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Granting site admin privilages to user "${user.name}" found in administrator group: ${groups.siteAdmin}`); 
                             if (user.siteadmin !== 0xFFFFFFFF) { user.siteadmin = 0xFFFFFFFF; userChanged = true; }
                         } else if ((groups.grantRevokeAdmin === false) && (user.siteadmin === 0xFFFFFFFF)) {
-                            parent.authlog('handleStrategyLogin', `OIDC: GROUPS: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
+                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
                             delete user.siteadmin;
                             userChanged = true;
                         }
@@ -2768,6 +2770,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Update db record for user if there are changes detected
                 if (userChanged) {
+                    parent.authLog(req.user.strategy.toUpperCase(), `EXISTING: Existing user has changed, updating user database entry`);
                     obj.db.SetUser(user);
 
                     // Event user change
@@ -2785,13 +2788,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const ua = obj.getUserAgentInfo(req);
                 const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
-                parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: User Logged In: Name: ${user.name} ID: ${user._id}`);
+                parent.authLog(req.user.strategy.toUpperCase(), `EXISTING: Logged In: Name: ${user.name} ID: ${user._id}`);
             }
         } else {
-            parent.debug('ERROR', 'handleStrategyLogin: FAILED - No user');
+            parent.debug('ERROR', req.user.strategy.toUpperCase() + ': LOGIN FAILED - REQUEST CONTAINS NO USER OR SID');
         }
         
-        parent.authlog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: User Authenticated: ${JSON.stringify(user, null, 2)}`);
+        parent.authLog(req.user.strategy.toUpperCase(), `User Authenticated: ${JSON.stringify(user, null, 2)}`);
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
@@ -6406,19 +6409,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Setup all domain auth strategy passport.js
         async function setupAllDomainAuthStrategies(){
             for (var i in parent.config.domains) {
-                if (typeof parent.config.domains[i].authstrategies == 'object') {
-                    let authStrategyFlags = 0;
-                    let domain = parent.config.domains[i]
-                    authStrategyFlags = await setupDomainAuthStrategy(domain);
-                    if (authStrategyFlags > 0) {
-                        if (parent.config.domains[i].dns != null) {
-                            if (typeof parent.config.domains[''].authstrategies != 'object') { parent.config.domains[''].authstrategies = { 'authStrategyFlags': 0 }; }
-                            parent.config.domains[''].authstrategies.authStrategyFlags |= authStrategyFlags;
-                        } else {
-                            if (typeof parent.config.domains[i].authstrategies != 'object') { parent.config.domains[i].authstrategies = { 'authStrategyFlags': 0 }; }
-                            parent.config.domains[i].authstrategies.authStrategyFlags |= authStrategyFlags;
-                        }
-                    }
+                if (parent.config.domains[i].dns != null) {
+                    if (typeof parent.config.domains[''].authstrategies != 'object') { parent.config.domains[''].authstrategies = { 'authStrategyFlags': 0 }; }
+                    parent.config.domains[''].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains['']);
+                } else {
+                    if (typeof parent.config.domains[i].authstrategies != 'object') { parent.config.domains[i].authstrategies = { 'authStrategyFlags': 0 }; }
+                    parent.config.domains[i].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains[i]);
                 }
             }
         }
@@ -7303,177 +7299,84 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof domain.authstrategies.oidc == 'object') {
             // Ensure required objects exist
             let initStrategy = domain.authstrategies.oidc
-            let strategy = Object.assign({
-                'client': {},
-                'issuer': {},
-                'options': {},
-                'custom': {},
-                'obj': { 'openidClient': require('openid-client') }
-            },initStrategy)
-            let oldConfigs = []
-            let preset = strategy.custom.preset
-            if ((strategy.custom.tenant_id || initStrategy.tenantid) && strategy.custom.preset !== null) { preset = 'azure' }
-            if ((strategy.custom.customer_id || initStrategy.customerid) && strategy.custom.preset !== null) { preset = 'google' }
+            let strategy = migrateOldConfigs(Object.assign({ 'client': {}, 'issuer': {}, 'options': {}, 'custom': {}, 'obj': { 'openidClient': require('openid-client') }}, initStrategy))
+            let preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null
+            if ((strategy.custom.tenant_id) && !strategy.custom.preset) { strategy.custom.preset = preset = 'azure' }
+            if ((strategy.custom.customer_id || strategy.custom.identitysource || (strategy.client.client_id.split('.')[2] == 'googleusercontent')) && !strategy.custom.preset) { strategy.custom.preset = preset = 'google' }
             if (typeof initStrategy.issuer == 'string') { strategy.issuer = { 'issuer': initStrategy.issuer } }
             if (typeof strategy.issuer.issuer != 'string' && preset === null) {
-                parent.debug('authlog', 'OIDC: Missing issuer url.')
-                return new Error('OIDC: Missing issuer url.');
+                let error = new Error('OIDC: Missing issuer URI.');
+                parent.authLog('error', `${error.message} STRATEGY: ${JSON.stringify(strategy, null, 2)}`);
+                throw error;
             }
 
-            /* Begin Scope Modifications */
-            if (typeof strategy.scope == 'string') { // Migrate old issuer configs, new configs take priority
+            // Setup Scope
+            if (typeof strategy.scope == 'string') { 
                 if (!strategy.options.params?.scope) {
                     if (!strategy.options.params) {
                         strategy.options.params = {'scope': strategy.scope };
                     } else {
                         strategy.options.params.scope = strategy.scope
                     };
-                    oldConfigs.push('scope\t=> options.params.scope');
+                    parent.authlog('oidc', `OLD CONFIG: Moving old config to new location. strategy.scope => strategy.options.params.scope`);
                 } else {
-                    oldConfigs.push('\e[9mscope\e[0m\t=> options.params.scope IGNORED OLD CONFIG');
+                    let error = new Error('OIDC: OLD CONFIG: Config conflict, new config overrides old config');
+                    parent.authlog('warn', `${error.message} OLD CONFIG: strategy.scope: ${strategy.scope} NEW CONFIG: strategy.options.params.scope:${strategy.options.params.scope}`);
                 }
                 delete strategy.scope
             }
-            if (!strategy.options.params) { // Check and prepare scope
+            if (!strategy.options.params) {
                 strategy.options.params = { 'scope': ['openid','profile','email'] }
             } else if (!strategy.options.params.scope) {
                 strategy.options.params.scope = ['openid','profile','email']
             } else {
-                strategy.options.params.scope = obj.common.convertStrArray(strategy.options.params.scope, ' ');
-            }
-            
-            if (strategy.options.params.scope === null) {
-                parent.debug('authlog', 'OIDC: Invalid scope defined.')
-                return new Error('OIDC: Invalid scope defined.');
+                try {
+                    strategy.options.params.scope = obj.common.convertStrArray(strategy.options.params.scope, ' ');
+                } catch(err) {
+                    let error = new Error('OIDC: CONFIG: Scope not strArray.', { cause: err });
+                    parent.debug('error', `${JSON.stringify(error)} SCOPE: ${JSON.stringify(strategy.options.params.scope)} OPTIONS: ${JSON.stringify(strategy.options)}`);
+                    throw error;
+                }
             }
             if (typeof strategy.groups == 'object') {
                 let groupScope = strategy.groups.scope || null
-                if (groupScope === null) {
-                    switch(preset){
-                        case 'azure':
-                            groupScope = 'User.Read'
-                            break;
-                        case 'google':
-                            groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly'
-                            break;
-                        default:
-                            groupScope = 'groups'
-                    }
+                if (groupScope == null) {
+                    if (preset == 'azure') { groupScope = 'User.Read' }
+                    if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
+                    if (typeof preset != 'string') { groupScope = 'groups' }
                 }
                 strategy.options.params.scope.push(groupScope)
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
-            /* End Scope Modifications */
+            
 
-            /* Begin Client Modifications */
-            if (typeof strategy.clientid == 'string') { // Migrate old client configs, new configs override old configs if both are present
-                if (!strategy.client.client_id) {
-                    strategy.client.client_id = strategy.clientid + '';
-                    oldConfigs.push('clientid\t=> client.client_id');
-                } else {
-                    oldConfigs.push('\e[9mclientid\e[0m\t=> client.client_id IGNORED OLD CONFIG');
-                }
-                delete strategy.clientid
-            }
-            if (strategy.client.client_id.split('.')[2] == 'googleusercontent') { preset = 'google' } else { console.log(strategy.client.client_id?.split('.')[2]) }
-            if (typeof strategy.clientsecret == 'string') {
-                if (!strategy.client.client_secret) {
-                    strategy.client.client_secret = strategy.clientsecret + '';
-                    oldConfigs.push('clientsecret\t=> client.client_secret');
-                } else {
-                    oldConfigs.push('\e[9mclientsecret\e[0m\t=> client.client_secret IGNORED OLD CONFIG');
-                }
-                delete strategy.clientsecret
-            }
-            if (typeof strategy.callbackurl == 'string') {
-                if (!strategy.client.redirect_uri) {
-                    strategy.client.redirect_uri = strategy.callbackurl;
-                    oldConfigs.push('callbackurl\t=> client.redirect_uri');
-                } else {
-                    oldConfigs.push('\e[9mcallbackurl\e[0m\t=> client.redirect_uri IGNORED OLD CONFIG');
-                }
-                delete strategy.callbackurl
-            }
-
-            /* Begin Issuer Modifications */
-            if (typeof strategy.logouturl == 'string') { // Migrate old issuer configs, new configs take priority
-                if (!strategy.issuer.end_session_endpoint) {
-                    strategy.issuer.end_session_endpoint = strategy.logouturl;
-                    oldConfigs.push('logouturl\t=> issuer.end_session_endpoint');
-                } else {
-                    oldConfigs.push('\e[9mlogouturl\e[0m\t=> issuer.end_session_endpoint IGNORED OLD CONFIG');
-                }
-                delete strategy.logouturl
-            }
-            if (typeof strategy.authorizationurl == 'string') {
-                if (!strategy.issuer.authorization_endpoint) {
-                    strategy.issuer.authorization_endpoint = strategy.authorizationurl;
-                    oldConfigs.push('authorizationurl\t=> issuer.authorization_endpoint');
-                } else {
-                    oldConfigs.push('\e[9mauthorizationurl\e[0m\t=> issuer.authorization_endpoint IGNORED OLD CONFIG');
-                }
-                delete strategy.authorizationurl
-            }
-            if (typeof strategy.tokenurl == 'string') {
-                if (!strategy.issuer.token_endpoint) {
-                    strategy.issuer.token_endpoint = strategy.tokenurl;
-                    oldConfigs.push('tokenurl\t=> issuer.token_endpoint');
-                } else {
-                    oldConfigs.push('\e[9mtokenurl\e[0m\t=> issuer.userinfo_endpoint IGNORED OLD CONFIG');
-                }
-                delete strategy.tokenurl
-            }
-            if (typeof strategy.userinfourl == 'string') {
-                if (!strategy.issuer.userinfo_endpoint) {
-                    strategy.issuer.userinfo_endpoint = strategy.userinfourl;
-                    oldConfigs.push('userinfourl\t=> issuer.userinfo_endpoint');
-                } else {
-                    oldConfigs.push('\e[9muserinfourl\e[0m\t=> issuer.userinfo_endpoint IGNORED OLD CONFIG');
-                }
-                delete strategy.userinfourl
-            }
-            if (typeof strategy.tenantid == 'string') {
-                if (!strategy.custom.tenant_id) {
-                    strategy.custom.tenant_id = strategy.tenantid;
-                    oldConfigs.push('tenantid\t=> custom.tenant_id');
-                } else {
-                    oldConfigs.push('\e[9mtenantid\e[0m\t=> custom.tenant_id IGNORED OLD CONFIG');
-                }
-                delete strategy.tenantid
-            }
-            if (typeof strategy.customerid == 'string') {
-                if (!strategy.custom.customer_id) {
-                    strategy.custom.customer_id = strategy.customerid;
-                    oldConfigs.push('customerid\t=> custom.customer_id');
-                } else {
-                    oldConfigs.push('\e[9mcustomerid\e[0m\t=> custom.customer_id IGNORED OLD CONFIG');
-                }
-                delete strategy.customerid
-            }
             // Check for preset issuer url
             let presetIssuer
-            switch(preset){
-                case 'azure':
-                    presetIssuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0';
-                    break;
-                case 'google':
-                    presetIssuer = 'https://accounts.google.com';
-                    break;
-            }
+            if (preset == 'azure') { presetIssuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0'; }
+            if (preset == 'google') { presetIssuer = 'https://accounts.google.com'; }
             if (typeof strategy.issuer.issuer != 'string') {
                 strategy.issuer.issuer = presetIssuer
             } else if ((typeof strategy.issuer.issuer == 'string') && (typeof strategy.custom.preset == 'string')) {
-                parent.debug('authlog', `OIDC: ${strategy.custom.preset.toUpperCase()}: Issuer Overridden:\n  Using Configured Issuer: ${strategy.issuer.issuer}\n  Instead of Preset Issuer: ${presetIssuer}`);
+                let error = new Error(`OIDC: PRESET: ${strategy.custom.preset.toUpperCase()}: PRESET OVERRIDDEN: CONFIG ISSUER: ${strategy.issuer.issuer} PRESET ISSUER: ${presetIssuer}`);
+                parent.authlog('warn', error.message);
             }
             // Discover additional information if available, use endpoints from config if present
-            let issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
-            if (Object.keys(strategy.issuer).length > 1) {
-                parent.debug('authlog', `OIDC: Adding Custom Metadata: ${JSON.stringify(strategy.issuer, null, 2)}`);
-                issuer = new strategy.obj.openidClient.Issuer(Object.assign(issuer.metadata,strategy.issuer));
+            let issuer
+            try {
+                issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
+            } catch(err) {
+                let error = new Error('OIDC: Discovery failed.', { cause: err });
+                parent.debug('error', `${JSON.stringify(error)} ISSUER URI: ${strategy.issuer.issuer}`);
+                throw error
+            } finally {
+                if (Object.keys(strategy.issuer).length > 1) {
+                    let error = new Error(`OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
+                    parent.authLog('warn', error.message);
+                    issuer = new strategy.obj.openidClient.Issuer(Object.assign(strategy.issuer, issuer.metadata));
+                }
+                strategy.issuer = issuer.metadata
+                strategy.obj.issuer = issuer
             }
-            strategy.issuer = issuer.metadata
-            strategy.obj.issuer = issuer
-            /* End Issuer Modifications */
 
             // Make sure redirect_uri and post_logout_redirect_uri exist before continuing
             if (!strategy.client.redirect_uri) {
@@ -7490,146 +7393,160 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             /* End Client Modifications */
 
             // Setup strategy and save configs for later
-            if (oldConfigs.length > 0) { parent.debug('authlog', `OIDC: Migrated and Removed Old Configs:\n  ${oldConfigs.join('\n  ')}`); }
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             if (domain.id === '') {
                 parent.config.domains[''].authstrategies.oidc = strategy;
-                parent.debug('authlog', 'OIDC: Saved Configuration: ' + JSON.stringify(parent.config.domains[''].authstrategies.oidc, null, 2));
+                parent.debug('verbose', 'OIDC', 'Saved Configuration: ' + JSON.stringify(parent.config.domains[''].authstrategies.oidc, null, 2));
             } else if (typeof parent.config.domains[domain.id].authstrategies.oidc == 'object') {
                 parent.config.domains[domain.id].authstrategies.oidc = strategy;
-                parent.debug('authlog', 'OIDC: Saved Configuration: ' + JSON.stringify(parent.config.domains[domain.id].authstrategies.oidc, null, 2));
+                parent.debug('verbose', 'OIDC', 'Saved Configuration: ' + JSON.stringify(parent.config.domains[domain.id].authstrategies.oidc, null, 2));
             }
+
             authStrategyFlags |= domainAuthStrategyConsts.oidc
 
             // Callback function must be able to grab info from API's using the access token, would prefer to use the token here.
             function oidcCallback(tokenset, profile, verified) {
                 // Initialize user object
                 let user = {
-                    'sid': (typeof strategy.custom.preset == 'string') ? `~oidc:${preset}:${profile.sub}` : `~oidc:${profile.sub}`,
-                    'name': profile.name,
+                    'sid': obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null,
+                    'name': obj.common.validateString(profile.name) ? profile.name : null,
                     'strategy': 'oidc',
-                    'email': profile.email,
-                    'emailVerified': profile.email_verified
+                    'preset': obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null,
+                    'email': obj.common.validateEmail(profile.email) ? profile.email : null,
+                    'emailVerified': profile.email_verified ? profile.email_verified : obj.common.validateEmail(profile.email),
+                    'groups': obj.common.validateStrArray(profile.groups) ? profile.groups : []
                 }
-
-                // Setup logout uri if not manually configured
+                
+                // Setup end sesstion enpoint if not already configured this required a registered client
                 try {
                     if (!strategy.issuer.end_session_endpoint) {
-                        strategy.issuer.end_session_endpoint = client.endSessionUrl(tokenset,domain.authstrategies[initStrategy].client.post_logout_redirect_uri)
+                        strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({'id_token_hint': tokenset})
                     }
                 } catch(err) {
-                    parent.debug('authlog', 'OIDC: Discovering end_session_endpoint Failed: ' + err);
-                    strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout'
+                    let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
+                    strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
+                    parent.debug('error', `${error.message} end_session_endpoint: ${strategy.issuer.end_session_endpoint} post_logout_redirect_uri: ${strategy.client.post_logout_redirect_uri} TOKENSET: ${JSON.stringify(tokenset)}`);
+                    parent.authLog('warn', error.message);
                 }
 
-                // Setup presets and groups
-                if (typeof strategy.groups == 'object' && typeof strategy.custom.preset == 'string') {
-                    user.preset = strategy.custom.preset
-                    getGroups(user, tokenset).then((err, user)=>{
-                        return returnVerified(err, user);
-                    });
-                } else {
-                    user.groups = profile.groups;
-                    return returnVerified(null, user);
-                }
-
-                function returnVerified(err,user){
-                    if (err !== null){
-                        parent.debug('authlog', `OIDC: ERROR: ${JSON.stringify(err, null, 2)}`);
-                        return verified(err);
-                    } else if (user !== null){
-                        parent.debug('authlog', `OIDC: Configured:\nUser: ${JSON.stringify(user, null, 2)}\nFROM\nProfile: ${JSON.stringify(profile, null, 2)}`);
-                        return verified(null, user);
-                    } else {
-                        return verified(new Error('No errors or users returned.'))
-                    }
-                }
-                async function getGroups(initUser, tokenset) {
-                    let recursiveSearchEnabled = strategy.groups.recursive || false
-                    let data
-                    let modUser = { 'groups': [] }
-                    switch (user.preset) {
-                        case 'azure':
-                            if (recursiveSearchEnabled === true) {
-                                try {
-                                    data = await getAPI('https://graph.microsoft.com/v1.0/me/transitiveMemberOf', tokenset);
-                                } catch(err) {
-                                    return err
-                                }
-                            } else {
-                                try {
-                                    data = await getAPI('https://graph.microsoft.com/v1.0/me/memberOf', tokenset);
-                                } catch(err) {
-                                    return err
-                                }
-                            }
-                            modUser.groups = [];
-                            for (var i in data.value) {
-                                if (data.value[i].displayName) {
-                                    modUser.groups.push(data.value[i].displayName);
-                                }
-                            }
-                            break;
-                        case 'google':
-                            // You can add a search here for specific group types: Security group type - cloudidentity.googleapis.com/groups.security 
-                            try {
-                                data = await getAPI('https://cloudidentity.googleapis.com/v1/groups/customers/' + strategy.custom.customer_id, tokenset);
-                            } catch(err) {
-                                return err
-                            }
-                            modUser.groups = [];
-                            for (var i in data.value) {
-                                if (typeof data.value[i].displayName == 'string') {
-                                    modUser.groups.push(data.value[i].displayName);
-                                }
-                            }
-                            break;
-                    }
-                    if (modUser.groups.length == 0) { parent.debug('authlog', `${initUser.strategy.toUpperCase()}: Skipping group setup, no memberships found.`); return new Error('No Groups were found by the request.'), initUser; }
-                    return null, Object.assign(initUser, modUser);
-                    
-                    async function getAPI(url, tokenset) {
-                        return new Promise((resolve, reject) => {
-                            url = new URL(url)
-                            const options = {
-                                'host': url.host,
-                                'path': url.path,
-                                'headers': { authorization : 'Bearer ' + tokenset.access_token },
-                                'port': url.port,
-                                'scheme': url.scheme
-                            }
-                            const req = require('https').get(options, (res) => {
-                                if (res.statusCode < 200 || res.statusCode >= 300) {
-                                    throw new Error('statusCode=' + res.statusCode);
-                                }
-                                var body = []
-                                res.on('data', function(chunk) {
-                                    body.push(chunk);
-                                });
-                                res.on('end', function() {
-                                    if(body.length == 0){
-                                        parent.debug('error', 'AUTHLOG: OIDC: Response: Body contained no data'); 
-                                        throw new Error('AUTHLOG: OIDC: Response: Body contained no data')
-                                    }
-                                    try {
-                                        body = body.join();
-                                    } catch(err) {
-                                        parent.debug('error', `AUTHLOG: OIDC: Response: Error joining data from response: ${err.message}`); 
-                                        throw err
-                                    }
-                                    resolve(body);
-                                });
-                            });
-                            req.on('error', (err) => {
-                                parent.debug('error', `AUTHLOG: OIDC: Request: Error getting groups from API: ${err.message}`); 
-                                throw err
-                            });
-                            req.end();
+                // Setup presets and groups, get groups from API if needed then return
+                if (typeof strategy.groups == 'object') {
+                    if (obj.common.validateString(strategy.groups.claim)) {
+                        user.groups = profile[strategy.groups.claim];
+                    } else if (typeof user.preset == 'string') {
+                        getGroups(user.preset, tokenset).then((groups) => {
+                            user = Object.assign(user, { 'groups': groups });
+                            return verified(null, user);
+                        }).catch((err) => {
+                            let error = new Error('OIDC: GROUPS: Skipping Groups.', { cause: err });
+                            parent.debug('error', `${JSON.stringify(error, null, 2)}`);
+                            parent.authLog('warn', error.message);
+                            delete user.groups;
+                            return verified(null, user);
                         });
+                    } else {
+                        user.groups = profile.groups;
                     }
+                } else {
+                    return verified(null, user);
+                }
+
+                async function getGroups(preset, tokenset) {
+                    let url = '';
+                    if (preset == 'azure') { url = strategy.groups.recursive ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
+                    if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null ; }
+                    return new Promise((resolve,reject) => {
+                        const options = {
+                            'headers': { authorization : 'Bearer ' + tokenset.access_token }
+                        }
+                        const req = require('https').get(url, options, (res) => {
+                            let data = []
+                            if (res.statusCode < 200 || res.statusCode >= 300) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed, statusCode: ' + res.statusCode );
+                                parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                reject(error);
+                            }
+                            res.on('data', (chunk) => {
+                                data.push(chunk);
+                            });
+                            res.on('end', () => {
+                                if (data.length == 0) {
+                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
+                                    parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                    reject(error);
+                                }
+                                try {
+                                    data = Buffer.concat(data); // data.join();
+                                    data = data.toString()
+                                } catch(err) {
+                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
+                                    parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                    reject(error);
+                                }
+                                if (preset == 'azure'){ data = data.value; }
+                                if (preset == 'google'){
+                                    data = data.split('\n');
+                                    data = data.join('');
+                                    data = JSON.parse(data);
+                                    data = data.groups;
+                                }
+                                let groups = []
+                                for (var i in data) {
+                                    if (typeof data[i].displayName == 'string') {
+                                        groups.push(data[i].displayName);
+                                    }
+                                }
+                                if (groups.length == 0) {
+                                    let error = new Error('OIDC: GROUPS: No memberships found, skipping group setup.');
+                                    parent.debug('error', `${error.message} DATA: ${data}`);
+                                    reject(error);
+                                } else {
+                                    resolve(groups);
+                                }
+                            });
+                        });
+                        req.on('error', (err) => {
+                            let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
+                            parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                            reject(error);
+                        });
+                        req.end();
+                    });
                 }
             }
-
+            function migrateOldConfigs(strategy) {
+                let oldConfigs = {
+                    'client': {
+                        'clientid': 'client_id',
+                        'clientsecret': 'client_secret',
+                        'callbackurl': 'redirect_uri'
+                    },
+                    'issuer': {
+                        'authorizationurl': 'authorization_endpoint',
+                        'tokenurl': 'token_endpoint',
+                        'userinfourl': 'userinfo_endpoint'
+                    },
+                    'custom': {
+                        'tenantid': 'tenant_id',
+                        'customerid': 'customer_id'
+                    }
+                }
+                for (var type in oldConfigs) {
+                    for ( const [key, value] of Object.entries(oldConfigs[type]) ) {
+                        if (Object.hasOwn(strategy, key)) {
+                            if (strategy[type][value] && obj.common.validateString(strategy[type][value])) {
+                                let error = new Error('OIDC: OLD CONFIG: Config conflict, new config overrides old config');
+                                parent.authLog('warn', `${JSON.stringify(error)} OLD CONFIG: ${key}: ${strategy[key]} NEW CONFIG: ${value}:${strategy[type][value]}`);
+                            } else {
+                                parent.authLog('info', `OIDC: OLD CONFIG: Moving old config to new location. strategy.${key} => strategy.${type}.${value}`);
+                                strategy[type][value] = strategy[key];
+                            }
+                            delete strategy[key]
+                        }
+                    }
+                }
+                return strategy
+            }
         }
         return authStrategyFlags;
     }
