@@ -27469,7 +27469,11 @@
       "fr": "Demande d'aide par courrier électronique",
       "hu": "Segítségkérés e-mailben",
       "de": "E-Mail Hilfeanforderung",
-      "es": "Solicitud de ayuda por correo"
+      "es": "Solicitud de ayuda por correo",
+      "xloc": [
+        "default.handlebars->47->1939",
+        "default.handlebars->47->889"
+      ]
     },
     {
       "bs": "Obavještenja putem e-pošte",
