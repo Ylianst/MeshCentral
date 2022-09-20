@@ -34050,7 +34050,7 @@
     },
     {
       "en": "Intel&reg; AMT Reset to BIOS",
-      "en": "Intel&reg; AMT reset naar de BIOS",
+      "nl": "Intel&reg; AMT reset naar de BIOS",
       "pl": "Intel&reg; AMT Resetuj do BIOS",
       "xloc": [
         "default.handlebars->47->1144"
@@ -50429,7 +50429,7 @@
     },
     {
       "en": "Port",
-      "en": "Poort",
+      "nl": "Poort",
       "pl": "Port",
       "xloc": [
         "default.handlebars->47->1126",
@@ -55635,7 +55635,7 @@
     },
     {
       "en": "Request:",
-      "en": "Verzoek:",
+      "nl": "Verzoek:",
       "pl": "Prośba:",
       "xloc": [
         "device-help.html->2->5"
@@ -71391,7 +71391,7 @@
     },
     {
       "en": "User: \"[[[HELPUSERNAME]]]\"",
-      "en": "Gebruiker: \"[[[HELPUSERNAME]]]\"",
+      "nl": "Gebruiker: \"[[[HELPUSERNAME]]]\"",
       "pl": "Użytkownik: \"[[[HELPUSERNAME]]]\"",
       "xloc": [
         "device-help.txt"
@@ -77669,7 +77669,7 @@
     },
     {
       "en": "to navigate to this device.",
-      "en": "naar dit apparaat navigeren.",
+      "nl": "naar dit apparaat navigeren.",
       "pl": "by nawigować do tego urządzenia.",
       "xloc": [
         "device-help.html->2->7"
