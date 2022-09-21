@@ -2602,11 +2602,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 groups.syncFilter = obj.common.convertStrArray(strategy.groups.sync?.filter)
 
                 // Fancy Logs
-                if (groups.userMemberships.length == 1) {
-                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Found membership: "${groups.userMemberships[0]}"`);
-                } else {
-                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Found ${groups.userMemberships.length} memberships: ${groups.userMemberships.join(', ')}`);
-                }
+                let groupMessage = ''
+                if (groups.userMemberships.length == 1) { groupMessage = ` Found membership: "${groups.userMemberships[0]}"` }
+                else { groupMessage = ` Found ${groups.userMemberships.length} memberships: ["${groups.userMemberships.join('", "')}"]` }
+                parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}"` + groupMessage);
 
                 // Check user membership in required groups
                 if (groups.requiredGroups != null) {
@@ -2614,7 +2613,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     for (var i in groups.requiredGroups) {
                         if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
                             match = true;
-                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Membership to required group found: ${groups.requiredGroups[i]}`);
+                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Membership to required group found: "${groups.requiredGroups[i]}"`);
                         }
                     }
                     if (match === false) { 
@@ -2631,7 +2630,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     groups.grantAdmin = false;
                     for (var i in strategy.groups.siteadmin) {
                         if (groups.userMemberships.indexOf(strategy.groups.siteadmin[i]) >= 0) {
-                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" SITEADMIN: ${strategy.groups.siteadmin[i]} User found in site admin group.`); 
+                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" SITEADMIN: "${strategy.groups.siteadmin[i]}" User found in site admin group.`); 
                             groups.siteAdmin = strategy.groups.siteadmin[i];
                             groups.grantAdmin = true;
                             break;
