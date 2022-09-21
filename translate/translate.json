@@ -475,7 +475,8 @@
     },
     {
       "en": "\" requested help.",
-	  "pl": "\" prosi o pomoc.",
+      "nl": "\" vraagt om hulp.",
+      "pl": "\" prosi o pomoc.",
       "xloc": [
         "device-help.html->2->3"
       ]
@@ -19639,7 +19640,8 @@
     },
     {
       "en": "Denied user login from {0}, {1}, {2}",
-	  "pl": "Odmówiono zalogowania użytkownika z {0}, {1}, {2}",
+      "nl": "Geweigerde gebruikerslogin van {0}, {1}, {2}",
+      "pl": "Odmówiono zalogowania użytkownika z {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->47->2406"
       ]
@@ -20419,14 +20421,16 @@
     },
     {
       "en": "Device \"",
-	  "pl": "Urządzenie \"",
+      "nl": "Apparaat \"",
+      "pl": "Urządzenie \"",
       "xloc": [
         "device-help.html->2->3"
       ]
     },
     {
       "en": "Device \"[[[DEVICENAME]]]\" requested assistance.",
-	  "pl": "Urządzenie \"[[[DEVICENAME]]]\" prosiło o pomoc.",
+      "nl": "Apparaat \"[[[DEVICENAME]]]\" heeft assistentie gevraagd",
+      "pl": "Urządzenie \"[[[DEVICENAME]]]\" prosiło o pomoc.",
       "xloc": [
         "device-help.txt"
       ]
@@ -25014,7 +25018,8 @@
     },
     {
       "en": "Email Help Request",
-	  "pl": "Prośba Pomocy Email",
+      "nl": "E-mail hulpverzoek",
+      "pl": "Prośba Pomocy Email",
       "xloc": [
         "default.handlebars->47->1939",
         "default.handlebars->47->889"
@@ -29996,14 +30001,16 @@
     },
     {
       "en": "Go to first page",
-	  "pl": "Idź do pierwszej strony",
+      "nl": "Ga naar de eerste pagina",
+      "pl": "Idź do pierwszej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
     },
     {
       "en": "Go to last page",
-	  "pl": "Idź do ostatniej strony",
+      "nl": "Ga naar de laatste pagina  ",
+      "pl": "Idź do ostatniej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -30062,14 +30069,16 @@
     },
     {
       "en": "Go to next page",
-	  "pl": "Idź do następnej strony",
+      "nl": "Ga naar de volgende pagina",
+      "pl": "Idź do następnej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
     },
     {
       "en": "Go to previous page",
-	  "pl": "Idź do poprzedniej strony",
+      "nl": "Ga naar de vorige pagina",
+      "pl": "Idź do poprzedniej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -30442,7 +30451,8 @@
     },
     {
       "en": "Group Type",
-	  "pl": "Typ Grupy",
+      "nl": "Groepstype",
+      "pl": "Typ Grupy",
       "xloc": [
         "default.handlebars->47->2576"
       ]
@@ -30829,7 +30839,23 @@
     },
     {
       "en": "HTTP/",
-	  "pl": "HTTP/",
+      "nl": "HTTP/",
+      "cs": "HTTP/",
+      "es": "HTTP/",
+      "de": "HTTP/",
+      "da": "HTTP/",
+      "fi": "HTTP/",
+      "fr": "HTTP/",
+      "hi": "HTTP/",
+      "it": "HTTP/",
+      "ja": "HTTP/",
+      "ko": "HTTP/",
+      "pt": "HTTP/",
+      "pt-br": "HTTP/",
+      "pl": "HTTP/",
+      "sv": "HTTP/",
+      "ru": "HTTP/",
+      "tr": "HTTP/",
       "xloc": [
         "default.handlebars->47->1004",
         "default.handlebars->47->1981"
@@ -30837,7 +30863,8 @@
     },
     {
       "en": "HTTP/{0} link",
-	  "pl": "HTTP/{0} link",
+      "nl": "HTTP/{0} link",
+      "pl": "HTTP/{0} link",
       "xloc": [
         "default.handlebars->47->298"
       ]
@@ -30920,7 +30947,23 @@
     },
     {
       "en": "HTTPS/",
-	  "pl": "HTTPS/",
+      "nl": "HTTPS/",
+      "cs": "HTTPS/",
+      "es": "HTTPS/",
+      "de": "HTTPS/",
+      "da": "HTTPS/",
+      "fi": "HTTPS/",
+      "fr": "HTTPS/",
+      "hi": "HTTPS/",
+      "it": "HTTPS/",
+      "ja": "HTTPS/",
+      "ko": "HTTPS/",
+      "pt": "HTTPS/",
+      "pt-br": "HTTPS/",
+      "sv": "HTTPS/",
+      "ru": "HTTPS/",
+      "tr": "HTTPS/",
+      "pl": "HTTPS/",
       "xloc": [
         "default.handlebars->47->1005",
         "default.handlebars->47->1982"
@@ -30928,7 +30971,23 @@
     },
     {
       "en": "HTTPS/{0}",
-	  "pl": "HTTPS/{0}",
+      "nl": "HTTPS/{0}",
+      "pl": "HTTPS/{0}",
+      "cs": "HTTPS/{0}",
+      "es": "HTTPS/{0}",
+      "de": "HTTPS/{0}",
+      "da": "HTTPS/{0}",
+      "fi": "HTTPS/{0}",
+      "fr": "HTTPS/{0}",
+      "hi": "HTTPS/{0}",
+      "it": "HTTPS/{0}",
+      "ja": "HTTPS/{0}",
+      "ko": "HTTPS/{0}",
+      "pt": "HTTPS/{0}",
+      "pt-br": "HTTPS/{0}",
+      "sv": "HTTPS/{0}",
+      "ru": "HTTPS/{0}",
+      "tr": "HTTPS/{0}",
       "xloc": [
         "default.handlebars->47->299"
       ]
@@ -31313,7 +31372,8 @@
     },
     {
       "en": "Help requests",
-	  "pl": "Prośby pomocy",
+      "nl": "Hulpverzoeken",
+      "pl": "Prośby pomocy",
       "xloc": [
         "default.handlebars->47->1027",
         "default.handlebars->47->2179"
@@ -33929,7 +33989,8 @@
     },
     {
       "en": "Intel&reg; AMT Power on to BIOS",
-	  "pl": "Intel&reg; AMT Uruchom do BIOS",
+      "nl": "Intel&reg; AMT opstarten naar de BIOS",
+      "pl": "Intel&reg; AMT Uruchom do BIOS",
       "xloc": [
         "default.handlebars->47->1145"
       ]
@@ -33989,7 +34050,8 @@
     },
     {
       "en": "Intel&reg; AMT Reset to BIOS",
-	  "pl": "Intel&reg; AMT Resetuj do BIOS",
+      "nl": "Intel&reg; AMT reset naar de BIOS",
+      "pl": "Intel&reg; AMT Resetuj do BIOS",
       "xloc": [
         "default.handlebars->47->1144"
       ]
@@ -49503,7 +49565,8 @@
     },
     {
       "en": "Perform Intel&reg; AMT power on to BIOS?",
-	  "pl": "Czy wykonać Intel&reg; AMT uruchomienie do BIOS?",
+      "nl": "Perform Intel&reg; AMT opstarten naar de BIOS?",
+      "pl": "Czy wykonać Intel&reg; AMT uruchomienie do BIOS?",
       "xloc": [
         "default.handlebars->47->1168"
       ]
@@ -49536,7 +49599,8 @@
     },
     {
       "en": "Perform Intel&reg; AMT reset to BIOS?",
-	  "pl": "Czy wykonać Intel&reg; AMT resetowanie do BIOS?",
+      "nl": "Perform Intel&reg; AMT resetten naar de BIOS?",
+      "pl": "Czy wykonać Intel&reg; AMT resetowanie do BIOS?",
       "xloc": [
         "default.handlebars->47->1170"
       ]
@@ -50365,7 +50429,8 @@
     },
     {
       "en": "Port",
-	  "pl": "Port",
+      "nl": "Poort",
+      "pl": "Port",
       "xloc": [
         "default.handlebars->47->1126",
         "default.handlebars->47->1127"
@@ -55570,14 +55635,16 @@
     },
     {
       "en": "Request:",
-	  "pl": "Prośba:",
+      "nl": "Verzoek:",
+      "pl": "Prośba:",
       "xloc": [
         "device-help.html->2->5"
       ]
     },
     {
       "en": "Request: \"[[[HELPREQUEST]]]\"",
-	  "pl": "Prośba: \"[[[HELPREQUEST]]]\"",
+      "nl": "Verzoek: \"[[[HELPREQUEST]]]\"",
+      "pl": "Prośba: \"[[[HELPREQUEST]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -66009,7 +66076,8 @@
     },
     {
       "en": "This NodeJS version does not support OpenID.",
-	  "pl": "Obecna wersja NodeJS nie wspiera OpenID.",
+      "nl": "Deze NodeJS-versie ondersteunt OpenID niet.",
+      "pl": "Obecna wersja NodeJS nie wspiera OpenID.",
       "xloc": [
         "default.handlebars->47->107"
       ]
@@ -70467,7 +70535,8 @@
     },
     {
       "en": "User Authentication Log",
-	  "pl": "Dziennik Autentykacji Użytkownika",
+      "nl": "Gebruikersauthenticatielogboek",
+      "pl": "Dziennik Autentykacji Użytkownika",
       "xloc": [
         "default.handlebars->47->3053"
       ]
@@ -71314,14 +71383,16 @@
     },
     {
       "en": "User:",
-	  "pl": "Użytkownik:",
+      "nl": "Gebruiker:",
+      "pl": "Użytkownik:",
       "xloc": [
         "device-help.html->2->5"
       ]
     },
     {
       "en": "User: \"[[[HELPUSERNAME]]]\"",
-	  "pl": "Użytkownik: \"[[[HELPUSERNAME]]]\"",
+      "nl": "Gebruiker: \"[[[HELPUSERNAME]]]\"",
+      "pl": "Użytkownik: \"[[[HELPUSERNAME]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -75039,7 +75110,8 @@
     },
     {
       "en": "[[[DEVICENAME]]]",
-	  "pl": "[[[DEVICENAME]]]",
+      "nl": "[[[DEVICENAME]]]",
+      "pl": "[[[DEVICENAME]]]",
       "xloc": [
         "device-help.html->2->3->1"
       ]
@@ -75071,14 +75143,44 @@
     },
     {
       "en": "[[[HELPREQUEST]]]",
-	  "pl": "[[[HELPREQUEST]]]",
+      "nl": "[[[HELPREQUEST]]]",
+      "pl": "[[[HELPREQUEST]]]",
+      "cs": "[[[HELPREQUEST]]]",
+      "de": "[[[HELPREQUEST]]]",
+      "es": "[[[HELPREQUEST]]]",
+      "fi": "[[[HELPREQUEST]]]",
+      "it": "[[[HELPREQUEST]]]",
+      "hi": "[[[HELPREQUEST]]]",
+      "fr": "[[[HELPREQUEST]]]",
+      "ja": "[[[HELPREQUEST]]]",
+      "ko": "[[[HELPREQUEST]]]",
+      "pt": "[[[HELPREQUEST]]]",
+      "pt-br": "[[[HELPREQUEST]]]",
+      "ru": "[[[HELPREQUEST]]]",
+      "sv": "[[[HELPREQUEST]]]",
+      "tr": "[[[HELPREQUEST]]]",
       "xloc": [
         "device-help.html->2->5->4"
       ]
     },
     {
       "en": "[[[HELPUSERNAME]]]",
-	  "pl": "[[[HELPUSERNAME]]]",
+      "nl": "[[[HELPUSERNAME]]]",
+      "pl": "[[[HELPUSERNAME]]]",
+      "cs": "[[[HELPUSERNAME]]]",
+      "de": "[[[HELPUSERNAME]]]",
+      "es": "[[[HELPUSERNAME]]]",
+      "fi": "[[[HELPUSERNAME]]]",
+      "it": "[[[HELPUSERNAME]]]",
+      "hi": "[[[HELPUSERNAME]]]",
+      "fr": "[[[HELPUSERNAME]]]",
+      "ja": "[[[HELPUSERNAME]]]",
+      "ko": "[[[HELPUSERNAME]]]",
+      "pt": "[[[HELPUSERNAME]]]",
+      "pt-br": "[[[HELPUSERNAME]]]",
+      "ru": "[[[HELPUSERNAME]]]",
+      "sv": "[[[HELPUSERNAME]]]",
+      "tr": "[[[HELPUSERNAME]]]",
       "xloc": [
         "device-help.html->2->5->1"
       ]
@@ -75112,7 +75214,8 @@
     },
     {
       "en": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Help Request",
-	  "pl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Prośba Pomocy",
+      "nl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Verzoek om hulp",
+      "pl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Prośba Pomocy",
       "xloc": [
         "device-help.html->0"
       ]
@@ -75224,7 +75327,8 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Device Help Request",
-	  "pl": "[[[SERVERNAME]]] - Prośba Pomocy Urządzenia",
+      "nl": "[[[SERVERNAME]]] - Een verzoek om het apparaat te helpen",
+      "pl": "[[[SERVERNAME]]] - Prośba Pomocy Urządzenia",
       "xloc": [
         "device-help.txt"
       ]
@@ -75284,7 +75388,8 @@
     },
     {
       "en": "[[[SERVERNAME]]] - Help Request",
-	  "pl": "[[[SERVERNAME]]] - Prośba Pomocy",
+      "nl": "[[[SERVERNAME]]] - Verzoek om hulp",
+      "pl": "[[[SERVERNAME]]] - Prośba Pomocy",
       "xloc": [
         "device-help.html->2->1->1->0->1->1"
       ]
@@ -75343,7 +75448,8 @@
     },
     {
       "en": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
-	  "pl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
+      "nl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
+      "pl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
       "xloc": [
         "device-help.txt"
       ]
@@ -77563,7 +77669,8 @@
     },
     {
       "en": "to navigate to this device.",
-	  "pl": "by nawigować do tego urządzenia.",
+      "nl": "naar dit apparaat navigeren.",
+      "pl": "by nawigować do tego urządzenia.",
       "xloc": [
         "device-help.html->2->7"
       ]
