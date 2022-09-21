@@ -2549,9 +2549,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Fancy Logs
                 if (groups.userMemberships.length == 1) {
-                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Found membership: ${groups.userMemberships[0]}`);
+                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Found membership: "${groups.userMemberships[0]}"`);
                 } else {
-                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Found ${groups.userMemberships.length} memberships: ${groups.userMemberships.join(', ')}`);
+                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Found ${groups.userMemberships.length} memberships: ${groups.userMemberships.join(', ')}`);
                 }
 
                 // Check user membership in required groups
@@ -2560,11 +2560,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     for (var i in groups.requiredGroups) {
                         if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
                             match = true;
-                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Membership to required group found: ${groups.requiredGroups[i]}`);
+                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Membership to required group found: ${groups.requiredGroups[i]}`);
                         }
                     }
                     if (match === false) { 
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Login denied. No memberhip to required group.`); 
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Login denied. No memberhip to required group.`); 
                         req.session.loginmode = 1;
                         req.session.messageid = 111; // Access Denied.
                         res.redirect(domain.url + getQueryPortion(req));
@@ -2577,7 +2577,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     groups.grantAdmin = false;
                     for (var i in strategy.groups.siteadmin) {
                         if (groups.userMemberships.indexOf(strategy.groups.siteadmin[i]) >= 0) {
-                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} SITEADMIN: ${strategy.groups.siteadmin[i]} User found in site admin group.`); 
+                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" SITEADMIN: ${strategy.groups.siteadmin[i]} User found in site admin group.`); 
                             groups.siteAdmin = strategy.groups.siteadmin[i];
                             groups.grantAdmin = true;
                             break;
@@ -2591,11 +2591,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
                     }
                     if (groups.syncMemberships.length > 0) {
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
                     } else { 
                         groups.syncMemberships = null;
                         groups.syncEnabled = false
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
                     }
                 }
             }
@@ -2617,7 +2617,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 if (newAccountAllowed === true) {
                     // Create the user
-                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: USER: ${req.user.sid} Creating new login user: "${userid}"`);
+                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: USER: "${req.user.sid}" Creating new login user: "${userid}"`);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = req.user.email_verified ? req.user.email_verified : true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
@@ -2658,7 +2658,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                         // See if the user is a member of the site admin group.
                         if (groups.grantAdmin === true) {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: ${req.user.sid} Granting site admin privilages`);
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Granting site admin privilages`);
                             user.siteadmin = 0xFFFFFFFF;
                         }
                     }
@@ -2683,7 +2683,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.parent.DispatchEvent(targets, obj, loginEvent);
                 } else {
                     // New users not allowed
-                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: ${req.user.sid} New accounts are not allowed`);
+                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: "${req.user.sid}" New accounts are not allowed`);
                     req.session.loginmode = 1;
                     req.session.messageid = 100; // Unable to create account.
                     res.redirect(domain.url + getQueryPortion(req));
@@ -2703,10 +2703,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // See if the user is a member of the site admin group.
                     if (groups.siteAdminEnabled === true) {
                         if (groups.grantAdmin === true) {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: ${req.user.sid} Granting site admin privilages`); 
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Granting site admin privilages`); 
                             if (user.siteadmin !== 0xFFFFFFFF) { user.siteadmin = 0xFFFFFFFF; userChanged = true; }
                         } else if ((groups.revokeAdmin === true) && (user.siteadmin === 0xFFFFFFFF)) {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: ${req.user.sid} Revoking site admin privilages.`); 
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Revoking site admin privilages.`); 
                             delete user.siteadmin;
                             userChanged = true;
                         }
@@ -2715,7 +2715,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Update db record for user if there are changes detected
                 if (userChanged) {
-                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: CHANGED: USER: ${req.user.sid} Updating user database entry`);
+                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: CHANGED: USER: "${req.user.sid}" Updating user database entry`);
                     obj.db.SetUser(user);
 
                     // Event user change
@@ -2733,10 +2733,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const ua = obj.getUserAgentInfo(req);
                 const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
-                parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: ${req.user.sid}`);
+                parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: "${req.user.sid}"`);
             }
         } else {
-            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: ${req.user.sid} REQUEST CONTAINS NO USER OR SID`);
+            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: "${req.user.sid}" REQUEST CONTAINS NO USER OR SID`);
         }
         
         parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: User Authenticated: ${JSON.stringify(user)}`);
