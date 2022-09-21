@@ -457,7 +457,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Save this LDAP user to file if needed
                 if (typeof domain.ldapsaveusertofile == 'string') {
-                    obj.fs.appendFile(domain.ldapsaveusertofile, JSON.stringify(xxuser, null, 2) + '\r\n\r\n', function (err) { });
+                    obj.fs.appendFile(domain.ldapsaveusertofile, JSON.stringify(xxuser) + '\r\n\r\n', function (err) { });
                 }
 
                 // Work on getting the userid for this LDAP user
@@ -494,7 +494,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Look for a matching LDAP user group
                     var userMembershipMatch = false;
                     for (var i in domain.ldapuserrequiredgroupmembership) { if (userMemberships.indexOf(domain.ldapuserrequiredgroupmembership[i]) >= 0) { userMembershipMatch = true; } }
-                    if (userMembershipMatch === false) { parent.debug('authlog', 'LDAP denying login to a user that is not a member of a LDAP required group.'); fn('denied'); return; } // If there is no match, deny the login
+                    if (userMembershipMatch === false) { parent.authLog('ldapHandler', 'LDAP denying login to a user that is not a member of a LDAP required group.'); fn('denied'); return; } // If there is no match, deny the login
                 }
 
                 // Check if user is in an site administrator group
@@ -559,7 +559,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Display user information extracted from LDAP data
-                parent.debug('authlog', 'LDAP user login, id: ' + shortname + ', username: ' + username + ', email: ' + email + ', realname: ' + realname + ', phone: ' + phonenumber + ', image: ' + (userimage != null));
+                parent.authLog('ldapHandler', 'LDAP user login, id: ' + shortname + ', username: ' + username + ', email: ' + email + ', realname: ' + realname + ', phone: ' + phonenumber + ', image: ' + (userimage != null));
 
                 // If there is a testing userid, use that
                 if (ldapHandlerFunc.ldapShortName) {
@@ -619,7 +619,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // See if the user is a member of the site admin group.
                     if (typeof siteAdminGroup === 'string') {
-                        parent.debug('authlog', `LDAP: Granting site admin privilages to new user "${user.name}" found in admin group: ${siteAdminGroup}`);
+                        parent.authLog('ldapHandler', `LDAP: Granting site admin privilages to new user "${user.name}" found in admin group: ${siteAdminGroup}`);
                         user.siteadmin = 0xFFFFFFFF;
                     }
 
@@ -662,11 +662,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // See if the user is a member of the site admin group.
                     if ((typeof siteAdminGroup === 'string') && (user.siteadmin !== 0xFFFFFFFF)) {
-                        parent.debug('authlog', `LDAP: Granting site admin privilages to user "${user.name}" found in administrator group: ${siteAdminGroup}`);
+                        parent.authLog('ldapHandler', `LDAP: Granting site admin privilages to user "${user.name}" found in administrator group: ${siteAdminGroup}`);
                         user.siteadmin = 0xFFFFFFFF;
                         userChanged = true;
                     } else if ((siteAdminGroup === false) && (user.siteadmin === 0xFFFFFFFF)) {
-                        parent.debug('authlog', `LDAP: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`);
+                        parent.authLog('ldapHandler', `LDAP: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`);
                         delete user.siteadmin;
                         userChanged = true;
                     }
@@ -2011,7 +2011,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 // Send a notification
                                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: 'Email verified', value: user.email, nolog: 1, id: Math.random() });
 
-                                                // Send to authlog
+                                                // Send to authLog
                                                 obj.parent.authLog('https', 'Verified email address ' + user.email + ' for user ' + user.name, { useragent: req.headers['user-agent'] });
                                             }
                                         });
@@ -2047,7 +2047,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                     render(req, res, getRenderPage((domain.sitestyle == 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, req, domain));
                                                     parent.debug('web', 'handleCheckMailRequest: send temporary password.');
 
-                                                    // Send to authlog
+                                                    // Send to authLog
                                                     obj.parent.authLog('https', 'Performed account reset for user ' + user.name);
                                                 }, 0);
                                             });
@@ -2589,22 +2589,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null || strategy == null) { return; }
         const groups = { 'enabled': typeof strategy.groups == 'object' }
         if ((req.user != null) && (req.user.sid != null)) {
-            parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user, null, 2)}`);
+            parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
             if (groups.enabled) { // Groups only available for OIDC strategy currently
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups)
                 groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false
                 groups.syncMemberships = []
                 groups.siteAdminEnabled = strategy.groups.siteadmin ? true : false
-                groups.grantRevokeAdmin = null
+                groups.grantAdmin = false
+                groups.revokeAdmin = strategy.groups.revokeAdmin || false
                 groups.requiredGroups = obj.common.convertStrArray(strategy.groups.required)
                 groups.siteAdmin = obj.common.convertStrArray(strategy.groups.siteadmin)
                 groups.syncFilter = obj.common.convertStrArray(strategy.groups.sync?.filter)
 
                 // Fancy Logs
                 if (groups.userMemberships.length == 1) {
-                    parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Found membership: ${groups.userMemberships[0]}`);
+                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Found membership: ${groups.userMemberships[0]}`);
                 } else {
-                    parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Found ${groups.userMemberships.length} memberships:\n  ${groups.userMemberships.join('\n  ')}`);
+                    parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Found ${groups.userMemberships.length} memberships: ${groups.userMemberships.join(', ')}`);
                 }
 
                 // Check user membership in required groups
@@ -2613,11 +2614,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     for (var i in groups.requiredGroups) {
                         if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
                             match = true;
-                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: ${req.user.name} is member of required group: ${groups.requiredGroups[i]}`);
+                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Membership to required group found: ${groups.requiredGroups[i]}`);
                         }
                     }
                     if (match === false) { 
-                        parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: User login denied. User not found in required group.`); 
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Login denied. No memberhip to required group.`); 
                         req.session.loginmode = 1;
                         req.session.messageid = 111; // Access Denied.
                         res.redirect(domain.url + getQueryPortion(req));
@@ -2627,11 +2628,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Check user membership in admin groups
                 if (groups.siteAdminEnabled === true) {
-                    groups.grantRevokeAdmin = false;
+                    groups.grantAdmin = false;
                     for (var i in strategy.groups.siteadmin) {
                         if (groups.userMemberships.indexOf(strategy.groups.siteadmin[i]) >= 0) {
+                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} SITEADMIN: ${strategy.groups.siteadmin[i]} User found in site admin group.`); 
                             groups.siteAdmin = strategy.groups.siteadmin[i];
-                            groups.grantRevokeAdmin = true;
+                            groups.grantAdmin = true;
                             break;
                         }
                     }
@@ -2643,11 +2645,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
                     }
                     if (groups.syncMemberships.length > 0) {
-                        parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
                     } else { 
                         groups.syncMemberships = null;
                         groups.syncEnabled = false
-                        parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: ${req.user.sid} No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
                     }
                 }
             }
@@ -2669,7 +2671,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 if (newAccountAllowed === true) {
                     // Create the user
-                    parent.authLog(req.user.strategy.toUpperCase(), `Creating new login user: "${userid}"`);
+                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: USER: ${req.user.sid} Creating new login user: "${userid}"`);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = req.user.email_verified ? req.user.email_verified : true; }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
@@ -2709,8 +2711,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             syncExternalUserGroups(domain, user, groups.syncMemberships, req.user.strategy)
                         }
                         // See if the user is a member of the site admin group.
-                        if (groups.grantRevokeAdmin === true) {
-                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Granting site admin privilages to new user "${user.name}" found in admin group: ${groups.siteAdmin}`);
+                        if (groups.grantAdmin === true) {
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: ${req.user.sid} Granting site admin privilages`);
                             user.siteadmin = 0xFFFFFFFF;
                         }
                     }
@@ -2735,7 +2737,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.parent.DispatchEvent(targets, obj, loginEvent);
                 } else {
                     // New users not allowed
-                    parent.authLog(req.user.strategy.toUpperCase(), `NEW USER: Can't create new user, account creation is not allowed`);
+                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: ${req.user.sid} New accounts are not allowed`);
                     req.session.loginmode = 1;
                     req.session.messageid = 100; // Unable to create account.
                     res.redirect(domain.url + getQueryPortion(req));
@@ -2754,11 +2756,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                     // See if the user is a member of the site admin group.
                     if (groups.siteAdminEnabled === true) {
-                        if (groups.grantRevokeAdmin === true) {
-                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Granting site admin privilages to user "${user.name}" found in administrator group: ${groups.siteAdmin}`); 
+                        if (groups.grantAdmin === true) {
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: ${req.user.sid} Granting site admin privilages`); 
                             if (user.siteadmin !== 0xFFFFFFFF) { user.siteadmin = 0xFFFFFFFF; userChanged = true; }
-                        } else if ((groups.grantRevokeAdmin === false) && (user.siteadmin === 0xFFFFFFFF)) {
-                            parent.authLog(req.user.strategy.toUpperCase(), `GROUPS: Revoking site admin privilages from user "${user.name}" since they are not found in any administrator groups.`); 
+                        } else if ((groups.revokeAdmin === true) && (user.siteadmin === 0xFFFFFFFF)) {
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: ${req.user.sid} Revoking site admin privilages.`); 
                             delete user.siteadmin;
                             userChanged = true;
                         }
@@ -2767,7 +2769,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Update db record for user if there are changes detected
                 if (userChanged) {
-                    parent.authLog(req.user.strategy.toUpperCase(), `EXISTING: Existing user has changed, updating user database entry`);
+                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: CHANGED: USER: ${req.user.sid} Updating user database entry`);
                     obj.db.SetUser(user);
 
                     // Event user change
@@ -2785,13 +2787,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const ua = obj.getUserAgentInfo(req);
                 const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
-                parent.authLog(req.user.strategy.toUpperCase(), `EXISTING: Logged In: Name: ${user.name} ID: ${user._id}`);
+                parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: ${req.user.sid}`);
             }
         } else {
-            parent.debug('ERROR', req.user.strategy.toUpperCase() + ': LOGIN FAILED - REQUEST CONTAINS NO USER OR SID');
+            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: ${req.user.sid} REQUEST CONTAINS NO USER OR SID`);
         }
         
-        parent.authLog(req.user.strategy.toUpperCase(), `User Authenticated: ${JSON.stringify(user, null, 2)}`);
+        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: User Authenticated: ${JSON.stringify(user)}`);
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
@@ -7109,10 +7111,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const TwitterStrategy = require('passport-twitter');
             let options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
             if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
-            parent.debug('authlog', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
             passport.use('twitter-' + domain.id, new TwitterStrategy(options,
                 function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Twitter profile: ' + JSON.stringify(profile));
+                    parent.authLog('setupDomainAuthStrategy', 'Twitter profile: ' + JSON.stringify(profile));
                     var user = { sid: '~twitter:' + profile.id, name: profile.displayName, strategy: 'twitter' };
                     if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
                     return cb(null, user);
@@ -7126,10 +7128,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const GoogleStrategy = require('passport-google-oauth20');
             let options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
             if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
-            parent.debug('authlog', 'Adding Google SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Google SSO with options: ' + JSON.stringify(options));
             passport.use('google-' + domain.id, new GoogleStrategy(options,
                 function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Google profile: ' + JSON.stringify(profile));
+                    parent.authLog('setupDomainAuthStrategy', 'Google profile: ' + JSON.stringify(profile));
                     var user = { sid: '~google:' + profile.id, name: profile.displayName, strategy: 'google' };
                     if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
                     return cb(null, user);
@@ -7143,10 +7145,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const GitHubStrategy = require('passport-github2');
             let options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
             if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
-            parent.debug('authlog', 'Adding Github SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO with options: ' + JSON.stringify(options));
             passport.use('github-' + domain.id, new GitHubStrategy(options,
                 function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Github profile: ' + JSON.stringify(profile));
+                    parent.authLog('setupDomainAuthStrategy', 'Github profile: ' + JSON.stringify(profile));
                     var user = { sid: '~github:' + profile.id, name: profile.displayName, strategy: 'github' };
                     if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
                     return cb(null, user);
@@ -7160,10 +7162,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const RedditStrategy = require('passport-reddit');
             let options = { clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret };
             if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.callbackURL = url + 'auth-reddit-callback'; }
-            parent.debug('authlog', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
             passport.use('reddit-' + domain.id, new RedditStrategy.Strategy(options,
                 function (token, tokenSecret, profile, cb) {
-                    parent.debug('authlog', 'Reddit profile: ' + JSON.stringify(profile));
+                    parent.authLog('setupDomainAuthStrategy', 'Reddit profile: ' + JSON.stringify(profile));
                     var user = { sid: '~reddit:' + profile.id, name: profile.name, strategy: 'reddit' };
                     if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
                     return cb(null, user);
@@ -7177,12 +7179,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const AzureOAuth2Strategy = require('passport-azure-oauth2');
             let options = { clientID: domain.authstrategies.azure.clientid, clientSecret: domain.authstrategies.azure.clientsecret, tenant: domain.authstrategies.azure.tenantid };
             if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.callbackURL = url + 'auth-azure-callback'; }
-            parent.debug('authlog', 'Adding Azure SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Azure SSO with options: ' + JSON.stringify(options));
             passport.use('azure-' + domain.id, new AzureOAuth2Strategy(options,
                 function (accessToken, refreshtoken, params, profile, done) {
                     var userex = null;
                     try { userex = require('jwt-simple').decode(params.id_token, '', true); } catch (ex) { }
-                    parent.debug('authlog', 'Azure profile: ' + JSON.stringify(userex));
+                    parent.authLog('setupDomainAuthStrategy', 'Azure profile: ' + JSON.stringify(userex));
                     var user = null;
                     if (userex != null) {
                         var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
@@ -7208,12 +7210,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
                     if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                     if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
-                    parent.debug('authlog', 'Adding SAML SSO with options: ' + JSON.stringify(options, null, 2));
+                    parent.authLog('setupDomainAuthStrategy', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                     options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                     const SamlStrategy = require('passport-saml').Strategy;
                     passport.use('saml-' + domain.id, new SamlStrategy(options,
                         function (profile, done) {
-                            parent.debug('authlog', 'SAML profile: ' + JSON.stringify(profile, null, 2));
+                            parent.authLog('setupDomainAuthStrategy', 'SAML profile: ' + JSON.stringify(profile));
                             if (typeof profile.nameID != 'string') { return done(); }
                             var user = { sid: '~saml:' + profile.nameID, name: profile.nameID, strategy: 'saml' };
                             if (typeof profile.displayname == 'string') {
@@ -7243,12 +7245,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.intel.callbackurl; } else { options.callbackUrl = url + 'auth-intel-callback'; }
                     if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
                     if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
-                    parent.debug('authlog', 'Adding Intel SSO with options: ' + JSON.stringify(options, null, 2));
+                    parent.authLog('setupDomainAuthStrategy', 'Adding Intel SSO with options: ' + JSON.stringify(options));
                     options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                     const SamlStrategy = require('passport-saml').Strategy;
                     passport.use('isaml-' + domain.id, new SamlStrategy(options,
                         function (profile, done) {
-                            parent.debug('authlog', 'Intel profile: ' + JSON.stringify(profile, null, 2));
+                            parent.authLog('setupDomainAuthStrategy', 'Intel profile: ' + JSON.stringify(profile));
                             if (typeof profile.nameID != 'string') { return done(); }
                             var user = { sid: '~intel:' + profile.nameID, name: profile.nameID, strategy: 'intel' };
                             if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
@@ -7275,12 +7277,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var options = { entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
                     if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.jumpcloud.callbackurl; } else { options.callbackUrl = url + 'auth-jumpcloud-callback'; }
                     if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
-                    parent.debug('authlog', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options, null, 2));
+                    parent.authLog('setupDomainAuthStrategy', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
                     options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                     const SamlStrategy = require('passport-saml').Strategy;
                     passport.use('jumpcloud-' + domain.id, new SamlStrategy(options,
                         function (profile, done) {
-                            parent.debug('authlog', 'JumpCloud profile: ' + JSON.stringify(profile, null, 2));
+                            parent.authLog('setupDomainAuthStrategy', 'JumpCloud profile: ' + JSON.stringify(profile));
                             if (typeof profile.nameID != 'string') { return done(); }
                             var user = { sid: '~jumpcloud:' + profile.nameID, name: profile.nameID, strategy: 'jumpcloud' };
                             if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
@@ -7310,12 +7312,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (preset == 'google') { strategy.issuer.issuer = 'https://accounts.google.com'; }
                 if (!preset) {
                     let error = new Error('OIDC: Missing issuer URI.');
-                    parent.authLog('error', `${error.message} STRATEGY: ${JSON.stringify(strategy, null, 2)}`);
+                    parent.authLog('error', `${error.message} STRATEGY: ${JSON.stringify(strategy)}`);
                     throw error;
                 }
             } else if ((typeof strategy.issuer.issuer == 'string') && (typeof strategy.custom.preset == 'string')) {
                 let error = new Error(`OIDC: PRESET: ${strategy.custom.preset.toUpperCase()}: PRESET OVERRIDDEN: CONFIG ISSUER: ${strategy.issuer.issuer} PRESET ISSUER: ${presetIssuer}`);
-                parent.authlog('warn', error.message);
+                parent.authLog('setupDomainAuthStrategy', error.message);
+                console.warn(error)
             }
 
             // Setup Strategy Options
@@ -7369,11 +7372,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             if (domain.dns == null) {
                 parent.config.domains[''].authstrategies.oidc = strategy;
-                parent.authLog('setupDomainAuthStrategy', 'OIDC: Saved Configuration: ' + JSON.stringify(parent.config.domains[''].authstrategies.oidc, null, 2));
             } else if (typeof parent.config.domains[domain.id].authstrategies.oidc == 'object') {
                 parent.config.domains[domain.id].authstrategies.oidc = strategy;
-                parent.authLog('setupDomainAuthStrategy', 'OIDC: Saved Configuration: ' + JSON.stringify(parent.config.domains[domain.id].authstrategies.oidc, null, 2));
             }
+            parent.debug('verbose', 'OIDC: Saved Configuration: ' + JSON.stringify(strategy));
             parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete');
 
             authStrategyFlags |= domainAuthStrategyConsts.oidc
@@ -7413,10 +7415,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (!strategy.custom.scope) {
                         strategy.custom.scope = strategy.scope;
                         strategy.options.params = {'scope': strategy.scope };
-                        parent.authlog('oidc', `OLD CONFIG: Moving old config to new location. strategy.scope => strategy.custom.scope`);
+                        parent.authLog('migrateOldConfigs', `OIDC: OLD CONFIG: Moving old config to new location. strategy.scope => strategy.custom.scope`);
                     } else {
-                        let error = new Error('OIDC: OLD CONFIG: Config conflict, new config overrides old config');
-                        parent.authlog('warn', `${error.message} OLD CONFIG: strategy.scope: ${strategy.scope} NEW CONFIG: strategy.custom.scope:${strategy.custom.scope}`);
+                        let error = new Error('OIDC: OLD CONFIG: Config conflict, using new config values.');
+                        parent.authLog('migrateOldConfigs', `${error.message} OLD CONFIG: strategy.scope: ${strategy.scope} NEW CONFIG: strategy.custom.scope:${strategy.custom.scope}`);
+                        parent.debug('warning', error.message)
                     }
                     delete strategy.scope
                 }
@@ -7462,7 +7465,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return verified(null, user);
                     }).catch((err) => {
                         let error = new Error('OIDC: GROUPS: Skipping Groups.', { cause: err });
-                        parent.debug('error', `${JSON.stringify(error, null, 2)}`);
+                        parent.debug('error', `${JSON.stringify(error)}`);
                         parent.authLog('warn', error.message);
                         user.groups = [];
                         return verified(null, user);
