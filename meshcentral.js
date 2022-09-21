@@ -3703,9 +3703,9 @@ function CreateMeshCentralServer(config, args) {
         if (obj.authlogfile != null) { // Write authlog to file
             try {
                 const d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
-                msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
-                obj.fs.write(obj.authlogfile, str, function (err, written, string) { });
-            } catch (ex) { console.log(ex); }
+                str = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
+                obj.fs.write(obj.authlogfile, str, function (err, written, string) { if (err) {console.error(err); } });
+            } catch (ex) { console.error(ex); }
         }
     }
 
