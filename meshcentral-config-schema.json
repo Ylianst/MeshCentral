@@ -1327,19 +1327,19 @@
                     "type": "object",
                     "properties": {
                       "recursive": { "type": "boolean", "default": false, "description": "When true, the group memberships will be scanned recursively." },
-                      "required": { "type": [ "string", "array" ], "description": "When set, the user must be part of one of the OIDC user groups to login to MeshCentral." },
-                      "siteadmin": { "type": [ "string", "array" ], "description": "When set, users part of these groups will be promoted with site administrator in MeshCentral, users that are not part of these groups will be demoted." },
-                      "revokeAdmin" { "type": "boolean", "description": "If enabled, users NOT in the admin group will have admin privlidges revoked."},
+                      "required": { "type": [ "string", "array" ], "description": "Access is only granted to users who are a member of at least one of the listed required groups." },
+                      "siteadmin": { "type": [ "string", "array" ], "description": "Full site admin priviledges will be granted to users who are a member of at least one of the listed admin groups." },
+                      "revokeAdmin" { "type": "boolean", "description": "If true, admin privileges will be revoked from users who are NOT a member of at least one of the listed admin groups."},
                       "sync": {
                         "type": [ "boolean", "object" ],
                         "default": false,
-                        "description": "Allows some or all ODIC user groups to be mirrored within MeshCentral as user groups.",
+                        "description": "If true, all groups found during user login are mirrored into MeshCentral user groups.",
                         "properties": {
-                          "filter": { "type": [ "string", "array" ], "description": "Limits what OIDC groups are mirrored into MeshCentral user groups." }
+                          "filter": { "type": [ "string", "array" ], "description": "Only groups listed here are mirrored into MeshCentral user groups." }
                         }
                       },
-                      "scope": { "type": "string", "default": "groups", "description": "Overrides presets. Custom scope to use when enabling groups." },
-                      "claim": { "type": "string", "default": "groups", "description": "Overrides presets. Custom claim to use when enabling groups." }
+                      "scope": { "type": "string", "default": "groups", "description": "Custom scope to use." },
+                      "claim": { "type": "string", "default": "groups", "description": "Custom claim to use." }
                     },
                     "additionalProperties": false
                   }
