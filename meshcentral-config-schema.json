@@ -1305,27 +1305,18 @@
                     },
                     "additionalProperties": false
                   },
-                  "options": {
-                    "type": "object",
-                    "description": "Strategy Options",
-                    "properties": {
-                      "params": { 
-                        "type": "object",
-                        "description": "Additional Parameters to send to the IdP during authorization",
-                        "properties": {
-                          "scope": { "type": ["string", "array"], "description": "A list of scopes to request from the issuer.", "default": "openid profile email", "examples": ["openid", ["openid", "profile"], "openid profile email", "openid profile email groups"] }
-                        },
-                        "additionalProperties": true
-                      },
-                      "passReqToCallback": { "type": "boolean", "description": "Boolean specifying whether the verify function should get the request object as first argument instead.", "default": false},
-                      "usePKCE": { "type": ["string", "boolean"], "description": "The PKCE method to use. When 'true' it will resolve based on the issuer metadata, when 'false' no PKCE will be used.", "default": true },
-                      "sessionKey": { "type": "string", "description": "Define the property in your session which is used for storing information for the purpose of consuming the authentication response.", "default": "oidc:${Issuer Identifier}" }
-                    },
-                    "additionalProperties": false
-                  },
                   "custom": {
                     "type": "object",
                     "properties": {
+                      "scope": { "type": ["string", "array"], "description": "A list of scopes to request from the issuer.", "default": "openid profile email", "examples": ["openid", ["openid", "profile"], "openid profile email", "openid profile email groups"] },
+                      "claims": {
+                        "type": "object",
+                        "properties": {
+                          "email": { "type": "string" },
+                          "name": { "type": "string" },
+                          "uuid": { "type": "string" }
+                        }
+                      },
                       "preset": { "type": "string", "enum": ["azure", "google"]},
                       "tenant_id": { "type": "string", "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"},
                       "customer_id": { "type": "string", "description": "REQUIRED IF USING GROUPS: Customer ID from Google Workspace Admin Console (https://admin.google.com/ac/accountsettings/profile)"}

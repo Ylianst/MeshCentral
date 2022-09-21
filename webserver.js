@@ -826,7 +826,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // If this user was logged in using an authentication strategy and there is a logout URL, use it.
         if ((userid != null) && (domain.authstrategies?.authStrategyFlags != null)) {
-            let strategy
             let logouturl
             const u = userid.split('/')[2];
             if (u.startsWith('~twitter:') && (domain.authstrategies.twitter != null) && (typeof domain.authstrategies.twitter.logouturl == 'string')) { strategy = 'twitter'; logouturl = domain.authstrategies.twitter.logouturl; }
@@ -835,7 +834,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (u.startsWith('~reddit:') && (domain.authstrategies.reddit != null) && (typeof domain.authstrategies.reddit.logouturl == 'string')) { strategy = 'reddit'; logouturl = domain.authstrategies.reddit.logouturl; }
             if (u.startsWith('~azure:') && (domain.authstrategies.azure != null) && (typeof domain.authstrategies.azure.logouturl == 'string')) { strategy = 'azure'; logouturl = domain.authstrategies.azure.logouturl; }
             if (u.startsWith('~oidc:') && domain.authstrategies.oidc != null) {
-                strategy = 'oidc';
                 if (typeof domain.authstrategies.oidc.logouturl == 'string') {
                     logouturl = domain.authstrategies.oidc.logouturl
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
@@ -847,8 +845,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { strategy = 'jumpcloud'; logouturl = domain.authstrategies.jumpcloud.logouturl; }
             if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { strategy = 'saml'; logouturl = domain.authstrategies.saml.logouturl; }
             if (u.startsWith('~intel:') && (domain.authstrategies.intel != null) && (typeof domain.authstrategies.intel.logouturl == 'string')) { strategy = 'intel'; logouturl = domain.authstrategies.intel.logouturl; }
-            logouturl = URL.toString(new URL(logouturl))
-            parent.authLog('handleLogoutRequest', strategy.toUpperCase() + ': LOGOUT AT:' + logouturl)
+            parent.authLog('handleLogoutRequest', 'Redirecting:' + logouturl)
             res.redirect(logouturl)
             return;
         }
@@ -7149,47 +7146,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
-        if (typeof domain.authstrategies.oidc == 'object') {
+        // Setup OpenID Connect Authentication Strategy
+        if (obj.common.validateObject(domain.authstrategies.oidc)) {
             // Ensure required objects exist
             let initStrategy = domain.authstrategies.oidc
+            if (typeof initStrategy.issuer == 'string') { initStrategy.issuer = { 'issuer': initStrategy.issuer } }
             let strategy = migrateOldConfigs(Object.assign({ 'client': {}, 'issuer': {}, 'options': {}, 'custom': {}, 'obj': { 'openidClient': require('openid-client') }}, initStrategy))
             let preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null
-            if ((strategy.custom.tenant_id) && !strategy.custom.preset) { strategy.custom.preset = preset = 'azure' }
-            if ((strategy.custom.customer_id || strategy.custom.identitysource || (strategy.client.client_id.split('.')[2] == 'googleusercontent')) && !strategy.custom.preset) { strategy.custom.preset = preset = 'google' }
-            if (typeof initStrategy.issuer == 'string') { strategy.issuer = { 'issuer': initStrategy.issuer } }
-            if (typeof strategy.issuer.issuer != 'string' && preset === null) {
-                let error = new Error('OIDC: Missing issuer URI.');
-                parent.authLog('error', `${error.message} STRATEGY: ${JSON.stringify(strategy, null, 2)}`);
-                throw error;
+            if (!preset) {
+                if (typeof strategy.custom.tenant_id == 'string') { strategy.custom.preset = preset = 'azure' }
+                if (strategy.custom.customer_id || strategy.custom.identitysource || strategy.client.client_id.split('.')[2] == 'googleusercontent') { strategy.custom.preset = preset = 'google' }
             }
-
-            // Setup Scope
-            if (typeof strategy.scope == 'string') { 
-                if (!strategy.options.params?.scope) {
-                    if (!strategy.options.params) {
-                        strategy.options.params = {'scope': strategy.scope };
-                    } else {
-                        strategy.options.params.scope = strategy.scope
-                    };
-                    parent.authlog('oidc', `OLD CONFIG: Moving old config to new location. strategy.scope => strategy.options.params.scope`);
-                } else {
-                    let error = new Error('OIDC: OLD CONFIG: Config conflict, new config overrides old config');
-                    parent.authlog('warn', `${error.message} OLD CONFIG: strategy.scope: ${strategy.scope} NEW CONFIG: strategy.options.params.scope:${strategy.options.params.scope}`);
-                }
-                delete strategy.scope
-            }
-            if (!strategy.options.params) {
-                strategy.options.params = { 'scope': ['openid','profile','email'] }
-            } else if (!strategy.options.params.scope) {
-                strategy.options.params.scope = ['openid','profile','email']
-            } else {
-                try {
-                    strategy.options.params.scope = obj.common.convertStrArray(strategy.options.params.scope, ' ');
-                } catch(err) {
-                    let error = new Error('OIDC: CONFIG: Scope not strArray.', { cause: err });
-                    parent.debug('error', `${JSON.stringify(error)} SCOPE: ${JSON.stringify(strategy.options.params.scope)} OPTIONS: ${JSON.stringify(strategy.options)}`);
+            // Check issuer url
+            if (!obj.common.validateString(strategy.issuer.issuer)) {
+                if (preset == 'azure') { strategy.issuer.issuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0'; }
+                if (preset == 'google') { strategy.issuer.issuer = 'https://accounts.google.com'; }
+                if (!preset) {
+                    let error = new Error('OIDC: Missing issuer URI.');
+                    parent.authLog('error', `${error.message} STRATEGY: ${JSON.stringify(strategy, null, 2)}`);
                     throw error;
                 }
+            } else if ((typeof strategy.issuer.issuer == 'string') && (typeof strategy.custom.preset == 'string')) {
+                let error = new Error(`OIDC: PRESET: ${strategy.custom.preset.toUpperCase()}: PRESET OVERRIDDEN: CONFIG ISSUER: ${strategy.issuer.issuer} PRESET ISSUER: ${presetIssuer}`);
+                parent.authlog('warn', error.message);
+            }
+
+            // Setup Strategy Options
+            strategy.custom.scope = obj.common.convertStrArray(strategy.custom.scope, ' ')
+            if (strategy.custom.scope.length > 1) {
+                strategy.options = Object.assign(strategy.options, { 'params': { 'scope': strategy.custom.scope } })
+            } else {
+                strategy.options = Object.assign(strategy.options, { 'params': { 'scope': ['openid','profile','email'] } })
             }
             if (typeof strategy.groups == 'object') {
                 let groupScope = strategy.groups.scope || null
@@ -7201,36 +7188,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 strategy.options.params.scope.push(groupScope)
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
-            
 
-            // Check for preset issuer url
-            let presetIssuer
-            if (preset == 'azure') { presetIssuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0'; }
-            if (preset == 'google') { presetIssuer = 'https://accounts.google.com'; }
-            if (typeof strategy.issuer.issuer != 'string') {
-                strategy.issuer.issuer = presetIssuer
-            } else if ((typeof strategy.issuer.issuer == 'string') && (typeof strategy.custom.preset == 'string')) {
-                let error = new Error(`OIDC: PRESET: ${strategy.custom.preset.toUpperCase()}: PRESET OVERRIDDEN: CONFIG ISSUER: ${strategy.issuer.issuer} PRESET ISSUER: ${presetIssuer}`);
-                parent.authlog('warn', error.message);
-            }
             // Discover additional information if available, use endpoints from config if present
             let issuer
             try {
                 issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
             } catch(err) {
                 let error = new Error('OIDC: Discovery failed.', { cause: err });
-                parent.debug('error', `${JSON.stringify(error)} ISSUER URI: ${strategy.issuer.issuer}`);
+                parent.authLog('setupDomainAuthStrategy', `ERROR: ${JSON.stringify(error)} ISSUER_URI: ${strategy.issuer.issuer}`);
                 throw error
             } finally {
                 if (Object.keys(strategy.issuer).length > 1) {
-                    let error = new Error(`OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
-                    parent.authLog('warn', error.message);
-                    issuer = new strategy.obj.openidClient.Issuer(Object.assign(strategy.issuer, issuer.metadata));
+                    parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
+                    issuer = new strategy.obj.openidClient.Issuer(Object.assign(issuer.metadata, strategy.issuer));
                 }
                 strategy.issuer = issuer.metadata
                 strategy.obj.issuer = issuer
             }
-
             // Make sure redirect_uri and post_logout_redirect_uri exist before continuing
             if (!strategy.client.redirect_uri) {
                 strategy.client.redirect_uri = 'https://' + parent.config.settings.cert + url + 'auth-oidc-callback';
@@ -7243,131 +7217,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.options = Object.assign(strategy.options, { 'client': client });
             strategy.client = client.metadata
             strategy.obj.client = client
-            /* End Client Modifications */
 
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
-            if (domain.id === '') {
+            if (domain.dns == null) {
                 parent.config.domains[''].authstrategies.oidc = strategy;
-                parent.debug('verbose', 'OIDC', 'Saved Configuration: ' + JSON.stringify(parent.config.domains[''].authstrategies.oidc, null, 2));
+                parent.authLog('setupDomainAuthStrategy', 'OIDC: Saved Configuration: ' + JSON.stringify(parent.config.domains[''].authstrategies.oidc, null, 2));
             } else if (typeof parent.config.domains[domain.id].authstrategies.oidc == 'object') {
                 parent.config.domains[domain.id].authstrategies.oidc = strategy;
-                parent.debug('verbose', 'OIDC', 'Saved Configuration: ' + JSON.stringify(parent.config.domains[domain.id].authstrategies.oidc, null, 2));
+                parent.authLog('setupDomainAuthStrategy', 'OIDC: Saved Configuration: ' + JSON.stringify(parent.config.domains[domain.id].authstrategies.oidc, null, 2));
             }
+            parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete');
 
             authStrategyFlags |= domainAuthStrategyConsts.oidc
 
-            // Callback function must be able to grab info from API's using the access token, would prefer to use the token here.
-            function oidcCallback(tokenset, profile, verified) {
-                // Initialize user object
-                let user = {
-                    'sid': obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null,
-                    'name': obj.common.validateString(profile.name) ? profile.name : null,
-                    'strategy': 'oidc',
-                    'preset': obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null,
-                    'email': obj.common.validateEmail(profile.email) ? profile.email : null,
-                    'emailVerified': profile.email_verified ? profile.email_verified : obj.common.validateEmail(profile.email),
-                    'groups': obj.common.validateStrArray(profile.groups) ? profile.groups : []
-                }
-                
-                // Setup end sesstion enpoint if not already configured this required a registered client
-                try {
-                    if (!strategy.issuer.end_session_endpoint) {
-                        strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({'id_token_hint': tokenset})
-                    }
-                } catch(err) {
-                    let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
-                    strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
-                    parent.debug('error', `${error.message} end_session_endpoint: ${strategy.issuer.end_session_endpoint} post_logout_redirect_uri: ${strategy.client.post_logout_redirect_uri} TOKENSET: ${JSON.stringify(tokenset)}`);
-                    parent.authLog('warn', error.message);
-                }
-
-                // Setup presets and groups, get groups from API if needed then return
-                if (typeof strategy.groups == 'object') {
-                    if (obj.common.validateString(strategy.groups.claim)) {
-                        user.groups = profile[strategy.groups.claim];
-                    } else if (typeof user.preset == 'string') {
-                        getGroups(user.preset, tokenset).then((groups) => {
-                            user = Object.assign(user, { 'groups': groups });
-                            return verified(null, user);
-                        }).catch((err) => {
-                            let error = new Error('OIDC: GROUPS: Skipping Groups.', { cause: err });
-                            parent.debug('error', `${JSON.stringify(error, null, 2)}`);
-                            parent.authLog('warn', error.message);
-                            delete user.groups;
-                            return verified(null, user);
-                        });
-                    } else {
-                        user.groups = profile.groups;
-                    }
-                } else {
-                    return verified(null, user);
-                }
-
-                async function getGroups(preset, tokenset) {
-                    let url = '';
-                    if (preset == 'azure') { url = !strategy.groups.recursive ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
-                    if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null ; }
-                    return new Promise((resolve,reject) => {
-                        const options = {
-                            'headers': { authorization : 'Bearer ' + tokenset.access_token }
-                        }
-                        const req = require('https').get(url, options, (res) => {
-                            let data = []
-                            if (res.statusCode < 200 || res.statusCode >= 300) {
-                                let error = new Error('OIDC: GROUPS: Getting groups from API failed, statusCode: ' + res.statusCode );
-                                parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
-                                reject(error);
-                            }
-                            res.on('data', (chunk) => {
-                                data.push(chunk);
-                            });
-                            res.on('end', () => {
-                                if (data.length == 0) {
-                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
-                                    parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
-                                    reject(error);
-                                }
-                                try {
-                                    data = Buffer.concat(data); // data.join();
-                                    data = data.toString()
-                                } catch(err) {
-                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
-                                    parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
-                                    reject(error);
-                                }
-                                if (preset == 'azure'){ data = JSON.parse(data); data = data.value; }
-                                if (preset == 'google'){
-                                    data = data.split('\n');
-                                    data = data.join('');
-                                    data = JSON.parse(data);
-                                    data = data.groups;
-                                }
-                                let groups = []
-                                console.log(data)
-                                for (var i in data) {
-                                    if (typeof data[i].displayName == 'string') {
-                                        groups.push(data[i].displayName);
-                                    }
-                                }
-                                if (groups.length == 0) {
-                                    let error = new Error('OIDC: GROUPS: No memberships found, skipping group setup.');
-                                    parent.debug('error', `${error.message} DATA: ${data}`);
-                                    reject(error);
-                                } else {
-                                    resolve(groups);
-                                }
-                            });
-                        });
-                        req.on('error', (err) => {
-                            let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
-                            parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
-                            reject(error);
-                        });
-                        req.end();
-                    });
-                }
-            }
             function migrateOldConfigs(strategy) {
                 let oldConfigs = {
                     'client': {
@@ -7399,7 +7262,131 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
                 }
+                if (typeof strategy.scope == 'string') { 
+                    if (!strategy.custom.scope) {
+                        strategy.custom.scope = strategy.scope;
+                        strategy.options.params = {'scope': strategy.scope };
+                        parent.authlog('oidc', `OLD CONFIG: Moving old config to new location. strategy.scope => strategy.custom.scope`);
+                    } else {
+                        let error = new Error('OIDC: OLD CONFIG: Config conflict, new config overrides old config');
+                        parent.authlog('warn', `${error.message} OLD CONFIG: strategy.scope: ${strategy.scope} NEW CONFIG: strategy.custom.scope:${strategy.custom.scope}`);
+                    }
+                    delete strategy.scope
+                }
                 return strategy
+            }
+
+            // Callback function must be able to grab info from API's using the access token, would prefer to use the token here.
+            function oidcCallback(tokenset, profile, verified) {
+                // Initialize user object
+                let user = { 'strategy': 'oidc' }
+                let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null
+                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null
+                user.name = obj.common.validateString(profile.name) ? profile.name : null
+                user.email = obj.common.validateString(profile.email) ? profile.email : null
+                if (claims != null) {
+                    user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid
+                    user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name
+                    user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email
+                }
+                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(email),
+                user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null
+                user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null
+                if (obj.common.validateString(strategy.groups.claim)) {
+                    user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
+                }
+                
+                // Setup end session enpoint if not already configured this requires an auth token
+                try {
+                    if (!strategy.issuer.end_session_endpoint) {
+                        strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({'id_token_hint': tokenset})
+                    }
+                } catch(err) {
+                    let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
+                    strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
+                    parent.debug('error', `${error.message} end_session_endpoint: ${strategy.issuer.end_session_endpoint} post_logout_redirect_uri: ${strategy.client.post_logout_redirect_uri} TOKENSET: ${JSON.stringify(tokenset)}`);
+                    parent.authLog('warn', error.message);
+                }
+
+                // Setup presets and groups, get groups from API if needed then return
+                if (strategy.groups && typeof user.preset == 'string') {
+                    getGroups(user.preset, tokenset).then((groups) => {
+                        user = Object.assign(user, { 'groups': groups });
+                        return verified(null, user);
+                    }).catch((err) => {
+                        let error = new Error('OIDC: GROUPS: Skipping Groups.', { cause: err });
+                        parent.debug('error', `${JSON.stringify(error, null, 2)}`);
+                        parent.authLog('warn', error.message);
+                        user.groups = [];
+                        return verified(null, user);
+                    });
+                } else {
+                    return verified(null, user);
+                }
+
+                async function getGroups(preset, tokenset) {
+                    let url = '';
+                    if (preset == 'azure') { url = !strategy.groups.recursive ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
+                    if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null ; }
+                    return new Promise((resolve,reject) => {
+                        const options = {
+                            'headers': { authorization : 'Bearer ' + tokenset.access_token }
+                        }
+                        const req = require('https').get(url, options, (res) => {
+                            let data = []
+                            if (res.statusCode < 200 || res.statusCode >= 300) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed, statusCode: ' + res.statusCode );
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                reject(error);
+                            }
+                            res.on('data', (chunk) => {
+                                data.push(chunk);
+                            });
+                            res.on('end', () => {
+                                if (data.length == 0) {
+                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
+                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                    reject(error);
+                                }
+                                try {
+                                    data = Buffer.concat(data); // data.join();
+                                    data = data.toString()
+                                } catch(err) {
+                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
+                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                    reject(error);
+                                }
+                                if (preset == 'azure'){ data = JSON.parse(data); data = data.value; }
+                                if (preset == 'google'){
+                                    data = data.split('\n');
+                                    data = data.join('');
+                                    data = JSON.parse(data);
+                                    data = data.groups;
+                                }
+                                let groups = []
+                                console.log(data)
+                                for (var i in data) {
+                                    if (typeof data[i].displayName == 'string') {
+                                        groups.push(data[i].displayName);
+                                    }
+                                }
+                                if (groups.length == 0) {
+                                    let error = new Error('OIDC: GROUPS: No memberships found.');
+                                    parent.authLog('getGroups', `ERROR: ${error.message} DATA: ${data}`);
+                                    reject(error);
+                                } else {
+                                    resolve(groups);
+                                }
+                            });
+                        });
+                        req.on('error', (err) => {
+                            let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
+                            parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                            reject(error);
+                        });
+                        req.end();
+                    });
+                }
             }
         }
         return authStrategyFlags;
