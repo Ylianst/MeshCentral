@@ -1,28 +1,30 @@
-# General Overview of the OpenID Connect
+# Using the OpenID Connect Strategy on MeshCentral
 
-## Introducing OpenID Connect SSO on MeshCentral
+## Overview
+
+### Introduction
 
 There is a lot of information to go over, but first, why OpenID Connect?
 
 Esentially its because its both based on a industry standard authorization protocol, and is becoming an industry standard authentication protocol. Put simply it's reliable and reusable, and we use OpenID Connect for exactly those reasons, almost every everyone does, and we want to be able to integrate with almost anyone. This strategy allows us to expand the potential of MeshCentral through the potential of OpenID Connect.
 
-In this section, we will learn about the OpenID Connect specification at a high level, and then use that information to configure the OpenID Connect strategy for MeshCentral using a generic OpenID Connect compatible IdP. After that we will take a sneak peek at some advanced configurations. We will continue by explaining how to use the new presets for popular IdPs, such as Google or Azure. Then we will explore the configuration and usage of the groups feature, as well as check out some of the other advanced options you can setup. Finally, we will look at migrating some existing strategies to the OpenID Connect strategy on MeshCentral.
+In this document, we will learn about the OpenID Connect specification at a high level, and then use that information to configure the OpenID Connect strategy for MeshCentral using a generic OpenID Connect compatible IdP. After that we will go over some advanced configurations and then continue by explaining how to use the new presets for popular IdPs, specifically Google or Azure. Then we will explore the configuration and usage of the groups feature.
 
-## Frequently Used Terms and Acronyms
+> ATTENTION: As of MeshCentral `v1.0.86` there are multiple config options being depreciated. Using any of the old configs will only generate a warning in the authlog and will not stop you from using this strategy at this time. If there is information found in both the new and old config locations the new config location will be used. We will go over the specifics later, now lets jump in.
 
 ### Chart of Frequently Used Terms and Acronyms
-|Term|AKA|Descriptions|
-|---|---|---|
-|OAuth 2.0|OAuth2| OAuth 2.0 is the industry-standard protocol for user *authorization*.|
-|OpenID Connect|OIDC| Identity layer built on top of OAuth2 for user *authentication*.|
-|Identity Provider|IdP| The *service used* to provide authentication and authorization.|
-|Preset Configs|Presets|Set of *pre-configured values* to allow some specific IdPs to connect correctly.|
-|OAuth2 Scope|Scope|A flag *requesting access* to a specific resource or endpoint|
-|OIDC Claim|Claim|A *returned property* in the user info provided by your IdP|
-|User Authentication|Identity Verification|Checks if you *who you say you are*. Example: Username and password authentication|
-|User Authorization|Permission Verification|Check if you have the *permissions* required to access a specific resource or endpoint|
+| Term                | AKA                     | Descriptions                                                                           |
+| ------------------- | ----------------------- | -------------------------------------------------------------------------------------- |
+| OAuth 2.0           | OAuth2                  | OAuth 2.0 is the industry-standard protocol for user *authorization*.                  |
+| OpenID Connect      | OIDC                    | Identity layer built on top of OAuth2 for user *authentication*.                       |
+| Identity Provider   | IdP                     | The *service used* to provide authentication and authorization.                        |
+| Preset Configs      | Presets                 | Set of *pre-configured values* to allow some specific IdPs to connect correctly.       |
+| OAuth2 Scope        | Scope                   | A flag *requesting access* to a specific resource or endpoint                          |
+| OIDC Claim          | Claim                   | A *returned property* in the user info provided by your IdP                            |
+| User Authentication | Identity Verification   | Checks if you *are who you say you are*. Example: Username and password authentication |
+| User Authorization  | Permission Verification | Check if you have the *permissions* required to access a specific resource or endpoint |
 
-## OpenID Connect Technology Overview
+### OpenID Connect Technology Overview
 
 OpenID Connect is a simple identity layer built on top of the OAuth2 protocol. It allows Clients to verify the identity of the End-User based on the authentication performed by an “Authorization Server”, as well as to obtain basic profile information about the End-User in an interoperable and REST-like manner.
 
@@ -30,15 +32,14 @@ OpenID Connect allows clients of all types, including Web-based, mobile, and Jav
 
 That description was straigt from [OpenID Connect Documentation](https://openid.net/connect/), but basically, OAuth2 is the foundation upon which OpenID Connect was built, allowing for wide ranging compatability and interconnection. OpenID Connect appends the secure user *authentication* OAuth2 is known for, with user *authorization* by allowing the request of additional *scopes* that provide additional *claims* or access to API's in an easily expandable way.
 
-# Configuring OpenID Connect SSO on MeshCentral
-
-## **Quick Start**
+## Basic Config
 
 ### *Introduction*
 
 Generally, if you are using an IdP that supports OIDC, you can use a very basic configuration to get started, and if needed, add more specific or advanced configurations later. Here is what your config file will look like with a basic, generic, configuration.
 
 ### *Basic Config File Example*
+
 ``` json
 {
     "settings": {
@@ -53,8 +54,8 @@ Generally, if you are using an IdP that supports OIDC, you can use a very basic 
             "authStrategies": {
                 "oidc": {
                     "issuer": "https://sso.your.domain",
-                    "clientid": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-                    "clientsecret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "clientid": "2d5685c5-0f32-4c1f-9f09-c60e0dbc948a",
+                    "clientsecret": "7PiGSLSLL4e7NGi67KM229tfK7Z7TqzQ",
                     "newAccounts": true
                 }
             }
@@ -71,12 +72,13 @@ In this most basic of setups, you only need the URL of the issuer, as well as a 
 
 > ATTENTION: You are required to configure the cert property in the settings section for the default domain, and configure the dns property under each additional domain.
 
-## **Advanced Options**
+## Advanced Options
 
-### *Introduction*
+### Overview
+
+#### *Introduction*
 
 There are plenty of options at your disposal if you need them. In fact, you can configure any property that node-openid-client supports. The openid-client module supports far more customization than I know what to do with, if you want to know more check out [node-openid-client on GitHub]() for expert level configuration details. There are plenty of things you can configure with this strategy and there is a lot of decumentation behind the tools used to make this all happen. I strongly recommend you explore the [config schema](), and if you have a complicated config maybe check out the [openid-client readme](). Theres a list of resources at the end if you want more information on any specific topics. In the meantime, let’s take a look at an example of what your config file could look with a slightly more complicated configuration, including multiple manually defined endpoints.
-
 
 #### *Advanced Config File Example*
 
@@ -87,7 +89,7 @@ There are plenty of options at your disposal if you need them. In fact, you can 
         "port": 443,
         "redirPort": 80,
         "AgentPong": 300,
-    "TLSOffload": "192.168.1.50",
+        "TLSOffload": "192.168.1.50",
         "SelfUpdate": false,
         "AllowFraming": false,
         "sqlite3": true,
@@ -97,7 +99,7 @@ There are plenty of options at your disposal if you need them. In fact, you can 
         "": {
             "title": "Mesh",
             "title2": ".Your.Domain",
-            "orphanAgentUser": "~oidc:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+            "orphanAgentUser": "~oidc:e48f8ef3-a9cb-4c84-b6d1-fb7d294e963c",
             "authStrategies": {
                 "oidc": {
                     "issuer": {
@@ -108,8 +110,8 @@ There are plenty of options at your disposal if you need them. In fact, you can 
                         "jwks_uri": "https://sso.your.domain/jwks-uri"
                     },
                     "client": {
-                        "client_id": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-                        "client_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "client_id": "110d5612-0822-4449-a057-8a0dbe26eca5",
+                        "client_secret": "4TqST46K53o3Z2Q88p39YwR6YwJb7Cka",
                         "redirect_uri": "https://mesh.your.domain/oauth2/oidc/redirect",
                         "post_logout_redirect_uri": "https://mesh.your.domain/login",
                         "token_endpoint_auth_method": "client_secret_post",
@@ -140,14 +142,19 @@ There are plenty of options at your disposal if you need them. In fact, you can 
 }
 ```
 
-
-### *"Issuer" Options*
+### "Issuer" Options
 
 #### *Introduction*
 
-Compared to the basic example, did you notice that the issuer property has changed from a *string* to an *object* in this example? This not only allows for much a much smaller config footprint when advanced issuer options are not required, it successfully fools you in to a false sense of confidence early on in this document. If you are manually configuring the issuer endpoints, keep in mind that MeshCentral will still attempt to discover **ALL** issuer information, then simply use your configs to fill in the blanks. Obviously if you manually configure an endpoint, it will be used even if the discovered information is different from your config. 
+In the advanced example config above, did you notice that the issuer property has changed from a *string* to an *object* compared to the basic example? This not only allows for much a much smaller config footprint when advanced issuer options are not required, it successfully fools you in to a false sense of confidence early on in this document. If you are manually configuring the issuer endpoints, keep in mind that MeshCentral will still attempt to discover **ALL** issuer information. Obviously if you manually configure an endpoint, it will be used even if the discovered information is different from your config. 
 
 > NOTE: If you are using a preset, you dont need to define an issuer. If you do, the predefined information will be ignored.
+
+#### *Common Config Chart*
+
+| Name | Description | Default | Example | Required |
+| --- | --- | --- | --- | --- |
+| `issuer` | The primary URI that represents your Identity Providers authentication endpoints. | N/A | `"issuer": "https://sso.your.domain"`<br/>`"issuer": { "issuer": "https://sso.your.domain" }` | Unless using preset. |
 
 #### *Advanced Config Example*
 
@@ -163,13 +170,7 @@ Compared to the basic example, did you notice that the issuer property has chang
 
 #### *Required and Commonly Used Configs*
 
-The `issuer` property in the `issuer` object is the only one required, and its only required if you aren't using a preset. Besides the issuer, these are mostly options related to the endpoints and their configuration. 
-
-#### *Common Config Chart*
-
-|Name|Description|Default|Example|Required|
-|---|---|---|---|---|
-|`issuer`|The primary URI that represents your Identity Providers authentication endpoints.|N/A|`"https://sso.your.domain"`|Unless using preset.|
+The `issuer` property in the `issuer` object is the only one required, and its only required if you aren't using a preset. Besides the issuer, these are mostly options related to the endpoints and their configuration. The schema below looks intimidating but it comes down to being able to support any IdP. Setting the issuer, and endsession_endpoint are the two main ones you want to setup.
 
 #### *Schema*
 
@@ -214,7 +215,7 @@ The `issuer` property in the `issuer` object is the only one required, and its o
 },
 ```
 
-### *"Client" Options*
+### "Client" Options
 
 #### *Introduction*
 
@@ -222,12 +223,21 @@ There are just about as many option as possible here since openid-client also pr
 
 > NOTE: The client object is required, however an exception would be with using old configs, which will be discussed later.
 
+#### *Common Configs*
+
+| Name | Description | Default | Example | Required |
+| --- | --- | --- | --- | --- |
+| `client_id` | The client ID provided by your Identity Provider (IdP) | N/A | `bdd6aa4b-d2a2-4ceb-96d3-b3e23cd17678` | `true` |
+| `client_secret` | The client secret provided by your Identity Provider (IdP) | N/A | `vUg82LJ322rp2bvdzuVRh3dPn3oVo29m` | `true` |
+| `redirect_uri` | "URI your IdP sends you after successful authorization. | `https://mesh.your.domain/auth-oidc-callback` | `https://mesh.your.domain/oauth2/oidc/redirect` | `false` |
+| `post_logout_redirect_uri` | URI for your IdP to send you after logging out of IdP via MeshCentral. | `https://mesh.your.domain/login` | `https://site.your.other.domain/login` | `false` |
+
 #### *Advanced Config Example*
 
 ``` json
 "client": {
-    "client_id": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-    "client_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "client_id": "00b3875c-8d82-4238-a8ef-25303fa7f9f2",
+    "client_secret": "7PP453H577xbFDCqG8nYEJg8M3u8GT8F",
     "redirect_uri": "https://mesh.your.domain/oauth2/oidc/redirect",
     "post_logout_redirect_uri": "https://mesh.your.domain/login",
     "token_endpoint_auth_method": "client_secret_post",
@@ -237,16 +247,7 @@ There are just about as many option as possible here since openid-client also pr
 
 #### *Required and Commonly Used Configs*
 
-Below is the full client object straight from the [MeshCentral config schema](https://github.com/Ylianst/MeshCentral/blob/21d94a87b065706ab4536226df84311b0207fafe/meshcentral-config-schema.json) The more commonly used properties are on top. The first two properties, `client_id` and `client_secret` are required. The next one `redirect_uri` is used to setup a custom URI for the redirect back to MeshCentral after being authenicated by your IdP.  The `post_logout_redirect_uri` property is used to tell your IdP where to send you after being logged out. These work in conjunction with the issuers `end_session_url` to automatically fill in any blanks in the config.
-
-#### *Common Config Chart*
-
-|Name|Description|Default|Example|Required|
-|---|---|---|---|---|
-|`client_id`|The client ID provided by your Identity Provider (IdP)|N/A|`XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`|`true`|
-|`client_secret`|The client secret provided by your Identity Provider (IdP)|N/A|`XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`|`true`|
-|`redirect_uri`|"URI your IdP sends you after successful authorization.|`https://mesh.your.domain/auth-oidc-callback`|`https://mesh.your.domain/oauth2/oidc/redirect`|`false`|
-|`post_logout_redirect_uri`|URI for your IdP to send you after logging out of IdP via MeshCentral.|`https://mesh.your.domain/login`|`https://mesh.your.domain/login`|`false`|
+There are many available options you can configure but most of them go unused. Although there are a few *commonly used* properties. The first two properties, `client_id` and `client_secret` are required. The next one `redirect_uri` is used to setup a custom URI for the redirect back to MeshCentral after being authenicated by your IdP.  The `post_logout_redirect_uri` property is used to tell your IdP where to send you after being logged out. These work in conjunction with the issuers `end_session_url` to automatically fill in any blanks in the config.
 
 #### *Schema*
 ``` json
@@ -310,7 +311,7 @@ Below is the full client object straight from the [MeshCentral config schema](ht
 },
 ```
 
-### *"Custom"*
+### "Custom" Options
 
 #### *Introduction*
 
@@ -318,27 +319,31 @@ These are all the options that dont fit with the issuer or client, including the
 
 > NOTE: The scope must be a string, an array of strings, or a space separated list of scopes as a single string.
 
+#### *Common Config Chart*
+
+| Name     | Description                                      | Default                                                   | Example                             | Required |
+| -------- | ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------- | -------- |
+| `scope`  | A list of scopes to request from the issuer.     | `"openid profile email"`                                  | `["openid", "profile"]`             | `false`  |
+| `claims` | A group of claims to use instead of the defaults | Defauts to name of property except that `uuid` used `sub` | `"claims": {"uuid": "unique_name"}` | `false`  |
+
 #### *Advanced Config Example*
 
 ``` json
 "custom": {
     "scope": [ "openid", "profile", "read.EmailAlias", "read.UserProfile" ],
-    "preset": null
+    "preset": null,
+    "claims": {
+        "name": "nameOfUser",
+        "email": "publicEmail"
+    }
 },
 ```
 
-> NOTE: You can `preset` to null if you want to explicitly disable them
+> NOTE: You can `preset` to null if you want to explicitly disable presets.
 
 #### *Required and Commonly Used Configs*
 
-As should be apparent by the name alone, the custom property does not need to exist and is entirely optional. With that said, lets look at few common ones anyway. This strategy will default to using the `openid`, `profile`, and `email` scopes to gather the required information about the user, if your IdP doesn't support or require all these, you can set up the scope manually. Combine that with the ability to set the group scope and you can end up with an entirely custom scope being sent to your IdP. Not to mention the claims property, which allows you to pick and choose what claims to use to gather your data in case you have issues with any of the default behaviors of OpenID Connect and your IdP. This is also where you would set the preset and any values required by the presets.
-
-#### *Common Config Chart*
-
-|Name|Description|Default|Example|Required|
-|---|---|---|---|---|
-|`scope`|A list of scopes to request from the issuer.|`"openid profile email"`|`["openid", "profile"]`|`false`|
-|`claims`|A group of claims to use instead of the defaults|Defauts to name of property except that `uuid` used `sub`|`"claims": {"uuid": "unique_name"}`|`false`|
+As should be apparent by the name alone, the custom property does not need to be configured and is used for optional or advanced configurations. With that said, lets look at few common options  strategy will default to using the `openid`, `profile`, and `email` scopes to gather the required information about the user, if your IdP doesn't support or require all these, you can set up the scope manually. Combine that with the ability to set the group scope and you can end up with an entirely custom scope being sent to your IdP. Not to mention the claims property, which allows you to pick and choose what claims to use to gather your data in case you have issues with any of the default behaviors of OpenID Connect and your IdP. This is also where you would set the preset and any values required by the presets.
 
 #### *Schema*
 ``` json
@@ -367,11 +372,20 @@ As should be apparent by the name alone, the custom property does not need to ex
 },
 ```
 
-### *"Groups" Options*
+### "Groups" Options
 
 #### *Introduction*
 
 The groups option allows you to use the groups you already have with your IdP in MeshCentral in a few ways. First you can set a group that the authorized user must be in to sign in to MeshCentral. You can also allow users with the right memberships automatic admin privlidges, and there is even an option to revoke privlidges if the user is NOT in the admin group. Besides these filters, you can filter the sync property to mirror only certain groups as MeshCentral User Groups, dynamically created as the user logs in. You can of course simply enable sync and mirror all groups from your IdP as User Groups. Additionally you can define the scope and claim of the groups for a custom setup, again allowing for a wide range of IdPs to be used, even without a preset.
+
+#### *Common Config Chart*
+
+| Name | Description | Default | Example | Required |
+| --- | --- | --- | --- | --- |
+| `sync` | Allows you to mirror user groups from your IdP. | `false` | `"sync": { "filter": ["Group1", "Group2"] }`<br/>`"sync": true` | `false` |
+| `required` | Access is only granted to users who are a member<br/>of at least one of the listed required groups. | `undefined` | `"required": ["Group1", "Group2"]` | `false` |
+| `siteadmin` | Full site admin priviledges will be granted to users<br/>who are a member of at least one of the listed admin groups | `undefined` | `"siteadmin": ["Group1", "Group2"]` | `false` |
+| `revokeAdmin` | If true, admin privileges will be revoked from users<br/>who arent a member of at least one of the listed admin groups. | `true` | `"revokeAdmin": false` | `false` |
 
 #### *Advanced Config Example*
 
@@ -380,7 +394,7 @@ The groups option allows you to use the groups you already have with your IdP in
     "recursive": true,
     "required": ["Group1", "Group2"],
     "siteadmin": ["GroupA", "GroupB"],
-    "revokeAdmin": true,
+    "revokeAdmin": false,
     "sync": { 
         "filter": ["Group1", "GroupB", "OtherGroup"]
     },
@@ -397,28 +411,168 @@ As you can see in the schema below, there aren't any required properties in the 
 
 ``` json
 "groups": {
-    "type": "object",
-    "properties": {
-        "recursive": { "type": "boolean", "default": false, "description": "When true, the group memberships will be scanned recursively." },
-        "required": { "type": [ "string", "array" ], "description": "Access is only granted to users who are a member of at least one of the listed required groups." },
-        "siteadmin": { "type": [ "string", "array" ], "description": "Full site admin priviledges will be granted to users who are a member of at least one of the listed admin groups." },
-        "revokeAdmin" { "type": "boolean", "description": "If true, admin privileges will be revoked from users who are NOT a member of at least one of the listed admin groups."},
-        "sync": {
-            "type": [ "boolean", "object" ],
-            "default": false,
-            "description": "If true, all groups found during user login are mirrored into MeshCentral user groups.",
-            "properties": {
-                "filter": { "type": [ "string", "array" ], "description": "Only groups listed here are mirrored into MeshCentral user groups." }
-            }
-        },
-        "scope": { "type": "string", "default": "groups", "description": "Custom scope to use." },
-        "claim": { "type": "string", "default": "groups", "description": "Custom claim to use." }
+  "type": "object",
+  "properties": {
+    "recursive": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, the group memberships will be scanned recursively."
     },
-    "additionalProperties": false
+    "required": {
+      "type": [ "string", "array" ],
+      "description": "Access is only granted to users who are a member of at least one of the listed required groups."
+    },
+    "siteadmin": {
+      "type": [ "string", "array" ],
+      "description": "Full site admin priviledges will be granted to users who are a member of at least one of the listed admin groups."
+    },
+    "revokeAdmin": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, admin privileges will be revoked from users who are NOT a member of at least one of the listed admin groups."
+    },
+    "sync": {
+      "type": [ "boolean", "object" ],
+      "default": false,
+      "description": "If true, all groups found during user login are mirrored into MeshCentral user groups.",
+      "properties": {
+        "filter": {
+          "type": [ "string", "array" ],
+          "description": "Only groups listed here are mirrored into MeshCentral user groups."
+        }
+      }
+    },
+    "scope": { "type": "string", "default": "groups", "description": "Custom scope to use." },
+    "claim": { "type": "string", "default": "groups", "description": "Custom claim to use." }
+  },
+  "additionalProperties": false
 }
 ```
 
+## Preset OpenID Connect Configurations
 
-# Preset OpenID Connect Configurations
+### Overview
 
-# Migration of Depreciated Strategy Setting
+#### *Introduction*
+
+Google is a blah and is used by tons of blahs as its so great. Lets move on.
+
+#### *Common Config Chart*
+
+> NOTE: All settings directly related to presets are in the custom section of the config.
+
+| Name | Description | Example | Required |
+| --- | --- | --- | --- |
+| `preset` | Manually enable the use of a preset. | `"preset": "google"`<br/>`"preset": "azure"` | `false` |
+| `customer_id` | Customer ID of the Google Workspaces instace you<br/>plan to use with the groups feature.| `"customer_id": ["Group1", "Group2"]` | If `google` preset is used with `groups` feature |
+| `tenant_id` | Tenant ID from Azure AD, this is required to use<br/>the `azure` preset as it is part of the issuer url. | `"siteadmin": ["Group1", "Group2"]` | `false` |
+
+### Google Preset
+
+#### *Basic Config Example*
+
+``` json
+"oidc": {
+    "client": {
+        "client_id": "268438852161-r8xa7qxwf3rr0shp1xnpgmm70bnag21p.apps.googleusercontent.com",
+        "client_secret": "ETFWBX-gFEaxfPXs1tWmAOkuWDFTgoL3nwh"
+    }
+}
+```
+
+#### *Specifics*
+
+If you notice above I forgot to add any preset related configs, however because google tags the client ID we can detect that and automatically use the google preset. The above config is tested, the sentive data has been scrambled of course. That said, you would normally use this preset in more advaced setups, let take a look at an example.
+
+#### *Advanced Example with Groups*
+
+``` json
+"oidc": {
+    "client": {
+        "client_id": "424555768625-k7ub3ovqs0yp7mfo0usvyyx51nfii61c.apps.googleusercontent.com",
+        "client_secret": "QLBCQY-nRYmjnFWv3nKyHGmwQEGLokP6ldk"
+    },
+    "custom": {
+        "preset": "google",
+        "customer_id": "C46kyhmps"
+    },
+    "groups": {
+        "siteadmin": ["GroupA", "GroupB"],
+        "revokeAdmin": true,
+        "sync": true
+    },
+    "callbackURL": "https://mesh.your.domain/auth-oidc-google-callback"
+},
+```
+
+#### *Customer ID and Groups*
+
+As always, the client ID and secret are required, the customer ID on the other hand is only required if you plan to take advantage of the groups function *and* the google preset. This also requires you have a customer ID, if you have do, it is available in the Google Workspace Admin Console under Profile->View. Groups work the same as they would with any other IdP but they are pulled from the Workspace groups. 
+
+#### *Google Workspaces Setup*
+
+*`I need to get words and picturesand stuff for this section`*
+
+#### *Schema*
+
+```json
+"custom": {
+    "type": "object",
+    "properties": {
+        "preset": { "type": "string", "enum": ["azure", "google"]},
+        "customer_id": { "type": "string", "description": "Customer ID from Google, should start with 'C'."}
+    },
+    "additionalProperties": false
+},
+```
+
+## Depreciated Properties
+
+### Overview
+
+#### Introduction
+
+As of [MeshCentral `v1.0.86`]() and the writing of this documentation, the node module that handles everything was changed from [passport-openid-connect]() to [openid-client](). As a result of this change multiple properties in the config have been depcrecated. Basically this means some options in the strategy arent being used anymore. These are often referred to as "old configs" by this documentation. 
+
+#### *Migrating Old Configs*
+
+We upgraded but what about all the existing users, we couldn't just invalidate every config pre `1.0.86`. So in an effort to allow greater flexibility to all users of MeshCentral, and what futures scholars will all agree was an obvious move, all the depreciated configs will continue working as expected. Using any of the old options will just generate a warning in the authlog and will not stop you from using this the OIDC strategy with outdated configs, however if both the equivalent new and old config are set the new config will be used.
+
+#### *Old Config Example*
+```json
+"oidc": {
+    "newAccounts": true,
+    "clientid": "421326444155-i1tt4bsmk3jm7dri6jldekl86rfpg07r.apps.googleusercontent.com",
+    "clientsecret": "GNLXOL-kEDjufOCk6pIcTHtaHFOCgbT4hoi"
+}
+```
+
+This example was chosen because I wanted to highlight an advantage of supporting these old configs long term, even in a depreciated status. That is, the ability to copy your existing config from one of the related strategies without making any changes to your config by using the presets. This allows you to test out the oidc strategy without commiting to anything, since the user is always appended with the strategy used to login. In this example, the config was originally a google auth strategy config, changing the `"google"` to `"oidc"` is all that was done to the above config, besides obsfuscation of course.
+
+#### *Advcanced Old Config Example*
+
+``` json
+"oidc": {
+    "authorizationURL": "https://sso.your.domain/api/oidc/authorization",
+    "callbackURL": "https://mesh.your.domain/oauth2/oidc/callback",
+    "clientid": "tZiPTMDNuSaQPapAQJtwDXVnYjjhQybc",
+    "clientsecret": "vrQWspJxdVAxEFJdrxvxeQwWkooVcqdU",
+    "issuer": "https://sso.your.domain",
+    "tokenURL": "https://sso.your.domain/api/oidc/token",
+    "userInfoURL": "https://sso.your.domain/api/oidc/userinfo",
+    "logoutURL": "https://sso.your.domain/logout?rd=https://mesh.your.domain/login",
+    "groups": {
+        "recursive": true,
+        "required": ["Group1", "Group2"],
+        "siteadmin": ["GroupA", "GroupB"],
+        "sync": { 
+            "filter": ["Group1", "GroupB", "OtherGroup"]
+        }
+    },
+    "newAccounts": true
+},
+```
+
+#### *Upgrading to v1.0.86*
+
+If you were already using a meticulusly configured oidc strategy, all of your configs will still be used. You will simply see a warning in the logs if any depreciated properties were used. If you check the authLog there are additional details about the old config and provide the new place to put that information. In this advanced config, even the groups will continue to work just as they did before without any user intervention when upgrading from a version of MeshCentral pre v1.0.86. There are no step to take and no action is needed, moving the configs to the new locations is completely optional at the moment.
