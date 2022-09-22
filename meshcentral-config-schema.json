@@ -2965,7 +2965,7 @@
                       "recursive": { "type": "boolean", "default": false, "description": "When true, the group memberships will be scanned recursively." },
                       "required": { "type": [ "string", "array" ], "description": "Access is only granted to users who are a member of at least one of the listed required groups." },
                       "siteadmin": { "type": [ "string", "array" ], "description": "Full site admin priviledges will be granted to users who are a member of at least one of the listed admin groups." },
-                      "revokeAdmin" { "type": "boolean", "description": "If true, admin privileges will be revoked from users who are NOT a member of at least one of the listed admin groups."},
+                      "revokeAdmin": { "type": "boolean", "description": "If true, admin privileges will be revoked from users who are NOT a member of at least one of the listed admin groups."},
                       "sync": {
                         "type": [ "boolean", "object" ],
                         "default": false,
