@@ -13,16 +13,16 @@ In this document, we will learn about the OpenID Connect specification at a high
 > ATTENTION: As of MeshCentral `v1.0.86` there are multiple config options being depreciated. Using any of the old configs will only generate a warning in the authlog and will not stop you from using this strategy at this time. If there is information found in both the new and old config locations the new config location will be used. We will go over the specifics later, now lets jump in.
 
 ### Chart of Frequently Used Terms and Acronyms
-| Term                | AKA                     | Descriptions                                                                           |
-| ------------------- | ----------------------- | -------------------------------------------------------------------------------------- |
-| OAuth 2.0           | OAuth2                  | OAuth 2.0 is the industry-standard protocol for user *authorization*.                  |
-| OpenID Connect      | OIDC                    | Identity layer built on top of OAuth2 for user *authentication*.                       |
-| Identity Provider   | IdP                     | The *service used* to provide authentication and authorization.                        |
-| Preset Configs      | Presets                 | Set of *pre-configured values* to allow some specific IdPs to connect correctly.       |
-| OAuth2 Scope        | Scope                   | A flag *requesting access* to a specific resource or endpoint                          |
-| OIDC Claim          | Claim                   | A *returned property* in the user info provided by your IdP                            |
-| User Authentication | Identity Verification   | Checks if you *are who you say you are*. Example: Username and password authentication |
-| User Authorization  | Permission Verification | Check if you have the *permissions* required to access a specific resource or endpoint |
+| Term | AKA | Descriptions |
+| --- | --- | --- |
+| OAuth 2.0 | OAuth2 | OAuth 2.0 is the industry-standard protocol for user *authorization*. |
+| OpenID Connect | OIDC | Identity layer built on top of OAuth2 for user *authentication*. |
+| Identity Provider | IdP | The *service used* to provide authentication and authorization. |
+| Preset Configs | Presets | Set of *pre-configured values* to allow some specific IdPs to connect correctly. |
+| OAuth2 Scope | Scope | A flag *requesting access* to a specific resource or endpoint |
+| OIDC Claim | Claim | A *returned property* in the user info provided by your IdP |
+| User Authentication | AuthN | Checks if you *are who you say you are*. Example: Username and password authentication |
+| User Authorization  | AuthZ | Check if you have the *permissions* required to access a specific resource or endpoint |
 
 ### OpenID Connect Technology Overview
 
@@ -75,8 +75,6 @@ In this most basic of setups, you only need the URL of the issuer, as well as a 
 ## Advanced Options
 
 ### Overview
-
-#### *Introduction*
 
 There are plenty of options at your disposal if you need them. In fact, you can configure any property that node-openid-client supports. The openid-client module supports far more customization than I know what to do with, if you want to know more check out [node-openid-client on GitHub]() for expert level configuration details. There are plenty of things you can configure with this strategy and there is a lot of decumentation behind the tools used to make this all happen. I strongly recommend you explore the [config schema](), and if you have a complicated config maybe check out the [openid-client readme](). Theres a list of resources at the end if you want more information on any specific topics. In the meantime, let’s take a look at an example of what your config file could look with a slightly more complicated configuration, including multiple manually defined endpoints.
 
@@ -469,6 +467,10 @@ Google is a blah and is used by tons of blahs as its so great. Lets move on.
 
 ### Google Preset
 
+#### *Prerequisites*
+
+> Check out this [documentation](https://developers.google.com/identity/protocols/oauth2/openid-connect) to get ready before we start.
+
 #### *Basic Config Example*
 
 ``` json
@@ -509,10 +511,6 @@ If you notice above I forgot to add any preset related configs, however because 
 
 As always, the client ID and secret are required, the customer ID on the other hand is only required if you plan to take advantage of the groups function *and* the google preset. This also requires you have a customer ID, if you have do, it is available in the Google Workspace Admin Console under Profile->View. Groups work the same as they would with any other IdP but they are pulled from the Workspace groups. 
 
-#### *Google Workspaces Setup*
-
-*`I need to get words and picturesand stuff for this section`*
-
 #### *Schema*
 
 ```json
@@ -521,6 +519,70 @@ As always, the client ID and secret are required, the customer ID on the other h
     "properties": {
         "preset": { "type": "string", "enum": ["azure", "google"]},
         "customer_id": { "type": "string", "description": "Customer ID from Google, should start with 'C'."}
+    },
+    "additionalProperties": false
+},
+```
+
+### Azure Preset
+
+#### *Prerequisites*
+
+To configure OIDC-based SSO, you need an Azure account with an active subscription. [Create an account](https://azure.microsoft.com/free/?WT.mc_id=A261C142F) for free. The account used for setup must be of the following roles: Global Administrator, Cloud Application Administrator, Application Administrator, or owner the service principal.
+
+> Check this [documentation](https://learn.microsoft.com/en-us/azure/active-directory/manage-apps/add-application-portal-setup-oidc-sso) for more information.  
+
+#### *Basic Config Example*
+
+``` json
+"oidc": {
+    "client": {
+        "client_id": "a1gkl04i-40g8-2h74-6v41-2jm2o2x0x27r",
+        "client_secret": "AxT6U5K4QtcyS6gF48gndL7Ys22BL15BWJImuq1O"
+    },
+    "custom": {
+        "preset": "azure",
+        "tenant_id": "46a6022g-4h33-1451-h1rc-08102ga3b5e4"
+    }
+}
+```
+
+#### *Specifics*
+
+As with all other types of configuration for the OIDC strategy, the Azure preset requires a client ID and secret.The tenant ID is used as part of the issuer URI to make even the most basic AuthN requests so it is also required for the azure preset. besides that groups are available to the Azure preset as well as the recursive feature of groups. This allows you to search user groups recursively for groups they have membership in through other groups.
+
+> NOTE: The Azure AD preset uses the Tenant ID as part of the issuer URI:<br>`"https://login.microsoftonline.com/"` + `strategy`.custom.tenant_id + `"/v2.0"`
+
+#### *Advanced Example with Groups*
+
+``` json
+"oidc": {
+    "client": {
+        "client_id": "a1gkl04i-40g8-2h74-6v41-2jm2o2x0x27r",
+        "client_secret": "AxT6U5K4QtcyS6gF48gndL7Ys22BL15BWJImuq1O"
+    },
+    "custom": {
+        "preset": "azure",
+        "tenant_id": "46a6022g-4h33-1451-h1rc-08102ga3b5e4"
+    },
+    "groups": {
+        "recursive": true,
+        "siteadmin": ["GroupA", "GroupB"],
+        "revokeAdmin": true,
+        "sync": true
+    },
+    "callbackURL": "https://mesh.your.domain/auth-oidc-azure-callback"
+},
+```
+
+#### *Schema*
+
+```json
+"custom": {
+    "type": "object",
+    "properties": {
+        "preset": { "type": "string", "enum": ["azure", "google"]},
+        "tenant_id": { "type": "string", "description": "Tenant ID from Azure AD."}
     },
     "additionalProperties": false
 },
@@ -576,3 +638,13 @@ This example was chosen because I wanted to highlight an advantage of supporting
 #### *Upgrading to v1.0.86*
 
 If you were already using a meticulusly configured oidc strategy, all of your configs will still be used. You will simply see a warning in the logs if any depreciated properties were used. If you check the authLog there are additional details about the old config and provide the new place to put that information. In this advanced config, even the groups will continue to work just as they did before without any user intervention when upgrading from a version of MeshCentral pre v1.0.86. There are no step to take and no action is needed, moving the configs to the new locations is completely optional at the moment.
+
+# Sources
+
+https://cloud.google.com/identity/docs/reference/rest/v1/groups/list
+
+https://www.onelogin.com/learn/authentication-vs-authorization
+
+https://auth0.com/docs/authenticate/protocols/openid-connect-protocol
+
+> You just read `openidConnectStrategy.ms v0.0.1` by [@mstrhakr]()
