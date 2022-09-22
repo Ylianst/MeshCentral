@@ -103,14 +103,13 @@ if (msh.agentName) { connectArgs.push('--agentName="' + msh.agentName + '"'); }
 
 function _install(parms)
 {
+    var i;
     var mstr = require('fs').createWriteStream(process.execPath + '.msh', { flags: 'wb' });
-    mstr.write('MeshName=' + msh.MeshName + '\n');
-    mstr.write('MeshType=' + msh.MeshType + '\n');
-    mstr.write('MeshID=' + msh.MeshID + '\n');
-    mstr.write('ServerID=' + msh.ServerID + '\n');
-    mstr.write('MeshServer=' + msh.MeshServer + '\n');
-    if (msh.agentName) { mstr.write('agentName=' + msh.agentName + '\n'); }
-    if (msh.meshServiceName) { mstr.write('meshServiceName=' + msh.meshServiceName + '\n'); }
+
+    for (i in msh)
+    {
+        mstr.write(i + '=' + msh[i] + '\n');
+    }
     mstr.end();
 
     if (parms == null) { parms = []; }
