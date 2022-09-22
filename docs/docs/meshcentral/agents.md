@@ -25,6 +25,8 @@ xxx Path: `c:\Program Files\Mesh Agent\meshagent.msh`
 
 ## Linux / BSD
 
+Uninstall: `sudo /usr/local/mesh_services/meshagent/[agent-name]/meshagent -fulluninstall`
+
 ## Apple macOS Binary Installer
 
 Default Install Path: `/usr/local/mesh_services/meshagent/meshagent`
@@ -37,6 +39,10 @@ Controlling agent
 launchctl stop meshagent
 launchctl start meshagent
 ```
+
+Install: 
+
+Uninstall: `sudo /usr/local/mesh_services/meshagent/[agent-name]/meshagent -fulluninstall`
 
 ## Apple macOS Universal
 
