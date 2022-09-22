@@ -639,7 +639,7 @@ This example was chosen because I wanted to highlight an advantage of supporting
 
 If you were already using a meticulusly configured oidc strategy, all of your configs will still be used. You will simply see a warning in the logs if any depreciated properties were used. If you check the authLog there are additional details about the old config and provide the new place to put that information. In this advanced config, even the groups will continue to work just as they did before without any user intervention when upgrading from a version of MeshCentral pre v1.0.86. There are no step to take and no action is needed, moving the configs to the new locations is completely optional at the moment.
 
-# Sources
+# Links
 
 https://cloud.google.com/identity/docs/reference/rest/v1/groups/list
 

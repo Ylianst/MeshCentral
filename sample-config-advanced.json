@@ -512,15 +512,14 @@
           "cert": "saml.pem"
         },
         "oidc": {
-          "authorizationURL": "https://sso.server.com/api/oidc/authorization",
-          "callbackURL": "https://mesh.server.com/oidc-callback",
-          "clientid": "00000000-0000-0000-0000-000000000000",
-          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-          "issuer": "https://sso.server.com",
-          "tokenURL": "https://sso.server.com/api/oidc/token",
-          "userInfoURL": "https://sso.server.com/api/oidc/userinfo",
-          "logoutURL": "https://sso.server.com/logout",
-          "newAccounts": true,
+          "issuer": {
+            "issuer": "https://sso.server.com",
+            "end_session_endpoint": "https://sso.server.com/logout"
+          },
+          "client": {
+            "clientid": "00000000-0000-0000-0000-000000000000",
+            "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          },
           "groups": {
             "required": [ "groupA", "groupB", "groupC" ],
             "siteadmin": [ "groupA" ],
@@ -528,7 +527,8 @@
               "enable": true,
               "filter": [ "groupB", "groupC" ]
             }
-          }
+          },
+          "newAccounts": true
         }
       }
     },
