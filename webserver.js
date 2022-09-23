@@ -826,12 +826,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // If this user was logged in using an authentication strategy and there is a logout URL, use it.
         if ((userid != null) && (domain.authstrategies?.authStrategyFlags != null)) {
-            let logouturl
-            let userStrategy = ((userid.split('/')[2]).split(':')[0]).substring(1)
+            let logouturl = null;
+            let userStrategy = ((userid.split('/')[2]).split(':')[0]).substring(1);
             // Setup logout url for oidc
             if (userStrategy == 'oidc' && domain.authstrategies.oidc != null) {
                 if (typeof domain.authstrategies.oidc.logouturl == 'string') {
-                    logouturl = domain.authstrategies.oidc.logouturl
+                    logouturl = domain.authstrategies.oidc.logouturl;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
                     logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + '?post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
@@ -840,7 +840,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Log out all other strategies
             } else if ((domain.authstrategies[userStrategy] != null) && (typeof domain.authstrategies[userStrategy].logouturl == 'string')) { logouturl = domain.authstrategies[userStrategy].logouturl; }
             // If custom logout was setup, use it
-            if (typeof logouturl == 'string') {
+            if (logouturl != null) {
                 parent.authLog('handleLogoutRequest', userStrategy.toUpperCase() + ': LOGOUT: ' + logouturl);
                 res.redirect(logouturl);
                 return;
