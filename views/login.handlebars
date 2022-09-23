@@ -430,7 +430,7 @@
                     if (typeof authStrategies.custom?.preset == 'string') {
                         if (authStrategies.custom.preset == 'azure') {
                             QV('auth-oidc-azure', true);
-                        } else if (authStrategies.custom.preset == 'azure') {
+                        } else if (authStrategies.custom.preset == 'google') {
                             QV('auth-oidc-google', true);
                         }
                     } else { QV('auth-oidc', true); }
