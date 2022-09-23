@@ -7438,7 +7438,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name
                     user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email
                 }
-                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(email),
+                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email),
                 user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null
                 if (obj.common.validateString(strategy.groups.claim)) {
