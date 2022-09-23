@@ -845,9 +845,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { strategy = 'jumpcloud'; logouturl = domain.authstrategies.jumpcloud.logouturl; }
             if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { strategy = 'saml'; logouturl = domain.authstrategies.saml.logouturl; }
             if (u.startsWith('~intel:') && (domain.authstrategies.intel != null) && (typeof domain.authstrategies.intel.logouturl == 'string')) { strategy = 'intel'; logouturl = domain.authstrategies.intel.logouturl; }
-            parent.authLog('handleLogoutRequest', 'Redirecting:' + logouturl)
-            res.redirect(logouturl)
-            return;
+            
+            if (logouturl) {
+                parent.authLog('handleLogoutRequest', strategy.toUpperCase() + ': Redirecting:' + logouturl);
+                res.redirect(logouturl);
+                return;
+            }
+    
         }
 
         // This is the default logout redirect to the login page
@@ -7254,9 +7258,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (Object.hasOwn(strategy, key)) {
                             if (strategy[type][value] && obj.common.validateString(strategy[type][value])) {
                                 let error = new Error('OIDC: OLD CONFIG: Config conflict, new config overrides old config');
-                                parent.authLog('warn', `${JSON.stringify(error)} OLD CONFIG: ${key}: ${strategy[key]} NEW CONFIG: ${value}:${strategy[type][value]}`);
+                                parent.authLog('migrateOldConfigs', `${JSON.stringify(error)} OLD CONFIG: ${key}: ${strategy[key]} NEW CONFIG: ${value}:${strategy[type][value]}`);
                             } else {
-                                parent.authLog('info', `OIDC: OLD CONFIG: Moving old config to new location. strategy.${key} => strategy.${type}.${value}`);
+                                parent.authLog('migrateOldConfigs', `OIDC: OLD CONFIG: Moving old config to new location. strategy.${key} => strategy.${type}.${value}`);
                                 strategy[type][value] = strategy[key];
                             }
                             delete strategy[key]
@@ -7307,7 +7311,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
                     strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
                     parent.debug('error', `${error.message} end_session_endpoint: ${strategy.issuer.end_session_endpoint} post_logout_redirect_uri: ${strategy.client.post_logout_redirect_uri} TOKENSET: ${JSON.stringify(tokenset)}`);
-                    parent.authLog('warn', error.message);
+                    parent.authLog('oidcCallback', error.message);
                 }
 
                 // Setup presets and groups, get groups from API if needed then return
@@ -7316,9 +7320,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         user = Object.assign(user, { 'groups': groups });
                         return verified(null, user);
                     }).catch((err) => {
-                        let error = new Error('OIDC: GROUPS: Skipping Groups.', { cause: err });
+                        let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
                         parent.debug('error', `${JSON.stringify(error)}`);
-                        parent.authLog('warn', error.message);
+                        parent.authLog('oidcCallback', error.message);
                         user.groups = [];
                         return verified(null, user);
                     });
@@ -7339,6 +7343,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (res.statusCode < 200 || res.statusCode >= 300) {
                                 let error = new Error('OIDC: GROUPS: Getting groups from API failed, statusCode: ' + res.statusCode );
                                 parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                console.error(error);
                                 reject(error);
                             }
                             res.on('data', (chunk) => {
@@ -7348,6 +7353,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 if (data.length == 0) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
                                     parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                    console.error(error);
                                     reject(error);
                                 }
                                 try {
@@ -7356,6 +7362,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 } catch(err) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
                                     parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                    console.error(error);
                                     reject(error);
                                 }
                                 if (preset == 'azure'){ data = JSON.parse(data); data = data.value; }
@@ -7373,9 +7380,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     }
                                 }
                                 if (groups.length == 0) {
-                                    let error = new Error('OIDC: GROUPS: No memberships found.');
-                                    parent.authLog('getGroups', `ERROR: ${error.message} DATA: ${data}`);
-                                    reject(error);
+                                    let warn = new Error('OIDC: GROUPS: No groups returned from API.');
+                                    parent.authLog('getGroups', `WARN: ${error.message} DATA: ${data}`);
+                                    console.warn(warn);
+                                    resolve(groups);
                                 } else {
                                     resolve(groups);
                                 }
@@ -7383,7 +7391,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         });
                         req.on('error', (err) => {
                             let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
-                            parent.authLog('error', `${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                            parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                            console.error(error);
                             reject(error);
                         });
                         req.end();
