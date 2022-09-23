@@ -827,13 +827,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // If this user was logged in using an authentication strategy and there is a logout URL, use it.
         if ((userid != null) && (domain.authstrategies?.authStrategyFlags != null)) {
             let logouturl
-            const u = userid.split('/')[2];
-            if (u.startsWith('~twitter:') && (domain.authstrategies.twitter != null) && (typeof domain.authstrategies.twitter.logouturl == 'string')) { strategy = 'twitter'; logouturl = domain.authstrategies.twitter.logouturl; }
-            if (u.startsWith('~google:') && (domain.authstrategies.google != null) && (typeof domain.authstrategies.google.logouturl == 'string')) { strategy = 'google'; logouturl = domain.authstrategies.google.logouturl; }
-            if (u.startsWith('~github:') && (domain.authstrategies.github != null) && (typeof domain.authstrategies.github.logouturl == 'string')) { strategy = 'github'; logouturl = domain.authstrategies.github.logouturl; }
-            if (u.startsWith('~reddit:') && (domain.authstrategies.reddit != null) && (typeof domain.authstrategies.reddit.logouturl == 'string')) { strategy = 'reddit'; logouturl = domain.authstrategies.reddit.logouturl; }
-            if (u.startsWith('~azure:') && (domain.authstrategies.azure != null) && (typeof domain.authstrategies.azure.logouturl == 'string')) { strategy = 'azure'; logouturl = domain.authstrategies.azure.logouturl; }
-            if (u.startsWith('~oidc:') && domain.authstrategies.oidc != null) {
+            let userStrategy = ((userid.split('/')[2]).split(':')[0]).substring(1)
+            // Setup logout url for oidc
+            if (userStrategy == 'oidc' && domain.authstrategies.oidc != null) {
                 if (typeof domain.authstrategies.oidc.logouturl == 'string') {
                     logouturl = domain.authstrategies.oidc.logouturl
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
@@ -841,17 +837,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
                     logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint;
                 }
-            }
-            if (u.startsWith('~jumpcloud:') && (domain.authstrategies.jumpcloud != null) && (typeof domain.authstrategies.jumpcloud.logouturl == 'string')) { strategy = 'jumpcloud'; logouturl = domain.authstrategies.jumpcloud.logouturl; }
-            if (u.startsWith('~saml:') && (domain.authstrategies.saml != null) && (typeof domain.authstrategies.saml.logouturl == 'string')) { strategy = 'saml'; logouturl = domain.authstrategies.saml.logouturl; }
-            if (u.startsWith('~intel:') && (domain.authstrategies.intel != null) && (typeof domain.authstrategies.intel.logouturl == 'string')) { strategy = 'intel'; logouturl = domain.authstrategies.intel.logouturl; }
-            
-            if (logouturl) {
-                parent.authLog('handleLogoutRequest', strategy.toUpperCase() + ': Redirecting:' + logouturl);
+            // Log out all other strategies
+            } else if ((domain.authstrategies[userStrategy] != null) && (typeof domain.authstrategies[userStrategy].logouturl == 'string')) { logouturl = domain.authstrategies[userStrategy].logouturl; }
+            // If custom logout was setup, use it
+            if (typeof logouturl == 'string') {
+                parent.authLog('handleLogoutRequest', userStrategy.toUpperCase() + ': LOGOUT: ' + logouturl);
                 res.redirect(logouturl);
                 return;
             }
-    
         }
 
         // This is the default logout redirect to the login page
@@ -2580,7 +2573,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     groups.grantAdmin = false;
                     for (var i in strategy.groups.siteadmin) {
                         if (groups.userMemberships.indexOf(strategy.groups.siteadmin[i]) >= 0) {
-                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" SITEADMIN: "${strategy.groups.siteadmin[i]}" User found in site admin group.`); 
+                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" User membership found in site admin group: "${strategy.groups.siteadmin[i]}"`); 
                             groups.siteAdmin = strategy.groups.siteadmin[i];
                             groups.grantAdmin = true;
                             break;
@@ -2594,11 +2587,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
                     }
                     if (groups.syncMemberships.length > 0) {
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Filtered user memberships from config: ${groups.syncMemberships.join(', ')}`);
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Filtered user memberships from config to sync: ${groups.syncMemberships.join(', ')}`);
                     } else { 
                         groups.syncMemberships = null;
                         groups.syncEnabled = false
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" No groups found with filter: ${strategy.groups.sync.filter.join(', ')}`); 
+                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" No sync memberships found after filter: ${strategy.groups.sync.filter.join(', ')}`); 
                     }
                 }
             }
@@ -7232,7 +7225,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.config.domains[domain.id].authstrategies.oidc = strategy;
             }
             parent.debug('verbose', 'OIDC: Saved Configuration: ' + JSON.stringify(strategy));
-            parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete');
+            if (preset) { parent.authLog('setupDomainAuthStrategy', 'OIDC: ' + preset.toUpperCase() + ': Setup Complete'); }
+            else { parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete'); }
 
             authStrategyFlags |= domainAuthStrategyConsts.oidc
 
@@ -7332,7 +7326,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 async function getGroups(preset, tokenset) {
                     let url = '';
-                    if (preset == 'azure') { url = !strategy.groups.recursive ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
+                    if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
                     if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null ; }
                     return new Promise((resolve,reject) => {
                         const options = {
@@ -7340,16 +7334,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                         const req = require('https').get(url, options, (res) => {
                             let data = []
-                            if (res.statusCode < 200 || res.statusCode >= 300) {
-                                let error = new Error('OIDC: GROUPS: Getting groups from API failed, statusCode: ' + res.statusCode );
-                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
-                                console.error(error);
-                                reject(error);
-                            }
                             res.on('data', (chunk) => {
                                 data.push(chunk);
                             });
                             res.on('end', () => {
+                                if (res.statusCode < 200 || res.statusCode >= 300) {
+                                    let error = new Error('OIDC: GROUPS: Bad response code from API, statusCode: ' + res.statusCode );
+                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                    console.error(error);
+                                    reject(error);
+                                }
                                 if (data.length == 0) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
                                     parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
@@ -7357,15 +7351,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     reject(error);
                                 }
                                 try {
-                                    data = Buffer.concat(data); // data.join();
-                                    data = data.toString()
+                                    if (Buffer.isBuffer(data[0])) {
+                                        data = Buffer.concat(data);
+                                        data = data.toString();
+                                    } else { // else if (typeof data[0] == 'string') 
+                                        data.join();
+                                    }
                                 } catch(err) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
                                     parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
                                     console.error(error);
                                     reject(error);
                                 }
-                                if (preset == 'azure'){ data = JSON.parse(data); data = data.value; }
+                                if (preset == 'azure'){
+                                    data = JSON.parse(data);
+                                    if (data.error) {
+                                        let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: data.error });
+                                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`); 
+                                        console.error(error);
+                                        reject(error);
+                                    }
+                                    data = data.value;
+                                }
                                 if (preset == 'google'){
                                     data = data.split('\n');
                                     data = data.join('');
@@ -7381,7 +7388,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 }
                                 if (groups.length == 0) {
                                     let warn = new Error('OIDC: GROUPS: No groups returned from API.');
-                                    parent.authLog('getGroups', `WARN: ${error.message} DATA: ${data}`);
+                                    parent.authLog('getGroups', `WARN: ${warn.message} DATA: ${data}`);
                                     console.warn(warn);
                                     resolve(groups);
                                 } else {
