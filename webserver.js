@@ -3308,7 +3308,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
             if (typeof domain.authstrategies.reddit == 'object') { authStrategies.push('reddit'); }
             if (typeof domain.authstrategies.azure == 'object') { authStrategies.push('azure'); }
-            if (typeof domain.authstrategies.oidc == 'object') { authStrategies.push('oidc'); }
+            if (typeof domain.authstrategies.oidc == 'object') {
+                if (obj.common.validateObject(domain.authstrategies.oidc.custom) && obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
+                    authStrategies.push('oidc-' + domain.authstrategies.oidc.custom.preset);
+                } else {
+                    authStrategies.push('oidc');
+                }
+            }
             if (typeof domain.authstrategies.intel == 'object') { authStrategies.push('intel'); }
             if (typeof domain.authstrategies.jumpcloud == 'object') { authStrategies.push('jumpcloud'); }
             if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
