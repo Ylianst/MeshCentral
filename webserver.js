@@ -7508,7 +7508,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                         data = Buffer.concat(data);
                                         data = data.toString();
                                     } else { // else if (typeof data[0] == 'string') 
-                                        data.join();
+                                        data = data.join();
                                     }
                                 } catch(err) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });

@@ -2748,7 +2748,7 @@
           },
           "authStrategies": {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "twitter": {
                 "type": "object",
