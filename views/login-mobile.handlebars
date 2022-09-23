@@ -401,15 +401,9 @@
                 if (authStrategies.indexOf('github') >= 0) { QV('auth-github', true); }
                 if (authStrategies.indexOf('reddit') >= 0) { QV('auth-reddit', true); }
                 if (authStrategies.indexOf('azure') >= 0) { QV('auth-azure', true); }
-                if (authStrategies.indexOf('oidc') >= 0) {
-                    if (typeof authStrategies.custom?.preset == 'string') {
-                        if (authStrategies.custom.preset == 'azure') {
-                            QV('auth-oidc-azure', true);
-                        } else if (authStrategies.custom.preset == 'google') {
-                            QV('auth-oidc-google', true);
-                        }
-                    } else { QV('auth-oidc', true); }
-                }
+                if (authStrategies.indexOf('oidc') >= 0) { QV('auth-oidc', true); }
+                if (authStrategies.indexOf('oidc-azure') >= 0) { QV('auth-oidc-azure', true); }
+                if (authStrategies.indexOf('oidc-google') >= 0) { QV('auth-oidc-google', true); }
                 if (authStrategies.indexOf('jumpcloud') >= 0) { QV('auth-jumpcloud', true); }
                 if (authStrategies.indexOf('intel') >= 0) { QV('auth-intel', true); }
                 if (authStrategies.indexOf('saml') >= 0) { QV('auth-saml', true); }
