@@ -47,6 +47,27 @@ var MESHRIGHT_NODESKTOP = 65536;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
 
+function __readdirSync_fix(path)
+{
+    var sysnative = false;
+    pathstr = require('fs')._fixwinpath(path);
+    if (pathstr.split('\\*').join('').toLowerCase() == process.env['windir'].toLowerCase()) { sysnative = true; }
+    var ret = __readdirSync_old(path);
+    if (sysnative) { ret.push('sysnative'); }
+    return (ret);
+}
+
+if (process.platform == 'win32' && require('_GenericMarshal').PointerSize == 4 && require('os').arch() == 'x64')
+{
+    if(require('fs').readdirSync.version == null)
+    {
+        require('fs').__readdirSync_old = require('fs').readdirSync;
+        require('fs').readdirSync = __readdirSync_fix;
+    }
+}
+
+
+
 function bcdOK() {
     if (process.platform != 'win32') { return (false); }
     if (require('os').arch() == 'x64') {
