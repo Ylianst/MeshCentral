@@ -269,15 +269,18 @@ function SMBiosTables()
     this.amtInfo = function amtInfo(data) {
         if (!data) { throw ('no data'); }
         var retVal = { AMT: false };
-        if (data[130] && data[130].peek().slice(0, 4).toString() == '$AMT') {
+        if (data[130] && data[130].peek().slice(0, 4).toString() == '$AMT')
+        {
             var amt = data[130].peek();
             retVal.AMT = amt[4] ? true : false;
-            if (retVal.AMT) {
+            if (retVal.AMT)
+            {
                 retVal.enabled = amt[5] ? true : false;
                 retVal.storageRedirection = amt[6] ? true : false;
                 retVal.serialOverLan = amt[7] ? true : false;
                 retVal.kvm = amt[14] ? true : false;
-                if (data[131].peek() && data[131].peek().slice(52, 56).toString() == 'vPro') {
+                if (data[131].peek() && data[131].peek().slice(52, 56).toString() == 'vPro')
+                {
                     var settings = data[131].peek();
                     if (settings[0] & 0x04) { retVal.TXT = (settings[0] & 0x08) ? true : false; }
                     if (settings[0] & 0x10) { retVal.VMX = (settings[0] & 0x20) ? true : false; }
@@ -293,6 +296,14 @@ function SMBiosTables()
                     //console.log(lan.readUInt16LE(3));
                     //retVal.WLAN = (lan.readUInt16LE(3) & 0x07).toString() + '/' + ((lan.readUInt16LE(3) & 0xF8) >> 3).toString() + '/' + (lan.readUInt16LE(3) >> 8).toString();
                 }
+            }
+        }
+        if (!retVal.AMT)
+        {
+            if (data[131].peek() && data[131].peek().slice(52, 56).toString() == 'vPro')
+            {
+                var settings = data[131].peek();
+                if ((settings[20] & 0x08) == 0x08) { retVal.AMT = true; }
             }
         }
         return (retVal);

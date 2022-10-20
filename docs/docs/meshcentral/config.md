@@ -356,7 +356,7 @@ See description for information about each item.
           "loginKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that users add the value ?key=xxx in the URL in order to see the web site." },
           "agentKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that agents add the value ?key=xxx in the URL in order to connect. This is not automatic and needs to be manually added in the meshagent.msh file." },
           "ipkvm": { "type": "boolean", "default": false, "description": "Set to true to enable IP KVM device support in this domain." },
-          "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sided web pages." },
+          "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sized web pages." },
           "newAccounts": { "type": "boolean", "default": false, "description": "When set to true, allow new user accounts to be created from the login page." },
           "newAccountsPass": { "type": "string", "default": null, "description": "When set this password will be required in order to create a new account from the login screen." },
           "newAccountsCaptcha": { "type": "boolean", "default": false, "description": "When set to true, users will get a CAPTCHA when creating a new account from the login screen." },
@@ -410,12 +410,12 @@ See description for information about each item.
                   "enum": [ "bat", "ps1", "sh", "agent" ]
                 },
                 "runas": {
-                  "description": "How to run this script, does not appy to agent scripts.",
+                  "description": "How to run this script, does not apply to agent scripts.",
                   "type": "string",
                   "enum": ["agent", "userfirst", "user"]
                 },
                 "cmd": {
-                  "description": "The command or \\r\\n seperated commands to run, if set do not use the file key.",
+                  "description": "The command or \\r\\n separated commands to run, if set do not use the file key.",
                   "type": "string"
                 },
                 "file": {
@@ -562,13 +562,13 @@ See description for information about each item.
           "ldapSyncWithUserGroups": {
             "type": [ "boolean", "object" ],
             "default": false,
-            "description": "When set to true or set to an object, MeshCentral will syncronized LDAP user memberships to MeshCentral user groups.",
+            "description": "When set to true or set to an object, MeshCentral will synchronize LDAP user memberships to MeshCentral user groups.",
             "additionalProperties": false,
             "properties": {
               "filter": {
                 "type": [ "string", "array" ],
                 "default": null,
-                "description": "When set to a string or array of strings, only LDAP membership groups that includes one of the strings will be syncronized with MeshCentral user groups."
+                "description": "When set to a string or array of strings, only LDAP membership groups that includes one of the strings will be synchronized with MeshCentral user groups."
               }
             }
           },

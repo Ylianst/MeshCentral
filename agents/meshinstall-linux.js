@@ -103,14 +103,13 @@ if (msh.agentName) { connectArgs.push('--agentName="' + msh.agentName + '"'); }
 
 function _install(parms)
 {
+    var i;
     var mstr = require('fs').createWriteStream(process.execPath + '.msh', { flags: 'wb' });
-    mstr.write('MeshName=' + msh.MeshName + '\n');
-    mstr.write('MeshType=' + msh.MeshType + '\n');
-    mstr.write('MeshID=' + msh.MeshID + '\n');
-    mstr.write('ServerID=' + msh.ServerID + '\n');
-    mstr.write('MeshServer=' + msh.MeshServer + '\n');
-    if (msh.agentName) { mstr.write('agentName=' + msh.agentName + '\n'); }
-    if (msh.meshServiceName) { mstr.write('meshServiceName=' + msh.meshServiceName + '\n'); }
+
+    for (i in msh)
+    {
+        mstr.write(i + '=' + msh[i] + '\n');
+    }
     mstr.end();
 
     if (parms == null) { parms = []; }
@@ -156,7 +155,7 @@ if (process.argv.includes('-translations'))
     console.log(JSON.stringify(translation));
     process.exit();
 }
-if (process.argv.includes('-help') || (process.platform == 'linux' && process.env['XAUTHORITY']==null && process.env['DISPLAY'] == null))
+if (process.argv.includes('-help') || (process.platform == 'linux' && process.env['XAUTHORITY'] == null && process.env['DISPLAY'] == null && process.argv.length == 1))
 {
     console.log("\n" + translation[lang].commands + ": ");
     if ((msh.InstallFlags & 1) == 1)
