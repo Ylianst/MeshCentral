@@ -47,6 +47,10 @@ var MESHRIGHT_NODESKTOP = 65536;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
 
+//
+// This is a helper function used by the 32 bit Windows Agent, when running on 64 bit windows. It will check if the agent is already patched for this
+// and will use this helper if it is not. This helper will inject 'sysnative' into the results when calling readdirSync() on %windir%.
+//
 function __readdirSync_fix(path)
 {
     var sysnative = false;
@@ -59,14 +63,15 @@ function __readdirSync_fix(path)
 
 if (process.platform == 'win32' && require('_GenericMarshal').PointerSize == 4 && require('os').arch() == 'x64')
 {
-    if(require('fs').readdirSync.version == null)
+    if (require('fs').readdirSync.version == null)
     {
+        //
+        // 32 Bit Windows Agent on 64 bit Windows has not been patched for sysnative issue, so lets use our own solution
+        //
         require('fs').__readdirSync_old = require('fs').readdirSync;
         require('fs').readdirSync = __readdirSync_fix;
     }
 }
-
-
 
 function bcdOK() {
     if (process.platform != 'win32') { return (false); }
