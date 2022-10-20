@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - Pozivnica za račun
+Za vas je kreiran račun na serveru [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), sada mu možete pristupiti sa korisničkim imenom "[[[ACCOUNTNAME]]]" i lozinka "[[[PASSWORD]]]".
+~
+Srdačan pozdrav,
+~[[[USERNAME]]]

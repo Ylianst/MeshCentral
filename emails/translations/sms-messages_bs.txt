@@ -1,0 +1,2 @@
+[[0]] verifikacioni kod je: [[1]]
+[[0]] pristupni token je: [[1]]

@@ -1,0 +1,7 @@
+[[[SERVERNAME]]] - Zahtjev za pomoć uređaja
+Uređaj "[[[DEVICENAME]]]" je zatražio pomoć.
+
+Korisnik: "[[[IME POMOĆI]]]"
+Zahtjev: "[[[UPIT ZA POMOĆ]]]"
+
+[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]

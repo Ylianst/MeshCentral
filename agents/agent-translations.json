@@ -620,5 +620,36 @@
     "elevation": "Permissões Elevadas são necessárias para instalar/desinstalar este software",
     "graphicalerror": "A versão gráfica do instalador não pode ser executada neste sistema",
     "description": "Clique nos botões abaixo para instalar ou desinstalar  este software de gerenciamento remoto. Quando instalado, este software é executado em segundo plano permitindo que este computador seja gerenciado e controlado por um administrador remoto"
+  },
+  "bs": {
+    "agent": "Agent",
+    "agentVersion": "Nova verzija",
+    "group": "Grupa uređaja",
+    "url": "URL servera",
+    "meshName": "Ime grupe",
+    "meshId": "Grupni identifikator",
+    "serverId": "Identifikator servera",
+    "setup": "Postaviti",
+    "update": "Ažuriraj",
+    "install": "Instaliraj",
+    "uninstall": "Deinstalirati",
+    "connect": "Povežite se",
+    "disconnect": "Prekini vezu",
+    "cancel": "Otkaži",
+    "close": "Zatvori",
+    "pressok": "Pritisnite OK da prekinete vezu",
+    "elevation": "Za instaliranje/deinstaliranje ovog softvera potrebne su povišene dozvole.",
+    "sudo": "Molimo pokušajte ponovo sa sudo.",
+    "ctrlc": "Pritisnite Ctrl-C za izlaz.",
+    "commands": "Možete pokrenuti tekstualnu verziju iz komandne linije sa sljedećim naredbama",
+    "graphicalerror": "Grafička verzija ovog instalatera ne može da radi na ovom sistemu",
+    "zenity": "Pokušajte instalirati/ažurirati Zenity i pokrenite ponovo",
+    "status": [
+      "NIJE INSTALIRANO",
+      "RUNNING",
+      "NOT RUNNING"
+    ],
+    "statusDescription": "Trenutni status agenta",
+    "description": "Kliknite na dugmad ispod da instalirate ili deinstalirate ovaj softver za daljinsko upravljanje. Kada je instaliran, ovaj softver radi u pozadini, što omogućava da ovim računarom upravlja i kontroliše udaljeni administrator."
   }
 }
