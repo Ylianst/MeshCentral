@@ -494,6 +494,8 @@
     {
       "bs": "“ zatražio pomoć.",
       "en": "\" requested help.",
+      "nl": "\" vraagt om hulp.",
+      "pl": "\" prosi o pomoc.",
       "xloc": [
         "device-help.html->2->3"
       ]
@@ -5939,6 +5941,7 @@
       "bs": "Zapisi tokena za prijavu na račun",
       "en": "Account login token records",
       "nl": "Token vermeldingen voor accountaanmelding",
+	  "pl": "Zapisy logowania tokenami użytkownika",
       "xloc": [
         "default.handlebars->47->2918"
       ]
@@ -9639,6 +9642,7 @@
       "bs": "Došlo je do nepoznate greške.",
       "en": "An unknown error occured.",
       "nl": "Er is een onbekende fout opgetreden.",
+	  "pl": "Wystąpił nieznany błąd.",
       "xloc": [
         "default.handlebars->47->2798"
       ]
@@ -15761,6 +15765,7 @@
       "bs": "Naredbe iz datoteke",
       "en": "Commands from file",
       "nl": "Opdrachten uit bestand",
+	  "pl": "Komendy z pliku",
       "xloc": [
         "default.handlebars->47->730"
       ]
@@ -15769,6 +15774,7 @@
       "bs": "Komande iz datoteke na serveru",
       "en": "Commands from file on server",
       "nl": "Opdrachten uit een bestand op de server",
+	  "pl": "Komendy z pliku na serwerze",
       "xloc": [
         "default.handlebars->47->731"
       ]
@@ -15777,6 +15783,7 @@
       "bs": "Naredbe iz okvira za tekst",
       "en": "Commands from text box",
       "nl": "Opdrachten uit tekstvak",
+	  "pl": "Komendy z okienka tekstowego",
       "xloc": [
         "default.handlebars->47->729"
       ]
@@ -15939,6 +15946,7 @@
       "bs": "Zapisi konfiguracionih datoteka",
       "en": "Configuration file records",
       "nl": "Configuratiebestand vermeldingen",
+	  "pl": "Zapisy pliku konfiguracyjnego",
       "xloc": [
         "default.handlebars->47->2911"
       ]
@@ -19523,6 +19531,7 @@
       "bs": "Zapisi baze podataka",
       "en": "Database Records",
       "nl": "Database vermeldingen",
+	  "pl": "Zapisy Bazy Danych",
       "xloc": [
         "default.handlebars->47->2837"
       ]
@@ -20402,6 +20411,8 @@
     {
       "bs": "Odbijena prijava korisnika sa {0}, {1}, {2}",
       "en": "Denied user login from {0}, {1}, {2}",
+      "nl": "Geweigerde gebruikerslogin van {0}, {1}, {2}",
+      "pl": "Odmówiono zalogowania użytkownika z {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->47->2406"
       ]
@@ -21210,6 +21221,8 @@
     {
       "bs": "uređaj \"",
       "en": "Device \"",
+      "nl": "Apparaat \"",
+      "pl": "Urządzenie \"",
       "xloc": [
         "device-help.html->2->3"
       ]
@@ -21217,6 +21230,8 @@
     {
       "bs": "Uređaj \"[[[DEVICENAME]]]\" je zatražio pomoć.",
       "en": "Device \"[[[DEVICENAME]]]\" requested assistance.",
+      "nl": "Apparaat \"[[[DEVICENAME]]]\" heeft assistentie gevraagd",
+      "pl": "Urządzenie \"[[[DEVICENAME]]]\" prosiło o pomoc.",
       "xloc": [
         "device-help.txt"
       ]
@@ -21643,6 +21658,7 @@
       "bs": "Zapis push obavijesti uređaja",
       "en": "Device Push Notification Record",
       "nl": "Apparaat Push Notificatie vermelding",
+	  "pl": "Zapis Powiadomień Push Urządzenia",
       "xloc": [
         "default.handlebars->47->2920"
       ]
@@ -21651,6 +21667,7 @@
       "bs": "SMBIOS zapis uređaja",
       "en": "Device SMBIOS record",
       "nl": "Apparaat SMBIOS vermelding",
+	  "pl": "Zapis SMBIOS urządzenia",
       "xloc": [
         "default.handlebars->47->2919"
       ]
@@ -22029,6 +22046,7 @@
       "bs": "Zapis grupe uređaja",
       "en": "Device group record",
       "nl": "Apparaatgroep vermelding",
+	  "pl": "Zapis grupy urządzeń",
       "xloc": [
         "default.handlebars->47->2905"
       ]
@@ -22115,6 +22133,7 @@
       "bs": "Zapisi informacija o uređaju",
       "en": "Device information records",
       "nl": "Apparaatinformatie vermeldingen",
+	  "pl": "Zapisy informacji urządzenia",
       "xloc": [
         "default.handlebars->47->2907"
       ]
@@ -22657,6 +22676,7 @@
       "bs": "Zapisi o prelasku napajanja uređaja",
       "en": "Device power transition records",
       "nl": "Apparaat aan/uit vermeldingen",
+	  "pl": "Zapisy zmiany stanu zasilania",
       "xloc": [
         "default.handlebars->47->2913"
       ]
@@ -22665,6 +22685,7 @@
       "bs": "Zapis uređaja",
       "en": "Device record",
       "nl": "Apparaat vermelding",
+	  "pl": "Zapis urządzenia",
       "xloc": [
         "default.handlebars->47->2904"
       ]
@@ -22725,6 +22746,7 @@
       "bs": "Zapisi o dijeljenju uređaja",
       "en": "Device sharing records",
       "nl": "Apparaten delings vermeldingen",
+	  "pl": "Zapisy udostępniania urządzenia",
       "xloc": [
         "default.handlebars->47->2917"
       ]
@@ -22733,6 +22755,7 @@
       "bs": "Uređaj, korisnici, grupe i drugi zapisi",
       "en": "Device, users, groups and other records",
       "nl": "Apparaat, gebruikers, groepen en andere vermeldingen",
+	  "pl": "Zapisy urządzenia, użytkowników, grup i inne",
       "xloc": [
         "default.handlebars->47->2921"
       ]
@@ -25980,6 +26003,8 @@
     {
       "bs": "Pošaljite zahtjev za pomoć e-poštom",
       "en": "Email Help Request",
+      "nl": "E-mail hulpverzoek",
+      "pl": "Prośba Pomocy Email",
       "xloc": [
         "default.handlebars->47->1939",
         "default.handlebars->47->889"
@@ -28036,6 +28061,7 @@
       "bs": "Evidencija događaja",
       "en": "Event records",
       "nl": "Gebeurtenis vermeldingen",
+	  "pl": "Zapisy zdarzeń",
       "xloc": [
         "default.handlebars->47->2914"
       ]
@@ -31158,6 +31184,8 @@
     {
       "bs": "Idi na prvu stranicu",
       "en": "Go to first page",
+      "nl": "Ga naar de eerste pagina",
+      "pl": "Idź do pierwszej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31165,6 +31193,8 @@
     {
       "bs": "Idi na posljednju stranicu",
       "en": "Go to last page",
+      "nl": "Ga naar de laatste pagina  ",
+      "pl": "Idź do ostatniej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31226,6 +31256,8 @@
     {
       "bs": "Idi na sljedeću stranicu",
       "en": "Go to next page",
+      "nl": "Ga naar de volgende pagina",
+      "pl": "Idź do następnej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31233,6 +31265,8 @@
     {
       "bs": "Idi na prethodnu stranicu",
       "en": "Go to previous page",
+      "nl": "Ga naar de vorige pagina",
+      "pl": "Idź do poprzedniej strony",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31620,6 +31654,8 @@
     {
       "bs": "Tip grupe",
       "en": "Group Type",
+      "nl": "Groepstype",
+      "pl": "Typ Grupy",
       "xloc": [
         "default.handlebars->47->2576"
       ]
@@ -32022,6 +32058,23 @@
     {
       "bs": "HTTP/",
       "en": "HTTP/",
+      "nl": "HTTP/",
+      "cs": "HTTP/",
+      "es": "HTTP/",
+      "de": "HTTP/",
+      "da": "HTTP/",
+      "fi": "HTTP/",
+      "fr": "HTTP/",
+      "hi": "HTTP/",
+      "it": "HTTP/",
+      "ja": "HTTP/",
+      "ko": "HTTP/",
+      "pt": "HTTP/",
+      "pt-br": "HTTP/",
+      "pl": "HTTP/",
+      "sv": "HTTP/",
+      "ru": "HTTP/",
+      "tr": "HTTP/",
       "xloc": [
         "default.handlebars->47->1004",
         "default.handlebars->47->1981"
@@ -32030,6 +32083,8 @@
     {
       "bs": "HTTP/{0} link",
       "en": "HTTP/{0} link",
+      "nl": "HTTP/{0} link",
+      "pl": "HTTP/{0} link",
       "xloc": [
         "default.handlebars->47->298"
       ]
@@ -32116,6 +32171,23 @@
     {
       "bs": "HTTPS/",
       "en": "HTTPS/",
+      "nl": "HTTPS/",
+      "cs": "HTTPS/",
+      "es": "HTTPS/",
+      "de": "HTTPS/",
+      "da": "HTTPS/",
+      "fi": "HTTPS/",
+      "fr": "HTTPS/",
+      "hi": "HTTPS/",
+      "it": "HTTPS/",
+      "ja": "HTTPS/",
+      "ko": "HTTPS/",
+      "pt": "HTTPS/",
+      "pt-br": "HTTPS/",
+      "sv": "HTTPS/",
+      "ru": "HTTPS/",
+      "tr": "HTTPS/",
+      "pl": "HTTPS/",
       "xloc": [
         "default.handlebars->47->1005",
         "default.handlebars->47->1982"
@@ -32124,6 +32196,23 @@
     {
       "bs": "HTTPS/{0}",
       "en": "HTTPS/{0}",
+      "nl": "HTTPS/{0}",
+      "pl": "HTTPS/{0}",
+      "cs": "HTTPS/{0}",
+      "es": "HTTPS/{0}",
+      "de": "HTTPS/{0}",
+      "da": "HTTPS/{0}",
+      "fi": "HTTPS/{0}",
+      "fr": "HTTPS/{0}",
+      "hi": "HTTPS/{0}",
+      "it": "HTTPS/{0}",
+      "ja": "HTTPS/{0}",
+      "ko": "HTTPS/{0}",
+      "pt": "HTTPS/{0}",
+      "pt-br": "HTTPS/{0}",
+      "sv": "HTTPS/{0}",
+      "ru": "HTTPS/{0}",
+      "tr": "HTTPS/{0}",
       "xloc": [
         "default.handlebars->47->299"
       ]
@@ -32524,6 +32613,8 @@
     {
       "bs": "Zahtjevi za pomoć",
       "en": "Help requests",
+      "nl": "Hulpverzoeken",
+      "pl": "Prośby pomocy",
       "xloc": [
         "default.handlebars->47->1027",
         "default.handlebars->47->2179"
@@ -33126,6 +33217,7 @@
       "bs": "Zapisi informacija o IP lokaciji",
       "en": "IP location information records",
       "nl": "IP locatiegegevens vermeldingen",
+	  "pl": "Zapisy o informacji lokalizacji IP",
       "xloc": [
         "default.handlebars->47->2908"
       ]
@@ -35244,6 +35336,8 @@
     {
       "bs": "Intel&reg; AMT Uključite BIOS",
       "en": "Intel&reg; AMT Power on to BIOS",
+      "nl": "Intel&reg; AMT opstarten naar de BIOS",
+      "pl": "Intel&reg; AMT Uruchom do BIOS",
       "xloc": [
         "default.handlebars->47->1145"
       ]
@@ -35306,6 +35400,8 @@
     {
       "bs": "Intel&reg; AMT Resetujte BIOS",
       "en": "Intel&reg; AMT Reset to BIOS",
+      "nl": "Intel&reg; AMT reset naar de BIOS",
+      "pl": "Intel&reg; AMT Resetuj do BIOS",
       "xloc": [
         "default.handlebars->47->1144"
       ]
@@ -38838,6 +38934,7 @@
       "bs": "Zabilježeno vrijeme posljednje veze",
       "en": "Last connection time records",
       "nl": "Laatste verbindingstijd vermeldingen",
+	  "pl": "Zapisy czasu ostatnich połączeń",
       "xloc": [
         "default.handlebars->47->2912"
       ]
@@ -45805,6 +45902,7 @@
       "bs": "Zapisi informacija o mrežnom interfejsu",
       "en": "Network interface information records",
       "nl": "Netwerkinterface informatie vermeldingen",
+	  "pl": "Zapisy informacji o interfejsach sieciowych",
       "xloc": [
         "default.handlebars->47->2910"
       ]
@@ -51426,6 +51524,8 @@
     {
       "bs": "Uključite Intel&reg; AMT napajanje u BIOS?",
       "en": "Perform Intel&reg; AMT power on to BIOS?",
+      "nl": "Perform Intel&reg; AMT opstarten naar de BIOS?",
+      "pl": "Czy wykonać Intel&reg; AMT uruchomienie do BIOS?",
       "xloc": [
         "default.handlebars->47->1168"
       ]
@@ -51460,6 +51560,8 @@
     {
       "bs": "Izvršiti Intel&reg; AMT resetovanje na BIOS?",
       "en": "Perform Intel&reg; AMT reset to BIOS?",
+      "nl": "Perform Intel&reg; AMT resetten naar de BIOS?",
+      "pl": "Czy wykonać Intel&reg; AMT resetowanie do BIOS?",
       "xloc": [
         "default.handlebars->47->1170"
       ]
@@ -52321,6 +52423,8 @@
     {
       "bs": "Port",
       "en": "Port",
+      "nl": "Poort",
+      "pl": "Port",
       "xloc": [
         "default.handlebars->47->1126",
         "default.handlebars->47->1127"
@@ -57733,6 +57837,8 @@
     {
       "bs": "Zahtjev:",
       "en": "Request:",
+      "nl": "Verzoek:",
+      "pl": "Prośba:",
       "xloc": [
         "device-help.html->2->5"
       ]
@@ -57740,6 +57846,8 @@
     {
       "bs": "Zahtjev: \"[[[UPIT ZA POMOĆ]]]\"",
       "en": "Request: \"[[[HELPREQUEST]]]\"",
+      "nl": "Verzoek: \"[[[HELPREQUEST]]]\"",
+      "pl": "Prośba: \"[[[HELPREQUEST]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -58650,6 +58758,7 @@
       "bs": "Trči",
       "en": "Run",
       "nl": "Uitvoeren",
+      "pl": "Wykonaj",
       "xloc": [
         "default.handlebars->47->924"
       ]
@@ -58712,6 +58821,7 @@
       "bs": "Pokrenite skriptu na ovom računaru",
       "en": "Run a script on this computer",
       "nl": "Voer een script uit op deze computer",
+	  "pl": "Wykonaj skrypt na tym komputerze",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -62381,6 +62491,7 @@
       "bs": "Server ne može preuzeti snimke iz baze podataka.",
       "en": "Server is unable to get recordings from the database.",
       "nl": "Server kan geen opnamen uit de database halen.",
+	  "pl": "Serwer nie może pobrać zapisów z bazy danych.",
       "xloc": [
         "default.handlebars->47->2797"
       ]
@@ -62389,6 +62500,7 @@
       "bs": "Server ne može čitati iz foldera sa snimcima.",
       "en": "Server is unable to read from the recordings folder.",
       "nl": "Server kan niet lezen uit de opnamemap.",
+	  "pl": "Serwer nie może odczytać zapisów z folderu.",
       "xloc": [
         "default.handlebars->47->2796"
       ]
@@ -62397,6 +62509,7 @@
       "bs": "Statistički zapisi servera",
       "en": "Server statistics records",
       "nl": "Server statistieken vermeldingen",
+	  "pl": "Zapisy statystyk serwera",
       "xloc": [
         "default.handlebars->47->2915"
       ]
@@ -68186,6 +68299,7 @@
       "bs": "Zapisi tekstualnih bilješki",
       "en": "Text notes records",
       "nl": "Tekst notities vermeldingen",
+	  "pl": "Zapisy notatek tekstowych",
       "xloc": [
         "default.handlebars->47->2909"
       ]
@@ -68580,6 +68694,8 @@
     {
       "bs": "Ova verzija NodeJS-a ne podržava OpenID.",
       "en": "This NodeJS version does not support OpenID.",
+      "nl": "Deze NodeJS-versie ondersteunt OpenID niet.",
+      "pl": "Obecna wersja NodeJS nie wspiera OpenID.",
       "xloc": [
         "default.handlebars->47->107"
       ]
@@ -71483,6 +71599,7 @@
       "bs": "Nije moguće učitati fajl ikone agenta: {0}.",
       "en": "Unable to load agent icon file: {0}.",
       "nl": "Kan agent pictogram bestand niet laden: {0}.",
+	  "pl": "Nie moge załadować pliku ikony agenta: {0}.",
       "xloc": [
         "default.handlebars->47->105"
       ]
@@ -71491,6 +71608,7 @@
       "bs": "Nije moguće učitati fajl logotipa agenta: {0}.",
       "en": "Unable to load agent logo file: {0}.",
       "nl": "Kan agent logo bestand niet laden: {0}.",
+	  "pl": "Nie moge załadować pliku logo agenta: {0}.",
       "xloc": [
         "default.handlebars->47->106"
       ]
@@ -73211,6 +73329,8 @@
     {
       "bs": "Dnevnik provjere autentičnosti korisnika",
       "en": "User Authentication Log",
+      "nl": "Gebruikersauthenticatielogboek",
+      "pl": "Dziennik Autentykacji Użytkownika",
       "xloc": [
         "default.handlebars->47->3053"
       ]
@@ -73939,6 +74059,7 @@
       "bs": "Zapisi grupe korisnika",
       "en": "User group records",
       "nl": "Gebruikersgroep vermeldingen",
+	  "pl": "Zapisy grupy użytkownika",
       "xloc": [
         "default.handlebars->47->2916"
       ]
@@ -74056,6 +74177,7 @@
       "bs": "Korisnički zapisi",
       "en": "User records",
       "nl": "Gebruikers vermeldingen",
+	  "pl": "Zapisy użytkownika",
       "xloc": [
         "default.handlebars->47->2906"
       ]
@@ -74090,6 +74212,8 @@
     {
       "bs": "Korisnik:",
       "en": "User:",
+      "nl": "Gebruiker:",
+      "pl": "Użytkownik:",
       "xloc": [
         "device-help.html->2->5"
       ]
@@ -74097,6 +74221,8 @@
     {
       "bs": "Korisnik: \"[[[IME POMOĆI]]]\"",
       "en": "User: \"[[[HELPUSERNAME]]]\"",
+      "nl": "Gebruiker: \"[[[HELPUSERNAME]]]\"",
+      "pl": "Użytkownik: \"[[[HELPUSERNAME]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -77959,6 +78085,8 @@
     {
       "bs": "[[[NAZIV UREĐAJA]]]",
       "en": "[[[DEVICENAME]]]",
+      "nl": "[[[DEVICENAME]]]",
+      "pl": "[[[DEVICENAME]]]",
       "xloc": [
         "device-help.html->2->3->1"
       ]
@@ -77992,6 +78120,22 @@
     {
       "bs": "[[[UPIT ZA POMOĆ]]]",
       "en": "[[[HELPREQUEST]]]",
+      "nl": "[[[HELPREQUEST]]]",
+      "pl": "[[[HELPREQUEST]]]",
+      "cs": "[[[HELPREQUEST]]]",
+      "de": "[[[HELPREQUEST]]]",
+      "es": "[[[HELPREQUEST]]]",
+      "fi": "[[[HELPREQUEST]]]",
+      "it": "[[[HELPREQUEST]]]",
+      "hi": "[[[HELPREQUEST]]]",
+      "fr": "[[[HELPREQUEST]]]",
+      "ja": "[[[HELPREQUEST]]]",
+      "ko": "[[[HELPREQUEST]]]",
+      "pt": "[[[HELPREQUEST]]]",
+      "pt-br": "[[[HELPREQUEST]]]",
+      "ru": "[[[HELPREQUEST]]]",
+      "sv": "[[[HELPREQUEST]]]",
+      "tr": "[[[HELPREQUEST]]]",
       "xloc": [
         "device-help.html->2->5->4"
       ]
@@ -77999,6 +78143,22 @@
     {
       "bs": "[[[IME POMOĆI]]]",
       "en": "[[[HELPUSERNAME]]]",
+      "nl": "[[[HELPUSERNAME]]]",
+      "pl": "[[[HELPUSERNAME]]]",
+      "cs": "[[[HELPUSERNAME]]]",
+      "de": "[[[HELPUSERNAME]]]",
+      "es": "[[[HELPUSERNAME]]]",
+      "fi": "[[[HELPUSERNAME]]]",
+      "it": "[[[HELPUSERNAME]]]",
+      "hi": "[[[HELPUSERNAME]]]",
+      "fr": "[[[HELPUSERNAME]]]",
+      "ja": "[[[HELPUSERNAME]]]",
+      "ko": "[[[HELPUSERNAME]]]",
+      "pt": "[[[HELPUSERNAME]]]",
+      "pt-br": "[[[HELPUSERNAME]]]",
+      "ru": "[[[HELPUSERNAME]]]",
+      "sv": "[[[HELPUSERNAME]]]",
+      "tr": "[[[HELPUSERNAME]]]",
       "xloc": [
         "device-help.html->2->5->1"
       ]
@@ -78034,6 +78194,8 @@
     {
       "bs": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Zahtjev za pomoć",
       "en": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Help Request",
+      "nl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Verzoek om hulp",
+      "pl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Prośba Pomocy",
       "xloc": [
         "device-help.html->0"
       ]
@@ -78150,6 +78312,8 @@
     {
       "bs": "[[[SERVERNAME]]] - Zahtjev za pomoć uređaja",
       "en": "[[[SERVERNAME]]] - Device Help Request",
+      "nl": "[[[SERVERNAME]]] - Een verzoek om het apparaat te helpen",
+      "pl": "[[[SERVERNAME]]] - Prośba Pomocy Urządzenia",
       "xloc": [
         "device-help.txt"
       ]
@@ -78212,6 +78376,8 @@
     {
       "bs": "[[[SERVERNAME]]] - Zahtjev za pomoć",
       "en": "[[[SERVERNAME]]] - Help Request",
+      "nl": "[[[SERVERNAME]]] - Verzoek om hulp",
+      "pl": "[[[SERVERNAME]]] - Prośba Pomocy",
       "xloc": [
         "device-help.html->2->1->1->0->1->1"
       ]
@@ -78273,6 +78439,8 @@
     {
       "bs": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
       "en": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
+      "nl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
+      "pl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
       "xloc": [
         "device-help.txt"
       ]
@@ -80581,6 +80749,8 @@
     {
       "bs": "za navigaciju do ovog uređaja.",
       "en": "to navigate to this device.",
+      "nl": "naar dit apparaat navigeren.",
+      "pl": "by nawigować do tego urządzenia.",
       "xloc": [
         "device-help.html->2->7"
       ]
