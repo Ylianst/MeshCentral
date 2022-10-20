@@ -238,5 +238,17 @@
     "desktopNotify": "{0} 啟動了遠程桌面會話。",
     "fileNotify": "{0} 啟動了遠程文件會話。",
     "privacyBar": "與：{0} 共享桌面"
+  },
+  "bs": {
+    "allow": "Dopustiti",
+    "deny": "Deny",
+    "autoAllowForFive": "Automatski prihvati sve veze u narednih 5 minuta",
+    "terminalConsent": "{0} zahtijeva pristup udaljenom terminalu. Odobriti pristup?",
+    "desktopConsent": "{0} zahtijeva pristup udaljenoj radnoj površini. Odobriti pristup?",
+    "fileConsent": "{0} zahtijeva udaljeni pristup fajlu. Odobriti pristup?",
+    "terminalNotify": "{0} je započeo sesiju udaljenog terminala.",
+    "desktopNotify": "{0} je započeo sesiju udaljene radne površine.",
+    "fileNotify": "{0} je započeo sesiju udaljenog fajla.",
+    "privacyBar": "Dijeljenje radne površine sa: {0}"
   }
 }

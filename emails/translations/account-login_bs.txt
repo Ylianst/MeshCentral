@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Prijava na račun
+Vaš token za prijavu je: [[[TOKEN]]]
+~
+Ovaj token se može koristiti samo jednom i vrijedi 5 minuta.

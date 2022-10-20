@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Obavještenje uređaja
+~<area-header>
+Sljedeći uređaji su promijenili stanje veze.
+~</area-header>
+~<area-connections>
+~
+Povezani uređaji:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Isključeni uređaji:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+Da odjavite pretplatu, učitajte ovaj link u roku od 1 sata od prijema ove poruke: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]
+~</area-footer>
