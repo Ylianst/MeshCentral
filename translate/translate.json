@@ -5941,7 +5941,7 @@
       "bs": "Zapisi tokena za prijavu na račun",
       "en": "Account login token records",
       "nl": "Token vermeldingen voor accountaanmelding",
-	  "pl": "Zapisy logowania tokenami użytkownika",
+      "pl": "Zapisy logowania tokenami użytkownika",
       "xloc": [
         "default.handlebars->47->2918"
       ]
@@ -9642,7 +9642,7 @@
       "bs": "Došlo je do nepoznate greške.",
       "en": "An unknown error occured.",
       "nl": "Er is een onbekende fout opgetreden.",
-	  "pl": "Wystąpił nieznany błąd.",
+      "pl": "Wystąpił nieznany błąd.",
       "xloc": [
         "default.handlebars->47->2798"
       ]
@@ -15765,7 +15765,7 @@
       "bs": "Naredbe iz datoteke",
       "en": "Commands from file",
       "nl": "Opdrachten uit bestand",
-	  "pl": "Komendy z pliku",
+      "pl": "Komendy z pliku",
       "xloc": [
         "default.handlebars->47->730"
       ]
@@ -15774,7 +15774,7 @@
       "bs": "Komande iz datoteke na serveru",
       "en": "Commands from file on server",
       "nl": "Opdrachten uit een bestand op de server",
-	  "pl": "Komendy z pliku na serwerze",
+      "pl": "Komendy z pliku na serwerze",
       "xloc": [
         "default.handlebars->47->731"
       ]
@@ -15783,7 +15783,7 @@
       "bs": "Naredbe iz okvira za tekst",
       "en": "Commands from text box",
       "nl": "Opdrachten uit tekstvak",
-	  "pl": "Komendy z okienka tekstowego",
+      "pl": "Komendy z okienka tekstowego",
       "xloc": [
         "default.handlebars->47->729"
       ]
@@ -15946,7 +15946,7 @@
       "bs": "Zapisi konfiguracionih datoteka",
       "en": "Configuration file records",
       "nl": "Configuratiebestand vermeldingen",
-	  "pl": "Zapisy pliku konfiguracyjnego",
+      "pl": "Zapisy pliku konfiguracyjnego",
       "xloc": [
         "default.handlebars->47->2911"
       ]
@@ -19531,7 +19531,7 @@
       "bs": "Zapisi baze podataka",
       "en": "Database Records",
       "nl": "Database vermeldingen",
-	  "pl": "Zapisy Bazy Danych",
+      "pl": "Zapisy Bazy Danych",
       "xloc": [
         "default.handlebars->47->2837"
       ]
@@ -21658,7 +21658,7 @@
       "bs": "Zapis push obavijesti uređaja",
       "en": "Device Push Notification Record",
       "nl": "Apparaat Push Notificatie vermelding",
-	  "pl": "Zapis Powiadomień Push Urządzenia",
+      "pl": "Zapis Powiadomień Push Urządzenia",
       "xloc": [
         "default.handlebars->47->2920"
       ]
@@ -21667,7 +21667,7 @@
       "bs": "SMBIOS zapis uređaja",
       "en": "Device SMBIOS record",
       "nl": "Apparaat SMBIOS vermelding",
-	  "pl": "Zapis SMBIOS urządzenia",
+      "pl": "Zapis SMBIOS urządzenia",
       "xloc": [
         "default.handlebars->47->2919"
       ]
@@ -22046,7 +22046,7 @@
       "bs": "Zapis grupe uređaja",
       "en": "Device group record",
       "nl": "Apparaatgroep vermelding",
-	  "pl": "Zapis grupy urządzeń",
+      "pl": "Zapis grupy urządzeń",
       "xloc": [
         "default.handlebars->47->2905"
       ]
@@ -22133,7 +22133,7 @@
       "bs": "Zapisi informacija o uređaju",
       "en": "Device information records",
       "nl": "Apparaatinformatie vermeldingen",
-	  "pl": "Zapisy informacji urządzenia",
+      "pl": "Zapisy informacji urządzenia",
       "xloc": [
         "default.handlebars->47->2907"
       ]
@@ -22676,7 +22676,7 @@
       "bs": "Zapisi o prelasku napajanja uređaja",
       "en": "Device power transition records",
       "nl": "Apparaat aan/uit vermeldingen",
-	  "pl": "Zapisy zmiany stanu zasilania",
+      "pl": "Zapisy zmiany stanu zasilania",
       "xloc": [
         "default.handlebars->47->2913"
       ]
@@ -22685,7 +22685,7 @@
       "bs": "Zapis uređaja",
       "en": "Device record",
       "nl": "Apparaat vermelding",
-	  "pl": "Zapis urządzenia",
+      "pl": "Zapis urządzenia",
       "xloc": [
         "default.handlebars->47->2904"
       ]
@@ -22746,7 +22746,7 @@
       "bs": "Zapisi o dijeljenju uređaja",
       "en": "Device sharing records",
       "nl": "Apparaten delings vermeldingen",
-	  "pl": "Zapisy udostępniania urządzenia",
+      "pl": "Zapisy udostępniania urządzenia",
       "xloc": [
         "default.handlebars->47->2917"
       ]
@@ -22755,7 +22755,7 @@
       "bs": "Uređaj, korisnici, grupe i drugi zapisi",
       "en": "Device, users, groups and other records",
       "nl": "Apparaat, gebruikers, groepen en andere vermeldingen",
-	  "pl": "Zapisy urządzenia, użytkowników, grup i inne",
+      "pl": "Zapisy urządzenia, użytkowników, grup i inne",
       "xloc": [
         "default.handlebars->47->2921"
       ]
@@ -28061,7 +28061,7 @@
       "bs": "Evidencija događaja",
       "en": "Event records",
       "nl": "Gebeurtenis vermeldingen",
-	  "pl": "Zapisy zdarzeń",
+      "pl": "Zapisy zdarzeń",
       "xloc": [
         "default.handlebars->47->2914"
       ]
@@ -33217,7 +33217,7 @@
       "bs": "Zapisi informacija o IP lokaciji",
       "en": "IP location information records",
       "nl": "IP locatiegegevens vermeldingen",
-	  "pl": "Zapisy o informacji lokalizacji IP",
+      "pl": "Zapisy o informacji lokalizacji IP",
       "xloc": [
         "default.handlebars->47->2908"
       ]
@@ -38934,7 +38934,7 @@
       "bs": "Zabilježeno vrijeme posljednje veze",
       "en": "Last connection time records",
       "nl": "Laatste verbindingstijd vermeldingen",
-	  "pl": "Zapisy czasu ostatnich połączeń",
+      "pl": "Zapisy czasu ostatnich połączeń",
       "xloc": [
         "default.handlebars->47->2912"
       ]
@@ -45902,7 +45902,7 @@
       "bs": "Zapisi informacija o mrežnom interfejsu",
       "en": "Network interface information records",
       "nl": "Netwerkinterface informatie vermeldingen",
-	  "pl": "Zapisy informacji o interfejsach sieciowych",
+      "pl": "Zapisy informacji o interfejsach sieciowych",
       "xloc": [
         "default.handlebars->47->2910"
       ]
@@ -58821,7 +58821,7 @@
       "bs": "Pokrenite skriptu na ovom računaru",
       "en": "Run a script on this computer",
       "nl": "Voer een script uit op deze computer",
-	  "pl": "Wykonaj skrypt na tym komputerze",
+      "pl": "Wykonaj skrypt na tym komputerze",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -62491,7 +62491,7 @@
       "bs": "Server ne može preuzeti snimke iz baze podataka.",
       "en": "Server is unable to get recordings from the database.",
       "nl": "Server kan geen opnamen uit de database halen.",
-	  "pl": "Serwer nie może pobrać zapisów z bazy danych.",
+      "pl": "Serwer nie może pobrać zapisów z bazy danych.",
       "xloc": [
         "default.handlebars->47->2797"
       ]
@@ -62500,7 +62500,7 @@
       "bs": "Server ne može čitati iz foldera sa snimcima.",
       "en": "Server is unable to read from the recordings folder.",
       "nl": "Server kan niet lezen uit de opnamemap.",
-	  "pl": "Serwer nie może odczytać zapisów z folderu.",
+      "pl": "Serwer nie może odczytać zapisów z folderu.",
       "xloc": [
         "default.handlebars->47->2796"
       ]
@@ -62509,7 +62509,7 @@
       "bs": "Statistički zapisi servera",
       "en": "Server statistics records",
       "nl": "Server statistieken vermeldingen",
-	  "pl": "Zapisy statystyk serwera",
+      "pl": "Zapisy statystyk serwera",
       "xloc": [
         "default.handlebars->47->2915"
       ]
@@ -68299,7 +68299,7 @@
       "bs": "Zapisi tekstualnih bilješki",
       "en": "Text notes records",
       "nl": "Tekst notities vermeldingen",
-	  "pl": "Zapisy notatek tekstowych",
+      "pl": "Zapisy notatek tekstowych",
       "xloc": [
         "default.handlebars->47->2909"
       ]
@@ -71599,7 +71599,7 @@
       "bs": "Nije moguće učitati fajl ikone agenta: {0}.",
       "en": "Unable to load agent icon file: {0}.",
       "nl": "Kan agent pictogram bestand niet laden: {0}.",
-	  "pl": "Nie moge załadować pliku ikony agenta: {0}.",
+      "pl": "Nie moge załadować pliku ikony agenta: {0}.",
       "xloc": [
         "default.handlebars->47->105"
       ]
@@ -71608,7 +71608,7 @@
       "bs": "Nije moguće učitati fajl logotipa agenta: {0}.",
       "en": "Unable to load agent logo file: {0}.",
       "nl": "Kan agent logo bestand niet laden: {0}.",
-	  "pl": "Nie moge załadować pliku logo agenta: {0}.",
+      "pl": "Nie moge załadować pliku logo agenta: {0}.",
       "xloc": [
         "default.handlebars->47->106"
       ]
@@ -74059,7 +74059,7 @@
       "bs": "Zapisi grupe korisnika",
       "en": "User group records",
       "nl": "Gebruikersgroep vermeldingen",
-	  "pl": "Zapisy grupy użytkownika",
+      "pl": "Zapisy grupy użytkownika",
       "xloc": [
         "default.handlebars->47->2916"
       ]
@@ -74177,7 +74177,7 @@
       "bs": "Korisnički zapisi",
       "en": "User records",
       "nl": "Gebruikers vermeldingen",
-	  "pl": "Zapisy użytkownika",
+      "pl": "Zapisy użytkownika",
       "xloc": [
         "default.handlebars->47->2906"
       ]
