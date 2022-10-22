@@ -425,6 +425,7 @@
                             <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
                             <div id="managePushAuthDev"><div class="p2AccountActions"><span id="authPushAuthDevCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_managePushAuthDev()">Manage push authentication</a><br /></span></div>
                             <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span></div>
+                            <div id="manageMessaging1"><div class="p2AccountActions"><span id="authMessagingCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageMessaging()">Manage messaging</a><br /></span></div>
                             <div class="p2AccountActions"></div><span><a href=# onclick="return account_viewPreviousLogins()">View previous logins</a><br /></span>
                         </div>
                     </div>
@@ -432,6 +433,7 @@
                         <p><strong>Account actions</strong></p>
                         <p class="mL">
                             <span id="managePhoneNumber2" style="display:none"><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span>
+                            <span id="manageMessaging2" style="display:none"><a href=# onclick="return account_manageMessaging()">Manage messaging</a><br /></span>
                             <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
                             <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
                             <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
@@ -2139,6 +2141,8 @@
             QV('p2AccountActions', !accountSettingsLocked)
             QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000) && (serverinfo.lock2factor != true));
             QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000) && (serverinfo.lock2factor != true));
+            QV('manageMessaging1', (features2 & 0x02000000) && (features2 & 0x04000000) && (serverinfo.lock2factor != true));
+            QV('manageMessaging2', (features2 & 0x02000000) && !(features2 & 0x04000000) && (serverinfo.lock2factor != true));
             QV('manageEmail2FA', (features & 0x00800000) && (serverinfo.lock2factor != true));
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
@@ -2238,6 +2242,7 @@
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (accountSettingsLocked == false));
             QV('manageOtp', (serverinfo.lock2factor != true) && (authFactorCount > 0) && ((features2 & 0x40000) == 0));
             QV('authPhoneNumberCheck', (userinfo.phone != null));
+            QV('authMessagingCheck', (userinfo.msghandle != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0))); 
@@ -2949,6 +2954,16 @@
                     x += '<td>' + "Check your phone and enter the verification code.";
                     x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
                     setDialogMode(2, "Phone Notifications", 3, account_managePhoneConfirm, x, message.cookie);
+                    Q('d2phoneCodeInput').focus();
+                    account_managePhoneCodeValidate();
+                    break;
+                }
+                case 'verifyMessaging': {
+                    if (xxdialogMode && (xxdialogTag != 'verifyMessaging')) return;
+                    var x = '<table><tr><td><img src="images/messaging40.png" style=padding:8px>';
+                    x += '<td>' + "Check your messaging application and enter the verification code.";
+                    x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
+                    setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingConfirm, x, message.cookie);
                     Q('d2phoneCodeInput').focus();
                     account_managePhoneCodeValidate();
                     break;
@@ -11920,7 +11935,7 @@
             var x;
             if (userinfo.phone != null) {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
-                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + userinfo.phone + '</div>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.phone) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
                 setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
                 account_managePhoneRemoveValidate();
@@ -11941,6 +11956,35 @@
         function account_managePhoneAdd() { if (isPhoneNumber(Q('d2phoneinput').value) == false) return; QE('d2phoneinput', false); meshserver.send({ action: 'verifyPhone', phone: Q('d2phoneinput').value }); }
         function account_managePhoneRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removePhone' }); } }
         function account_managePhoneRemoveValidate() { QE('idx_dlgOkButton', Q('d2delPhone').checked); }
+
+        function account_manageMessaging() {
+            if (xxdialogMode || ((features2 & 0x02000000) == 0)) return;
+            var x;
+            if (userinfo.msghandle != null) {
+                x = '<table style=width:100%><tr><td style=width:56px><img src="images/messaging40.png" style=padding:8px>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.msghandle) + '</div>';
+                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
+                setDialogMode(2, "Messaging Notifications", 3, account_managePhoneRemove, x);
+                account_managePhoneRemoveValidate();
+            } else {
+                x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
+                x += '<td>' + "Enter your messaging service and handle. Once verified, this server can send you login verification and other notifications." + '<br /><br />';
+                var y = '<select id=d2serviceselect style=width:160px;margin-left:8px>';
+                if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
+                y += '</select>';
+                x += '<table><tr><td>' + "Service" + '<td>' + y;
+                x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=account_manageMessagingValidate() onkeypress="if (event.key==\'Enter\') account_manageMessagingValidate(1)">';
+                x += '</table>';
+                setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingAdd, x, 'verifyMessaging');
+                Q('d2handleinput').focus();
+                account_manageMessagingValidate();
+            }
+        }
+
+        function account_manageMessagingValidate(x) { var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
+        function account_manageMessagingAdd() { if (Q('d2handleinput').value.length == 0) return; QE('d2handleinput', false); meshserver.send({ action: 'verifyMessaging', service: Q('d2serviceselect').value, handle: Q('d2handleinput').value }); }
+        function account_manageMessagingConfirm(b, tag) { meshserver.send({ action: 'confirmMessaging', code: Q('d2phoneCodeInput').value, cookie: tag }); }
 
         function account_manageAuthEmail() {
             if (xxdialogMode || ((features & 0x00800000) == 0)) return;
@@ -14279,7 +14323,9 @@
             152: "No longer a relay for \"{0}\".",
             153: "Is a relay for \"{0}\".",
             154: "Account changed to sync with LDAP data.",
-            155: "Denied user login from {0}, {1}, {2}"
+            155: "Denied user login from {0}, {1}, {2}",
+            156: "Verified messaging account of user {0}",
+            157: "Removed messaging account of user {0}"
         };
 
         var eventsShortMessageId = {
@@ -14722,6 +14768,15 @@
 
         function showSendSMSValidate() { QE('idx_dlgOkButton', Q('d2smsText').value.length > 0); }
         function showSendSMSEx(b, tag) { if (Q('d2smsText').value.length > 0) { meshserver.send({ action: 'smsuser', userid: decodeURIComponent(tag), msg: Q('d2smsText').value }); } }
+
+        function showSendMessage(userid) {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Send Message", 3, showSendMessageEx, '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>', userid);
+            Q('d2smsText').focus();
+            showSendSMSValidate();
+        }
+
+        function showSendMessageEx(b, tag) { if (Q('d2smsText').value.length > 0) { meshserver.send({ action: 'msguser', userid: decodeURIComponent(tag), msg: Q('d2smsText').value }); } }
 
         function showSendEmail(userid) {
             if (xxdialogMode) return;
@@ -15630,6 +15685,10 @@
                 x += addDeviceAttribute("Phone Number", (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editPhone() />');
             }
 
+            if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
+                x += addDeviceAttribute("Messaging", (user.msghandle?user.msghandle:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editMessaging() />');
+            }
+
             // Display features
             var userFeatures = [];
             if ((serverinfo.usersSessionRecording == 1) && (user.flags) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
@@ -15706,6 +15765,7 @@
             // Add action buttons
             x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
             if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
+            if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
             if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
             if (!self && ((activeSessions > 0) || ((features2 & 8) && (user.webpush)))) {
                 x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
@@ -15762,6 +15822,16 @@
         }
 
         function p30editPhone() {
+            if (xxdialogMode) return;
+            var x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
+            x += '<td style=width:100%;text-align:center>' + "SMS capable phone number for this user." + '<br />' + "Leave blank for none.";
+            x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone?currentUser.phone:'') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
+            setDialogMode(2, "Phone Notifications", 3, p30editPhoneEx, x, 'verifyPhone');
+            Q('d2phoneinput').focus();
+            p30editPhoneValidate();
+        }
+
+        function p30editMessaging() { // TODO
             if (xxdialogMode) return;
             var x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
             x += '<td style=width:100%;text-align:center>' + "SMS capable phone number for this user." + '<br />' + "Leave blank for none.";
@@ -16866,10 +16936,14 @@
                 "No user management rights",
                 "Invalid SMS message",
                 "No phone number for this user",
-                "SMS succesfuly sent.",
+                "SMS succesfully sent.",
                 "SMS error",
                 "SMS error: {0}",
-                "Email domain \"{0}\" is not allowed. Only ({1}) are allowed" // 30
+                "Email domain \"{0}\" is not allowed. Only ({1}) are allowed", // 30,
+                "Invalid message",
+                "Message succesfully sent.",
+                "Message error",
+                "Message error: {0}"
             ];
             if (typeof n.titleid == 'number') { try { n.title = translatedTitles[n.titleid]; } catch (ex) {} }
             if (typeof n.msgid == 'number') { try { n.text = translatedMessages[n.msgid]; if (Array.isArray(n.args)) { n.text = format(n.text, n.args[0], n.args[1], n.args[2], n.args[3], n.args[4], n.args[5]); } } catch (ex) { } }

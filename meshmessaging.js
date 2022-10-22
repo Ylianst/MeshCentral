@@ -117,8 +117,8 @@ module.exports.CreateServer = function (parent) {
         return lines[templateNumber];
     }
 
-    // Send phone number verification SMS
-    obj.sendPhoneCheck = function (domain, to, verificationCode, language, func) {
+    // Send messaging account verification
+    obj.sendMessagingCheck = function (domain, to, verificationCode, language, func) {
         parent.debug('email', "Sending verification message to " + to);
 
         var sms = getTemplate(0, domain, language);
@@ -128,11 +128,11 @@ module.exports.CreateServer = function (parent) {
         sms = sms.split('[[0]]').join(domain.title ? domain.title : 'MeshCentral');
         sms = sms.split('[[1]]').join(verificationCode);
 
-        // Send the SMS
-        obj.sendSMS(to, sms, func);
+        // Send the message
+        obj.sendMessage(to, sms, func);
     };
 
-    // Send phone number verification SMS
+    // Send 2FA verification
     obj.sendToken = function (domain, to, verificationCode, language, func) {
         parent.debug('email', "Sending login token message to " + to);
 
@@ -143,8 +143,8 @@ module.exports.CreateServer = function (parent) {
         sms = sms.split('[[0]]').join(domain.title ? domain.title : 'MeshCentral');
         sms = sms.split('[[1]]').join(verificationCode);
 
-        // Send the SMS
-        obj.sendSMS(to, sms, func);
+        // Send the message
+        obj.sendMessage(to, sms, func);
     };
 
     return obj;

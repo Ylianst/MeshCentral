@@ -5233,6 +5233,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'changelang': serverCommandChangeLang,
         'close': serverCommandClose,
         'confirmPhone': serverCommandConfirmPhone,
+        'confirmMessaging': serverCommandConfirmMessaging,
         'emailuser': serverCommandEmailUser,
         'files': serverCommandFiles,
         'getClip': serverCommandGetClip,
@@ -5261,6 +5262,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverversion': serverCommandServerVersion,
         'setClip': serverCommandSetClip,
         'smsuser': serverCommandSmsUser,
+        'msguser': serverCommandMsgUser,
         'trafficdelta': serverCommandTrafficDelta,
         'trafficstats': serverCommandTrafficStats,
         'updateAgents': serverCommandUpdateAgents,
@@ -5268,7 +5270,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
         'verifyemail': serverCommandVerifyEmail,
-        'verifyPhone': serverCommandVerifyPhone
+        'verifyPhone': serverCommandVerifyPhone,
+        'verifyMessaging': serverCommandVerifyMessaging
     };
 
     const serverUserCommands = {
@@ -6026,6 +6029,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
 
+    function serverCommandConfirmMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if ((parent.parent.msgserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedMsgCookieCheck == 1)) return; // Input checks
+        var cookie = parent.parent.decodeCookie(command.cookie);
+        if (cookie == null) return; // Invalid cookie
+        if (cookie.s != ws.sessionId) return; // Invalid session
+        if (cookie.c != command.code) {
+            obj.failedMsgCookieCheck = 1;
+            // Code does not match, delay the response to limit how many guesses we can make and don't allow more than 1 guess at any given time.
+            setTimeout(function () {
+                ws.send(JSON.stringify({ action: 'verifyMessaging', cookie: command.cookie, success: true }));
+                delete obj.failedMsgCookieCheck;
+            }, 2000 + (parent.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+            return;
+        }
+
+        // Set the user's messaging handle
+        user.msghandle = cookie.p;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 156, msgArgs: [user.name], msg: 'Verified messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
     function serverCommandEmailUser(command) {
         var errMsg = null, emailuser = null;
         if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
@@ -6498,6 +6530,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
+    function serverCommandMsgUser(command) {
+        var errMsg = null, msguser = null;
+        if ((parent.parent.msgserver == null) || (parent.parent.msgserver.providers == 0)) { errMsg = "Messaging server not enabled"; }
+        else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; }
+        else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; }
+        else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid message"; }
+        else {
+            msguser = parent.users[command.userid];
+            if (msguser == null) { errMsg = "Invalid username"; }
+            else if (msguser.msghandle == null) { errMsg = "No messaging service configured for this user"; }
+        }
+
+        if (errMsg != null) { displayNotificationMessage(errMsg); return; }
+
+        parent.parent.msgserver.sendMessage(msguser.msghandle, command.msg, function (success, msg) {
+            if (success) {
+                displayNotificationMessage("Message succesfuly sent.", null, null, null, 32);
+            } else {
+                if (typeof msg == 'string') { displayNotificationMessage("Messaging error: " + msg, null, null, null, 34, [msg]); } else { displayNotificationMessage("Messaging error", null, null, null, 33); }
+            }
+        });
+    }
+
     function serverCommandTrafficDelta(command) {
         const stats = parent.getTrafficDelta(obj.trafficStats);
         obj.trafficStats = stats.current;
@@ -6603,6 +6658,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone, s: ws.sessionId });
         parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
             ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
+        });
+    }
+
+    function serverCommandVerifyMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (parent.parent.msgserver == null) return;
+        if (common.validateString(command.handle, 1, 64) == false) return; // Check handle length
+
+        // Setup the handle for the right messaging service
+        var handle = null;
+        if ((command.service == 1) && ((parent.parent.msgserver.providers & 1) != 0)) { handle = 'telegram:@' + command.handle; }
+        if (handle == null) return;
+
+        // Send a verification message
+        const code = common.zeroPad(getRandomSixDigitInteger(), 6);
+        const messagingCookie = parent.parent.encodeCookie({ a: 'verifyMessaging', c: code, p: handle, s: ws.sessionId });
+        parent.parent.msgserver.sendMessagingCheck(domain, handle, code, parent.getLanguageCodes(req), function (success) {
+            ws.send(JSON.stringify({ action: 'verifyMessaging', cookie: messagingCookie, success: success }));
         });
     }
 
