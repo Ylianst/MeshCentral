@@ -45,10 +45,11 @@ module.exports.CreateServer = function (parent) {
             async function setupTelegram() {
                 const { TelegramClient } = require('telegram');
                 const { StringSession } = require('telegram/sessions');
+                const { Logger } = require('telegram/extensions/Logger');
+                const logger = new Logger({ LogLevel : 'none' });
                 const input = require('input');
                 const stringSession = new StringSession(parent.config.messaging.telegram.session);
-                const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5 });
-                client.setLogLevel('none');
+                const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
                 await client.start({ onError: function (err) { console.log('Telegram error', err); } });
                 obj.telegramClient = client;
                 obj.providers += 1; // Enable Telegram messaging
@@ -171,10 +172,11 @@ module.exports.SetupTelegram = async function (parent) {
     if ((parent.config.messaging.telegram.session == null) || (parent.config.messaging.telegram.session == '') || (typeof parent.config.messaging.telegram.session != 'string')) {
         const { TelegramClient } = require('telegram');
         const { StringSession } = require('telegram/sessions');
+        const { Logger } = require('telegram/extensions/Logger');
+        const logger = new Logger({ LogLevel : 'none' });
         const input = require('input');
         const stringSession = new StringSession('');
-        const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, logLevel: 'none' });
-        client.setLogLevel('none');
+        const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
         await client.start({
             phoneNumber: async function () { return await input.text("Please enter your number (+1-111-222-3333): "); },
             password: async function () { return await input.text("Please enter your password: "); },
