@@ -69,7 +69,7 @@ module.exports.CreateServer = function (parent) {
             async function sendTelegramMessage(to, msg, func) {
                 if (obj.telegramClient == null) return;
                 parent.debug('email', 'Sending Telegram message to: ' + to.substring(9) + ': ' + msg);
-                try { await obj.telegramClient.sendMessage(to.substring(9), { message: msg }); func(true); } catch (ex) { func(false, ex); }
+                try { await obj.telegramClient.sendMessage(to.substring(9), { message: msg }); if (func != null) { func(true); } } catch (ex) { if (func != null) { func(false, ex); } }
             }
             sendTelegramMessage(to, msg, func);
         } else {
