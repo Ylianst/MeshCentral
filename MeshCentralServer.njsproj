@@ -113,6 +113,7 @@
     <Compile Include="meshdesktopmultiplex.js" />
     <Compile Include="meshipkvm.js" />
     <Compile Include="meshmail.js" />
+    <Compile Include="meshmessaging.js" />
     <Compile Include="meshrelay.js" />
     <Compile Include="meshsms.js" />
     <Compile Include="meshscanner.js" />
