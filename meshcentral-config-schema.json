@@ -527,6 +527,7 @@
               "sms2factor": { "type": "boolean", "default": true, "description": "Set to false to disable SMS 2FA." },
               "push2factor": { "type": "boolean", "default": true, "description": "Set to false to disable push notification 2FA." },
               "otp2factor": { "type": "boolean", "default": true, "description": "Set to false to disable one-time-password 2FA." },
+              "msg2factor": { "type": "boolean", "default": true, "description": "Set to false to disable user messaging 2FA." },
               "backupcode2factor": { "type": "boolean", "default": true, "description": "Set to false to disable 2FA backup codes." },
               "single2factorWarning": { "type": "boolean", "default": true, "description": "Set to false to disable single 2FA warning." },
               "lock2factor": { "type": "boolean", "default": false, "description": "When set to true, prevents any changes to 2FA." },

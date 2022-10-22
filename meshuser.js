@@ -1387,6 +1387,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
+                        if ((command.msghandle != null) && (typeof command.msghandle == 'string')) { if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; } change = 1; }
                         if ((command.flags != null) && (typeof command.flags == 'number')) {
                             // Flags: 1 = Account Image, 2 = Session Recording
                             if ((command.flags == 0) && (chguser.flags != null)) { delete chguser.flags; change = 1; } else { if (command.flags !== chguser.flags) { chguser.flags = command.flags; change = 1; } }
@@ -5250,7 +5251,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'pong': serverCommandPong,
         'powertimeline': serverCommandPowerTimeline,
         'print': serverCommandPrint,
-        'removePhone': serverCommandremovePhone,
+        'removePhone': serverCommandRemovePhone,
+        'removeMessaging': serverCommandRemoveMessaging,
         'removeuserfromusergroup': serverCommandRemoveUserFromUserGroup,
         'report': serverCommandReport,
         'serverclearerrorlog': serverCommandServerClearErrorLog,
@@ -6304,7 +6306,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandPrint(command) { console.log(command.value); }
 
-    function serverCommandremovePhone(command) {
+    function serverCommandRemovePhone(command) {
         // Do not allow this command when logged in using a login token
         if (req.session.loginToken != null) return;
 
@@ -6317,6 +6319,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Event the change
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 97, msgArgs: [user.name], msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
+    function serverCommandRemoveMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (user.msghandle == null) return;
+
+        // Clear the user's phone
+        delete user.msghandle;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 157, msgArgs: [user.name], msg: 'Removed messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
