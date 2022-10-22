@@ -11964,7 +11964,7 @@
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/messaging40.png" style=padding:8px>';
                 x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.msghandle) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
-                setDialogMode(2, "Messaging Notifications", 3, account_managePhoneRemove, x);
+                setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingRemove, x);
                 account_managePhoneRemoveValidate();
             } else {
                 x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
@@ -11985,6 +11985,7 @@
         function account_manageMessagingValidate(x) { var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); } }
         function account_manageMessagingAdd() { if (Q('d2handleinput').value.length == 0) return; QE('d2handleinput', false); meshserver.send({ action: 'verifyMessaging', service: Q('d2serviceselect').value, handle: Q('d2handleinput').value }); }
         function account_manageMessagingConfirm(b, tag) { meshserver.send({ action: 'confirmMessaging', code: Q('d2phoneCodeInput').value, cookie: tag }); }
+        function account_manageMessagingRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removeMessaging' }); } }
 
         function account_manageAuthEmail() {
             if (xxdialogMode || ((features & 0x00800000) == 0)) return;
@@ -14616,6 +14617,7 @@
             if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
             if (user.phone != null) { username += ' <img src="images/phone12.png" height=12 width=7 title="' + "Verified phone number" + '" style="margin-top:2px" />'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
+            if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <img src="images/messaging12.png" height=12 width=12 title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponentEx(user._id) + '\')"><td>';
             x += '<div class=bar>';
             x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponentEx(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponentEx(user._id) + '",false,event)>';
@@ -15686,7 +15688,7 @@
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
-                x += addDeviceAttribute("Messaging", (user.msghandle?user.msghandle:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editMessaging() />');
+                x += addDeviceAttribute("Messaging", '<img src="images/messaging12.png" height=12 width=12 title="' + "Messaging enabled" + '" style="margin-top:2px" /> ' + (user.msghandle?user.msghandle:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editMessaging() />');
             }
 
             // Display features
@@ -15757,6 +15759,7 @@
                 if (user.otpkeys > 0) { factors.push("Backup Codes"); }
                 if (user.otpdev > 0) { factors.push("Device Push"); }
                 if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
+                if ((user.msghandle != null) && (features2 & 0x04000000)) { factors.push("Messaging"); }
                 x += addDeviceAttribute("Security", '<img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" /> ' + factors.join(', '));
             }
 
@@ -15831,14 +15834,32 @@
             p30editPhoneValidate();
         }
 
-        function p30editMessaging() { // TODO
+        function p30editMessaging() {
             if (xxdialogMode) return;
-            var x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
-            x += '<td style=width:100%;text-align:center>' + "SMS capable phone number for this user." + '<br />' + "Leave blank for none.";
-            x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone?currentUser.phone:'') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
-            setDialogMode(2, "Phone Notifications", 3, p30editPhoneEx, x, 'verifyPhone');
-            Q('d2phoneinput').focus();
-            p30editPhoneValidate();
+            var x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
+            x += '<td style=width:100%>' + "Messaging account for this user." + '<br />' + "Leave blank for none.";
+
+            var y = '<select id=d2serviceselect style=width:160px;margin-left:8px>';
+            if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
+            y += '</select>';
+            x += '<table style=margin-top:12px><tr><td>' + "Service" + '<td>' + y;
+            x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=p30editMessagingValidate() onkeypress="if (event.key==\'Enter\') p30editMessagingValidate(1)">';
+            x += '</table>';
+
+            setDialogMode(2, "Messaging Notifications", 3, p30editMessagingEx, x, 'verifyMessaging');
+            Q('d2handleinput').focus();
+            p30editMessagingValidate();
+        }
+
+        function p30editMessagingValidate(x) { if (x == 1) { dialogclose(1); } }
+
+        // Send to the server the user's messaging account
+        function p30editMessagingEx() {
+            var handle = null;
+            if (Q('d2handleinput').value == '') { handle = ''; }
+            else if (Q('d2serviceselect').value == 1) { handle = 'telegram:@' + Q('d2handleinput').value; }
+            if (handle != null) { meshserver.send({ action: 'edituser', id: currentUser._id, msghandle: handle }); }
         }
 
         function p20edituserfeatures() {
