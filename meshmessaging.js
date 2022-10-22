@@ -48,12 +48,8 @@ module.exports.CreateServer = function (parent) {
                 const input = require('input');
                 const stringSession = new StringSession(parent.config.messaging.telegram.session);
                 const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5 });
-                await client.start({
-                    phoneNumber: async function () { await input.text("Please enter your number: "); },
-                    password: async function () { await input.text("Please enter your password: "); },
-                    phoneCode: async function () { await input.text("Please enter the code you received: "); },
-                    onError: function (err) { console.log('Telegram error', err); },
-                });
+                client.setLogLevel('none');
+                await client.start({ onError: function (err) { console.log('Telegram error', err); } });
                 obj.telegramClient = client;
                 obj.providers += 1; // Enable Telegram messaging
                 console.log("MeshCentral Telegram client is connected.");
@@ -177,7 +173,8 @@ module.exports.SetupTelegram = async function (parent) {
         const { StringSession } = require('telegram/sessions');
         const input = require('input');
         const stringSession = new StringSession('');
-        const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5 });
+        const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, logLevel: 'none' });
+        client.setLogLevel('none');
         await client.start({
             phoneNumber: async function () { return await input.text("Please enter your number (+1-111-222-3333): "); },
             password: async function () { return await input.text("Please enter your password: "); },
