@@ -575,6 +575,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (domain.passwordrequirements.lock2factor == true) { serverinfo.lock2factor = true; } // Indicate 2FA change are not allowed
                 if (typeof domain.passwordrequirements.maxfidokeys == 'number') { serverinfo.maxfidokeys = domain.passwordrequirements.maxfidokeys; }
             }
+            if (parent.parent.msgserver != null) { serverinfo.userMsgProviders = parent.parent.msgserver.providers; }
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain, req);
@@ -5315,7 +5316,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverupdate': [serverUserCommandServerUpdate, "Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"],
         'setmaxtasks': [serverUserCommandSetMaxTasks, ""],
         'showpaths': [serverUserCommandShowPaths, ""],
-        'sms': [serverUserCommandSMS, ""],
+        'sms': [serverUserCommandSMS, "Send a SMS message to a specified phone number"],
+        'msg': [serverUserCommandMsg, "Send a user message to a user handle"],
         'swarmstats': [serverUserCommandSwarmStats, ""],
         'tasklimiter': [serverUserCommandTaskLimiter, "Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."],
         'trafficdelta': [serverUserCommandTrafficDelta, ""],
@@ -6717,6 +6719,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 cmdData.result = "Usage: SMS \"PhoneNumber\" \"Message\".";
             } else {
                 parent.parent.smsserver.sendSMS(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
+                    if (typeof msg == 'string') {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
+                    } else {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: cmdData.command.tag })); } catch (ex) { }
+                    }
+                });
+            }
+        }
+    }
+
+    function serverUserCommandMsg(cmdData) {
+        if ((parent.parent.msgserver == null) || (parent.parent.msgserver.providers == 0)) {
+            cmdData.result = "No messaging providers configured.";
+        } else {
+            if (cmdData.cmdargs['_'].length != 2) {
+                var r = [];
+                if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:@UserHandle\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:@UserHandle\" \"Message\"."); }
+                cmdData.result = r.join('\r\n');
+            } else {
+                parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
                     if (typeof msg == 'string') {
                         try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
                     } else {
