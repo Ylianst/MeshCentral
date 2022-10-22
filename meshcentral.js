@@ -22,19 +22,20 @@ if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ 
 function CreateMeshCentralServer(config, args) {
     const obj = {};
     obj.db = null;
-    obj.webserver = null;
-    obj.redirserver = null;
-    obj.mpsserver = null;
-    obj.mqttbroker = null;
-    obj.swarmserver = null;
-    obj.smsserver = null;
+    obj.webserver = null;       // HTTPS main web server, typically on port 443
+    obj.redirserver = null;     // HTTP relay web server, typically on port 80
+    obj.mpsserver = null;       // Intel AMT CIRA server, typically on port 4433
+    obj.mqttbroker = null;      // MQTT server, not is not often used
+    obj.swarmserver = null;     // Swarm server, this is used only to update older MeshCentral v1 agents
+    obj.smsserver = null;       // SMS server, used to send user SMS messages
+    obj.msgserver = null;       // Messaging server, used to sent used messages
     obj.amtEventHandler = null;
     obj.pluginHandler = null;
     obj.amtScanner = null;
-    obj.amtManager = null;
+    obj.amtManager = null;      // Intel AMT manager, used to oversee all Intel AMT devices, activate them and sync policies
     obj.meshScanner = null;
     obj.taskManager = null;
-    obj.letsencrypt = null;
+    obj.letsencrypt = null;     // Let's encrypt server, used to get and renew TLS certificates
     obj.eventsDispatch = {};
     obj.fs = require('fs');
     obj.path = require('path');
@@ -758,7 +759,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unrecognized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
 
         // Read IP lists from files if applicable
         config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
@@ -858,7 +859,7 @@ function CreateMeshCentralServer(config, args) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                             const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
-                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; // Disable 2FA
+                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
                             if (obj.args.hashpass) {
                                 // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
                                 var hashpasssplit = obj.args.hashpass.split(',');
@@ -1775,6 +1776,11 @@ function CreateMeshCentralServer(config, args) {
                     if (config.sms != null) {
                         obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
                         if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
+                    }
+
+                    // Setup user messaging
+                    if (config.messaging != null) {
+                        obj.msgserver = require('./meshmessaging.js').CreateServer(obj);
                     }
 
                     // Setup web based push notifications
@@ -4008,9 +4014,16 @@ function mainStart() {
         if (config.settings.desktopmultiplex === true) { modules.push('image-size'); }
 
         // SMS support
-        if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
-        if ((config.sms != null) && (config.sms.provider == 'plivo')) { modules.push('plivo'); }
-        if ((config.sms != null) && (config.sms.provider == 'telnyx')) { modules.push('telnyx'); }
+        if (config.sms != null) {
+            if (config.sms.provider == 'twilio') { modules.push('twilio'); }
+            if (config.sms.provider == 'plivo') { modules.push('plivo'); }
+            if (config.sms.provider == 'telnyx') { modules.push('telnyx'); }
+        }
+
+        // Messaging support
+        if (config.messaging != null) {
+            if (config.messaging.telegram != null) { modules.push('telegram'); modules.push('input'); }
+        }
 
         // Setup web based push notifications
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }

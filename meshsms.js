@@ -37,9 +37,15 @@
     "apikey": "xxxxxxx",
     "from": "15555555555"
 }
+
+// For URL, add this in config.json
+"sms": {
+    "provider": "url",
+    "url": "https://sample.com/?phone={{phone}}&msg={{message}}"
+}
 */
 
-// Construct a MeshAgent object, called upon connection
+// Construct a SMS server object
 module.exports.CreateMeshSMS = function (parent) {
     var obj = {};
     obj.parent = parent;

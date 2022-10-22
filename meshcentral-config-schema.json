@@ -1299,13 +1299,16 @@
       "required": [ "host", "port", "from", "tls" ]
     },
     "sms": {
-      "title" : "SMS provider",
+      "title": "SMS provider",
       "description": "Connects MeshCentral to a SMS text messaging provider, allows MeshCentral to send SMS messages for 2FA or user notification.",
       "oneOf": [
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "twilio" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "twilio" ]
+            },
             "sid": { "type": "string" },
             "auth": { "type": "string" },
             "from": { "type": "string" }
@@ -1313,9 +1316,12 @@
           "required": [ "provider", "sid", "auth", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "plivo" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "plivo" ]
+            },
             "id": { "type": "string" },
             "token": { "type": "string" },
             "from": { "type": "string" }
@@ -1323,23 +1329,48 @@
           "required": [ "provider", "id", "token", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "telnyx" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "telnyx" ]
+            },
             "apikey": { "type": "string" },
             "from": { "type": "string" }
           },
           "required": [ "provider", "apikey", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "url" ] },
-            "url": { "type": "string", "description": "A http or https URL with {{phone}} and {{message}} in the string. These will be replaced with the URL encoded target phone number and message." }
+            "provider": {
+              "type": "string",
+              "enum": [ "url" ]
+            },
+            "url": {
+              "type": "string",
+              "description": "A http or https URL with {{phone}} and {{message}} in the string. These will be replaced with the URL encoded target phone number and message."
+            }
           },
           "required": [ "url" ]
         }
       ]
+    },
+    "messaging": {
+      "title" : "Messaging server",
+      "description": "This section allow MeshCentral to send messages over user messaging networks like Telegram",
+      "type": "object",
+      "properties": {
+        "telegram": {
+          "type": "object",
+          "description": "Configure Telegram messaging system",
+          "properties": {
+            "apiid": { "type": "number" },
+            "apihash": { "type": "string" },
+            "session": { "type": "string" }
+          }
+        }
+      }
     }
   },
   "required": [ "settings", "domains" ]

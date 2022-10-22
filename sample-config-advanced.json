@@ -614,5 +614,12 @@
   "____sms": {
     "provider": "url",
     "url": "http://example.com/sms.ashx?phone={{phone}}&message={{message}}"
+  },
+  "_messaging": {
+    "telegram": {
+      "apiid": 0,
+      "apihash": "hexBalue",
+      "session": "base64Value"
+    }
   }
 }
