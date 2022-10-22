@@ -25,7 +25,7 @@
 }
 */
 
-// Construct a SMS server object
+// Construct a messaging server object
 module.exports.CreateServer = function (parent) {
     var obj = {};
     obj.parent = parent;
@@ -148,4 +148,56 @@ module.exports.CreateServer = function (parent) {
     };
 
     return obj;
+};
+
+// Called to setup the Telegram session key
+module.exports.SetupTelegram = async function (parent) {
+    // If basic telegram values are not setup, instruct the user on how to get them.
+    if ((typeof parent.config.messaging != 'object') || (typeof parent.config.messaging.telegram != 'object') || (typeof parent.config.messaging.telegram.apiid != 'number') || (typeof parent.config.messaging.telegram.apihash != 'string')) {
+        console.log('Login to your Telegram account at this URL: https://my.telegram.org/.');
+        console.log('Click "API development tools" and fill your application details (only app title and short name required).');
+        console.log('Click "Create application"');
+        console.log('Set this apiid and apihash values in the messaging section of the config.json like this:');
+        console.log('{');
+        console.log('  "messaging": {');
+        console.log('    "telegram": {');
+        console.log('      "apiid": 123456,');
+        console.log('      "apihash": "123456abcdfg"');
+        console.log('    }');
+        console.log('  }');
+        console.log('}');
+        console.log('Then, run --setuptelegram again to continue.');
+        process.exit();
+        return;
+    }
+
+    // If the session value is missing, perform the process to get it
+    if ((parent.config.messaging.telegram.session == null) || (parent.config.messaging.telegram.session == '') || (typeof parent.config.messaging.telegram.session != 'string')) {
+        const { TelegramClient } = require('telegram');
+        const { StringSession } = require('telegram/sessions');
+        const input = require('input');
+        const stringSession = new StringSession('');
+        const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5 });
+        await client.start({
+            phoneNumber: async function () { return await input.text("Please enter your number (+1-111-222-3333): "); },
+            password: async function () { return await input.text("Please enter your password: "); },
+            phoneCode: async function () { return await input.text("Please enter the code you received: "); },
+            onError: function (err) { console.log('Telegram error', err); }
+        });
+        console.log('Set this session value in the messaging section of the config.json like this:');
+        console.log('{');
+        console.log('  "messaging": {');
+        console.log('    "telegram": {');
+        console.log('      "apiid": ' + parent.config.messaging.telegram.apiid + ',');
+        console.log('      "apihash": "' + parent.config.messaging.telegram.apihash + '",');
+        console.log('      "session": "' + client.session.save() + '"');
+        console.log('    }');
+        console.log('  }');
+        console.log('}');
+        process.exit();
+    }
+
+    // All Telegram values seem ok
+    console.log('Telegram seems to be configured correctly in the config.json, no need to run --setuptelegram.');
+    process.exit();
 };
