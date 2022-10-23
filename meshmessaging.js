@@ -15,12 +15,21 @@
 "use strict";
 
 /*
-// For Telegram, add this in config.json
+// For Telegram user login, add this in config.json
 "messaging": {
     "telegram": {
         "apiid": 00000000,
         "apihash": "00000000000000000000000",
         "session": "aaaaaaaaaaaaaaaaaaaaaaa"
+    }
+}
+
+// For Telegram bot login, add this in config.json
+"messaging": {
+    "telegram": {
+        "apiid": 00000000,
+        "apihash": "00000000000000000000000",
+        "bottoken": "00000000:aaaaaaaaaaaaaaaaaaaaaaaa"
     }
 }
 */
@@ -38,7 +47,7 @@ module.exports.CreateServer = function (parent) {
         var telegramOK = true;
         if (typeof parent.config.messaging.telegram.apiid != 'number') { console.log('Invalid or missing Telegram apiid.'); telegramOK = false; }
         if (typeof parent.config.messaging.telegram.apihash != 'string') { console.log('Invalid or missing Telegram apihash.'); telegramOK = false; }
-        if (typeof parent.config.messaging.telegram.session != 'string') { console.log('Invalid or missing Telegram session.'); telegramOK = false; }
+        if ((typeof parent.config.messaging.telegram.session != 'string') && (typeof parent.config.messaging.telegram.bottoken != 'string')) { console.log('Invalid or missing Telegram session or bottoken.'); telegramOK = false; }
 
         if (telegramOK) {
             // Setup Telegram
@@ -48,12 +57,24 @@ module.exports.CreateServer = function (parent) {
                 const { Logger } = require('telegram/extensions/Logger');
                 const logger = new Logger({ LogLevel : 'none' });
                 const input = require('input');
-                const stringSession = new StringSession(parent.config.messaging.telegram.session);
-                const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
-                await client.start({ onError: function (err) { console.log('Telegram error', err); } });
-                obj.telegramClient = client;
-                obj.providers += 1; // Enable Telegram messaging
-                console.log("MeshCentral Telegram client is connected.");
+                var client;
+                if (parent.config.messaging.telegram.bottoken == null) {
+                    // User login
+                    var stringSession = new StringSession(parent.config.messaging.telegram.session);
+                    const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
+                    await client.start({ onError: function (err) { console.log('Telegram error', err); } });
+                    obj.telegramClient = client;
+                    obj.providers += 1; // Enable Telegram messaging
+                    console.log("MeshCentral Telegram client is user connected.");
+                } else {
+                    // Bot login
+                    var stringSession = new StringSession('');
+                    const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
+                    await client.start({ botAuthToken: parent.config.messaging.telegram.bottoken, onError: function (err) { console.log('Telegram error', err); } });
+                    obj.telegramClient = client;
+                    obj.providers += 1; // Enable Telegram messaging
+                    console.log("MeshCentral Telegram client is bot connected.");
+                }
             }
             setupTelegram();
         }
@@ -169,31 +190,50 @@ module.exports.SetupTelegram = async function (parent) {
     }
 
     // If the session value is missing, perform the process to get it
-    if ((parent.config.messaging.telegram.session == null) || (parent.config.messaging.telegram.session == '') || (typeof parent.config.messaging.telegram.session != 'string')) {
-        const { TelegramClient } = require('telegram');
-        const { StringSession } = require('telegram/sessions');
-        const { Logger } = require('telegram/extensions/Logger');
-        const logger = new Logger({ LogLevel : 'none' });
-        const input = require('input');
-        const stringSession = new StringSession('');
-        const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
-        await client.start({
-            phoneNumber: async function () { return await input.text("Please enter your number (+1-111-222-3333): "); },
-            password: async function () { return await input.text("Please enter your password: "); },
-            phoneCode: async function () { return await input.text("Please enter the code you received: "); },
-            onError: function (err) { console.log('Telegram error', err); }
-        });
-        console.log('Set this session value in the messaging section of the config.json like this:');
-        console.log('{');
-        console.log('  "messaging": {');
-        console.log('    "telegram": {');
-        console.log('      "apiid": ' + parent.config.messaging.telegram.apiid + ',');
-        console.log('      "apihash": "' + parent.config.messaging.telegram.apihash + '",');
-        console.log('      "session": "' + client.session.save() + '"');
-        console.log('    }');
-        console.log('  }');
-        console.log('}');
-        process.exit();
+    if (((parent.config.messaging.telegram.session == null) || (parent.config.messaging.telegram.session == '') || (typeof parent.config.messaging.telegram.session != 'string')) && ((parent.config.messaging.telegram.bottoken == null) || (parent.config.messaging.telegram.bottoken == '') || (typeof parent.config.messaging.telegram.bottoken != 'string'))) {
+        if (parent.args.setuptelegram == 'user') {
+            const { TelegramClient } = require('telegram');
+            const { StringSession } = require('telegram/sessions');
+            const { Logger } = require('telegram/extensions/Logger');
+            const logger = new Logger({ LogLevel: 'none' });
+            const input = require('input');
+            const stringSession = new StringSession('');
+            const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
+            await client.start({
+                phoneNumber: async function () { return await input.text("Please enter your number (+1-111-222-3333): "); },
+                password: async function () { return await input.text("Please enter your password: "); },
+                phoneCode: async function () { return await input.text("Please enter the code you received: "); },
+                onError: function (err) { console.log('Telegram error', err); }
+            });
+            console.log('Set this session value in the messaging section of the config.json like this:');
+            console.log('{');
+            console.log('  "messaging": {');
+            console.log('    "telegram": {');
+            console.log('      "apiid": ' + parent.config.messaging.telegram.apiid + ',');
+            console.log('      "apihash": "' + parent.config.messaging.telegram.apihash + '",');
+            console.log('      "session": "' + client.session.save() + '"');
+            console.log('    }');
+            console.log('  }');
+            console.log('}');
+            process.exit();
+        } else if (parent.args.setuptelegram == 'bot') {
+            console.log('Login to your Telegram account, search for "BotFather", message him and create a bot.');
+            console.log('Once you get the HTTP API token, add it in the config.json as "bottoken" like so:');
+            console.log('{');
+            console.log('  "messaging": {');
+            console.log('    "telegram": {');
+            console.log('      "apiid": ' + parent.config.messaging.telegram.apiid + ',');
+            console.log('      "apihash": "' + parent.config.messaging.telegram.apihash + '",');
+            console.log('      "bottoken": "00000000:aaaaaaaaaaaaaaaaaaaaaaaa"');
+            console.log('    }');
+            console.log('  }');
+            console.log('}');
+            process.exit();
+        } else {
+            console.log('run "--setuptelegram bot" to setup Telegram login as a bot (typical).');
+            console.log('run "--setuptelegram user" to setup Telegram login as a user.');
+            process.exit();
+        }
     }
 
     // All Telegram values seem ok
