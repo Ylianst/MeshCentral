@@ -456,9 +456,9 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
                 QV('securityKeyButton', twofakey);
-                QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4));
-                QV('smsKeyButton', otpsms && (messageid != 2) && (messageid != 4));
-                QV('msgKeyButton', otpmsg && (messageid != 2) && (messageid != 4));
+                QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('smsKeyButton', otpsms && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('msgKeyButton', otpmsg && (messageid != 2) && (messageid != 4) && (messageid != 6));
 
                 // If hardware key is an option, trigger it now
                 if (autofido && twofakey) { setTimeout(function () { useSecurityKey(1); }, 300); }
@@ -469,9 +469,9 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
                 QV('securityKeyButton2', twofakey);
-                QV('emailKeyButton2', otpemail && (messageid != 2) && (messageid != 4));
-                QV('smsKeyButton2', otpsms && (messageid != 2) && (messageid != 4));
-                QV('msgKeyButton2', otpmsg && (messageid != 2) && (messageid != 4));
+                QV('emailKeyButton2', otpemail && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('smsKeyButton2', otpsms && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('msgKeyButton2', otpmsg && (messageid != 2) && (messageid != 4) && (messageid != 6));
 
                 // If hardware key is an option, trigger it now
                 if (autofido && twofakey) { setTimeout(function () { useSecurityKey(2); }, 300); }
