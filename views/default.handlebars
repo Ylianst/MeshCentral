@@ -775,7 +775,7 @@
                         </tr>
                         <tr>
                             <td id="termarea3x">
-                                <div id="termarea3xdiv" style="width:100%;height:100%"></div>
+                                <div id="termarea3xdiv" style="width:100%;height:100%;text-align:left"></div>
                                 <pre id="Term"></pre>
                             </td>
                         </tr>
@@ -10130,7 +10130,15 @@
             return obj;
         }
 
-        function tunnelUpdate(data) { if (xterm != null) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } } }
+        function tunnelUpdate(data) {
+            if (xterm != null) {
+                if (xterm.writeUtf8) {
+                    if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); }
+                } else {
+                    if (typeof data == 'string') { xterm.write(data); } else { xterm.write(new Uint8Array(data)); }
+                }
+            }
+        }
 
         function sshTunnelAuthDialog(j, func) {
             var x = '';
