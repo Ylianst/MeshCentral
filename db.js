@@ -1542,20 +1542,6 @@ module.exports.CreateDB = function (parent, func) {
             // List all configuration files
             obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
 
-            // Get all configuration files (TODO: This is not SQL)
-            obj.getAllConfigFiles = function (password, func) {
-                obj.file.find({ type: 'cfile' }).toArray(function (err, docs) {
-                    if (err != null) { func(null); return; }
-                    var r = null;
-                    for (var i = 0; i < docs.length; i++) {
-                        var name = docs[i]._id.split('/')[1];
-                        var data = obj.decryptData(password, docs[i].data);
-                        if (data != null) { if (r == null) { r = {}; } r[name] = data; }
-                    }
-                    func(r);
-                });
-            }
-
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -1796,21 +1782,6 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
 
-            // Get all configuration files
-            obj.getAllConfigFiles = function (password, func) {
-                obj.file.query('meshcentral').filter('type', '==', 'cfile').sort('_id').get(function (snapshots) {
-                    const docs = [];
-                    for (var i in snapshots) { docs.push(snapshots[i].val()); }
-                    var r = null;
-                    for (var i = 0; i < docs.length; i++) {
-                        var name = docs[i]._id.split('/')[1];
-                        var data = obj.decryptData(password, docs[i].data);
-                        if (data != null) { if (r == null) { r = {}; } r[name] = data; }
-                    }
-                    func(r);
-                });
-            }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 5 };
@@ -1983,20 +1954,6 @@ module.exports.CreateDB = function (parent, func) {
             // List all configuration files
             obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
 
-            // Get all configuration files
-            obj.getAllConfigFiles = function (password, func) {
-                obj.file.find({ type: 'cfile' }).toArray(function (err, docs) {
-                    if (err != null) { func(null); return; }
-                    var r = null;
-                    for (var i = 0; i < docs.length; i++) {
-                        var name = docs[i]._id.split('/')[1];
-                        var data = obj.decryptData(password, docs[i].data);
-                        if (data != null) { if (r == null) { r = {}; } r[name] = data; }
-                    }
-                    func(r);
-                });
-            }
-
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -2166,20 +2123,6 @@ module.exports.CreateDB = function (parent, func) {
 
             // List all configuration files
             obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
-
-            // Get all configuration files
-            obj.getAllConfigFiles = function (password, func) {
-                obj.file.find({ type: 'cfile' }).toArray(function (err, docs) {
-                    if (err != null) { func(null); return; }
-                    var r = null;
-                    for (var i = 0; i < docs.length; i++) {
-                        var name = docs[i]._id.split('/')[1];
-                        var data = obj.decryptData(password, docs[i].data);
-                        if (data != null) { if (r == null) { r = {}; } r[name] = data; }
-                    }
-                    func(r);
-                });
-            }
             
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
@@ -2451,20 +2394,6 @@ module.exports.CreateDB = function (parent, func) {
             // List all configuration files
             obj.listConfigFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).toArray(func); }
 
-            // Get all configuration files
-            obj.getAllConfigFiles = function (password, func) {
-                obj.file.find({ type: 'cfile' }).toArray(function (err, docs) {
-                    if (err != null) { func(null); return; }
-                    var r = null;
-                    for (var i = 0; i < docs.length; i++) {
-                        var name = docs[i]._id.split('/')[1];
-                        var data = obj.decryptData(password, docs[i].data);
-                        if (data != null) { if (r == null) { r = {}; } r[name] = data; }
-                    }
-                    func(r);
-                });
-            }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 6 };
@@ -2635,20 +2564,6 @@ module.exports.CreateDB = function (parent, func) {
             // List all configuration files
             obj.listConfigFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).exec(func); }
 
-            // Get all configuration files
-            obj.getAllConfigFiles = function (password, func) {
-                obj.file.find({ type: 'cfile' }, function (err, docs) {
-                    if (err != null) { func(null); return; }
-                    var r = null;
-                    for (var i = 0; i < docs.length; i++) {
-                        var name = docs[i]._id.split('/')[1];
-                        var data = obj.decryptData(password, docs[i].data);
-                        if (data != null) { if (r == null) { r = {}; } r[name] = data; }
-                    }
-                    func(r);
-                });
-            }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 5 };
@@ -2680,6 +2595,20 @@ module.exports.CreateDB = function (parent, func) {
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.pluginsfile.update({ _id: id }, { $set: args }, func); };
             }
 
+        }
+
+        // Get all configuration files
+        obj.getAllConfigFiles = function (password, func) {
+            obj.GetAllType('cfile', function (err, docs) {
+                if (err != null) { func(null); return; }
+                var r = null;
+                for (var i = 0; i < docs.length; i++) {
+                    var name = docs[i]._id.split('/')[1];
+                    var data = obj.decryptData(password, docs[i].data);
+                    if (data != null) { if (r == null) { r = {}; } r[name] = data; }
+                }
+                func(r);
+            });
         }
 
         func(obj); // Completed function setup
