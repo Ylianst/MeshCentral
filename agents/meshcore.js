@@ -56,7 +56,8 @@ function __readdirSync_fix(path)
     var sysnative = false;
     pathstr = require('fs')._fixwinpath(path);
     if (pathstr.split('\\*').join('').toLowerCase() == process.env['windir'].toLowerCase()) { sysnative = true; }
-    var ret = __readdirSync_old(path);
+
+    var ret = require('fs').__readdirSync_old(path);
     if (sysnative) { ret.push('sysnative'); }
     return (ret);
 }
