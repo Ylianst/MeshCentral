@@ -222,21 +222,19 @@ if ((!skip) && ((msh.InstallFlags & 2) == 2))
 
     if (!skip)
     {
-        if (process.platform != 'darwin')
+        if (process.argv.includes('-install') || process.argv.includes('-update'))
         {
-            if (process.argv.includes('-install') || process.argv.includes('-update'))
+            var p = [];
+            for (var i = 0; i < process.argv.length; ++i)
             {
-                var p = [];
-                for (var i = 0; i < process.argv.length; ++i)
+                if (process.argv[i].startsWith('--installPath='))
                 {
-                    if (process.argv[i].startsWith('--installPath='))
-                    {
-                        p.push('--installPath="' + process.argv[i].split('=').pop() + '"');
-                    }
-                    else if(process.argv[i].startsWith('--'))
-                    {
-                        p.push(process.argv[i]);
-                    }
+                    p.push('--installPath="' + process.argv[i].split('=').pop() + '"');
+                }
+                else if(process.argv[i].startsWith('--'))
+                {
+                    p.push(process.argv[i]);
+                }
             }
             _install(p);
             process.exit();
@@ -274,12 +272,11 @@ if ((!skip) && ((msh.InstallFlags & 2) == 2))
                 process.exit();
             }
         }
+        if (process.platform == 'darwin')
+        {
+            if (!require('user-sessions').isRoot()) { console.log('\n' + translation[lang].elevation); process.exit(); }
+        }
     }
-    else
-    {
-        if (!require('user-sessions').isRoot()) { console.log('\n' + translation[lang].elevation); process.exit(); }
-    }
-}
 
 
 if (!skip)
