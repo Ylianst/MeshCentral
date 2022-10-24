@@ -1189,11 +1189,13 @@ function CreateMeshCentralServer(config, args) {
                         obj.db.getAllConfigFiles(key, function (configFiles) {
                             if (configFiles == null) { console.log("Error, no configuration files found or invalid configkey."); process.exit(); return; }
                             if (!configFiles['config.json']) { console.log("Error, could not file config.json from database."); process.exit(); return; }
+                            if (typeof configFiles['config.json'] == 'object') { configFiles['config.json'] = configFiles['config.json'].toString(); }
+                            if (configFiles['config.json'].charCodeAt(0) == 65279) { configFiles['config.json'] = configFiles['config.json'].substring(1); }
                             obj.configurationFiles = configFiles;
 
                             // Parse the new configuration file
                             var config2 = null;
-                            try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.'); process.exit(); return; }
+                            try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.', ex); process.exit(); return; }
 
                             // Set the command line arguments to the config file if they are not present
                             if (!config2.settings) { config2.settings = {}; }
