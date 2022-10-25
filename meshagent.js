@@ -1842,7 +1842,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Event device share removal
             if (removedExact != null) {
                 // Send out an event that we removed a device share
-                var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, []);
+                var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, ['server-shareremove']);
                 var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: ['Agent'], domain: domain.id, publicid: publicid };
                 parent.parent.DispatchEvent(targets, obj, event);
             }
