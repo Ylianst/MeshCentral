@@ -509,10 +509,10 @@
                 if (tokenTimeout > 0) { setTimeout(function () { Q('hwtokenInput').value = '**timeout**'; QE('tokenOkButton', true); Q('tokenOkButton').click(); }, tokenTimeout); }
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
-                var emailkey = otpemail && (messageid != 2) && (messageid != 4);
-                var smskey = otpsms && (messageid != 2) && (messageid != 4);
-                var msgkey = otpmsg && (messageid != 2) && (messageid != 4);
-                var pushkey = otppush && (messageid != 2) && (messageid != 4);
+                var emailkey = otpemail && (messageid != 2) && (messageid != 4) && (messageid != 6);
+                var smskey = otpsms && (messageid != 2) && (messageid != 4) && (messageid != 6);
+                var msgkey = otpmsg && (messageid != 2) && (messageid != 4) && (messageid != 6);
+                var pushkey = otppush && (messageid != 2) && (messageid != 4) && (messageid != 6);
                 QV('securityKeyButton', twofakey);
                 QV('emailKeyButton', emailkey);
                 QV('smsKeyButton', smskey);
