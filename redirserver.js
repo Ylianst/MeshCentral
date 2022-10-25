@@ -122,7 +122,7 @@ module.exports.CreateRedirServer = function (parent, db, args, func) {
         if (obj.parent.fs.existsSync(p)) { obj.app.use(url + '.well-known', obj.express.static(p)); }
 
         // Setup all of the redirections to HTTPS
-        const redirections = ['player.htm', 'terms', 'logout', 'MeshServerRootCert.cer', 'mescript.ashx', 'checkmail', 'agentinvite', 'messenger', 'meshosxagent', 'devicepowerevents.ashx', 'downloadfile.ashx', 'userfiles/*', 'webrelay.ashx', 'health.ashx', 'logo.png', 'welcome.jpg'];
+        const redirections = ['player.htm', 'terms', 'logout', 'MeshServerRootCert.cer', 'mescript.ashx', 'checkmail', 'agentinvite', 'messenger', 'meshosxagent', 'devicepowerevents.ashx', 'downloadfile.ashx', 'userfiles/*', 'webrelay.ashx', 'health.ashx', 'logo.png', 'welcome.jpg', 'invite'];
         for (i in redirections) { obj.app.get(url + redirections[i], performRedirection); }
     }
 
