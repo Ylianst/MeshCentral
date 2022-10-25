@@ -4160,7 +4160,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Event device share removal
                         if (removedExact != null) {
                             // Send out an event that we removed a device share
-                            var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                            var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', 'server-shareremove', user._id]);
                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: [removedExact.guestName], domain: domain.id, publicid: command.publicid };
                             parent.parent.DispatchEvent(targets, obj, event);
 
