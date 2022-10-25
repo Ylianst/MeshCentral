@@ -87,8 +87,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Web relay sessions
     var webRelayNextSessionId = 1;
-    var webRelaySessions = {}            // UserId/SessionId/Host --> Web Relay Session
+    var webRelaySessions = {}                   // UserId/SessionId/Host --> Web Relay Session
     var webRelayCleanupTimer = null;
+
+    // Monitor web relay session removals
+    parent.AddEventDispatch(['server-shareremove'], obj);
+    obj.HandleEvent = function (source, event, ids, id) {
+        if (event.action == 'removedDeviceShare') {
+            for (var relaySessionId in webRelaySessions) {
+                // A share was removed that matches an active session, close the web relay session.
+                if (webRelaySessions[relaySessionId].xpublicid === event.publicid) { webRelaySessions[relaySessionId].close(); }
+            }
+        }
+    }
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 0x00000001;
@@ -6749,7 +6760,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (req.query.c == null) { res.sendStatus(404); return; }
 
                     // Decode and check if this relay cookie is valid
-                    var userid, domainid, domain, nodeid, addr, port, appid, webSessionId, expire;
+                    var userid, domainid, domain, nodeid, addr, port, appid, webSessionId, expire, publicid;
                     const urlCookie = obj.parent.decodeCookie(req.query.c, parent.loginCookieEncryptionKey, 32); // Allow cookies up to 32 minutes old. The web page will renew this cookie every 30 minutes.
                     if (urlCookie == null) { res.sendStatus(404); return; }
 
@@ -6782,6 +6793,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         port = urlCookie.port;
                         appid = (urlCookie.p == 16) ? 2 : 1; // appid: 1 = HTTP, 2 = HTTPS
                         webSessionId = userid + '/' + urlCookie.pid;
+                        publicid = urlCookie.pid;
                         if (req.session.x) { delete req.session.x; } // Clear the web relay sessionid
                         if (req.session.userid) { delete req.session.userid; }  // Clear the web relay userid
                         if (req.session.z != webSessionId) { req.session.z = webSessionId; } // Set the web relay guest session
@@ -6854,6 +6866,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                             // Create a web relay session
                             const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId, expire);
+                            relaySession.xpublicid = publicid;
                             relaySession.onclose = function (sessionId) {
                                 // Remove the relay session
                                 delete webRelaySessions[sessionId];
