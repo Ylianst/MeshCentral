@@ -975,20 +975,43 @@ module.exports.CreateAmtManager = function (parent) {
         if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
         if (status != 200) return;
         if ((responses['AMT_BootSettingData'] == null) || (responses['AMT_BootSettingData'].response == null)) return;
-
         var bootSettingData = responses['AMT_BootSettingData'].response;
+
+        // Clean up parameters
+        bootSettingData['ConfigurationDataReset'] = false;
+        delete bootSettingData['WinREBootEnabled'];
+        delete bootSettingData['UEFILocalPBABootEnabled'];
+        delete bootSettingData['UEFIHTTPSBootEnabled'];
+        delete bootSettingData['SecureBootControlEnabled'];
+        delete bootSettingData['BootguardStatus'];
+        delete bootSettingData['OptionsCleared'];
+        delete bootSettingData['BIOSLastStatus'];
+        delete bootSettingData['UefiBootParametersArray'];
+        delete bootSettingData['RPEEnabled'];
+        delete bootSettingData['RSEPassword']
+
+        // Ready boot parameters
         bootSettingData['BIOSSetup'] = ((action >= 11) && (action <= 14));
         bootSettingData['UseSOL'] = ((action >= 13) && (action <= 14));
         if ((action == 11) || (action == 13)) { dev.powerAction = 2; } // Power on
         if ((action == 12) || (action == 14)) { dev.powerAction = 10; } // Reset
 
-        dev.amtstack.Put('AMT_BootSettingData', bootSettingData, function performAdvancedPowerActionResponseEx(stack, name, response, status, tag) {
+        // Set boot parameters
+        dev.amtstack.Put('AMT_BootSettingData', bootSettingData, function (stack, name, response, status, tag) {
             const dev = stack.dev;
-            const action = dev.powerAction;
-            delete dev.powerAction;
-            if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
-            if (status != 200) return;
-            try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
+            if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
+            // Set boot config
+            dev.amtstack.SetBootConfigRole(1, function (stack, name, response, status, tag) {
+                const dev = stack.dev;
+                if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
+                // Set boot order
+                dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder(null, function (stack, name, response, status) {
+                    const dev = stack.dev;
+                    if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
+                    // Perform power action
+                    try { dev.amtstack.RequestPowerStateChange(dev.powerAction, performPowerActionResponse); } catch (ex) { }
+                }, 0, 1);
+            }, 0, 1);
         }, 0, 1);
     }
 
