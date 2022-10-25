@@ -14376,6 +14376,7 @@
     },
     {
       "en": "Check your messaging application and enter the verification code.",
+      "nl": "Controleer uw berichten applicatie en voer de verificatiecode in.",
       "xloc": [
         "default.handlebars->47->245"
       ]
@@ -27632,6 +27633,7 @@
     },
     {
       "en": "Enter your messaging service and handle. Once verified, this server can send you login verification and other notifications.",
+      "nl": "Voer uw berichtenservice en afhandeling in. Na verificatie kan deze server u aanmeldingsverificatie en andere meldingen sturen.",
       "xloc": [
         "default.handlebars->47->1565"
       ]
@@ -32286,6 +32288,7 @@
     },
     {
       "en": "Handle",
+      "nl": "afhandeling",
       "xloc": [
         "default.handlebars->47->1569",
         "default.handlebars->47->2753"
@@ -37028,6 +37031,7 @@
     },
     {
       "en": "Invalid message",
+      "nl": "Ongeldig bericht",
       "xloc": [
         "default.handlebars->47->3002"
       ]
@@ -42780,6 +42784,7 @@
     },
     {
       "en": "Manage messaging",
+      "nl": "Beheer berichtenservice",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->manageMessaging2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageMessaging1->1->0"
@@ -44537,18 +44542,21 @@
     },
     {
       "en": "Message error",
+      "nl": "Bericht fout",
       "xloc": [
         "default.handlebars->47->3004"
       ]
     },
     {
       "en": "Message error: {0}",
+      "nl": "Bericht fout: {0}",
       "xloc": [
         "default.handlebars->47->3005"
       ]
     },
     {
       "en": "Message sent.",
+      "nl": "Bericht verzonden.",
       "xloc": [
         "login.handlebars->5->6",
         "login2.handlebars->7->7"
@@ -44556,6 +44564,7 @@
     },
     {
       "en": "Message succesfully sent.",
+      "nl": "Bericht succesvol verzonden",
       "xloc": [
         "default.handlebars->47->3003"
       ]
@@ -44614,6 +44623,7 @@
     },
     {
       "en": "Messaging",
+      "nl": "Berichten",
       "xloc": [
         "default.handlebars->47->2673",
         "default.handlebars->47->2721",
@@ -44624,6 +44634,7 @@
     },
     {
       "en": "Messaging Notifications",
+      "nl": "Berichten notificaties",
       "xloc": [
         "default.handlebars->47->1564",
         "default.handlebars->47->1570",
@@ -44633,12 +44644,14 @@
     },
     {
       "en": "Messaging account for this user.",
+      "nl": "Berichtenaccount voor deze gebruiker.",
       "xloc": [
         "default.handlebars->47->2748"
       ]
     },
     {
       "en": "Messaging enabled",
+      "nl": "Berichten ingeschakeld",
       "xloc": [
         "default.handlebars->47->2674"
       ]
@@ -44672,6 +44685,7 @@
     },
     {
       "en": "Messenging",
+      "nl": "Berichten",
       "xloc": [
         "default.handlebars->47->2927"
       ]
@@ -57041,6 +57055,7 @@
     },
     {
       "en": "Remove messaging",
+      "nl": "Berichtenservice verwijderen",
       "xloc": [
         "default.handlebars->47->1563"
       ]
@@ -57440,6 +57455,7 @@
     },
     {
       "en": "Removed messaging account of user {0}",
+      "nl": "Berichtenaccount van gebruiker {0} verwijderd",
       "xloc": [
         "default.handlebars->47->2420"
       ]
@@ -59596,6 +59612,7 @@
     },
     {
       "en": "SMS succesfully sent.",
+      "nl": "SMS succesvol verzonden.",
       "xloc": [
         "default.handlebars->47->2998"
       ]
@@ -61396,6 +61413,7 @@
     },
     {
       "en": "Send Message",
+      "nl": "Bericht versturen",
       "xloc": [
         "default.handlebars->47->2496"
       ]
@@ -61480,6 +61498,7 @@
     },
     {
       "en": "Send a message to this user",
+      "nl": "Stuur een bericht naar deze gebruiker",
       "xloc": [
         "default.handlebars->47->2729"
       ]
@@ -61643,6 +61662,7 @@
     },
     {
       "en": "Send token to messaging application?",
+      "nl": "Token naar berichtentoepassing verzenden?",
       "xloc": [
         "login.handlebars->5->33",
         "login2.handlebars->7->40"
@@ -62730,6 +62750,7 @@
     },
     {
       "en": "Service",
+      "nl": "Service",
       "xloc": [
         "default.handlebars->47->1568",
         "default.handlebars->47->2752"
@@ -64559,6 +64580,7 @@
     },
     {
       "en": "Signal Messenger",
+      "nl": "Signal Messenger",
       "xloc": [
         "default.handlebars->47->1567",
         "default.handlebars->47->2751"
@@ -68131,6 +68153,7 @@
     },
     {
       "en": "Telegram",
+      "nl": "Telegram",
       "xloc": [
         "default.handlebars->47->1566",
         "default.handlebars->47->2750"
@@ -75033,18 +75056,21 @@
     },
     {
       "en": "Verified handle",
+      "nl": "Geverifieerde handeling",
       "xloc": [
         "default.handlebars->47->1562"
       ]
     },
     {
       "en": "Verified messaging account",
+      "nl": "Geverifieerd berichtenaccount",
       "xloc": [
         "default.handlebars->47->2481"
       ]
     },
     {
       "en": "Verified messaging account of user {0}",
+      "nl": "Geverifieerd berichtenaccount van gebruiker {0}",
       "xloc": [
         "default.handlebars->47->2419"
       ]
