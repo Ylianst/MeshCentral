@@ -2573,10 +2573,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // This is called after a successful Oauth to Twitter, Google, GitHub...
     function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
-        const authStrategy = req.user.strategy
         if (domain == null) { return; }
-        parent.debug('authlog', `${authStrategy.toUpperCase()}: Verified user: ${JSON.stringify(req.user, null, 4)}` + JSON.stringify(req.user));
-        if ((req.user != null) && (req.user.sid != null)) {
+        if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
+            const authStrategy = req.user.strategy
+            parent.debug('authlog', `${authStrategy.toUpperCase()}: Verified user: ${JSON.stringify(req.user, null, 4)}` + JSON.stringify(req.user));
 
             // Check if any group related options exist
             var userMemberships = [];
