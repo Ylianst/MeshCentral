@@ -2354,7 +2354,8 @@
                             22: "Failed to sign agent {0}: {1}",
                             23: "Unable to load agent icon file: {0}.",
                             24: "Unable to load agent logo file: {0}.",
-                            25: "This NodeJS version does not support OpenID."
+                            25: "This NodeJS version does not support OpenID.",
+                            26: "This NodeJS version does not support Discord.js."
                         };
                         var x = '';
                         for (var i in message.warnings) {
@@ -11983,6 +11984,7 @@
                 var y = '<select id=d2serviceselect style=width:160px;margin-left:8px>';
                 if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
                 if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
                 y += '</select>';
                 x += '<table><tr><td>' + "Service" + '<td>' + y;
                 x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=account_manageMessagingValidate() onkeypress="if (event.key==\'Enter\') account_manageMessagingValidate(1)">';
@@ -15853,6 +15855,7 @@
             var y = '<select id=d2serviceselect style=width:160px;margin-left:8px>';
             if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
             if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
             y += '</select>';
             x += '<table style=margin-top:12px><tr><td>' + "Service" + '<td>' + y;
             x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=p30editMessagingValidate() onkeypress="if (event.key==\'Enter\') p30editMessagingValidate(1)">';
@@ -15870,6 +15873,7 @@
             var handle = null;
             if (Q('d2handleinput').value == '') { handle = ''; }
             else if (Q('d2serviceselect').value == 1) { handle = 'telegram:@' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 4) { handle = 'discord:' + Q('d2handleinput').value; }
             if (handle != null) { meshserver.send({ action: 'edituser', id: currentUser._id, msghandle: handle }); }
         }
 
