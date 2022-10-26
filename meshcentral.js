@@ -3876,7 +3876,8 @@ var ServerWarnings = {
     22: "Failed to sign agent {0}: {1}",
     23: "Unable to load agent icon file: {0}.",
     24: "Unable to load agent logo file: {0}.",
-    25: "This NodeJS version does not support OpenID."
+    25: "This NodeJS version does not support OpenID.",
+    26: "This NodeJS version does not support Discord.js."
 };
 */
 
@@ -4028,6 +4029,7 @@ function mainStart() {
         // Messaging support
         if (config.messaging != null) {
             if (config.messaging.telegram != null) { modules.push('telegram'); modules.push('input'); }
+            if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 25); } }
         }
 
         // Setup web based push notifications

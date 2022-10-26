@@ -32,16 +32,25 @@
         "bottoken": "00000000:aaaaaaaaaaaaaaaaaaaaaaaa"
     }
 }
+
+// For Discord login, add this in config.json
+"messaging": {
+    "discord": {
+      "inviteurl": "https://discord.gg/xxxxxxxxx",
+      "token": "xxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxx"
+    }
+}
 */
 
 // Construct a messaging server object
 module.exports.CreateServer = function (parent) {
     var obj = {};
     obj.parent = parent;
-    obj.providers = 0; // 1 = Telegram, 2 = Signal
+    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord
     obj.telegramClient = null;
+    obj.discordClient = null;
 
-    // Messaging client setup
+    // Telegram client setup
     if (parent.config.messaging.telegram) {
         // Validate Telegram configuration values
         var telegramOK = true;
@@ -80,16 +89,85 @@ module.exports.CreateServer = function (parent) {
         }
     }
 
+    // Discord client setup
+    if (parent.config.messaging.discord) {
+        // Validate Discord configuration values
+        var discordOK = true;
+        if (typeof parent.config.messaging.discord.inviteurl != 'string') { console.log('Invalid or missing Discord invite URL.'); discordOK = false; }
+        if (typeof parent.config.messaging.discord.token != 'string') { console.log('Invalid or missing Discord token.'); discordOK = false; }
+
+        if (discordOK) {
+            // Setup Discord
+            const { Client, GatewayIntentBits } = require('discord.js');
+            var discordClient = new Client({
+                intents: [
+                    GatewayIntentBits.Guilds,
+                    GatewayIntentBits.GuildMessages,
+                    GatewayIntentBits.MessageContent,
+                    GatewayIntentBits.GuildMembers,
+                    GatewayIntentBits.DirectMessages
+                ]
+            });
+
+            // Called when Discord client is connected
+            discordClient.on('ready', function() {
+                console.log(`MeshCentral Discord client is connected as ${discordClient.user.tag}!`);
+                obj.discordClient = discordClient;
+                obj.providers += 4; // Enable Discord messaging
+            });
+
+            // Receives incoming messages, ignore for now
+            discordClient.on('messageCreate', function(message) {
+                if (message.author.bot) return false;
+                console.log(`Discord message from ${message.author.username}: ${message.content}`, message.channel.type);
+                //message.channel.send("Channel Hello");
+                //message.author.send('Private Hello');
+            });
+
+            // Called when Discord client received an interaction
+            discordClient.on('interactionCreate', async function(interaction) {
+                console.log('Discord interaction', interaction);
+                if (!interaction.isChatInputCommand()) return;
+                if (interaction.commandName === 'ping') { await interaction.reply('Pong!'); }
+            });
+
+            // Connect Discord client
+            discordClient.login(parent.config.messaging.discord.token);
+        }
+    }
+
+    // Send a direct message to a specific userid
+    async function discordSendMsg(userId, message) {
+        const user = await obj.discordClient.users.fetch(userId).catch(function () { return null; });
+        if (!user) return;
+        await user.send(message).catch(function (ex) { console.log('Discord Error', ex); });
+    }
+
+    // Convert a userTag to a userId. We need to query the Discord server to find this information.
+    // Example: findUserByTab('aaaa#0000', function (userid) { sendMsg(userid, 'message'); });
+    async function discordFindUserByTag(userTag, func) {
+        var username = userTag.split('#')[0];
+        const guilds = await obj.discordClient.guilds.fetch();
+        guilds.forEach(async function (value, key) {
+            var guild = await value.fetch();
+            const guildMembers = await guild.members.search({ query: username });
+            guildMembers.forEach(async function (value, key) {
+                if ((value.user.username + '#' + value.user.discriminator) == userTag) { func(key); return; }
+            });
+        });
+    }
+
     // Send an user message
     obj.sendMessage = function(to, msg, func) {
-        // Telegram
-        if ((to.startsWith('telegram:')) && (obj.telegramClient != null)) {
+        if ((to.startsWith('telegram:')) && (obj.telegramClient != null)) { // Telegram
             async function sendTelegramMessage(to, msg, func) {
                 if (obj.telegramClient == null) return;
                 parent.debug('email', 'Sending Telegram message to: ' + to.substring(9) + ': ' + msg);
                 try { await obj.telegramClient.sendMessage(to.substring(9), { message: msg }); if (func != null) { func(true); } } catch (ex) { if (func != null) { func(false, ex); } }
             }
             sendTelegramMessage(to, msg, func);
+        } else if ((to.startsWith('discord:')) && (obj.discordClient != null)) { // Discord
+            discordFindUserByTag(to.substring(8), function (userid) { discordSendMsg(userid, msg); if (func != null) { func(true); } });
         } else {
             // No providers found
             func(false, "No messaging providers found for this message.");

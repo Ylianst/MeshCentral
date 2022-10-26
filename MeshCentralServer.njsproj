@@ -681,6 +681,7 @@
     <Folder Include="typings\globals\ajv\" />
     <Folder Include="typings\globals\async\" />
     <Folder Include="typings\globals\axios\" />
+    <Folder Include="typings\globals\busboy\" />
     <Folder Include="typings\globals\connect-redis\" />
     <Folder Include="typings\globals\cookie-session\" />
     <Folder Include="typings\globals\core-js\" />
@@ -723,6 +724,7 @@
     <TypeScriptCompile Include="typings\globals\ajv\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\async\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\axios\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\busboy\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\connect-redis\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\cookie-session\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\core-js\index.d.ts" />
