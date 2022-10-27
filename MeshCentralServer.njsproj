@@ -681,6 +681,7 @@
     <Folder Include="typings\globals\ajv\" />
     <Folder Include="typings\globals\async\" />
     <Folder Include="typings\globals\axios\" />
+    <Folder Include="typings\globals\big-integer\" />
     <Folder Include="typings\globals\busboy\" />
     <Folder Include="typings\globals\connect-redis\" />
     <Folder Include="typings\globals\cookie-session\" />
@@ -695,6 +696,7 @@
     <Folder Include="typings\globals\he\" />
     <Folder Include="typings\globals\hooker\" />
     <Folder Include="typings\globals\http-errors\" />
+    <Folder Include="typings\globals\ip\" />
     <Folder Include="typings\globals\is-plain-object\" />
     <Folder Include="typings\globals\jsbn\" />
     <Folder Include="typings\globals\klaw\" />
@@ -711,6 +713,7 @@
     <Folder Include="typings\globals\once\" />
     <Folder Include="typings\globals\passport\" />
     <Folder Include="typings\globals\pg-pool\" />
+    <Folder Include="typings\globals\rx-lite\" />
     <Folder Include="typings\globals\split2\" />
     <Folder Include="typings\globals\sprintf-js\" />
     <Folder Include="typings\globals\sqlite3\" />
@@ -724,6 +727,7 @@
     <TypeScriptCompile Include="typings\globals\ajv\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\async\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\axios\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\big-integer\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\busboy\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\connect-redis\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\cookie-session\index.d.ts" />
@@ -738,6 +742,7 @@
     <TypeScriptCompile Include="typings\globals\he\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\hooker\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\http-errors\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\ip\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\is-plain-object\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\jsbn\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\klaw\index.d.ts" />
@@ -754,6 +759,7 @@
     <TypeScriptCompile Include="typings\globals\once\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\passport\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\pg-pool\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\rx-lite\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\split2\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\sprintf-js\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\sqlite3\index.d.ts" />
