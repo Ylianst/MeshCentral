@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "1.0.90",
+  "version": "1.0.91",
   "keywords": [
     "Remote Device Management",
     "Remote Device Monitoring",
@@ -37,27 +37,19 @@
     "sample-config-advanced.json"
   ],
   "dependencies": {
-    "@yetzt/nedb": "^1.8.0",
     "archiver": "^5.3.1",
     "body-parser": "^1.19.0",
     "cbor": "~5.2.0",
     "compression": "^1.7.4",
     "cookie-session": "^1.4.0",
-    "discord.js": "^14.6.0",
     "express": "^4.17.0",
     "express-handlebars": "^5.3.5",
     "express-ws": "^4.0.0",
-    "input": "^1.0.1",
     "ipcheck": "^0.1.0",
-    "loadavg-windows": "^1.1.1",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "mysql": "^2.18.1",
+    "@yetzt/nedb": "^1.8.0",
     "node-forge": "^1.0.0",
-    "node-windows": "^0.1.4",
-    "otplib": "^10.2.3",
-    "ssh2": "^1.11.0",
-    "telegram": "^2.13.6",
     "ws": "^5.2.3",
     "yauzl": "^2.10.0"
   },
