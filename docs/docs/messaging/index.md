@@ -6,7 +6,7 @@ MeshCentral supports messaging platforms so that users can register a messaging 
 
 ## Telegram Setup
 
-Currently only Telegram is supported. You will need to provide MeshCentral with the necessary login information so that MeshCentral can authenticate and connect to the Telegram servers and start sending notifications. For Telegram, both user and bot login is supported with bot login being the more typical way to go. The configuration in the config.json for a bot login looks like this:
+For Telegram integration, you will need to provide MeshCentral with the necessary login information so that MeshCentral can authenticate and connect to the Telegram servers and start sending notifications. For Telegram, both user and bot login is supported with bot login being the more typical way to go. The configuration in the config.json for a bot login looks like this:
 
 ```json
 {
@@ -58,6 +58,27 @@ MeshCentral Telegram client is bot connected.
 ```
 
 Note the last line, indicating it's connected as a bot.
+
+## Discord Setup
+
+For Discord integration, you need to provide MeshCentral with a bot application token so that MeshCentral can login and send notifications to users. The Discord bot will need to be joined to one or more Discord servers and users will need to join at at least one Discord server that is in common with the bot to receive notifications.
+
+There are many tutorials online on how to create a Discord bot and get the login token. For example follow the [two first sections of this tutorial](https://www.freecodecamp.org/news/create-a-discord-bot-with-javascript-nodejs/). The "How to Create a Discord Bot Account" section will show how to create a bot and get the token, the "How to Invite Your Bot to Join a Server" section shows how to join the bot to a Discord server.
+
+Once you have the Discord bot login token, the config.json Discord configuration looks like this:
+
+```json
+{
+  "messaging": {
+    "discord": {
+      "serverurl": "https://discord.gg/xxxxxxxxx",
+      "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  }
+}
+```
+
+Once users will need to join the same Discord server as the bot, the optional "serverurl" can be used to give the users a URL link to join the server, this can be a server invitation link or some other URL with instructions.
 
 ## User Setup
 

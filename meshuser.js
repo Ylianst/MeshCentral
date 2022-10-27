@@ -575,7 +575,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (domain.passwordrequirements.lock2factor == true) { serverinfo.lock2factor = true; } // Indicate 2FA change are not allowed
                 if (typeof domain.passwordrequirements.maxfidokeys == 'number') { serverinfo.maxfidokeys = domain.passwordrequirements.maxfidokeys; }
             }
-            if (parent.parent.msgserver != null) { serverinfo.userMsgProviders = parent.parent.msgserver.providers; }
+            if (parent.parent.msgserver != null) { // Setup messaging providers information
+                serverinfo.userMsgProviders = parent.parent.msgserver.providers;
+                if (parent.parent.msgserver.discordUrl != null) { serverinfo.discordUrl = parent.parent.msgserver.discordUrl; }
+            }
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain, req);

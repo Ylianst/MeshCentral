@@ -49,6 +49,7 @@ module.exports.CreateServer = function (parent) {
     obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord
     obj.telegramClient = null;
     obj.discordClient = null;
+    obj.discordUrl = null;
 
     // Telegram client setup
     if (parent.config.messaging.telegram) {
@@ -93,7 +94,6 @@ module.exports.CreateServer = function (parent) {
     if (parent.config.messaging.discord) {
         // Validate Discord configuration values
         var discordOK = true;
-        if (typeof parent.config.messaging.discord.inviteurl != 'string') { console.log('Invalid or missing Discord invite URL.'); discordOK = false; }
         if (typeof parent.config.messaging.discord.token != 'string') { console.log('Invalid or missing Discord token.'); discordOK = false; }
 
         if (discordOK) {
@@ -113,6 +113,7 @@ module.exports.CreateServer = function (parent) {
             discordClient.on('ready', function() {
                 console.log(`MeshCentral Discord client is connected as ${discordClient.user.tag}!`);
                 obj.discordClient = discordClient;
+                obj.discordUrl = parent.config.messaging.discord.serverurl;
                 obj.providers += 4; // Enable Discord messaging
             });
 

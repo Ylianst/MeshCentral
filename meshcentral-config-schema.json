@@ -1370,6 +1370,15 @@
             "apihash": { "type": "string" },
             "session": { "type": "string" }
           }
+        },
+        "discord": {
+          "type": "object",
+          "description": "Configure Discord messaging system",
+          "properties": {
+            "serverurl": { "type": "string", "format": "uri", "description": "An optional HTTP link to the discord server the user must join to get notifications." },
+            "token": { "type": "string", "description": "A Discord bot token that MeshCentral will use to login to Discord." }
+          },
+          "required": [ "token" ]
         }
       }
     }
