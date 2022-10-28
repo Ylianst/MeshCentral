@@ -80,6 +80,26 @@ Discord integration requires that MeshCentral be run on NodeJS v17 or higher. On
 
 Once users will need to join the same Discord server as the bot, the optional "serverurl" can be used to give the users a URL link to join the server, this can be a server invitation link or some other URL with instructions.
 
+## XMPP Setup
+
+For XMPP integration, you need to provide MeshCentral with a XMPP server, username and password so that MeshCentral can login and send notifications to users. You can get a XMPP account to any number of servers or start up your own XMPP server.
+
+```json
+{
+  "messaging": {
+    "xmpp": {
+        service: "xmppserver.com",
+        credentials: {
+            username: 'username',
+            password: 'password'
+        }
+     }
+  }
+}
+```
+
+An easy way to get setup with XMPP is to create a free account with [chatterboxtown.us](https://chatterboxtown.us/) and then, setup MeshCentral with the service value set to "chatterboxtown.us" along with the username and password of you account. This can be done in minutes. Once setup, users will be able to setup and verify XMLL accounts and use this for notifications and 2FA verification.
+
 ## User Setup
 
 Once a messaging system is setup with MeshCentral, users will be able to register their handle and verify that they own that account by typing in a 6 digit code.

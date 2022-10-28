@@ -948,6 +948,7 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
     function performPowerAction(nodeid, action) {
+        console.log('performPowerAction', nodeid, action);
         var devices = obj.amtDevices[nodeid];
         if (devices == null) return;
         for (var i in devices) {
