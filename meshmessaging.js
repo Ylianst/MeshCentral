@@ -17,41 +17,41 @@
 /*
 // For Telegram user login, add this in config.json
 "messaging": {
-    "telegram": {
-        "apiid": 00000000,
-        "apihash": "00000000000000000000000",
-        "session": "aaaaaaaaaaaaaaaaaaaaaaa"
-    }
+  "telegram": {
+    "apiid": 00000000,
+    "apihash": "00000000000000000000000",
+    "session": "aaaaaaaaaaaaaaaaaaaaaaa"
+  }
 }
 
 // For Telegram bot login, add this in config.json
 "messaging": {
-    "telegram": {
-        "apiid": 00000000,
-        "apihash": "00000000000000000000000",
-        "bottoken": "00000000:aaaaaaaaaaaaaaaaaaaaaaaa"
-    }
+  "telegram": {
+    "apiid": 00000000,
+    "apihash": "00000000000000000000000",
+    "bottoken": "00000000:aaaaaaaaaaaaaaaaaaaaaaaa"
+  }
 }
 
 // For Discord login, add this in config.json
 "messaging": {
-    "discord": {
-      "inviteurl": "https://discord.gg/xxxxxxxxx",
-      "token": "xxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxx"
-    }
+  "discord": {
+    "inviteurl": "https://discord.gg/xxxxxxxxx",
+    "token": "xxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxx"
+  }
 }
 
 // For XMPP login, add this in config.json
-"messaging": {
+{
+  "messaging": {
     "xmpp": {
-        service: "xmppserver.com",
-        //domain: "xmppserver.com",
-        //resource: "example",
-        credentials: {
-            username: 'username',
-            password: 'password'
-        }
+      "service": "xmppserver.com",
+      "credentials": {
+        "username": "username",
+        "password": "password"
+      }
     }
+  }
 }
 */
 
