@@ -152,7 +152,7 @@ module.exports.CreateAmtRemoteIder = function (webserver, meshcentral) {
     obj.ProcessData = function (data) {
         data = Buffer.from(data, 'binary');
         obj.bytesFromAmt += data.length;
-        if (obj.acc == null) { obj.acc = data; } else { obj.acc = Buffer.concat(obj.acc, data); }
+        if (obj.acc == null) { obj.acc = data; } else { obj.acc = Buffer.concat([obj.acc, data]); }
         if (obj.debug) console.log('IDER-ProcessData', obj.acc.length, obj.acc.toString('hex'));
 
         // Process as many commands as possible

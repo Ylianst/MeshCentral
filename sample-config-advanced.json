@@ -614,5 +614,16 @@
   "____sms": {
     "provider": "url",
     "url": "http://example.com/sms.ashx?phone={{phone}}&message={{message}}"
+  },
+  "_messaging": {
+    "_telegram": {
+      "apiid": 0,
+      "apihash": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "_discord": {
+      "serverurl": "https://discord.gg/xxxxxxxxx",
+      "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
   }
 }

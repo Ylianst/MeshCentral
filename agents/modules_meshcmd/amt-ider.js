@@ -98,7 +98,7 @@ module.exports = function CreateAmtRemoteIder() {
     // Private method
     obj.ProcessData = function (data) {
         obj.bytesFromAmt += data.length;
-        if (obj.acc == null) { obj.acc = data; } else { obj.acc = Buffer.concat(obj.acc, data); }
+        if (obj.acc == null) { obj.acc = data; } else { obj.acc = Buffer.concat([obj.acc, data]); }
         if (obj.debug) console.log('IDER-ProcessData', obj.acc.length, obj.acc.toString('hex'));
 
         // Process as many commands as possible

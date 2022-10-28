@@ -575,6 +575,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (domain.passwordrequirements.lock2factor == true) { serverinfo.lock2factor = true; } // Indicate 2FA change are not allowed
                 if (typeof domain.passwordrequirements.maxfidokeys == 'number') { serverinfo.maxfidokeys = domain.passwordrequirements.maxfidokeys; }
             }
+            if (parent.parent.msgserver != null) { // Setup messaging providers information
+                serverinfo.userMsgProviders = parent.parent.msgserver.providers;
+                if (parent.parent.msgserver.discordUrl != null) { serverinfo.discordUrl = parent.parent.msgserver.discordUrl; }
+            }
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain, req);
@@ -1386,6 +1390,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
+                        if ((command.msghandle != null) && (typeof command.msghandle == 'string')) { if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; } change = 1; }
                         if ((command.flags != null) && (typeof command.flags == 'number')) {
                             // Flags: 1 = Account Image, 2 = Session Recording
                             if ((command.flags == 0) && (chguser.flags != null)) { delete chguser.flags; change = 1; } else { if (command.flags !== chguser.flags) { chguser.flags = command.flags; change = 1; } }
@@ -4158,7 +4163,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Event device share removal
                         if (removedExact != null) {
                             // Send out an event that we removed a device share
-                            var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                            var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', 'server-shareremove', user._id]);
                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: [removedExact.guestName], domain: domain.id, publicid: command.publicid };
                             parent.parent.DispatchEvent(targets, obj, event);
 
@@ -5232,6 +5237,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'changelang': serverCommandChangeLang,
         'close': serverCommandClose,
         'confirmPhone': serverCommandConfirmPhone,
+        'confirmMessaging': serverCommandConfirmMessaging,
         'emailuser': serverCommandEmailUser,
         'files': serverCommandFiles,
         'getClip': serverCommandGetClip,
@@ -5248,7 +5254,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'pong': serverCommandPong,
         'powertimeline': serverCommandPowerTimeline,
         'print': serverCommandPrint,
-        'removePhone': serverCommandremovePhone,
+        'removePhone': serverCommandRemovePhone,
+        'removeMessaging': serverCommandRemoveMessaging,
         'removeuserfromusergroup': serverCommandRemoveUserFromUserGroup,
         'report': serverCommandReport,
         'serverclearerrorlog': serverCommandServerClearErrorLog,
@@ -5260,6 +5267,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverversion': serverCommandServerVersion,
         'setClip': serverCommandSetClip,
         'smsuser': serverCommandSmsUser,
+        'msguser': serverCommandMsgUser,
         'trafficdelta': serverCommandTrafficDelta,
         'trafficstats': serverCommandTrafficStats,
         'updateAgents': serverCommandUpdateAgents,
@@ -5267,7 +5275,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
         'verifyemail': serverCommandVerifyEmail,
-        'verifyPhone': serverCommandVerifyPhone
+        'verifyPhone': serverCommandVerifyPhone,
+        'verifyMessaging': serverCommandVerifyMessaging
     };
 
     const serverUserCommands = {
@@ -5315,7 +5324,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverupdate': [serverUserCommandServerUpdate, "Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"],
         'setmaxtasks': [serverUserCommandSetMaxTasks, ""],
         'showpaths': [serverUserCommandShowPaths, ""],
-        'sms': [serverUserCommandSMS, ""],
+        'sms': [serverUserCommandSMS, "Send a SMS message to a specified phone number"],
+        'msg': [serverUserCommandMsg, "Send a user message to a user handle"],
         'swarmstats': [serverUserCommandSwarmStats, ""],
         'tasklimiter': [serverUserCommandTaskLimiter, "Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."],
         'trafficdelta': [serverUserCommandTrafficDelta, ""],
@@ -6024,6 +6034,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
 
+    function serverCommandConfirmMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if ((parent.parent.msgserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedMsgCookieCheck == 1)) return; // Input checks
+        var cookie = parent.parent.decodeCookie(command.cookie);
+        if (cookie == null) return; // Invalid cookie
+        if (cookie.s != ws.sessionId) return; // Invalid session
+        if (cookie.c != command.code) {
+            obj.failedMsgCookieCheck = 1;
+            // Code does not match, delay the response to limit how many guesses we can make and don't allow more than 1 guess at any given time.
+            setTimeout(function () {
+                ws.send(JSON.stringify({ action: 'verifyMessaging', cookie: command.cookie, success: true }));
+                delete obj.failedMsgCookieCheck;
+            }, 2000 + (parent.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+            return;
+        }
+
+        // Set the user's messaging handle
+        user.msghandle = cookie.p;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 156, msgArgs: [user.name], msg: 'Verified messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
     function serverCommandEmailUser(command) {
         var errMsg = null, emailuser = null;
         if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
@@ -6270,7 +6309,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandPrint(command) { console.log(command.value); }
 
-    function serverCommandremovePhone(command) {
+    function serverCommandRemovePhone(command) {
         // Do not allow this command when logged in using a login token
         if (req.session.loginToken != null) return;
 
@@ -6283,6 +6322,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Event the change
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 97, msgArgs: [user.name], msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
+    function serverCommandRemoveMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (user.msghandle == null) return;
+
+        // Clear the user's phone
+        delete user.msghandle;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 157, msgArgs: [user.name], msg: 'Removed messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
@@ -6496,6 +6552,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
+    function serverCommandMsgUser(command) {
+        var errMsg = null, msguser = null;
+        if ((parent.parent.msgserver == null) || (parent.parent.msgserver.providers == 0)) { errMsg = "Messaging server not enabled"; }
+        else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; }
+        else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; }
+        else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid message"; }
+        else {
+            msguser = parent.users[command.userid];
+            if (msguser == null) { errMsg = "Invalid username"; }
+            else if (msguser.msghandle == null) { errMsg = "No messaging service configured for this user"; }
+        }
+
+        if (errMsg != null) { displayNotificationMessage(errMsg); return; }
+
+        parent.parent.msgserver.sendMessage(msguser.msghandle, command.msg, function (success, msg) {
+            if (success) {
+                displayNotificationMessage("Message succesfuly sent.", null, null, null, 32);
+            } else {
+                if (typeof msg == 'string') { displayNotificationMessage("Messaging error: " + msg, null, null, null, 34, [msg]); } else { displayNotificationMessage("Messaging error", null, null, null, 33); }
+            }
+        });
+    }
+
     function serverCommandTrafficDelta(command) {
         const stats = parent.getTrafficDelta(obj.trafficStats);
         obj.trafficStats = stats.current;
@@ -6601,6 +6680,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone, s: ws.sessionId });
         parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
             ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
+        });
+    }
+
+    function serverCommandVerifyMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (parent.parent.msgserver == null) return;
+        if (common.validateString(command.handle, 1, 64) == false) return; // Check handle length
+
+        // Setup the handle for the right messaging service
+        var handle = null;
+        if ((command.service == 1) && ((parent.parent.msgserver.providers & 1) != 0)) { handle = 'telegram:@' + command.handle; }
+        if ((command.service == 4) && ((parent.parent.msgserver.providers & 4) != 0)) { handle = 'discord:' + command.handle; }
+        if (handle == null) return;
+
+        // Send a verification message
+        const code = common.zeroPad(getRandomSixDigitInteger(), 6);
+        const messagingCookie = parent.parent.encodeCookie({ a: 'verifyMessaging', c: code, p: handle, s: ws.sessionId });
+        parent.parent.msgserver.sendMessagingCheck(domain, handle, code, parent.getLanguageCodes(req), function (success) {
+            ws.send(JSON.stringify({ action: 'verifyMessaging', cookie: messagingCookie, success: success }));
         });
     }
 
@@ -6717,6 +6818,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 cmdData.result = "Usage: SMS \"PhoneNumber\" \"Message\".";
             } else {
                 parent.parent.smsserver.sendSMS(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
+                    if (typeof msg == 'string') {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
+                    } else {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: cmdData.command.tag })); } catch (ex) { }
+                    }
+                });
+            }
+        }
+    }
+
+    function serverUserCommandMsg(cmdData) {
+        if ((parent.parent.msgserver == null) || (parent.parent.msgserver.providers == 0)) {
+            cmdData.result = "No messaging providers configured.";
+        } else {
+            if (cmdData.cmdargs['_'].length != 2) {
+                var r = [];
+                if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:@UserHandle\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:UserHandle\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:Username#0000\" \"Message\"."); }
+                cmdData.result = r.join('\r\n');
+            } else {
+                parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
                     if (typeof msg == 'string') {
                         try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
                     } else {
@@ -7823,10 +7946,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function count2factoraAuths() {
         var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null));
         var sms2fa = ((parent.parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)));
+        var msg2fa = ((parent.parent.msgserver != null) && (parent.parent.msgserver.providers != 0) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)));
         var authFactorCount = 0;
         if (typeof user.otpsecret == 'string') { authFactorCount++; } // Authenticator time factor
         if (email2fa && (user.otpekey != null)) { authFactorCount++; } // EMail factor
         if (sms2fa && (user.phone != null)) { authFactorCount++; } // SMS factor
+        if (msg2fa && (user.msghandle != null)) { authFactorCount++; } // Messaging factor
         if (user.otphkeys != null) { authFactorCount += user.otphkeys.length; } // FIDO hardware factor
         if ((authFactorCount > 0) && (user.otpkeys != null)) { authFactorCount++; } // Backup keys
         return authFactorCount;

@@ -192,6 +192,7 @@
                                                 <input style="display:none;float:right" id=securityKeyButton type=button value="Use Security Key" onclick="useSecurityKey(1)" />
                                                 <input style="display:none;float:right" id=emailKeyButton type=button value="Email" onclick="useEmailToken(1)" />
                                                 <input style="display:none;float:right" id=smsKeyButton type=button value="SMS" onclick="useSMSToken(1)" />
+                                                <input style="display:none;float:right" id=msgKeyButton type=button value="Messaging" onclick="useMsgToken(1)" />
                                             </div>
                                         </td>
                                     </tr>
@@ -219,6 +220,7 @@
                                                 <input style="display:none;float:right" id=securityKeyButton2 type=button value="Use Security Key" onclick="useSecurityKey(2)" />
                                                 <input style="display:none;float:right" id=emailKeyButton2 type=button value="Email" onclick="useEmailToken(2)" />
                                                 <input style="display:none;float:right" id=smsKeyButton2 type=button value="SMS" onclick="useSMSToken(2)" />
+                                                <input style="display:none;float:right" id=msgKeyButton2 type=button value="Messaging" onclick="useMsgToken(2)" />
                                             </div>
                                         </td>
                                     </tr>
@@ -337,6 +339,7 @@
         var publicKeyCredentialRequestOptions = null;
         var otpemail = (decodeURIComponent('{{{otpemail}}}') === 'true');
         var otpsms = (decodeURIComponent('{{{otpsms}}}') === 'true');
+        var otpmsg = (decodeURIComponent('{{{otpmsg}}}') === 'true');
         var autofido = (decodeURIComponent('{{{autofido}}}') === 'true');
         var twoFactorCookieDays = parseInt('{{{twoFactorCookieDays}}}');
         var authStrategies = '{{{authStrategies}}}'.split(',');
@@ -346,7 +349,7 @@
             // Display the right server message
             var i;
             var messageid = parseInt('{{{messageid}}}');
-            var okmessages = ['', "If valid, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent."];
+            var okmessages = ['', "If valid, reset mail sent.", "Email sent.", "Email verification required, check your mailbox and click the confirmation link.", "SMS sent.", "Sending notification...", "Message sent."];
             var failmessages = ["Unable to create account.", "Account limit reached.", "Existing account with this email address.", "Invalid account creation token.", "Username already exists.", "Password rejected, use a different one.", "Invalid email.", "Account not found.", "Invalid token, try again.", "Unable to sent email.", "Account locked.", "Access denied.", "Login failed, check username and password.", "Password change requested.", "IP address blocked, try again later.", "Server under maintenance.", "Unable to send device notification.", "Invalid security check."];
             if (messageid > 0) {
                 var msg = '';
@@ -457,8 +460,9 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
                 QV('securityKeyButton', twofakey);
-                QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4));
-                QV('smsKeyButton', otpsms && (messageid != 2) && (messageid != 4));
+                QV('emailKeyButton', otpemail && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('smsKeyButton', otpsms && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('msgKeyButton', otpmsg && (messageid != 2) && (messageid != 4) && (messageid != 6));
 
                 // If hardware key is an option, trigger it now
                 if (autofido && twofakey) { setTimeout(function () { useSecurityKey(1); }, 300); }
@@ -469,8 +473,9 @@
                 try { if (hardwareKeyChallenge.length > 0) { hardwareKeyChallenge = JSON.parse(hardwareKeyChallenge); } else { hardwareKeyChallenge = null; } } catch (ex) { hardwareKeyChallenge = null }
                 var twofakey = (hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn');
                 QV('securityKeyButton2', twofakey);
-                QV('emailKeyButton2', otpemail && (messageid != 2) && (messageid != 4));
-                QV('smsKeyButton2', otpsms && (messageid != 2) && (messageid != 4));
+                QV('emailKeyButton2', otpemail && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('smsKeyButton2', otpsms && (messageid != 2) && (messageid != 4) && (messageid != 6));
+                QV('msgKeyButton2', otpmsg && (messageid != 2) && (messageid != 4) && (messageid != 6));
 
                 // If hardware key is an option, trigger it now
                 if (autofido && twofakey) { setTimeout(function () { useSecurityKey(2); }, 300); }
@@ -579,6 +584,23 @@
                 Q('tokenOkButton').click();
             } else if (panelAction == 2) {
                 Q('resetHwtokenInput').value = '**sms**';
+                QE('resetTokenOkButton', true);
+                Q('resetTokenOkButton').click();
+            }
+        }
+
+        function useMsgToken(panelAction) {
+            if (otpmsg != true) return;
+            setDialogMode(1, "Secure Login", 3, useMsgTokenEx, "Send token to messaging application?", panelAction);
+        }
+
+        function useMsgTokenEx(b, panelAction) {
+            if (panelAction == 1) {
+                Q('hwtokenInput').value = '**msg**';
+                QE('tokenOkButton', true);
+                Q('tokenOkButton').click();
+            } else if (panelAction == 2) {
+                Q('resetHwtokenInput').value = '**msg**';
                 QE('resetTokenOkButton', true);
                 Q('resetTokenOkButton').click();
             }

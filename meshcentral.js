@@ -22,19 +22,20 @@ if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ 
 function CreateMeshCentralServer(config, args) {
     const obj = {};
     obj.db = null;
-    obj.webserver = null;
-    obj.redirserver = null;
-    obj.mpsserver = null;
-    obj.mqttbroker = null;
-    obj.swarmserver = null;
-    obj.smsserver = null;
+    obj.webserver = null;       // HTTPS main web server, typically on port 443
+    obj.redirserver = null;     // HTTP relay web server, typically on port 80
+    obj.mpsserver = null;       // Intel AMT CIRA server, typically on port 4433
+    obj.mqttbroker = null;      // MQTT server, not is not often used
+    obj.swarmserver = null;     // Swarm server, this is used only to update older MeshCentral v1 agents
+    obj.smsserver = null;       // SMS server, used to send user SMS messages
+    obj.msgserver = null;       // Messaging server, used to sent used messages
     obj.amtEventHandler = null;
     obj.pluginHandler = null;
     obj.amtScanner = null;
-    obj.amtManager = null;
+    obj.amtManager = null;      // Intel AMT manager, used to oversee all Intel AMT devices, activate them and sync policies
     obj.meshScanner = null;
     obj.taskManager = null;
-    obj.letsencrypt = null;
+    obj.letsencrypt = null;     // Let's encrypt server, used to get and renew TLS certificates
     obj.eventsDispatch = {};
     obj.fs = require('fs');
     obj.path = require('path');
@@ -138,7 +139,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (ex) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
+        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -193,6 +194,9 @@ function CreateMeshCentralServer(config, args) {
 
         // Dump to mesh cores
         if (obj.args.dumpcores) { obj.updateMeshCore(function () { console.log('Done.'); }, true); return; }
+
+        // Setup Telegram
+        if (obj.args.setuptelegram) { require('./meshmessaging.js').SetupTelegram(obj); return; }
 
         // Perform web site translations into different languages
         if (obj.args.translate) {
@@ -758,7 +762,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unrecognized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
 
         // Read IP lists from files if applicable
         config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
@@ -858,7 +862,7 @@ function CreateMeshCentralServer(config, args) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                             const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
-                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; // Disable 2FA
+                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
                             if (obj.args.hashpass) {
                                 // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
                                 var hashpasssplit = obj.args.hashpass.split(',');
@@ -1185,11 +1189,13 @@ function CreateMeshCentralServer(config, args) {
                         obj.db.getAllConfigFiles(key, function (configFiles) {
                             if (configFiles == null) { console.log("Error, no configuration files found or invalid configkey."); process.exit(); return; }
                             if (!configFiles['config.json']) { console.log("Error, could not file config.json from database."); process.exit(); return; }
+                            if (typeof configFiles['config.json'] == 'object') { configFiles['config.json'] = configFiles['config.json'].toString(); }
+                            if (configFiles['config.json'].charCodeAt(0) == 65279) { configFiles['config.json'] = configFiles['config.json'].substring(1); }
                             obj.configurationFiles = configFiles;
 
                             // Parse the new configuration file
                             var config2 = null;
-                            try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.'); process.exit(); return; }
+                            try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.', ex); process.exit(); return; }
 
                             // Set the command line arguments to the config file if they are not present
                             if (!config2.settings) { config2.settings = {}; }
@@ -1420,7 +1426,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.mpsaliasport != null && (typeof obj.args.mpsaliasport != 'number')) obj.args.mpsaliasport = null;
         if (obj.args.rediraliasport != null && (typeof obj.args.rediraliasport != 'number')) obj.args.rediraliasport = null;
         if (obj.args.redirport == null) obj.args.redirport = 80;
-        if (obj.args.minifycore === 0) obj.args.minifycore = false;
+        if (obj.args.minifycore == null) obj.args.minifycore = false;
         if (typeof args.agentidletimeout != 'number') { args.agentidletimeout = 150000; } else { args.agentidletimeout *= 1000 } // Default agent idle timeout is 2m, 30sec.
         if ((obj.args.lanonly != true) && (obj.args.webrtconfig == null)) { obj.args.webrtconfig = { iceservers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.services.mozilla.com' }] }; } // Setup default WebRTC STUN servers
         if (typeof obj.args.ignoreagenthashcheck == 'string') { if (obj.args.ignoreagenthashcheck == '') { delete obj.args.ignoreagenthashcheck; } else { obj.args.ignoreagenthashcheck = obj.args.ignoreagenthashcheck.split(','); } }
@@ -1775,6 +1781,11 @@ function CreateMeshCentralServer(config, args) {
                     if (config.sms != null) {
                         obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
                         if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
+                    }
+
+                    // Setup user messaging
+                    if (config.messaging != null) {
+                        obj.msgserver = require('./meshmessaging.js').CreateServer(obj);
                     }
 
                     // Setup web based push notifications
@@ -3865,7 +3876,8 @@ var ServerWarnings = {
     22: "Failed to sign agent {0}: {1}",
     23: "Unable to load agent icon file: {0}.",
     24: "Unable to load agent logo file: {0}.",
-    25: "This NodeJS version does not support OpenID."
+    25: "This NodeJS version does not support OpenID.",
+    26: "This NodeJS version does not support Discord.js."
 };
 */
 
@@ -4016,9 +4028,17 @@ function mainStart() {
         if (config.settings.desktopmultiplex === true) { modules.push('image-size'); }
 
         // SMS support
-        if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
-        if ((config.sms != null) && (config.sms.provider == 'plivo')) { modules.push('plivo'); }
-        if ((config.sms != null) && (config.sms.provider == 'telnyx')) { modules.push('telnyx'); }
+        if (config.sms != null) {
+            if (config.sms.provider == 'twilio') { modules.push('twilio'); }
+            if (config.sms.provider == 'plivo') { modules.push('plivo'); }
+            if (config.sms.provider == 'telnyx') { modules.push('telnyx'); }
+        }
+
+        // Messaging support
+        if (config.messaging != null) {
+            if (config.messaging.telegram != null) { modules.push('telegram'); modules.push('input'); }
+            if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
+        }
 
         // Setup web based push notifications
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }
