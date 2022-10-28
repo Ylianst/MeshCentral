@@ -130,9 +130,9 @@ As an administrator you can turn off use of messaging for 2FA using the followin
   "domains": {
     "": {
       "title": "My Server",
-	  "passwordRequirements": {
-	    "msg2factor": false
-	  }
+      "passwordRequirements": {
+        "msg2factor": false
+      }
     }
   }
 }
