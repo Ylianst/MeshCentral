@@ -11985,6 +11985,7 @@
                 if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
                 if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
                 if ((serverinfo.userMsgProviders & 4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
                 y += '</select>';
                 x += '<table><tr><td>' + "Service" + '<td>' + y;
                 x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=account_manageMessagingValidate() onkeypress="if (event.key==\'Enter\') account_manageMessagingValidate(1)">';
@@ -11998,7 +11999,9 @@
 
         function account_manageMessagingValidate(x) {
             if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
-            if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; } else { Q('d2handleinput')['placeholder'] = "Username"; }
+            if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
+            else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
+            else { Q('d2handleinput')['placeholder'] = "Username"; }
             var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); }
         }
         function account_manageMessagingAdd() { if (Q('d2handleinput').value.length == 0) return; QE('d2handleinput', false); meshserver.send({ action: 'verifyMessaging', service: Q('d2serviceselect').value, handle: Q('d2handleinput').value }); }
@@ -15860,6 +15863,7 @@
             if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
             if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
             if ((serverinfo.userMsgProviders & 4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
             y += '</select>';
             x += '<table style=margin-top:12px><tr><td>' + "Service" + '<td>' + y;
             x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=p30editMessagingValidate() onkeypress="if (event.key==\'Enter\') p30editMessagingValidate(1)">';
@@ -15870,6 +15874,7 @@
             if (userinfo.msghandle) {
                 if (userinfo.msghandle.startsWith('telegram:') && ((serverinfo.userMsgProviders & 1) != 0)) { Q('d2serviceselect').value = 1; Q('d2handleinput').value = userinfo.msghandle.substring(10); }
                 if (userinfo.msghandle.startsWith('discord:') && ((serverinfo.userMsgProviders & 4) != 0)) { Q('d2serviceselect').value = 4; Q('d2handleinput').value = userinfo.msghandle.substring(8); }
+                if (userinfo.msghandle.startsWith('xmpp:') && ((serverinfo.userMsgProviders & 8) != 0)) { Q('d2serviceselect').value = 4; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
             }
             p30editMessagingValidate();
         }
@@ -15877,6 +15882,10 @@
         function p30editMessagingValidate(x) {
             QE('d2handleinput', Q('d2serviceselect').value != 0);
             if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
+            if (Q('d2serviceselect').value == 0) { Q('d2handleinput')['placeholder'] = ''; }
+            else if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
+            else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
+            else { Q('d2handleinput')['placeholder'] = "Username"; }
             if (x == 1) { dialogclose(1); }
         }
 
@@ -15886,6 +15895,7 @@
             if ((Q('d2handleinput').value == '') || (Q('d2serviceselect').value == 0)) { handle = ''; }
             else if (Q('d2serviceselect').value == 1) { handle = 'telegram:@' + Q('d2handleinput').value; }
             else if (Q('d2serviceselect').value == 4) { handle = 'discord:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 8) { handle = 'xmpp:' + Q('d2handleinput').value; }
             if (handle != null) { meshserver.send({ action: 'edituser', id: currentUser._id, msghandle: handle }); }
         }
 

@@ -40,16 +40,31 @@
       "token": "xxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxx"
     }
 }
+
+// For XMPP login, add this in config.json
+"messaging": {
+    "xmpp": {
+        service: "xmppserver.com",
+        //domain: "xmppserver.com",
+        //resource: "example",
+        credentials: {
+            username: 'username',
+            password: 'password'
+        }
+    }
+}
 */
 
 // Construct a messaging server object
 module.exports.CreateServer = function (parent) {
     var obj = {};
     obj.parent = parent;
-    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord
+    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP
     obj.telegramClient = null;
     obj.discordClient = null;
     obj.discordUrl = null;
+    obj.xmppClient = null;
+    var xmppXml = null;
 
     // Telegram client setup
     if (parent.config.messaging.telegram) {
@@ -137,6 +152,30 @@ module.exports.CreateServer = function (parent) {
         }
     }
 
+    // XMPP client setup
+    if (parent.config.messaging.xmpp) {
+        // Validate Discord configuration values
+        var xmppOK = true;
+        if (typeof parent.config.messaging.xmpp.service != 'string') { console.log('Invalid or missing XMPP service.'); xmppOK = false; }
+
+        if (xmppOK) {
+            // Setup XMPP
+            const { client, xml } = require('@xmpp/client');
+            const xmpp = client(parent.config.messaging.xmpp);
+            xmpp.on('error', function (err) { parent.debug('email', 'XMPP error: ' + err); console.error('XMPP error', err); });
+            xmpp.on('offline', function () { parent.debug('email', 'XMPP client is offline.'); console.log('XMPP offline'); });
+            //xmpp.on('stanza', async function (stanza) { if (stanza.is("message")) { await xmpp.send(xml('presence', { type: 'unavailable' })); await xmpp.stop(); } });
+            xmpp.on('online', async function (address) {
+                // await xmpp.send(xml("presence")); const message = xml("message", { type: "chat", to: "username@server.com" }, xml("body", {}, "hello world")); await xmpp.send(message);
+                xmppXml = xml;
+                obj.xmppClient = xmpp;
+                obj.providers += 8; // Enable XMPP messaging
+                console.log("MeshCentral XMPP client is connected.");
+            });
+            xmpp.start().catch(console.error);
+        }
+    }
+
     // Send a direct message to a specific userid
     async function discordSendMsg(userId, message) {
         const user = await obj.discordClient.users.fetch(userId).catch(function () { return null; });
@@ -158,6 +197,13 @@ module.exports.CreateServer = function (parent) {
         });
     }
 
+    // Send an XMPP message
+    async function sendXmppMessage(to, msg, func) {
+        const message = xmppXml('message', { type: 'chat', to: to.substring(5) }, xmppXml('body', {}, msg));
+        await obj.xmppClient.send(message);
+        if (func != null) { func(true); }
+    }
+
     // Send an user message
     obj.sendMessage = function(to, msg, func) {
         if ((to.startsWith('telegram:')) && (obj.telegramClient != null)) { // Telegram
@@ -168,7 +214,13 @@ module.exports.CreateServer = function (parent) {
             }
             sendTelegramMessage(to, msg, func);
         } else if ((to.startsWith('discord:')) && (obj.discordClient != null)) { // Discord
-            discordFindUserByTag(to.substring(8), function (userid) { discordSendMsg(userid, msg); if (func != null) { func(true); } });
+            discordFindUserByTag(to.substring(8), function (userid) {
+                parent.debug('email', 'Sending Discord message to: ' + to.substring(9) + ', ' + userid + ': ' + msg);
+                discordSendMsg(userid, msg); if (func != null) { func(true); }
+            });
+        } else if ((to.startsWith('xmpp:')) && (obj.xmppClient != null)) { // XMPP
+            parent.debug('email', 'Sending XMPP message to: ' + to.substring(5) + ': ' + msg);
+            sendXmppMessage(to, msg, func);
         } else {
             // No providers found
             func(false, "No messaging providers found for this message.");

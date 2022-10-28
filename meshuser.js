@@ -6695,6 +6695,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         var handle = null;
         if ((command.service == 1) && ((parent.parent.msgserver.providers & 1) != 0)) { handle = 'telegram:@' + command.handle; }
         if ((command.service == 4) && ((parent.parent.msgserver.providers & 4) != 0)) { handle = 'discord:' + command.handle; }
+        if ((command.service == 8) && ((parent.parent.msgserver.providers & 8) != 0)) { handle = 'xmpp:' + command.handle; }
         if (handle == null) return;
 
         // Send a verification message
@@ -6837,6 +6838,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:@UserHandle\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:UserHandle\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:Username#0000\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 8) != 0) { r.push("Usage: MSG \"xmpp:username@server.com\" \"Message\"."); }
                 cmdData.result = r.join('\r\n');
             } else {
                 parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
