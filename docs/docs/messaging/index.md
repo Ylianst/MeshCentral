@@ -34,7 +34,7 @@ Note the "messaging" section in the config.json. For Telegram user login, it loo
 {
   "messaging": {
     "telegram": {
-      "apiid": 00000000,
+      "apiid": 0,
       "apihash": "00000000000000000000000",
       "session": "aaaaaaaaaaaaaaaaaaaaaaa"
     }
@@ -88,10 +88,10 @@ For XMPP integration, you need to provide MeshCentral with a XMPP server, userna
 {
   "messaging": {
     "xmpp": {
-      service: "xmppserver.com",
-      credentials: {
-        username: 'username',
-        password: 'password'
+      "service": "xmppserver.com",
+      "credentials": {
+        "username": "username",
+        "password": "password"
       }
     }
   }
