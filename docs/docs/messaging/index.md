@@ -20,7 +20,7 @@ For Telegram integration, you will need to provide MeshCentral with the necessar
   },
   "messaging": {
     "telegram": {
-      "apiid": 00000000,
+      "apiid": 0,
       "apihash": "00000000000000000000000",
       "bottoken": "00000000:aaaaaaaaaaaaaaaaaaaaaaaa"
     }
