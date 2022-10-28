@@ -88,12 +88,12 @@ For XMPP integration, you need to provide MeshCentral with a XMPP server, userna
 {
   "messaging": {
     "xmpp": {
-        service: "xmppserver.com",
-        credentials: {
-            username: 'username',
-            password: 'password'
-        }
-     }
+      service: "xmppserver.com",
+      credentials: {
+        username: 'username',
+        password: 'password'
+      }
+    }
   }
 }
 ```
