@@ -104,9 +104,29 @@ For XMPP integration, you need to provide MeshCentral with a XMPP server, userna
 
 An easy way to get setup with XMPP is to create a free account with [chatterboxtown.us](https://chatterboxtown.us/) and then, setup MeshCentral with the service value set to "chatterboxtown.us" along with the username and password of you account. This can be done in minutes. Once setup, users will be able to setup and verify XMLL accounts and use this for notifications and 2FA verification.
 
+## CallMeBot Setup
+
+[CallMeBot](https://www.callmebot.com/) is a free system that allows users to receive notifications on Signal Messenger, Whatsapp and Facebook Messenger. Enabling this feature is very simple, just enable it like this:
+
+```json
+{
+  "messaging": {
+    "callmebot": true
+  }
+}
+```
+
+Once enabled, users see the new "CallMeBot" option when trying to enable messaging in MeshCentral. They will need to follow specific instructions to enable CallMeBot to send notifications to their messaging application.
+
+  - [Signal Messenger](https://www.callmebot.com/blog/free-api-signal-send-messages/)
+  - [Whatsapp](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
+  - [Facebook Messenger](https://www.callmebot.com/blog/free-api-facebook-messenger/)
+
+Once the user has enabled their account, they can cut & paste the CallMeBot URI into MeshCentral to validate their account.
+
 ## User Setup
 
-Once a messaging system is setup with MeshCentral, users will be able to register their handle and verify that they own that account by typing in a 6 digit code.
+Once one or more messaging systems are setup with MeshCentral, users will be able to register their handle and verify that they own that account by typing in a 6 digit code.
 
 ![](images/MC2-Telegram1.png)
 
