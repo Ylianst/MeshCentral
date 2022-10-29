@@ -53,18 +53,28 @@
     }
   }
 }
+
+// For CallMeBot
+// For Signal Messenger: https://www.callmebot.com/blog/free-api-signal-send-messages/
+{
+  "messaging": {
+    "callmebot": true
+  }
+}
+
 */
 
 // Construct a messaging server object
 module.exports.CreateServer = function (parent) {
     var obj = {};
     obj.parent = parent;
-    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP
+    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP, 16 = CallMeBot
     obj.telegramClient = null;
     obj.discordClient = null;
     obj.discordUrl = null;
     obj.xmppClient = null;
     var xmppXml = null;
+    obj.callMeBotClient = null;
 
     // Telegram client setup
     if (parent.config.messaging.telegram) {
@@ -154,7 +164,7 @@ module.exports.CreateServer = function (parent) {
 
     // XMPP client setup
     if (parent.config.messaging.xmpp) {
-        // Validate Discord configuration values
+        // Validate XMPP configuration values
         var xmppOK = true;
         if (typeof parent.config.messaging.xmpp.service != 'string') { console.log('Invalid or missing XMPP service.'); xmppOK = false; }
 
@@ -174,6 +184,12 @@ module.exports.CreateServer = function (parent) {
             });
             xmpp.start().catch(console.error);
         }
+    }
+
+    // CallMeBot client setup
+    if (parent.config.messaging.callmebot) {
+        obj.callMeBotClient = true;
+        obj.providers += 16; // Enable CallMeBot messaging
     }
 
     // Send a direct message to a specific userid
@@ -221,10 +237,40 @@ module.exports.CreateServer = function (parent) {
         } else if ((to.startsWith('xmpp:')) && (obj.xmppClient != null)) { // XMPP
             parent.debug('email', 'Sending XMPP message to: ' + to.substring(5) + ': ' + msg);
             sendXmppMessage(to, msg, func);
+        } else if ((to.startsWith('callmebot:')) && (obj.callMeBotClient != null)) { // CallMeBot
+            parent.debug('email', 'Sending CallMeBot message to: ' + to.substring(10) + ': ' + msg);
+            console.log('Sending CallMeBot message to: ' + to.substring(10) + ': ' + msg);
+            var toData = to.substring(10).split('|');
+            if ((toData[0] == 'signal') && (toData.length == 3)) {
+                var url = 'https://api.callmebot.com/signal/send.php?phone=' + encodeURIComponent(toData[1]) + '&apikey=' + encodeURIComponent(toData[2]) + '&text=' + encodeURIComponent(msg);
+                require('https').get(url, function (r) { if (func != null) { func(r.statusCode == 200); } });
+            } else if ((toData[0] == 'whatsapp') && (toData.length == 3)) {
+                var url = 'https://api.callmebot.com/whatsapp.php?phone=' + encodeURIComponent(toData[1]) + '&apikey=' + encodeURIComponent(toData[2]) + '&text=' + encodeURIComponent(msg);
+                require('https').get(url, function (r) { if (func != null) { func(r.statusCode == 200); } });
+            } else if ((toData[0] == 'facebook') && (toData.length == 2)) {
+                var url = 'https://api.callmebot.com/facebook/send.php?apikey=' + encodeURIComponent(toData[1]) + '&text=' + encodeURIComponent(msg);
+                require('https').get(url, function (r) { if (func != null) { func(r.statusCode == 200); } });
+            }
         } else {
             // No providers found
             func(false, "No messaging providers found for this message.");
         }
+    }
+
+    // Convert a CallMeBot URL into a handle
+    obj.callmebotUrlToHandle = function (xurl) {
+        var url = null;
+        try { url = require('url').parse(xurl); } catch (ex) { return; }
+        if ((url == null) || (url.host != 'api.callmebot.com') || (url.protocol != 'https:') || (url.query == null)) return;
+        var urlArgs = {}, urlArgs2 = url.query.split('&');
+        for (var i in urlArgs2) { var j = urlArgs2[i].indexOf('='); if (j > 0) { urlArgs[urlArgs2[i].substring(0, j)] = urlArgs2[i].substring(j + 1); } }
+        if ((urlArgs['phone'] != null) && (urlArgs['phone'].indexOf('|') >= 0)) return;
+        if ((urlArgs['apikey'] != null) && (urlArgs['apikey'].indexOf('|') >= 0)) return;
+        // Signal Messenger, Whatapp and Facebook
+        if (url.path.startsWith('/signal') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:signal|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
+        if (url.path.startsWith('/whatsapp') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:whatsapp|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
+        if (url.path.startsWith('/facebook') && (urlArgs['apikey'] != null)) { return 'callmebot:facebook|' + urlArgs['apikey']; }
+        return null;
     }
 
     // Get the correct SMS template

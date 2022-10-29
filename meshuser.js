@@ -1390,7 +1390,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
-                        if ((command.msghandle != null) && (typeof command.msghandle == 'string')) { if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; } change = 1; }
+                        if ((command.msghandle != null) && (typeof command.msghandle == 'string')) {
+                            if (command.msghandle.startsWith('callmebot:https://')) { const h = parent.parent.msgserver.callmebotUrlToHandle(command.msghandle.substring(10)); if (h) { command.msghandle = h; } else { command.msghandle = ''; } }
+                            if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; }
+                            change = 1;
+                        }
                         if ((command.flags != null) && (typeof command.flags == 'number')) {
                             // Flags: 1 = Account Image, 2 = Session Recording
                             if ((command.flags == 0) && (chguser.flags != null)) { delete chguser.flags; change = 1; } else { if (command.flags !== chguser.flags) { chguser.flags = command.flags; change = 1; } }
@@ -6689,13 +6693,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
         if (parent.parent.msgserver == null) return;
-        if (common.validateString(command.handle, 1, 64) == false) return; // Check handle length
+        if (common.validateString(command.handle, 1, 1024) == false) return; // Check handle length
 
         // Setup the handle for the right messaging service
         var handle = null;
         if ((command.service == 1) && ((parent.parent.msgserver.providers & 1) != 0)) { handle = 'telegram:@' + command.handle; }
         if ((command.service == 4) && ((parent.parent.msgserver.providers & 4) != 0)) { handle = 'discord:' + command.handle; }
         if ((command.service == 8) && ((parent.parent.msgserver.providers & 8) != 0)) { handle = 'xmpp:' + command.handle; }
+        if ((command.service == 16) && ((parent.parent.msgserver.providers & 16) != 0)) { handle = parent.parent.msgserver.callmebotUrlToHandle(command.handle); }
         if (handle == null) return;
 
         // Send a verification message
