@@ -23275,6 +23275,7 @@
     },
     {
       "en": "Discord",
+      "nl": "Discord",
       "xloc": [
         "default.handlebars->47->1569",
         "default.handlebars->47->2759"
@@ -37741,6 +37742,7 @@
     },
     {
       "en": "Join this Discord server to receive notifications.",
+      "nl": "Word lid van deze Discord-server om meldingen te ontvangen.",
       "xloc": [
         "default.handlebars->47->1573",
         "default.handlebars->47->2763"
@@ -68888,6 +68890,7 @@
     },
     {
       "en": "This NodeJS version does not support Discord.js.",
+      "nl": "Deze NodeJS versie ondersteunt geen Discord.js.",
       "xloc": [
         "default.handlebars->47->108"
       ]
@@ -74623,6 +74626,7 @@
     },
     {
       "en": "Username:0000",
+      "nl": "Gebruikersnaam:0000",
       "xloc": [
         "default.handlebars->47->1575",
         "default.handlebars->47->2765"
@@ -77794,6 +77798,26 @@
     },
     {
       "en": "XMPP",
+      "bs": "XMPP",
+      "cs": "XMPP",
+      "da": "XMPP",
+      "de": "XMPP",
+      "es": "XMPP",
+      "fi": "XMPP",
+      "fr": "XMPP",
+      "hi": "XMPP",
+      "it": "XMPP",
+      "ja": "XMPP",
+      "ko": "XMPP",
+      "nl": "XMPP",
+      "pl": "XMPP",
+      "pt": "XMPP",
+      "pt-br": "XMPP",
+      "ru": "XMPP",
+      "sv": "XMPP",
+      "tr": "XMPP",
+      "zh-chs": "XMPP",
+      "zh-cht": "XMPP",
       "xloc": [
         "default.handlebars->47->1570",
         "default.handlebars->47->2760"
@@ -81184,6 +81208,7 @@
     },
     {
       "en": "username@server.com",
+      "nl": "gebruikersnaam@server.nl",
       "xloc": [
         "default.handlebars->47->1576",
         "default.handlebars->47->2766"
