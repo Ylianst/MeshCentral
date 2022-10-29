@@ -65,6 +65,10 @@ For Discord integration, you need to provide MeshCentral with a bot application 
 
 There are many tutorials online on how to create a Discord bot and get the login token. For example follow the [two first sections of this tutorial](https://www.freecodecamp.org/news/create-a-discord-bot-with-javascript-nodejs/). The "How to Create a Discord Bot Account" section will show how to create a bot and get the token, the "How to Invite Your Bot to Join a Server" section shows how to join the bot to a Discord server.
 
+Note that Privleged Gateway Intents permissions is needed for the bot on Discord. If not set, MeshCentral will show an error when trying to connect to Discord.
+
+![](images/MC2-Discord1.png)
+
 Discord integration requires that MeshCentral be run on NodeJS v17 or higher. Once you have the Discord bot login token, the config.json Discord configuration looks like this:
 
 ```json
