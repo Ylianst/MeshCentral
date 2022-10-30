@@ -1,5 +1,16 @@
 # Messaging
 
+## Table of Contents
+
+[Introduction](#introduction)
+[Telegram Setup](#telegram-setup)
+[Discord Setup](#discord-setup)
+[XMPP Setup](#xmpp-setup)
+[CallMeBot Setup](#callmebot-setup)
+[User Setup](#user-setup)
+[Administrator Management](#administrator-management)
+[Two-Factor Authentication](#two-factor-authentication)
+
 ## Introduction
 
 MeshCentral supports messaging platforms so that users can register a messaging account with MeshCentral and receive notifications. This is useful since messages are sent to an application the user is confirtable with and many messaging platforms have clients on mobile phones, desktop and more so that the notification can show up where the user is.
@@ -106,6 +117,8 @@ An easy way to get setup with XMPP is to create a free account with [chatterboxt
 
 ## CallMeBot Setup
 
+![](images/MC2-CallMeBot3.png)
+
 [CallMeBot](https://www.callmebot.com/) is a free system that allows users to receive notifications on Signal Messenger, Whatsapp and Facebook Messenger. Enabling this feature is very simple, just enable it like this:
 
 ```json
@@ -138,7 +151,7 @@ When users setup a messaging account, a messaging bubble will show up next to th
 
 ![](images/MC2-Telegram2.png)
 
-## Messaging Two-Factor Authentication
+## Two-Factor Authentication
 
 By default, messaging is used as a second factor for login when a user enabled a messaging account. Users will need to messaging icon on the login screen and can opt to receive a 6 digit code to login.
 
