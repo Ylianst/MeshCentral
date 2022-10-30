@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-[Introduction](#introduction)
-[Telegram Setup](#telegram-setup)
-[Discord Setup](#discord-setup)
-[XMPP Setup](#xmpp-setup)
-[CallMeBot Setup](#callmebot-setup)
-[User Setup](#user-setup)
-[Administrator Management](#administrator-management)
-[Two-Factor Authentication](#two-factor-authentication)
+[Introduction](#introduction)  
+[Telegram Setup](#telegram-setup)  
+[Discord Setup](#discord-setup)  
+[XMPP Setup](#xmpp-setup)  
+[CallMeBot Setup](#callmebot-setup)  
+[User Setup](#user-setup)  
+[Administrator Management](#administrator-management)  
+[Two-Factor Authentication](#two-factor-authentication)  
 
 ## Introduction
 
