@@ -7,6 +7,7 @@
 [Discord Setup](#discord-setup)  
 [XMPP Setup](#xmpp-setup)  
 [CallMeBot Setup](#callmebot-setup)  
+[Pushover Setup](#pushover-setup)  
 [User Setup](#user-setup)  
 [Administrator Management](#administrator-management)  
 [Two-Factor Authentication](#two-factor-authentication)  
@@ -136,6 +137,28 @@ Once enabled, users see the new "CallMeBot" option when trying to enable messagi
   - [Facebook Messenger](https://www.callmebot.com/blog/free-api-facebook-messenger/)
 
 Once the user has enabled their account, they can cut & paste the CallMeBot URI into MeshCentral to validate their account.
+
+## Pushover Setup
+
+[Pushover](https://pushover.net/) is another notification service that makes it's own mobile application. To get started, download the Pushover application and create an account then go to the https://pushover.net/ web site and setup a new application like this:
+
+![](images/MC2-Pushover2.png)
+
+You can setup an application with a name and icon, then, once you get a application token you can add it to the config.json like this:
+
+```json
+{
+  "messaging": {
+    "pushover": {
+      "token": "xxxxxxxxxxxxxxxxxxxxx"
+    }
+  }
+}
+```
+
+Once setup, the server will offer users the "Pushover" option when setting up messaging. Users will need to copy the Pushover user key into the dialog box to verify notifications are correct.
+
+![](images/MC2-Pushover1.png)
 
 ## User Setup
 
