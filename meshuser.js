@@ -6570,7 +6570,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         if (errMsg != null) { displayNotificationMessage(errMsg); return; }
 
-        parent.parent.msgserver.sendMessage(msguser.msghandle, command.msg, function (success, msg) {
+        parent.parent.msgserver.sendMessage(msguser.msghandle, command.msg, domain, function (success, msg) {
             if (success) {
                 displayNotificationMessage("Message succesfuly sent.", null, null, null, 32);
             } else {
@@ -6701,6 +6701,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if ((command.service == 4) && ((parent.parent.msgserver.providers & 4) != 0)) { handle = 'discord:' + command.handle; }
         if ((command.service == 8) && ((parent.parent.msgserver.providers & 8) != 0)) { handle = 'xmpp:' + command.handle; }
         if ((command.service == 16) && ((parent.parent.msgserver.providers & 16) != 0)) { handle = parent.parent.msgserver.callmebotUrlToHandle(command.handle); }
+        if ((command.service == 32) && ((parent.parent.msgserver.providers & 32) != 0)) { handle = 'pushover:' + command.handle; }
         if (handle == null) return;
 
         // Send a verification message
@@ -6844,9 +6845,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:UserHandle\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:Username#0000\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 8) != 0) { r.push("Usage: MSG \"xmpp:username@server.com\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:userkey\" \"Message\"."); }
                 cmdData.result = r.join('\r\n');
             } else {
-                parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
+                parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], domain, function (status, msg) {
                     if (typeof msg == 'string') {
                         try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
                     } else {

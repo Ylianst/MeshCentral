@@ -4031,6 +4031,7 @@ function mainStart() {
             if (config.messaging.telegram != null) { modules.push('telegram'); modules.push('input'); }
             if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
             if (config.messaging.xmpp != null) { modules.push('@xmpp/client'); }
+            if (config.messaging.pushover != null) { modules.push('node-pushover'); }
         }
 
         // Setup web based push notifications

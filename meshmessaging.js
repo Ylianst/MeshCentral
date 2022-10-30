@@ -62,19 +62,29 @@
   }
 }
 
+// For Pushover
+{
+  "messaging": {
+    "pushover": {
+      "token": "xxxxxxx"
+    }
+  }
+}
+
 */
 
 // Construct a messaging server object
 module.exports.CreateServer = function (parent) {
     var obj = {};
     obj.parent = parent;
-    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP, 16 = CallMeBot
+    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP, 16 = CallMeBot, 32 = Pushover
     obj.telegramClient = null;
     obj.discordClient = null;
     obj.discordUrl = null;
     obj.xmppClient = null;
     var xmppXml = null;
     obj.callMeBotClient = null;
+    obj.pushoverClient = null;
 
     // Telegram client setup
     if (parent.config.messaging.telegram) {
@@ -192,6 +202,19 @@ module.exports.CreateServer = function (parent) {
         obj.providers += 16; // Enable CallMeBot messaging
     }
 
+    // Pushover client setup (https://pushover.net)
+    if (parent.config.messaging.pushover) {
+        // Validate Pushover configuration values
+        var pushoverOK = true;
+        if (typeof parent.config.messaging.pushover.token != 'string') { console.log('Invalid or missing Pushover token.'); pushoverOK = false; }
+
+        if (pushoverOK) {
+            // Setup PushOver
+            obj.pushoverClient = true;
+            obj.providers += 32; // Enable Pushover messaging
+        }
+    }
+
     // Send a direct message to a specific userid
     async function discordSendMsg(userId, message) {
         const user = await obj.discordClient.users.fetch(userId).catch(function () { return null; });
@@ -221,7 +244,7 @@ module.exports.CreateServer = function (parent) {
     }
 
     // Send an user message
-    obj.sendMessage = function(to, msg, func) {
+    obj.sendMessage = function(to, msg, domain, func) {
         if ((to.startsWith('telegram:')) && (obj.telegramClient != null)) { // Telegram
             async function sendTelegramMessage(to, msg, func) {
                 if (obj.telegramClient == null) return;
@@ -251,6 +274,10 @@ module.exports.CreateServer = function (parent) {
                 var url = 'https://api.callmebot.com/facebook/send.php?apikey=' + encodeURIComponent(toData[1]) + '&text=' + encodeURIComponent(msg);
                 require('https').get(url, function (r) { if (func != null) { func(r.statusCode == 200); } });
             }
+        } else if ((to.startsWith('pushover:')) && (obj.pushoverClient != null)) { // Pushover
+            const Pushover = require('node-pushover');
+            const push = new Pushover({ token: parent.config.messaging.pushover.token, user: to.substring(9) });
+            push.send(domain.title ? domain.title : 'MeshCentral', msg, function (err, res) { if (func != null) { func(err == null); } });
         } else {
             // No providers found
             func(false, "No messaging providers found for this message.");
@@ -324,7 +351,7 @@ module.exports.CreateServer = function (parent) {
         sms = sms.split('[[1]]').join(verificationCode);
 
         // Send the message
-        obj.sendMessage(to, sms, func);
+        obj.sendMessage(to, sms, domain, func);
     };
 
     // Send 2FA verification
@@ -339,7 +366,7 @@ module.exports.CreateServer = function (parent) {
         sms = sms.split('[[1]]').join(verificationCode);
 
         // Send the message
-        obj.sendMessage(to, sms, func);
+        obj.sendMessage(to, sms, domain, func);
     };
 
     return obj;
