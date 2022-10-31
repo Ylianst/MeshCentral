@@ -579,6 +579,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 serverinfo.userMsgProviders = parent.parent.msgserver.providers;
                 if (parent.parent.msgserver.discordUrl != null) { serverinfo.discordUrl = parent.parent.msgserver.discordUrl; }
             }
+            if ((typeof parent.parent.config.messaging == 'object') && (typeof parent.parent.config.messaging.ntfy == 'object') && (typeof parent.parent.config.messaging.ntfy.userurl == 'string')) { // nfty user url
+                serverinfo.userMsgNftyUrl = parent.parent.config.messaging.ntfy.userurl;
+            }
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain, req);
