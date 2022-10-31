@@ -6702,6 +6702,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if ((command.service == 8) && ((parent.parent.msgserver.providers & 8) != 0)) { handle = 'xmpp:' + command.handle; }
         if ((command.service == 16) && ((parent.parent.msgserver.providers & 16) != 0)) { handle = parent.parent.msgserver.callmebotUrlToHandle(command.handle); }
         if ((command.service == 32) && ((parent.parent.msgserver.providers & 32) != 0)) { handle = 'pushover:' + command.handle; }
+        if ((command.service == 64) && ((parent.parent.msgserver.providers & 64) != 0)) { handle = 'ntfy:' + command.handle; }
         if (handle == null) return;
 
         // Send a verification message
@@ -6841,11 +6842,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else {
             if (cmdData.cmdargs['_'].length != 2) {
                 var r = [];
-                if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:@UserHandle\" \"Message\"."); }
-                if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:UserHandle\" \"Message\"."); }
-                if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:Username#0000\" \"Message\"."); }
-                if ((parent.parent.msgserver.providers & 8) != 0) { r.push("Usage: MSG \"xmpp:username@server.com\" \"Message\"."); }
-                if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:userkey\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:[@UserHandle]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:[UserHandle]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:[Username#0000]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 8) != 0) { r.push("Usage: MSG \"xmpp:[username@server.com]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:[userkey]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 64) != 0) { r.push("Usage: MSG \"ntfy:[topic]\" \"Message\"."); }
                 cmdData.result = r.join('\r\n');
             } else {
                 parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], domain, function (status, msg) {
