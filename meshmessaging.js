@@ -292,7 +292,8 @@ module.exports.CreateServer = function (parent) {
             const push = new Pushover({ token: parent.config.messaging.pushover.token, user: to.substring(9) });
             push.send(domain.title ? domain.title : 'MeshCentral', msg, function (err, res) { if (func != null) { func(err == null); } });
         } else if ((to.startsWith('ntfy:')) && (obj.ntfyClient != null)) { // ntfy
-            const req = require('https').request(new URL('https://ntfy.sh/' + encodeURIComponent(to.substring(5))), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
+            const url = 'https://' + (((typeof parent.config.messaging.ntfy == 'object') && (typeof parent.config.messaging.ntfy.host == 'string')) ? parent.config.messaging.ntfy.host : 'ntfy.sh') + '/' + encodeURIComponent(to.substring(5));
+            const req = require('https').request(new URL(url), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
             req.on('error', function (err) { if (func != null) { func(false); } });
             req.end(msg);
         } else {
