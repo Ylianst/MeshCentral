@@ -71,6 +71,13 @@
   }
 }
 
+// For ntfy
+{
+  "messaging": {
+    "ntfy": true
+  }
+}
+
 */
 
 // Construct a messaging server object
@@ -196,7 +203,7 @@ module.exports.CreateServer = function (parent) {
         }
     }
 
-    // CallMeBot client setup
+    // CallMeBot client setup (https://www.callmebot.com/)
     if (parent.config.messaging.callmebot) {
         obj.callMeBotClient = true;
         obj.providers += 16; // Enable CallMeBot messaging
@@ -213,6 +220,12 @@ module.exports.CreateServer = function (parent) {
             obj.pushoverClient = true;
             obj.providers += 32; // Enable Pushover messaging
         }
+    }
+
+    // ntfy client setup (https://ntfy.sh/)
+    if (parent.config.messaging.ntfy) {
+        obj.ntfyClient = true;
+        obj.providers += 64; // Enable ntfy messaging
     }
 
     // Send a direct message to a specific userid
@@ -278,6 +291,10 @@ module.exports.CreateServer = function (parent) {
             const Pushover = require('node-pushover');
             const push = new Pushover({ token: parent.config.messaging.pushover.token, user: to.substring(9) });
             push.send(domain.title ? domain.title : 'MeshCentral', msg, function (err, res) { if (func != null) { func(err == null); } });
+        } else if ((to.startsWith('ntfy:')) && (obj.ntfyClient != null)) { // ntfy
+            const req = require('https').request(new URL('https://ntfy.sh/' + encodeURIComponent(to.substring(5))), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
+            req.on('error', function (err) { if (func != null) { func(false); } });
+            req.end(msg);
         } else {
             // No providers found
             func(false, "No messaging providers found for this message.");

@@ -11987,12 +11987,15 @@
                 if ((serverinfo.userMsgProviders &  8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
                 if ((serverinfo.userMsgProviders & 16) != 0) { y += '<option value=16>' + "CallMeBot" + '</option>'; }
                 if ((serverinfo.userMsgProviders & 32) != 0) { y += '<option value=32>' + "Pushover" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 64) != 0) { y += '<option value=64>' + "ntfy" + '</option>'; }
                 y += '</select>';
                 x += '<table><tr><td>' + "Service" + '<td>' + y;
                 x += '<tr><td>' + "Handle" + '<td><input maxlength=1024 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=account_manageMessagingValidate() onkeypress="if (event.key==\'Enter\') account_manageMessagingValidate(1)">';
                 x += '</table>';
                 if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>'; }
                 x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a></div>';
+                x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
+                x += '<div id=d2ntfyinfo style=display:none><br /><a href=https://ntfy.sh/ target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
                 setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingAdd, x, 'verifyMessaging');
                 Q('d2handleinput').focus();
                 account_manageMessagingValidate();
@@ -12002,10 +12005,13 @@
         function account_manageMessagingValidate(x) {
             if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
             QV('d2callmebotinfo', Q('d2serviceselect').value == 16);
+            QV('d2pushoverinfo', Q('d2serviceselect').value == 32);
+            QV('d2ntfyinfo', Q('d2serviceselect').value == 64);
             if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
             else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
             else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
             else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
+            else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
             else { Q('d2handleinput')['placeholder'] = "Username"; }
             var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); }
         }
@@ -15870,12 +15876,15 @@
             if ((serverinfo.userMsgProviders &  8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
             if ((serverinfo.userMsgProviders & 16) != 0) { y += '<option value=16>' + "CallMeBot" + '</option>'; }
             if ((serverinfo.userMsgProviders & 32) != 0) { y += '<option value=32>' + "Pushover" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 64) != 0) { y += '<option value=64>' + "ntfy" + '</option>'; }
             y += '</select>';
             x += '<table style=margin-top:12px><tr><td>' + "Service" + '<td>' + y;
             x += '<tr><td>' + "Handle" + '<td><input maxlength=1024 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=p30editMessagingValidate() onkeypress="if (event.key==\'Enter\') p30editMessagingValidate(1)">';
             x += '</table>';
             if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>' }
             x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a></div>';
+            x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
+            x += '<div id=d2ntfyinfo style=display:none><br /><a href=https://ntfy.sh/ target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
             setDialogMode(2, "Messaging Notifications", 3, p30editMessagingEx, x, 'verifyMessaging');
             Q('d2handleinput').focus();
             if (userinfo.msghandle) {
@@ -15890,6 +15899,7 @@
                     if ((toData[0] == 'facebook') && (toData.length == 2)) { Q('d2handleinput').value = 'https://api.callmebot.com/facebook/send.php?apikey=' + decodeURIComponent(toData[1]); }
                 }
                 if (userinfo.msghandle.startsWith('pushover:') && ((serverinfo.userMsgProviders & 32) != 0)) { Q('d2serviceselect').value = 32; Q('d2handleinput').value = userinfo.msghandle.substring(9); }
+                if (userinfo.msghandle.startsWith('ntfy:') && ((serverinfo.userMsgProviders & 64) != 0)) { Q('d2serviceselect').value = 64; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
             }
             p30editMessagingValidate();
         }
@@ -15898,11 +15908,14 @@
             QE('d2handleinput', Q('d2serviceselect').value != 0);
             if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
             QV('d2callmebotinfo', Q('d2serviceselect').value == 16);
+            QV('d2pushoverinfo', Q('d2serviceselect').value == 32);
+            QV('d2ntfyinfo', Q('d2serviceselect').value == 64);
             if (Q('d2serviceselect').value == 0) { Q('d2handleinput')['placeholder'] = ''; }
             else if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
             else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
             else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
             else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
+            else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
             else { Q('d2handleinput')['placeholder'] = "Username"; }
             if (x == 1) { dialogclose(1); }
         }
@@ -15915,6 +15928,8 @@
             else if (Q('d2serviceselect').value == 4) { handle = 'discord:' + Q('d2handleinput').value; }
             else if (Q('d2serviceselect').value == 8) { handle = 'xmpp:' + Q('d2handleinput').value; }
             else if (Q('d2serviceselect').value == 16) { handle = 'callmebot:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 32) { handle = 'pushover:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 64) { handle = 'ntfy:' + Q('d2handleinput').value; }
             if (handle != null) { meshserver.send({ action: 'edituser', id: currentUser._id, msghandle: handle }); }
         }
 
