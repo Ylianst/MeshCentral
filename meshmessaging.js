@@ -33,6 +33,26 @@
   }
 }
 
+// For Telegram login with proxy settings, add this in config.json
+{
+  "messaging": {
+    "telegram": {
+      "apiid": 0,
+      "apihash": "00000000000000000000000",
+      "session": "aaaaaaaaaaaaaaaaaaaaaaa",
+	  "useWSS": false,                                 // Important. Most proxies cannot use SSL.
+      "proxy": {
+        "ip": "123.123.123.123",                       // Proxy host (IP or hostname)
+        "port": 123,                                   // Proxy port
+        "MTProxy": false,                              // Whether it's an MTProxy or a normal Socks one
+        "secret": "00000000000000000000000000000000",  // If used MTProxy then you need to provide a secret (or zeros).
+        "socksType": 5,                                // If used Socks you can choose 4 or 5.
+        "timeout": 2                                   // Timeout (in seconds) for connection,
+      }
+    }
+  }
+}
+
 // For Discord login, add this in config.json
 "messaging": {
   "discord": {
@@ -120,10 +140,14 @@ module.exports.CreateServer = function (parent) {
                 const logger = new Logger({ LogLevel : 'none' });
                 const input = require('input');
                 var client;
+                var options = { connectionRetries: 5, baseLogger: logger };
+                if (parent.config.messaging.telegram.usewss == false) { options.useWSS = false; }
+                if (typeof parent.config.messaging.telegram.connectionretries == 'number') { options.connectionRetries = parent.config.messaging.telegram.connectionretries; }
+                if (typeof parent.config.messaging.telegram.proxy == 'object') { options.proxy = parent.config.messaging.telegram.proxy; }
                 if (parent.config.messaging.telegram.bottoken == null) {
                     // User login
                     var stringSession = new StringSession(parent.config.messaging.telegram.session);
-                    const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
+                    const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, options);
                     await client.start({ onError: function (err) { console.log('Telegram error', err); } });
                     obj.telegramClient = client;
                     obj.providers += 1; // Enable Telegram messaging
@@ -131,7 +155,7 @@ module.exports.CreateServer = function (parent) {
                 } else {
                     // Bot login
                     var stringSession = new StringSession('');
-                    const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, { connectionRetries: 5, baseLogger: logger });
+                    const client = new TelegramClient(stringSession, parent.config.messaging.telegram.apiid, parent.config.messaging.telegram.apihash, options);
                     await client.start({ botAuthToken: parent.config.messaging.telegram.bottoken, onError: function (err) { console.log('Telegram error', err); } });
                     obj.telegramClient = client;
                     obj.providers += 1; // Enable Telegram messaging
