@@ -721,7 +721,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
             }
 
             // If there is data, send it
-            if (data != null) { obj.res.write(data, 'binary'); }
+            if (data != null) { try { obj.res.write(data, 'binary'); } catch (ex) { } }
 
             // If we are done, close the response
             if (done == true) {
