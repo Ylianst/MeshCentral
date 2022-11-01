@@ -81,8 +81,9 @@
 // For zulip
 {
   "messaging": {
-    email: "your-bot@zulip.com",
-    api_key: "your_32_character_api_key"
+    "site": "https://api.zulip.com",
+    "email": "your-bot@zulip.com",
+    "api_key": "your_32_character_api_key"
   }
 }
 
