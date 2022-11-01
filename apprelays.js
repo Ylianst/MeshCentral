@@ -69,7 +69,7 @@ function SerialTunnel(options) {
 }
 
 // Construct a Web relay object
-module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid, expire) {
+module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid, expire, mtype) {
     const obj = {};
     obj.parent = parent;
     obj.lastOperation = Date.now();
@@ -81,6 +81,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     obj.appid = appid;
     obj.sessionid = sessionid;
     obj.expireTimer = null;
+    obj.mtype = mtype;
     var pendingRequests = [];
     var nextTunnelId = 1;
     var tunnels = {};
@@ -164,7 +165,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         // Launch a new tunnel
         if (obj.closed == true) return;
         parent.parent.debug('webrelay', 'launchNewTunnel');
-        const tunnel = module.exports.CreateWebRelay(obj, db, args, domain);
+        const tunnel = module.exports.CreateWebRelay(obj, db, args, domain, obj.mtype);
         tunnel.onclose = function (tunnelId, processedCount) {
             if (tunnels == null) return;
             parent.parent.debug('webrelay', 'tunnel-onclose');
@@ -238,7 +239,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
 
 // Construct a Web relay object
-module.exports.CreateWebRelay = function (parent, db, args, domain) {
+module.exports.CreateWebRelay = function (parent, db, args, domain, mtype) {
     //const Net = require('net');
     const WebSocket = require('ws')
 
@@ -249,6 +250,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.isWebSocket = false; // If true, this request will not close and so, it can't be allowed to hold up other requests
     obj.isStreaming = false; // If true, this request will not close and so, it can't be allowed to hold up other requests
     obj.processedRequestCount = 0;
+    obj.mtype = mtype;
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Events
@@ -260,7 +262,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     // Called when we need to close the tunnel because the response stream has closed
     function handleResponseClosure() { obj.close(); }
 
-    // Return copkie name and values
+    // Return cookie name and values
     function parseRequestCookies(cookiesString) {
         var r = {};
         if (typeof cookiesString != 'string') return r;
@@ -437,7 +439,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         obj.relayActive = false;
     };
 
-    // Start the looppback server
+    // Start the loopback server
     obj.connect = function (userid, nodeid, addr, port, appid) {
         if (obj.relayActive || obj.closed) return;
         obj.addr = addr;
@@ -687,7 +689,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
             // If there is a header, send it
             if (header != null) {
-                obj.res.status(parseInt(header.Directive[1])); // Set the status
+                const statusCode = parseInt(header.Directive[1]);
+                if ((!isNaN(statusCode)) && (statusCode > 0) && (statusCode <= 999)) { obj.res.status(statusCode); } // Set the status
                 const blockHeaders = ['Directive', 'sec-websocket-extensions', 'connection', 'transfer-encoding', 'last-modified', 'content-security-policy', 'cache-control']; // We do not forward these headers 
                 for (var i in header) {
                     if (i == 'set-cookie') {
