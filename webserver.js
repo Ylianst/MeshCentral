@@ -6865,7 +6865,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (xrelaySession != null) { xrelaySession.close(); delete webRelaySessions[xrelaySessionId]; }
 
                             // Create a web relay session
-                            const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId, expire);
+                            const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId, expire, node.mtype);
                             relaySession.xpublicid = publicid;
                             relaySession.onclose = function (sessionId) {
                                 // Remove the relay session
