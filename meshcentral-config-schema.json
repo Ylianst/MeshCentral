@@ -1421,6 +1421,7 @@
         "zulip": {
           "type": "object",
           "properties": {
+            "site": { "type": "string", "format": "uri", "default": "https://api.zulip.com", "description": "URL to the Zulip server"},
             "email": { "type": "string", "description": "Bot email address to login as." },
             "api_key": { "type": "string", "description": "Bot api key." }
           },
