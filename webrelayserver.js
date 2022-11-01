@@ -252,8 +252,8 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
 
             // Check that the user has rights to access this device
             parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
-                // If there is no remote control rights, reject this web relay
-                if ((rights & 8) == 0) { res.sendStatus(404); return; }
+                // If there is no remote control or relay rights, reject this web relay
+                if ((rights & 0x00200008) == 0) { res.sendStatus(404); return; } // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY
 
                 // There is a relay session, but it's not correct, close it.
                 if (xrelaySession != null) { xrelaySession.close(); delete relaySessions[webSessionId]; }
