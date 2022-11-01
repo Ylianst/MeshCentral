@@ -80,7 +80,7 @@ Note the last line, indicating it's connected as a bot. If you wish to use Teleg
       "apiid": 0,
       "apihash": "00000000000000000000000",
       "session": "aaaaaaaaaaaaaaaaaaaaaaa",
-	  "useWSS": false,                                 // Important. Most proxies cannot use SSL.
+      "useWSS": false,                                 // Important. Most proxies cannot use SSL.
       "proxy": {
         "ip": "123.123.123.123",                       // Proxy host (IP or hostname)
         "port": 123,                                   // Proxy port
