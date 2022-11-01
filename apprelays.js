@@ -35,28 +35,29 @@ const PROTOCOL_WEBSFTP = 203;
 const PROTOCOL_WEBVNC = 204;
 
 // Mesh Rights
-const MESHRIGHT_EDITMESH = 0x00000001; // 1
-const MESHRIGHT_MANAGEUSERS = 0x00000002; // 2
-const MESHRIGHT_MANAGECOMPUTERS = 0x00000004; // 4
-const MESHRIGHT_REMOTECONTROL = 0x00000008; // 8
-const MESHRIGHT_AGENTCONSOLE = 0x00000010; // 16
-const MESHRIGHT_SERVERFILES = 0x00000020; // 32
-const MESHRIGHT_WAKEDEVICE = 0x00000040; // 64
-const MESHRIGHT_SETNOTES = 0x00000080; // 128
-const MESHRIGHT_REMOTEVIEWONLY = 0x00000100; // 256
-const MESHRIGHT_NOTERMINAL = 0x00000200; // 512
-const MESHRIGHT_NOFILES = 0x00000400; // 1024
-const MESHRIGHT_NOAMT = 0x00000800; // 2048
-const MESHRIGHT_DESKLIMITEDINPUT = 0x00001000; // 4096
-const MESHRIGHT_LIMITEVENTS = 0x00002000; // 8192
-const MESHRIGHT_CHATNOTIFY = 0x00004000; // 16384
-const MESHRIGHT_UNINSTALL = 0x00008000; // 32768
-const MESHRIGHT_NODESKTOP = 0x00010000; // 65536
-const MESHRIGHT_REMOTECOMMAND = 0x00020000; // 131072
-const MESHRIGHT_RESETOFF = 0x00040000; // 262144
-const MESHRIGHT_GUESTSHARING = 0x00080000; // 524288
-const MESHRIGHT_DEVICEDETAILS = 0x00100000; // 1048576
-const MESHRIGHT_ADMIN = 0xFFFFFFFF;
+const MESHRIGHT_EDITMESH            = 0x00000001; // 1
+const MESHRIGHT_MANAGEUSERS         = 0x00000002; // 2
+const MESHRIGHT_MANAGECOMPUTERS     = 0x00000004; // 4
+const MESHRIGHT_REMOTECONTROL       = 0x00000008; // 8
+const MESHRIGHT_AGENTCONSOLE        = 0x00000010; // 16
+const MESHRIGHT_SERVERFILES         = 0x00000020; // 32
+const MESHRIGHT_WAKEDEVICE          = 0x00000040; // 64
+const MESHRIGHT_SETNOTES            = 0x00000080; // 128
+const MESHRIGHT_REMOTEVIEWONLY      = 0x00000100; // 256
+const MESHRIGHT_NOTERMINAL          = 0x00000200; // 512
+const MESHRIGHT_NOFILES             = 0x00000400; // 1024
+const MESHRIGHT_NOAMT               = 0x00000800; // 2048
+const MESHRIGHT_DESKLIMITEDINPUT    = 0x00001000; // 4096
+const MESHRIGHT_LIMITEVENTS         = 0x00002000; // 8192
+const MESHRIGHT_CHATNOTIFY          = 0x00004000; // 16384
+const MESHRIGHT_UNINSTALL           = 0x00008000; // 32768
+const MESHRIGHT_NODESKTOP           = 0x00010000; // 65536
+const MESHRIGHT_REMOTECOMMAND       = 0x00020000; // 131072
+const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
+const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
+const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
+const MESHRIGHT_RELAY               = 0x00200000; // 2097152
+const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
 // SerialTunnel object is used to embed TLS within another connection.
 function SerialTunnel(options) {
@@ -2332,6 +2333,6 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 function checkRelayRights(parent, domain, user, relayNodeId, func) {
     if (relayNodeId == null) { func(true); return; } // No relay, do nothing.
     parent.GetNodeWithRights(domain, user, relayNodeId, function (node, rights, visible) {
-        func((node != null) && (rights == 0xFFFFFFFF));
+        func((node != null) && ((rights & 0x00200008) != 0)); // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights
     });
 }

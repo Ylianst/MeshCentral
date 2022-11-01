@@ -6845,8 +6845,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Check that the user has rights to access this device
                     parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
-                        // If there is no remote control rights, reject this web relay
-                        if ((rights & 8) == 0) { res.sendStatus(404); return; }
+                        // If there is no remote control or relay rights, reject this web relay
+                        if ((rights & 0x00200008) == 0) { res.sendStatus(404); return; } // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY
 
                         // Check if there is a free relay DNS name we can use
                         var selectedHost = null;

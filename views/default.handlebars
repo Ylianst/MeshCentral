@@ -7762,6 +7762,9 @@
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
             if (rights & 262144) str.push("Reset/Off");
+            if (rights & 524288) str.push("Sharing");
+            if (rights & 1048576) str.push("Details");
+            if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -7792,6 +7795,9 @@
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
             if (rights & 262144) str.push("Reset/Off");
+            if (rights & 524288) str.push("Sharing");
+            if (rights & 1048576) str.push("Details");
+            if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -13234,7 +13240,7 @@
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
             }
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
             if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
@@ -13252,6 +13258,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
             x += '</div>';
 
             if (userid == null) {
@@ -13329,6 +13336,7 @@
                 if (urights & 262144) { Q('p20resetoff').checked = true; }
                 if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                 if (urights & 1048576) { Q('p20details').checked = true; }
+                if (urights & 2097152) { Q('p20relay').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -13377,6 +13385,7 @@
                 Q('p20resetoff').checked = ((devrights & 262144) != 0);
                 if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
                 Q('p20details').checked = ((devrights & 1048576) != 0);
+                Q('p20relay').checked = ((devrights & 2097152) != 0);
                 ok = (nodeid != '');
             }
 
@@ -13458,6 +13467,7 @@
             QE('p20commands', nc);
             QE('p20resetoff', nc);
             QE('p20details', nc);
+            QE('p20relay', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -13487,6 +13497,7 @@
                 if (Q('p20resetoff').checked == true) meshadmin += 262144;
                 if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
                 if (Q('p20details').checked == true) meshadmin += 1048576;
+                if (Q('p20relay').checked == true) meshadmin += 2097152;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
@@ -13572,6 +13583,7 @@
                     if ((meshrights & 262144) != 0) r.push("Reset/Off");
                     if ((meshrights & 524288) != 0) r.push("Sharing");
                     if ((meshrights & 1048576) != 0) r.push("Details");
+                    if ((meshrights & 2097152) != 0) r.push("Relay");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];
