@@ -8,6 +8,8 @@
 [XMPP Setup](#xmpp-setup)  
 [CallMeBot Setup](#callmebot-setup)  
 [Pushover Setup](#pushover-setup)  
+[ntfy Setup](#ntfy-setup)  
+[Zulip Setup](#zulip-setup)  
 [User Setup](#user-setup)  
 [Administrator Management](#administrator-management)  
 [Two-Factor Authentication](#two-factor-authentication)  
@@ -159,6 +161,35 @@ You can setup an application with a name and icon, then, once you get a applicat
 Once setup, the server will offer users the "Pushover" option when setting up messaging. Users will need to copy the Pushover user key into the dialog box to verify notifications are correct.
 
 ![](images/MC2-Pushover1.png)
+
+## ntfy setup
+
+[ntfy](https://ntfy.sh/) is a completely free notification service. You can enable the ntfy integration with the following config.json section:
+
+```json
+{
+  "messaging": {
+    "ntfy": true
+  }
+}
+```
+
+No setup is reqired to enable this. When using ntfy, make sure you use a suffisently random topic name so that others can't guess the name and subscribe to it to receive your messages.
+
+![](images/MC2-Ntfy1.png)
+
+## Zulip setup
+
+You can enable the MeshCentral [Zulip](https://zulip.com/) integration with the following config.json section:
+
+```json
+{
+  "messaging": {
+    email: "your-bot@zulip.com",
+    api_key: "your_32_character_api_key"
+  }
+}
+```
 
 ## User Setup
 
