@@ -71,7 +71,28 @@ MeshCentral HTTPS relay server running on relay1.mesh.meshcentral.com:443.
 MeshCentral Telegram client is bot connected.
 ```
 
-Note the last line, indicating it's connected as a bot.
+Note the last line, indicating it's connected as a bot. If you wish to use Telegram with a proxy, here are the possible Telegram settings. You can use the proxy settings for both user or bot login modes.
+
+```
+{
+  "messaging": {
+    "telegram": {
+      "apiid": 0,
+      "apihash": "00000000000000000000000",
+      "session": "aaaaaaaaaaaaaaaaaaaaaaa",
+	  "useWSS": false,                                 // Important. Most proxies cannot use SSL.
+      "proxy": {
+        "ip": "123.123.123.123",                       // Proxy host (IP or hostname)
+        "port": 123,                                   // Proxy port
+        "MTProxy": false,                              // Whether it's an MTProxy or a normal Socks one
+        "secret": "00000000000000000000000000000000",  // If used MTProxy then you need to provide a secret (or zeros).
+        "socksType": 5,                                // If used Socks you can choose 4 or 5.
+        "timeout": 2                                   // Timeout (in seconds) for connection,
+      }
+    }
+  }
+}
+```
 
 ## Discord Setup
 
