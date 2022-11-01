@@ -1417,6 +1417,14 @@
             "userurl": { "type": "string", "description": "A URL given to users to help them setup this service." }
           },
           "description": "Enabled ntfy.sh integration support."
+        },
+        "zulip": {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string", "description": "Bot email address to login as." },
+            "api_key": { "type": "string", "description": "Bot api key." }
+          },
+          "description": "Enabled Zulip integration support."
         }
       }
     }

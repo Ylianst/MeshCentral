@@ -6706,6 +6706,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if ((command.service == 16) && ((parent.parent.msgserver.providers & 16) != 0)) { handle = parent.parent.msgserver.callmebotUrlToHandle(command.handle); }
         if ((command.service == 32) && ((parent.parent.msgserver.providers & 32) != 0)) { handle = 'pushover:' + command.handle; }
         if ((command.service == 64) && ((parent.parent.msgserver.providers & 64) != 0)) { handle = 'ntfy:' + command.handle; }
+        if ((command.service == 128) && ((parent.parent.msgserver.providers & 128) != 0)) { handle = 'zulip:' + command.handle; }
         if (handle == null) return;
 
         // Send a verification message
@@ -6851,6 +6852,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((parent.parent.msgserver.providers & 8) != 0) { r.push("Usage: MSG \"xmpp:[username@server.com]\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:[userkey]\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 64) != 0) { r.push("Usage: MSG \"ntfy:[topic]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 128) != 0) { r.push("Usage: MSG \"zulip:[topic]\" \"Message\"."); }
                 cmdData.result = r.join('\r\n');
             } else {
                 parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], domain, function (status, msg) {

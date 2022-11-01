@@ -78,13 +78,21 @@
   }
 }
 
+// For zulip
+{
+  "messaging": {
+    email: "your-bot@zulip.com",
+    api_key: "your_32_character_api_key"
+  }
+}
+
 */
 
 // Construct a messaging server object
 module.exports.CreateServer = function (parent) {
     var obj = {};
     obj.parent = parent;
-    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP, 16 = CallMeBot, 32 = Pushover
+    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP, 16 = CallMeBot, 32 = Pushover, 64 = ntfy, 128 = Zulip
     obj.telegramClient = null;
     obj.discordClient = null;
     obj.discordUrl = null;
@@ -92,6 +100,7 @@ module.exports.CreateServer = function (parent) {
     var xmppXml = null;
     obj.callMeBotClient = null;
     obj.pushoverClient = null;
+    obj.zulipClient = null;
 
     // Telegram client setup
     if (parent.config.messaging.telegram) {
@@ -228,6 +237,13 @@ module.exports.CreateServer = function (parent) {
         obj.providers += 64; // Enable ntfy messaging
     }
 
+    // Zulip client setup (https://zulip.com/)
+    if (typeof parent.config.messaging.zulip == 'object') {
+        var zulip = require('zulip');
+        obj.zulipClient = new zulip.Client(parent.config.messaging.zulip);
+        obj.providers += 128; // Enable zulip messaging
+    }
+
     // Send a direct message to a specific userid
     async function discordSendMsg(userId, message) {
         const user = await obj.discordClient.users.fetch(userId).catch(function () { return null; });
@@ -296,6 +312,14 @@ module.exports.CreateServer = function (parent) {
             const req = require('https').request(new URL(url), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
             req.on('error', function (err) { if (func != null) { func(false); } });
             req.end(msg);
+        } else if ((to.startsWith('zulip:')) && (obj.zulipClient != null)) { // zulip
+            obj.zulipClient.sendMessage({
+                type: 'private',
+                content: msg,
+                to: [ to.substring(6) ],
+                subject: domain.title ? domain.title : 'MeshCentral'
+            });
+            if (func != null) { func(true); }
         } else {
             // No providers found
             func(false, "No messaging providers found for this message.");
