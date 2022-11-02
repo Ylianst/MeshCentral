@@ -2302,7 +2302,7 @@ function CreateMeshCentralServer(config, args) {
         const domainId = meshSplit[1];
         if (obj.config.domains[domainId] == null) return;
         const mailserver = obj.config.domains[domainId].mailserver;
-        if (mailserver == null) return;
+        if ((mailserver == null) && (obj.msgserver == null)) return;
 
         // Get the device group for this device
         const mesh = obj.webserver.meshes[meshid];
@@ -2335,7 +2335,8 @@ function CreateMeshCentralServer(config, args) {
                     if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
                 }
 
-                if ((notify & 48) != 0) {
+                // Email notifications
+                if ((mailserver != null)  && ((notify & 48) != 0)) {
                     if (stateSet == true) {
                         if ((notify & 16) != 0) {
                             mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
@@ -2348,6 +2349,24 @@ function CreateMeshCentralServer(config, args) {
                             mailserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                         } else {
                             mailserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        }
+                    }
+                }
+
+                // Messaging notifications
+                if ((obj.msgserver != null) && ((notify & 384) != 0)) {
+                    if (stateSet == true) {
+                        if ((notify & 128) != 0) {
+                            obj.msgserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            obj.msgserver.cancelNotifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        }
+                    }
+                    else if (stateSet == false) {
+                        if ((notify & 256) != 0) {
+                            obj.msgserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            obj.msgserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                         }
                     }
                 }

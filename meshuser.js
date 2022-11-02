@@ -1717,12 +1717,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
-                    //  2 = WebPage device connections
-                    //  4 = WebPage device disconnections
-                    //  8 = WebPage device desktop and serial events
-                    // 16 = Email device connections
-                    // 32 = Email device disconnections
-                    // 64 = Email device help request
+                    //   2 = WebPage device connections
+                    //   4 = WebPage device disconnections
+                    //   8 = WebPage device desktop and serial events
+                    //  16 = Email device connections
+                    //  32 = Email device disconnections
+                    //  64 = Email device help request
+                    // 128 = Messaging device connections
+                    // 256 = Messaging device disconnections
+                    // 512 = Messaging device help request
 
                     var err = null;
                     try {
@@ -1767,12 +1770,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
-                    //  2 = WebPage device connections
-                    //  4 = WebPage device disconnections
-                    //  8 = WebPage device desktop and serial events
-                    // 16 = Email device connections
-                    // 32 = Email device disconnections
-                    // 64 = Email device help request
+                    //   2 = WebPage device connections
+                    //   4 = WebPage device disconnections
+                    //   8 = WebPage device desktop and serial events
+                    //  16 = Email device connections
+                    //  32 = Email device disconnections
+                    //  64 = Email device help request
+                    // 128 = Messaging device connections
+                    // 256 = Messaging device disconnections
+                    // 512 = Messaging device help request
 
                     var err = null;
                     try {
@@ -5312,6 +5318,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'dupagents': [serverUserCommandDupAgents, ""],
         'email': [serverUserCommandEmail, ""],
         'emailnotifications': [serverUserCommandEmailNotifications, ""],
+        'msgnotifications': [serverUserCommandMessageNotifications, ""],
         'firebase': [serverUserCommandFirebase, ""],
         'heapdump': [serverUserCommandHeapDump, ""],
         'heapdump2': [serverUserCommandHeapDump2, ""],
@@ -6892,7 +6899,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     x += '  ' + info.mn + ', ' + info.nn + ', c:' + (info.c ? info.c : 0) + ', d:' + (info.d ? info.d : 0) + '\r\n';
                 }
             }
-            cmdData.result = ((x == '')?'None':x);
+            cmdData.result = ((x == '') ? 'None' : x);
+        }
+    }
+
+    function serverUserCommandMessageNotifications(cmdData) {
+        if (parent.parent.msgserver == null) {
+            cmdData.result = "No messaging service enabled.";
+        } else {
+            var x = '';
+            for (var userid in parent.parent.msgserver.deviceNotifications) {
+                x += userid + '\r\n';
+                for (var nodeid in parent.parent.msgserver.deviceNotifications[userid].nodes) {
+                    const info = parent.parent.msgserver.deviceNotifications[userid].nodes[nodeid];
+                    x += '  ' + info.mn + ', ' + info.nn + ', c:' + (info.c ? info.c : 0) + ', d:' + (info.d ? info.d : 0) + '\r\n';
+                }
+            }
+            cmdData.result = ((x == '') ? 'None' : x);
         }
     }
 
