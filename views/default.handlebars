@@ -7281,9 +7281,14 @@
                     if (devNotify & 4) { devNotifyStr.push("Disconnect"); }
                     if ((node.intelamt != null) && (devNotify & 8)) { devNotifyStr.push("Intel&reg; AMT"); }
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
-                        if (devNotify & 16) { devNotifyStr.push("Email Connect"); }
-                        if (devNotify & 32) { devNotifyStr.push("Email Disconnect"); }
-                        if (devNotify & 64) { devNotifyStr.push("Email Help Request"); }
+                        var xx = 0;
+                        if (devNotify & 16) { xx++; } if (devNotify & 32) { xx++; } if (devNotify & 64) { xx++; }
+                        if (xx > 0) { devNotifyStr.push(format("Email ({0})", xx)); }
+                    }
+                    if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                        var xx = 0;
+                        if (devNotify & 128) { xx++; } if (devNotify & 256) { xx++; } if (devNotify & 512) { xx++; }
+                        if (xx > 0) { devNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                 }
                 devNotifyStr = devNotifyStr.join(', ');
@@ -7714,6 +7719,12 @@
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
+                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+            }
             setDialogMode(2, "Notification Settings", 3, p20editDeviceNotifyEx, x, fx);
             Q('p20notifyIntelDeviceConnect').checked = (devNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (devNotify & 4);
@@ -7722,6 +7733,11 @@
                 Q('p20enotifyIntelDeviceConnect').checked = (devNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (devNotify & 32);
                 Q('p20enotifyIntelDeviceHelp').checked = (devNotify & 64);
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                Q('p20emsgDeviceConnect').checked = (devNotify & 128);
+                Q('p20emsgDeviceDisconnect').checked = (devNotify & 256);
+                Q('p20emsgDeviceHelp').checked = (devNotify & 512);
             }
             return false;
         }
@@ -7735,6 +7751,11 @@
                 devNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 devNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
                 devNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                devNotify += Q('p20emsgDeviceConnect').checked ? 128 : 0;
+                devNotify += Q('p20emsgDeviceDisconnect').checked ? 256 : 0;
+                devNotify += Q('p20emsgDeviceHelp').checked ? 512 : 0;
             }
             meshserver.send({ action: 'changeusernotify', nodeid: currentNode._id, notify: devNotify });
         }
@@ -12674,9 +12695,14 @@
                     if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
                     if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
-                        if (meshNotify & 16) { meshNotifyStr.push("Email Connect"); }
-                        if (meshNotify & 32) { meshNotifyStr.push("Email Disconnect"); }
-                        if (meshNotify & 64) { meshNotifyStr.push("Email Help Request"); }
+                        var xx = 0;
+                        if (meshNotify & 16) { xx++; } if (meshNotify & 32) { xx++; } if (meshNotify & 64) { xx++; }
+                        if (xx > 0) { meshNotifyStr.push(format("Email ({0})", xx)); }
+                    }
+                    if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                        var xx = 0;
+                        if (meshNotify & 128) { xx++; } if (meshNotify & 256) { xx++; } if (meshNotify & 512) { xx++; }
+                        if (xx > 0) { meshNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                     if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
                     x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
@@ -13692,6 +13718,12 @@
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
+                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+            }
             setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
@@ -13700,6 +13732,11 @@
                 Q('p20enotifyIntelDeviceConnect').checked = (meshNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (meshNotify & 32);
                 Q('p20enotifyIntelDeviceHelp').checked = (meshNotify & 64);
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                Q('p20emsgDeviceConnect').checked = (meshNotify & 128);
+                Q('p20emsgDeviceDisconnect').checked = (meshNotify & 256);
+                Q('p20emsgDeviceHelp').checked = (meshNotify & 512);
             }
             return false;
         }
@@ -13713,6 +13750,11 @@
                 meshNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 meshNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
                 meshNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                meshNotify += Q('p20emsgDeviceConnect').checked ? 128 : 0;
+                meshNotify += Q('p20emsgDeviceDisconnect').checked ? 256 : 0;
+                meshNotify += Q('p20emsgDeviceHelp').checked ? 512 : 0;
             }
             meshserver.send({ action: 'changemeshnotify', meshid: currentMesh._id, notify: meshNotify });
         }
