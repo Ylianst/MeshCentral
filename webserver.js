@@ -3393,7 +3393,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof obj.args.trustedcert == 'boolean') return obj.args.trustedcert; // If the status of the cert specified, use that.
         if (obj.args.tlsoffload != null) return true; // We are using TLS offload, a real cert is likely used.
         if (obj.parent.config.letsencrypt != null) return (obj.parent.config.letsencrypt.production === true); // We are using Let's Encrypt, real cert in use if production is set to true.
-        if (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) return false; // Our cert is issued by self-signed cert.
+        if ((typeof obj.certificates.WebIssuer == 'string') && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0)) return false; // Our cert is issued by self-signed cert.
         if (obj.certificates.CommonName.indexOf('.') == -1) return false; // Our cert is named with a fake name
         return true; // This is a guess
     }
