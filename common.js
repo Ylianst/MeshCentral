@@ -142,9 +142,12 @@ module.exports.zeroPad = function(num, c) { if (c == null) { c = 2; } var s = '0
 
 // Lowercase all the names in a object recursively
 // Allow for exception keys, child of exceptions will not get lower-cased.
-module.exports.objKeysToLower = function (obj, exceptions) {
+// Exceptions is an array of "keyname" or "parent\keyname"
+module.exports.objKeysToLower = function (obj, exceptions, parent) {
     for (var i in obj) {
-        if ((typeof obj[i] == 'object') && ((exceptions == null) || (exceptions.indexOf(i.toLowerCase()) == -1))) { module.exports.objKeysToLower(obj[i], exceptions); } // LowerCase all key names in the child object
+        if ((typeof obj[i] == 'object') && ((exceptions == null) || (exceptions.indexOf(i.toLowerCase()) == -1)) && ((parent != null) && (exceptions.indexOf(parent.toLowerCase() + '/' + i.toLowerCase()) == -1))) {
+            module.exports.objKeysToLower(obj[i], exceptions, i); // LowerCase all key names in the child object
+        }
         if (i.toLowerCase() !== i) { obj[i.toLowerCase()] = obj[i]; delete obj[i]; } // LowerCase all key names
     }
     return obj;
