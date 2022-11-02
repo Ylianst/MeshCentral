@@ -442,6 +442,7 @@ module.exports.CreateServer = function (parent) {
         if (to == null) return;
         parent.debug('email', "Sending device state change message to " + to);
 
+        // Format the message
         var sms = [];
         if (connections.length > 0) { sms.push('Connections: ' + connections.join(', ')); }             // TODO: Translate 'Connections: '
         if (disconnections.length > 0) { sms.push('Disconnections: ' + disconnections.join(', ')); }    // TODO: Translate 'Disconnections: '
@@ -452,6 +453,19 @@ module.exports.CreateServer = function (parent) {
         // Send the message
         obj.sendMessage(to, sms, domain, null);
     };
+
+    // Send help request notification
+    obj.sendDeviceHelpRequest = function (domain, username, to, devicename, nodeid, helpusername, helprequest, lang) {
+        if (to == null) return;
+        parent.debug('email', "Sending device help request message to " + to);
+
+        // Format the message
+        var sms = "Help Request from " + devicename + ': ' + helprequest;  // TODO: Translate 'Help Request from {0}:'
+        if (sms.length > 1000) { sms = sms.substring(0, 997) + '...'; } // Limit messages to 1000 characters
+
+        // Send the message
+        obj.sendMessage(to, sms, domain, null);
+    }
 
 
     //
