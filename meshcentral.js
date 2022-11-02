@@ -2322,7 +2322,7 @@ function CreateMeshCentralServer(config, args) {
         // Check if any user needs email notification
         for (var i in users) {
             const user = obj.webserver.users[users[i]];
-            if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+            if (user != null) {
                 var notify = 0;
 
                 // Device group notifications
@@ -2336,7 +2336,7 @@ function CreateMeshCentralServer(config, args) {
                 }
 
                 // Email notifications
-                if ((mailserver != null)  && ((notify & 48) != 0)) {
+                if ((user.email != null) && (user.emailVerified == true) && (mailserver != null) && ((notify & 48) != 0)) {
                     if (stateSet == true) {
                         if ((notify & 16) != 0) {
                             mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
@@ -2384,7 +2384,7 @@ function CreateMeshCentralServer(config, args) {
         const domainId = meshSplit[1];
         if (obj.config.domains[domainId] == null) return;
         const mailserver = obj.config.domains[domainId].mailserver;
-        if (mailserver == null) return;
+        if ((mailserver == null) && (obj.msgserver == null)) return;
 
         // Get the device group for this device
         const mesh = obj.webserver.meshes[meshid];
@@ -2404,7 +2404,7 @@ function CreateMeshCentralServer(config, args) {
         // Check if any user needs email notification
         for (var i in users) {
             const user = obj.webserver.users[users[i]];
-            if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+            if (user != null) {
                 var notify = 0;
 
                 // Device group notifications
@@ -2417,9 +2417,11 @@ function CreateMeshCentralServer(config, args) {
                     if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
                 }
 
-                if ((notify & 64) != 0) {
-                    mailserver.sendDeviceHelpMail(domain, user.name, user.email, devicename, nodeid, helpusername, helprequest, user.llang);
-                }
+                // Mail help request
+                if ((user.email != null) && (user.emailVerified == true) && ((notify & 64) != 0)) { mailserver.sendDeviceHelpMail(domain, user.name, user.email, devicename, nodeid, helpusername, helprequest, user.llang); }
+
+                // Message help request
+                if ((user.msghandle != null) && ((notify & 512) != 0)) { obj.msgserver.sendDeviceHelpRequest(domain, user.name, user.msghandle, devicename, nodeid, helpusername, helprequest, user.llang); }
             }
         }
     }
