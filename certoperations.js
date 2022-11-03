@@ -922,7 +922,7 @@ module.exports.CertificateOperations = function (parent) {
             // Fetch the certificates names for the main certificate
             r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField('CN').value;
             var webCertificate = obj.pki.certificateFromPem(r.web.cert);
-            r.WebIssuer = webCertificate.issuer.getField('CN').value;
+            if (webCertificate.issuer.getField('CN') != null) { r.WebIssuer = webCertificate.issuer.getField('CN').value; } else { r.WebIssuer = null; }
             r.CommonName = webCertificate.subject.getField('CN').value;
             r.CommonNames = [ r.CommonName ];
             var altNames = webCertificate.getExtension('subjectAltName');
@@ -1005,6 +1005,7 @@ module.exports.CertificateOperations = function (parent) {
                 return r;
             }
         }
+
         if (parent.configurationFiles != null) {
             console.log("Error: Vault/Database missing some certificates.");
             if (r.root == null) { console.log('  Code signing certificate is missing.'); }
@@ -1074,7 +1075,8 @@ module.exports.CertificateOperations = function (parent) {
                 webPrivateKey = r.web.key;
             }
         }
-        var webIssuer = webCertAndKey.cert.issuer.getField('CN').value;
+        var webIssuer = null;
+        if (webCertAndKey.cert.issuer.getField('CN') != null) { webIssuer = webCertAndKey.cert.issuer.getField('CN').value; }
 
         // If the mesh agent server certificate does not exist, create one
         var agentCertAndKey, agentCertificate, agentPrivateKey;
@@ -1131,7 +1133,7 @@ module.exports.CertificateOperations = function (parent) {
 
         // Fetch the certificates names for the main certificate
         var webCertificate = obj.pki.certificateFromPem(r.web.cert);
-        r.WebIssuer = webCertificate.issuer.getField('CN').value;
+        if (webCertificate.issuer.getField('CN') != null) { r.WebIssuer = webCertificate.issuer.getField('CN').value; } else { r.WebIssuer = null; }
         r.CommonName = webCertificate.subject.getField('CN').value;
         if (r.CommonName.startsWith('*.')) {
             if (commonName.indexOf('.') == -1) { console.log("ERROR: Must specify a server full domain name in Config.json->Settings->Cert when using a wildcard certificate."); process.exit(0); return; }

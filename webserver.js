@@ -3422,7 +3422,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof obj.args.trustedcert == 'boolean') return obj.args.trustedcert; // If the status of the cert specified, use that.
         if (obj.args.tlsoffload != null) return true; // We are using TLS offload, a real cert is likely used.
         if (obj.parent.config.letsencrypt != null) return (obj.parent.config.letsencrypt.production === true); // We are using Let's Encrypt, real cert in use if production is set to true.
-        if (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0) return false; // Our cert is issued by self-signed cert.
+        if ((typeof obj.certificates.WebIssuer == 'string') && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0)) return false; // Our cert is issued by self-signed cert.
         if (obj.certificates.CommonName.indexOf('.') == -1) return false; // Our cert is named with a fake name
         return true; // This is a guess
     }
@@ -6028,9 +6028,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Setup the HTTP server without TLS
             obj.expressWs = require('express-ws')(obj.app, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
         } else {
+            var ciphers = [
+                'TLS_AES_256_GCM_SHA384',
+                'TLS_AES_128_GCM_SHA256',
+                'TLS_AES_128_CCM_8_SHA256',
+                'TLS_AES_128_CCM_SHA256',
+                'TLS_CHACHA20_POLY1305_SHA256',
+                'ECDHE-RSA-AES256-GCM-SHA384',
+                'ECDHE-ECDSA-AES256-GCM-SHA384',
+                'ECDHE-RSA-AES128-GCM-SHA256',
+                'ECDHE-ECDSA-AES128-GCM-SHA256',
+                'DHE-RSA-AES128-GCM-SHA256',
+                'ECDHE-RSA-CHACHA20-POLY1305',      // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca8)
+                'ECDHE-ARIA128-GCM-SHA256',
+                'ECDHE-ARIA256-GCM-SHA384',
+                'ECDHE-RSA-AES128-SHA256',          // SSLlabs considers this cipher suite weak, but it's needed for older browers.
+                'ECDHE-RSA-AES256-SHA384',          // SSLlabs considers this cipher suite weak, but it's needed for older browers.
+                '!aNULL',
+                '!eNULL',
+                '!EXPORT',
+                '!DES',
+                '!RC4',
+                '!MD5',
+                '!PSK',
+                '!SRP',
+                '!CAMELLIA'
+            ].join(':');
+
             // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
             //const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!RSA:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 }; // This does not work with TLS 1.3
-            const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
+            const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: ciphers, secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
             if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
             obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
             obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
@@ -6883,12 +6910,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 }
                             }
                         }
+                    }
 
-                        // Check that the user has rights to access this device
-                        parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
-                            // If there is no remote control rights, reject this web relay
-                            if ((rights & 8) == 0) { res.sendStatus(404); return; }
-
+                    // Check that the user has rights to access this device
+                    parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
+                        // If there is no remote control or relay rights, reject this web relay
+                        if ((rights & 0x00200008) == 0) { res.sendStatus(404); return; } // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY
+                        
                             // Check if there is a free relay DNS name we can use
                             var selectedHost = null;
                             if (freeRelayHost != null) {
@@ -6899,14 +6927,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 selectedHost = oldestRelayHost;
                             }
                             xrelaySessionId = webSessionId + '/' + selectedHost;
-
+                            
                             if (selectedHost == req.hostname) {
                                 // If this web relay session id is not free, close it now
                                 xrelaySession = webRelaySessions[xrelaySessionId];
                                 if (xrelaySession != null) { xrelaySession.close(); delete webRelaySessions[xrelaySessionId]; }
 
                                 // Create a web relay session
-                                const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId, expire);
+                                const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId, expire, node.mtype);
                                 relaySession.xpublicid = publicid;
                                 relaySession.onclose = function (sessionId) {
                                     // Remove the relay session

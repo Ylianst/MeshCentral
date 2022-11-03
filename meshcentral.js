@@ -470,9 +470,9 @@ function CreateMeshCentralServer(config, args) {
                 const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
                 const env = Object.assign({}, process.env); // Shallow clone
                 if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-                const xxprocess = child_process.exec(npmpath + ' install --no-package-lock meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
+                const xxprocess = child_process.exec(npmpath + ' install --no-audit --no-package-lock meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
                     if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
-                 });
+                });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
@@ -1202,7 +1202,7 @@ function CreateMeshCentralServer(config, args) {
                             for (i in args) { config2.settings[i] = args[i]; }
 
                             // Lower case all keys in the config file
-                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
+                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'telegram/proxy']);
 
                             // Grab some of the values from the original config.json file if present.
                             config2['mysql'] = config['mysql'];
@@ -2302,7 +2302,7 @@ function CreateMeshCentralServer(config, args) {
         const domainId = meshSplit[1];
         if (obj.config.domains[domainId] == null) return;
         const mailserver = obj.config.domains[domainId].mailserver;
-        if (mailserver == null) return;
+        if ((mailserver == null) && (obj.msgserver == null)) return;
 
         // Get the device group for this device
         const mesh = obj.webserver.meshes[meshid];
@@ -2322,7 +2322,7 @@ function CreateMeshCentralServer(config, args) {
         // Check if any user needs email notification
         for (var i in users) {
             const user = obj.webserver.users[users[i]];
-            if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+            if (user != null) {
                 var notify = 0;
 
                 // Device group notifications
@@ -2335,7 +2335,8 @@ function CreateMeshCentralServer(config, args) {
                     if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
                 }
 
-                if ((notify & 48) != 0) {
+                // Email notifications
+                if ((user.email != null) && (user.emailVerified == true) && (mailserver != null) && ((notify & 48) != 0)) {
                     if (stateSet == true) {
                         if ((notify & 16) != 0) {
                             mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
@@ -2348,6 +2349,24 @@ function CreateMeshCentralServer(config, args) {
                             mailserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                         } else {
                             mailserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        }
+                    }
+                }
+
+                // Messaging notifications
+                if ((obj.msgserver != null) && ((notify & 384) != 0)) {
+                    if (stateSet == true) {
+                        if ((notify & 128) != 0) {
+                            obj.msgserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            obj.msgserver.cancelNotifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        }
+                    }
+                    else if (stateSet == false) {
+                        if ((notify & 256) != 0) {
+                            obj.msgserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            obj.msgserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
                         }
                     }
                 }
@@ -2365,7 +2384,7 @@ function CreateMeshCentralServer(config, args) {
         const domainId = meshSplit[1];
         if (obj.config.domains[domainId] == null) return;
         const mailserver = obj.config.domains[domainId].mailserver;
-        if (mailserver == null) return;
+        if ((mailserver == null) && (obj.msgserver == null)) return;
 
         // Get the device group for this device
         const mesh = obj.webserver.meshes[meshid];
@@ -2385,7 +2404,7 @@ function CreateMeshCentralServer(config, args) {
         // Check if any user needs email notification
         for (var i in users) {
             const user = obj.webserver.users[users[i]];
-            if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+            if (user != null) {
                 var notify = 0;
 
                 // Device group notifications
@@ -2398,9 +2417,11 @@ function CreateMeshCentralServer(config, args) {
                     if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
                 }
 
-                if ((notify & 64) != 0) {
-                    mailserver.sendDeviceHelpMail(domain, user.name, user.email, devicename, nodeid, helpusername, helprequest, user.llang);
-                }
+                // Mail help request
+                if ((user.email != null) && (user.emailVerified == true) && ((notify & 64) != 0)) { mailserver.sendDeviceHelpMail(domain, user.name, user.email, devicename, nodeid, helpusername, helprequest, user.llang); }
+
+                // Message help request
+                if ((user.msghandle != null) && ((notify & 512) != 0)) { obj.msgserver.sendDeviceHelpRequest(domain, user.name, user.msghandle, devicename, nodeid, helpusername, helprequest, user.llang); }
             }
         }
     }
@@ -3717,6 +3738,7 @@ function CreateMeshCentralServer(config, args) {
                 str = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
                 obj.fs.write(obj.authlogfile, str, function (err, written, string) { if (err) {console.error(err); } });
             } catch (ex) { console.error(ex); }
+
         }
     }
 
@@ -3829,7 +3851,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    child_process.exec(npmpath + ` install --no-package-lock --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    child_process.exec(npmpath + ` install --no-audit --no-package-lock --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
@@ -4038,6 +4060,9 @@ function mainStart() {
         if (config.messaging != null) {
             if (config.messaging.telegram != null) { modules.push('telegram'); modules.push('input'); }
             if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
+            if (config.messaging.xmpp != null) { modules.push('@xmpp/client'); }
+            if (config.messaging.pushover != null) { modules.push('node-pushover'); }
+            if (config.messaging.zulip != null) { modules.push('zulip'); }
         }
 
         // Setup web based push notifications

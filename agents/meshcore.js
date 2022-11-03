@@ -3679,6 +3679,44 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
+            case 'mousetrails':
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "mousetrails", type "help" for list of avaialble commands.'; break; }
+                var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : null;
+                switch (args['_'].length) 
+                {
+                    case 0:                    
+                        var trails = require('win-deskutils').mouse.getTrails(id);
+                        response = trails == 0 ? 'MouseTrails Disabled' : ('MouseTrails enabled (' + trails + ')');
+                        response += '\nTo change setting, specify a positive integer, where 0 is disable: mousetrails [n]';
+                        break;
+                    case 1:
+                        var trails = parseInt(args['_'][0]);
+                        require('win-deskutils').mouse.setTrails(trails, id);
+                        trails = require('win-deskutils').mouse.getTrails(id);
+                        response = trails == 0 ? 'MouseTrails Disabled' : ('MouseTrails enabled (' + trails + ')');
+                        break;
+                    default:
+                        response = 'Proper usage: mousetrails [n]';
+                        break;
+                }
+                break;
+            case 'deskbackground':
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "deskbackground", type "help" for list of avaialble commands.'; break; }
+                var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : null;
+                switch (args['_'].length)
+                {
+                    case 0:
+                        response = 'Desktop Background: ' + require('win-deskutils').background.get(id);
+                        break;
+                    case 1:
+                        require('win-deskutils').background.set(args['_'][0], id);
+                        response = 'Desktop Background: ' + require('win-deskutils').background.get(id);
+                        break;
+                    default:
+                        response = 'Proper usage: deskbackground [path]';
+                        break;
+                }
+                break;
             case 'taskbar':
                 try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of avaialble commands.'; break; }
                 switch (args['_'].length) {

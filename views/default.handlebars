@@ -7281,9 +7281,14 @@
                     if (devNotify & 4) { devNotifyStr.push("Disconnect"); }
                     if ((node.intelamt != null) && (devNotify & 8)) { devNotifyStr.push("Intel&reg; AMT"); }
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
-                        if (devNotify & 16) { devNotifyStr.push("Email Connect"); }
-                        if (devNotify & 32) { devNotifyStr.push("Email Disconnect"); }
-                        if (devNotify & 64) { devNotifyStr.push("Email Help Request"); }
+                        var xx = 0;
+                        if (devNotify & 16) { xx++; } if (devNotify & 32) { xx++; } if (devNotify & 64) { xx++; }
+                        if (xx > 0) { devNotifyStr.push(format("Email ({0})", xx)); }
+                    }
+                    if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                        var xx = 0;
+                        if (devNotify & 128) { xx++; } if (devNotify & 256) { xx++; } if (devNotify & 512) { xx++; }
+                        if (xx > 0) { devNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                 }
                 devNotifyStr = devNotifyStr.join(', ');
@@ -7714,6 +7719,12 @@
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
+                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+            }
             setDialogMode(2, "Notification Settings", 3, p20editDeviceNotifyEx, x, fx);
             Q('p20notifyIntelDeviceConnect').checked = (devNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (devNotify & 4);
@@ -7722,6 +7733,11 @@
                 Q('p20enotifyIntelDeviceConnect').checked = (devNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (devNotify & 32);
                 Q('p20enotifyIntelDeviceHelp').checked = (devNotify & 64);
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                Q('p20emsgDeviceConnect').checked = (devNotify & 128);
+                Q('p20emsgDeviceDisconnect').checked = (devNotify & 256);
+                Q('p20emsgDeviceHelp').checked = (devNotify & 512);
             }
             return false;
         }
@@ -7735,6 +7751,11 @@
                 devNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 devNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
                 devNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                devNotify += Q('p20emsgDeviceConnect').checked ? 128 : 0;
+                devNotify += Q('p20emsgDeviceDisconnect').checked ? 256 : 0;
+                devNotify += Q('p20emsgDeviceHelp').checked ? 512 : 0;
             }
             meshserver.send({ action: 'changeusernotify', nodeid: currentNode._id, notify: devNotify });
         }
@@ -7762,6 +7783,9 @@
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
             if (rights & 262144) str.push("Reset/Off");
+            if (rights & 524288) str.push("Sharing");
+            if (rights & 1048576) str.push("Details");
+            if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -7792,6 +7816,9 @@
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
             if (rights & 262144) str.push("Reset/Off");
+            if (rights & 524288) str.push("Sharing");
+            if (rights & 1048576) str.push("Details");
+            if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -11982,14 +12009,22 @@
                 x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
                 x += '<td>' + "Enter your messaging service and handle. Once verified, this server can send you login verification and other notifications." + '<br /><br />';
                 var y = '<select id=d2serviceselect style=width:160px;margin-left:8px onchange=account_manageMessagingValidate()>';
-                if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
-                if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
-                if ((serverinfo.userMsgProviders & 4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+                if ((serverinfo.userMsgProviders &  1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
+                if ((serverinfo.userMsgProviders &  4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+                if ((serverinfo.userMsgProviders &  8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 16) != 0) { y += '<option value=16>' + "CallMeBot" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 32) != 0) { y += '<option value=32>' + "Pushover" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 64) != 0) { y += '<option value=64>' + "ntfy" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 128) != 0) { y += '<option value=128>' + "Zulip" + '</option>'; }
                 y += '</select>';
                 x += '<table><tr><td>' + "Service" + '<td>' + y;
-                x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=account_manageMessagingValidate() onkeypress="if (event.key==\'Enter\') account_manageMessagingValidate(1)">';
+                x += '<tr><td>' + "Handle" + '<td><input maxlength=1024 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=account_manageMessagingValidate() onkeypress="if (event.key==\'Enter\') account_manageMessagingValidate(1)">';
                 x += '</table>';
-                if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>' }
+                if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>'; }
+                x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a></div>';
+                x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
+                console.log(serverinfo.userMsgNftyUrl);
+                x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
                 setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingAdd, x, 'verifyMessaging');
                 Q('d2handleinput').focus();
                 account_manageMessagingValidate();
@@ -11998,7 +12033,16 @@
 
         function account_manageMessagingValidate(x) {
             if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
-            if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; } else { Q('d2handleinput')['placeholder'] = "Username"; }
+            QV('d2callmebotinfo', Q('d2serviceselect').value == 16);
+            QV('d2pushoverinfo', Q('d2serviceselect').value == 32);
+            QV('d2ntfyinfo', Q('d2serviceselect').value == 64);
+            if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
+            else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
+            else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
+            else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
+            else { Q('d2handleinput')['placeholder'] = "Username"; }
             var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); }
         }
         function account_manageMessagingAdd() { if (Q('d2handleinput').value.length == 0) return; QE('d2handleinput', false); meshserver.send({ action: 'verifyMessaging', service: Q('d2serviceselect').value, handle: Q('d2handleinput').value }); }
@@ -12651,9 +12695,14 @@
                     if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
                     if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
-                        if (meshNotify & 16) { meshNotifyStr.push("Email Connect"); }
-                        if (meshNotify & 32) { meshNotifyStr.push("Email Disconnect"); }
-                        if (meshNotify & 64) { meshNotifyStr.push("Email Help Request"); }
+                        var xx = 0;
+                        if (meshNotify & 16) { xx++; } if (meshNotify & 32) { xx++; } if (meshNotify & 64) { xx++; }
+                        if (xx > 0) { meshNotifyStr.push(format("Email ({0})", xx)); }
+                    }
+                    if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                        var xx = 0;
+                        if (meshNotify & 128) { xx++; } if (meshNotify & 256) { xx++; } if (meshNotify & 512) { xx++; }
+                        if (xx > 0) { meshNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                     if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
                     x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
@@ -13217,7 +13266,7 @@
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
             }
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
             if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
@@ -13235,6 +13284,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
             x += '</div>';
 
             if (userid == null) {
@@ -13312,6 +13362,7 @@
                 if (urights & 262144) { Q('p20resetoff').checked = true; }
                 if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                 if (urights & 1048576) { Q('p20details').checked = true; }
+                if (urights & 2097152) { Q('p20relay').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -13360,6 +13411,7 @@
                 Q('p20resetoff').checked = ((devrights & 262144) != 0);
                 if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
                 Q('p20details').checked = ((devrights & 1048576) != 0);
+                Q('p20relay').checked = ((devrights & 2097152) != 0);
                 ok = (nodeid != '');
             }
 
@@ -13441,6 +13493,7 @@
             QE('p20commands', nc);
             QE('p20resetoff', nc);
             QE('p20details', nc);
+            QE('p20relay', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -13470,6 +13523,7 @@
                 if (Q('p20resetoff').checked == true) meshadmin += 262144;
                 if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
                 if (Q('p20details').checked == true) meshadmin += 1048576;
+                if (Q('p20relay').checked == true) meshadmin += 2097152;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
@@ -13555,6 +13609,7 @@
                     if ((meshrights & 262144) != 0) r.push("Reset/Off");
                     if ((meshrights & 524288) != 0) r.push("Sharing");
                     if ((meshrights & 1048576) != 0) r.push("Details");
+                    if ((meshrights & 2097152) != 0) r.push("Relay");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];
@@ -13663,6 +13718,12 @@
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
+                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+            }
             setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
@@ -13671,6 +13732,11 @@
                 Q('p20enotifyIntelDeviceConnect').checked = (meshNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (meshNotify & 32);
                 Q('p20enotifyIntelDeviceHelp').checked = (meshNotify & 64);
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                Q('p20emsgDeviceConnect').checked = (meshNotify & 128);
+                Q('p20emsgDeviceDisconnect').checked = (meshNotify & 256);
+                Q('p20emsgDeviceHelp').checked = (meshNotify & 512);
             }
             return false;
         }
@@ -13684,6 +13750,11 @@
                 meshNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 meshNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
                 meshNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                meshNotify += Q('p20emsgDeviceConnect').checked ? 128 : 0;
+                meshNotify += Q('p20emsgDeviceDisconnect').checked ? 256 : 0;
+                meshNotify += Q('p20emsgDeviceHelp').checked ? 512 : 0;
             }
             meshserver.send({ action: 'changemeshnotify', meshid: currentMesh._id, notify: meshNotify });
         }
@@ -15857,19 +15928,37 @@
             var x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
             x += '<td style=width:100%>' + "Messaging account for this user.";
             var y = '<select id=d2serviceselect style=width:160px;margin-left:8px onchange=p30editMessagingValidate()><option value=0>' + "None" + '</option>';
-            if ((serverinfo.userMsgProviders & 1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
-            if ((serverinfo.userMsgProviders & 2) != 0) { y += '<option value=2>' + "Signal Messenger" + '</option>'; }
-            if ((serverinfo.userMsgProviders & 4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+            if ((serverinfo.userMsgProviders &  1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
+            if ((serverinfo.userMsgProviders &  4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+            if ((serverinfo.userMsgProviders &  8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 16) != 0) { y += '<option value=16>' + "CallMeBot" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 32) != 0) { y += '<option value=32>' + "Pushover" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 64) != 0) { y += '<option value=64>' + "ntfy" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 128) != 0) { y += '<option value=128>' + "Zulip" + '</option>'; }
             y += '</select>';
             x += '<table style=margin-top:12px><tr><td>' + "Service" + '<td>' + y;
-            x += '<tr><td>' + "Handle" + '<td><input maxlength=64 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=p30editMessagingValidate() onkeypress="if (event.key==\'Enter\') p30editMessagingValidate(1)">';
+            x += '<tr><td>' + "Handle" + '<td><input maxlength=1024 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=p30editMessagingValidate() onkeypress="if (event.key==\'Enter\') p30editMessagingValidate(1)">';
             x += '</table>';
             if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>' }
+            x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a></div>';
+            x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
+            x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
             setDialogMode(2, "Messaging Notifications", 3, p30editMessagingEx, x, 'verifyMessaging');
             Q('d2handleinput').focus();
             if (userinfo.msghandle) {
                 if (userinfo.msghandle.startsWith('telegram:') && ((serverinfo.userMsgProviders & 1) != 0)) { Q('d2serviceselect').value = 1; Q('d2handleinput').value = userinfo.msghandle.substring(10); }
                 if (userinfo.msghandle.startsWith('discord:') && ((serverinfo.userMsgProviders & 4) != 0)) { Q('d2serviceselect').value = 4; Q('d2handleinput').value = userinfo.msghandle.substring(8); }
+                if (userinfo.msghandle.startsWith('xmpp:') && ((serverinfo.userMsgProviders & 8) != 0)) { Q('d2serviceselect').value = 8; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
+                if (userinfo.msghandle.startsWith('callmebot:') && ((serverinfo.userMsgProviders & 16) != 0)) {
+                    Q('d2serviceselect').value = 16;
+                    var toData = userinfo.msghandle.substring(10).split('|');
+                    if ((toData[0] == 'signal') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/signal/send.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
+                    if ((toData[0] == 'whatsapp') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/whatsapp.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
+                    if ((toData[0] == 'facebook') && (toData.length == 2)) { Q('d2handleinput').value = 'https://api.callmebot.com/facebook/send.php?apikey=' + decodeURIComponent(toData[1]); }
+                }
+                if (userinfo.msghandle.startsWith('pushover:') && ((serverinfo.userMsgProviders & 32) != 0)) { Q('d2serviceselect').value = 32; Q('d2handleinput').value = userinfo.msghandle.substring(9); }
+                if (userinfo.msghandle.startsWith('ntfy:') && ((serverinfo.userMsgProviders & 64) != 0)) { Q('d2serviceselect').value = 64; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
+                if (userinfo.msghandle.startsWith('zulip:') && ((serverinfo.userMsgProviders & 128) != 0)) { Q('d2serviceselect').value = 128; Q('d2handleinput').value = userinfo.msghandle.substring(6); }
             }
             p30editMessagingValidate();
         }
@@ -15877,6 +15966,17 @@
         function p30editMessagingValidate(x) {
             QE('d2handleinput', Q('d2serviceselect').value != 0);
             if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
+            QV('d2callmebotinfo', Q('d2serviceselect').value == 16);
+            QV('d2pushoverinfo', Q('d2serviceselect').value == 32);
+            QV('d2ntfyinfo', Q('d2serviceselect').value == 64);
+            if (Q('d2serviceselect').value == 0) { Q('d2handleinput')['placeholder'] = ''; }
+            else if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
+            else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
+            else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
+            else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
+            else { Q('d2handleinput')['placeholder'] = "Username"; }
             if (x == 1) { dialogclose(1); }
         }
 
@@ -15886,6 +15986,11 @@
             if ((Q('d2handleinput').value == '') || (Q('d2serviceselect').value == 0)) { handle = ''; }
             else if (Q('d2serviceselect').value == 1) { handle = 'telegram:@' + Q('d2handleinput').value; }
             else if (Q('d2serviceselect').value == 4) { handle = 'discord:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 8) { handle = 'xmpp:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 16) { handle = 'callmebot:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 32) { handle = 'pushover:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 64) { handle = 'ntfy:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 128) { handle = 'zulip:' + Q('d2handleinput').value; }
             if (handle != null) { meshserver.send({ action: 'edituser', id: currentUser._id, msghandle: handle }); }
         }
 

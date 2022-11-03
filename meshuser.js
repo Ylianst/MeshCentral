@@ -52,6 +52,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
     const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
+    const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -578,6 +579,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             if (parent.parent.msgserver != null) { // Setup messaging providers information
                 serverinfo.userMsgProviders = parent.parent.msgserver.providers;
                 if (parent.parent.msgserver.discordUrl != null) { serverinfo.discordUrl = parent.parent.msgserver.discordUrl; }
+            }
+            if ((typeof parent.parent.config.messaging == 'object') && (typeof parent.parent.config.messaging.ntfy == 'object') && (typeof parent.parent.config.messaging.ntfy.userurl == 'string')) { // nfty user url
+                serverinfo.userMsgNftyUrl = parent.parent.config.messaging.ntfy.userurl;
             }
 
             // Build the mobile agent URL, this is used to connect mobile devices
@@ -1390,7 +1394,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
-                        if ((command.msghandle != null) && (typeof command.msghandle == 'string')) { if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; } change = 1; }
+                        if ((command.msghandle != null) && (typeof command.msghandle == 'string')) {
+                            if (command.msghandle.startsWith('callmebot:https://')) { const h = parent.parent.msgserver.callmebotUrlToHandle(command.msghandle.substring(10)); if (h) { command.msghandle = h; } else { command.msghandle = ''; } }
+                            if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; }
+                            change = 1;
+                        }
                         if ((command.flags != null) && (typeof command.flags == 'number')) {
                             // Flags: 1 = Account Image, 2 = Session Recording
                             if ((command.flags == 0) && (chguser.flags != null)) { delete chguser.flags; change = 1; } else { if (command.flags !== chguser.flags) { chguser.flags = command.flags; change = 1; } }
@@ -1709,12 +1717,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
-                    //  2 = WebPage device connections
-                    //  4 = WebPage device disconnections
-                    //  8 = WebPage device desktop and serial events
-                    // 16 = Email device connections
-                    // 32 = Email device disconnections
-                    // 64 = Email device help request
+                    //   2 = WebPage device connections
+                    //   4 = WebPage device disconnections
+                    //   8 = WebPage device desktop and serial events
+                    //  16 = Email device connections
+                    //  32 = Email device disconnections
+                    //  64 = Email device help request
+                    // 128 = Messaging device connections
+                    // 256 = Messaging device disconnections
+                    // 512 = Messaging device help request
 
                     var err = null;
                     try {
@@ -1759,12 +1770,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
-                    //  2 = WebPage device connections
-                    //  4 = WebPage device disconnections
-                    //  8 = WebPage device desktop and serial events
-                    // 16 = Email device connections
-                    // 32 = Email device disconnections
-                    // 64 = Email device help request
+                    //   2 = WebPage device connections
+                    //   4 = WebPage device disconnections
+                    //   8 = WebPage device desktop and serial events
+                    //  16 = Email device connections
+                    //  32 = Email device disconnections
+                    //  64 = Email device help request
+                    // 128 = Messaging device connections
+                    // 256 = Messaging device disconnections
+                    // 512 = Messaging device help request
 
                     var err = null;
                     try {
@@ -5304,6 +5318,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'dupagents': [serverUserCommandDupAgents, ""],
         'email': [serverUserCommandEmail, ""],
         'emailnotifications': [serverUserCommandEmailNotifications, ""],
+        'msgnotifications': [serverUserCommandMessageNotifications, ""],
         'firebase': [serverUserCommandFirebase, ""],
         'heapdump': [serverUserCommandHeapDump, ""],
         'heapdump2': [serverUserCommandHeapDump2, ""],
@@ -6566,7 +6581,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         if (errMsg != null) { displayNotificationMessage(errMsg); return; }
 
-        parent.parent.msgserver.sendMessage(msguser.msghandle, command.msg, function (success, msg) {
+        parent.parent.msgserver.sendMessage(msguser.msghandle, command.msg, domain, function (success, msg) {
             if (success) {
                 displayNotificationMessage("Message succesfuly sent.", null, null, null, 32);
             } else {
@@ -6689,12 +6704,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
         if (parent.parent.msgserver == null) return;
-        if (common.validateString(command.handle, 1, 64) == false) return; // Check handle length
+        if (common.validateString(command.handle, 1, 1024) == false) return; // Check handle length
 
         // Setup the handle for the right messaging service
         var handle = null;
         if ((command.service == 1) && ((parent.parent.msgserver.providers & 1) != 0)) { handle = 'telegram:@' + command.handle; }
         if ((command.service == 4) && ((parent.parent.msgserver.providers & 4) != 0)) { handle = 'discord:' + command.handle; }
+        if ((command.service == 8) && ((parent.parent.msgserver.providers & 8) != 0)) { handle = 'xmpp:' + command.handle; }
+        if ((command.service == 16) && ((parent.parent.msgserver.providers & 16) != 0)) { handle = parent.parent.msgserver.callmebotUrlToHandle(command.handle); }
+        if ((command.service == 32) && ((parent.parent.msgserver.providers & 32) != 0)) { handle = 'pushover:' + command.handle; }
+        if ((command.service == 64) && ((parent.parent.msgserver.providers & 64) != 0)) { handle = 'ntfy:' + command.handle; }
+        if ((command.service == 128) && ((parent.parent.msgserver.providers & 128) != 0)) { handle = 'zulip:' + command.handle; }
         if (handle == null) return;
 
         // Send a verification message
@@ -6834,12 +6854,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else {
             if (cmdData.cmdargs['_'].length != 2) {
                 var r = [];
-                if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:@UserHandle\" \"Message\"."); }
-                if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:UserHandle\" \"Message\"."); }
-                if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:Username#0000\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:[@UserHandle]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:[UserHandle]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:[Username#0000]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 8) != 0) { r.push("Usage: MSG \"xmpp:[username@server.com]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:[userkey]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 64) != 0) { r.push("Usage: MSG \"ntfy:[topic]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 128) != 0) { r.push("Usage: MSG \"zulip:[topic]\" \"Message\"."); }
                 cmdData.result = r.join('\r\n');
             } else {
-                parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], function (status, msg) {
+                parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], domain, function (status, msg) {
                     if (typeof msg == 'string') {
                         try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
                     } else {
@@ -6875,7 +6899,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     x += '  ' + info.mn + ', ' + info.nn + ', c:' + (info.c ? info.c : 0) + ', d:' + (info.d ? info.d : 0) + '\r\n';
                 }
             }
-            cmdData.result = ((x == '')?'None':x);
+            cmdData.result = ((x == '') ? 'None' : x);
+        }
+    }
+
+    function serverUserCommandMessageNotifications(cmdData) {
+        if (parent.parent.msgserver == null) {
+            cmdData.result = "No messaging service enabled.";
+        } else {
+            var x = '';
+            for (var userid in parent.parent.msgserver.deviceNotifications) {
+                x += userid + '\r\n';
+                for (var nodeid in parent.parent.msgserver.deviceNotifications[userid].nodes) {
+                    const info = parent.parent.msgserver.deviceNotifications[userid].nodes[nodeid];
+                    x += '  ' + info.mn + ', ' + info.nn + ', c:' + (info.c ? info.c : 0) + ', d:' + (info.d ? info.d : 0) + '\r\n';
+                }
+            }
+            cmdData.result = ((x == '') ? 'None' : x);
         }
     }
 
