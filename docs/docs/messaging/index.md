@@ -206,9 +206,11 @@ You can enable the MeshCentral [Zulip](https://zulip.com/) integration with the 
 ```json
 {
   "messaging": {
-    "site": "https://api.zulip.com",
-    "email": "your-bot@zulip.com",
-    "api_key": "your_32_character_api_key"
+    "zulip": {
+      "site": "https://api.zulip.com",
+      "email": "your-bot@zulip.com",
+      "api_key": "your_32_character_api_key"
+    }
   }
 }
 ```
