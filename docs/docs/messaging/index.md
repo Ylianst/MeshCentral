@@ -194,8 +194,19 @@ Once setup, the server will offer users the "Pushover" option when setting up me
   }
 }
 ```
-
 No setup is reqired to enable this. When using ntfy, make sure you use a suffisently random topic name so that others can't guess the name and subscribe to it to receive your messages.
+
+For [self-hosting your own ntfy server](https://ntfy.sh/docs/install/) with [ACL support](https://ntfy.sh/docs/config/#access-control)
+```json
+{
+  "messaging": {
+    "ntfy": {
+      "host": "https://[my]ntfy.sh",
+      "userurl": "https://[my]ntfy.sh/userhelp"
+    }
+  }
+}
+```
 
 ![](images/MC2-Ntfy1.png)
 
