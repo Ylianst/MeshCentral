@@ -49,6 +49,14 @@ Intel® AMT
 
 If you are looking into managing remote computers that would be difficult to physically get access to for remote support or maintenance, one should probably look at getting a PC with Intel AMT.
 
+## Bare-Metal Activation Server
+
+The `AmtProvisioningServer` section in the `settings` section of the config.json will enable this feature. MeshCentral will then listen for activation requests, match against your ACM activation certificates and if everything goes well, will activate and add the device to a Intel AMT only device group. No agent or MeshCMD is involved.
+
+This bare-metal activation server is not enabled by default and only makes sense when activating devices on the local network.
+
+![baremetal](images/amtprovisioningserver.png)
+
 ## MeshCentral Group Types
 
 Once MeshCentral is installed, a user will typically create a new device group. Here is the first hint that MeshCentral supports Intel AMT. Device groups come in two types. You can manage using a software agent, or using Intel AMT only.
