@@ -185,6 +185,10 @@ Once setup, Intel AMT will not automatically activate to Intel AMT unless the ri
   - The name “meshcentral.com” by have been set as “Trusted FQDN” in MEBx.
   - The name “meshcentral.com” must have been set using a USB key with a setup.bin file.
 
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/mhq0bsWJEOw" frameborder="0" allowfullscreen></iframe>
+</div>
+
 Once Intel AMT is in a situation where ACM activation can occur, the activation command line can be run or the Mesh Agent will detect this situation and ask the server to perform activation.
 
 ![](images/2022-05-16-23-16-05.png)
