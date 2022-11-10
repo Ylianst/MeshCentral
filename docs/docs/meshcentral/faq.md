@@ -46,5 +46,7 @@ You're sure you're typing in everything right, giving it 2FA code and can't logi
 
 # Branding and Customisation
 
-You can brand and customise MeshCentral almost as much as you like without delving into the code, a few changes in the config.json file and uplaoding images can change the way your system looks. Read more [here](https://ylianst.github.io/MeshCentral/meshcentral/#branding-terms-of-use)
+You can brand and customise MeshCentral almost as much as you like without delving into the code, a few changes in the config.json file and uploading images can change the way your system looks. Read more [here](https://ylianst.github.io/MeshCentral/meshcentral/#branding-terms-of-use)
 
+!!!note
+    You will need to reinstall the agent for agent customizations to take effect.
