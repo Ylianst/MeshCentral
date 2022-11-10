@@ -55,6 +55,8 @@ The `AmtProvisioningServer` section in the `settings` section of the config.json
 
 This bare-metal activation server is not enabled by default and only makes sense when activating devices on the local network.
 
+Once enabled, Intel AMT can send “hello” data to the MeshCentral provisioning server on port 9971 and MeshCentral will respond by connecting back, authenticating, and activating Intel AMT. MeshCentral will then log the event, add the device to a pre-defined agent-less device group and complete any remaining configuration. A trusted CA certificate is required to perform this operation fully automatically.
+
 ![baremetal](images/amtprovisioningserver.png)
 
 ## MeshCentral Group Types
