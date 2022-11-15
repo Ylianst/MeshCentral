@@ -8904,7 +8904,12 @@
                             }
                         }
                     };
-                    desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    // Use TLS if TLS is set
+                    if (desktopNode.conn==4 && desktopNode.intelamt!=null && desktopNode.intelamt.tls==1) {
+                        desktop.Start(desktopNode._id, 16995, '*', '*', 1);
+                    } else {
+                        desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    }
                     desktop.contype = 2;
                 } else if ((contype == null) || (contype == 1) || ((contype == 3) && ((currentNode.agent.id > 4) && ((debugmode == null))))) {
                     // Setup the Mesh Agent remote desktop
