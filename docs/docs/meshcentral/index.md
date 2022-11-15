@@ -1258,6 +1258,59 @@ You can also customize the Agent to add your own logo.
 
 ![](images/2022-08-24-06-42-40.png)
 
+```json
+ "agentCustomization": {
+ 	"displayName": {
+ 		"type": "string",
+ 		"default": "MeshCentral Agent",
+ 		"description": "The name of the agent as displayed to the user."
+ 	},
+ 	"description": {
+ 		"type": "string",
+ 		"default": "Mesh Agent background service",
+ 		"description": "The description of the agent as displayed to the user."
+ 	},
+ 	"companyName": {
+ 		"type": "string",
+ 		"default": "Mesh Agent",
+ 		"description": "This will be used as the path to install the agent, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's."
+ 	},
+ 	"serviceName": {
+ 		"type": "string",
+ 		"default": "Mesh Agent",
+ 		"description": "The name of the background service, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's but should be set to an all lower case, no space string."
+ 	},
+ 	"installText": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "Text string to show in the agent installation dialog box."
+ 	},
+ 	"image": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "The filename of a image file in .png format located in meshcentral-data to display in the MeshCentral Agent installation dialog, image should be square and from 64x64 to 200x200."
+ 	},
+ 	"fileName": {
+ 		"type": "string",
+ 		"default": "meshagent",
+ 		"description": "The agent filename."
+ 	},
+ 	"foregroundColor": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "Foreground text color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF."
+ 	},
+ 	"backgroundColor": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "Background color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF."
+ 	}
+ }
+ ```
+
+!!!note
+    You will need to reinstall the agent for agent customizations to take effect.
+
 ### Terms of use
 
 You can change the terms of use of the web site by adding a “terms.txt” file in the “meshcentral-data” folder. The file can include HTML markup. Once set, the server does not need to be restarted, the updated terms.txt file will get used the next time it’s requested.
