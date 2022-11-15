@@ -49,6 +49,16 @@ Intel® AMT
 
 If you are looking into managing remote computers that would be difficult to physically get access to for remote support or maintenance, one should probably look at getting a PC with Intel AMT.
 
+## Bare-Metal Activation Server
+
+The `AmtProvisioningServer` section in the `settings` section of the config.json will enable this feature. MeshCentral will then listen for activation requests, match against your ACM activation certificates and if everything goes well, will activate and add the device to a Intel AMT only device group. No agent or MeshCMD is involved.
+
+This bare-metal activation server is not enabled by default and only makes sense when activating devices on the local network.
+
+Once enabled, Intel AMT can send “hello” data to the MeshCentral provisioning server on port 9971 and MeshCentral will respond by connecting back, authenticating, and activating Intel AMT. MeshCentral will then log the event, add the device to a pre-defined agent-less device group and complete any remaining configuration. A trusted CA certificate is required to perform this operation fully automatically.
+
+![baremetal](images/amtprovisioningserver.png)
+
 ## MeshCentral Group Types
 
 Once MeshCentral is installed, a user will typically create a new device group. Here is the first hint that MeshCentral supports Intel AMT. Device groups come in two types. You can manage using a software agent, or using Intel AMT only.
@@ -174,6 +184,10 @@ Once setup, Intel AMT will not automatically activate to Intel AMT unless the ri
   - Intel AMT must have a wired Ethernet interface that is connected to a local network with a DHCP server responding with option 15 set to “xxx.meshcentral.com”.
   - The name “meshcentral.com” by have been set as “Trusted FQDN” in MEBx.
   - The name “meshcentral.com” must have been set using a USB key with a setup.bin file.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/mhq0bsWJEOw" frameborder="0" allowfullscreen></iframe>
+</div>
 
 Once Intel AMT is in a situation where ACM activation can occur, the activation command line can be run or the Mesh Agent will detect this situation and ask the server to perform activation.
 

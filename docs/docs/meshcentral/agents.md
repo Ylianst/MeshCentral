@@ -50,7 +50,7 @@ For OSx 11+ including Big Sur, Monterey and later
 
 ## Apple macOS
 
-For macOS 10.x including Catalina, Mojave, High Sierra, Sierra, El Capitan, Yosemite, Mavericks, Mountain Lion and earlier
+For macOS 10.x including Catalina, Mojave, High Sierra, Sierra, El Capitan, Yosemite, Mavericks, Mountain Lion and earlier.
 
 ## Mobile Device (Android)
 
