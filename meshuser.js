@@ -2781,6 +2781,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         });
                     }
+
+                    // Send response if required, in this case we always send ok which is not ideal.
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+
                     break;
                 }
             case 'wakedevices':
