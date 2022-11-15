@@ -7157,7 +7157,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             parent.debug('authlog', 'SAML profile: ' + JSON.stringify(profile, null, 4));
                             if (typeof profile.nameID != 'string') { return done(); }
                             var user = { sid: '~saml:' + profile.nameID, name: profile.nameID, strategy: 'saml' };
-                            if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
+                            if (typeof profile.displayname == 'string') {
+                                user.name = profile.displayname;
+                            } else if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) {
+                                user.name = profile.firstname + ' ' + profile.lastname;
+                            }
                             if (typeof profile.email == 'string') { user.email = profile.email; }
                             return done(null, user);
                         }

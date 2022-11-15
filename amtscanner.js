@@ -362,8 +362,8 @@ module.exports.CreateAmtScanner = function (parent) {
         if (oldVer == newVer) return false; // Versions are same already, don't update.
         if (newVer == undefined || newVer == null) return false; // New version is bad, don't update it.
         if (oldVer == undefined || oldVer == null) return true; // Old version is no good anyway, update it.
-        var oldVerArr = oldVer.split('.');
-        var newVerArr = newVer.split('.');
+        var oldVerArr = oldVer.toString().split('.');
+        var newVerArr = newVer.toString().split('.');
         if ((oldVerArr.length < 2) || (newVerArr.length < 2)) return false;
         if ((oldVerArr[0] != newVerArr[0]) || (oldVerArr[1] != newVerArr[1])) return true;
         if (newVerArr.length > oldVerArr.length) return true;
