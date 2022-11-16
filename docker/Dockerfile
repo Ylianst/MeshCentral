@@ -1,23 +1,12 @@
-FROM alpine:latest AS base
+FROM --platform=$BUILDPLATFORM node:current-alpine AS builder
 
-#Add non-root user, add installation directories and assign proper permissions
 RUN mkdir -p /opt/meshcentral/meshcentral
-
-# meshcentral installation
+COPY ./ /opt/meshcentral/meshcentral/
 WORKDIR /opt/meshcentral
-
-RUN apk update \
-    && apk add --no-cache --update tzdata nodejs npm bash \
-    && rm -rf /var/cache/apk/*
-RUN npm install -g npm@latest
-
-
-FROM base AS builder
 
 ARG DISABLE_MINIFY=""
 ARG DISABLE_TRANSLATE=""
 
-COPY ./ /opt/meshcentral/meshcentral/
 
 RUN if ! [ -z "$DISABLE_MINIFY" ] && [ "$DISABLE_MINIFY" != "yes" ] && [ "$DISABLE_MINIFY" != "YES" ] \
     && [ "$DISABLE_MINIFY" != "true" ] && [ "$DISABLE_MINIFY" != "TRUE" ]; then \
@@ -45,7 +34,18 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 
-FROM base
+FROM --platform=$TARGETPLATFORM alpine:latest
+
+#Add non-root user, add installation directories and assign proper permissions
+RUN mkdir -p /opt/meshcentral/meshcentral
+
+# meshcentral installation
+WORKDIR /opt/meshcentral
+
+RUN apk update \
+    && apk add --no-cache --update tzdata nodejs npm bash \
+    && rm -rf /var/cache/apk/*
+RUN npm install -g npm@latest
 
 ARG INCLUDE_MONGODBTOOLS=""
 ARG PREINSTALL_LIBS="false"
