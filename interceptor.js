@@ -395,7 +395,7 @@ module.exports.CreateRedirInterceptor = function (args) {
                         if (obj.amt.digestRealm) {
                             // Replace this authentication digest with a server created one
                             // We have everything we need to authenticate
-                            var nc = obj.ws.authCNonceCount;
+                            var nc = '0'+ (10000000 + obj.ws.authCNonceCount).toString().substring(1);// set NC at least 8 bytes
                             obj.ws.authCNonceCount++;
                             var digest = obj.ComputeDigesthash(obj.args.user, obj.args.pass, obj.amt.digestRealm, 'POST', authurl, obj.amt.digestQOP, obj.amt.digestNonce, nc, obj.ws.authCNonce);
 

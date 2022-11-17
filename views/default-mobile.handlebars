@@ -4173,7 +4173,12 @@
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
                     desktop.m.showmouse = true;
                     desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
-                    desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    // Use TLS if TLS is set
+                    if (desktopNode.conn==4 && desktopNode.intelamt!=null && desktopNode.intelamt.tls==1) {
+                        desktop.Start(desktopNode._id, 16995, '*', '*', 1);
+                    } else {
+                        desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    }
                     desktop.contype = 2;
                 } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4))) {
                     // Setup the Mesh Agent remote desktop
