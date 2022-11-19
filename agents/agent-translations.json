@@ -37,7 +37,7 @@
     "meshName": "Skupinové jméno",
     "meshId": "Identifikátor skupiny",
     "serverId": "Identifikátor serveru",
-    "setup": "Založit",
+    "setup": "Nastavit",
     "update": "Aktualizace",
     "install": "Instalace",
     "uninstall": "Odinstalace",
