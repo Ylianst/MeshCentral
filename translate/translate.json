@@ -12587,7 +12587,7 @@
     },
     {
       "bs": "Zadani pretraživač",
-      "cs": "Výchozí prohlížeč",
+      "cs": "Dle prohlížeče",
       "da": "Browser standard",
       "de": "Browser Standard",
       "en": "Browser default",
@@ -14358,7 +14358,7 @@
     },
     {
       "bs": "Provjerite verziju servera",
-      "cs": "Zjistit dostupnost případné novější verze",
+      "cs": "Zjistit dostupnost novější verze",
       "da": "Kontroller serverversionen",
       "de": "Server auf Aktualisierung überprüfen",
       "en": "Check server version",
@@ -15778,6 +15778,7 @@
     },
     {
       "bs": "Naredbe iz datoteke",
+      "cs": "Příkazy ze souboru",
       "en": "Commands from file",
       "nl": "Opdrachten uit bestand",
       "pl": "Komendy z pliku",
@@ -15787,6 +15788,7 @@
     },
     {
       "bs": "Komande iz datoteke na serveru",
+      "cs": "Příkazy ze souboru na serveru",
       "en": "Commands from file on server",
       "nl": "Opdrachten uit een bestand op de server",
       "pl": "Komendy z pliku na serwerze",
@@ -15796,6 +15798,7 @@
     },
     {
       "bs": "Naredbe iz okvira za tekst",
+      "cs": "Příkazy z textového pole",
       "en": "Commands from text box",
       "nl": "Opdrachten uit tekstvak",
       "pl": "Komendy z okienka tekstowego",
@@ -18848,7 +18851,7 @@
     },
     {
       "bs": "Kreacija",
-      "cs": "Vytváření",
+      "cs": "Vytvořen",
       "da": "Oprettelse",
       "de": "Erzeugung",
       "en": "Creation",
@@ -23941,7 +23944,7 @@
     },
     {
       "bs": "Preuzmite događaje",
-      "cs": "Stáhnout si události",
+      "cs": "Stáhnout události",
       "da": "Download hændelser",
       "de": "Ereignisse herunterladen",
       "en": "Download Events",
@@ -23969,7 +23972,7 @@
     },
     {
       "bs": "Preuzmite datoteku",
-      "cs": "Stáhnout si soubor",
+      "cs": "Stáhnout soubor",
       "da": "Download Fil",
       "de": "Datei herunterladen",
       "en": "Download File",
@@ -23997,7 +24000,7 @@
     },
     {
       "bs": "Preuzmite MeshCentral Router, alat za mapiranje TCP portova.",
-      "cs": "Stáhnout si MeshCentral Router – nástroj pro mapování TCP portů.",
+      "cs": "Stáhnout MeshCentral Router – nástroj pro mapování TCP portů.",
       "da": "Download MeshCentral Router, et TCP port mapping tool.",
       "de": "MeshCentral Router herunterladen, ein TCP-Port-Mapping-Tool.",
       "en": "Download MeshCentral Router, a TCP port mapping tool.",
@@ -24023,7 +24026,7 @@
     },
     {
       "bs": "Preuzmite MeshCmd",
-      "cs": "Stáhnout si MeshCmd",
+      "cs": "Stáhnout MeshCmd",
       "da": "Download MeshCmd",
       "de": "MeshCmd herunterladen",
       "en": "Download MeshCmd",
@@ -24049,7 +24052,7 @@
     },
     {
       "bs": "Preuzmite MeshCmd, alat naredbene linije koji obavlja mnoge funkcije.",
-      "cs": "Stáhnout si MeshCmd – nástroj s mnoha funkcemi, určený pro příkazový řádek.",
+      "cs": "Stáhnout MeshCmd – nástroj s mnoha funkcemi, určený pro příkazový řádek.",
       "da": "Download MeshCmd, et kommandolinjeværktøj, der udfører mange funktioner.",
       "de": "MeshCmd herunterladen, ein Befehlszeilenprogramm, das viele Aufgaben ausführt.",
       "en": "Download MeshCmd, a command line tool that performs many functions.",
@@ -24075,7 +24078,7 @@
     },
     {
       "bs": "Preuzmite dodatak",
-      "cs": "Stáhnout si zásuvný modul",
+      "cs": "Stáhnout zásuvný modul",
       "da": "Download Plugin",
       "de": "Plugin herunterladen",
       "en": "Download Plugin",
@@ -24155,7 +24158,7 @@
     },
     {
       "bs": "Preuzmite tekst konzole",
-      "cs": "Stáhnout si text z konzole",
+      "cs": "Stáhnout text z konzole",
       "da": "Download konsol tekst",
       "de": "Konsolentext herunterladen",
       "en": "Download console text",
@@ -24181,7 +24184,7 @@
     },
     {
       "bs": "Preuzimanje tačaka podataka (.csv)",
-      "cs": "Stáhnout si datové body (.csv)",
+      "cs": "Stáhnout datové body (.csv)",
       "da": "Download datapunkter (.csv)",
       "de": "Datenpunkte herunterladen (.csv)",
       "en": "Download data points (.csv)",
@@ -24233,7 +24236,7 @@
     },
     {
       "bs": "Preuzmi dnevnik grešaka",
-      "cs": "Stáhnout si záznam chyb",
+      "cs": "Stáhnout záznam chyb",
       "da": "Download fejllog",
       "de": "Fehlerprotokoll herunterladen",
       "en": "Download error log",
@@ -24259,7 +24262,7 @@
     },
     {
       "bs": "Preuzmite događaje napajanja",
-      "cs": "Stáhnout si události napájení",
+      "cs": "Stáhnout události napájení",
       "da": "Download strøm hændelser",
       "de": "Energiezustandsereignisse herunterladen",
       "en": "Download power events",
@@ -24311,7 +24314,7 @@
     },
     {
       "bs": "Preuzmite rezervnu kopiju servera",
-      "cs": "Stáhnout si zálohu serveru",
+      "cs": "Stáhnout zálohu serveru",
       "da": "Download server backup",
       "de": "Server-Datensicherung herunterladen",
       "en": "Download server backup",
@@ -24494,7 +24497,7 @@
     },
     {
       "bs": "Preuzmi trag (.csv)",
-      "cs": "Stáhnout si trace (.csv)",
+      "cs": "Stáhnout trace (.csv)",
       "da": "Download trace (.csv)",
       "de": "Trace herunterladen (.csv)",
       "en": "Download trace (.csv)",
@@ -24520,7 +24523,7 @@
     },
     {
       "bs": "Preuzmite korisničke informacije",
-      "cs": "Stáhnout si informace o uživatelích",
+      "cs": "Stáhnout informace o uživatelích",
       "da": "Download brugeroplysninger",
       "de": "Benutzerinformationen herunterladen",
       "en": "Download user information",
@@ -36408,7 +36411,7 @@
     },
     {
       "bs": "Interfejsi",
-      "cs": "Rozhraní",
+      "cs": "Síťová rozhraní",
       "da": "Interfaces",
       "de": "Schnittstellen",
       "en": "Interfaces",
@@ -38865,7 +38868,7 @@
     },
     {
       "bs": "Last Seen",
-      "cs": "Naposledy viděn",
+      "cs": "Naposledy připojen",
       "da": "Sidst sete",
       "de": "Zuletzt gesehen",
       "en": "Last Seen",
@@ -39787,7 +39790,7 @@
     },
     {
       "bs": "Lagani način rada",
-      "cs": "Režim světla",
+      "cs": "Světlý režim",
       "da": "Lys tilstand",
       "de": "Heller Modus",
       "en": "Light mode",
@@ -45571,7 +45574,7 @@
     },
     {
       "bs": "Praćenje mog servera",
-      "cs": "Trasování mého serveru",
+      "cs": "Trasování serveru",
       "da": "Min server sporing",
       "de": "Mein Server-Tracing",
       "en": "My Server Tracing",
@@ -46479,7 +46482,7 @@
     },
     {
       "bs": "Noćni način rada",
-      "cs": "Noční režim",
+      "cs": "Tmavý režim",
       "da": "Night Mode",
       "de": "Nacht Modus",
       "en": "Night Mode",
@@ -49720,7 +49723,7 @@
     },
     {
       "bs": "Online korisnici",
-      "cs": "Připojených uživatelů",
+      "cs": "Připojení uživatelé",
       "da": "Online brugere",
       "de": "Benutzer online",
       "en": "Online Users",
@@ -53095,7 +53098,7 @@
     },
     {
       "bs": "Present",
-      "cs": "Současnost",
+      "cs": "Připojeno",
       "da": "Findes",
       "de": "präsent",
       "en": "Present",
@@ -58953,6 +58956,7 @@
     },
     {
       "bs": "Trči",
+      "cs": "Spustit",
       "en": "Run",
       "nl": "Uitvoeren",
       "pl": "Wykonaj",
@@ -59016,6 +59020,7 @@
     },
     {
       "bs": "Pokrenite skriptu na ovom računaru",
+      "cs": "Spustit skript na tomto počítači",
       "en": "Run a script on this computer",
       "nl": "Voer een script uit op deze computer",
       "pl": "Wykonaj skrypt na tym komputerze",
@@ -68495,7 +68500,7 @@
     },
     {
       "bs": "Uslovi i privatnost",
-      "cs": "Pravidla a ochrana soukromí",
+      "cs": "Smluvní podmínky a ochrana soukromí",
       "da": "Vilkår og privatliv",
       "de": "Nutzungsbedingungen & Datenschutz",
       "en": "Terms & Privacy",
@@ -69821,7 +69826,7 @@
     },
     {
       "bs": "Da dodate novi računar u grupu uređaja \\\"{0}\\\", preuzmite mesh agent i instalirajte ga na računar kojim ćete upravljati. Ovaj instalater agenta ima informacije o serveru i grupi uređaja ugrađene u njega.",
-      "cs": "Pro přidání nového zařízení do skupiny „{0}“, je třeba si do počítače, který chcete spravovat, stáhnout a nainstalovat agenta. Ten už obsahuje potřebné pro připojení na server.",
+      "cs": "Pro přidání nového zařízení do skupiny „{0}“, je třeba do počítače, který chcete spravovat, stáhnout a nainstalovat agenta. Ten už obsahuje potřebné informace pro připojení na server.",
       "da": "For at tilføje en ny computer til enhedsgruppen \\\"{0}\\\", skal du downloade mesh-agenten og installere den på den computer, der skal administreres. Dette agentinstallationsprogram har server- og enhedsgruppeoplysninger indlejret i sig.",
       "de": "Um einen neuen Rechner zur Gerätegruppe \\\"{0}\\\" hinzuzufügen, laden Sie den Mesh-Agenten herunter und installieren Sie ihn auf dem zu verwaltenden Rechner. In dieses Agenten-Installationsprogramm sind Server- und Gerätegruppen-Informationen bereits eingebettet.",
       "en": "To add a new computer to device group \\\"{0}\\\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.",
@@ -70320,7 +70325,7 @@
     },
     {
       "bs": "Uključite noćni način rada",
-      "cs": "Vyp/zap. noční režim",
+      "cs": "Vyp/zap. tmavý režim",
       "da": "Skift nattilstand",
       "de": "Nachtmodus ein-/ausschalten",
       "en": "Toggle night mode",
