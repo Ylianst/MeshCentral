@@ -4060,7 +4060,8 @@ function mainStart() {
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }
 
         // Firebase Support
-        if (config.firebase != null) { modules.push('node-xcs'); }
+        // Avoid 0.1.8 due to bugs: https://github.com/guness/node-xcs/issues/43
+        if (config.firebase != null) { modules.push('node-xcs@0.1.7'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
