@@ -393,7 +393,7 @@
         }
 
         function deskAdjust() {
-            if ((xxcurrentView == 12) && (terminal != null) && (xtermfit != null)) { xtermfit.fit(); } // Terminal 
+            if ((xxcurrentView == 12) && (terminal != null) && (xtermfit != null)) { xtermfit.fit(); } // Terminal
             QS('fileArea4')['height'] = 'calc(100vh - ' + (90 + Q('fileArea2').clientHeight) + 'px)'; // Files
             var parentH = Q('DeskParent').clientHeight, parentW = Q('DeskParent').clientWidth;
             var deskH = Q('Desk').height, deskW = Q('Desk').width;
@@ -1405,7 +1405,13 @@
             return obj;
         }
 
-        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+        function tunnelUpdate(data) {
+            if (xterm.writeUtf8) {
+                if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); }
+            } else {
+                if (typeof data == 'string') { xterm.write(data); } else { xterm.write(new Uint8Array(data)); }
+            }
+        }
 
         // Send the new terminal size to the agent
         function xTermSendResize() {
@@ -1567,7 +1573,7 @@
 
         //
         // Files
-        // 
+        //
 
         function setupFiles() {
             // Setup the files tab
