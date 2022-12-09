@@ -1670,7 +1670,13 @@
             return obj;
         }
 
-        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+        function tunnelUpdate(data) {
+            if (xterm.writeUtf8) {
+                if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); }
+            } else {
+                if (typeof data == 'string') { xterm.write(data); } else { xterm.write(new Uint8Array(data)); }
+            }
+        }
 
         function sshTunnelUpdate(data) {
             if (typeof data == 'string') {
