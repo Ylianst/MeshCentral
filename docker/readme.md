@@ -10,8 +10,10 @@
 | - docker-compose.yml
 ```
 
-# Templates:
-## .env:
+# Templates
+
+## .env
+
 ```ini
 NODE_ENV=production
 
@@ -42,7 +44,8 @@ LOCALSESSIONRECORDING=false
 MINIFY=true
 ```
 
-## docker-compose.yml:
+## docker-compose.yml
+
 ```yaml
 version: '3'
 
@@ -63,12 +66,13 @@ services:
       # where file uploads for users live
       - ./meshcentral/user_files:/opt/meshcentral/meshcentral-files
       # location for the meshcentral-backups - this should be mounted to an external storage
-      - ./meshcentral/backup:/opt/meshcentral/meshcentral-backup
+      - ./meshcentral/backup:/opt/meshcentral/meshcentral-backups
       # location for site customization files
       - ./meshcentral/web:/opt/meshcentral/meshcentral-web
 ```
 
-## docker-compose.yml mongodb:
+## docker-compose.yml mongodb
+
 ```yaml
 version: '3'
 
@@ -107,7 +111,7 @@ services:
       # where file uploads for users live
       - ./meshcentral/user_files:/opt/meshcentral/meshcentral-files
       # location for the meshcentral-backups - this should be mounted to an external storage
-      - ./meshcentral/backup:/opt/meshcentral/meshcentral-backup
+      - ./meshcentral/backup:/opt/meshcentral/meshcentral-backups
       # location for site customization files
       - ./meshcentral/web:/opt/meshcentral/meshcentral-web
     networks:
