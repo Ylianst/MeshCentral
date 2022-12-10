@@ -86,7 +86,7 @@ function CreateMeshCentralServer(config, args) {
         obj.parentpath = obj.path.join(__dirname, '../..');
         obj.datapath = obj.path.join(__dirname, '../../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../../meshcentral-files');
-        obj.backuppath = obj.path.join(__dirname, '../../meshcentral-backup');
+        obj.backuppath = obj.path.join(__dirname, '../../meshcentral-backups');
         obj.recordpath = obj.path.join(__dirname, '../../meshcentral-recordings');
         obj.webViewsPath = obj.path.join(__dirname, 'views');
         obj.webPublicPath = obj.path.join(__dirname, 'public');
