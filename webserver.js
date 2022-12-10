@@ -4485,6 +4485,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Subscribe to all events we are allowed to receive
     obj.subscribe = function (userid, target) {
         const user = obj.users[userid];
+        if (user == null) return;
         const subscriptions = [userid, 'server-allusers'];
         if (user.siteadmin != null) {
             // Allow full site administrators of users with all events rights to see all events.
