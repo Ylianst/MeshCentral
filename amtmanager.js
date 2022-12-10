@@ -1318,7 +1318,7 @@ module.exports.CreateAmtManager = function (parent) {
                         }
 
                         // Figure out what index is local & remote
-                        var localNdx = ((dev.policy.tlsSettings[0]['InstanceID'] == 'Intel(r) AMT LMS TLS Settings')) ? 0 : 1, remoteNdx = (1 - localNdx);
+                        var localNdx = ((dev.policy != null) && (dev.policy.tlsSettings != null) && (dev.policy.tlsSettings[0] != null) && (dev.policy.tlsSettings[0]['InstanceID'] == 'Intel(r) AMT LMS TLS Settings')) ? 0 : 1, remoteNdx = (1 - localNdx);
 
                         // Remote TLS settings
                         var xxTlsSettings2 = Clone(dev.policy.tlsSettings);

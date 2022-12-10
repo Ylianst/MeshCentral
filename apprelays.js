@@ -820,7 +820,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 obj.relaySocket = socket;
                 obj.relaySocket.pause();
                 obj.relaySocket.on('data', function (chunk) { // Make sure to handle flow control.
-                    if (obj.relayActive == true) { obj.relaySocket.pause(); obj.wsClient.send(chunk, function () { obj.relaySocket.resume(); }); }
+                    if (obj.relayActive == true) { obj.relaySocket.pause(); if (obj.wsClient != null) { obj.wsClient.send(chunk, function () { obj.relaySocket.resume(); }); } }
                 });
                 obj.relaySocket.on('end', function () { obj.close(); });
                 obj.relaySocket.on('error', function (err) { obj.close(); });
