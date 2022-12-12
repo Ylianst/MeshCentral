@@ -1,5 +1,5 @@
 {
-  "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
+  "$schema": "https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json",
   "settings": {
     "plugins":{"enabled": false},
     "_mongoDb": null,
