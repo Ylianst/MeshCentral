@@ -497,7 +497,6 @@
       "en": "\" requested help.",
       "nl": "\" vraagt om hulp.",
       "pl": "\" prosi o pomoc.",
-      "fr": "\" assistance demandée.",
       "xloc": [
         "device-help.html->2->3"
       ]
@@ -5692,7 +5691,6 @@
       "en": "Account changed to sync with LDAP data.",
       "nl": "Account gewijzigd om te synchroniseren met LDAP gegevens.",
       "pl": "Konto zmienione di synchronizacji z danymi LDAP.",
-      "fr": "Compte modifié pour se synchroniser avec les données LDAP.",
       "xloc": [
         "default.handlebars->47->2450"
       ]
@@ -5945,7 +5943,6 @@
       "en": "Account login token records",
       "nl": "Token vermeldingen voor accountaanmelding",
       "pl": "Zapisy logowania tokenami użytkownika",
-      "fr": "Enregistrements des jetons de connexion au compte",
       "xloc": [
         "default.handlebars->47->2999"
       ]
@@ -9647,7 +9644,6 @@
       "en": "An unknown error occured.",
       "nl": "Er is een onbekende fout opgetreden.",
       "pl": "Wystąpił nieznany błąd.",
-      "fr": "Une erreur inconnue est survenue.",
       "xloc": [
         "default.handlebars->47->2878"
       ]
@@ -12803,7 +12799,6 @@
       "en": "CAPTCHA image",
       "nl": "CAPTCHA afbeelding",
       "pl": "Obraz CAPTCHA",
-      "fr": "image CAPTCHA",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
@@ -13265,7 +13260,6 @@
     },
     {
       "en": "CallMeBot",
-      "fr": "CallMeBot",
       "xloc": [
         "default.handlebars->47->1579",
         "default.handlebars->47->2786"
@@ -14391,7 +14385,6 @@
     {
       "en": "Check your messaging application and enter the verification code.",
       "nl": "Controleer uw berichten applicatie en voer de verificatiecode in.",
-      "fr": "Vérifiez votre messagerie et entrez le code de vérification.",
       "xloc": [
         "default.handlebars->47->246"
       ]
@@ -15789,7 +15782,6 @@
       "en": "Commands from file",
       "nl": "Opdrachten uit bestand",
       "pl": "Komendy z pliku",
-      "fr": "Commandes depuis le fichier",
       "xloc": [
         "default.handlebars->47->734"
       ]
@@ -15800,7 +15792,6 @@
       "en": "Commands from file on server",
       "nl": "Opdrachten uit een bestand op de server",
       "pl": "Komendy z pliku na serwerze",
-      "fr": "Commandes depuis le fichier sur le serveur",
       "xloc": [
         "default.handlebars->47->735"
       ]
@@ -15811,7 +15802,6 @@
       "en": "Commands from text box",
       "nl": "Opdrachten uit tekstvak",
       "pl": "Komendy z okienka tekstowego",
-      "fr": "Commandes depuis une zone de texte",
       "xloc": [
         "default.handlebars->47->733"
       ]
@@ -15975,7 +15965,6 @@
       "en": "Configuration file records",
       "nl": "Configuratiebestand vermeldingen",
       "pl": "Zapisy pliku konfiguracyjnego",
-      "fr": "Enregistrement du fichier de configuration",
       "xloc": [
         "default.handlebars->47->2992"
       ]
@@ -18704,7 +18693,6 @@
       "en": "Create many Intel&reg; AMT device at once by importing a JSON file with the following format:",
       "nl": "Maak meerdere Intel&reg; AMT apparaten in één keer door een JSON bestand met het volgende formaat te importeren:",
       "pl": "Utwórz wiele urządzeń Intel&reg; AMT za jednym razem, poprzez import pliku JSON o takim formacie:",
-      "fr": "Créer plusieurs appareils Intel® AMT en important un fichier JSON respectant le format suivant :",
       "xloc": [
         "default.handlebars->47->478"
       ]
@@ -19562,7 +19550,6 @@
       "en": "Database Records",
       "nl": "Database vermeldingen",
       "pl": "Zapisy Bazy Danych",
-      "fr": "Enregistrements dans la base de données",
       "xloc": [
         "default.handlebars->47->2917"
       ]
@@ -20444,7 +20431,6 @@
       "en": "Denied user login from {0}, {1}, {2}",
       "nl": "Geweigerde gebruikerslogin van {0}, {1}, {2}",
       "pl": "Odmówiono zalogowania użytkownika z {0}, {1}, {2}",
-      "fr": "La connexion de l'utilisateur a été refusée à partir de {0}, {1}, {2}",
       "xloc": [
         "default.handlebars->47->2451"
       ]
@@ -21257,7 +21243,6 @@
       "en": "Device \"",
       "nl": "Apparaat \"",
       "pl": "Urządzenie \"",
-      "fr": "Appareil \"",
       "xloc": [
         "device-help.html->2->3"
       ]
@@ -21267,7 +21252,6 @@
       "en": "Device \"[[[DEVICENAME]]]\" requested assistance.",
       "nl": "Apparaat \"[[[DEVICENAME]]]\" heeft assistentie gevraagd",
       "pl": "Urządzenie \"[[[DEVICENAME]]]\" prosiło o pomoc.",
-      "fr": "Une assistance est demandée par l'appareil \"[[[DEVICENAME]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -21695,7 +21679,6 @@
       "en": "Device Push Notification Record",
       "nl": "Apparaat Push Notificatie vermelding",
       "pl": "Zapis Powiadomień Push Urządzenia",
-      "fr": "Enregistrement des notifications poussées sur l'appareil",
       "xloc": [
         "default.handlebars->47->3001"
       ]
@@ -21705,7 +21688,6 @@
       "en": "Device SMBIOS record",
       "nl": "Apparaat SMBIOS vermelding",
       "pl": "Zapis SMBIOS urządzenia",
-      "fr": "Enregistrement SMBIOS de l'appareil",
       "xloc": [
         "default.handlebars->47->3000"
       ]
@@ -22089,7 +22071,6 @@
       "en": "Device group record",
       "nl": "Apparaatgroep vermelding",
       "pl": "Zapis grupy urządzeń",
-      "fr": "Enregistrement du groupe de l'appareil",
       "xloc": [
         "default.handlebars->47->2986"
       ]
@@ -22177,7 +22158,6 @@
       "en": "Device information records",
       "nl": "Apparaatinformatie vermeldingen",
       "pl": "Zapisy informacji urządzenia",
-      "fr": "Enregistrements des informations de l'appareil",
       "xloc": [
         "default.handlebars->47->2988"
       ]
@@ -22721,7 +22701,6 @@
       "en": "Device power transition records",
       "nl": "Apparaat aan/uit vermeldingen",
       "pl": "Zapisy zmiany stanu zasilania",
-      "fr": "Enregistrement de l'état de l'alimentation de l'appareil",
       "xloc": [
         "default.handlebars->47->2994"
       ]
@@ -22731,7 +22710,6 @@
       "en": "Device record",
       "nl": "Apparaat vermelding",
       "pl": "Zapis urządzenia",
-      "fr": "Enregistrement de l'appareil",
       "xloc": [
         "default.handlebars->47->2985"
       ]
@@ -22793,7 +22771,6 @@
       "en": "Device sharing records",
       "nl": "Apparaten delings vermeldingen",
       "pl": "Zapisy udostępniania urządzenia",
-      "fr": "Enregistrements du partage des appareils",
       "xloc": [
         "default.handlebars->47->2998"
       ]
@@ -22803,7 +22780,6 @@
       "en": "Device, users, groups and other records",
       "nl": "Apparaat, gebruikers, groepen en andere vermeldingen",
       "pl": "Zapisy urządzenia, użytkowników, grup i inne",
-      "fr": "Appareils, utilisateurs, groupes, et autres enregistrements",
       "xloc": [
         "default.handlebars->47->3002"
       ]
@@ -23317,7 +23293,6 @@
     {
       "en": "Discord",
       "nl": "Discord",
-      "fr": "Discord",
       "xloc": [
         "default.handlebars->47->1577",
         "default.handlebars->47->2784"
@@ -25923,7 +25898,6 @@
     },
     {
       "en": "Email ({0})",
-      "fr": "Email ({0})",
       "xloc": [
         "default.handlebars->47->1977",
         "default.handlebars->47->891"
@@ -26061,8 +26035,7 @@
       "bs": "Pošaljite zahtjev za pomoć e-poštom",
       "en": "Email Help Request",
       "nl": "E-mail hulpverzoek",
-      "pl": "Prośba Pomocy Email",
-      "fr": "Demande d'aide par courrier électronique"
+      "pl": "Prośba Pomocy Email"
     },
     {
       "bs": "Obavještenja putem e-pošte",
@@ -27681,7 +27654,6 @@
     {
       "en": "Enter your messaging service and handle. Once verified, this server can send you login verification and other notifications.",
       "nl": "Voer uw berichtenservice en afhandeling in. Na verificatie kan deze server u aanmeldingsverificatie en andere meldingen sturen.",
-      "fr": "Saisir votre service de messagerie et votre identifiant. Après validation, ce serveur peut vous demander une vérification de la connexion et envoyer d'autres notifications.",
       "xloc": [
         "default.handlebars->47->1575"
       ]
@@ -28124,7 +28096,6 @@
       "en": "Event records",
       "nl": "Gebeurtenis vermeldingen",
       "pl": "Zapisy zdarzeń",
-      "fr": "Enregistrements des évènements",
       "xloc": [
         "default.handlebars->47->2995"
       ]
@@ -28557,7 +28528,6 @@
     },
     {
       "en": "Facebook",
-      "fr": "Facebook",
       "xloc": [
         "default.handlebars->47->1588",
         "default.handlebars->47->2795"
@@ -30146,7 +30116,6 @@
     },
     {
       "en": "Free service at ntfy.sh",
-      "fr": "Service gratuit sur ntfy.sh",
       "xloc": [
         "default.handlebars->47->1590",
         "default.handlebars->47->2797"
@@ -31265,7 +31234,6 @@
       "en": "Go to first page",
       "nl": "Ga naar de eerste pagina",
       "pl": "Idź do pierwszej strony",
-      "fr": "Aller à la première page",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31275,7 +31243,6 @@
       "en": "Go to last page",
       "nl": "Ga naar de laatste pagina  ",
       "pl": "Idź do ostatniej strony",
-      "fr": "Aller à la dernière page",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31339,7 +31306,6 @@
       "en": "Go to next page",
       "nl": "Ga naar de volgende pagina",
       "pl": "Idź do następnej strony",
-      "fr": "Aller à la page suivante",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31349,7 +31315,6 @@
       "en": "Go to previous page",
       "nl": "Ga naar de vorige pagina",
       "pl": "Idź do poprzedniej strony",
-      "fr": "Aller à la page précédente",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -31739,7 +31704,6 @@
       "en": "Group Type",
       "nl": "Groepstype",
       "pl": "Typ Grupy",
-      "fr": "Type de groupe",
       "xloc": [
         "default.handlebars->47->2625"
       ]
@@ -32169,7 +32133,6 @@
       "en": "HTTP/{0} link",
       "nl": "HTTP/{0} link",
       "pl": "HTTP/{0} link",
-      "fr": "Lien HTTP/{0}",
       "xloc": [
         "default.handlebars->47->302"
       ]
@@ -32360,7 +32323,6 @@
     {
       "en": "Handle",
       "nl": "afhandeling",
-      "fr": "Identifiant",
       "xloc": [
         "default.handlebars->47->1584",
         "default.handlebars->47->2791"
@@ -32709,7 +32671,6 @@
       "en": "Help requests",
       "nl": "Hulpverzoeken",
       "pl": "Prośby pomocy",
-      "fr": "Demandes d'aide",
       "xloc": [
         "default.handlebars->47->1030",
         "default.handlebars->47->1034",
@@ -33315,7 +33276,6 @@
       "en": "IP location information records",
       "nl": "IP locatiegegevens vermeldingen",
       "pl": "Zapisy o informacji lokalizacji IP",
-      "fr": "Enregistrements des localisations IP",
       "xloc": [
         "default.handlebars->47->2989"
       ]
@@ -34076,7 +34036,6 @@
       "en": "Import",
       "nl": "Importeren",
       "pl": "Importuj",
-      "fr": "Importer",
       "xloc": [
         "default.handlebars->47->1996"
       ]
@@ -34086,7 +34045,6 @@
       "en": "Import Intel AMT devices",
       "nl": "Importeer Intel AMT apparaten",
       "pl": "Importuj urządzenia Intel AMT",
-      "fr": "Importer des appareils Intel AMT",
       "xloc": [
         "default.handlebars->47->477"
       ]
@@ -34124,7 +34082,6 @@
       "en": "Import Intel&reg; AMT devices.",
       "nl": "Importeer Intel&reg; AMT apparaten.",
       "pl": "Importuj urządzenia Intel&reg; AMT.",
-      "fr": "Importer des appareils Intel® AMT",
       "xloc": [
         "default.handlebars->47->1995"
       ]
@@ -34519,7 +34476,6 @@
     },
     {
       "en": "Information at Pushover.net",
-      "fr": "Informations sur Pushover.net",
       "xloc": [
         "default.handlebars->47->1589",
         "default.handlebars->47->2796"
@@ -35244,7 +35200,6 @@
       "en": "Intel&reg; AMT Device Import",
       "nl": "Intel&reg; AMT apparaat importeren",
       "pl": "Import Urządzenia Intel&reg; AMT",
-      "fr": "Import de l'appareil Intel® AMT",
       "xloc": [
         "default.handlebars->47->479",
         "default.handlebars->47->480",
@@ -35448,7 +35403,6 @@
       "en": "Intel&reg; AMT Power on to BIOS",
       "nl": "Intel&reg; AMT opstarten naar de BIOS",
       "pl": "Intel&reg; AMT Uruchom do BIOS",
-      "fr": "Démarrage dans le BIOS via Intel® AMT",
       "xloc": [
         "default.handlebars->47->1158"
       ]
@@ -35513,7 +35467,6 @@
       "en": "Intel&reg; AMT Reset to BIOS",
       "nl": "Intel&reg; AMT reset naar de BIOS",
       "pl": "Intel&reg; AMT Resetuj do BIOS",
-      "fr": "Réinitialisation du BIOS par Intel® AMT",
       "xloc": [
         "default.handlebars->47->1157"
       ]
@@ -37122,7 +37075,6 @@
     {
       "en": "Invalid message",
       "nl": "Ongeldig bericht",
-      "fr": "Message erroné",
       "xloc": [
         "default.handlebars->47->3053"
       ]
@@ -37161,7 +37113,6 @@
       "en": "Invalid security check.",
       "nl": "Ongeldige beveiligingscontrole.",
       "pl": "Błędna walidacja bezpieczeństwa.",
-      "fr": "Vérification de la sécurité non valide.",
       "xloc": [
         "login-mobile.handlebars->5->22",
         "login.handlebars->5->24",
@@ -37827,7 +37778,6 @@
     {
       "en": "Join this Discord server to receive notifications.",
       "nl": "Word lid van deze Discord-server om meldingen te ontvangen.",
-      "fr": "Rejoindre ce serveur Discord pour recevoir les notifications.",
       "xloc": [
         "default.handlebars->47->1585",
         "default.handlebars->47->2792"
@@ -39065,7 +39015,6 @@
       "en": "Last connection time records",
       "nl": "Laatste verbindingstijd vermeldingen",
       "pl": "Zapisy czasu ostatnich połączeń",
-      "fr": "Enregistrements des dernières connexions",
       "xloc": [
         "default.handlebars->47->2993"
       ]
@@ -42886,7 +42835,6 @@
     {
       "en": "Manage messaging",
       "nl": "Beheer berichtenservice",
-      "fr": "Gérer la messagerie",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->manageMessaging2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageMessaging1->1->0"
@@ -44645,7 +44593,6 @@
     {
       "en": "Message error",
       "nl": "Bericht fout",
-      "fr": "Message d'erreur",
       "xloc": [
         "default.handlebars->47->3055"
       ]
@@ -44653,7 +44600,6 @@
     {
       "en": "Message error: {0}",
       "nl": "Bericht fout: {0}",
-      "fr": "Message d'erreur : {0}",
       "xloc": [
         "default.handlebars->47->3056"
       ]
@@ -44661,7 +44607,6 @@
     {
       "en": "Message sent.",
       "nl": "Bericht verzonden.",
-      "fr": "Message envoyé.",
       "xloc": [
         "login.handlebars->5->6",
         "login2.handlebars->7->7"
@@ -44670,7 +44615,6 @@
     {
       "en": "Message succesfully sent.",
       "nl": "Bericht succesvol verzonden",
-      "fr": "Message envoyé.",
       "xloc": [
         "default.handlebars->47->3054"
       ]
@@ -44730,7 +44674,6 @@
     {
       "en": "Messaging",
       "nl": "Berichten",
-      "fr": "Messagerie",
       "xloc": [
         "default.handlebars->47->2706",
         "default.handlebars->47->2754",
@@ -44741,7 +44684,6 @@
     },
     {
       "en": "Messaging ({0})",
-      "fr": "Messagerie ({0})",
       "xloc": [
         "default.handlebars->47->1978",
         "default.handlebars->47->892"
@@ -44750,7 +44692,6 @@
     {
       "en": "Messaging Notifications",
       "nl": "Berichten notificaties",
-      "fr": "Notifications de la messagerie",
       "xloc": [
         "default.handlebars->47->1031",
         "default.handlebars->47->1574",
@@ -44763,7 +44704,6 @@
     {
       "en": "Messaging account for this user.",
       "nl": "Berichtenaccount voor deze gebruiker.",
-      "fr": "Compte de messagerie de cet utilisateur.",
       "xloc": [
         "default.handlebars->47->2781"
       ]
@@ -44771,7 +44711,6 @@
     {
       "en": "Messaging enabled",
       "nl": "Berichten ingeschakeld",
-      "fr": "Messagerie activée",
       "xloc": [
         "default.handlebars->47->2707"
       ]
@@ -44806,7 +44745,6 @@
     {
       "en": "Messenging",
       "nl": "Berichten",
-      "fr": "Messagerie",
       "xloc": [
         "default.handlebars->47->2978"
       ]
@@ -46134,7 +46072,6 @@
       "en": "Network interface information records",
       "nl": "Netwerkinterface informatie vermeldingen",
       "pl": "Zapisy informacji o interfejsach sieciowych",
-      "fr": "Enregistrements des informations réseau",
       "xloc": [
         "default.handlebars->47->2991"
       ]
@@ -51760,7 +51697,6 @@
       "en": "Perform Intel&reg; AMT power on to BIOS?",
       "nl": "Perform Intel&reg; AMT opstarten naar de BIOS?",
       "pl": "Czy wykonać Intel&reg; AMT uruchomienie do BIOS?",
-      "fr": "Démarrer dans le BIOS via Intel® AMT ?",
       "xloc": [
         "default.handlebars->47->1181"
       ]
@@ -51797,7 +51733,6 @@
       "en": "Perform Intel&reg; AMT reset to BIOS?",
       "nl": "Perform Intel&reg; AMT resetten naar de BIOS?",
       "pl": "Czy wykonać Intel&reg; AMT resetowanie do BIOS?",
-      "fr": "Réinitialiser le BIOS via Intel® AMT ?",
       "xloc": [
         "default.handlebars->47->1183"
       ]
@@ -52661,7 +52596,6 @@
       "en": "Port",
       "nl": "Poort",
       "pl": "Port",
-      "fr": "Port",
       "xloc": [
         "default.handlebars->47->1139",
         "default.handlebars->47->1140"
@@ -54103,7 +54037,6 @@
     },
     {
       "en": "Pushover",
-      "fr": "Pushover",
       "xloc": [
         "default.handlebars->47->1580",
         "default.handlebars->47->2787"
@@ -55814,7 +55747,6 @@
     },
     {
       "en": "Remote Control & Relay",
-      "fr": "Contrôle et relais distant",
       "xloc": [
         "default.handlebars->47->2124"
       ]
@@ -57199,7 +57131,6 @@
     {
       "en": "Remove messaging",
       "nl": "Berichtenservice verwijderen",
-      "fr": "Supprimer le messagerie",
       "xloc": [
         "default.handlebars->47->1573"
       ]
@@ -57600,7 +57531,6 @@
     {
       "en": "Removed messaging account of user {0}",
       "nl": "Berichtenaccount van gebruiker {0} verwijderd",
-      "fr": "Compte de messagerie de l'utilisateur {0} supprimé",
       "xloc": [
         "default.handlebars->47->2453"
       ]
@@ -58109,7 +58039,6 @@
       "en": "Request:",
       "nl": "Verzoek:",
       "pl": "Prośba:",
-      "fr": "Demande :",
       "xloc": [
         "device-help.html->2->5"
       ]
@@ -58119,7 +58048,6 @@
       "en": "Request: \"[[[HELPREQUEST]]]\"",
       "nl": "Verzoek: \"[[[HELPREQUEST]]]\"",
       "pl": "Prośba: \"[[[HELPREQUEST]]]\"",
-      "fr": "Demande : \"[[[HELPREQUEST]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -59032,7 +58960,6 @@
       "en": "Run",
       "nl": "Uitvoeren",
       "pl": "Wykonaj",
-      "fr": "Exécuter",
       "xloc": [
         "default.handlebars->47->927"
       ]
@@ -59097,7 +59024,6 @@
       "en": "Run a script on this computer",
       "nl": "Voer een script uit op deze computer",
       "pl": "Wykonaj skrypt na tym komputerze",
-      "fr": "Exécuter un script sur cet appareil",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -59764,7 +59690,6 @@
     {
       "en": "SMS succesfully sent.",
       "nl": "SMS succesvol verzonden.",
-      "fr": "SMS envoyé.",
       "xloc": [
         "default.handlebars->47->3049"
       ]
@@ -60947,7 +60872,6 @@
       "en": "Security Check:",
       "nl": "Veiligheidscontrole:",
       "pl": "Walidacja Bezpieczeństwa:",
-      "fr": "Vérification de la sécurité :",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->newAccountCaptcha->nuCaptcha",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->newAccountCaptcha->nuCaptcha",
@@ -61012,7 +60936,6 @@
       "en": "Security check",
       "nl": "Veiligheidscontrole",
       "pl": "Walidacja bezpieczeństwa",
-      "fr": "Vérification de la sécurité",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
@@ -61568,7 +61491,6 @@
     {
       "en": "Send Message",
       "nl": "Bericht versturen",
-      "fr": "Envoyer le message",
       "xloc": [
         "default.handlebars->47->2529"
       ]
@@ -61654,7 +61576,6 @@
     {
       "en": "Send a message to this user",
       "nl": "Stuur een bericht naar deze gebruiker",
-      "fr": "Envoyer un message à l'utilisateur",
       "xloc": [
         "default.handlebars->47->2762"
       ]
@@ -61819,7 +61740,6 @@
     {
       "en": "Send token to messaging application?",
       "nl": "Token naar berichtentoepassing verzenden?",
-      "fr": "Envoyer le jeton à l'application de messagerie ?",
       "xloc": [
         "login.handlebars->5->33",
         "login2.handlebars->7->40"
@@ -62806,7 +62726,6 @@
       "en": "Server is unable to get recordings from the database.",
       "nl": "Server kan geen opnamen uit de database halen.",
       "pl": "Serwer nie może pobrać zapisów z bazy danych.",
-      "fr": "Le serveur ne peut pas récupérer les enregistrements dans la base de données.",
       "xloc": [
         "default.handlebars->47->2877"
       ]
@@ -62816,7 +62735,6 @@
       "en": "Server is unable to read from the recordings folder.",
       "nl": "Server kan niet lezen uit de opnamemap.",
       "pl": "Serwer nie może odczytać zapisów z folderu.",
-      "fr": "Le serveur ne peut pas lire dans répertoire d'enregistrement.",
       "xloc": [
         "default.handlebars->47->2876"
       ]
@@ -62826,7 +62744,6 @@
       "en": "Server statistics records",
       "nl": "Server statistieken vermeldingen",
       "pl": "Zapisy statystyk serwera",
-      "fr": "Enregistrements des statistiques du serveur",
       "xloc": [
         "default.handlebars->47->2996"
       ]
@@ -62911,7 +62828,6 @@
     {
       "en": "Service",
       "nl": "Service",
-      "fr": "Service",
       "xloc": [
         "default.handlebars->47->1583",
         "default.handlebars->47->2790"
@@ -64743,7 +64659,6 @@
     },
     {
       "en": "Signal",
-      "fr": "Signal",
       "xloc": [
         "default.handlebars->47->1586",
         "default.handlebars->47->2793"
@@ -64751,8 +64666,7 @@
     },
     {
       "en": "Signal Messenger",
-      "nl": "Signal Messenger",
-      "fr": "Signal Messenger"
+      "nl": "Signal Messenger"
     },
     {
       "bs": "Jednostavni način rada administratora (ACM)",
@@ -68322,7 +68236,6 @@
     {
       "en": "Telegram",
       "nl": "Telegram",
-      "fr": "Telegram",
       "xloc": [
         "default.handlebars->47->1576",
         "default.handlebars->47->2783"
@@ -68650,7 +68563,6 @@
       "en": "Text notes records",
       "nl": "Tekst notities vermeldingen",
       "pl": "Zapisy notatek tekstowych",
-      "fr": "Enregistrements des notes",
       "xloc": [
         "default.handlebars->47->2990"
       ]
@@ -69045,7 +68957,6 @@
     {
       "en": "This NodeJS version does not support Discord.js.",
       "nl": "Deze NodeJS versie ondersteunt geen Discord.js.",
-      "fr": "Cette version de NodeJS ne supporte pas Discord.js.",
       "xloc": [
         "default.handlebars->47->108"
       ]
@@ -69055,7 +68966,6 @@
       "en": "This NodeJS version does not support OpenID.",
       "nl": "Deze NodeJS-versie ondersteunt OpenID niet.",
       "pl": "Obecna wersja NodeJS nie wspiera OpenID.",
-      "fr": "Cette version de NodeJS ne supporte pas OpenID.",
       "xloc": [
         "default.handlebars->47->107"
       ]
@@ -71962,7 +71872,6 @@
       "en": "Unable to load agent icon file: {0}.",
       "nl": "Kan agent pictogram bestand niet laden: {0}.",
       "pl": "Nie moge załadować pliku ikony agenta: {0}.",
-      "fr": "Impossible de charger l'icône de l'agent : {0}.",
       "xloc": [
         "default.handlebars->47->105"
       ]
@@ -71972,7 +71881,6 @@
       "en": "Unable to load agent logo file: {0}.",
       "nl": "Kan agent logo bestand niet laden: {0}.",
       "pl": "Nie moge załadować pliku logo agenta: {0}.",
-      "fr": "Impossible de charger le logo de l'agent : {0}.",
       "xloc": [
         "default.handlebars->47->106"
       ]
@@ -73441,7 +73349,6 @@
     },
     {
       "en": "Use as Relay",
-      "fr": "Utiliser comme un relais",
       "xloc": [
         "default.handlebars->47->2142"
       ]
@@ -73702,7 +73609,6 @@
       "en": "User Authentication Log",
       "nl": "Gebruikersauthenticatielogboek",
       "pl": "Dziennik Autentykacji Użytkownika",
-      "fr": "Journaux d'authentification utilisateurs",
       "xloc": [
         "default.handlebars->47->3138"
       ]
@@ -74432,7 +74338,6 @@
       "en": "User group records",
       "nl": "Gebruikersgroep vermeldingen",
       "pl": "Zapisy grupy użytkownika",
-      "fr": "Enregistrements des groupes de l'utilisateur",
       "xloc": [
         "default.handlebars->47->2997"
       ]
@@ -74470,7 +74375,6 @@
     },
     {
       "en": "User key",
-      "fr": "Clé de l'utilisateur",
       "xloc": [
         "default.handlebars->47->1595",
         "default.handlebars->47->2802"
@@ -74559,7 +74463,6 @@
       "en": "User records",
       "nl": "Gebruikers vermeldingen",
       "pl": "Zapisy użytkownika",
-      "fr": "Enregistrements des utilisateurs",
       "xloc": [
         "default.handlebars->47->2987"
       ]
@@ -74596,7 +74499,6 @@
       "en": "User:",
       "nl": "Gebruiker:",
       "pl": "Użytkownik:",
-      "fr": "Utilisateur :",
       "xloc": [
         "device-help.html->2->5"
       ]
@@ -74606,7 +74508,6 @@
       "en": "User: \"[[[HELPUSERNAME]]]\"",
       "nl": "Gebruiker: \"[[[HELPUSERNAME]]]\"",
       "pl": "Użytkownik: \"[[[HELPUSERNAME]]]\"",
-      "fr": "Utilistateur : \"[[[HELPUSERNAME]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -74807,7 +74708,6 @@
     {
       "en": "Username:0000",
       "nl": "Gebruikersnaam:0000",
-      "fr": "Nom d'utilisateur : 0000",
       "xloc": [
         "default.handlebars->47->1592",
         "default.handlebars->47->2799"
@@ -75271,7 +75171,6 @@
     {
       "en": "Verified handle",
       "nl": "Geverifieerde handeling",
-      "fr": "Identifiant vérifié",
       "xloc": [
         "default.handlebars->47->1572"
       ]
@@ -75279,7 +75178,6 @@
     {
       "en": "Verified messaging account",
       "nl": "Geverifieerd berichtenaccount",
-      "fr": "Compte de messagerie vérifié",
       "xloc": [
         "default.handlebars->47->2514"
       ]
@@ -75287,7 +75185,6 @@
     {
       "en": "Verified messaging account of user {0}",
       "nl": "Geverifieerd berichtenaccount van gebruiker {0}",
-      "fr": "Compte de messagerie vérifié pour l'utilisateur {0}",
       "xloc": [
         "default.handlebars->47->2452"
       ]
@@ -76741,7 +76638,6 @@
     },
     {
       "en": "Whatsapp",
-      "fr": "Whatsapp",
       "xloc": [
         "default.handlebars->47->1587",
         "default.handlebars->47->2794"
@@ -78409,7 +78305,6 @@
     },
     {
       "en": "Zulip",
-      "fr": "Zulip",
       "xloc": [
         "default.handlebars->47->1582",
         "default.handlebars->47->2789"
@@ -78550,7 +78445,6 @@
       "en": "[[[DEVICENAME]]]",
       "nl": "[[[DEVICENAME]]]",
       "pl": "[[[DEVICENAME]]]",
-      "fr": "[[[DEVICENAME]]]",
       "xloc": [
         "device-help.html->2->3->1"
       ]
@@ -78660,7 +78554,6 @@
       "en": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Help Request",
       "nl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Verzoek om hulp",
       "pl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Prośba Pomocy",
-      "fr": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Demande d'assistance",
       "xloc": [
         "device-help.html->0"
       ]
@@ -78779,7 +78672,6 @@
       "en": "[[[SERVERNAME]]] - Device Help Request",
       "nl": "[[[SERVERNAME]]] - Een verzoek om het apparaat te helpen",
       "pl": "[[[SERVERNAME]]] - Prośba Pomocy Urządzenia",
-      "fr": "[[[SERVERNAME]]] - Demande d'assistance sur l'appareil",
       "xloc": [
         "device-help.txt"
       ]
@@ -78844,7 +78736,6 @@
       "en": "[[[SERVERNAME]]] - Help Request",
       "nl": "[[[SERVERNAME]]] - Verzoek om hulp",
       "pl": "[[[SERVERNAME]]] - Prośba Pomocy",
-      "fr": "[[[SERVERNAME]]] - Demande d'assistance",
       "xloc": [
         "device-help.html->2->1->1->0->1->1"
       ]
@@ -78908,7 +78799,6 @@
       "en": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
       "nl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
       "pl": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
-      "fr": "[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]",
       "xloc": [
         "device-help.txt"
       ]
@@ -80042,7 +79932,6 @@
     },
     {
       "en": "https://api.callmebot.com/...",
-      "fr": "https://api.callmebot.com/...",
       "xloc": [
         "default.handlebars->47->1594",
         "default.handlebars->47->2801"
@@ -80807,7 +80696,6 @@
     },
     {
       "en": "ntfy",
-      "fr": "ntfy",
       "xloc": [
         "default.handlebars->47->1581",
         "default.handlebars->47->2788"
@@ -81235,7 +81123,6 @@
       "en": "to navigate to this device.",
       "nl": "naar dit apparaat navigeren.",
       "pl": "by nawigować do tego urządzenia.",
-      "fr": "pour naviguer vers cet appareil.",
       "xloc": [
         "device-help.html->2->7"
       ]
@@ -81430,7 +81317,6 @@
     },
     {
       "en": "username@sample.com",
-      "fr": "username@sample.com",
       "xloc": [
         "default.handlebars->47->1597",
         "default.handlebars->47->2804"
@@ -81439,7 +81325,6 @@
     {
       "en": "username@server.com",
       "nl": "gebruikersnaam@server.nl",
-      "fr": "username@server.com",
       "xloc": [
         "default.handlebars->47->1593",
         "default.handlebars->47->2800"
