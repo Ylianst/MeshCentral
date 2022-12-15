@@ -37,6 +37,7 @@
     "sample-config-advanced.json"
   ],
   "dependencies": {
+    "@yetzt/nedb": "^1.8.0",
     "archiver": "^5.3.1",
     "body-parser": "^1.19.0",
     "cbor": "~5.2.0",
@@ -47,8 +48,8 @@
     "express-ws": "^4.0.0",
     "ipcheck": "^0.1.0",
     "minimist": "^1.2.5",
+    "mongodb": "^4.12.1",
     "multiparty": "^4.2.1",
-    "@yetzt/nedb": "^1.8.0",
     "node-forge": "^1.0.0",
     "ws": "^5.2.3",
     "yauzl": "^2.10.0"

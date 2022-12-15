@@ -4002,7 +4002,7 @@ function mainStart() {
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb@4.9.1'); modules.push('saslprep'); } // Add MongoDB, official driver.
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.12.1'); modules.push('saslprep'); } // Add MongoDB, official driver.
         if (config.settings.postgres != null) { modules.push('pg@8.7.1'); modules.push('pgtools@0.3.2'); } // Add Postgres, Postgres driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase'); } // Add AceBase, official driver.
