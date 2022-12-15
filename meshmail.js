@@ -82,8 +82,6 @@ module.exports.CreateMeshMail = function (parent, domain) {
         obj.smtpServer = nodemailer.createTransport(options);
     }
 
-    console.log('obj.emailDelay', obj.emailDelay);
-
     // Get the correct mail template object
     function getTemplate(name, domain, lang) {
         parent.debug('email', 'Getting mail template for: ' + name + ', lang: ' + lang);
