@@ -1051,7 +1051,8 @@
             "properties": {
               "from": { "type": "string", "format": "email", "description": "Email address used in the messages from field." },
               "apikey": { "type": "string", "description": "The SendGrid API key." },
-              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." }
+              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             },
             "required": [ "from", "apikey" ]
           },
@@ -1093,11 +1094,8 @@
               },
               "tlscertcheck": { "type": "boolean" },
               "tlsstrict": { "type": "boolean" },
-              "verifyemail": {
-                "type": "boolean",
-                "default": true,
-                "description": "When set to false, the email format and DNS MX record are not checked."
-              }
+              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             },
             "required": [ "from" ]
           },
@@ -1108,7 +1106,8 @@
             "properties": {
               "newline": { "type": "string", "default": "unix", "description": "Possible values are unix or windows" },
               "path": { "type": "string", "default": "sendmail", "description": "Path to the sendmail command" },
-              "args": { "type": "array", "items": { "type": "string" }, "default": null, "description": "Array or arguments to pass to sendmail" }
+              "args": { "type": "array", "items": { "type": "string" }, "default": null, "description": "Array or arguments to pass to sendmail" },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             }
           },
           "authStrategies": {
