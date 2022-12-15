@@ -583,16 +583,19 @@
     "___tlscertcheck__": "When set to false, the TLS certificate of the SMTP server is not checked.",
     "_tlscertcheck": false,
     "__tlsstrict__": "When set to true, TLS cypher setup is more limited, SSLv2 and SSLv3 are not allowed.",
-    "_tlsstrict": true
+    "_tlsstrict": true,
+    "_emailDelaySeconds": 300
   },
   "_sendgrid": {
     "from": "myemail@myserver.com",
-    "apikey": "***********"
+    "apikey": "***********",
+    "_emailDelaySeconds": 300
   },
   "_sendmail": {
     "newline": "unix",
     "path": "/usr/sbin/sendmail",
-    "_args": [ "-f", "foo@example.com" ]
+    "_args": [ "-f", "foo@example.com" ],
+    "_emailDelaySeconds": 300
   },
   "_sms": {
     "provider": "twilio",
