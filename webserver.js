@@ -5446,7 +5446,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.sendFile(argentInfo.signedMeshCmdPath);
             } else {
                 // Merge JavaScript to a unsigned agent and send that.
-                console.log('aa', argentInfo.path);
                 obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
             }
             return;
