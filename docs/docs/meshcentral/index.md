@@ -1308,6 +1308,8 @@ You can also customize the Agent to add your own logo.
  }
  ```
 
+![agent icon](images/agentico.png)
+
 !!!note
     You will need to reinstall the agent for agent customizations to take effect.
 
@@ -1777,6 +1779,8 @@ The callback URL will be of the form “https://(servername)/auth-saml-callback�
 
 Enabling SAML will require MeshCentral to install extra modules from NPM, so depending on your server configuration, you may need to run MeshCentral once manually.
 
+!!!note
+  MeshCentral only supports "POST". [For example Authentik's](https://github.com/Ylianst/MeshCentral/issues/4725) default setting is to use "Redirect" as a "Service Provider Binding".
 ## Improvements to MeshCentral
 
 In 2007, the first version of MeshCentral was built. We will refer to it as “MeshCentral1”. When MeshCentral1 was designed, HTML5 did not exist and web sockets where not implemented in any of the major browsers. Many design decisions were made at the time that are no longer optimal today. With the advent of the latest MeshCentral, MeshCentral1 is no longer supported and MeshCentral v2 has been significantly redesigned and mostly re-written based of previous version. Here is a list of improvements made in MeshCentral when compared with MeshCentral1:

@@ -469,7 +469,7 @@ module.exports.CreateServer = function (parent) {
 
 
     //
-    // Device connetion and disconnection notifications
+    // Device connection and disconnection notifications
     //
 
     obj.deviceNotifications = {}; // UserId --> { timer, nodes: nodeid --> connectType }
