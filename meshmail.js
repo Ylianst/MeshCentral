@@ -575,7 +575,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
     }
 
     //
-    // Device connetion and disconnection notifications
+    // Device connection and disconnection notifications
     //
 
     obj.deviceNotifications = {}; // UserId --> { timer, nodes: nodeid --> connectType }
