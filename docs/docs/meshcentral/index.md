@@ -1308,6 +1308,8 @@ You can also customize the Agent to add your own logo.
  }
  ```
 
+![agent icon](images/agentico.png)
+
 !!!note
     You will need to reinstall the agent for agent customizations to take effect.
 
