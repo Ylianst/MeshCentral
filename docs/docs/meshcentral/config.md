@@ -534,6 +534,7 @@ See description for information about each item.
               "sms2factor": { "type": "boolean", "default": true, "description": "Set to false to disable SMS 2FA." },
               "push2factor": { "type": "boolean", "default": true, "description": "Set to false to disable push notification 2FA." },
               "otp2factor": { "type": "boolean", "default": true, "description": "Set to false to disable one-time-password 2FA." },
+              "msg2factor": { "type": "boolean", "default": true, "description": "Set to false to disable user messaging 2FA." },
               "backupcode2factor": { "type": "boolean", "default": true, "description": "Set to false to disable 2FA backup codes." },
               "single2factorWarning": { "type": "boolean", "default": true, "description": "Set to false to disable single 2FA warning." },
               "lock2factor": { "type": "boolean", "default": false, "description": "When set to true, prevents any changes to 2FA." },
@@ -1057,7 +1058,8 @@ See description for information about each item.
             "properties": {
               "from": { "type": "string", "format": "email", "description": "Email address used in the messages from field." },
               "apikey": { "type": "string", "description": "The SendGrid API key." },
-              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." }
+              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             },
             "required": [ "from", "apikey" ]
           },
@@ -1099,11 +1101,8 @@ See description for information about each item.
               },
               "tlscertcheck": { "type": "boolean" },
               "tlsstrict": { "type": "boolean" },
-              "verifyemail": {
-                "type": "boolean",
-                "default": true,
-                "description": "When set to false, the email format and DNS MX record are not checked."
-              }
+              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             },
             "required": [ "from" ]
           },
@@ -1114,7 +1113,8 @@ See description for information about each item.
             "properties": {
               "newline": { "type": "string", "default": "unix", "description": "Possible values are unix or windows" },
               "path": { "type": "string", "default": "sendmail", "description": "Path to the sendmail command" },
-              "args": { "type": "array", "items": { "type": "string" }, "default": null, "description": "Array or arguments to pass to sendmail" }
+              "args": { "type": "array", "items": { "type": "string" }, "default": null, "description": "Array or arguments to pass to sendmail" },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             }
           },
           "authStrategies": {
@@ -1306,13 +1306,16 @@ See description for information about each item.
       "required": [ "host", "port", "from", "tls" ]
     },
     "sms": {
-      "title" : "SMS provider",
+      "title": "SMS provider",
       "description": "Connects MeshCentral to a SMS text messaging provider, allows MeshCentral to send SMS messages for 2FA or user notification.",
       "oneOf": [
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "twilio" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "twilio" ]
+            },
             "sid": { "type": "string" },
             "auth": { "type": "string" },
             "from": { "type": "string" }
@@ -1320,9 +1323,12 @@ See description for information about each item.
           "required": [ "provider", "sid", "auth", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "plivo" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "plivo" ]
+            },
             "id": { "type": "string" },
             "token": { "type": "string" },
             "from": { "type": "string" }
@@ -1330,25 +1336,107 @@ See description for information about each item.
           "required": [ "provider", "id", "token", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "telnyx" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "telnyx" ]
+            },
             "apikey": { "type": "string" },
             "from": { "type": "string" }
           },
           "required": [ "provider", "apikey", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "url" ] },
-            "url": { "type": "string", "description": "A http or https URL with {{phone}} and {{message}} in the string. These will be replaced with the URL encoded target phone number and message." }
+            "provider": {
+              "type": "string",
+              "enum": [ "url" ]
+            },
+            "url": {
+              "type": "string",
+              "description": "A http or https URL with {{phone}} and {{message}} in the string. These will be replaced with the URL encoded target phone number and message."
+            }
           },
           "required": [ "url" ]
         }
       ]
+    },
+    "messaging": {
+      "title" : "Messaging server",
+      "description": "This section allow MeshCentral to send messages over user messaging networks like Telegram",
+      "type": "object",
+      "properties": {
+        "telegram": {
+          "type": "object",
+          "description": "Configure Telegram messaging system",
+          "properties": {
+            "apiid": { "type": "number" },
+            "apihash": { "type": "string" },
+            "session": { "type": "string" }
+          }
+        },
+        "discord": {
+          "type": "object",
+          "description": "Configure Discord messaging system",
+          "properties": {
+            "serverurl": { "type": "string", "format": "uri", "description": "An optional HTTP link to the discord server the user must join to get notifications." },
+            "token": { "type": "string", "description": "A Discord bot token that MeshCentral will use to login to Discord." }
+          },
+          "required": [ "token" ]
+        },
+        "xmpp": {
+          "type": "object",
+          "description": "Configure XMPP messaging system",
+          "properties": {
+            "service": { "type": "string", "description": "Host name of the XMPP server." },
+            "credentials": {
+              "type": "object",
+              "description": "Login credentials for the XMPP server.",
+              "properties": {
+                "username": { "type": "string" },
+                "password": { "type": "string" }
+              }
+            }
+          },
+          "required": [ "credentials" ]
+        },
+        "callmebot": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enabled CallMeBot integration support."
+        },
+        "pushover": {
+          "type": "object",
+          "description": "Configure Pushover messaging system",
+          "properties": {
+            "token": { "type": "string", "description": "A Pushover application token that MeshCentral will use to login." }
+          },
+          "required": [ "token" ]
+        },
+        "ntfy": {
+          "type": [ "boolean", "object" ],
+          "default": false,
+          "properties": {
+            "host": { "type": "string", "description": "Host name of the ntfy server." },
+            "userurl": { "type": "string", "description": "A URL given to users to help them setup this service." }
+          },
+          "description": "Enabled ntfy.sh integration support."
+        },
+        "zulip": {
+          "type": "object",
+          "properties": {
+            "site": { "type": "string", "format": "uri", "default": "https://api.zulip.com", "description": "URL to the Zulip server"},
+            "email": { "type": "string", "description": "Bot email address to login as." },
+            "api_key": { "type": "string", "description": "Bot api key." }
+          },
+          "description": "Enabled Zulip integration support."
+        }
+      }
     }
   },
   "required": [ "settings", "domains" ]
 }
+
 ```
