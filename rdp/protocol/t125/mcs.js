@@ -50,7 +50,7 @@ var Channel = {
 };
 
 /**
- * Channel Definde
+ * Channel Defined
  */
 const RdpdrChannelDef = new type.Component({
     name: new type.BinaryString(Buffer.from('rdpdr' + '\x00\x00\x00', 'binary'), { readLength: new type.CallableValue(8) }),
@@ -239,7 +239,7 @@ function Client(transport) {
     this.clientNetworkData = gcc.clientNetworkData(new type.Component([RdpdrChannelDef, CliprdrChannelDef, RdpsndChannelDef]));
 	this.clientSecurityData = gcc.clientSecurityData();
 	
-	// must be readed from protocol
+	// must be read from protocol
 	this.serverCoreData = null;
 	this.serverSecurityData = null;
 	this.serverNetworkData = null;
@@ -414,7 +414,7 @@ Client.prototype.connectChannels = function(s) {
 			self.recv(s);
 		});
 		
-		// send client and sever gcc informations
+		// send client and sever gcc information
 		this.emit('connect', 
 				{
 					core : this.clientCoreData.obj, 
@@ -497,7 +497,7 @@ Server.prototype.recvConnectInitial = function (s) {
 };
 
 /**
- * State 2 in mcs server connetion automata
+ * State 2 in mcs server connection automata
  */
 Server.prototype.sendConnectResponse = function () {
 	var ccReq = gcc.writeConferenceCreateResponse(new type.Component([
