@@ -13265,6 +13265,7 @@
     },
     {
       "en": "CallMeBot",
+      "nl": "CallMeBot",
       "fr": "CallMeBot",
       "xloc": [
         "default.handlebars->47->1579",
@@ -25923,6 +25924,7 @@
     },
     {
       "en": "Email ({0})",
+      "nl": "Email ({0})",
       "fr": "Email ({0})",
       "xloc": [
         "default.handlebars->47->1977",
@@ -28557,6 +28559,7 @@
     },
     {
       "en": "Facebook",
+      "nl": "Facebook",
       "fr": "Facebook",
       "xloc": [
         "default.handlebars->47->1588",
@@ -30146,6 +30149,7 @@
     },
     {
       "en": "Free service at ntfy.sh",
+      "nl": "Gratis service via ntfy.sh",
       "fr": "Service gratuit sur ntfy.sh",
       "xloc": [
         "default.handlebars->47->1590",
@@ -34519,6 +34523,7 @@
     },
     {
       "en": "Information at Pushover.net",
+      "en": "Informatie op Pushover.net",
       "fr": "Informations sur Pushover.net",
       "xloc": [
         "default.handlebars->47->1589",
@@ -44741,6 +44746,7 @@
     },
     {
       "en": "Messaging ({0})",
+      "nl": "Berichten ({0})",
       "fr": "Messagerie ({0})",
       "xloc": [
         "default.handlebars->47->1978",
@@ -54103,6 +54109,7 @@
     },
     {
       "en": "Pushover",
+      "nl": "Pushover",
       "fr": "Pushover",
       "xloc": [
         "default.handlebars->47->1580",
@@ -55814,6 +55821,7 @@
     },
     {
       "en": "Remote Control & Relay",
+      "nl": "Extern beheer & Relay",
       "fr": "Contrôle et relais distant",
       "xloc": [
         "default.handlebars->47->2124"
@@ -64743,6 +64751,7 @@
     },
     {
       "en": "Signal",
+      "nl": "Signal",
       "fr": "Signal",
       "xloc": [
         "default.handlebars->47->1586",
@@ -73441,6 +73450,7 @@
     },
     {
       "en": "Use as Relay",
+      "nl": "Gebruik als relay",
       "fr": "Utiliser comme un relais",
       "xloc": [
         "default.handlebars->47->2142"
@@ -74470,6 +74480,7 @@
     },
     {
       "en": "User key",
+      "nl": "Gebruikerssleutel",
       "fr": "Clé de l'utilisateur",
       "xloc": [
         "default.handlebars->47->1595",
@@ -76741,6 +76752,7 @@
     },
     {
       "en": "Whatsapp",
+      "nl": "Whatsapp",
       "fr": "Whatsapp",
       "xloc": [
         "default.handlebars->47->1587",
@@ -78409,6 +78421,7 @@
     },
     {
       "en": "Zulip",
+      "nl": "Zulip",
       "fr": "Zulip",
       "xloc": [
         "default.handlebars->47->1582",
@@ -80042,6 +80055,7 @@
     },
     {
       "en": "https://api.callmebot.com/...",
+      "nl": "https://api.callmebot.com/...",
       "fr": "https://api.callmebot.com/...",
       "xloc": [
         "default.handlebars->47->1594",
@@ -80807,6 +80821,7 @@
     },
     {
       "en": "ntfy",
+      "nl": "ntfy"
       "fr": "ntfy",
       "xloc": [
         "default.handlebars->47->1581",
@@ -81430,6 +81445,7 @@
     },
     {
       "en": "username@sample.com",
+      "nl": "gebruikersnaam@voorbeeld.com",
       "fr": "username@sample.com",
       "xloc": [
         "default.handlebars->47->1597",
