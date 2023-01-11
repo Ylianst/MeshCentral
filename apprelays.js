@@ -35,28 +35,29 @@ const PROTOCOL_WEBSFTP = 203;
 const PROTOCOL_WEBVNC = 204;
 
 // Mesh Rights
-const MESHRIGHT_EDITMESH = 0x00000001; // 1
-const MESHRIGHT_MANAGEUSERS = 0x00000002; // 2
-const MESHRIGHT_MANAGECOMPUTERS = 0x00000004; // 4
-const MESHRIGHT_REMOTECONTROL = 0x00000008; // 8
-const MESHRIGHT_AGENTCONSOLE = 0x00000010; // 16
-const MESHRIGHT_SERVERFILES = 0x00000020; // 32
-const MESHRIGHT_WAKEDEVICE = 0x00000040; // 64
-const MESHRIGHT_SETNOTES = 0x00000080; // 128
-const MESHRIGHT_REMOTEVIEWONLY = 0x00000100; // 256
-const MESHRIGHT_NOTERMINAL = 0x00000200; // 512
-const MESHRIGHT_NOFILES = 0x00000400; // 1024
-const MESHRIGHT_NOAMT = 0x00000800; // 2048
-const MESHRIGHT_DESKLIMITEDINPUT = 0x00001000; // 4096
-const MESHRIGHT_LIMITEVENTS = 0x00002000; // 8192
-const MESHRIGHT_CHATNOTIFY = 0x00004000; // 16384
-const MESHRIGHT_UNINSTALL = 0x00008000; // 32768
-const MESHRIGHT_NODESKTOP = 0x00010000; // 65536
-const MESHRIGHT_REMOTECOMMAND = 0x00020000; // 131072
-const MESHRIGHT_RESETOFF = 0x00040000; // 262144
-const MESHRIGHT_GUESTSHARING = 0x00080000; // 524288
-const MESHRIGHT_DEVICEDETAILS = 0x00100000; // 1048576
-const MESHRIGHT_ADMIN = 0xFFFFFFFF;
+const MESHRIGHT_EDITMESH            = 0x00000001; // 1
+const MESHRIGHT_MANAGEUSERS         = 0x00000002; // 2
+const MESHRIGHT_MANAGECOMPUTERS     = 0x00000004; // 4
+const MESHRIGHT_REMOTECONTROL       = 0x00000008; // 8
+const MESHRIGHT_AGENTCONSOLE        = 0x00000010; // 16
+const MESHRIGHT_SERVERFILES         = 0x00000020; // 32
+const MESHRIGHT_WAKEDEVICE          = 0x00000040; // 64
+const MESHRIGHT_SETNOTES            = 0x00000080; // 128
+const MESHRIGHT_REMOTEVIEWONLY      = 0x00000100; // 256
+const MESHRIGHT_NOTERMINAL          = 0x00000200; // 512
+const MESHRIGHT_NOFILES             = 0x00000400; // 1024
+const MESHRIGHT_NOAMT               = 0x00000800; // 2048
+const MESHRIGHT_DESKLIMITEDINPUT    = 0x00001000; // 4096
+const MESHRIGHT_LIMITEVENTS         = 0x00002000; // 8192
+const MESHRIGHT_CHATNOTIFY          = 0x00004000; // 16384
+const MESHRIGHT_UNINSTALL           = 0x00008000; // 32768
+const MESHRIGHT_NODESKTOP           = 0x00010000; // 65536
+const MESHRIGHT_REMOTECOMMAND       = 0x00020000; // 131072
+const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
+const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
+const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
+const MESHRIGHT_RELAY               = 0x00200000; // 2097152
+const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
 // SerialTunnel object is used to embed TLS within another connection.
 function SerialTunnel(options) {
@@ -69,7 +70,7 @@ function SerialTunnel(options) {
 }
 
 // Construct a Web relay object
-module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid, expire) {
+module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, userid, nodeid, addr, port, appid, sessionid, expire, mtype) {
     const obj = {};
     obj.parent = parent;
     obj.lastOperation = Date.now();
@@ -81,6 +82,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
     obj.appid = appid;
     obj.sessionid = sessionid;
     obj.expireTimer = null;
+    obj.mtype = mtype;
     var pendingRequests = [];
     var nextTunnelId = 1;
     var tunnels = {};
@@ -164,7 +166,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         // Launch a new tunnel
         if (obj.closed == true) return;
         parent.parent.debug('webrelay', 'launchNewTunnel');
-        const tunnel = module.exports.CreateWebRelay(obj, db, args, domain);
+        const tunnel = module.exports.CreateWebRelay(obj, db, args, domain, obj.mtype);
         tunnel.onclose = function (tunnelId, processedCount) {
             if (tunnels == null) return;
             parent.parent.debug('webrelay', 'tunnel-onclose');
@@ -238,7 +240,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
 
 // Construct a Web relay object
-module.exports.CreateWebRelay = function (parent, db, args, domain) {
+module.exports.CreateWebRelay = function (parent, db, args, domain, mtype) {
     //const Net = require('net');
     const WebSocket = require('ws')
 
@@ -249,6 +251,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     obj.isWebSocket = false; // If true, this request will not close and so, it can't be allowed to hold up other requests
     obj.isStreaming = false; // If true, this request will not close and so, it can't be allowed to hold up other requests
     obj.processedRequestCount = 0;
+    obj.mtype = mtype;
     const constants = (require('crypto').constants ? require('crypto').constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Events
@@ -260,7 +263,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
     // Called when we need to close the tunnel because the response stream has closed
     function handleResponseClosure() { obj.close(); }
 
-    // Return copkie name and values
+    // Return cookie name and values
     function parseRequestCookies(cookiesString) {
         var r = {};
         if (typeof cookiesString != 'string') return r;
@@ -282,7 +285,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
-        const blockedHeaders = ['origin', 'cookie', 'upgrade-insecure-requests', 'sec-ch-ua', 'sec-ch-ua-mobile', 'dnt', 'sec-fetch-user', 'sec-ch-ua-platform', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest']; // These are headers we do not forward
+        const blockedHeaders = ['cookie', 'upgrade-insecure-requests', 'sec-ch-ua', 'sec-ch-ua-mobile', 'dnt', 'sec-fetch-user', 'sec-ch-ua-platform', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest']; // These are headers we do not forward
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         var cookieStr = '';
         for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
@@ -331,7 +334,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
         // Construct the HTTP request
         var request = req.method + ' ' + req.url + ' HTTP/' + req.httpVersion + '\r\n';
-        const blockedHeaders = ['origin', 'cookie', 'sec-websocket-extensions']; // These are headers we do not forward
+        const blockedHeaders = ['cookie', 'sec-websocket-extensions']; // These are headers we do not forward
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         var cookieStr = '';
         for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
@@ -437,7 +440,7 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
         obj.relayActive = false;
     };
 
-    // Start the looppback server
+    // Start the loopback server
     obj.connect = function (userid, nodeid, addr, port, appid) {
         if (obj.relayActive || obj.closed) return;
         obj.addr = addr;
@@ -687,7 +690,8 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
 
             // If there is a header, send it
             if (header != null) {
-                obj.res.status(parseInt(header.Directive[1])); // Set the status
+                const statusCode = parseInt(header.Directive[1]);
+                if ((!isNaN(statusCode)) && (statusCode > 0) && (statusCode <= 999)) { obj.res.status(statusCode); } // Set the status
                 const blockHeaders = ['Directive', 'sec-websocket-extensions', 'connection', 'transfer-encoding', 'last-modified', 'content-security-policy', 'cache-control']; // We do not forward these headers 
                 for (var i in header) {
                     if (i == 'set-cookie') {
@@ -715,12 +719,13 @@ module.exports.CreateWebRelay = function (parent, db, args, domain) {
                     }
                     else if (blockHeaders.indexOf(i) == -1) { obj.res.set(i, header[i]); } // Set the headers if not blocked
                 }
-                obj.res.set('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"); // Set an "allow all" policy, see if the can restrict this in the future
+                obj.res.set('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"); // Set an "allow all" policy, see if the can restrict this in the future
+                //obj.res.set('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"); // Set an "allow all" policy, see if the can restrict this in the future
                 obj.res.set('Cache-Control', 'no-store'); // Tell the browser not to cache the responses since since the relay port can be used for many relays
             }
 
             // If there is data, send it
-            if (data != null) { obj.res.write(data, 'binary'); }
+            if (data != null) { try { obj.res.write(data, 'binary'); } catch (ex) { } }
 
             // If we are done, close the response
             if (done == true) {
@@ -815,7 +820,7 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                 obj.relaySocket = socket;
                 obj.relaySocket.pause();
                 obj.relaySocket.on('data', function (chunk) { // Make sure to handle flow control.
-                    if (obj.relayActive == true) { obj.relaySocket.pause(); obj.wsClient.send(chunk, function () { obj.relaySocket.resume(); }); }
+                    if (obj.relayActive == true) { obj.relaySocket.pause(); if (obj.wsClient != null) { obj.wsClient.send(chunk, function () { obj.relaySocket.resume(); }); } }
                 });
                 obj.relaySocket.on('end', function () { obj.close(); });
                 obj.relaySocket.on('error', function (err) { obj.close(); });
@@ -2328,6 +2333,6 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 function checkRelayRights(parent, domain, user, relayNodeId, func) {
     if (relayNodeId == null) { func(true); return; } // No relay, do nothing.
     parent.GetNodeWithRights(domain, user, relayNodeId, function (node, rights, visible) {
-        func((node != null) && (rights == 0xFFFFFFFF));
+        func((node != null) && ((rights & 0x00200008) != 0)); // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights
     });
 }

@@ -1,5 +1,23 @@
 # Device Tabs
 
+## Search or Filter
+
+You can search your list of agents using any of these criteria using the filter box (also viewable in the tooltip of the Filter box):
+
+user:xxx or u:xxx
+ip:xxx
+group:xxx or g:xxx
+tag:xxx or t:xxx
+atag:xxx or a:xxx
+os:xxx
+amt:xxx
+desc:xxx
+wsc:ok
+wsc:noav
+wsc:noupdate
+wsc:nofirewall
+wsc:any
+
 ## General
 
 For viewing general information about the agent
@@ -192,3 +210,60 @@ Note you can show CPU and Memory usage info by clicking the icon in the top righ
 For debugging and communicating with the mesh agent.
 
 It allows JS commands to be issued to the device but also run extra commands from the meshcore. Type `help` for all available options
+
+- 2falock
+- acceleratorsstats
+- agentissues
+- agentstats
+- amtacm
+- amtmanager
+- amtpasswords
+- amtstats
+- args
+- autobackup
+- backupconfig
+- bad2fa
+- badlogins
+- certexpire
+- certhashes
+- closeusersessions
+- cores
+- dbcounters
+- dbstats
+- dispatchtable
+- dropallcira
+- dupagents
+- email
+- emailnotifications
+- firebase
+- heapdump
+- heapdump2
+- help
+- info
+- le
+- lecheck
+- leevents
+- maintenance
+- migrationagents
+- mps
+- mpsstats
+- msg
+- nodeconfig
+- print
+- relays
+- removeinactivedevices
+- resetserver
+- serverupdate
+- setmaxtasks
+- showpaths
+- sms
+- swarmstats
+- tasklimiter
+- trafficdelta
+- trafficstats
+- updatecheck
+- usersessions
+- versions
+- watchdog
+- webpush
+- webstats

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
+  "$schema": "https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json",
   "__comment__": "This is a sample configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
   "settings": {
     "_cert": "myserver.mydomain.com",
@@ -180,6 +180,7 @@
       "_loginPicture": "title-sample.png",
       "_rootRedirect": "https://www.youtube.com/watch?v=Gs069dndIYk",
       "_mobileSite": false,
+      "_maxDeviceView": 1000,
       "_unknownUserRootRedirect": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE",
       "_nightMode": 1,
       "_userQuota": 1048576,
@@ -519,7 +520,15 @@
           "tokenURL": "https://sso.server.com/api/oidc/token",
           "userInfoURL": "https://sso.server.com/api/oidc/userinfo",
           "logoutURL": "https://sso.server.com/logout",
-          "newAccounts": true
+          "newAccounts": true,
+          "groups": {
+            "required": [ "groupA", "groupB", "groupC" ],
+            "siteadmin": [ "groupA" ],
+            "sync": {
+              "enable": true,
+              "filter": [ "groupB", "groupC" ]
+            }
+          }
         }
       }
     },
@@ -534,6 +543,7 @@
       "_LDAPUserKey": "uid",
       "_LDAPUserEmail": "otherMail",
       "_LDAPUserGroups": "memberOf",
+      "_LDAPSiteAdminGroups": [ "CN=Domain Admins,CN=Users,DC=sample,DC=com" ],
       "_LDAPUserRequiredGroupMembership": [ "CN=Domain Admins,CN=Users,DC=sample,DC=com" ],
       "_LDAPSyncWithUserGroups": { "filter": [ "CN=Domain Admins" ] },
       "_LDAPOptions": {
@@ -573,16 +583,19 @@
     "___tlscertcheck__": "When set to false, the TLS certificate of the SMTP server is not checked.",
     "_tlscertcheck": false,
     "__tlsstrict__": "When set to true, TLS cypher setup is more limited, SSLv2 and SSLv3 are not allowed.",
-    "_tlsstrict": true
+    "_tlsstrict": true,
+    "_emailDelaySeconds": 300
   },
   "_sendgrid": {
     "from": "myemail@myserver.com",
-    "apikey": "***********"
+    "apikey": "***********",
+    "_emailDelaySeconds": 300
   },
   "_sendmail": {
     "newline": "unix",
     "path": "/usr/sbin/sendmail",
-    "_args": [ "-f", "foo@example.com" ]
+    "_args": [ "-f", "foo@example.com" ],
+    "_emailDelaySeconds": 300
   },
   "_sms": {
     "provider": "twilio",
@@ -600,5 +613,20 @@
     "provider": "telnyx",
     "apikey": "xxxxxxx",
     "from": "1-555-555-5555"
+  },
+  "____sms": {
+    "provider": "url",
+    "url": "http://example.com/sms.ashx?phone={{phone}}&message={{message}}"
+  },
+  "_messaging": {
+    "_telegram": {
+      "apiid": 0,
+      "apihash": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "_discord": {
+      "serverurl": "https://discord.gg/xxxxxxxxx",
+      "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
   }
 }

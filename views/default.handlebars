@@ -294,6 +294,11 @@
             <div id=p1 style="display:none">
                 <div id="p1title">
                     <div style="display:none" id="devListToolbarViewIcons">
+                        <div id=devViewPageState style="float:left;line-height:32px;height:32px;font-size:16px;display:none"></div>
+                        <div tabindex=0 id=devViewPageButton1 class=viewSelector onclick=onDeviceViewPageChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(1); }" title="Go to first page" style="display:none"><div class="viewSelector9"></div></div>
+                        <div tabindex=0 id=devViewPageButton2 class=viewSelector onclick=onDeviceViewPageChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(2); }" title="Go to previous page" style="display:none"><div class="viewSelector10"></div></div>
+                        <div tabindex=0 id=devViewPageButton3 class=viewSelector onclick=onDeviceViewPageChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(3); }" title="Go to next page" style="display:none"><div class="viewSelector11"></div></div>
+                        <div tabindex=0 id=devViewPageButton4 class=viewSelector onclick=onDeviceViewPageChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(4); }" title="Go to last page" style="display:none;margin-right:12px"><div class="viewSelector8"></div></div>
                         <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns"><div class="viewSelector2"></div></div>
                         <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List"><div class="viewSelector1"></div></div>
                         <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops"><div class="viewSelector3"></div></div>
@@ -419,6 +424,7 @@
                             <div id="manageAuthApp"><div class="p2AccountActions"><span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span></div>
                             <div id="manageHardwareOtp"><div class="p2AccountActions"><span id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span></div>
                             <div id="managePushAuthDev"><div class="p2AccountActions"><span id="authPushAuthDevCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_managePushAuthDev()">Manage push authentication</a><br /></span></div>
+                            <div id="manageMessaging1"><div class="p2AccountActions"><span id="authMessagingCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageMessaging()">Manage messaging</a><br /></span></div>
                             <div id="manageOtp"><div class="p2AccountActions"><span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span></div>
                             <div class="p2AccountActions"></div><span><a href=# onclick="return account_viewPreviousLogins()">View previous logins</a><br /></span>
                         </div>
@@ -427,6 +433,7 @@
                         <p><strong>Account actions</strong></p>
                         <p class="mL">
                             <span id="managePhoneNumber2" style="display:none"><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span>
+                            <span id="manageMessaging2" style="display:none"><a href=# onclick="return account_manageMessaging()">Manage messaging</a><br /></span>
                             <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
                             <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
                             <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
@@ -768,7 +775,7 @@
                         </tr>
                         <tr>
                             <td id="termarea3x">
-                                <div id="termarea3xdiv" style="width:100%;height:100%"></div>
+                                <div id="termarea3xdiv" style="width:100%;height:100%;text-align:left"></div>
                                 <pre id="Term"></pre>
                             </td>
                         </tr>
@@ -1509,6 +1516,7 @@
         var deskKeyboardStrings = [];
         var deskLastClipboardSent = null;
         var requestedLastConnects = false;
+        var devicePagingState = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -2093,7 +2101,7 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
-                meshserver.send({ action: 'nodes', id: '{{currentNode}}' });
+                meshserver.send({ action: 'nodes', id: '{{currentNode}}', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
                 meshserver.send({ action: 'loginTokens' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
@@ -2133,6 +2141,8 @@
             QV('p2AccountActions', !accountSettingsLocked)
             QV('managePhoneNumber1', (features & 0x02000000) && (features & 0x04000000) && (serverinfo.lock2factor != true));
             QV('managePhoneNumber2', (features & 0x02000000) && !(features & 0x04000000) && (serverinfo.lock2factor != true));
+            QV('manageMessaging1', (features2 & 0x02000000) && (features2 & 0x04000000) && (serverinfo.lock2factor != true));
+            QV('manageMessaging2', (features2 & 0x02000000) && !(features2 & 0x04000000) && (serverinfo.lock2factor != true));
             QV('manageEmail2FA', (features & 0x00800000) && (serverinfo.lock2factor != true));
             QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
@@ -2220,6 +2230,7 @@
             if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
             if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
+            if ((features2 & 0x02000000) && (features2 & 0x04000000) && (userinfo.msghandle != null)) { authFactorCount++; } // Messaging factor
             if ((authFactorCount > 0) && (userinfo.otpkeys > 0) && ((features2 & 0x40000) == 0)) { authFactorCount++; } // Backup keys
             return authFactorCount;
         }
@@ -2232,6 +2243,7 @@
             QV('verifyEmailId2', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true) && (accountSettingsLocked == false));
             QV('manageOtp', (serverinfo.lock2factor != true) && (authFactorCount > 0) && ((features2 & 0x40000) == 0));
             QV('authPhoneNumberCheck', (userinfo.phone != null));
+            QV('authMessagingCheck', (userinfo.msghandle != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0))); 
@@ -2341,7 +2353,9 @@
                             21: "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
                             22: "Failed to sign agent {0}: {1}",
                             23: "Unable to load agent icon file: {0}.",
-                            24: "Unable to load agent logo file: {0}."
+                            24: "Unable to load agent logo file: {0}.",
+                            25: "This NodeJS version does not support OpenID.",
+                            26: "This NodeJS version does not support Discord.js."
                         };
                         var x = '';
                         for (var i in message.warnings) {
@@ -2350,7 +2364,7 @@
                                 x += '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + y + '</b></div>';
                             } else {
                                 var z = ServerWarnings[y.id];
-                                if (z == null) { z = y.msg; } else { z = format(z, ...y.args); }
+                                if (z == null) { z = y.msg; } else { if (y.args != null) { z = format(z, ...y.args); } }
                                 x += '<div style=color:red;padding-bottom:6px><b>' + "WARNING: " + z + '</b></div>';
                             }
                         }
@@ -2474,6 +2488,10 @@
 
                     // Change the reference to the current node
                     if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); } else { go(1); } }
+
+                    // Update device paging
+                    devicePagingState = (message.totalcount == null) ? null : { total: message.totalcount, skip: message.skip, limit: message.limit };
+                    updateDevicePageState();
 
                     mainUpdate(1 | 2 | 4 | 64);
                     break;
@@ -2942,6 +2960,16 @@
                     account_managePhoneCodeValidate();
                     break;
                 }
+                case 'verifyMessaging': {
+                    if (xxdialogMode && (xxdialogTag != 'verifyMessaging')) return;
+                    var x = '<table><tr><td><img src="images/messaging40.png" style=padding:8px>';
+                    x += '<td>' + "Check your messaging application and enter the verification code.";
+                    x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
+                    setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingConfirm, x, message.cookie);
+                    Q('d2phoneCodeInput').focus();
+                    account_managePhoneCodeValidate();
+                    break;
+                }
                 case 'fileoperation': {
                     // View the file in the dialog box
                     var p5editSaveBack = function(b, tag) {
@@ -3094,7 +3122,7 @@
                                 }
 
                                 // If our list of nodes may have changes, request the new list now.
-                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes' }); }
+                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip }); }
                             }
                             if (currentNode) { refreshDevice(currentNode._id); }
                             if (users == null) break;
@@ -3136,7 +3164,7 @@
 
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
-                            meshserver.send({ action: 'nodes' });
+                            meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
                             break;
                         }
                         case 'deleteusergroup': {
@@ -3171,7 +3199,7 @@
                                 // This is a new mesh for us
                                 if (add) {
                                     meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links, amt: message.event.amt, invite: message.event.invite, expireDevs: message.event.expireDevs, relayid: message.event.relayid };
-                                    meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
+                                    meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                                 }
                             } else {
                                 // This is an existing device group
@@ -3837,6 +3865,37 @@
         function onOnlineCheckBox(e) {
             putstore('devFilterSelect', Q('DevFilterSelect').value);
             onDeviceSearchChanged(e);
+        }
+
+        function updateDevicePageState() {
+            if ((devicePagingState == null) || (devicePagingState.total <= devicePagingState.limit)) {
+                QV('devViewPageState', false);
+                QV('devViewPageButton1', false);
+                QV('devViewPageButton2', false);
+                QV('devViewPageButton3', false);
+                QV('devViewPageButton4', false);
+            } else {
+                var currentPage = Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit);
+                var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+                QV('devViewPageState', true);
+                QV('devViewPageButton1', true);
+                QV('devViewPageButton2', true);
+                QV('devViewPageButton3', true);
+                QV('devViewPageButton4', true);
+                QH('devViewPageState', currentPage + '/' + maxPage);
+            }
+        }
+
+        function onDeviceViewPageChange(i) {
+            if (devicePagingState == null) return;
+            var currentPage = (Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit));
+            var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+            switch (i) {
+                case 1: { if (currentPage > 1) meshserver.send({ action: 'nodes', skip: 0 }); break; } // Goto first page
+                case 2: { if (currentPage > 1) meshserver.send({ action: 'nodes', skip: (currentPage - 2) * devicePagingState.limit }); break; } // Goto previous page
+                case 3: { if (currentPage < maxPage) meshserver.send({ action: 'nodes', skip: currentPage * devicePagingState.limit }); break; } // Goto next page
+                case 4: { if (currentPage < maxPage) meshserver.send({ action: 'nodes', skip: (maxPage - 1) * devicePagingState.limit }); break; } // Goto last page
+            }
         }
 
         function onDeviceViewChange(i) {
@@ -7222,8 +7281,14 @@
                     if (devNotify & 4) { devNotifyStr.push("Disconnect"); }
                     if ((node.intelamt != null) && (devNotify & 8)) { devNotifyStr.push("Intel&reg; AMT"); }
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
-                        if (devNotify & 16) { devNotifyStr.push("Email Connect"); }
-                        if (devNotify & 32) { devNotifyStr.push("Email Disconnect"); }
+                        var xx = 0;
+                        if (devNotify & 16) { xx++; } if (devNotify & 32) { xx++; } if (devNotify & 64) { xx++; }
+                        if (xx > 0) { devNotifyStr.push(format("Email ({0})", xx)); }
+                    }
+                    if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                        var xx = 0;
+                        if (devNotify & 128) { xx++; } if (devNotify & 256) { xx++; } if (devNotify & 512) { xx++; }
+                        if (xx > 0) { devNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                 }
                 devNotifyStr = devNotifyStr.join(', ');
@@ -7652,6 +7717,13 @@
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
+                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
             setDialogMode(2, "Notification Settings", 3, p20editDeviceNotifyEx, x, fx);
             Q('p20notifyIntelDeviceConnect').checked = (devNotify & 2);
@@ -7660,6 +7732,12 @@
             if (fx & 1) {
                 Q('p20enotifyIntelDeviceConnect').checked = (devNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (devNotify & 32);
+                Q('p20enotifyIntelDeviceHelp').checked = (devNotify & 64);
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                Q('p20emsgDeviceConnect').checked = (devNotify & 128);
+                Q('p20emsgDeviceDisconnect').checked = (devNotify & 256);
+                Q('p20emsgDeviceHelp').checked = (devNotify & 512);
             }
             return false;
         }
@@ -7672,6 +7750,12 @@
             if (fx & 1) {
                 devNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 devNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
+                devNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                devNotify += Q('p20emsgDeviceConnect').checked ? 128 : 0;
+                devNotify += Q('p20emsgDeviceDisconnect').checked ? 256 : 0;
+                devNotify += Q('p20emsgDeviceHelp').checked ? 512 : 0;
             }
             meshserver.send({ action: 'changeusernotify', nodeid: currentNode._id, notify: devNotify });
         }
@@ -7699,6 +7783,9 @@
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
             if (rights & 262144) str.push("Reset/Off");
+            if (rights & 524288) str.push("Sharing");
+            if (rights & 1048576) str.push("Details");
+            if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -7729,6 +7816,9 @@
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
             if (rights & 262144) str.push("Reset/Off");
+            if (rights & 524288) str.push("Sharing");
+            if (rights & 1048576) str.push("Details");
+            if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -8814,7 +8904,12 @@
                             }
                         }
                     };
-                    desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    // Use TLS if TLS is set
+                    if (desktopNode.conn==4 && desktopNode.intelamt!=null && desktopNode.intelamt.tls==1) {
+                        desktop.Start(desktopNode._id, 16995, '*', '*', 1);
+                    } else {
+                        desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    }
                     desktop.contype = 2;
                 } else if ((contype == null) || (contype == 1) || ((contype == 3) && ((currentNode.agent.id > 4) && ((debugmode == null))))) {
                     // Setup the Mesh Agent remote desktop
@@ -10068,7 +10163,15 @@
             return obj;
         }
 
-        function tunnelUpdate(data) { if (xterm != null) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } } }
+        function tunnelUpdate(data) {
+            if (xterm != null) {
+                if (xterm.writeUtf8) {
+                    if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); }
+                } else {
+                    if (typeof data == 'string') { xterm.write(data); } else { xterm.write(new Uint8Array(data)); }
+                }
+            }
+        }
 
         function sshTunnelAuthDialog(j, func) {
             var x = '';
@@ -10120,7 +10223,9 @@
                         case 'sessionerror': { p12setConsoleMsg("Session expired", 5000); break; }
                         case 'sessiontimeout': { p12setConsoleMsg("Session timeout", 5000); break; }
                     }
-                } else if (data[0] == '~') { xterm.writeUtf8(data.substring(1)); }
+                } else if (data[0] == '~') {
+                    if (xterm.writeUtf8) { xterm.writeUtf8(data.substring(1)); } else { xterm.write(data.substring(1)); }
+                }
             }
         }
 
@@ -11874,7 +11979,7 @@
             var x;
             if (userinfo.phone != null) {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
-                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + userinfo.phone + '</div>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.phone) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
                 setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
                 account_managePhoneRemoveValidate();
@@ -11895,6 +12000,59 @@
         function account_managePhoneAdd() { if (isPhoneNumber(Q('d2phoneinput').value) == false) return; QE('d2phoneinput', false); meshserver.send({ action: 'verifyPhone', phone: Q('d2phoneinput').value }); }
         function account_managePhoneRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removePhone' }); } }
         function account_managePhoneRemoveValidate() { QE('idx_dlgOkButton', Q('d2delPhone').checked); }
+
+        function account_manageMessaging() {
+            if (xxdialogMode || ((features2 & 0x02000000) == 0)) return;
+            var x;
+            if (userinfo.msghandle != null) {
+                x = '<table style=width:100%><tr><td style=width:56px><img src="images/messaging40.png" style=padding:8px>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.msghandle) + '</div>';
+                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
+                setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingRemove, x);
+                account_managePhoneRemoveValidate();
+            } else {
+                x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
+                x += '<td>' + "Enter your messaging service and handle. Once verified, this server can send you login verification and other notifications." + '<br /><br />';
+                var y = '<select id=d2serviceselect style=width:160px;margin-left:8px onchange=account_manageMessagingValidate()>';
+                if ((serverinfo.userMsgProviders &  1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
+                if ((serverinfo.userMsgProviders &  4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+                if ((serverinfo.userMsgProviders &  8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 16) != 0) { y += '<option value=16>' + "CallMeBot" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 32) != 0) { y += '<option value=32>' + "Pushover" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 64) != 0) { y += '<option value=64>' + "ntfy" + '</option>'; }
+                if ((serverinfo.userMsgProviders & 128) != 0) { y += '<option value=128>' + "Zulip" + '</option>'; }
+                y += '</select>';
+                x += '<table><tr><td>' + "Service" + '<td>' + y;
+                x += '<tr><td>' + "Handle" + '<td><input maxlength=1024 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=account_manageMessagingValidate() onkeypress="if (event.key==\'Enter\') account_manageMessagingValidate(1)">';
+                x += '</table>';
+                if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>'; }
+                x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a></div>';
+                x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
+                console.log(serverinfo.userMsgNftyUrl);
+                x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
+                setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingAdd, x, 'verifyMessaging');
+                Q('d2handleinput').focus();
+                account_manageMessagingValidate();
+            }
+        }
+
+        function account_manageMessagingValidate(x) {
+            if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
+            QV('d2callmebotinfo', Q('d2serviceselect').value == 16);
+            QV('d2pushoverinfo', Q('d2serviceselect').value == 32);
+            QV('d2ntfyinfo', Q('d2serviceselect').value == 64);
+            if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
+            else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
+            else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
+            else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
+            else { Q('d2handleinput')['placeholder'] = "Username"; }
+            var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); }
+        }
+        function account_manageMessagingAdd() { if (Q('d2handleinput').value.length == 0) return; QE('d2handleinput', false); meshserver.send({ action: 'verifyMessaging', service: Q('d2serviceselect').value, handle: Q('d2handleinput').value }); }
+        function account_manageMessagingConfirm(b, tag) { meshserver.send({ action: 'confirmMessaging', code: Q('d2phoneCodeInput').value, cookie: tag }); }
+        function account_manageMessagingRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removeMessaging' }); } }
 
         function account_manageAuthEmail() {
             if (xxdialogMode || ((features & 0x00800000) == 0)) return;
@@ -12542,8 +12700,14 @@
                     if (meshNotify & 4) { meshNotifyStr.push("Disconnect"); }
                     if (meshNotify & 8) { meshNotifyStr.push("Intel&reg; AMT"); }
                     if ((features2 & 0x00004000) && (userinfo.emailVerified)) {
-                        if (meshNotify & 16) { meshNotifyStr.push("Email Connect"); }
-                        if (meshNotify & 32) { meshNotifyStr.push("Email Disconnect"); }
+                        var xx = 0;
+                        if (meshNotify & 16) { xx++; } if (meshNotify & 32) { xx++; } if (meshNotify & 64) { xx++; }
+                        if (xx > 0) { meshNotifyStr.push(format("Email ({0})", xx)); }
+                    }
+                    if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                        var xx = 0;
+                        if (meshNotify & 128) { xx++; } if (meshNotify & 256) { xx++; } if (meshNotify & 512) { xx++; }
+                        if (xx > 0) { meshNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                     if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
                     x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
@@ -13107,7 +13271,7 @@
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
             }
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
             if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
@@ -13125,6 +13289,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
             x += '</div>';
 
             if (userid == null) {
@@ -13202,6 +13367,7 @@
                 if (urights & 262144) { Q('p20resetoff').checked = true; }
                 if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                 if (urights & 1048576) { Q('p20details').checked = true; }
+                if (urights & 2097152) { Q('p20relay').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -13250,6 +13416,7 @@
                 Q('p20resetoff').checked = ((devrights & 262144) != 0);
                 if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
                 Q('p20details').checked = ((devrights & 1048576) != 0);
+                Q('p20relay').checked = ((devrights & 2097152) != 0);
                 ok = (nodeid != '');
             }
 
@@ -13331,6 +13498,7 @@
             QE('p20commands', nc);
             QE('p20resetoff', nc);
             QE('p20details', nc);
+            QE('p20relay', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -13360,6 +13528,7 @@
                 if (Q('p20resetoff').checked == true) meshadmin += 262144;
                 if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
                 if (Q('p20details').checked == true) meshadmin += 1048576;
+                if (Q('p20relay').checked == true) meshadmin += 2097152;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
@@ -13445,6 +13614,7 @@
                     if ((meshrights & 262144) != 0) r.push("Reset/Off");
                     if ((meshrights & 524288) != 0) r.push("Sharing");
                     if ((meshrights & 1048576) != 0) r.push("Details");
+                    if ((meshrights & 2097152) != 0) r.push("Relay");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];
@@ -13551,6 +13721,13 @@
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
                 x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
+                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
             }
             setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
@@ -13559,6 +13736,12 @@
             if (emailNotify) {
                 Q('p20enotifyIntelDeviceConnect').checked = (meshNotify & 16);
                 Q('p20enotifyIntelDeviceDisconnect').checked = (meshNotify & 32);
+                Q('p20enotifyIntelDeviceHelp').checked = (meshNotify & 64);
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                Q('p20emsgDeviceConnect').checked = (meshNotify & 128);
+                Q('p20emsgDeviceDisconnect').checked = (meshNotify & 256);
+                Q('p20emsgDeviceHelp').checked = (meshNotify & 512);
             }
             return false;
         }
@@ -13571,6 +13754,12 @@
             if (emailNotify) {
                 meshNotify += Q('p20enotifyIntelDeviceConnect').checked ? 16 : 0;
                 meshNotify += Q('p20enotifyIntelDeviceDisconnect').checked ? 32 : 0;
+                meshNotify += Q('p20enotifyIntelDeviceHelp').checked ? 64 : 0;
+            }
+            if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
+                meshNotify += Q('p20emsgDeviceConnect').checked ? 128 : 0;
+                meshNotify += Q('p20emsgDeviceDisconnect').checked ? 256 : 0;
+                meshNotify += Q('p20emsgDeviceHelp').checked ? 512 : 0;
             }
             meshserver.send({ action: 'changemeshnotify', meshid: currentMesh._id, notify: meshNotify });
         }
@@ -14229,7 +14418,9 @@
             152: "No longer a relay for \"{0}\".",
             153: "Is a relay for \"{0}\".",
             154: "Account changed to sync with LDAP data.",
-            155: "Denied user login from {0}, {1}, {2}"
+            155: "Denied user login from {0}, {1}, {2}",
+            156: "Verified messaging account of user {0}",
+            157: "Removed messaging account of user {0}"
         };
 
         var eventsShortMessageId = {
@@ -14520,6 +14711,7 @@
             if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
             if (user.phone != null) { username += ' <img src="images/phone12.png" height=12 width=7 title="' + "Verified phone number" + '" style="margin-top:2px" />'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
+            if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <img src="images/messaging12.png" height=12 width=12 title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
             x += '<tr tabindex=0 onmouseover=userMouseHover(this,1) onmouseout=userMouseHover(this,0) onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponentEx(user._id) + '\')"><td>';
             x += '<div class=bar>';
             x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponentEx(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponentEx(user._id) + '",false,event)>';
@@ -14672,6 +14864,15 @@
 
         function showSendSMSValidate() { QE('idx_dlgOkButton', Q('d2smsText').value.length > 0); }
         function showSendSMSEx(b, tag) { if (Q('d2smsText').value.length > 0) { meshserver.send({ action: 'smsuser', userid: decodeURIComponent(tag), msg: Q('d2smsText').value }); } }
+
+        function showSendMessage(userid) {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Send Message", 3, showSendMessageEx, '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>', userid);
+            Q('d2smsText').focus();
+            showSendSMSValidate();
+        }
+
+        function showSendMessageEx(b, tag) { if (Q('d2smsText').value.length > 0) { meshserver.send({ action: 'msguser', userid: decodeURIComponent(tag), msg: Q('d2smsText').value }); } }
 
         function showSendEmail(userid) {
             if (xxdialogMode) return;
@@ -15580,6 +15781,10 @@
                 x += addDeviceAttribute("Phone Number", (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editPhone() />');
             }
 
+            if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
+                x += addDeviceAttribute("Messaging", '<img src="images/messaging12.png" height=12 width=12 title="' + "Messaging enabled" + '" style="margin-top:2px" /> ' + (user.msghandle?user.msghandle:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" onclick=p30editMessaging() />');
+            }
+
             // Display features
             var userFeatures = [];
             if ((serverinfo.usersSessionRecording == 1) && (user.flags) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
@@ -15648,6 +15853,7 @@
                 if (user.otpkeys > 0) { factors.push("Backup Codes"); }
                 if (user.otpdev > 0) { factors.push("Device Push"); }
                 if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
+                if ((user.msghandle != null) && (features2 & 0x04000000)) { factors.push("Messaging"); }
                 x += addDeviceAttribute("Security", '<img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" /> ' + factors.join(', '));
             }
 
@@ -15656,6 +15862,7 @@
             // Add action buttons
             x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
             if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
+            if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
             if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
             if (!self && ((activeSessions > 0) || ((features2 & 8) && (user.webpush)))) {
                 x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
@@ -15719,6 +15926,77 @@
             setDialogMode(2, "Phone Notifications", 3, p30editPhoneEx, x, 'verifyPhone');
             Q('d2phoneinput').focus();
             p30editPhoneValidate();
+        }
+
+        function p30editMessaging() {
+            if (xxdialogMode) return;
+            var x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
+            x += '<td style=width:100%>' + "Messaging account for this user.";
+            var y = '<select id=d2serviceselect style=width:160px;margin-left:8px onchange=p30editMessagingValidate()><option value=0>' + "None" + '</option>';
+            if ((serverinfo.userMsgProviders &  1) != 0) { y += '<option value=1>' + "Telegram" + '</option>'; }
+            if ((serverinfo.userMsgProviders &  4) != 0) { y += '<option value=4>' + "Discord" + '</option>'; }
+            if ((serverinfo.userMsgProviders &  8) != 0) { y += '<option value=8>' + "XMPP" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 16) != 0) { y += '<option value=16>' + "CallMeBot" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 32) != 0) { y += '<option value=32>' + "Pushover" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 64) != 0) { y += '<option value=64>' + "ntfy" + '</option>'; }
+            if ((serverinfo.userMsgProviders & 128) != 0) { y += '<option value=128>' + "Zulip" + '</option>'; }
+            y += '</select>';
+            x += '<table style=margin-top:12px><tr><td>' + "Service" + '<td>' + y;
+            x += '<tr><td>' + "Handle" + '<td><input maxlength=1024 style=width:160px;margin-left:8px id=d2handleinput onKeyUp=p30editMessagingValidate() onkeypress="if (event.key==\'Enter\') p30editMessagingValidate(1)">';
+            x += '</table>';
+            if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>' }
+            x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a></div>';
+            x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
+            x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
+            setDialogMode(2, "Messaging Notifications", 3, p30editMessagingEx, x, 'verifyMessaging');
+            Q('d2handleinput').focus();
+            if (userinfo.msghandle) {
+                if (userinfo.msghandle.startsWith('telegram:') && ((serverinfo.userMsgProviders & 1) != 0)) { Q('d2serviceselect').value = 1; Q('d2handleinput').value = userinfo.msghandle.substring(10); }
+                if (userinfo.msghandle.startsWith('discord:') && ((serverinfo.userMsgProviders & 4) != 0)) { Q('d2serviceselect').value = 4; Q('d2handleinput').value = userinfo.msghandle.substring(8); }
+                if (userinfo.msghandle.startsWith('xmpp:') && ((serverinfo.userMsgProviders & 8) != 0)) { Q('d2serviceselect').value = 8; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
+                if (userinfo.msghandle.startsWith('callmebot:') && ((serverinfo.userMsgProviders & 16) != 0)) {
+                    Q('d2serviceselect').value = 16;
+                    var toData = userinfo.msghandle.substring(10).split('|');
+                    if ((toData[0] == 'signal') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/signal/send.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
+                    if ((toData[0] == 'whatsapp') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/whatsapp.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
+                    if ((toData[0] == 'facebook') && (toData.length == 2)) { Q('d2handleinput').value = 'https://api.callmebot.com/facebook/send.php?apikey=' + decodeURIComponent(toData[1]); }
+                }
+                if (userinfo.msghandle.startsWith('pushover:') && ((serverinfo.userMsgProviders & 32) != 0)) { Q('d2serviceselect').value = 32; Q('d2handleinput').value = userinfo.msghandle.substring(9); }
+                if (userinfo.msghandle.startsWith('ntfy:') && ((serverinfo.userMsgProviders & 64) != 0)) { Q('d2serviceselect').value = 64; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
+                if (userinfo.msghandle.startsWith('zulip:') && ((serverinfo.userMsgProviders & 128) != 0)) { Q('d2serviceselect').value = 128; Q('d2handleinput').value = userinfo.msghandle.substring(6); }
+            }
+            p30editMessagingValidate();
+        }
+
+        function p30editMessagingValidate(x) {
+            QE('d2handleinput', Q('d2serviceselect').value != 0);
+            if (serverinfo.discordUrl) { QV('d2discordurl', Q('d2serviceselect').value == 4); }
+            QV('d2callmebotinfo', Q('d2serviceselect').value == 16);
+            QV('d2pushoverinfo', Q('d2serviceselect').value == 32);
+            QV('d2ntfyinfo', Q('d2serviceselect').value == 64);
+            if (Q('d2serviceselect').value == 0) { Q('d2handleinput')['placeholder'] = ''; }
+            else if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
+            else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
+            else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
+            else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
+            else { Q('d2handleinput')['placeholder'] = "Username"; }
+            if (x == 1) { dialogclose(1); }
+        }
+
+        // Send to the server the user's messaging account
+        function p30editMessagingEx() {
+            var handle = null;
+            if ((Q('d2handleinput').value == '') || (Q('d2serviceselect').value == 0)) { handle = ''; }
+            else if (Q('d2serviceselect').value == 1) { handle = 'telegram:@' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 4) { handle = 'discord:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 8) { handle = 'xmpp:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 16) { handle = 'callmebot:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 32) { handle = 'pushover:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 64) { handle = 'ntfy:' + Q('d2handleinput').value; }
+            else if (Q('d2serviceselect').value == 128) { handle = 'zulip:' + Q('d2handleinput').value; }
+            if (handle != null) { meshserver.send({ action: 'edituser', id: currentUser._id, msghandle: handle }); }
         }
 
         function p20edituserfeatures() {
@@ -16597,6 +16875,7 @@
                 if (v == 'fido') { return "FIDO key"; }
                 if (v == 'sms') { return "SMS message"; }
                 if (v == 'hwotp') { return "Hardware OTP"; }
+                if (v == 'messenger') { return "Messenging"; }
                 if (v == 'push') { return "Push Notification"; }
                 if (v == 'otp') { return "One-Time Password"; }
                 if (v == 'cookie') { return "Remember Device"; }
@@ -16816,10 +17095,14 @@
                 "No user management rights",
                 "Invalid SMS message",
                 "No phone number for this user",
-                "SMS succesfuly sent.",
+                "SMS succesfully sent.",
                 "SMS error",
                 "SMS error: {0}",
-                "Email domain \"{0}\" is not allowed. Only ({1}) are allowed" // 30
+                "Email domain \"{0}\" is not allowed. Only ({1}) are allowed", // 30,
+                "Invalid message",
+                "Message succesfully sent.",
+                "Message error",
+                "Message error: {0}"
             ];
             if (typeof n.titleid == 'number') { try { n.title = translatedTitles[n.titleid]; } catch (ex) {} }
             if (typeof n.msgid == 'number') { try { n.text = translatedMessages[n.msgid]; if (Array.isArray(n.args)) { n.text = format(n.text, n.args[0], n.args[1], n.args[2], n.args[3], n.args[4], n.args[5]); } } catch (ex) { } }
@@ -17284,6 +17567,7 @@
             x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c7 ' + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + '>' + "Web Socket Relay" + '</label></div>';
             x += '<div><label><input type=checkbox id=p41c20 ' + ((serverTraceSources.indexOf('httpheaders') >= 0) ? 'checked' : '') + '>' + "Web Server HTTP Headers" + '</label></div>';
+            x += '<div><label><input type=checkbox id=p41c21 ' + ((serverTraceSources.indexOf('authlog') >= 0) ? 'checked' : '') + '>' + "User Authentication Log" + '</label></div>';
             //x += '<div><label><input type=checkbox id=p41c8 ' + ((serverTraceSources.indexOf('webrelaydata') >= 0) ? 'checked' : '') + '>' + "Traffic Relay 2 Data" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Intel&reg; AMT" + '</b></div>';
             x += '<div><label><input type=checkbox id=p41c19 ' + ((serverTraceSources.indexOf('amt') >= 0) ? 'checked' : '') + '>' + "Intel AMT manager" + '</label></div>';
@@ -17298,8 +17582,8 @@
         }
 
         function setServerTracingEx(b) {
-            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt', 'httpheaders'];
-            if (b == 1) { for (var i = 1; i < 21; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
+            var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt', 'httpheaders', 'authlog'];
+            if (b == 1) { for (var i = 1; i < 22; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
             meshserver.send({ action: 'traceinfo', traceSources: sources });
         }
 

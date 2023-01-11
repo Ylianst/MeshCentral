@@ -103,14 +103,13 @@ if (msh.agentName) { connectArgs.push('--agentName="' + msh.agentName + '"'); }
 
 function _install(parms)
 {
+    var i;
     var mstr = require('fs').createWriteStream(process.execPath + '.msh', { flags: 'wb' });
-    mstr.write('MeshName=' + msh.MeshName + '\n');
-    mstr.write('MeshType=' + msh.MeshType + '\n');
-    mstr.write('MeshID=' + msh.MeshID + '\n');
-    mstr.write('ServerID=' + msh.ServerID + '\n');
-    mstr.write('MeshServer=' + msh.MeshServer + '\n');
-    if (msh.agentName) { mstr.write('agentName=' + msh.agentName + '\n'); }
-    if (msh.meshServiceName) { mstr.write('meshServiceName=' + msh.meshServiceName + '\n'); }
+
+    for (i in msh)
+    {
+        mstr.write(i + '=' + msh[i] + '\n');
+    }
     mstr.end();
 
     if (parms == null) { parms = []; }
@@ -156,7 +155,7 @@ if (process.argv.includes('-translations'))
     console.log(JSON.stringify(translation));
     process.exit();
 }
-if (process.argv.includes('-help'))
+if (process.argv.includes('-help') || (process.platform == 'linux' && process.env['XAUTHORITY'] == null && process.env['DISPLAY'] == null && process.argv.length == 1))
 {
     console.log("\n" + translation[lang].commands + ": ");
     if ((msh.InstallFlags & 1) == 1)
@@ -221,9 +220,7 @@ if ((!skip) && ((msh.InstallFlags & 2) == 2))
     }
 }
 
-if (!skip)
-{
-    if (process.platform != 'darwin')
+    if (!skip)
     {
         if (process.argv.includes('-install') || process.argv.includes('-update'))
         {
@@ -233,6 +230,10 @@ if (!skip)
                 if (process.argv[i].startsWith('--installPath='))
                 {
                     p.push('--installPath="' + process.argv[i].split('=').pop() + '"');
+                }
+                else if(process.argv[i].startsWith('--'))
+                {
+                    p.push(process.argv[i]);
                 }
             }
             _install(p);
@@ -271,12 +272,11 @@ if (!skip)
                 process.exit();
             }
         }
+        if (process.platform == 'darwin')
+        {
+            if (!require('user-sessions').isRoot()) { console.log('\n' + translation[lang].elevation); process.exit(); }
+        }
     }
-    else
-    {
-        if (!require('user-sessions').isRoot()) { console.log('\n' + translation[lang].elevation); process.exit(); }
-    }
-}
 
 
 if (!skip)

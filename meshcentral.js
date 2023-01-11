@@ -22,19 +22,20 @@ if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ 
 function CreateMeshCentralServer(config, args) {
     const obj = {};
     obj.db = null;
-    obj.webserver = null;
-    obj.redirserver = null;
-    obj.mpsserver = null;
-    obj.mqttbroker = null;
-    obj.swarmserver = null;
-    obj.smsserver = null;
+    obj.webserver = null;       // HTTPS main web server, typically on port 443
+    obj.redirserver = null;     // HTTP relay web server, typically on port 80
+    obj.mpsserver = null;       // Intel AMT CIRA server, typically on port 4433
+    obj.mqttbroker = null;      // MQTT server, not is not often used
+    obj.swarmserver = null;     // Swarm server, this is used only to update older MeshCentral v1 agents
+    obj.smsserver = null;       // SMS server, used to send user SMS messages
+    obj.msgserver = null;       // Messaging server, used to sent used messages
     obj.amtEventHandler = null;
     obj.pluginHandler = null;
     obj.amtScanner = null;
-    obj.amtManager = null;
+    obj.amtManager = null;      // Intel AMT manager, used to oversee all Intel AMT devices, activate them and sync policies
     obj.meshScanner = null;
     obj.taskManager = null;
-    obj.letsencrypt = null;
+    obj.letsencrypt = null;     // Let's encrypt server, used to get and renew TLS certificates
     obj.eventsDispatch = {};
     obj.fs = require('fs');
     obj.path = require('path');
@@ -85,7 +86,7 @@ function CreateMeshCentralServer(config, args) {
         obj.parentpath = obj.path.join(__dirname, '../..');
         obj.datapath = obj.path.join(__dirname, '../../meshcentral-data');
         obj.filespath = obj.path.join(__dirname, '../../meshcentral-files');
-        obj.backuppath = obj.path.join(__dirname, '../../meshcentral-backup');
+        obj.backuppath = obj.path.join(__dirname, '../../meshcentral-backups');
         obj.recordpath = obj.path.join(__dirname, '../../meshcentral-recordings');
         obj.webViewsPath = obj.path.join(__dirname, 'views');
         obj.webPublicPath = obj.path.join(__dirname, 'public');
@@ -138,7 +139,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (ex) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
+        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -193,6 +194,9 @@ function CreateMeshCentralServer(config, args) {
 
         // Dump to mesh cores
         if (obj.args.dumpcores) { obj.updateMeshCore(function () { console.log('Done.'); }, true); return; }
+
+        // Setup Telegram
+        if (obj.args.setuptelegram) { require('./meshmessaging.js').SetupTelegram(obj); return; }
 
         // Perform web site translations into different languages
         if (obj.args.translate) {
@@ -466,9 +470,9 @@ function CreateMeshCentralServer(config, args) {
                 const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
                 const env = Object.assign({}, process.env); // Shallow clone
                 if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-                const xxprocess = child_process.exec(npmpath + ' install --no-package-lock meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
+                const xxprocess = child_process.exec(npmpath + ' install --no-audit --no-package-lock meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
                     if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
-                 });
+                });
                 xxprocess.data = '';
                 xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
                 xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
@@ -699,7 +703,7 @@ function CreateMeshCentralServer(config, args) {
                                 obj.args = args = config2.settings;
 
                                 // Lower case all keys in the config file
-                                obj.common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
+                                obj.common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'telegram/proxy']);
 
                                 // Grad some of the values from the original config.json file if present.
                                 if ((config.settings.vault != null) && (config2.settings != null)) { config2.settings.vault = config.settings.vault; }
@@ -739,7 +743,6 @@ function CreateMeshCentralServer(config, args) {
                 obj.syslogjson.log(obj.syslogjson.LOG_INFO, "MeshCentral v" + getCurrentVersion() + " Server Start");
             }
             if (typeof config.settings.syslogauth == 'string') {
-                obj.authlog = true;
                 obj.syslogauth = require('modern-syslog');
                 console.log('Starting ' + config.settings.syslogauth + ' auth syslog.');
                 obj.syslogauth.init(config.settings.syslogauth, obj.syslogauth.LOG_PID | obj.syslogauth.LOG_ODELAY, obj.syslogauth.LOG_LOCAL0);
@@ -759,7 +762,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unrecognized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
 
         // Read IP lists from files if applicable
         config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
@@ -859,7 +862,7 @@ function CreateMeshCentralServer(config, args) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                             const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
-                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; // Disable 2FA
+                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
                             if (obj.args.hashpass) {
                                 // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
                                 var hashpasssplit = obj.args.hashpass.split(',');
@@ -1186,18 +1189,20 @@ function CreateMeshCentralServer(config, args) {
                         obj.db.getAllConfigFiles(key, function (configFiles) {
                             if (configFiles == null) { console.log("Error, no configuration files found or invalid configkey."); process.exit(); return; }
                             if (!configFiles['config.json']) { console.log("Error, could not file config.json from database."); process.exit(); return; }
+                            if (typeof configFiles['config.json'] == 'object') { configFiles['config.json'] = configFiles['config.json'].toString(); }
+                            if (configFiles['config.json'].charCodeAt(0) == 65279) { configFiles['config.json'] = configFiles['config.json'].substring(1); }
                             obj.configurationFiles = configFiles;
 
                             // Parse the new configuration file
                             var config2 = null;
-                            try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.'); process.exit(); return; }
+                            try { config2 = JSON.parse(configFiles['config.json']); } catch (ex) { console.log('Error, unable to parse config.json from database.', ex); process.exit(); return; }
 
                             // Set the command line arguments to the config file if they are not present
                             if (!config2.settings) { config2.settings = {}; }
                             for (i in args) { config2.settings[i] = args[i]; }
 
                             // Lower case all keys in the config file
-                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
+                            common.objKeysToLower(config2, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'telegram/proxy']);
 
                             // Grab some of the values from the original config.json file if present.
                             config2['mysql'] = config['mysql'];
@@ -1231,7 +1236,7 @@ function CreateMeshCentralServer(config, args) {
         // Linux format /var/log/auth.log
         if (obj.config.settings.authlog != null) {
             obj.fs.open(obj.config.settings.authlog, 'a', function (err, fd) {
-                if (err == null) { obj.authlogfile = fd; obj.authlog = true; } else { console.log('ERROR: Unable to open: ' + obj.config.settings.authlog); }
+                if (err == null) { obj.authlogfile = fd; } else { console.log('ERROR: Unable to open: ' + obj.config.settings.authlog); }
             })
         }
 
@@ -1278,6 +1283,7 @@ function CreateMeshCentralServer(config, args) {
             if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
+            if ((typeof obj.config.domains[i].maxdeviceview != 'number') || (obj.config.domains[i].maxdeviceview < 1)) { delete obj.config.domains[i].maxdeviceview; }
             if (typeof obj.config.domains[i].loginkey == 'string') { obj.config.domains[i].loginkey = [obj.config.domains[i].loginkey]; }
             if ((obj.config.domains[i].loginkey != null) && (obj.common.validateAlphaNumericArray(obj.config.domains[i].loginkey, 1, 128) == false)) { console.log("ERROR: Invalid login key, must be alpha-numeric string with no spaces."); process.exit(); return; }
             if (typeof obj.config.domains[i].agentkey == 'string') { obj.config.domains[i].agentkey = [obj.config.domains[i].agentkey]; }
@@ -1420,7 +1426,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.mpsaliasport != null && (typeof obj.args.mpsaliasport != 'number')) obj.args.mpsaliasport = null;
         if (obj.args.rediraliasport != null && (typeof obj.args.rediraliasport != 'number')) obj.args.rediraliasport = null;
         if (obj.args.redirport == null) obj.args.redirport = 80;
-        if (obj.args.minifycore === 0) obj.args.minifycore = false;
+        if (obj.args.minifycore == null) obj.args.minifycore = false;
         if (typeof args.agentidletimeout != 'number') { args.agentidletimeout = 150000; } else { args.agentidletimeout *= 1000 } // Default agent idle timeout is 2m, 30sec.
         if ((obj.args.lanonly != true) && (obj.args.webrtconfig == null)) { obj.args.webrtconfig = { iceservers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.services.mozilla.com' }] }; } // Setup default WebRTC STUN servers
         if (typeof obj.args.ignoreagenthashcheck == 'string') { if (obj.args.ignoreagenthashcheck == '') { delete obj.args.ignoreagenthashcheck; } else { obj.args.ignoreagenthashcheck = obj.args.ignoreagenthashcheck.split(','); } }
@@ -1775,6 +1781,11 @@ function CreateMeshCentralServer(config, args) {
                     if (config.sms != null) {
                         obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
                         if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
+                    }
+
+                    // Setup user messaging
+                    if (config.messaging != null) {
+                        obj.msgserver = require('./meshmessaging.js').CreateServer(obj);
                     }
 
                     // Setup web based push notifications
@@ -2291,7 +2302,7 @@ function CreateMeshCentralServer(config, args) {
         const domainId = meshSplit[1];
         if (obj.config.domains[domainId] == null) return;
         const mailserver = obj.config.domains[domainId].mailserver;
-        if (mailserver == null) return;
+        if ((mailserver == null) && (obj.msgserver == null)) return;
 
         // Get the device group for this device
         const mesh = obj.webserver.meshes[meshid];
@@ -2311,7 +2322,7 @@ function CreateMeshCentralServer(config, args) {
         // Check if any user needs email notification
         for (var i in users) {
             const user = obj.webserver.users[users[i]];
-            if ((user != null) && (user.email != null) && (user.emailVerified == true)) {
+            if (user != null) {
                 var notify = 0;
 
                 // Device group notifications
@@ -2324,7 +2335,8 @@ function CreateMeshCentralServer(config, args) {
                     if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
                 }
 
-                if ((notify & 48) != 0) {
+                // Email notifications
+                if ((user.email != null) && (user.emailVerified == true) && (mailserver != null) && ((notify & 48) != 0)) {
                     if (stateSet == true) {
                         if ((notify & 16) != 0) {
                             mailserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
@@ -2340,6 +2352,76 @@ function CreateMeshCentralServer(config, args) {
                         }
                     }
                 }
+
+                // Messaging notifications
+                if ((obj.msgserver != null) && ((notify & 384) != 0)) {
+                    if (stateSet == true) {
+                        if ((notify & 128) != 0) {
+                            obj.msgserver.notifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            obj.msgserver.cancelNotifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        }
+                    }
+                    else if (stateSet == false) {
+                        if ((notify & 256) != 0) {
+                            obj.msgserver.notifyDeviceDisconnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        } else {
+                            obj.msgserver.cancelNotifyDeviceConnect(user, meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // See if we need to notifiy any user of device requested help
+    //if (typeof device.name == 'string') { parent.parent.NotifyUserOfDeviceHelpRequest(domain, device._id, device.meshid, device.name, command.msgArgs[0], command.msgArgs[1]); }
+
+    obj.NotifyUserOfDeviceHelpRequest = function (domain, meshid, nodeid, devicename, helpusername, helprequest) {
+        // Check if there is a email server for this domain
+        const meshSplit = meshid.split('/');
+        if (meshSplit.length != 3) return;
+        const domainId = meshSplit[1];
+        if (obj.config.domains[domainId] == null) return;
+        const mailserver = obj.config.domains[domainId].mailserver;
+        if ((mailserver == null) && (obj.msgserver == null)) return;
+
+        // Get the device group for this device
+        const mesh = obj.webserver.meshes[meshid];
+        if ((mesh == null) || (mesh.links == null)) return;
+
+        // Get the list of users that have visibility to this device
+        // This includes users that are part of user groups
+        const users = [];
+        for (var i in mesh.links) {
+            if (i.startsWith('user/') && (users.indexOf(i) < 0)) { users.push(i); }
+            if (i.startsWith('ugrp/')) {
+                var usergrp = obj.webserver.userGroups[i];
+                if (usergrp.links != null) { for (var j in usergrp.links) { if (j.startsWith('user/') && (users.indexOf(j) < 0)) { users.push(j); } } }
+            }
+        }
+
+        // Check if any user needs email notification
+        for (var i in users) {
+            const user = obj.webserver.users[users[i]];
+            if (user != null) {
+                var notify = 0;
+
+                // Device group notifications
+                const meshLinks = user.links[meshid];
+                if ((meshLinks != null) && (meshLinks.notify != null)) { notify |= meshLinks.notify; }
+
+                // User notifications
+                if (user.notify != null) {
+                    if (user.notify[meshid] != null) { notify |= user.notify[meshid]; }
+                    if (user.notify[nodeid] != null) { notify |= user.notify[nodeid]; }
+                }
+
+                // Mail help request
+                if ((user.email != null) && (user.emailVerified == true) && ((notify & 64) != 0)) { mailserver.sendDeviceHelpMail(domain, user.name, user.email, devicename, nodeid, helpusername, helprequest, user.llang); }
+
+                // Message help request
+                if ((user.msghandle != null) && ((notify & 512) != 0)) { obj.msgserver.sendDeviceHelpRequest(domain, user.name, user.msghandle, devicename, nodeid, helpusername, helprequest, user.llang); }
             }
         }
     }
@@ -2405,7 +2487,7 @@ function CreateMeshCentralServer(config, args) {
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
             var eventConnectChange = 0;
-            const state = obj.peerConnectivityByNode[serverid][nodeid];
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
             if (state) {
                 // Change the connection in the node and mesh state lists
                 if ((state.connectivity & connectType) == 0) { state.connectivity |= connectType; eventConnectChange = 1; }
@@ -2503,7 +2585,7 @@ function CreateMeshCentralServer(config, args) {
             // Remove the agent connection from the nodes connection list
             if (serverid == null) { serverid = obj.serverId; }
             if (obj.peerConnectivityByNode[serverid] == null) return; // Guard against unknown serverid's
-            const state = obj.peerConnectivityByNode[serverid][nodeid];
+            var state = obj.peerConnectivityByNode[serverid][nodeid];
             if (state == null) return;
 
             // If existing state exist, remove this connection
@@ -3641,9 +3723,15 @@ function CreateMeshCentralServer(config, args) {
     obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // auth.log functions
-    obj.authLog = function (server, msg) {
+    obj.authLog = function (server, msg, args) {
         if (typeof msg != 'string') return;
-        if (obj.syslogauth != null) { try { obj.syslogauth.log(obj.syslogauth.LOG_INFO, msg); } catch (ex) { } }
+        var str = msg;
+        if (args != null) {
+            if (typeof args.sessionid == 'string') { str += ', SessionID: ' + args.sessionid; }
+            if (typeof args.useragent == 'string') { const userAgentInfo = obj.webserver.getUserAgentInfo(args.useragent); str += ', Browser: ' + userAgentInfo.browserStr + ', OS: ' + userAgentInfo.osStr; }
+        }
+        obj.debug('authlog', str);
+        if (obj.syslogauth != null) { try { obj.syslogauth.log(obj.syslogauth.LOG_INFO, str); } catch (ex) { } }
         if (obj.authlogfile != null) { // Write authlog to file
             try {
                 const d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
@@ -3714,7 +3802,7 @@ function getConfig(createSampleConfig) {
 
     // Lower case all keys in the config file
     try {
-        require('./common.js').objKeysToLower(config, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders']);
+        require('./common.js').objKeysToLower(config, ['ldapoptions', 'defaultuserwebstate', 'forceduserwebstate', 'httpheaders', 'telegram/proxy']);
     } catch (ex) {
         console.log('CRITICAL ERROR: Unable to access the file \"./common.js\".\r\nCheck folder & file permissions.');
         process.exit();
@@ -3762,7 +3850,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    child_process.exec(npmpath + ` install --no-package-lock --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    child_process.exec(npmpath + ` install --no-audit --no-package-lock --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
@@ -3804,7 +3892,13 @@ var ServerWarnings = {
     17: "SendGrid server has limited use in LAN mode.",
     18: "SMTP server has limited use in LAN mode.",
     19: "SMS gateway has limited use in LAN mode.",
-    20: "Invalid \"LoginCookieEncryptionKey\" in config.json."
+    20: "Invalid \"LoginCookieEncryptionKey\" in config.json.",
+    21: "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
+    22: "Failed to sign agent {0}: {1}",
+    23: "Unable to load agent icon file: {0}.",
+    24: "Unable to load agent logo file: {0}.",
+    25: "This NodeJS version does not support OpenID.",
+    26: "This NodeJS version does not support Discord.js."
 };
 */
 
@@ -3872,7 +3966,7 @@ function mainStart() {
         if (domainCount == 0) { allsspi = false; }
         for (var i in config.domains) {
             if (i.startsWith('_')) continue;
-            if ((config.domains[i].smtp != null) || (config.domains[i].sendmail != null)) { nodemailer = true; }
+            if (((config.domains[i].smtp != null) && (config.domains[i].smtp.name != 'console')) || (config.domains[i].sendmail != null)) { nodemailer = true; }
             if (config.domains[i].sendgrid != null) { sendgrid = true; }
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
@@ -3885,7 +3979,9 @@ function mainStart() {
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
                 if ((typeof config.domains[i].authstrategies.reddit == 'object') && (typeof config.domains[i].authstrategies.reddit.clientid == 'string') && (typeof config.domains[i].authstrategies.reddit.clientsecret == 'string') && (passport.indexOf('passport-reddit') == -1)) { passport.push('passport-reddit'); }
                 if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
-                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (typeof config.domains[i].authstrategies.oidc.clientid == 'string') && (typeof config.domains[i].authstrategies.oidc.clientsecret == 'string') && (passport.indexOf('@mstrhakr/passport-generic-oidc') == -1)) { passport.push('@mstrhakr/passport-generic-oidc'); }
+                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (typeof config.domains[i].authstrategies.oidc.clientid == 'string') && (typeof config.domains[i].authstrategies.oidc.clientsecret == 'string') && (typeof config.domains[i].authstrategies.oidc.issuer == 'string') && (passport.indexOf('@mstrhakr/passport-openidconnect') == -1)) {
+                    if ((nodeVersion >= 17) || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13)) || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15)) || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) { passport.push('@mstrhakr/passport-openidconnect'); passport.push('openid-client'); } else { addServerWarning('This NodeJS version does not support OpenID.', 25); delete config.domains[i].authstrategies.oidc; }
+                }
                 if ((typeof config.domains[i].authstrategies.saml == 'object') || (typeof config.domains[i].authstrategies.jumpcloud == 'object')) { passport.push('passport-saml'); }
             }
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
@@ -3906,7 +4002,7 @@ function mainStart() {
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb@4.1.0'); modules.push('saslprep'); } // Add MongoDB, official driver.
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.12.1'); modules.push('saslprep'); } // Add MongoDB, official driver.
         if (config.settings.postgres != null) { modules.push('pg@8.7.1'); modules.push('pgtools@0.3.2'); } // Add Postgres, Postgres driver.
         if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase'); } // Add AceBase, official driver.
@@ -3915,7 +4011,7 @@ function mainStart() {
         if (config.settings.plugins != null) { modules.push('semver'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
-        if (nodemailer || (config.smtp != null) || (config.sendmail != null)) { modules.push('nodemailer'); } // Add SMTP support
+        if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer'); } // Add SMTP support
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
@@ -3945,15 +4041,27 @@ function mainStart() {
         if (config.settings.desktopmultiplex === true) { modules.push('image-size'); }
 
         // SMS support
-        if ((config.sms != null) && (config.sms.provider == 'twilio')) { modules.push('twilio'); }
-        if ((config.sms != null) && (config.sms.provider == 'plivo')) { modules.push('plivo'); }
-        if ((config.sms != null) && (config.sms.provider == 'telnyx')) { modules.push('telnyx'); }
+        if (config.sms != null) {
+            if (config.sms.provider == 'twilio') { modules.push('twilio'); }
+            if (config.sms.provider == 'plivo') { modules.push('plivo'); }
+            if (config.sms.provider == 'telnyx') { modules.push('telnyx'); }
+        }
+
+        // Messaging support
+        if (config.messaging != null) {
+            if (config.messaging.telegram != null) { modules.push('telegram'); modules.push('input'); }
+            if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
+            if (config.messaging.xmpp != null) { modules.push('@xmpp/client'); }
+            if (config.messaging.pushover != null) { modules.push('node-pushover'); }
+            if (config.messaging.zulip != null) { modules.push('zulip'); }
+        }
 
         // Setup web based push notifications
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }
 
         // Firebase Support
-        if (config.firebase != null) { modules.push('node-xcs'); }
+        // Avoid 0.1.8 due to bugs: https://github.com/guness/node-xcs/issues/43
+        if (config.firebase != null) { modules.push('node-xcs@0.1.7'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }

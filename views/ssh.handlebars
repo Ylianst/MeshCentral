@@ -37,14 +37,12 @@
                 <div id="bigok" style="display:none;left:calc((100vh / 2))"><b>&checkmark;</b></div>
                 <div id="bigfail" style="display:none;left:calc((100vh / 2))"><b>&#10007;</b></div>
                 <div id="metadatadiv" style="padding:20px;color:lightgrey;text-align:left;display:none"></div>
-                <div id=terminal style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);"></div>
+                <div id=terminal style="max-height:calc(100vh - 54px);height:calc(100vh - 54px);text-align:left"></div>
                 <div id=TermConsoleMsg style="display:none;cursor:pointer;z-index:10;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
             <div id=deskarea4 class="areaHead">
-                <div class="toright2">
-                </div>
-                <div style="height:21px;max-height:21px">
-                </div>
+                <div class="toright2"></div>
+                <div style="height:21px;max-height:21px"></div>
             </div>
         </div>
         <div id=dialog class="noselect" style="display:none">
@@ -243,7 +241,7 @@
                         case 'sessiontimeout': { setDialogMode(2, "Session", 1, null, "Session timeout."); break; }
                     }
                 } else if (data.data[0] == '~') {
-                    term.writeUtf8(data.data.substring(1));
+                    if (term.writeUtf8) { term.writeUtf8(data.data.substring(1)); } else { term.write(data.data.substring(1)); }
                 }
             }
             socket.onclose = function (e) { disconnect(); }

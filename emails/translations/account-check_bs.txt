@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Potvrda e-pošte
+Zdravo [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) vrši verifikaciju e-pošte. Idite na sljedeću vezu da dovršite proces:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Ako niste vi inicirali ovaj zahtjev, zanemarite ovu poruku.

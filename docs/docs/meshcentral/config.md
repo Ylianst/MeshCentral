@@ -15,6 +15,7 @@ See description for information about each item.
       "type": "object",
       "properties": {
         "cert": { "type": "string", "description": "Set this to the primary DNS name of this MeshCentral server." },
+        "keepCerts": { "type": "boolean", "default": false, "description": "Force MeshCentral to use the HTTPS and MPS certificates even if the name does not match the expected DNS value." },
         "mongoDb": { "type": "string", "default": null },
         "mongoDbName": { "type": "string" },
         "mongoDbChangeStream": { "type": "boolean", "default": false },
@@ -88,9 +89,9 @@ See description for information about each item.
         "sessionTime": { "type": "integer", "default": 60, "description": "Duration of a session cookie in minutes. Changing this affects how often the session needs to be automatically refreshed." },
         "sessionKey": { "type": "string", "default": null, "description": "Password used to encrypt the MeshCentral web session cookies. If null, a random one is generated each time the server starts." },
         "sessionSameSite": { "type": "string", "default": "lax", "enum": ["strict", "lax", "none"] },
-        "dbEncryptKey": { "type": "string" },
-        "dbRecordsEncryptKey": { "type": "string", "default": null },
-        "dbRecordsDecryptKey": { "type": "string", "default": null },
+        "dbEncryptKey": { "type": "string", "default": null, "description": "This value is only valid when used with NeDB, sets the database encryption and decryption key." },
+        "dbRecordsEncryptKey": { "type": "string", "default": null, "description": "With any database, encrypt and decrypt sensitive information within records using this secret key." },
+        "dbRecordsDecryptKey": { "type": "string", "default": null, "description": "With any database, decrypt sensitive information within records using this secret key, don't use a key to encrypt records." },
         "dbExpire": {
           "type": "object",
           "properties": {
@@ -347,6 +348,7 @@ See description for information about each item.
           "loginPicture": { "type": "string", "default": null, "description": "Web site .png logo file placed in meshcentral-data that used on the login page when sitestyle is 2." },
           "rootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL. When in use, direct users to /login to see the normal login page." },
           "mobileSite": { "type": "boolean", "default": true, "description": "When set to false, this setting will disable the mobile site." },
+          "maxDeviceView": { "type": "integer", "default": null, "description": "The maximum number of devices a user can see on the devices page at the same time. By default all devices will show, but this may need to be limited on servers with large number of devices." },
           "unknownUserRootRedirect": { "type": "string", "default": null, "description": "Redirects HTTP root requests to this URL only where user is not already logged in. When in use, direct users to /login to see the normal login page." },
           "nightMode": { "type": "integer", "default": 0, "description": "0 = User selects day/night mode, 1 = Always night mode, 2 = Always day mode" },
           "userQuota": { "type": "integer" },
@@ -354,7 +356,7 @@ See description for information about each item.
           "loginKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that users add the value ?key=xxx in the URL in order to see the web site." },
           "agentKey": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": null, "description": "Requires that agents add the value ?key=xxx in the URL in order to connect. This is not automatic and needs to be manually added in the meshagent.msh file." },
           "ipkvm": { "type": "boolean", "default": false, "description": "Set to true to enable IP KVM device support in this domain." },
-          "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sided web pages." },
+          "minify": { "type": "boolean", "default": false, "description": "When enabled, the server will send reduced sized web pages." },
           "newAccounts": { "type": "boolean", "default": false, "description": "When set to true, allow new user accounts to be created from the login page." },
           "newAccountsPass": { "type": "string", "default": null, "description": "When set this password will be required in order to create a new account from the login screen." },
           "newAccountsCaptcha": { "type": "boolean", "default": false, "description": "When set to true, users will get a CAPTCHA when creating a new account from the login screen." },
@@ -388,6 +390,39 @@ See description for information about each item.
             "description": "When set to true, MeshCentral Assistant can create it's own guest sharing links.",
             "properties": {
               "expire": { "type": "number", "description": "When set, limits the self-created guest sharing link to this number of minutes." }
+            }
+          },
+          "PreconfiguredScripts": {
+            "type": "array",
+            "default": null,
+            "description": "When set, your can try click the run button to run on of these scripts on the remote device.",
+            "items": {
+              "type": "object",
+              "required": [ "name", "type" ],
+              "properties": {
+                "name": {
+                  "description": "Name of the script.",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The type of script.",
+                  "type": "string",
+                  "enum": [ "bat", "ps1", "sh", "agent" ]
+                },
+                "runas": {
+                  "description": "How to run this script, does not apply to agent scripts.",
+                  "type": "string",
+                  "enum": ["agent", "userfirst", "user"]
+                },
+                "cmd": {
+                  "description": "The command or \\r\\n separated commands to run, if set do not use the file key.",
+                  "type": "string"
+                },
+                "file": {
+                  "description": "The script file path and name, if set do not use the cmd key. This file path starts in meshcentral-data.",
+                  "type": "string"
+                }
+              }
             }
           },
           "preConfiguredRemoteInput": {
@@ -499,6 +534,7 @@ See description for information about each item.
               "sms2factor": { "type": "boolean", "default": true, "description": "Set to false to disable SMS 2FA." },
               "push2factor": { "type": "boolean", "default": true, "description": "Set to false to disable push notification 2FA." },
               "otp2factor": { "type": "boolean", "default": true, "description": "Set to false to disable one-time-password 2FA." },
+              "msg2factor": { "type": "boolean", "default": true, "description": "Set to false to disable user messaging 2FA." },
               "backupcode2factor": { "type": "boolean", "default": true, "description": "Set to false to disable 2FA backup codes." },
               "single2factorWarning": { "type": "boolean", "default": true, "description": "Set to false to disable single 2FA warning." },
               "lock2factor": { "type": "boolean", "default": false, "description": "When set to true, prevents any changes to 2FA." },
@@ -523,6 +559,26 @@ See description for information about each item.
           "ldapUserPhoneNumber": { "type": "string", "default": "telephoneNumber", "description": "The LDAP value to use for the user's phone number." },
           "ldapUserImage": { "type": "string", "default": "thumbnailPhoto", "description": "The LDAP value to use for the user's image." },
           "ldapSaveUserToFile": { "type": "string", "default": null, "description": "When set to a filename, for example c:\\temp\\ldapusers.txt, MeshCentral will save the LDAP user object to this file each time a user logs in. This is used for debugging LDAP issues." },
+          "ldapUserGroups": { "type": "string", "default": "memberOf", "description": "The LDAP value to use for the user's group memberships." },
+          "ldapSyncWithUserGroups": {
+            "type": [ "boolean", "object" ],
+            "default": false,
+            "description": "When set to true or set to an object, MeshCentral will synchronize LDAP user memberships to MeshCentral user groups.",
+            "additionalProperties": false,
+            "properties": {
+              "filter": {
+                "type": [ "string", "array" ],
+                "default": null,
+                "description": "When set to a string or array of strings, only LDAP membership groups that includes one of the strings will be synchronized with MeshCentral user groups."
+              }
+            }
+          },
+          "ldapSiteAdminGroups": {
+            "type": [ "string", "array" ],
+            "default": null,
+            "description": "When set to a list of LDAP groups, users that are part of one of these groups will be set a site administrator, otherwise site administrator rights will be removed."
+          },
+          "ldapUserRequiredGroupMembership": { "type": [ "string", "array" ], "default": null, "description": "A list of LDAP groups. Users must be part of at least one of these groups to allow login. If null, all users are allowed to login." },
           "ldapOptions": { "type": "object", "description": "LDAP options passed to ldapauth-fork" },
           "agentInviteCodes": { "type": "boolean", "default": false, "description": "Enabled a feature where you can set one or more invitation codes in a device group. You can then give a invitation link to users who can use it to download the agent." },
           "agentNoProxy": { "type": "boolean", "default": false, "description": "When enabled, all newly installed MeshAgents will be instructed to no use a HTTP/HTTPS proxy even if one is configured on the remote system" },
@@ -1002,7 +1058,8 @@ See description for information about each item.
             "properties": {
               "from": { "type": "string", "format": "email", "description": "Email address used in the messages from field." },
               "apikey": { "type": "string", "description": "The SendGrid API key." },
-              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." }
+              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             },
             "required": [ "from", "apikey" ]
           },
@@ -1044,11 +1101,8 @@ See description for information about each item.
               },
               "tlscertcheck": { "type": "boolean" },
               "tlsstrict": { "type": "boolean" },
-              "verifyemail": {
-                "type": "boolean",
-                "default": true,
-                "description": "When set to false, the email format and DNS MX record are not checked."
-              }
+              "verifyemail": { "type": "boolean", "default": true, "description": "When set to false, the email format and DNS MX record are not checked." },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             },
             "required": [ "from" ]
           },
@@ -1059,7 +1113,8 @@ See description for information about each item.
             "properties": {
               "newline": { "type": "string", "default": "unix", "description": "Possible values are unix or windows" },
               "path": { "type": "string", "default": "sendmail", "description": "Path to the sendmail command" },
-              "args": { "type": "array", "items": { "type": "string" }, "default": null, "description": "Array or arguments to pass to sendmail" }
+              "args": { "type": "array", "items": { "type": "string" }, "default": null, "description": "Array or arguments to pass to sendmail" },
+              "emailDelaySeconds": { "type": "integer", "default": 300, "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."}
             }
           },
           "authStrategies": {
@@ -1167,7 +1222,22 @@ See description for information about each item.
                   "tokenURL": { "type": "string", "format": "uri", "description": "If set, this will be used as the token URL. (If set authorizationURL and userInfoURL need set also)" },
                   "userInfoURL": { "type": "string", "format": "uri", "description": "If set, this will be used as the user info URL. (If set authorizationURL and tokenURL need set also)" },
                   "logouturl": { "type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link." },
-                  "newAccounts": { "type": "boolean", "default": true }
+                  "newAccounts": { "type": "boolean", "default": true },
+                  "groups": {
+                    "type": "object",
+                    "properties": {
+                      "required": { "type": [ "string", "array" ], "description": "When set, the user must be part of one of the OIDC user groups to login to MeshCentral." },
+                      "siteadmin": { "type": [ "string", "array" ], "description": "When set, users part of these groups will be promoted with site administrator in MeshCentral, users that are not part of these groups will be demoted." },
+                      "sync": {
+                        "type": [ "boolean", "object" ],
+                        "description": "Allows some or all ODIC user groups to be mirrored within MeshCentral as user groups.",
+                        "properties": {
+                          "enabled": { "type": "boolean", "default": false },
+                          "filter": { "type": [ "string", "array" ], "description": "When set, limits what OIDC groups are mirrored into MeshCentral user groups." }
+                        }
+                      }
+                    }
+                  }
                 },
                 "required": [ "issuer", "clientid", "clientsecret", "callbackURL" ]
               }
@@ -1236,13 +1306,16 @@ See description for information about each item.
       "required": [ "host", "port", "from", "tls" ]
     },
     "sms": {
-      "title" : "SMS provider",
+      "title": "SMS provider",
       "description": "Connects MeshCentral to a SMS text messaging provider, allows MeshCentral to send SMS messages for 2FA or user notification.",
       "oneOf": [
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "twilio" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "twilio" ]
+            },
             "sid": { "type": "string" },
             "auth": { "type": "string" },
             "from": { "type": "string" }
@@ -1250,9 +1323,12 @@ See description for information about each item.
           "required": [ "provider", "sid", "auth", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "plivo" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "plivo" ]
+            },
             "id": { "type": "string" },
             "token": { "type": "string" },
             "from": { "type": "string" }
@@ -1260,17 +1336,107 @@ See description for information about each item.
           "required": [ "provider", "id", "token", "from" ]
         },
         {
-          "type": "object", 
+          "type": "object",
           "properties": {
-            "provider": { "type": "string", "enum": [ "telnyx" ] },
+            "provider": {
+              "type": "string",
+              "enum": [ "telnyx" ]
+            },
             "apikey": { "type": "string" },
             "from": { "type": "string" }
           },
           "required": [ "provider", "apikey", "from" ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": [ "url" ]
+            },
+            "url": {
+              "type": "string",
+              "description": "A http or https URL with {{phone}} and {{message}} in the string. These will be replaced with the URL encoded target phone number and message."
+            }
+          },
+          "required": [ "url" ]
         }
       ]
+    },
+    "messaging": {
+      "title" : "Messaging server",
+      "description": "This section allow MeshCentral to send messages over user messaging networks like Telegram",
+      "type": "object",
+      "properties": {
+        "telegram": {
+          "type": "object",
+          "description": "Configure Telegram messaging system",
+          "properties": {
+            "apiid": { "type": "number" },
+            "apihash": { "type": "string" },
+            "session": { "type": "string" }
+          }
+        },
+        "discord": {
+          "type": "object",
+          "description": "Configure Discord messaging system",
+          "properties": {
+            "serverurl": { "type": "string", "format": "uri", "description": "An optional HTTP link to the discord server the user must join to get notifications." },
+            "token": { "type": "string", "description": "A Discord bot token that MeshCentral will use to login to Discord." }
+          },
+          "required": [ "token" ]
+        },
+        "xmpp": {
+          "type": "object",
+          "description": "Configure XMPP messaging system",
+          "properties": {
+            "service": { "type": "string", "description": "Host name of the XMPP server." },
+            "credentials": {
+              "type": "object",
+              "description": "Login credentials for the XMPP server.",
+              "properties": {
+                "username": { "type": "string" },
+                "password": { "type": "string" }
+              }
+            }
+          },
+          "required": [ "credentials" ]
+        },
+        "callmebot": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enabled CallMeBot integration support."
+        },
+        "pushover": {
+          "type": "object",
+          "description": "Configure Pushover messaging system",
+          "properties": {
+            "token": { "type": "string", "description": "A Pushover application token that MeshCentral will use to login." }
+          },
+          "required": [ "token" ]
+        },
+        "ntfy": {
+          "type": [ "boolean", "object" ],
+          "default": false,
+          "properties": {
+            "host": { "type": "string", "description": "Host name of the ntfy server." },
+            "userurl": { "type": "string", "description": "A URL given to users to help them setup this service." }
+          },
+          "description": "Enabled ntfy.sh integration support."
+        },
+        "zulip": {
+          "type": "object",
+          "properties": {
+            "site": { "type": "string", "format": "uri", "default": "https://api.zulip.com", "description": "URL to the Zulip server"},
+            "email": { "type": "string", "description": "Bot email address to login as." },
+            "api_key": { "type": "string", "description": "Bot api key." }
+          },
+          "description": "Enabled Zulip integration support."
+        }
+      }
     }
   },
   "required": [ "settings", "domains" ]
 }
+
 ```

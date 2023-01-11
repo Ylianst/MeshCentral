@@ -30,7 +30,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
     const net = require('net');
     const tls = require('tls');
     const MAX_IDLE = 90000;         // 90 seconds max idle time, higher than the typical KEEP-ALIVE periode of 60 seconds
-    const KEEPALIVE_INTERVAL = 30;   // 30 seconds is typical keepalive interval for AMT CIRA connection
+    const KEEPALIVE_INTERVAL = 30;  // 30 seconds is typical keepalive interval for AMT CIRA connection
 
     // This MPS server is also a tiny HTTPS server. HTTP responses are here.
     obj.httpResponses = {

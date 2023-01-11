@@ -4,7 +4,7 @@
   "description": "Open source web based, remote computer management.",
   "scope": ".",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",

@@ -47,20 +47,20 @@ function vt()
 
         var GM = require('_GenericMarshal');
         var k32 = GM.CreateNativeProxy('kernel32.dll');
-        k32.CreateMethod('CancelIoEx');
-        k32.CreateMethod('CreatePipe');
-        k32.CreateMethod('CreateProcessW');
-        k32.CreateMethod('CreatePseudoConsole');
-        k32.CreateMethod('CloseHandle');
-        k32.CreateMethod('ClosePseudoConsole');
-        k32.CreateMethod('GetProcessHeap');
-        k32.CreateMethod('HeapAlloc');
-        k32.CreateMethod('InitializeProcThreadAttributeList');
-        k32.CreateMethod('ResizePseudoConsole');
-        k32.CreateMethod('UpdateProcThreadAttribute');
-        k32.CreateMethod('WriteFile');
-        k32.CreateMethod('ReadFile');
-        k32.CreateMethod('TerminateProcess');
+        k32.CreateMethod('CancelIoEx');                         // https://learn.microsoft.com/en-us/windows/win32/fileio/cancelioex-func
+        k32.CreateMethod('CreatePipe');                         // https://learn.microsoft.com/en-us/windows/win32/api/namedpipeapi/nf-namedpipeapi-createpipe
+        k32.CreateMethod('CreateProcessW');                     // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
+        k32.CreateMethod('CreatePseudoConsole');                // https://learn.microsoft.com/en-us/windows/console/createpseudoconsole
+        k32.CreateMethod('CloseHandle');                        // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+        k32.CreateMethod('ClosePseudoConsole');                 // https://learn.microsoft.com/en-us/windows/console/closepseudoconsole
+        k32.CreateMethod('GetProcessHeap');                     // https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-getprocessheap
+        k32.CreateMethod('HeapAlloc');                          // https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-heapalloc
+        k32.CreateMethod('InitializeProcThreadAttributeList');  // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-initializeprocthreadattributelist
+        k32.CreateMethod('ResizePseudoConsole');                // https://learn.microsoft.com/en-us/windows/console/resizepseudoconsole
+        k32.CreateMethod('UpdateProcThreadAttribute');          // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute
+        k32.CreateMethod('WriteFile');                          // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile
+        k32.CreateMethod('ReadFile');                           // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
+        k32.CreateMethod('TerminateProcess');                   // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
 
         var ret = { _h: GM.CreatePointer(), _consoleInput: GM.CreatePointer(), _consoleOutput: GM.CreatePointer(), _input: GM.CreatePointer(), _output: GM.CreatePointer(), k32: k32 };
         var attrSize = GM.CreateVariable(8);
@@ -77,18 +77,31 @@ function vt()
             throw ('Error calling CreatePseudoConsole()');
         }
 
+        //
+        // Reference for STARTUPINFOEXW
+        // https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-startupinfoexw
+        //
+
+        //
+        // Reference for STARTUPINFOW
+        // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow
+        //
+
         k32.InitializeProcThreadAttributeList(0, 1, 0, attrSize);
         attrList = GM.CreateVariable(attrSize.toBuffer().readUInt32LE());
-        var startupinfoex = GM.CreateVariable(GM.PointerSize == 8 ? 112 : 72);
-        startupinfoex.toBuffer().writeUInt32LE(GM.PointerSize == 8 ? 112 : 72, 0);
-        attrList.pointerBuffer().copy(startupinfoex.Deref(GM.PointerSize == 8 ? 104 : 68, GM.PointerSize).toBuffer());
+        var startupinfoex = GM.CreateVariable(GM.PointerSize == 8 ? 112 : 72);                                          // Create Structure, 64 bits is 112 bytes, 32 bits is 72 bytes
+        startupinfoex.toBuffer().writeUInt32LE(GM.PointerSize == 8 ? 112 : 72, 0);                                      // Write buffer size
+        attrList.pointerBuffer().copy(startupinfoex.Deref(GM.PointerSize == 8 ? 104 : 68, GM.PointerSize).toBuffer());  // Write the reference to STARTUPINFOEX
 
         if (k32.InitializeProcThreadAttributeList(attrList, 1, 0, attrSize).Val != 0)
         {
             if (k32.UpdateProcThreadAttribute(attrList, 0, PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE, ret._h.Deref(), GM.PointerSize, 0, 0).Val != 0)
             {
-                if (k32.CreateProcessW(0, GM.CreateVariable(path, { wide: true }), 0, 0, 1, EXTENDED_STARTUPINFO_PRESENT, 0, 0, startupinfoex, pi).Val != 0)
+                if (k32.CreateProcessW(0, GM.CreateVariable(path, { wide: true }), 0, 0, 1, EXTENDED_STARTUPINFO_PRESENT, 0, 0, startupinfoex, pi).Val != 0) // Create the process to run in the pseudoconsole
                 {
+                    //
+                    // Create a Stream Object, to be able to read/write data to the pseudoconsole
+                    //
                     ret._startupinfoex = startupinfoex;
                     ret._process = pi.Deref(0);
                     ret._pid = pi.Deref(GM.PointerSize == 4 ? 8 : 16, 4).toBuffer().readUInt32LE();
@@ -111,6 +124,10 @@ function vt()
                             flush();
                         }
                     });
+                    
+                    //
+                    // The ProcessInfo object is signaled when the process exits
+                    //
                     ds._obj = ret;
                     ret._waiter = require('DescriptorEvents').addDescriptor(pi.Deref(0));
                     ret._waiter.ds = ds;
@@ -151,6 +168,7 @@ function vt()
                     ds._rpbufRead = GM.CreateVariable(4);
                     ds.__read = function __read()
                     {
+                        // Asyncronously read data from the pseudoconsole
                         this._rp = this.terminal.k32.ReadFile.async(this.terminal._output.Deref(), this._rpbuf, this._rpbuf._size, this._rpbufRead, 0);                      
                         this._rp.then(function ()
                         {
@@ -173,6 +191,8 @@ function vt()
         }
         throw ('Internal Error');
     }
+
+    // This evaluates whether or not the powershell binary exists
     this.PowerShellCapable = function ()
     {
         if (require('os').arch() == 'x64')
@@ -184,10 +204,14 @@ function vt()
             return (require('fs').existsSync(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'));
         }
     }
+
+    // Start the PseudoConsole with the Command Prompt
     this.Start = function Start(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
     {
         return (this.Create(process.env['windir'] + '\\System32\\cmd.exe', CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT));
     }
+
+    // Start the PseduoConsole with PowerShell
     this.StartPowerShell = function StartPowerShell(CONSOLE_SCREEN_WIDTH, CONSOLE_SCREEN_HEIGHT)
     {
         if (require('os').arch() == 'x64')

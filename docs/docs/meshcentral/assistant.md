@@ -23,3 +23,9 @@ For web page customization:
 3. That copy will be served instead of the default one, you can customize as you want.
 
 ![agent invite code](images/assistant_invitation_link.png)
+
+## Email notification
+
+You can also get an email notification when someone clicks the "Request Help" button in the Assistant agent.
+
+![](images/2022-09-06-16-38-57.png)

@@ -1,0 +1,7 @@
+[[[SERVERNAME]]] - Een verzoek om het apparaat te helpen
+Apparaat "[[[DEVICENAME]]]" heeft assistentie gevraagd
+
+Gebruiker: "[[[HELPUSERNAME]]]"
+Verzoek: "[[[HELPREQUEST]]]"
+
+[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]

@@ -648,6 +648,22 @@
             height: 400px;
             position: relative;
         }
+
+        .viewSelector10 {
+            margin-left: 2px;
+            margin-top: 2px;
+            background: url(../images/views.png) -476px 0px;
+            height: 28px;
+            width: 28px;
+        }
+
+        .viewSelector11 {
+            margin-left: 2px;
+            margin-top: 2px;
+            background: url(../images/views.png) -504px 0px;
+            height: 28px;
+            width: 28px;
+        }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -663,6 +679,9 @@
                     <strong><font style="font-size:12px;font-family:Arial,Helvetica,sans-serif;text-shadow: 1px 1px 2px #000;">{{{title2}}}</font></strong>
                 </div>
             </div>
+            <div id="devViewPageState" class=noselect style="position:absolute;right:160px;top:10px;height:30px;line-height:30px;color:#c8c8c8;font-size:16px;display:none"></div>
+            <img id="devViewPageButton2" class=noselect style="position:absolute;right:130px;top:10px;cursor:pointer;display:none" onclick=onDeviceViewPageChange(2) src="/images/left-30.png" width=20 height=30 />
+            <img id="devViewPageButton3" class=noselect style="position:absolute;right:100px;top:10px;cursor:pointer;display:none" onclick=onDeviceViewPageChange(3) src="/images/right-30.png" width=20 height=30 />
             <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="position:absolute;right:50px;top:0px;font-size:28px;width:50px;height:50px;cursor:pointer;display:none" title="Click to view current notifications"><div id="notificationCount2" style="padding-top:8px">0</div></div>
             <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
@@ -928,7 +947,7 @@
                             </div>
                             <div id="termarea3" style="width:100%;height: calc(100% - 60px);" cellpadding=0 cellspacing=0>
                                 <div id="termarea3x" style="width:100%;height:100%">
-                                    <div style="width:100%;height:100%" id="termarea3xdiv"></div>
+                                    <div style="width:100%;height:100%;text-align:left" id="termarea3xdiv"></div>
                                 </div>
                             </div>
                             <div id="termarea4" style="position:relative;height:32px;">
@@ -1228,7 +1247,6 @@
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
         var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
-        console.log(logoutControls);
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -1260,6 +1278,7 @@
         var xterm = null;
         var xtermfit = null;
         var xtermResizeTimer = null;
+        var devicePagingState = null;
 
         // Console Message Display Timers
         var p11DeskConsoleMsgTimer = null;
@@ -1348,11 +1367,13 @@
                 if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', "Unable to connect web socket"); }
                 // Clean up here
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
+                devicePagingState = null;
+                updateDevicePageState();
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
-                meshserver.send({ action: 'nodes' });
+                meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
                 meshserver.send({ action: 'files' });
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
             }
@@ -1511,6 +1532,10 @@
 
                     // Change the reference to the current node
                     if (currentNode != null) { currentNode = getNodeFromId(currentNode._id); if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); } else { go(2); } }
+
+                    // Update device paging
+                    devicePagingState = (message.totalcount == null) ? null : { total: message.totalcount, skip: message.skip, limit: message.limit };
+                    updateDevicePageState();
 
                     //onSortSelectChange();
                     //onSearchInputChanged();
@@ -1751,7 +1776,7 @@
                                 updateSelf();
 
                                 // If our list of nodes may have changes, request the new list now.
-                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes' }); }
+                                if (message.event.nodeListChange == userinfo._id) { meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip }); }
                             }
                             break;
                         }
@@ -1774,7 +1799,7 @@
 
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
-                            meshserver.send({ action: 'nodes' });
+                            meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
                             break;
                         }
                         case 'deleteusergroup': {
@@ -1809,7 +1834,7 @@
                                 // This is a new mesh for us
                                 if (add) {
                                     meshes[message.event.meshid] = { _id: message.event.meshid, name: message.event.name, mtype: message.event.mtype, desc: message.event.desc, links: message.event.links, relayid: message.event.relayid };
-                                    meshserver.send({ action: 'nodes' }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
+                                    meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip }); // Request a refresh of all nodes (TODO: We could optimize this to only request nodes for the new mesh).
                                 }
                             } else {
                                 // This is an existing mesh
@@ -2713,6 +2738,31 @@
         function onOnlineCheckBox(e) {
             putstore('onlineOnly', Q('OnlineCheckBox').checked ? 1 : 0);
             onSearchInputChanged();
+        }
+
+        function updateDevicePageState() {
+            if ((devicePagingState == null) || (devicePagingState.total <= devicePagingState.limit)) {
+                QV('devViewPageState', false);
+                QV('devViewPageButton2', false);
+                QV('devViewPageButton3', false);
+            } else {
+                var currentPage = Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit);
+                var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+                QV('devViewPageState', true);
+                QV('devViewPageButton2', true);
+                QV('devViewPageButton3', true);
+                QH('devViewPageState', currentPage + '/' + maxPage);
+            }
+        }
+
+        function onDeviceViewPageChange(i) {
+            if (devicePagingState == null) return;
+            var currentPage = (Math.floor((devicePagingState.skip + devicePagingState.limit) / devicePagingState.limit));
+            var maxPage = Math.ceil(devicePagingState.total / devicePagingState.limit);
+            switch (i) {
+                case 2: { if (currentPage > 1) meshserver.send({ action: 'nodes', skip: (currentPage - 2) * devicePagingState.limit }); break; } // Goto previous page
+                case 3: { if (currentPage < maxPage) meshserver.send({ action: 'nodes', skip: currentPage * devicePagingState.limit }); break; } // Goto next page
+            }
         }
 
         function onDeviceSearchChanged(e) {
@@ -4123,7 +4173,12 @@
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
                     desktop.m.showmouse = true;
                     desktop.m.onScreenSizeChange = function (o, x, y) { if (fullscreen) { QS('deskarea3').width = (x * fullscreenzoom) + 'px'; QS('deskarea3').height = (y * fullscreenzoom) + 'px'; } deskAdjust(); }
-                    desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    // Use TLS if TLS is set
+                    if (desktopNode.conn==4 && desktopNode.intelamt!=null && desktopNode.intelamt.tls==1) {
+                        desktop.Start(desktopNode._id, 16995, '*', '*', 1);
+                    } else {
+                        desktop.Start(desktopNode._id, 16994, '*', '*', 0);
+                    }
                     desktop.contype = 2;
                 } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4))) {
                     // Setup the Mesh Agent remote desktop
@@ -4756,7 +4811,16 @@
             return obj;
         }
 
-        function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
+        function tunnelUpdate(data) {
+            if (xterm != null) {
+                if (xterm.writeUtf8) {
+                    if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); }
+                } else {
+                    if (typeof data == 'string') { xterm.write(data); } else { xterm.write(new Uint8Array(data)); }
+                }
+            }
+        }
+        //function tunnelUpdate(data) { if (typeof data == 'string') { xterm.writeUtf8(data); } else { xterm.writeUtf8(new Uint8Array(data)); } }
 
         function sshTunnelAuthDialog(j, func) {
             var x = '';
@@ -4971,7 +5035,7 @@
                 xterm = new Terminal();
                 xtermfit = new FitAddon.FitAddon();
                 if (xtermfit) { xterm.loadAddon(xtermfit); }
-                xterm.setOption('scrollback', 0);
+                //xterm.setOption('scrollback', 0);
                 //xterm.setOption('fontSize', 15);
                 xterm.open(Q('termarea3xdiv'));
                 xterm.onData(function (data) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } })

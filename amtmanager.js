@@ -948,6 +948,7 @@ module.exports.CreateAmtManager = function (parent) {
 
     // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
     function performPowerAction(nodeid, action) {
+        console.log('performPowerAction', nodeid, action);
         var devices = obj.amtDevices[nodeid];
         if (devices == null) return;
         for (var i in devices) {
@@ -975,20 +976,43 @@ module.exports.CreateAmtManager = function (parent) {
         if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
         if (status != 200) return;
         if ((responses['AMT_BootSettingData'] == null) || (responses['AMT_BootSettingData'].response == null)) return;
-
         var bootSettingData = responses['AMT_BootSettingData'].response;
+
+        // Clean up parameters
+        bootSettingData['ConfigurationDataReset'] = false;
+        delete bootSettingData['WinREBootEnabled'];
+        delete bootSettingData['UEFILocalPBABootEnabled'];
+        delete bootSettingData['UEFIHTTPSBootEnabled'];
+        delete bootSettingData['SecureBootControlEnabled'];
+        delete bootSettingData['BootguardStatus'];
+        delete bootSettingData['OptionsCleared'];
+        delete bootSettingData['BIOSLastStatus'];
+        delete bootSettingData['UefiBootParametersArray'];
+        delete bootSettingData['RPEEnabled'];
+        delete bootSettingData['RSEPassword']
+
+        // Ready boot parameters
         bootSettingData['BIOSSetup'] = ((action >= 11) && (action <= 14));
         bootSettingData['UseSOL'] = ((action >= 13) && (action <= 14));
         if ((action == 11) || (action == 13)) { dev.powerAction = 2; } // Power on
         if ((action == 12) || (action == 14)) { dev.powerAction = 10; } // Reset
 
-        dev.amtstack.Put('AMT_BootSettingData', bootSettingData, function performAdvancedPowerActionResponseEx(stack, name, response, status, tag) {
+        // Set boot parameters
+        dev.amtstack.Put('AMT_BootSettingData', bootSettingData, function (stack, name, response, status, tag) {
             const dev = stack.dev;
-            const action = dev.powerAction;
-            delete dev.powerAction;
-            if (obj.amtDevices[dev.nodeid] == null) return; // Device no longer exists, ignore this response.
-            if (status != 200) return;
-            try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
+            if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
+            // Set boot config
+            dev.amtstack.SetBootConfigRole(1, function (stack, name, response, status, tag) {
+                const dev = stack.dev;
+                if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
+                // Set boot order
+                dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder(null, function (stack, name, response, status) {
+                    const dev = stack.dev;
+                    if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
+                    // Perform power action
+                    try { dev.amtstack.RequestPowerStateChange(dev.powerAction, performPowerActionResponse); } catch (ex) { }
+                }, 0, 1);
+            }, 0, 1);
         }, 0, 1);
     }
 
@@ -1294,7 +1318,7 @@ module.exports.CreateAmtManager = function (parent) {
                         }
 
                         // Figure out what index is local & remote
-                        var localNdx = ((dev.policy.tlsSettings[0]['InstanceID'] == 'Intel(r) AMT LMS TLS Settings')) ? 0 : 1, remoteNdx = (1 - localNdx);
+                        var localNdx = ((dev.policy != null) && (dev.policy.tlsSettings != null) && (dev.policy.tlsSettings[0] != null) && (dev.policy.tlsSettings[0]['InstanceID'] == 'Intel(r) AMT LMS TLS Settings')) ? 0 : 1, remoteNdx = (1 - localNdx);
 
                         // Remote TLS settings
                         var xxTlsSettings2 = Clone(dev.policy.tlsSettings);

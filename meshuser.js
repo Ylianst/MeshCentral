@@ -52,6 +52,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
     const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
+    const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -104,6 +105,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.user = user;
     obj.domain = domain;
     obj.ws = ws;
+
+    // Information related to the current page the user is looking at
+    obj.deviceSkip = 0; // How many devices to skip
+    obj.deviceLimit = 0; // How many devices to view
+    obj.visibleDevices = null; // An object of visible nodeid's if the user is in paging mode
+    if (domain.maxdeviceview != null) { obj.deviceLimit = domain.maxdeviceview; }
 
     // Check if we are a cross-domain administrator
     if (parent.parent.config.settings.managecrossdomain && (parent.parent.config.settings.managecrossdomain.indexOf(user._id) >= 0)) { obj.crossDomain = true; }
@@ -414,6 +421,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // If this session is logged in using a loginToken and the token is removed, disconnect.
                 if ((req.session.loginToken != null) && (typeof event == 'object') && (event.action == 'loginTokenChanged') && (event.removed != null) && (event.removed.indexOf(req.session.loginToken) >= 0)) { delete req.session; obj.close(); return; }
 
+                // If this user is not viewing all devices and paging, check if this event is in the current page
+                if (isEventWithinPage(ids) == false) return;
+
                 // Normally, only allow this user to receive messages from it's own domain.
                 // If the user is a cross domain administrator, allow some select messages from different domains.
                 if ((event.domain == null) || (event.domain == domain.id) || ((obj.crossDomain === true) && (allowedCrossDomainMessages.indexOf(event.action) >= 0))) {
@@ -566,6 +576,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (domain.passwordrequirements.lock2factor == true) { serverinfo.lock2factor = true; } // Indicate 2FA change are not allowed
                 if (typeof domain.passwordrequirements.maxfidokeys == 'number') { serverinfo.maxfidokeys = domain.passwordrequirements.maxfidokeys; }
             }
+            if (parent.parent.msgserver != null) { // Setup messaging providers information
+                serverinfo.userMsgProviders = parent.parent.msgserver.providers;
+                if (parent.parent.msgserver.discordUrl != null) { serverinfo.discordUrl = parent.parent.msgserver.discordUrl; }
+            }
+            if ((typeof parent.parent.config.messaging == 'object') && (typeof parent.parent.config.messaging.ntfy == 'object') && (typeof parent.parent.config.messaging.ntfy.userurl == 'string')) { // nfty user url
+                serverinfo.userMsgNftyUrl = parent.parent.config.messaging.ntfy.userurl;
+            }
 
             // Build the mobile agent URL, this is used to connect mobile devices
             var agentServerName = parent.getWebServerName(domain, req);
@@ -605,6 +622,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 serverinfo.preConfiguredScripts = r;
             }
+            if (domain.maxdeviceview != null) { serverinfo.maxdeviceview = domain.maxdeviceview; } // Maximum number of devices a user can view at any given time
 
             // Send server information
             try { ws.send(JSON.stringify({ action: 'serverinfo', serverinfo: serverinfo })); } catch (ex) { }
@@ -667,6 +685,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         switch (command.action) {
             case 'nodes':
                 {
+                    // If in paging mode, look to set the skip and limit values
+                    if (domain.maxdeviceview != null) {
+                        if ((typeof command.skip == 'number') && (command.skip >= 0)) { obj.deviceSkip = command.skip; }
+                        if ((typeof command.limit == 'number') && (command.limit > 0)) { obj.deviceLimit = command.limit; }
+                        if (obj.deviceLimit > domain.maxdeviceview) { obj.deviceLimit = domain.maxdeviceview; }
+                    }
+
                     var links = [], extraids = null, err = null;
 
                     // Resolve the device group name if needed
@@ -706,17 +731,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Request a list of all nodes
-                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, docs) {
+                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
 
                         //console.log(err, docs, links, extraids, domain.id, 'node', command.id);
 
                         if (docs == null) { docs = []; }
                         parent.common.unEscapeAllLinksFieldName(docs);
 
-                        var r = {};
+                        var r = {}, nodeCount = docs.length;
+                        if (domain.maxdeviceview != null) { obj.visibleDevices = {}; }
                         for (i in docs) {
                             // Check device links, if a link points to an unknown user, remove it.
-                            parent.cleanDevice(docs[i]);
+                            parent.cleanDevice(docs[i]); // TODO: This will make the total device count incorrect and will affect device paging.
+
+                            // If we are paging, add the device to the page here
+                            if (domain.maxdeviceview != null) { obj.visibleDevices[docs[i]._id] = 1; }
 
                             // Remove any connectivity and power state information, that should not be in the database anyway.
                             // TODO: Find why these are sometimes saved in the db.
@@ -788,7 +817,38 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             r[meshid].push(docs[i]);
                         }
-                        try { ws.send(JSON.stringify({ action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag })); } catch (ex) { }
+                        const response = { action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag };
+                        if (domain.maxdeviceview != null) {
+                            // If in paging mode, report back the skip and limit values
+                            response.skip = obj.deviceSkip;
+                            response.limit = obj.deviceLimit;
+
+                            // Add total device count
+                            // Only set response.totalcount if we need to be in paging mode
+                            if (nodeCount < response.limit) {
+                                if (obj.deviceSkip > 0) { response.totalcount = obj.deviceSkip + nodeCount; } else { obj.visibleDevices = null; }
+                                try { ws.send(JSON.stringify(response)); } catch (ex) { }
+                            } else {
+                                // Ask the database for the total device count
+                                if (db.CountAllTypeNoTypeFieldMeshFiltered) {
+                                    db.CountAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, count) {
+                                        if ((err != null) || (typeof count != 'number') || ((obj.deviceSkip == 0) && (count < obj.deviceLimit))) {
+                                            obj.visibleDevices = null;
+                                        } else {
+                                            response.totalcount = count;
+                                        }
+                                        try { ws.send(JSON.stringify(response)); } catch (ex) { }
+                                    });
+                                } else {
+                                    // The database does not support device counting
+                                    obj.visibleDevices = null; // We are not in paging mode
+                                    try { ws.send(JSON.stringify(response)); } catch (ex) { }
+                                }
+                            }
+                        } else {
+                            obj.visibleDevices = null; // We are not in paging mode
+                            try { ws.send(JSON.stringify(response)); } catch (ex) { }
+                        }
                     });
                     break;
                 }
@@ -1334,6 +1394,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.resetNextLogin === true) { chguser.passchange = -1; }
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
+                        if ((command.msghandle != null) && (typeof command.msghandle == 'string')) {
+                            if (command.msghandle.startsWith('callmebot:https://')) { const h = parent.parent.msgserver.callmebotUrlToHandle(command.msghandle.substring(10)); if (h) { command.msghandle = h; } else { command.msghandle = ''; } }
+                            if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; }
+                            change = 1;
+                        }
                         if ((command.flags != null) && (typeof command.flags == 'number')) {
                             // Flags: 1 = Account Image, 2 = Session Recording
                             if ((command.flags == 0) && (chguser.flags != null)) { delete chguser.flags; change = 1; } else { if (command.flags !== chguser.flags) { chguser.flags = command.flags; change = 1; } }
@@ -1652,11 +1717,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
-                    //  2 = WebPage device connections
-                    //  4 = WebPage device disconnections
-                    //  8 = WebPage device desktop and serial events
-                    // 16 = Email device connections
-                    // 32 = Email device disconnections
+                    //   2 = WebPage device connections
+                    //   4 = WebPage device disconnections
+                    //   8 = WebPage device desktop and serial events
+                    //  16 = Email device connections
+                    //  32 = Email device disconnections
+                    //  64 = Email device help request
+                    // 128 = Messaging device connections
+                    // 256 = Messaging device disconnections
+                    // 512 = Messaging device help request
 
                     var err = null;
                     try {
@@ -1701,11 +1770,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
-                    //  2 = WebPage device connections
-                    //  4 = WebPage device disconnections
-                    //  8 = WebPage device desktop and serial events
-                    // 16 = Email device connections
-                    // 32 = Email device disconnections
+                    //   2 = WebPage device connections
+                    //   4 = WebPage device disconnections
+                    //   8 = WebPage device desktop and serial events
+                    //  16 = Email device connections
+                    //  32 = Email device disconnections
+                    //  64 = Email device help request
+                    // 128 = Messaging device connections
+                    // 256 = Messaging device disconnections
+                    // 512 = Messaging device help request
 
                     var err = null;
                     try {
@@ -2708,6 +2781,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         });
                     }
+
+                    // Send response if required, in this case we always send ok which is not ideal.
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+
                     break;
                 }
             case 'wakedevices':
@@ -4104,7 +4181,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Event device share removal
                         if (removedExact != null) {
                             // Send out an event that we removed a device share
-                            var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                            var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', 'server-shareremove', user._id]);
                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: [removedExact.guestName], domain: domain.id, publicid: command.publicid };
                             parent.parent.DispatchEvent(targets, obj, event);
 
@@ -5062,21 +5139,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var amtDevices = [];
 
                 // Decode a JSON file from the Intel SCS migration tool
-                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel EMA Migration Tool') && (Array.isArray(command.amtdevices['Managed Systems']))) {
-                    for (var i in command.amtdevices['Managed Systems']) {
-                        const importDev = command.amtdevices['Managed Systems'][i];
+                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel vPro(R) Manageability Migration Tool') && (typeof command.amtdevices['ManagedSystems'] == 'object') && (Array.isArray(command.amtdevices['ManagedSystems']['ManagedSystemsList']))) {
+                    for (var i in command.amtdevices['ManagedSystems']['ManagedSystemsList']) {
+                        const importDev = command.amtdevices['ManagedSystems']['ManagedSystemsList'][i];
                         var host = null;
-                        if ((typeof importDev.curr_AMTFqdn == 'string') && (importDev.curr_AMTFqdn != '')) { host = importDev.curr_AMTFqdn; }
-                        if ((host == null) && (typeof importDev.curr_AMTIPv4 == 'string') && (importDev.curr_AMTIPv4 != '')) { host = importDev.curr_AMTIPv4; }
+                        if ((typeof importDev.Fqdn == 'string') && (importDev.Fqdn != '')) { host = importDev.Fqdn; }
+                        if ((host == null) && (typeof importDev.IPv4 == 'string') && (importDev.IPv4 != '')) { host = importDev.IPv4; }
                         if (host != null) {
                             // Create a new Intel AMT device
                             const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             const device = { type: 'node', _id: nodeid, meshid: mesh._id, mtype: 1, icon: 1, name: host, host: host, domain: domain.id, intelamt: { user: 'admin', state: 2 } };
 
                             // Add optional fields
-                            if (typeof importDev.AMTVersion == 'string') { device.intelamt.ver = importDev.AMTVersion; }
+                            if (typeof importDev.AmtVersion == 'string') { device.intelamt.ver = importDev.AmtVersion; }
                             if (typeof importDev.ConfiguredPassword == 'string') { device.intelamt.pass = importDev.ConfiguredPassword; }
-                            if (typeof importDev.uuid == 'string') { device.intelamt.uuid = importDev.uuid; }
+                            if (typeof importDev.Uuid == 'string') { device.intelamt.uuid = importDev.Uuid; }
+                            if (importDev.ConnectionType == 'TLS') { device.intelamt.tls = 1; }
 
                             // Check if we are already adding a device with the same hostname, if so, skip it.
                             var skip = false;
@@ -5177,6 +5255,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'changelang': serverCommandChangeLang,
         'close': serverCommandClose,
         'confirmPhone': serverCommandConfirmPhone,
+        'confirmMessaging': serverCommandConfirmMessaging,
         'emailuser': serverCommandEmailUser,
         'files': serverCommandFiles,
         'getClip': serverCommandGetClip,
@@ -5193,7 +5272,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'pong': serverCommandPong,
         'powertimeline': serverCommandPowerTimeline,
         'print': serverCommandPrint,
-        'removePhone': serverCommandremovePhone,
+        'removePhone': serverCommandRemovePhone,
+        'removeMessaging': serverCommandRemoveMessaging,
         'removeuserfromusergroup': serverCommandRemoveUserFromUserGroup,
         'report': serverCommandReport,
         'serverclearerrorlog': serverCommandServerClearErrorLog,
@@ -5205,6 +5285,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverversion': serverCommandServerVersion,
         'setClip': serverCommandSetClip,
         'smsuser': serverCommandSmsUser,
+        'msguser': serverCommandMsgUser,
         'trafficdelta': serverCommandTrafficDelta,
         'trafficstats': serverCommandTrafficStats,
         'updateAgents': serverCommandUpdateAgents,
@@ -5212,7 +5293,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'urlargs': serverCommandUrlArgs,
         'users': serverCommandUsers,
         'verifyemail': serverCommandVerifyEmail,
-        'verifyPhone': serverCommandVerifyPhone
+        'verifyPhone': serverCommandVerifyPhone,
+        'verifyMessaging': serverCommandVerifyMessaging
     };
 
     const serverUserCommands = {
@@ -5240,6 +5322,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'dupagents': [serverUserCommandDupAgents, ""],
         'email': [serverUserCommandEmail, ""],
         'emailnotifications': [serverUserCommandEmailNotifications, ""],
+        'msgnotifications': [serverUserCommandMessageNotifications, ""],
         'firebase': [serverUserCommandFirebase, ""],
         'heapdump': [serverUserCommandHeapDump, ""],
         'heapdump2': [serverUserCommandHeapDump2, ""],
@@ -5260,7 +5343,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverupdate': [serverUserCommandServerUpdate, "Updates server to latest version. Optional version argument to install specific version. Example: serverupdate 0.8.49"],
         'setmaxtasks': [serverUserCommandSetMaxTasks, ""],
         'showpaths': [serverUserCommandShowPaths, ""],
-        'sms': [serverUserCommandSMS, ""],
+        'sms': [serverUserCommandSMS, "Send a SMS message to a specified phone number"],
+        'msg': [serverUserCommandMsg, "Send a user message to a user handle"],
         'swarmstats': [serverUserCommandSwarmStats, ""],
         'tasklimiter': [serverUserCommandTaskLimiter, "Returns the internal status of the tasklimiter. This is a system used to smooth out work done by the server. It's used by, for example, agent updates so that not all agents are updated at the same time."],
         'trafficdelta': [serverUserCommandTrafficDelta, ""],
@@ -5969,6 +6053,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
 
+    function serverCommandConfirmMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if ((parent.parent.msgserver == null) || (typeof command.cookie != 'string') || (typeof command.code != 'string') || (obj.failedMsgCookieCheck == 1)) return; // Input checks
+        var cookie = parent.parent.decodeCookie(command.cookie);
+        if (cookie == null) return; // Invalid cookie
+        if (cookie.s != ws.sessionId) return; // Invalid session
+        if (cookie.c != command.code) {
+            obj.failedMsgCookieCheck = 1;
+            // Code does not match, delay the response to limit how many guesses we can make and don't allow more than 1 guess at any given time.
+            setTimeout(function () {
+                ws.send(JSON.stringify({ action: 'verifyMessaging', cookie: command.cookie, success: true }));
+                delete obj.failedMsgCookieCheck;
+            }, 2000 + (parent.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+            return;
+        }
+
+        // Set the user's messaging handle
+        user.msghandle = cookie.p;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 156, msgArgs: [user.name], msg: 'Verified messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
     function serverCommandEmailUser(command) {
         var errMsg = null, emailuser = null;
         if (domain.mailserver == null) { errMsg = 'Email server not enabled'; }
@@ -6128,14 +6241,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandLastConnects(command) {
-        const links = parent.GetAllMeshIdWithRights(user);
-        const extraids = getUserExtraIds();
-        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, function (err, docs) {
-            if (docs == null) return;
+        if (obj.visibleDevices == null) {
+            // If we are not paging, get all devices visible to this user
+            const links = parent.GetAllMeshIdWithRights(user);
+            const extraids = getUserExtraIds();
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                if (docs == null) return;
 
+                // Create a list of node ids for this user and query them for last device connection time
+                const ids = []
+                for (var i in docs) { ids.push('lc' + docs[i]._id); }
+
+                // Pull list of last connections only for device owned by this user
+                db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
+                    if (docs == null) return;
+                    const response = {};
+                    for (var j in docs) { response[docs[j]._id.substring(2)] = docs[j].time; }
+                    obj.send({ action: 'lastconnects', lastconnects: response, tag: command.tag });
+                });
+            });
+        } else {
+            // If we are paging, we know what devices the user is look at
             // Create a list of node ids for this user and query them for last device connection time
             const ids = []
-            for (var i in docs) { ids.push('lc' + docs[i]._id); }
+            for (var i in obj.visibleDevices) { ids.push('lc' + i); }
 
             // Pull list of last connections only for device owned by this user
             db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
@@ -6144,7 +6273,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 for (var j in docs) { response[docs[j]._id.substring(2)] = docs[j].time; }
                 obj.send({ action: 'lastconnects', lastconnects: response, tag: command.tag });
             });
-        });
+        }
     }
 
     function serverCommandLoginCookie(command) {
@@ -6199,7 +6328,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandPrint(command) { console.log(command.value); }
 
-    function serverCommandremovePhone(command) {
+    function serverCommandRemovePhone(command) {
         // Do not allow this command when logged in using a login token
         if (req.session.loginToken != null) return;
 
@@ -6212,6 +6341,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Event the change
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 97, msgArgs: [user.name], msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+        parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
+    function serverCommandRemoveMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (user.msghandle == null) return;
+
+        // Clear the user's phone
+        delete user.msghandle;
+        db.SetUser(user);
+
+        // Event the change
+        var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 157, msgArgs: [user.name], msg: 'Removed messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
@@ -6425,6 +6571,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     }
 
+    function serverCommandMsgUser(command) {
+        var errMsg = null, msguser = null;
+        if ((parent.parent.msgserver == null) || (parent.parent.msgserver.providers == 0)) { errMsg = "Messaging server not enabled"; }
+        else if ((user.siteadmin & 2) == 0) { errMsg = "No user management rights"; }
+        else if (common.validateString(command.userid, 1, 2048) == false) { errMsg = "Invalid username"; }
+        else if (common.validateString(command.msg, 1, 160) == false) { errMsg = "Invalid message"; }
+        else {
+            msguser = parent.users[command.userid];
+            if (msguser == null) { errMsg = "Invalid username"; }
+            else if (msguser.msghandle == null) { errMsg = "No messaging service configured for this user"; }
+        }
+
+        if (errMsg != null) { displayNotificationMessage(errMsg); return; }
+
+        parent.parent.msgserver.sendMessage(msguser.msghandle, command.msg, domain, function (success, msg) {
+            if (success) {
+                displayNotificationMessage("Message succesfuly sent.", null, null, null, 32);
+            } else {
+                if (typeof msg == 'string') { displayNotificationMessage("Messaging error: " + msg, null, null, null, 34, [msg]); } else { displayNotificationMessage("Messaging error", null, null, null, 33); }
+            }
+        });
+    }
+
     function serverCommandTrafficDelta(command) {
         const stats = parent.getTrafficDelta(obj.trafficStats);
         obj.trafficStats = stats.current;
@@ -6530,6 +6699,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         const phoneCookie = parent.parent.encodeCookie({ a: 'verifyPhone', c: code, p: command.phone, s: ws.sessionId });
         parent.parent.smsserver.sendPhoneCheck(domain, command.phone, code, parent.getLanguageCodes(req), function (success) {
             ws.send(JSON.stringify({ action: 'verifyPhone', cookie: phoneCookie, success: success }));
+        });
+    }
+
+    function serverCommandVerifyMessaging(command) {
+        // Do not allow this command when logged in using a login token
+        if (req.session.loginToken != null) return;
+
+        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+        if (parent.parent.msgserver == null) return;
+        if (common.validateString(command.handle, 1, 1024) == false) return; // Check handle length
+
+        // Setup the handle for the right messaging service
+        var handle = null;
+        if ((command.service == 1) && ((parent.parent.msgserver.providers & 1) != 0)) { handle = 'telegram:@' + command.handle; }
+        if ((command.service == 4) && ((parent.parent.msgserver.providers & 4) != 0)) { handle = 'discord:' + command.handle; }
+        if ((command.service == 8) && ((parent.parent.msgserver.providers & 8) != 0)) { handle = 'xmpp:' + command.handle; }
+        if ((command.service == 16) && ((parent.parent.msgserver.providers & 16) != 0)) { handle = parent.parent.msgserver.callmebotUrlToHandle(command.handle); }
+        if ((command.service == 32) && ((parent.parent.msgserver.providers & 32) != 0)) { handle = 'pushover:' + command.handle; }
+        if ((command.service == 64) && ((parent.parent.msgserver.providers & 64) != 0)) { handle = 'ntfy:' + command.handle; }
+        if ((command.service == 128) && ((parent.parent.msgserver.providers & 128) != 0)) { handle = 'zulip:' + command.handle; }
+        if (handle == null) return;
+
+        // Send a verification message
+        const code = common.zeroPad(getRandomSixDigitInteger(), 6);
+        const messagingCookie = parent.parent.encodeCookie({ a: 'verifyMessaging', c: code, p: handle, s: ws.sessionId });
+        parent.parent.msgserver.sendMessagingCheck(domain, handle, code, parent.getLanguageCodes(req), function (success) {
+            ws.send(JSON.stringify({ action: 'verifyMessaging', cookie: messagingCookie, success: success }));
         });
     }
 
@@ -6656,6 +6852,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         }
     }
 
+    function serverUserCommandMsg(cmdData) {
+        if ((parent.parent.msgserver == null) || (parent.parent.msgserver.providers == 0)) {
+            cmdData.result = "No messaging providers configured.";
+        } else {
+            if (cmdData.cmdargs['_'].length != 2) {
+                var r = [];
+                if ((parent.parent.msgserver.providers & 1) != 0) { r.push("Usage: MSG \"telegram:[@UserHandle]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 2) != 0) { r.push("Usage: MSG \"signal:[UserHandle]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 4) != 0) { r.push("Usage: MSG \"discord:[Username#0000]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 8) != 0) { r.push("Usage: MSG \"xmpp:[username@server.com]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:[userkey]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 64) != 0) { r.push("Usage: MSG \"ntfy:[topic]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 128) != 0) { r.push("Usage: MSG \"zulip:[topic]\" \"Message\"."); }
+                cmdData.result = r.join('\r\n');
+            } else {
+                parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], domain, function (status, msg) {
+                    if (typeof msg == 'string') {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? ('Success: ' + msg) : ('Failed: ' + msg), tag: cmdData.command.tag })); } catch (ex) { }
+                    } else {
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: status ? 'Success' : 'Failed', tag: cmdData.command.tag })); } catch (ex) { }
+                    }
+                });
+            }
+        }
+    }
+
     function serverUserCommandEmail(cmdData) {
         if (domain.mailserver == null) {
             cmdData.result = "No email service enabled.";
@@ -6681,7 +6903,23 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     x += '  ' + info.mn + ', ' + info.nn + ', c:' + (info.c ? info.c : 0) + ', d:' + (info.d ? info.d : 0) + '\r\n';
                 }
             }
-            cmdData.result = ((x == '')?'None':x);
+            cmdData.result = ((x == '') ? 'None' : x);
+        }
+    }
+
+    function serverUserCommandMessageNotifications(cmdData) {
+        if (parent.parent.msgserver == null) {
+            cmdData.result = "No messaging service enabled.";
+        } else {
+            var x = '';
+            for (var userid in parent.parent.msgserver.deviceNotifications) {
+                x += userid + '\r\n';
+                for (var nodeid in parent.parent.msgserver.deviceNotifications[userid].nodes) {
+                    const info = parent.parent.msgserver.deviceNotifications[userid].nodes[nodeid];
+                    x += '  ' + info.mn + ', ' + info.nn + ', c:' + (info.c ? info.c : 0) + ', d:' + (info.d ? info.d : 0) + '\r\n';
+                }
+            }
+            cmdData.result = ((x == '') ? 'None' : x);
         }
     }
 
@@ -7505,22 +7743,62 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     // Return detailed information about all nodes this user has access to
     function getAllDeviceDetailedInfo(type, func) {
-        // Get all device groups this user has access to
-        var links = parent.GetAllMeshIdWithRights(user);
+        // If we are not paging, get all devices visible to this user
+        if (obj.visibleDevices == null) {
 
-        // Add any nodes with direct rights or any nodes with user group direct rights
-        var extraids = getUserExtraIds();
+            // Get all device groups this user has access to
+            var links = parent.GetAllMeshIdWithRights(user);
 
-        // Request a list of all nodes
-        db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, function (err, docs) {
-            if (docs == null) { docs = []; }
-            parent.common.unEscapeAllLinksFieldName(docs);
+            // Add any nodes with direct rights or any nodes with user group direct rights
+            var extraids = getUserExtraIds();
 
-            var results = [], resultPendingCount = 0;
-            for (i in docs) {
-                // Check device links, if a link points to an unknown user, remove it.
-                parent.cleanDevice(docs[i]);
+            // Request a list of all nodes
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                if (docs == null) { docs = []; }
+                parent.common.unEscapeAllLinksFieldName(docs);
 
+                var results = [], resultPendingCount = 0;
+                for (i in docs) {
+                    // Check device links, if a link points to an unknown user, remove it.
+                    parent.cleanDevice(docs[i]);
+
+                    // Fetch the node from the database
+                    resultPendingCount++;
+                    const getNodeFunc = function (node, rights, visible) {
+                        if ((node != null) && (visible == true)) {
+                            const getNodeSysInfoFunc = function (err, docs) {
+                                const getNodeNetInfoFunc = function (err, docs) {
+                                    var netinfo = null;
+                                    if ((err == null) && (docs != null) && (docs.length == 1)) { netinfo = docs[0]; }
+                                    resultPendingCount--;
+                                    getNodeNetInfoFunc.results.push({ node: parent.CloneSafeNode(getNodeNetInfoFunc.node), sys: getNodeNetInfoFunc.sysinfo, net: netinfo });
+                                    if (resultPendingCount == 0) { func(getNodeFunc.results, type); }
+                                }
+                                getNodeNetInfoFunc.results = getNodeSysInfoFunc.results;
+                                getNodeNetInfoFunc.nodeid = getNodeSysInfoFunc.nodeid;
+                                getNodeNetInfoFunc.node = getNodeSysInfoFunc.node;
+                                if ((err == null) && (docs != null) && (docs.length == 1)) { getNodeNetInfoFunc.sysinfo = docs[0]; }
+
+                                // Query the database for network information
+                                db.Get('if' + getNodeSysInfoFunc.nodeid, getNodeNetInfoFunc);
+                            }
+                            getNodeSysInfoFunc.results = getNodeFunc.results;
+                            getNodeSysInfoFunc.nodeid = getNodeFunc.nodeid;
+                            getNodeSysInfoFunc.node = node;
+
+                            // Query the database for system information
+                            db.Get('si' + getNodeFunc.nodeid, getNodeSysInfoFunc);
+                        } else { resultPendingCount--; }
+                        if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
+                    }
+                    getNodeFunc.results = results;
+                    getNodeFunc.nodeid = docs[i]._id;
+                    parent.GetNodeWithRights(domain, user, docs[i]._id, getNodeFunc);
+                }
+            });
+        } else {
+            // If we are paging, we know what devices the user is look at
+            for (var id in obj.visibleDevices) {
                 // Fetch the node from the database
                 resultPendingCount++;
                 const getNodeFunc = function (node, rights, visible) {
@@ -7551,10 +7829,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
                 }
                 getNodeFunc.results = results;
-                getNodeFunc.nodeid = docs[i]._id;
-                parent.GetNodeWithRights(domain, user, docs[i]._id, getNodeFunc);
+                getNodeFunc.nodeid = id;
+                parent.GetNodeWithRights(domain, user, id, getNodeFunc);
             }
-        });
+        }
     }
 
     // Display a notification message for this session only.
@@ -7712,13 +7990,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function count2factoraAuths() {
         var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null));
         var sms2fa = ((parent.parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)));
+        var msg2fa = ((parent.parent.msgserver != null) && (parent.parent.msgserver.providers != 0) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)));
         var authFactorCount = 0;
         if (typeof user.otpsecret == 'string') { authFactorCount++; } // Authenticator time factor
         if (email2fa && (user.otpekey != null)) { authFactorCount++; } // EMail factor
         if (sms2fa && (user.phone != null)) { authFactorCount++; } // SMS factor
+        if (msg2fa && (user.msghandle != null)) { authFactorCount++; } // Messaging factor
         if (user.otphkeys != null) { authFactorCount += user.otphkeys.length; } // FIDO hardware factor
         if ((authFactorCount > 0) && (user.otpkeys != null)) { authFactorCount++; } // Backup keys
         return authFactorCount;
+    }
+
+    // Return true if the event is for a device that is part of the currently visible page
+    function isEventWithinPage(ids) {
+        if (obj.visibleDevices == null) return true; // Add devices are visible
+        var r = true;
+        for (var i in ids) {
+            // If the event is for a visible device, return true
+            if (ids[i].startsWith('node/')) { r = false; if (obj.visibleDevices[ids[i]] != null) return true; }
+        }
+        return r; // If this event is not for any specific device, return true
     }
 
     return obj;

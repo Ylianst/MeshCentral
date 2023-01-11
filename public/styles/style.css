@@ -2943,6 +2943,38 @@ a {
     width: 28px;
 }
 
+.viewSelector8 {
+    margin-left: 2px;
+    margin-top: 2px;
+    background: url(../images/views.png) -420px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.viewSelector9 {
+    margin-left: 2px;
+    margin-top: 2px;
+    background: url(../images/views.png) -448px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.viewSelector10 {
+    margin-left: 2px;
+    margin-top: 2px;
+    background: url(../images/views.png) -476px 0px;
+    height: 28px;
+    width: 28px;
+}
+
+.viewSelector11 {
+    margin-left: 2px;
+    margin-top: 2px;
+    background: url(../images/views.png) -504px 0px;
+    height: 28px;
+    width: 28px;
+}
+
     .fulldesk .viewSelector5 {
         background: url(../images/views.png) -252px 0px;
     }

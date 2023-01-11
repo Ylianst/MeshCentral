@@ -1,0 +1,7 @@
+[[[SERVERNAME]]] - Demande d'assistance sur l'appareil
+Une assistance est demandée par l'appareil "[[[DEVICENAME]]]"
+
+Utilistateur : "[[[HELPUSERNAME]]]"
+Demande : "[[[HELPREQUEST]]]"
+
+[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]

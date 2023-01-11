@@ -1,3 +1,8 @@
+/* Maximum space for text block */
+.md-grid {
+    max-width: 95%; /* or 100%, if you want to stretch to full-width */
+  }
+
 .md-header {
     background-color: #0b3e81 !important;
     color: white !important;

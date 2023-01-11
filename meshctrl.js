@@ -16,7 +16,7 @@ var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
 const path = require('path');
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'editdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'removedevice', 'editdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -37,6 +37,7 @@ if (args['_'].length == 0) {
     console.log("  LoginTokens                 - List, create and remove login tokens.");
     console.log("  DeviceInfo                  - Show information about a device.");
     console.log("  EditDevice                  - Make changes to a device.");
+    console.log("  RemoveDevice                - Delete a device.");
     console.log("  Config                      - Perform operation on config.json file.");
     console.log("  AddUser                     - Create a new user account.");
     console.log("  EditUser                    - Change a user account.");
@@ -97,16 +98,9 @@ if (args['_'].length == 0) {
         case 'listdevices': { ok = true; break; }
         case 'listevents': { ok = true; break; }
         case 'logintokens': { ok = true; break; }
-        case 'listusersofdevicegroup': {
-            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing group id, use --id '[groupid]'")); }
-            else { ok = true; }
-            break;
-        }
-        case 'deviceinfo': {
-            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
-            else { ok = true; }
-            break;
-        }
+        case 'listusersofdevicegroup':
+        case 'deviceinfo':
+        case 'removedevice':
         case 'editdevice': {
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[deviceid]'")); }
             else { ok = true; }
@@ -208,7 +202,7 @@ if (args['_'].length == 0) {
         case 'sendinviteemail': {
             if ((args.id == null) && (args.group == null)) { console.log("Device group identifier missing, use --id '[groupid]' or --group [groupname]"); }
             else if (args.email == null) { console.log("Device email is missing, use --email [email]"); }
-			else { ok = true; }
+            else { ok = true; }
             break;
         }
         case 'generateinvitelink': {
@@ -304,7 +298,7 @@ if (args['_'].length == 0) {
                         console.log("  --email [email]        - Email address.");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --name (name)          - Name of recipient to be included in the email.");
-						console.log("  --message (msg)        - Message to be included in the email.");
+                        console.log("  --message (msg)        - Message to be included in the email.");
                         break;
                     }
                     case 'generateinvitelink': {
@@ -579,6 +573,7 @@ if (args['_'].length == 0) {
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --desc [description]   - New group description.");
                         console.log("  --amtonly              - New group is agent-less, Intel AMT only.");
+                        console.log("  --agentless            - New group is agent-less only.");
                         console.log("  --features [number]    - Set device group features, sum of numbers below.");
                         console.log("     1 = Auto-Remove                 2 = Hostname Sync");
                         console.log("     4 = Record Sessions");
@@ -761,6 +756,17 @@ if (args['_'].length == 0) {
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --raw                  - Output raw data in JSON format.");
                         console.log("  --json                 - Give results in JSON format.");
+                        break;
+                    }
+                    case 'removedevice': {
+                        console.log("Delete a device, Example usages:\r\n");
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RemoveDevice --id 'deviceid'"));
+                        console.log("\r\nRequired arguments:\r\n");
+                        if (process.platform == 'win32') {
+                            console.log("  --id [deviceid]        - The device identifier.");
+                        } else {
+                            console.log("  --id '[deviceid]'      - The device identifier.");
+                        }
                         break;
                     }
                     case 'editdevice': {
@@ -985,8 +991,8 @@ function displayConfigHelp() {
 
 function performConfigOperations(args) {
     var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapuseremail', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide'];
-    var domainObjectValues = [ 'ldapoptions', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording' ];
-    var domainArrayValues = [ 'newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig' ];
+    var domainObjectValues = ['ldapoptions', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording'];
+    var domainArrayValues = ['newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig'];
     var configChange = false;
     var fs = require('fs');
     var path = require('path');
@@ -1171,7 +1177,7 @@ function serverConnect() {
             case 'listdevices': {
                 if (args.details) {
                     // Get list of devices with lots of details
-                    ws.send(JSON.stringify({ action: 'getDeviceDetails', type: (args.csv)?'csv':'json' }));
+                    ws.send(JSON.stringify({ action: 'getDeviceDetails', type: (args.csv) ? 'csv' : 'json' }));
                 } else if (args.group) {
                     ws.send(JSON.stringify({ action: 'nodes', meshname: args.group, responseid: 'meshctrl' }));
                 } else if (args.id) {
@@ -1184,7 +1190,7 @@ function serverConnect() {
             }
             case 'listevents': {
                 limit = null;
-                if (args.limit) { limit = parseInt(args.limit); } 
+                if (args.limit) { limit = parseInt(args.limit); }
                 if ((typeof limit != 'number') || (limit < 1)) { limit = null; }
 
                 var cmd = null;
@@ -1356,6 +1362,7 @@ function serverConnect() {
                 var op = { action: 'createmesh', meshname: args.name, meshtype: 2, responseid: 'meshctrl' };
                 if (args.desc) { op.desc = args.desc; }
                 if (args.amtonly) { op.meshtype = 1; }
+                if (args.agentless) { op.meshtype = 3; }
                 if (args.features) { op.flags = parseInt(args.features); }
                 if (args.consent) { op.consent = parseInt(args.consent); }
                 ws.send(JSON.stringify(op));
@@ -1393,7 +1400,7 @@ function serverConnect() {
                 break;
             }
             case 'movetodevicegroup': {
-                var op = { action: 'changeDeviceMesh', responseid: 'meshctrl', nodeids: [ args.devid ] };
+                var op = { action: 'changeDeviceMesh', responseid: 'meshctrl', nodeids: [args.devid] };
                 if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
@@ -1484,6 +1491,11 @@ function serverConnect() {
                 ws.send(JSON.stringify({ action: 'getnetworkinfo', nodeid: args.id, responseid: 'meshctrl' }));
                 ws.send(JSON.stringify({ action: 'lastconnect', nodeid: args.id, responseid: 'meshctrl' }));
                 ws.send(JSON.stringify({ action: 'getsysinfo', nodeid: args.id, nodeinfo: true, responseid: 'meshctrl' }));
+                break;
+            }
+            case 'removedevice': {
+                var op = { action: 'removedevices', nodeids: [ args.id ], responseid: 'meshctrl' };
+                ws.send(JSON.stringify(op));
                 break;
             }
             case 'editdevice': {
@@ -1707,7 +1719,7 @@ function serverConnect() {
         return siteadmin;
     }
 
-    ws.on('close', function() { process.exit(); });
+    ws.on('close', function () { process.exit(); });
     ws.on('error', function (err) {
         if (err.code == 'ENOTFOUND') { console.log('Unable to resolve ' + url); }
         else if (err.code == 'ECONNREFUSED') { console.log('Unable to connect to ' + url); }
@@ -1891,6 +1903,7 @@ function serverConnect() {
             case 'toast': // TOAST
             case 'adduser': // ADDUSER
             case 'edituser': // EDITUSER
+            case 'removedevices': // REMOVEDEVICE
             case 'changedevice': // EDITDEVICE
             case 'deleteuser': // REMOVEUSER
             case 'createmesh': // ADDDEVICEGROUP
@@ -1957,11 +1970,11 @@ function serverConnect() {
                             console.log(x);
                             var mesh = [], user = [], node = [];
                             if (data.ugroups[i].links != null) { for (var j in data.ugroups[i].links) { if (j.startsWith('mesh/')) { mesh.push(j); } if (j.startsWith('user/')) { user.push(j); } if (j.startsWith('node/')) { node.push(j); } } }
-                            console.log('  Users:'); 
+                            console.log('  Users:');
                             if (user.length > 0) { for (var j in user) { console.log('    ' + user[j]); } } else { console.log('    (None)'); }
-                            console.log('  Device Groups:'); 
+                            console.log('  Device Groups:');
                             if (mesh.length > 0) { for (var j in mesh) { console.log('    ' + mesh[j] + ', ' + data.ugroups[i].links[mesh[j]].rights); } } else { console.log('    (None)'); }
-                            console.log('  Devices:'); 
+                            console.log('  Devices:');
                             if (node.length > 0) { for (var j in node) { console.log('    ' + node[j] + ', ' + data.ugroups[i].links[node[j]].rights); } } else { console.log('    (None)'); }
                         }
                     }
@@ -2084,7 +2097,7 @@ function serverConnect() {
                         } else if (args.json) {
                             // Return all devices in JSON format
                             var nodes = [];
-                            
+
                             for (var i in data.nodes) {
                                 const devicesInMesh = data.nodes[i];
                                 for (var j in devicesInMesh) {
@@ -2339,9 +2352,9 @@ function getDevicesThatMatchFilter(nodes, x) {
             var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
             for (var d in nodes) {
                 //if (showRealNames) {
-                    //if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(nodes[d]); }
+                //if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(nodes[d]); }
                 //} else {
-                    if (rx.test(nodes[d].name.toLowerCase())) { r.push(nodes[d]); }
+                if (rx.test(nodes[d].name.toLowerCase())) { r.push(nodes[d]); }
                 //}
             }
         } catch (ex) { for (var d in nodes) { r.push(nodes[d]); } }
@@ -2414,7 +2427,7 @@ function connectTunnel(url) {
                     if ((cmd.action == 'uploadack') || (cmd.action == 'uploadstart')) {
                         settings.inFlight--;
                         if (settings.uploadFile == null) { if (settings.inFlight == 0) { process.exit(); } return; } // If the file is closed and there is no more in-flight data, exit.
-                        var loops = (cmd.action == 'uploadstart')?16:1; // If this is the first data to be sent, hot start now. We are going to have 16 blocks of data in-flight.
+                        var loops = (cmd.action == 'uploadstart') ? 16 : 1; // If this is the first data to be sent, hot start now. We are going to have 16 blocks of data in-flight.
                         for (var i = 0; i < loops; i++) {
                             if (settings.uploadFile == null) continue;
                             var buf = Buffer.alloc(65565);

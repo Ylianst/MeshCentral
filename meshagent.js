@@ -1363,6 +1363,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             }
                             if ((typeof command.sessionid == 'string') && (command.sessionid.length < 500)) { event.sessionid = command.sessionid; }
                             parent.parent.DispatchEvent(targets, obj, event);
+
+                            // If this is a help request, see if we need to email notify anyone
+                            if (event.msgid == 98) {
+                                // Get the node and change it if needed
+                                db.Get(obj.dbNodeKey, function (err, nodes) { // TODO: THIS IS A BIG RACE CONDITION HERE, WE NEED TO FIX THAT. If this call is made twice at the same time on the same device, data will be missed.
+                                    if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
+                                    const device = nodes[0];
+                                    if (typeof device.name == 'string') { parent.parent.NotifyUserOfDeviceHelpRequest(domain, device.meshid, device._id, device.name, command.msgArgs[0], command.msgArgs[1]); }
+                                });
+                            }
                         }
                         break;
                     }
@@ -1832,7 +1842,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Event device share removal
             if (removedExact != null) {
                 // Send out an event that we removed a device share
-                var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, []);
+                var targets = parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey, ['server-shareremove']);
                 var event = { etype: 'node', nodeid: obj.dbNodeKey, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: ['Agent'], domain: domain.id, publicid: publicid };
                 parent.parent.DispatchEvent(targets, obj, event);
             }

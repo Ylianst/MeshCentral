@@ -1,0 +1,7 @@
+[[[SERVERNAME]]] - Prośba Pomocy Urządzenia
+Urządzenie "[[[DEVICENAME]]]" prosiło o pomoc.
+
+Użytkownik: "[[[HELPUSERNAME]]]"
+Prośba: "[[[HELPREQUEST]]]"
+
+[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]

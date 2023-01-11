@@ -47,6 +47,33 @@ var MESHRIGHT_NODESKTOP = 65536;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
 
+//
+// This is a helper function used by the 32 bit Windows Agent, when running on 64 bit windows. It will check if the agent is already patched for this
+// and will use this helper if it is not. This helper will inject 'sysnative' into the results when calling readdirSync() on %windir%.
+//
+function __readdirSync_fix(path)
+{
+    var sysnative = false;
+    pathstr = require('fs')._fixwinpath(path);
+    if (pathstr.split('\\*').join('').toLowerCase() == process.env['windir'].toLowerCase()) { sysnative = true; }
+
+    var ret = require('fs').__readdirSync_old(path);
+    if (sysnative) { ret.push('sysnative'); }
+    return (ret);
+}
+
+if (process.platform == 'win32' && require('_GenericMarshal').PointerSize == 4 && require('os').arch() == 'x64')
+{
+    if (require('fs').readdirSync.version == null)
+    {
+        //
+        // 32 Bit Windows Agent on 64 bit Windows has not been patched for sysnative issue, so lets use our own solution
+        //
+        require('fs').__readdirSync_old = require('fs').readdirSync;
+        require('fs').readdirSync = __readdirSync_fix;
+    }
+}
+
 function bcdOK() {
     if (process.platform != 'win32') { return (false); }
     if (require('os').arch() == 'x64') {
@@ -3652,8 +3679,46 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response = "Available commands: \r\n" + fin + ".";
                 break;
             }
+            case 'mousetrails':
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "mousetrails", type "help" for list of available commands.'; break; }
+                var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : null;
+                switch (args['_'].length) 
+                {
+                    case 0:                    
+                        var trails = require('win-deskutils').mouse.getTrails(id);
+                        response = trails == 0 ? 'MouseTrails Disabled' : ('MouseTrails enabled (' + trails + ')');
+                        response += '\nTo change setting, specify a positive integer, where 0 is disable: mousetrails [n]';
+                        break;
+                    case 1:
+                        var trails = parseInt(args['_'][0]);
+                        require('win-deskutils').mouse.setTrails(trails, id);
+                        trails = require('win-deskutils').mouse.getTrails(id);
+                        response = trails == 0 ? 'MouseTrails Disabled' : ('MouseTrails enabled (' + trails + ')');
+                        break;
+                    default:
+                        response = 'Proper usage: mousetrails [n]';
+                        break;
+                }
+                break;
+            case 'deskbackground':
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "deskbackground", type "help" for list of available commands.'; break; }
+                var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : null;
+                switch (args['_'].length)
+                {
+                    case 0:
+                        response = 'Desktop Background: ' + require('win-deskutils').background.get(id);
+                        break;
+                    case 1:
+                        require('win-deskutils').background.set(args['_'][0], id);
+                        response = 'Desktop Background: ' + require('win-deskutils').background.get(id);
+                        break;
+                    default:
+                        response = 'Proper usage: deskbackground [path]';
+                        break;
+                }
+                break;
             case 'taskbar':
-                try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of avaialble commands.'; break; }
+                try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of available commands.'; break; }
                 switch (args['_'].length) {
                     case 1:
                     case 2:
@@ -3676,7 +3741,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'privacybar':
                 if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null) {
-                    response = 'Unknown command "privacybar", type "help" for list of avaialble commands.';
+                    response = 'Unknown command "privacybar", type "help" for list of available commands.';
                 }
                 else {
                     switch (args['_'].length) {
@@ -3709,7 +3774,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'domaininfo':
                 {
                     if (process.platform != 'win32') {
-                        response = 'Unknown command "cs", type "help" for list of avaialble commands.';
+                        response = 'Unknown command "cs", type "help" for list of available commands.';
                         break;
                     }
                     if (global._domainQuery != null) {
@@ -3757,7 +3822,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.
                 {
-                    try { require('linux-dhcp'); } catch (ex) { response = 'Unknown command "dhcp", type "help" for list of avaialble commands.'; break; }
+                    try { require('linux-dhcp'); } catch (ex) { response = 'Unknown command "dhcp", type "help" for list of available commands.'; break; }
                     if (args['_'].length == 0) {
                         var j = require('os').networkInterfaces();
                         var ifcs = [];
@@ -3784,7 +3849,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
             case 'cs':
                 if (process.platform != 'win32') {
-                    response = 'Unknown command "cs", type "help" for list of avaialble commands.';
+                    response = 'Unknown command "cs", type "help" for list of available commands.';
                     break;
                 }
                 switch (args['_'].length) {
@@ -3864,7 +3929,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'dnsinfo':
                 if (require('os').dns == null) {
-                    response = "Unknown command \"" + cmd + "\", type \"help\" for list of avaialble commands.";
+                    response = "Unknown command \"" + cmd + "\", type \"help\" for list of available commands.";
                 }
                 else {
                     response = 'DNS Servers: ';
@@ -4047,7 +4112,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'uac':
                 if (process.platform != 'win32') {
-                    response = 'Unknown command "uac", type "help" for list of avaialble commands.';
+                    response = 'Unknown command "uac", type "help" for list of available commands.';
                     break;
                 }
                 if (args['_'].length != 1) {
@@ -4089,7 +4154,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'kvmmode':
                 if (require('MeshAgent').maxKvmTileSize == null) {
-                    response = "Unknown command \"kvmmode\", type \"help\" for list of avaialble commands.";
+                    response = "Unknown command \"kvmmode\", type \"help\" for list of available commands.";
                 }
                 else {
                     if (require('MeshAgent').maxKvmTileSize == 0) {
@@ -4902,7 +4967,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             default: { // This is an unknown command, return an error message
-                response = "Unknown command \"" + cmd + "\", type \"help\" for list of avaialble commands.";
+                response = "Unknown command \"" + cmd + "\", type \"help\" for list of available commands.";
                 break;
             }
         }

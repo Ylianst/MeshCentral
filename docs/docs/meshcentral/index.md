@@ -52,10 +52,6 @@ This is because by default MeshCentral is using a self-signed certificate that i
   
 - Click on “Advanced”, “Proceed to <http://serverIP> (unsafe)”
   
-  To proceed on Internet Explorer 11,
-
-- Click “Continue to this website (not recommended)”
-
 Note: You can also get to a device by specifying the device name in the URL by adding `?viewmode=10&gotodevicename=MyComputer` to the URL of the MeshCentral web page. The new `gotodevicename` will find a device with the specified name and navigate to that device’s page. This is perfect for integrating MeshCentral with other solutions but be aware that a computer name is not a unique identifier and so, `&gotonode=` is always the preferred way to access a device. This feature also works on the mobile web site.
 
 ### Create Account
@@ -1205,7 +1201,11 @@ And taking authentication to the next step is removing the login page entirely. 
 
 ## Branding & Terms of use
 
-Once MeshCentral is setup, you may want to customize the web site with your own brand and terms of use. This is important to personalize the web site to your organization. We also want to customize the web site in such a way that updating to the latest version will keep the branding as-is.
+Whitelabeling your MeshCentral installation to personalize it to your companies brand, as well as having your own terms of use is one of the first things many people do after installation.
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/xUZ1w9RSKpQ" frameborder="0" allowfullscreen></iframe>
+</div>
 
 ### Branding
 
@@ -1213,7 +1213,7 @@ You can put you own logo on the top of the web page. To get started, get the fil
 
 ![](images/2022-05-19-00-38-51.png)
 
-Once done, edit the config.json file and set the following values:
+Once done, edit the config.json file and set one or all of the following values:
 
 ```json
 "domains": {
@@ -1221,6 +1221,16 @@ Once done, edit the config.json file and set the following values:
     "Title": "",
     "Title2": "",
     "TitlePicture": "title-sample.png",
+    "loginPicture": "logintitle-sample.png",
+    "welcomeText": "This is sample text",
+    "welcomePicture": "mainwelcome-04.jpg",
+    "welcomePictureFullScreen": true,
+    "siteStyle": "1",
+    "nightMode": "1",
+    "meshMessengerTitle": "Mesh Chat",
+    "meshMessengerPicture": "chatimage.png",
+    "footer": "This is a HTML string displayed at the bottom of the web page when a user is logged in.",
+    "loginfooter": "This is a HTML string displayed at the bottom of the web page when a user is not logged in."
   },
 ```
 
@@ -1244,7 +1254,64 @@ This is great to personalize the look of the server within the web site.
 
 ### Agent Branding
 
+You can also customize the Agent to add your own logo.
+
 ![](images/2022-08-24-06-42-40.png)
+
+```json
+ "agentCustomization": {
+ 	"displayName": {
+ 		"type": "string",
+ 		"default": "MeshCentral Agent",
+ 		"description": "The name of the agent as displayed to the user."
+ 	},
+ 	"description": {
+ 		"type": "string",
+ 		"default": "Mesh Agent background service",
+ 		"description": "The description of the agent as displayed to the user."
+ 	},
+ 	"companyName": {
+ 		"type": "string",
+ 		"default": "Mesh Agent",
+ 		"description": "This will be used as the path to install the agent, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's."
+ 	},
+ 	"serviceName": {
+ 		"type": "string",
+ 		"default": "Mesh Agent",
+ 		"description": "The name of the background service, by default this is 'Mesh Agent' in Windows and 'meshagent' in other OS's but should be set to an all lower case, no space string."
+ 	},
+ 	"installText": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "Text string to show in the agent installation dialog box."
+ 	},
+ 	"image": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "The filename of a image file in .png format located in meshcentral-data to display in the MeshCentral Agent installation dialog, image should be square and from 64x64 to 200x200."
+ 	},
+ 	"fileName": {
+ 		"type": "string",
+ 		"default": "meshagent",
+ 		"description": "The agent filename."
+ 	},
+ 	"foregroundColor": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "Foreground text color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF."
+ 	},
+ 	"backgroundColor": {
+ 		"type": "string",
+ 		"default": null,
+ 		"description": "Background color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF."
+ 	}
+ }
+ ```
+
+![agent icon](images/agentico.png)
+
+!!!note
+    You will need to reinstall the agent for agent customizations to take effect.
 
 ### Terms of use
 
@@ -1712,6 +1779,8 @@ The callback URL will be of the form “https://(servername)/auth-saml-callback�
 
 Enabling SAML will require MeshCentral to install extra modules from NPM, so depending on your server configuration, you may need to run MeshCentral once manually.
 
+!!!note
+  MeshCentral only supports "POST". [For example Authentik's](https://github.com/Ylianst/MeshCentral/issues/4725) default setting is to use "Redirect" as a "Service Provider Binding".
 ## Improvements to MeshCentral
 
 In 2007, the first version of MeshCentral was built. We will refer to it as “MeshCentral1”. When MeshCentral1 was designed, HTML5 did not exist and web sockets where not implemented in any of the major browsers. Many design decisions were made at the time that are no longer optimal today. With the advent of the latest MeshCentral, MeshCentral1 is no longer supported and MeshCentral v2 has been significantly redesigned and mostly re-written based of previous version. Here is a list of improvements made in MeshCentral when compared with MeshCentral1:

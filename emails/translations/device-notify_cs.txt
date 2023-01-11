@@ -1,4 +1,4 @@
-[[[SERVERNAME]]] – Oznámení zařízení
+[[[SERVERNAME]]] - Oznámení zařízení
 ~<area-header>
 Následující zařízení změnila svůj stav připojení.
 ~</area-header>
