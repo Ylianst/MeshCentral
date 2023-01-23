@@ -34523,7 +34523,7 @@
     },
     {
       "en": "Information at Pushover.net",
-      "en": "Informatie op Pushover.net",
+      "nl": "Informatie op Pushover.net",
       "fr": "Informations sur Pushover.net",
       "xloc": [
         "default.handlebars->47->1589",
@@ -80821,7 +80821,7 @@
     },
     {
       "en": "ntfy",
-      "nl": "ntfy"
+      "nl": "ntfy",
       "fr": "ntfy",
       "xloc": [
         "default.handlebars->47->1581",
