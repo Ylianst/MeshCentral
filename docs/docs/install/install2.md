@@ -914,6 +914,14 @@ sudo chmod 755 –R /opt/meshcentral/meshcentral-data/letsencrypt
 
 This will allow the server to get and periodically update its Let’s Encrypt certificate. If this is not done, the server will generate an `ACCES: permission denied` exception.
 
+### Restore backup in Ubuntu
+
+- Stop Meshcentral service `sudo systemctl stop meshcentral.service`
+- In your old server, get your backup : meshcentral-data folder, and mongodump-xxxx.archive
+- In the new server, replace the actual meshcentral-data with your backup (it will handle your LestEncrypt cert also)
+- Restore mongodb : mongorestore --archive=mongodump-xxxx.archive
+- Restart meshcentral.service `sudo systemctl start meshcentral.service`
+
 ## Microsoft Azure
 
 In this section, we will look installing MeshCentral on Microsoft Azure. Microsoft Azure offers many operating system options and we will be selecting `Ubuntu Server` as our choice. From the Azure portal, we select `Virtual machines` on the left and `Add`.
