@@ -6341,8 +6341,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Setup all HTTP handlers
-        if (parent.parent.pluginHandler != null) {
-            parent.parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
+        if (parent.pluginHandler != null) {
+            parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
         }
         if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req, obj.args.tlsoffload == null); }); }
         for (var i in parent.config.domains) {
