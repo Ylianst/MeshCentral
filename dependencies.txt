@@ -2,7 +2,7 @@
     "body-parser": "^1.19.0",
     "cbor": "~5.2.0",
     "compression": "^1.7.4",
-    "cookie-session": "^1.4.0",
+    "cookie-session": "^2.0.0",
     "express": "^4.17.0",
     "express-handlebars": "^5.3.5",
     "express-ws": "^4.0.0",
