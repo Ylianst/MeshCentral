@@ -13265,8 +13265,9 @@
     },
     {
       "en": "CallMeBot",
-      "nl": "CallMeBot",
       "fr": "CallMeBot",
+      "nl": "CallMeBot",
+      "pl": "CallMeBot",
       "xloc": [
         "default.handlebars->47->1579",
         "default.handlebars->47->2786"
@@ -14391,8 +14392,9 @@
     },
     {
       "en": "Check your messaging application and enter the verification code.",
+	  "fr": "Vérifiez votre messagerie et entrez le code de vérification.",
       "nl": "Controleer uw berichten applicatie en voer de verificatiecode in.",
-      "fr": "Vérifiez votre messagerie et entrez le code de vérification.",
+      "pl": "Sprawdź swoją aplikacje wiadomości i wprowadź kod weryfikacyjny.",
       "xloc": [
         "default.handlebars->47->246"
       ]
@@ -23317,8 +23319,9 @@
     },
     {
       "en": "Discord",
+	  "fr": "Discord",
       "nl": "Discord",
-      "fr": "Discord",
+      "pl": "Discord",
       "xloc": [
         "default.handlebars->47->1577",
         "default.handlebars->47->2784"
@@ -25924,8 +25927,9 @@
     },
     {
       "en": "Email ({0})",
+	  "fr": "Email ({0})",
       "nl": "Email ({0})",
-      "fr": "Email ({0})",
+      "pl": "Email ({0})",
       "xloc": [
         "default.handlebars->47->1977",
         "default.handlebars->47->891"
@@ -27682,8 +27686,9 @@
     },
     {
       "en": "Enter your messaging service and handle. Once verified, this server can send you login verification and other notifications.",
+	  "fr": "Saisir votre service de messagerie et votre identifiant. Après validation, ce serveur peut vous demander une vérification de la connexion et envoyer d'autres notifications.",
       "nl": "Voer uw berichtenservice en afhandeling in. Na verificatie kan deze server u aanmeldingsverificatie en andere meldingen sturen.",
-      "fr": "Saisir votre service de messagerie et votre identifiant. Après validation, ce serveur peut vous demander une vérification de la connexion et envoyer d'autres notifications.",
+      "pl": "Wprowadź swoją usługę przesyłania wiadomości. Po weryfikacji, ten serwer może wysyłać weryfikację logowania i inne powiadomienia.",
       "xloc": [
         "default.handlebars->47->1575"
       ]
@@ -28559,8 +28564,9 @@
     },
     {
       "en": "Facebook",
+	  "fr": "Facebook",
       "nl": "Facebook",
-      "fr": "Facebook",
+      "pl": "Facebook",
       "xloc": [
         "default.handlebars->47->1588",
         "default.handlebars->47->2795"
@@ -30149,8 +30155,9 @@
     },
     {
       "en": "Free service at ntfy.sh",
+	  "fr": "Service gratuit sur ntfy.sh",
       "nl": "Gratis service via ntfy.sh",
-      "fr": "Service gratuit sur ntfy.sh",
+      "pl": "Darmowa usługa z ntfy.sh",
       "xloc": [
         "default.handlebars->47->1590",
         "default.handlebars->47->2797"
@@ -32363,8 +32370,9 @@
     },
     {
       "en": "Handle",
+	  "fr": "Identifiant",
       "nl": "afhandeling",
-      "fr": "Identifiant",
+      "pl": "Obsługa",
       "xloc": [
         "default.handlebars->47->1584",
         "default.handlebars->47->2791"
@@ -34523,8 +34531,9 @@
     },
     {
       "en": "Information at Pushover.net",
+	  "fr": "Informations sur Pushover.net",
       "nl": "Informatie op Pushover.net",
-      "fr": "Informations sur Pushover.net",
+      "pl": "Informacje na Pushover.net",
       "xloc": [
         "default.handlebars->47->1589",
         "default.handlebars->47->2796"
@@ -37126,8 +37135,9 @@
     },
     {
       "en": "Invalid message",
+	  "fr": "Message erroné",
       "nl": "Ongeldig bericht",
-      "fr": "Message erroné",
+      "pl": "Błędna wiadomość",
       "xloc": [
         "default.handlebars->47->3053"
       ]
@@ -37831,8 +37841,9 @@
     },
     {
       "en": "Join this Discord server to receive notifications.",
+	  "fr": "Rejoindre ce serveur Discord pour recevoir les notifications.",
       "nl": "Word lid van deze Discord-server om meldingen te ontvangen.",
-      "fr": "Rejoindre ce serveur Discord pour recevoir les notifications.",
+	  "pl": "Dołącz do tego serwera Discord aby dostawac powiadomienia.",
       "xloc": [
         "default.handlebars->47->1585",
         "default.handlebars->47->2792"
@@ -42890,8 +42901,9 @@
     },
     {
       "en": "Manage messaging",
+	  "fr": "Gérer la messagerie",
       "nl": "Beheer berichtenservice",
-      "fr": "Gérer la messagerie",
+      "pl": "Zarządzanie wiadomościami",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->manageMessaging2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageMessaging1->1->0"
@@ -44649,24 +44661,27 @@
     },
     {
       "en": "Message error",
+	  "fr": "Message d'erreur",
       "nl": "Bericht fout",
-      "fr": "Message d'erreur",
+      "pl": "Błąd wiadomości",
       "xloc": [
         "default.handlebars->47->3055"
       ]
     },
     {
       "en": "Message error: {0}",
+	  "fr": "Message d'erreur : {0}",
       "nl": "Bericht fout: {0}",
-      "fr": "Message d'erreur : {0}",
+	  "pl": "Błąd wiadomości: {0}",
       "xloc": [
         "default.handlebars->47->3056"
       ]
     },
     {
       "en": "Message sent.",
+	  "fr": "Message envoyé.",
       "nl": "Bericht verzonden.",
-      "fr": "Message envoyé.",
+	  "pl": "Wiadomość wysłana.",
       "xloc": [
         "login.handlebars->5->6",
         "login2.handlebars->7->7"
@@ -44674,8 +44689,9 @@
     },
     {
       "en": "Message succesfully sent.",
+	  "fr": "Message envoyé.",
       "nl": "Bericht succesvol verzonden",
-      "fr": "Message envoyé.",
+	  "pl": "Wiadomość wysłana.",
       "xloc": [
         "default.handlebars->47->3054"
       ]
@@ -44734,8 +44750,9 @@
     },
     {
       "en": "Messaging",
+	  "fr": "Messagerie",
       "nl": "Berichten",
-      "fr": "Messagerie",
+	  "pl": "Wiadomości",
       "xloc": [
         "default.handlebars->47->2706",
         "default.handlebars->47->2754",
@@ -44746,8 +44763,9 @@
     },
     {
       "en": "Messaging ({0})",
-      "nl": "Berichten ({0})",
       "fr": "Messagerie ({0})",
+      "nl": "Berichten ({0})",
+	  "pl": "Wiadomości ({0})",
       "xloc": [
         "default.handlebars->47->1978",
         "default.handlebars->47->892"
@@ -44755,8 +44773,9 @@
     },
     {
       "en": "Messaging Notifications",
-      "nl": "Berichten notificaties",
       "fr": "Notifications de la messagerie",
+      "nl": "Berichten notificaties",
+      "pl": "Powiadomienia w Komunikatorze",
       "xloc": [
         "default.handlebars->47->1031",
         "default.handlebars->47->1574",
@@ -44768,16 +44787,18 @@
     },
     {
       "en": "Messaging account for this user.",
-      "nl": "Berichtenaccount voor deze gebruiker.",
       "fr": "Compte de messagerie de cet utilisateur.",
+      "nl": "Berichtenaccount voor deze gebruiker.",
+      "pl": "Konto komunnikatora tego użytkownika.",
       "xloc": [
         "default.handlebars->47->2781"
       ]
     },
     {
       "en": "Messaging enabled",
-      "nl": "Berichten ingeschakeld",
       "fr": "Messagerie activée",
+      "nl": "Berichten ingeschakeld",
+      "pl": "Wiadomości włączone",
       "xloc": [
         "default.handlebars->47->2707"
       ]
@@ -44811,8 +44832,9 @@
     },
     {
       "en": "Messenging",
-      "nl": "Berichten",
       "fr": "Messagerie",
+      "nl": "Berichten",
+      "pl": "Wiadomości",
       "xloc": [
         "default.handlebars->47->2978"
       ]
@@ -54109,8 +54131,9 @@
     },
     {
       "en": "Pushover",
-      "nl": "Pushover",
       "fr": "Pushover",
+      "nl": "Pushover",
+      "pl": "Pushover",
       "xloc": [
         "default.handlebars->47->1580",
         "default.handlebars->47->2787"
@@ -55821,8 +55844,9 @@
     },
     {
       "en": "Remote Control & Relay",
-      "nl": "Extern beheer & Relay",
       "fr": "Contrôle et relais distant",
+      "nl": "Extern beheer & Relay",
+	  "pl": "Zdalne Sterowanie i Przekierowanie",
       "xloc": [
         "default.handlebars->47->2124"
       ]
@@ -57206,8 +57230,9 @@
     },
     {
       "en": "Remove messaging",
-      "nl": "Berichtenservice verwijderen",
       "fr": "Supprimer le messagerie",
+      "nl": "Berichtenservice verwijderen",
+      "pl": "Usuń obsługę komunikatora",
       "xloc": [
         "default.handlebars->47->1573"
       ]
@@ -57607,8 +57632,9 @@
     },
     {
       "en": "Removed messaging account of user {0}",
-      "nl": "Berichtenaccount van gebruiker {0} verwijderd",
       "fr": "Compte de messagerie de l'utilisateur {0} supprimé",
+      "nl": "Berichtenaccount van gebruiker {0} verwijderd",
+      "pl": "Usunięto konto komunikatora użytkownika {0}",
       "xloc": [
         "default.handlebars->47->2453"
       ]
@@ -59771,8 +59797,9 @@
     },
     {
       "en": "SMS succesfully sent.",
-      "nl": "SMS succesvol verzonden.",
       "fr": "SMS envoyé.",
+      "nl": "SMS succesvol verzonden.",
+      "pl": "Sukces wysyłania SMS.",
       "xloc": [
         "default.handlebars->47->3049"
       ]
@@ -61575,8 +61602,9 @@
     },
     {
       "en": "Send Message",
-      "nl": "Bericht versturen",
       "fr": "Envoyer le message",
+      "nl": "Bericht versturen",
+	  "pl": "Wyślij Wiadomość",
       "xloc": [
         "default.handlebars->47->2529"
       ]
@@ -61661,8 +61689,9 @@
     },
     {
       "en": "Send a message to this user",
-      "nl": "Stuur een bericht naar deze gebruiker",
       "fr": "Envoyer un message à l'utilisateur",
+      "nl": "Stuur een bericht naar deze gebruiker",
+	  "pl": "Wyślij wiadomość do tego użytkownika",
       "xloc": [
         "default.handlebars->47->2762"
       ]
@@ -61826,8 +61855,9 @@
     },
     {
       "en": "Send token to messaging application?",
-      "nl": "Token naar berichtentoepassing verzenden?",
       "fr": "Envoyer le jeton à l'application de messagerie ?",
+      "nl": "Token naar berichtentoepassing verzenden?",
+      "pl": "Wysłac token na komunikator?",
       "xloc": [
         "login.handlebars->5->33",
         "login2.handlebars->7->40"
@@ -62918,8 +62948,9 @@
     },
     {
       "en": "Service",
-      "nl": "Service",
       "fr": "Service",
+      "nl": "Service",
+      "pl": "Usługa",
       "xloc": [
         "default.handlebars->47->1583",
         "default.handlebars->47->2790"
@@ -64751,8 +64782,9 @@
     },
     {
       "en": "Signal",
-      "nl": "Signal",
       "fr": "Signal",
+      "nl": "Signal",
+      "pl": "Signal",
       "xloc": [
         "default.handlebars->47->1586",
         "default.handlebars->47->2793"
@@ -64760,8 +64792,9 @@
     },
     {
       "en": "Signal Messenger",
+      "fr": "Signal Messenger",
       "nl": "Signal Messenger",
-      "fr": "Signal Messenger"
+	  "pl": "Komunikator Signal"
     },
     {
       "bs": "Jednostavni način rada administratora (ACM)",
@@ -68330,8 +68363,9 @@
     },
     {
       "en": "Telegram",
+	  "fr": "Telegram",
       "nl": "Telegram",
-      "fr": "Telegram",
+      "pl": "Telegram",
       "xloc": [
         "default.handlebars->47->1576",
         "default.handlebars->47->2783"
@@ -69053,8 +69087,9 @@
     },
     {
       "en": "This NodeJS version does not support Discord.js.",
-      "nl": "Deze NodeJS versie ondersteunt geen Discord.js.",
       "fr": "Cette version de NodeJS ne supporte pas Discord.js.",
+      "nl": "Deze NodeJS versie ondersteunt geen Discord.js.",
+	  "pl": "Obecna wersja NodeJS nie wspiera Discord.js.",
       "xloc": [
         "default.handlebars->47->108"
       ]
@@ -73450,8 +73485,9 @@
     },
     {
       "en": "Use as Relay",
-      "nl": "Gebruik als relay",
       "fr": "Utiliser comme un relais",
+      "nl": "Gebruik als relay",
+	  "pl": "Używaj do Przekierowania",
       "xloc": [
         "default.handlebars->47->2142"
       ]
@@ -74480,8 +74516,9 @@
     },
     {
       "en": "User key",
-      "nl": "Gebruikerssleutel",
       "fr": "Clé de l'utilisateur",
+      "nl": "Gebruikerssleutel",
+	  "pl": "Klucz Użytkownika",
       "xloc": [
         "default.handlebars->47->1595",
         "default.handlebars->47->2802"
@@ -74819,6 +74856,7 @@
       "en": "Username:0000",
       "nl": "Gebruikersnaam:0000",
       "fr": "Nom d'utilisateur : 0000",
+	  "pl": "Username:0000",
       "xloc": [
         "default.handlebars->47->1592",
         "default.handlebars->47->2799"
@@ -75281,24 +75319,27 @@
     },
     {
       "en": "Verified handle",
-      "nl": "Geverifieerde handeling",
       "fr": "Identifiant vérifié",
+      "nl": "Geverifieerde handeling",
+      "pl": "Zweryfikowano logowanie",
       "xloc": [
         "default.handlebars->47->1572"
       ]
     },
     {
       "en": "Verified messaging account",
-      "nl": "Geverifieerd berichtenaccount",
       "fr": "Compte de messagerie vérifié",
+      "nl": "Geverifieerd berichtenaccount",
+      "pl": "Zweryfikowano konto komunikatora",
       "xloc": [
         "default.handlebars->47->2514"
       ]
     },
     {
       "en": "Verified messaging account of user {0}",
-      "nl": "Geverifieerd berichtenaccount van gebruiker {0}",
       "fr": "Compte de messagerie vérifié pour l'utilisateur {0}",
+      "nl": "Geverifieerd berichtenaccount van gebruiker {0}",
+	  "pl": "Zweryfikowano konto komunikatora użytkownika {0}",
       "xloc": [
         "default.handlebars->47->2452"
       ]
@@ -76752,8 +76793,9 @@
     },
     {
       "en": "Whatsapp",
-      "nl": "Whatsapp",
       "fr": "Whatsapp",
+      "nl": "Whatsapp",
+      "pl": "Whatsapp",
       "xloc": [
         "default.handlebars->47->1587",
         "default.handlebars->47->2794"
@@ -78421,8 +78463,9 @@
     },
     {
       "en": "Zulip",
-      "nl": "Zulip",
       "fr": "Zulip",
+      "nl": "Zulip",
+	  "pl": "Zulip",
       "xloc": [
         "default.handlebars->47->1582",
         "default.handlebars->47->2789"
@@ -80055,8 +80098,9 @@
     },
     {
       "en": "https://api.callmebot.com/...",
+	  "fr": "https://api.callmebot.com/...",
       "nl": "https://api.callmebot.com/...",
-      "fr": "https://api.callmebot.com/...",
+	  "pl": "https://api.callmebot.com/...",
       "xloc": [
         "default.handlebars->47->1594",
         "default.handlebars->47->2801"
@@ -80821,8 +80865,9 @@
     },
     {
       "en": "ntfy",
+	  "fr": "ntfy",
       "nl": "ntfy",
-      "fr": "ntfy",
+      "pl": "ntfy",
       "xloc": [
         "default.handlebars->47->1581",
         "default.handlebars->47->2788"
@@ -81445,8 +81490,9 @@
     },
     {
       "en": "username@sample.com",
-      "nl": "gebruikersnaam@voorbeeld.com",
       "fr": "username@sample.com",
+      "nl": "gebruikersnaam@voorbeeld.com",
+	  "pl": "nazwauzytkownika@domena.pl",
       "xloc": [
         "default.handlebars->47->1597",
         "default.handlebars->47->2804"
@@ -81454,8 +81500,9 @@
     },
     {
       "en": "username@server.com",
-      "nl": "gebruikersnaam@server.nl",
       "fr": "username@server.com",
+      "nl": "gebruikersnaam@server.nl",
+	  "pl": "nazwauzytkownika@serwer.pl",
       "xloc": [
         "default.handlebars->47->1593",
         "default.handlebars->47->2800"
