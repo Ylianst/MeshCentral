@@ -250,5 +250,17 @@
     "desktopNotify": "{0} je započeo sesiju udaljene radne površine.",
     "fileNotify": "{0} je započeo sesiju udaljenog fajla.",
     "privacyBar": "Dijeljenje radne površine sa: {0}"
+  },
+  "hu": {
+    "allow": "Engedélyezés",
+    "deny": "Elutasítás",
+    "autoAllowForFive": "Csatlakozások automatikus elfogadása a következő 5 percben",
+    "terminalConsent": "{0} távoli parancssor,terminál hozzáférést kér. Engedélyezi a hozzáférést?",
+    "desktopConsent": "{0} távoli asztali hozzáférést kér. Engedélyezi a hozzáférést?",
+    "fileConsent": "{0} távoli fájlhozzáférést kér. Engedélyezi a hozzáférést?",
+    "terminalNotify": "{0} távoli parancssor munkamenetet indított.",
+    "desktopNotify": "{0} távoli asztali munkamenetet indított.",
+    "fileNotify": "{0} távoli fájlmunkamenetet indított.",
+    "privacyBar": "Asztal megosztás aktív: {0} felhasználóval"
   }
 }

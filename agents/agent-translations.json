@@ -651,5 +651,36 @@
     ],
     "statusDescription": "Trenutni status agenta",
     "description": "Kliknite na dugmad ispod da instalirate ili deinstalirate ovaj softver za daljinsko upravljanje. Kada je instaliran, ovaj softver radi u pozadini, što omogućava da ovim računarom upravlja i kontroliše udaljeni administrator."
+  },
+  "hu": {
+    "agent": "Agent",
+    "agentVersion": "Új verzió",
+    "group": "Eszköz csoport",
+    "url": "Kiszolgáló URL",
+    "meshName": "Csoport név",
+    "meshId": "Csoport azonosító",
+    "serverId": "Kiszolgáló azonosító",
+    "setup": "Beállítás",
+    "update": "Frissítés",
+    "install": "Telepítés",
+    "uninstall": "Eltávolítás",
+    "connect": "Kapcsolódás",
+    "disconnect": "Lekapcsolódás",
+    "cancel": "Mégse",
+    "close": "Bezár",
+    "pressok": "Press OK to disconnect",
+    "elevation": "A szoftver telepítéséhez/eltávolításához megnövelt jogosultságok szükségesek.",
+    "sudo": "Kérjük, próbálja meg újra a sudo használatával.",
+    "ctrlc": "A kilépéshez nyomja meg a Ctrl-C billentyűt.",
+    "commands": "A szöveges változatot a parancssorból futtathatja a következő parancs(okk)al",
+    "graphicalerror": "A telepítő grafikus verziója nem futtatható ezen a rendszeren.",
+    "zenity": "Próbálja meg telepíteni/frissíteni a Zenity-t, és indítsa újra",
+    "status": [
+      "NINCS TELEPÍTVE",
+      "FUT",
+      "NEM FUT"
+    ],
+    "statusDescription": "Jelenlegi agent állapota",
+    "description": "Kattintson a Telepítés vagy Eltávolítás gombokra a Távfelügyeleti alkalmazás telepítéséhez vagy eltávolításához. Telepítés után ez az alkalmazás a háttérben fut, lehetővé téve, hogy a számítógépet egy távoli rendszergazda kezelje."
   }
 }
