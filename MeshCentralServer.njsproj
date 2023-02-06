@@ -441,7 +441,6 @@
     <Content Include="LICENSE" />
     <Content Include="meshcentral-config-schema.json" />
     <Content Include="package.json" />
-    <Content Include="plugin_development.md" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.application" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.exe.config.deploy" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.exe.deploy" />
