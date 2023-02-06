@@ -67288,8 +67288,7 @@
       "en": "Signal Messenger",
       "fr": "Signal Messenger",
       "nl": "Signal Messenger",
-      "fr": "Signal Messenger",
-      "hu": "Signal Messenger"
+      "hu": "Signal Messenger",
       "pl": "Komunikator Signal"
     },
     {
@@ -83187,7 +83186,7 @@
       "nl": "https://api.callmebot.com/...",
       "fr": "https://api.callmebot.com/...",
       "hu": "https://api.callmebot.com/...",
-  	  "pl": "https://api.callmebot.com/...",
+      "pl": "https://api.callmebot.com/...",
       "xloc": [
         "default.handlebars->47->1594",
         "default.handlebars->47->2801"
