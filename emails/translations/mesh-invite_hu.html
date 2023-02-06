@@ -1,0 +1,47 @@
+<html><head></head><body><div>[[[SERVERNAME]]] - Meghívás</div>
+<div style="font-family:Arial,Helvetica,sans-serif">
+    <table style="background-color:#003366;color:lightgray;width:100%" cellpadding="8">
+        <tbody><tr>
+            <td>
+                <b style="font-size:20px;font-family:Arial,Helvetica,sans-serif">[[[SERVERNAME]]] - Agent Telepítése</b>
+            </td>
+        </tr>
+    </tbody></table>
+    <area-name>
+        <p>
+            Tisztelt [[[NAME]]],
+        </p>
+    </area-name>
+    <p>[[[USERNAME]]] felhasználó, kiszolgáló:  <a href="[[[SERVERURL]]][[[URLARGS1]]]">[[[SERVERNAME]]]</a> kéri hogy telepítse az alkalmazást, amivel lehetőség van távvezérlő munkamant elindítására. </p>
+    <area-msg>
+        <p>
+            Üzenet: <b notrans="1">[[[MSG]]]</b>
+        </p>
+    </area-msg>
+    <area-windows>
+        <p style="margin-left:30px">
+            <a href="[[[SERVERURL]]]/meshagents?id=4&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Kattintson ide a MeshAgent for Windows letöltéséhez.</a>
+        </p>
+    </area-windows>
+    <area-osx>
+        <p style="margin-left:30px"><a href="[[[SERVERURL]]]/meshosxagent?id=16&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]&amp;installflags=[[[INSTALLFLAGS]]]">Kattintson ide az Apple OSX rendszerhez készült MeshAgent letöltéséhez.</a></p>
+    </area-osx>
+    <area-linux>
+        <p>
+            Linux esetén az Agent telepítéséhez vágja ki és illessze be egy terminálba a következőt:<br>
+            </p><pre style="margin-left:30px" notrans="1">wget -q "[[[SERVERURL]]]/meshagents?script=1" --no-check-certificate -O ./meshinstall.sh &amp;&amp; chmod 755 ./meshinstall.sh &amp;&amp; sudo ./meshinstall.sh [[[SERVERURL]]] \'[[[MESHIDHEX]]]\'</pre>
+        <p></p>
+    </area-linux>
+    <area-assistant>
+        <p style="margin-left:30px">
+            <a href="[[[SERVERURL]]]/meshagents?id=10006&amp;meshid=[[[MESHIDHEX]]]&amp;tag=mailto:[[[EMAIL]]]">Kattintson ide a MeshCentral Assistant for Windows letöltéséhez.</a>
+        </p>
+    </area-assistant>
+    <area-link>
+        <p>
+            A szoftver telepítéséhez, <a href="[[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]]">Kattintson ide</a> és kövesse az utasításokat.
+        </p>
+    </area-link>
+    <p>Ha nem Ön kezdeményezte ezt a kérést, kérjük, hagyja figyelmen kívül ezt a levelet.</p>
+    Üdvözlettel,<br>[[[USERNAME]]]<br>
+</div></body></html>

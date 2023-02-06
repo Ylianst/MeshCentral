@@ -1,0 +1,7 @@
+[[[SERVERNAME]]] - Segítség kérés
+A "[[[DEVICENAME]]]" eszköz segítséget kért.
+
+Felhasználó: "[[[HELPUSERNAME]]]"
+Segítség kérés: "[[[HELPREQUEST]]]"
+
+[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]

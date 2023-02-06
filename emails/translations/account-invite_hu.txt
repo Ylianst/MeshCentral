@@ -1,0 +1,5 @@
+[[[SERVERNAME]]] - Fiók meghívó
+A [[[SERVERNAME]]] szerveren  ([[[SERVERURL]]]/[[[URLARGS1]]]) létrehozásra került egy fiókot az Ön számára, amelyhez most már hozzáférhet a "[[[[ACCOUNTNAME]]]" felhasználónévvel és a "[[[[PASSWORD]]]" jelszóval.
+~
+Üdvözlettel,
+~[[[USERNAME]]]

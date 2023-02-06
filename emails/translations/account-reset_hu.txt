@@ -1,0 +1,6 @@
+[[[SERVERNAME]]] - Fiók visszaállítás
+Tisztelt [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) a fiók jelszavának visszaállítását kéri. A folyamat befejezéséhez lépjen a következő linkre:
+~
+~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
+~
+Ha nem Ön kezdeményezte ezt a kérést, kérjük, hagyja figyelmen kívül ezt a levelet.
