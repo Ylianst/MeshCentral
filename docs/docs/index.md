@@ -20,11 +20,11 @@ For more information, [visit MeshCentral.com](https://www.meshcentral.com/).
 
 ## Documentation
 
-The [User's Guide](https://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2UserGuide.pdf) contains information every adminstrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
+The [User's Guide](https://meshcentral.com/info/docs/MeshCentral2UserGuide.pdf) contains information every adminstrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
 
-The [Installation Guide](https://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2InstallGuide.pdf) has detailed instructions for installing the MeshCentral Server on Windows 8.1, Windows 10, Windows 2012 R2, Amazon Linux 2, Raspberry Pi, Microsoft Azure, Google Cloud, Ubuntu 18, Ubuntu 16 and OpenBSD.
+The [Installation Guide](https://meshcentral.com/info/docs/MeshCentral2InstallGuide.pdf) has detailed instructions for installing the MeshCentral Server on Windows 8.1, Windows 10, Windows 2012 R2, Amazon Linux 2, Raspberry Pi, Microsoft Azure, Google Cloud, Ubuntu 18, Ubuntu 16 and OpenBSD.
 
-The [Design and Architecture Guide](https://info.meshcentral.com/downloads/MeshCentral2/MeshCentral2DesignArchitecture.pdf) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
+The [Design and Architecture Guide](https://meshcentral.com/info/docs/MeshCentral2DesignArchitecture.pdf) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
 
 ## Video Tutorials
 
