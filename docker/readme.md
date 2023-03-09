@@ -13,11 +13,15 @@
 # Templates
 
 ## .env
+You can place the `config.json` file directly under `./meshcentral/data/`, or use the following `.env` file instead.
 
 ```ini
 NODE_ENV=production
 
-# initial mongodb-variables
+USE_MONGODB=false
+# set already exist mongo connection string url here
+MONGO_URL=
+# or set following init params for new mongodb, use it with docker-compose file with mongodb version
 MONGO_INITDB_ROOT_USERNAME=mongodbadmin
 MONGO_INITDB_ROOT_PASSWORD=mongodbpasswd
 
@@ -26,8 +30,7 @@ MONGO_INITDB_ROOT_PASSWORD=mongodbpasswd
 
 # your hostname
 HOSTNAME=my.domain.com
-USE_MONGODB=false
-# set to your reverse proxy IP if you want to put meshcentral behind a reverse proxy 
+# set to your reverse proxy IP if you want to put meshcentral behind a reverse proxy
 REVERSE_PROXY=false
 REVERSE_PROXY_TLS_PORT=
 # set to true if you wish to enable iframe support
