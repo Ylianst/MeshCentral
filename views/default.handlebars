@@ -122,6 +122,7 @@
         <div class="cmtext" onclick="cmfilesaction(1,event)">Rename</div>
         <div class="cmtext" onclick="cmfilesaction(2,event)">Edit</div>
         <div class="cmtext" onclick="cmfilesaction(3,event)">Delete</div>
+        <div class="cmtext" onclick="cmfilesaction(4,event)">Copy File Path</div>
     </div>
     <div id="expandAllContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmexpandaction(1,event)">Expand All</div>
@@ -1753,7 +1754,7 @@
             if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
 
             // Hide night mode button if needed
-            QV('uiViewButton4', (features2 & 0x00300000) == 0);            
+            QV('uiViewButton4', (features2 & 0x00300000) == 0);
 
             // Fix HTML words that in english have two or more meanings
             Q('DeskType').value = multiTranslate("[KeyboardTyping]|Type");
@@ -2246,7 +2247,7 @@
             QV('authMessagingCheck', (userinfo.msghandle != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
-            QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0))); 
+            QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0)));
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 0x40) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
@@ -5455,7 +5456,7 @@
             var states = [];
             if (node.state > 0 && node.state < powerStatetable.length) state.push(powerStatetable[node.state]);
             if (node.conn) {
-                if ((node.conn & 1) != 0) { 
+                if ((node.conn & 1) != 0) {
                     if (node.mtype == 4) {
                         if (node.porttype == 'PDU') {
                             states.push('<span title="' + "Power switch is ready for use." + '">' + "Switch" + '</span>');
@@ -6322,6 +6323,8 @@
                 } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
             } else if (action == 3) { // Delete the file
                 setDialogMode(2, "Delete", 3, p13deletefileCm, "Delete item?", file);
+            } else if (action == 4) {
+                navigator.clipboard.writeText(p13filetreelocation.join('/') + '/' + file.n)
             }
         }
 
@@ -7030,11 +7033,11 @@
         var powerTimelineReq = null;
         var powerTimelineUpdate = null;
         var powerTimeline = null;
-        
+
         var deviceSharesNode = null;
         var deviceSharesReq = null;
         var deviceShares = null;
-        
+
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh, event) {
             // Remind the user to verify the email address
@@ -8000,7 +8003,7 @@
             if ((currentNode.agent.caps & 6) == 6) { y += termFiles; } // Agent is terminal + files capable
             if ((currentNode.agent.caps & 7) == 7) { y += allFeatures; } // Agent is desktop + terminal + files capable
             y += httpFeature;
-            
+
             x += addHtmlValue("Type", '<select id=d2shareType style=float:right;width:250px onchange=showShareDeviceValidate()>' + y + '</select>');
             var options = { 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days", 0 : "Unlimited" }
             y = '';
@@ -9447,7 +9450,7 @@
             QS(cv.id)['margin-top'] = null;
             QS(cv.id)['margin-bottom'] = null;
         }
-        
+
         // Press ESC key
         function sendDeskEsc() {
             if (desktop == null || desktop.State != 3) return;
@@ -12811,7 +12814,7 @@
             }
 
             x += '</tbody></table>';
-            
+
             // Show device shares
             if ((deviceShares != null) && (deviceSharesNode == currentMesh._id) && (deviceShares.length > 0)) {
                 x += '<p></p><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Active Device Sharing" + '</th><th scope=col style=text-align:left><th scope=col style=text-align:left></th></tr>';
@@ -12865,7 +12868,7 @@
                 dllist += '<a onclick=meshDownloadDeviceList()><img title="' + "Download device list" + '" src="images/link4.png" /></a>';
                 if ((features & 1) == 0) { dllist += ' <a onclick=meshImportDeviceList()><img title="' + "Import device list" + '" src="images/link6.png" /></a>'; } // Show import only in LAN or Hybrid mode
             }
-            
+
             var y = '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Devices" + '</th><th scope=col style=text-align:right>' + dllist + '</th></tr>';
             for (var i in nodes) {
                 var node = nodes[i], gray = ((node.conn > 0)?'':' gray');
@@ -12892,7 +12895,7 @@
                 try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
             }
         }
-        
+
         // Save the list of devices in a device group in the MeshCommander format
         function meshDownloadDeviceList() {
             if (xxdialogMode) return;
@@ -14472,7 +14475,7 @@
                                     xx = x2.join(", ");
                                 } else {
                                     if ((typeof xx == 'string') && (xx.indexOf('DATETIME:') == 0)) { xx = printFlexDateTime(new Date(parseInt(xx.substring(9)))); }
-                                    
+
                                 }
                                 msg = msg.split('{' + i + '}').join(xx);
                             }
@@ -16661,7 +16664,7 @@
             for (var i in options) { y += '<option value=' + i + ((settings.timeRange == i)?' selected':'') + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Time", '<select id=d2timeRange style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
-            
+
             x += '<div id=d2timeRangeDiv style=display:none>';
             x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
@@ -16760,7 +16763,7 @@
                                 sumByCol = r.columns[k].sumBy;
                                 if (v2 != null)  {
                                     if (sumByValues.indexOf(v1) == -1) { sumByValues.push(v1); }
-                                    if (r.columns[k].subtotals == null) { r.columns[k].subtotals = {}; r.columns[k].totals = {}; } 
+                                    if (r.columns[k].subtotals == null) { r.columns[k].subtotals = {}; r.columns[k].totals = {}; }
                                     if (r.columns[k].subtotals[v1] == null) { r.columns[k].subtotals[v1] = v2; } else { r.columns[k].subtotals[v1] += v2; }
                                     if (r.columns[k].totals[v1] == null) { r.columns[k].totals[v1] = v2; } else { r.columns[k].totals[v1] += v2; }
                                 }
@@ -17401,7 +17404,7 @@
                         if (serverTimelineStats[i].traffic.CIRAIn > 0) { seriesWithData |= 0x0002; } // Intel AMT CIRA traffic
                         if (serverTimelineStats[i].traffic.LMSIn > 0) { seriesWithData |= 0x0004; } // Intel AMT LMS traffic
                         if (serverTimelineStats[i].traffic.httpIn > 0) { seriesWithData |= 0x0008; } // HTTP traffic
-                        if (serverTimelineStats[i].traffic.relayIn) { 
+                        if (serverTimelineStats[i].traffic.relayIn) {
                             if (serverTimelineStats[i].traffic.relayIn[0] > 0) { seriesWithData |= 0x0010; } // Relay traffic = 0
                             if (serverTimelineStats[i].traffic.relayIn[1] > 0) { seriesWithData |= 0x0020; } // Terminal traffic = 1
                             if (serverTimelineStats[i].traffic.relayIn[2] > 0) { seriesWithData |= 0x0040; } // Desktop traffic = 2
@@ -18055,7 +18058,7 @@
                 if (r.rights == 0xFFFFFFFF) { return removeUserRights(0xFFFFFFFF, userid); } // User has full rights thru a device group link, stop here.
                 rights = r.rights;
             }
-            
+
             // Check permissions thru user groups
             var user = null;
             if (userid == userinfo._id) { user = userinfo; } else { if (users != null) { user = users[userid]; } }
@@ -18349,7 +18352,7 @@
         window.addEventListener('beforeunload', function (e) {
             if (((desktop != null) && (xxcurrentView == 11)) || ((terminal != null) && (xxcurrentView == 12))) { e.preventDefault(); e.returnValue = ''; }
         });
-    
+
     </script>
 </body>
 </html>
