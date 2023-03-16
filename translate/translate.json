@@ -9697,7 +9697,7 @@
       "ru": "Alt",
       "sv": "Alt",
       "tr": "Alt",
-      "zh-chs": "替代",
+      "zh-chs": "Alt",
       "zh-cht": "Alt",
       "hu": "Alt",
       "xloc": [
@@ -9727,8 +9727,8 @@
       "ru": "Альтернативная оболочка",
       "sv": "Alt Shell",
       "tr": "Alt Kabuk",
-      "zh-chs": "替代壳",
-      "zh-cht": "替代殼",
+      "zh-chs": "替代Shell",
+      "zh-cht": "替代Shell",
       "hu": "Alternatív Shell",
       "xloc": [
         "default.handlebars->47->1280"
@@ -20532,8 +20532,8 @@
       "ru": "Del",
       "sv": "Del",
       "tr": "del",
-      "zh-chs": "德尔",
-      "zh-cht": "德爾",
+      "zh-chs": "Del",
+      "zh-cht": "Del",
       "hu": "Del",
       "xloc": [
         "default-mobile.handlebars->11->422",
@@ -35303,7 +35303,7 @@
       "ru": "Если вы не инициировали этот запрос, игнорируйте это письмо.",
       "sv": "Om du inte initierade denna begäran, ignorerar du det här meddelandet.",
       "tr": "Bu isteği siz başlatmadıysanız, lütfen bu postayı dikkate almayın.",
-      "zh-chs": "如果您没有发起此请求，请不理此邮件。",
+      "zh-chs": "如果您没有发起此请求，请忽略此邮件。",
       "zh-cht": "如果你沒有發起此請求，請不理此電郵。",
       "hu": "Ha nem Ön kezdeményezte ezt a kérést, kérjük, hagyja figyelmen kívül ezt a levelet.",
       "xloc": [
@@ -41037,8 +41037,8 @@
       "ru": "Left",
       "sv": "Vänster",
       "tr": "Sol",
-      "zh-chs": "剩下",
-      "zh-cht": "剩下",
+      "zh-chs": "左",
+      "zh-cht": "左",
       "hu": "Bal",
       "xloc": [
         "default-mobile.handlebars->11->427",
@@ -61030,8 +61030,8 @@
       "ru": "Right",
       "sv": "Rätt",
       "tr": "Doğru",
-      "zh-chs": "正确的",
-      "zh-cht": "正確的",
+      "zh-chs": "右",
+      "zh-cht": "右",
       "hu": "Jobb",
       "xloc": [
         "default-mobile.handlebars->11->429",
@@ -66340,8 +66340,8 @@
       "ru": "Shift",
       "sv": "Flytta",
       "tr": "Vardiya",
-      "zh-chs": "转移",
-      "zh-cht": "轉移",
+      "zh-chs": "Shift",
+      "zh-cht": "Shift",
       "hu": "Shift",
       "xloc": [
         "default-mobile.handlebars->11->432",
@@ -70539,8 +70539,8 @@
       "ru": "TAB",
       "sv": "FLIK",
       "tr": "Sekme",
-      "zh-chs": "标签",
-      "zh-cht": "標籤",
+      "zh-chs": "TAB",
+      "zh-cht": "TAB",
       "hu": "TAB"
     },
     {
@@ -70812,8 +70812,8 @@
       "ru": "Tab",
       "sv": "Flik",
       "tr": "Sekme",
-      "zh-chs": "标签",
-      "zh-cht": "標籤",
+      "zh-chs": "Tab",
+      "zh-cht": "Tab",
       "hu": "Tab",
       "xloc": [
         "default-mobile.handlebars->11->417",
@@ -75590,8 +75590,8 @@
       "ru": "Up",
       "sv": "Upp",
       "tr": "Yukarı",
-      "zh-chs": "返回",
-      "zh-cht": "向上",
+      "zh-chs": "上",
+      "zh-cht": "上",
       "hu": "Fel",
       "xloc": [
         "default-mobile.handlebars->11->428",
@@ -81566,7 +81566,7 @@
       "ru": "[[0]] токен доступа: [[1]]",
       "sv": "[[0]] åtkomsttoken är: [[1]]",
       "tr": "[[0]] erişim anahtarı: [[1]]",
-      "zh-chs": "[[0]]访问保安编码是：[[1]]",
+      "zh-chs": "[[0]]访问令牌是：[[1]]",
       "zh-cht": "[[0]]訪問保安編碼是：[[1]]",
       "hu": "[[0]] hozzáférés token: [[1]]",
       "xloc": [
@@ -81926,7 +81926,7 @@
       "ru": "[[[SERVERNAME]]] - подтверждение по электронной почте",
       "sv": "[[[SERVERNAME]]] - E-postverifiering",
       "tr": "[[[SERVERNAME]]] - E-posta Doğrulaması",
-      "zh-chs": "更改邮件地址",
+      "zh-chs": "[[[SERVERNAME]]] - 邮件验证",
       "zh-cht": "[[[SERVERNAME]]] - 電郵驗證",
       "hu": "[[[SERVERNAME]]] - Email megerősítés",
       "xloc": [
@@ -84419,7 +84419,7 @@
       "ru": "time, type, action, user, message",
       "sv": "tid, typ, åtgärd, användare, meddelande",
       "tr": "zaman, tür, işlem, kullanıcı, mesaj",
-      "zh-chs": "时间，类型，指令，用户，消息",
+      "zh-chs": "时间，打字，指令，用户，消息",
       "zh-cht": "時間，類型，指令，用戶，消息",
       "hu": "time, type, action, user, message"
     },
@@ -84671,7 +84671,7 @@
       "ru": "utc, time, type, action, user, device, message",
       "sv": "utc, tid, typ, åtgärd, användare, enhet, meddelande",
       "tr": "utc, saat, tür, işlem, kullanıcı, cihaz, mesaj",
-      "zh-chs": "utc，时间，类型，指令，用户，设备，消息",
+      "zh-chs": "utc，时间，打字，指令，用户，设备，消息",
       "zh-cht": "utc，時間，類型，指令，用戶，裝置，消息",
       "hu": "utc, time, type, action, user, device, message",
       "xloc": [
