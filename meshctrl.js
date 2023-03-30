@@ -1704,37 +1704,37 @@ function serverConnect() {
                 break;
             }
             case 'report': {
-				var reporttype = 1;
-				switch(args.type) {
-					case 'traffic':
-						reporttype = 2;
-						break;
-					case 'logins':
-						reporttype = 3;
-						break;
-					case 'db':
-						reporttype = 4;
-						break;
-				}
-				
-				var reportgroupby = 1;
-				if(args.groupby){
-					reportgroupby = args.groupby === 'device' ? 2 : args.groupby === 'day' ? 3: 1;
-				}
-				
-				var start = null, end = null;
-				if (args.start) {
-					start = Math.floor(Date.parse(args.start) / 1000);
-				} else {
-					start = reportgroupby === 3 ? Math.round(new Date().getTime() / 1000) - (168 * 3600) : Math.round(new Date().getTime() / 1000) - (24 * 3600);
-				}
-				if (args.end) {
-					end = Math.floor(Date.parse(args.end) / 1000);
-				} else {
-					end = Math.round(new Date().getTime() / 1000);
-				}					
-				if (end <= start) { console.log("End time must be ahead of start time."); process.exit(1); return; }
-				
+                var reporttype = 1;
+                switch(args.type) {
+                    case 'traffic':
+                        reporttype = 2;
+                        break;
+                    case 'logins':
+                        reporttype = 3;
+                        break;
+                    case 'db':
+                        reporttype = 4;
+                        break;
+                }
+                
+                var reportgroupby = 1;
+                if(args.groupby){
+                    reportgroupby = args.groupby === 'device' ? 2 : args.groupby === 'day' ? 3: 1;
+                }
+                
+                var start = null, end = null;
+                if (args.start) {
+                    start = Math.floor(Date.parse(args.start) / 1000);
+                } else {
+                    start = reportgroupby === 3 ? Math.round(new Date().getTime() / 1000) - (168 * 3600) : Math.round(new Date().getTime() / 1000) - (24 * 3600);
+                }
+                if (args.end) {
+                    end = Math.floor(Date.parse(args.end) / 1000);
+                } else {
+                    end = Math.round(new Date().getTime() / 1000);
+                }                    
+                if (end <= start) { console.log("End time must be ahead of start time."); process.exit(1); return; }
+                
                 ws.send(JSON.stringify({ action: 'report', type: reporttype, groupBy: reportgroupby, devGroup: args.devicegroup || null, start, end, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, tf: new Date().getTimezoneOffset(), showTraffic: args.hasOwnProperty('showtraffic'), l: 'en', responseid: 'meshctrl' }));
                 break;
             }
@@ -2304,15 +2304,15 @@ function serverConnect() {
                 console.log(data.data);
                 process.exit();
             }
-			case 'report': {
-				console.log('group,' + data.data.columns.flatMap(c => c.id).join(','));
-				Object.keys(data.data.groups).forEach(gk => {
-					data.data.groups[gk].entries.forEach(e => {
-						console.log(gk + ',' + Object.values(e).join(','));
-					});
-				});
+            case 'report': {
+                console.log('group,' + data.data.columns.flatMap(c => c.id).join(','));
+                Object.keys(data.data.groups).forEach(gk => {
+                    data.data.groups[gk].entries.forEach(e => {
+                        console.log(gk + ',' + Object.values(e).join(','));
+                    });
+                });
                 process.exit();
-			}
+            }
             default: { break; }
         }
         //console.log('Data', data);
