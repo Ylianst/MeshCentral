@@ -21,7 +21,7 @@ MeshCentral is a remote management web site that connects users to remote comput
 ## Downloading
 
 MeshCentral router is a Windows application that comes built-into the MeshCentral server or can
-be downloaded at: <http://info.meshcentral.com/downloads/MeshCentral2/MeshCentralRouter.exe>
+be downloaded at: <https://meshcentral.com/info/tools/MeshCentralRouter.exe>
 
 It’s probably best to use the MeshCentral router that comes with your version of the MeshCentral
 server as the two will likely be most compatible. A given MeshCentral Router version may not
