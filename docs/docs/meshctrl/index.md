@@ -274,6 +274,7 @@ devicesharing
 devicepower
 indexagenterrorlog
 agentdownload
+report
 ```
 
 You can get this list by just running MeshCtrl without any argument and can get more information on each action by typing “meshctrl help [action]” 
