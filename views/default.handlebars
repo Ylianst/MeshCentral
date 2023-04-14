@@ -1437,7 +1437,7 @@
         var autoReconnect = true;
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
-        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service"];
         var agentsStrNoAgent = ['', '', '', '', "Windows", '', "Linux", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "Apple"];
         var sort = 0;
         var searchFocus = 0;
@@ -5312,8 +5312,9 @@
 
             // Windows agent install
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "32bit version of the MeshAgent" + '">' + "Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "64bit version of the MeshAgent" + '">' + "Windows x64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
@@ -5416,6 +5417,7 @@
             // Fix the links if needed
             Q('aginsw32lnk').onclick = function() { downloadFile((Q('aginsw32lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''), null, true); }
             Q('aginsw64lnk').onclick = function() { downloadFile((Q('aginsw64lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''), null, true); }
+            Q('aginswa64lnk').onclick = function() { downloadFile((Q('aginswa64lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''), null, true); }
             if (debugmode > 0) { Q('aginswmshlnk').onclick = function() { downloadFile((Q('aginswmshlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''), null, true); } }
             Q('asinslnk').onclick = function() { downloadFile(Q('asinslnk').name + '&ac=' + Q('asinsType').value, null, true); }
             Q('asinslnk2').onclick = function() { downloadFile(Q('asinslnk').name + '&ac=' + Q('asinsType').value, null, true); }
@@ -8541,8 +8543,9 @@
         function p10showMeshCmdDialog(mode, nodeid) {
             if (xxdialogMode) return;
             var y = '<select id=aginsSelect onclick=meshCmdOsClick() style=width:236px>';
-            y += '<option value=4>' + "Windows (64bit)" + '</option>';
-            y += '<option value=3>' + "Windows (32bit)" + '</option>';
+            y += '<option value=4>' + "Windows x86 (64bit)" + '</option>';
+            y += '<option value=3>' + "Windows x86 (32bit)" + '</option>';
+            y += '<option value=43>' + "Windows ARM (64bit)" + '</option>';
             y += '<option value=6>' + "Linux x86 (64bit)" + '</option>';
             y += '<option value=5>' + "Linux x86 (32bit)" + '</option>';
             y += '<option value=16>' + "macOS x86 (64bit)" + '</option>';
@@ -8566,8 +8569,9 @@
         function meshCmdOsClick() {
             var os = Q('aginsSelect').value, osn = '', osurl = '';
             //Q('meshcmddownloadid').href = 'meshagents?meshcmd=' + os + (urlargs.key?('&key=' + urlargs.key):'');
-            if (os == 3) { osn = "MeshCmd (Win32 executable)"; }
-            if (os == 4) { osn = "MeshCmd (Win64 executable)"; }
+            if (os == 3) { osn = "MeshCmd (Win x86-32 executable)"; }
+            if (os == 4) { osn = "MeshCmd (Win x86-64 executable)"; }
+            if (os == 43) { osn = "MeshCmd (Win ARM-64 executable)"; }
             if (os == 5) { osn = "MeshCmd (Linux x86, 32bit)"; }
             if (os == 6) { osn = "MeshCmd (Linux x86, 64bit)"; }
             if (os == 16) { osn = "MeshCmd (macOS, x86-64bit)"; }
@@ -18300,7 +18304,7 @@
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
-        function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34].indexOf(node.agent.id) >= 0); }
+        function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34,42,43].indexOf(node.agent.id) >= 0); }
 
         // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
         // So we do that for all browsers except FireFox
