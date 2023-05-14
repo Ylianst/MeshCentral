@@ -6193,7 +6193,7 @@
                 if (selectedDevices.length == 0) { selectedDevices.push(nodeid); }
                 for (var i in selectedDevices) { if (stars[selectedDevices[i]] != null) { delete stars[selectedDevices[i]]; delete selectedDevices[i]; } }
                 var starcount = Object.keys(stars).length;
-                for (var i in selectedDevices) { if ((starcount < 20) && (stars[selectedDevices[i]] == null)) { stars[selectedDevices[i]] = 1; starcount++; } }
+                for (var i in selectedDevices) { if ((starcount < 200) && (stars[selectedDevices[i]] == null)) { stars[selectedDevices[i]] = 1; starcount++; } }
                 putstore('stars', JSON.stringify(stars));
                 updateDeviceViewDevice(nodeid);
                 if (Q('DevFilterSelect').value == 3) { mainUpdate(1); }
