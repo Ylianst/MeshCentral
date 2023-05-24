@@ -10,6 +10,7 @@
 [Aa]gents/meshcore.min.js
 [Pp]ublic/translations/
 [Vv]iews/translations/
+[Ee]mails/translations/
 [Pp]ublic/*-min.htm
 [Vv]iews/*-min.handlebars
 meshcentral.db
