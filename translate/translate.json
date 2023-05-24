@@ -5419,6 +5419,7 @@
     },
     {
       "en": "ARM 64bit version of the MeshAgent",
+      "nl": "ARM 64bit versie van de MeshAgent",
       "xloc": [
         "default.handlebars->47->584"
       ]
@@ -18609,18 +18610,21 @@
     },
     {
       "en": "Copy Windows ARM 64bit agent URL to clipboard",
+      "nl": "Kopieer de URL van de Windows ARM 64-bits agent naar het klembord",
       "xloc": [
         "default.handlebars->47->586"
       ]
     },
     {
       "en": "Copy Windows x86 32bit agent URL to clipboard",
+      "nl": "Kopieer de Windows x86 32-bits agent-URL naar het klembord",
       "xloc": [
         "default.handlebars->47->578"
       ]
     },
     {
       "en": "Copy Windows x86 64bit agent URL to clipboard",
+      "nl": "Kopieer de Windows x86 64-bits agent-URL naar het klembord",
       "xloc": [
         "default.handlebars->47->582"
       ]
@@ -29065,6 +29069,7 @@
     },
     {
       "en": "Espace",
+      "nl": "Ruimte",
       "xloc": [
         "default-mobile.handlebars->11->427"
       ]
@@ -46081,18 +46086,21 @@
     },
     {
       "en": "MeshCmd (Win ARM-64 executable)",
+      "nl": "MeshCmd (Win ARM-64 uitvoerbaar)",
       "xloc": [
         "default.handlebars->47->1247"
       ]
     },
     {
       "en": "MeshCmd (Win x86-32 executable)",
+      "nl": "MeshCmd (Win x86-32 uitvoerbaar)",
       "xloc": [
         "default.handlebars->47->1245"
       ]
     },
     {
       "en": "MeshCmd (Win x86-64 executable)",
+      "nl": "MeshCmd (Win x86-64 uitvoerbaar)",
       "xloc": [
         "default.handlebars->47->1246"
       ]
@@ -80608,12 +80616,14 @@
     },
     {
       "en": "Windows ARM (64bit)",
+      "nl": "Windows ARM (64bit)",
       "xloc": [
         "default.handlebars->47->1229"
       ]
     },
     {
       "en": "Windows ARM 64bit console",
+      "nl": "Windows ARM 64bit console",
       "xloc": [
         "default-mobile.handlebars->11->48",
         "default.handlebars->47->55"
@@ -80621,6 +80631,7 @@
     },
     {
       "en": "Windows ARM 64bit service",
+      "nl": "Windows ARM 64bit service",
       "xloc": [
         "default-mobile.handlebars->11->49",
         "default.handlebars->47->56"
@@ -80628,6 +80639,7 @@
     },
     {
       "en": "Windows ARM-64 (.exe)",
+      "nl": "Windows ARM-64 (.exe)",
       "xloc": [
         "default.handlebars->47->585"
       ]
@@ -80883,24 +80895,28 @@
     },
     {
       "en": "Windows x86 (32bit)",
+      "nl": "Windows x86 (32bit)",
       "xloc": [
         "default.handlebars->47->1228"
       ]
     },
     {
       "en": "Windows x86 (64bit)",
+      "nl": "Windows x86 (64bit)",
       "xloc": [
         "default.handlebars->47->1227"
       ]
     },
     {
       "en": "Windows x86-32 (.exe)",
+      "nl": "Windows x86-32 (.exe)",
       "xloc": [
         "default.handlebars->47->577"
       ]
     },
     {
       "en": "Windows x86-64 (.exe)",
+      "nl": "Windows x86-64 (.exe)",
       "xloc": [
         "default.handlebars->47->581"
       ]
@@ -84824,12 +84840,14 @@
     },
     {
       "en": "x86 32bit version of the MeshAgent",
+      "nl": "x86 32bit versie van de MeshAgent",
       "xloc": [
         "default.handlebars->47->576"
       ]
     },
     {
       "en": "x86 64bit version of the MeshAgent",
+      "nl": "x86 64bit versie van de MeshAgent",
       "xloc": [
         "default.handlebars->47->580"
       ]
