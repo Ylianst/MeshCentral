@@ -7116,6 +7116,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 clientSecret: domain.authstrategies.oidc.clientsecret,
                 scope: ['profile', 'email'],
             };
+            if (typeof domain.authstrategies.oidc.authorizationurl == 'string') {options.authorizationURL = domain.authstrategies.oidc.authorizationurl; }
+            if (typeof domain.authstrategies.oidc.tokenurl == 'string') { options.tokenURL = domain.authstrategies.oidc.tokenurl; }
+            if (typeof domain.authstrategies.oidc.userinfourl == 'string') { options.userInfoURL = domain.authstrategies.oidc.userinfourl; }
+            if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; }
+
             const discoverOptions = async function(options){
                 if ((typeof domain.authstrategies.oidc.authorizationurl != 'string') || (typeof domain.authstrategies.oidc.tokenurl != 'string') || (typeof domain.authstrategies.oidc.userinfourl != 'string')) {
                     const Issuer = require('openid-client').Issuer;
