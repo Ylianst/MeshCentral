@@ -1533,9 +1533,8 @@ a {
     opacity: 1;
 }
 
-.lb1 {
-    background: url(../images/leftbar-64.png) -1px -2px;
-    background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
+/*groups all buttons repeated code into one block*/
+.lbtg {
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1543,66 +1542,36 @@ a {
     position: absolute;
     top: 6px;
     left: 6px;
+}
+
+.lb1 {
+    background: url(../images/leftbar-64.png) -1px -2px;
+    background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
 }
 
 .lb2 {
     background: url(../images/leftbar-64.png) -66px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb3 {
     background: url(../images/leftbar-64.png) -130px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb4 {
     background: url(../images/leftbar-64.png) -194px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb5 {
     background: url(../images/leftbar-64.png) -257px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb6 {
     background: url(../images/leftbar-64.png) -318px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .m0 {
