@@ -135,12 +135,12 @@
     "allow": "Permitir",
     "deny": "Negar",
     "autoAllowForFive": "Aceita automaticamente todas as conexões pelos próximos 5 minutos",
-    "terminalConsent": "{0} solicitando acesso ao terminal remoto. Garantir acesso?",
-    "desktopConsent": "{0} solicitando acesso à área de trabalho remota. Garantir acesso?",
-    "fileConsent": "{0} solicitando acesso remoto ao arquivo. Garantir acesso?",
+    "terminalConsent": "{0} está a pedir acesso ao terminal remoto. Conceder acesso?",
+    "desktopConsent": "{0} está a pedir acesso à área de trabalho remota. Conceder acesso?",
+    "fileConsent": "{0} está a pedir acesso remoto aos ficheiros. Conceder acesso?",
     "terminalNotify": "{0} iniciou uma sessão de terminal remoto.",
     "desktopNotify": "{0} iniciou uma sessão de área de trabalho remota.",
-    "fileNotify": "{0} iniciou uma sessão de arquivo remoto.",
+    "fileNotify": "{0} iniciou uma sessão de ficheiro remoto.",
     "privacyBar": "Compartilhando área de trabalho com: {0}"
   },
   "ru": {
