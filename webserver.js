@@ -2813,7 +2813,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
-                if ((userid != null) && (err == null)) {
+                // 2FA is not supported in URL authentication method. If user has 2FA enabled, this login method fails.
+				var user = obj.users[userid];
+                if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
+                    handleRootRequestEx(req, res, domain, direct);
+                } else if ((userid != null) && (err == null)) {
                     // Login success
                     parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                     req.session.userid = userid;
