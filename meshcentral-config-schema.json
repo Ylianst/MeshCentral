@@ -2754,91 +2754,247 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "callbackurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "newAccounts": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "newAccountsUserGroups": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "clientid": {
+                    "type": "string"
+                  },
+                  "clientsecret": {
+                    "type": "string"
+                  },
+                  "logouturl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  }
                 },
-                "required": [ "clientid", "clientsecret" ]
+                "required": ["clientid", "clientsecret"]
               },
               "google": {
                 "type": "object",
                 "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "callbackurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "newAccounts": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "newAccountsUserGroups": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "clientid": {
+                    "type": "string"
+                  },
+                  "clientsecret": {
+                    "type": "string"
+                  },
+                  "logouturl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  }
                 },
-                "required": [ "clientid", "clientsecret" ]
+                "required": ["clientid", "clientsecret"]
               },
               "github": {
                 "type": "object",
                 "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "callbackurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "newAccounts": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "newAccountsUserGroups": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "clientid": {
+                    "type": "string"
+                  },
+                  "clientsecret": {
+                    "type": "string"
+                  },
+                  "logouturl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  }
                 },
-                "required": [ "clientid", "clientsecret" ]
+                "required": ["clientid", "clientsecret"]
               },
               "reddit": {
                 "type": "object",
                 "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "callbackurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "newAccounts": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "newAccountsUserGroups": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "clientid": {
+                    "type": "string"
+                  },
+                  "clientsecret": {
+                    "type": "string"
+                  },
+                  "logouturl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  }
                 },
-                "required": [ "clientid", "clientsecret" ]
+                "required": ["clientid", "clientsecret"]
               },
               "azure": {
                 "type": "object",
                 "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "clientid": { "type": "string" },
-                  "clientsecret": { "type": "string" },
-                  "tenantid": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "callbackurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "newAccounts": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "newAccountsUserGroups": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "clientid": {
+                    "type": "string"
+                  },
+                  "clientsecret": {
+                    "type": "string"
+                  },
+                  "tenantid": {
+                    "type": "string"
+                  },
+                  "logouturl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  }
                 },
-                "required": [ "clientid", "clientsecret", "tenantid" ]
+                "required": ["clientid", "clientsecret", "tenantid"]
               },
               "jumpcloud": {
                 "type": "object",
                 "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "entityid": { "type": "string" },
-                  "idpurl": { "type": "string", "format": "uri" },
-                  "cert": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "callbackurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "newAccounts": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "newAccountsUserGroups": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "entityid": {
+                    "type": "string"
+                  },
+                  "idpurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "cert": {
+                    "type": "string"
+                  },
+                  "logouturl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  }
                 },
-                "required": [ "entityid", "idpurl", "cert" ]
+                "required": ["entityid", "idpurl", "cert"]
               },
               "saml": {
                 "type": "object",
                 "properties": {
-                  "callbackurl": { "type": "string", "format": "uri" },
-                  "disableRequestedAuthnContext": { "type": "boolean" },
-                  "newAccounts": { "type": "boolean", "default": false },
-                  "newAccountsUserGroups": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "newAccountsRights": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-                  "entityid": { "type": "string" },
-                  "idpurl": { "type": "string", "format": "uri" },
-                  "cert": { "type": "string" },
-                  "logouturl": {"type": "string", "format": "uri", "description": "Then set, the user will be redirected to this URL when hitting the logout link."}
+                  "callbackurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "disableRequestedAuthnContext": {
+                    "type": "boolean"
+                  },
+                  "newAccounts": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "newAccountsUserGroups": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "newAccountsRights": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "entityid": {
+                    "type": "string"
+                  },
+                  "idpurl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "cert": {
+                    "type": "string"
+                  },
+                  "logouturl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  }
                 },
-                "required": [ "entityid", "idpurl", "cert" ]
+                "required": ["entityid", "idpurl", "cert"]
               },
               "oidc": {
                 "type": "object",
