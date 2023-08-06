@@ -9717,7 +9717,7 @@
     },
     {
       "bs": "Alt Shell",
-      "cs": "Alt Shell",
+      "cs": "Alternativní prostředí",
       "da": "Alt Shell",
       "de": "Alternative Shell",
       "en": "Alt Shell",
@@ -14930,7 +14930,7 @@
     },
     {
       "bs": "Označite i kliknite OK da pokrenete samoažuriranje servera.",
-      "cs": "Pro zahájení samoaktualizace serveru zaškrtněte a klikněte na OK. ",
+      "cs": "Pro zahájení aktualizace serveru zaškrtněte a klikněte na OK. ",
       "da": "Marker og klik på OK for at starte serverselvopdatering.",
       "de": "Haken setzen und OK klicken, um die Server-Selbstaktualisierung zu starten.",
       "en": "Check and click OK to start server self-update.",
@@ -47926,7 +47926,7 @@
     },
     {
       "bs": "Ime",
-      "cs": "Jméno/název",
+      "cs": "Název",
       "da": "Navn",
       "de": "Name",
       "en": "Name",
@@ -52852,7 +52852,7 @@
     },
     {
       "bs": "PID",
-      "cs": "identif. procesu (PID)",
+      "cs": "PID",
       "da": "PID",
       "de": "PID",
       "en": "PID",
@@ -56907,7 +56907,7 @@
     },
     {
       "bs": "RUNNING",
-      "cs": "BĚH",
+      "cs": "SPUŠTĚNO",
       "da": "KØRER",
       "de": "GESTARTET",
       "en": "RUNNING",
@@ -61810,7 +61810,7 @@
     },
     {
       "bs": "Trčanje",
-      "cs": "Běh",
+      "cs": "Spuštěno",
       "da": "Kører",
       "de": "gestartet",
       "en": "Running",
@@ -65942,7 +65942,7 @@
     },
     {
       "bs": "ID sesije",
-      "cs": "Identif. relace",
+      "cs": "ID relace",
       "da": "SessionID",
       "de": "Sitzungs-ID",
       "en": "SessionID",
@@ -68413,7 +68413,7 @@
     },
     {
       "bs": "Sortiraj po ID-u procesa",
-      "cs": "Seřadit podle identif. procesu",
+      "cs": "Seřadit podle ID procesu",
       "da": "Sortér efter proces-id",
       "de": "Nach Prozess-ID sortieren",
       "en": "Sort by process id",
@@ -69930,7 +69930,7 @@
     },
     {
       "bs": "Zaustavi proces",
-      "cs": "Zastavte proces",
+      "cs": "Zastavit proces",
       "da": "Stop process",
       "de": "Prozess stoppen",
       "en": "Stop process",
@@ -70008,7 +70008,7 @@
     },
     {
       "bs": "Zaustavljeno",
-      "cs": "Zastavil",
+      "cs": "Zastaveno",
       "da": "Stoppet",
       "de": "gestoppt",
       "en": "Stopped",
@@ -70036,7 +70036,7 @@
     },
     {
       "bs": "Zaustavljeno.",
-      "cs": "Zastavil.",
+      "cs": "Zastaveno.",
       "da": "Stoppet.",
       "de": "Gestoppt.",
       "en": "Stopped.",
@@ -81241,7 +81241,7 @@
     },
     {
       "bs": "Working Dir",
-      "cs": "Pracovní ředitel",
+      "cs": "Pracovní adresář",
       "da": "Arbejder Dir",
       "de": "Arbeitsverzeichnis",
       "en": "Working Dir",
