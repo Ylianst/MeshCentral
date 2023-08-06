@@ -5420,6 +5420,7 @@
     {
       "en": "ARM 64bit version of the MeshAgent",
       "nl": "ARM 64bit versie van de MeshAgent",
+      "de": "ARM 64bit Version des MeshAgents",
       "xloc": [
         "default.handlebars->47->584"
       ]
@@ -10025,6 +10026,7 @@
       "pl": "Wystąpił nieznany błąd.",
       "fr": "Une erreur inconnue est survenue.",
       "hu": "Ismeretlen hiba történt.",
+      "de": "Ein unbekannter Fehler ist aufgetreten.",
       "xloc": [
         "default.handlebars->47->2887"
       ]
@@ -13329,6 +13331,7 @@
       "pl": "Obraz CAPTCHA",
       "fr": "image CAPTCHA",
       "hu": "CAPTCHA kép",
+      "de": "CAPTCHA Bild",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
@@ -14985,6 +14988,7 @@
       "fr": "Vérifiez votre messagerie et entrez le code de vérification.",
       "hu": "Ellenőrizze az üzenetküldő alkalmazást, és írja be az megerősítő kódot.",
       "pl": "Sprawdź swoją aplikacje wiadomości i wprowadź kod weryfikacyjny.",
+      "de": "Prüfen Sie Ihre Messenger-App und geben Sie den Verifikationscode ein.",
       "xloc": [
         "default.handlebars->47->248"
       ]
@@ -16444,6 +16448,7 @@
       "pl": "Komendy z pliku",
       "fr": "Commandes depuis le fichier",
       "hu": "Parancsok fájlból",
+      "de": "Befehle aus Datei",
       "xloc": [
         "default.handlebars->47->740"
       ]
@@ -16456,6 +16461,7 @@
       "pl": "Komendy z pliku na serwerze",
       "fr": "Commandes depuis le fichier sur le serveur",
       "hu": "Parancsok a kiszolgálón lévő fájlból",
+      "de": "Befehle aus Datei vom Server",
       "xloc": [
         "default.handlebars->47->741"
       ]
@@ -16468,6 +16474,7 @@
       "pl": "Komendy z okienka tekstowego",
       "fr": "Commandes depuis une zone de texte",
       "hu": "Parancsok a szövegdobozból",
+      "de": "Befehle aus Textfeld",
       "xloc": [
         "default.handlebars->47->739"
       ]
@@ -16639,6 +16646,7 @@
       "pl": "Zapisy pliku konfiguracyjnego",
       "fr": "Enregistrement du fichier de configuration",
       "hu": "Konfigurációs fájl rekordok",
+      "de": "Aufzeichnungen von Konfigurationsdatei",
       "xloc": [
         "default.handlebars->47->3001"
       ]
@@ -18654,6 +18662,7 @@
     {
       "en": "Copy Windows ARM 64bit agent URL to clipboard",
       "nl": "Kopieer de URL van de Windows ARM 64-bits agent naar het klembord",
+      "de": "Windows ARM 64bit Agent-URL in die Zwischenablage kopieren",
       "xloc": [
         "default.handlebars->47->586"
       ]
@@ -18661,6 +18670,7 @@
     {
       "en": "Copy Windows x86 32bit agent URL to clipboard",
       "nl": "Kopieer de Windows x86 32-bits agent-URL naar het klembord",
+      "de": "Windows x86 32bit Agent-URL in die Zwischenablage kopieren",
       "xloc": [
         "default.handlebars->47->578"
       ]
@@ -18668,6 +18678,7 @@
     {
       "en": "Copy Windows x86 64bit agent URL to clipboard",
       "nl": "Kopieer de Windows x86 64-bits agent-URL naar het klembord",
+      "de": "Windows x86 64bit Agent-URL in die Zwischenablage kopieren",
       "xloc": [
         "default.handlebars->47->582"
       ]
@@ -19487,6 +19498,7 @@
       "pl": "Utwórz wiele urządzeń Intel&reg; AMT za jednym razem, poprzez import pliku JSON o takim formacie:",
       "fr": "Créer plusieurs appareils Intel® AMT en important un fichier JSON respectant le format suivant :",
       "hu": "Hozzon létre egyszerre több Intel® AMT eszközt a következő formátumú JSON-fájl importálásával:",
+      "de": "Erstellen Sie mehrere Intel® AMT Geräte gleichzeitig durch Import einer JSON Datei mit dem folgenden Format:",
       "xloc": [
         "default.handlebars->47->480"
       ]
@@ -20382,6 +20394,7 @@
       "pl": "Zapisy Bazy Danych",
       "fr": "Enregistrements dans la base de données",
       "hu": "Adatbázis rekordok",
+      "de": "Datenbankaufzeichnungen",
       "xloc": [
         "default.handlebars->47->2926"
       ]
@@ -21298,6 +21311,7 @@
       "pl": "Odmówiono zalogowania użytkownika z {0}, {1}, {2}",
       "fr": "La connexion de l'utilisateur a été refusée à partir de {0}, {1}, {2}",
       "hu": "Felhasználói bejelentkezés megtagadva: {0}, {1}, {2}",
+      "de": "Login des Benutzers von {0}, {1}, {2} verweigert",
       "xloc": [
         "default.handlebars->47->2460"
       ]
@@ -22140,6 +22154,7 @@
       "pl": "Urządzenie \"",
       "fr": "Appareil \"",
       "hu": "Eszköz \"",
+      "de": "Gerät \"",
       "xloc": [
         "device-help.html->2->3"
       ]
@@ -22151,6 +22166,7 @@
       "pl": "Urządzenie \"[[[DEVICENAME]]]\" prosiło o pomoc.",
       "fr": "Une assistance est demandée par l'appareil \"[[[DEVICENAME]]]\"",
       "hu": "A \"[[[DEVICENAME]]]\" eszköz segítséget kért.",
+      "de": "Gerät \"[[[DEVICENAME]]]\" hat Unterstützung angefordert.",
       "xloc": [
         "device-help.txt"
       ]
@@ -22595,6 +22611,7 @@
       "pl": "Zapis Powiadomień Push Urządzenia",
       "fr": "Enregistrement des notifications poussées sur l'appareil",
       "hu": "Eszköz push értesítés rekord",
+      "de": "Aufzeichnungen zu Push-Benachrichtigungen des Geräts",
       "xloc": [
         "default.handlebars->47->3010"
       ]
@@ -22606,6 +22623,7 @@
       "pl": "Zapis SMBIOS urządzenia",
       "fr": "Enregistrement SMBIOS de l'appareil",
       "hu": "Eszköz SMBIOS rekord",
+      "de": "SMBIOS Geräteaufzeichnungen",
       "xloc": [
         "default.handlebars->47->3009"
       ]
@@ -23005,6 +23023,7 @@
       "pl": "Zapis grupy urządzeń",
       "fr": "Enregistrement du groupe de l'appareil",
       "hu": "Eszközcsoport rekordok",
+      "de": "Gerätegruppenaufzeichnungen",
       "xloc": [
         "default.handlebars->47->2995"
       ]
@@ -23097,6 +23116,7 @@
       "pl": "Zapisy informacji urządzenia",
       "fr": "Enregistrements des informations de l'appareil",
       "hu": "Eszköz információs rekordok",
+      "de": "Aufzeichnungen zu Geräteinformationen",
       "xloc": [
         "default.handlebars->47->2997"
       ]
@@ -23673,6 +23693,7 @@
       "pl": "Zapis urządzenia",
       "fr": "Enregistrement de l'appareil",
       "hu": "Eszköz rekordok",
+      "de": "Geräteaufzeichnungen",
       "xloc": [
         "default.handlebars->47->2994"
       ]
@@ -23738,6 +23759,7 @@
       "pl": "Zapisy udostępniania urządzenia",
       "fr": "Enregistrements du partage des appareils",
       "hu": "Eszközmegosztási rekordok",
+      "de": "Aufzeichnungen zu Geräte-Teilen",
       "xloc": [
         "default.handlebars->47->3007"
       ]
@@ -23749,6 +23771,7 @@
       "pl": "Zapisy urządzenia, użytkowników, grup i inne",
       "fr": "Appareils, utilisateurs, groupes, et autres enregistrements",
       "hu": "Eszköz, felhasználók, csoportok és egyéb rekordok",
+      "de": "Aufzeichnungen zu Geräten, Benutzern und Weiteres",
       "xloc": [
         "default.handlebars->47->3011"
       ]
@@ -24283,6 +24306,7 @@
       "fr": "Discord",
       "hu": "Discord",
       "pl": "Discord",
+      "de": "Discord",
       "xloc": [
         "default.handlebars->47->1586",
         "default.handlebars->47->2793"
@@ -26992,6 +27016,7 @@
       "fr": "Email ({0})",
       "hu": "Email ({0})",
       "pl": "Email ({0})",
+      "de": "E-Mail ({0})",
       "xloc": [
         "default.handlebars->47->1986",
         "default.handlebars->47->897"
@@ -27136,7 +27161,8 @@
       "nl": "E-mail hulpverzoek",
       "pl": "Prośba Pomocy Email",
       "fr": "Demande d'aide par courrier électronique",
-      "hu": "Segítségkérés e-mailben"
+      "hu": "Segítségkérés e-mailben",
+      "de": "E-Mail Hilfeanforderung"
     },
     {
       "bs": "Obavještenja putem e-pošte",
@@ -28833,6 +28859,7 @@
       "fr": "Saisir votre service de messagerie et votre identifiant. Après validation, ce serveur peut vous demander une vérification de la connexion et envoyer d'autres notifications.",
       "hu": "Adja meg az üzenetküldő szolgáltatást és az üzenetkezelőt. Az megerősítést követően ez a szerver küldhet Önnek bejelentkezési igazolást és egyéb értesítéseket.",
       "pl": "Wprowadź swoją usługę przesyłania wiadomości. Po weryfikacji, ten serwer może wysyłać weryfikację logowania i inne powiadomienia.",
+      "de": "Geben Sie ihren Messengerdienst und Nutzernamen ein. Sobald Sie verifiziert sind, kann dieser Server Ihnen Loginverifikationen und andere Benachrichtigungen senden.",
       "xloc": [
         "default.handlebars->47->1584"
       ]
@@ -29303,6 +29330,7 @@
       "pl": "Zapisy zdarzeń",
       "fr": "Enregistrements des évènements",
       "hu": "Esemény rekordok",
+      "de": "Eventaufzeichnungen",
       "xloc": [
         "default.handlebars->47->3004"
       ]
@@ -29756,6 +29784,7 @@
       "fr": "Facebook",
       "hu": "Facebook",
       "pl": "Facebook",
+      "de": "Facebook",
       "xloc": [
         "default.handlebars->47->1597",
         "default.handlebars->47->2804"
@@ -32592,6 +32621,7 @@
       "pl": "Idź do pierwszej strony",
       "fr": "Aller à la première page",
       "hu": "Ugrás az első oldalra",
+      "de": "Gehe zur ersten Seite",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -32603,6 +32633,7 @@
       "pl": "Idź do ostatniej strony",
       "fr": "Aller à la dernière page",
       "hu": "Ugrás az utolsó oldalra",
+      "de": "Gehe zur letzten Seite",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -32670,6 +32701,7 @@
       "pl": "Idź do następnej strony",
       "fr": "Aller à la page suivante",
       "hu": "Ugrás az következő oldalra",
+      "de": "Gehe zur nächsten Seite",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -32681,6 +32713,7 @@
       "pl": "Idź do poprzedniej strony",
       "fr": "Aller à la page précédente",
       "hu": "Ugrás az előző oldalra",
+      "de": "Gehe zur vorherigen Seite",
       "xloc": [
         "default.handlebars->container->column_l->p1->p1title->devListToolbarViewIcons"
       ]
@@ -33087,6 +33120,7 @@
       "pl": "Typ Grupy",
       "fr": "Type de groupe",
       "hu": "Csoport típus",
+      "de": "Gruppentyp",
       "xloc": [
         "default.handlebars->47->2634"
       ]
@@ -33736,6 +33770,7 @@
       "fr": "Identifiant",
       "hu": "Kezelő",
       "pl": "Obsługa",
+      "de": "Nutzername",
       "xloc": [
         "default.handlebars->47->1593",
         "default.handlebars->47->2800"
@@ -34100,6 +34135,7 @@
       "pl": "Prośby pomocy",
       "fr": "Demandes d'aide",
       "hu": "Segítség kérések",
+      "de": "Hilfeanforderungen",
       "xloc": [
         "default.handlebars->47->1036",
         "default.handlebars->47->1040",
@@ -34732,6 +34768,7 @@
       "pl": "Zapisy o informacji lokalizacji IP",
       "fr": "Enregistrements des localisations IP",
       "hu": "IP helyadatokat tartalmazó rekordok",
+      "de": "Aufzeichnungen zu IP Lokationsinformationen",
       "xloc": [
         "default.handlebars->47->2998"
       ]
@@ -35523,6 +35560,7 @@
       "pl": "Importuj",
       "fr": "Importer",
       "hu": "Importálás",
+      "de": "Import",
       "xloc": [
         "default.handlebars->47->2005"
       ]
@@ -35534,6 +35572,7 @@
       "pl": "Importuj urządzenia Intel AMT",
       "fr": "Importer des appareils Intel AMT",
       "hu": "Intel AMT eszközök importálása",
+      "de": "Intel AMT Geräte importieren",
       "xloc": [
         "default.handlebars->47->479"
       ]
@@ -35574,6 +35613,7 @@
       "pl": "Importuj urządzenia Intel&reg; AMT.",
       "fr": "Importer des appareils Intel® AMT",
       "hu": "Intel&reg; AMT eszközök importálása.",
+      "de": "Intel® AMT Geräte importieren",
       "xloc": [
         "default.handlebars->47->2004"
       ]
@@ -35988,6 +36028,7 @@
       "fr": "Informations sur Pushover.net",
       "hu": "Információ a Pushover.net oldalon",
       "pl": "Informacje na Pushover.net",
+      "de": "Informationen bei Pushover.net",
       "xloc": [
         "default.handlebars->47->1598",
         "default.handlebars->47->2805"
@@ -36741,6 +36782,7 @@
       "pl": "Import Urządzenia Intel&reg; AMT",
       "fr": "Import de l'appareil Intel® AMT",
       "hu": "Intel&reg; AMT eszköz importálása",
+      "de": "Intel® AMT Geräteimport",
       "xloc": [
         "default.handlebars->47->481",
         "default.handlebars->47->482",
@@ -36953,6 +36995,7 @@
       "pl": "Intel&reg; AMT Uruchom do BIOS",
       "fr": "Démarrage dans le BIOS via Intel® AMT",
       "hu": "Intel&reg; AMT bekapcsolás és BIOS elérése",
+      "de": "Intel® AMT Einschalten ins BIOS",
       "xloc": [
         "default.handlebars->47->1164"
       ]
@@ -37021,6 +37064,7 @@
       "pl": "Intel&reg; AMT Resetuj do BIOS",
       "fr": "Réinitialisation du BIOS par Intel® AMT",
       "hu": "Intel&reg; AMT BIOS reset",
+      "de": "Intel® AMT Reset ins BIOS",
       "xloc": [
         "default.handlebars->47->1163"
       ]
@@ -38694,6 +38738,7 @@
       "fr": "Message erroné",
       "hu": "Érvénytelen üzenet",
       "pl": "Błędna wiadomość",
+      "de": "Ungültige Nachricht",
       "xloc": [
         "default.handlebars->47->3062"
       ]
@@ -38735,6 +38780,7 @@
       "pl": "Błędna walidacja bezpieczeństwa.",
       "fr": "Vérification de la sécurité non valide.",
       "hu": "Érvénytelen biztonsági ellenőrzés.",
+      "de": "Ungültiger Sicherheitscheck",
       "xloc": [
         "login-mobile.handlebars->5->22",
         "login.handlebars->5->24",
@@ -39432,6 +39478,7 @@
       "fr": "Rejoindre ce serveur Discord pour recevoir les notifications.",
       "hu": "Az értesítések fogadásához csatlakozzon ehhez a Discord szerverhez.",
       "pl": "Dołącz do tego serwera Discord aby dostawac powiadomienia.",
+      "de": "Treten Sie dem Discordserver bei um Benachrichtigungen zu erhalten.",
       "xloc": [
         "default.handlebars->47->1594",
         "default.handlebars->47->2801"
@@ -40727,6 +40774,7 @@
       "pl": "Zapisy czasu ostatnich połączeń",
       "fr": "Enregistrements des dernières connexions",
       "hu": "Utolsó kapcsolódási idő rekordok",
+      "de": "Aufzeichnungen über letzte Verbindungszeiten",
       "xloc": [
         "default.handlebars->47->3002"
       ]
@@ -44703,6 +44751,7 @@
       "fr": "Gérer la messagerie",
       "hu": "Üzenetküldés kezelése",
       "pl": "Zarządzanie wiadomościami",
+      "de": "Benachrichtigungen verwalten",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->manageMessaging2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageMessaging1->1->0"
@@ -46212,6 +46261,7 @@
     {
       "en": "MeshCmd (Win ARM-64 executable)",
       "nl": "MeshCmd (Win ARM-64 uitvoerbaar)",
+      "de": "MeshCmd (Win ARM-64 ausführbare Datei)",
       "xloc": [
         "default.handlebars->47->1247"
       ]
@@ -46219,6 +46269,7 @@
     {
       "en": "MeshCmd (Win x86-32 executable)",
       "nl": "MeshCmd (Win x86-32 uitvoerbaar)",
+      "de": "MeshCmd (Win x86-32 ausführbare Datei)",
       "xloc": [
         "default.handlebars->47->1245"
       ]
@@ -46226,6 +46277,7 @@
     {
       "en": "MeshCmd (Win x86-64 executable)",
       "nl": "MeshCmd (Win x86-64 uitvoerbaar)",
+      "de": "MeshCmd (Win x86-64 ausführbare Datei)",
       "xloc": [
         "default.handlebars->47->1246"
       ]
@@ -46549,6 +46601,7 @@
       "fr": "Message d'erreur",
       "hu": "Üzenet hiba",
       "pl": "Błąd wiadomości",
+      "de": "Fehler bei Nachricht",
       "xloc": [
         "default.handlebars->47->3064"
       ]
@@ -46559,6 +46612,7 @@
       "fr": "Message d'erreur : {0}",
       "hu": "Üzenet hiba: {0}",
       "pl": "Błąd wiadomości: {0}",
+      "de": "Fehler bei Nachricht: {0}",
       "xloc": [
         "default.handlebars->47->3065"
       ]
@@ -46569,6 +46623,7 @@
       "fr": "Message envoyé.",
       "hu": "Üzenet elküldve.",
       "pl": "Wiadomość wysłana.",
+      "de": "Nachricht gesendet.",
       "xloc": [
         "login.handlebars->5->6",
         "login2.handlebars->7->7"
@@ -46580,6 +46635,7 @@
       "fr": "Message envoyé.",
       "hu": "Az üzenet sikeresen elküldve.",
       "pl": "Wiadomość wysłana.",
+      "de": "Nachricht erfolgreich gesendet.",
       "xloc": [
         "default.handlebars->47->3063"
       ]
@@ -46644,6 +46700,7 @@
       "fr": "Messagerie",
       "hu": "Üzenetküldés",
       "pl": "Wiadomości",
+      "de": "Benachrichtigung",
       "xloc": [
         "default.handlebars->47->2715",
         "default.handlebars->47->2763",
@@ -46658,6 +46715,7 @@
       "hu": "Üzenetküldés ({0})",
       "nl": "Berichten ({0})",
       "pl": "Wiadomości ({0})",
+      "de": "Benachrichtigung ({0})",
       "xloc": [
         "default.handlebars->47->1987",
         "default.handlebars->47->898"
@@ -46684,6 +46742,7 @@
       "hu": "Üzenetküldő fiók ehhez a felhasználóhoz.",
       "nl": "Berichtenaccount voor deze gebruiker.",
       "pl": "Konto komunnikatora tego użytkownika.",
+      "de": "Benachrichtigungsaccount für diesen Benutzer.",
       "xloc": [
         "default.handlebars->47->2790"
       ]
@@ -46694,6 +46753,7 @@
       "hu": "Üzenetküldés engedélyezve",
       "nl": "Berichten ingeschakeld",
       "pl": "Wiadomości włączone",
+      "de": "Benachrichtigungen aktiviert",
       "xloc": [
         "default.handlebars->47->2716"
       ]
@@ -48114,6 +48174,7 @@
       "pl": "Zapisy informacji o interfejsach sieciowych",
       "fr": "Enregistrements des informations réseau",
       "hu": "Hálózati interfész információs rekordok",
+      "de": "Aufzeichnungen über Informationen zu Netzwerkschnittstellen",
       "xloc": [
         "default.handlebars->47->3000"
       ]
@@ -53955,6 +54016,7 @@
       "pl": "Czy wykonać Intel&reg; AMT uruchomienie do BIOS?",
       "fr": "Démarrer dans le BIOS via Intel® AMT ?",
       "hu": "Végrehajtja a indítást és Intel® AMT-n keresztül a BIOS elérését?",
+      "de": "Intel® AMT Einschalten ins BIOS durchführen?",
       "xloc": [
         "default.handlebars->47->1187"
       ]
@@ -53994,6 +54056,7 @@
       "pl": "Czy wykonać Intel&reg; AMT resetowanie do BIOS?",
       "fr": "Réinitialiser le BIOS via Intel® AMT ?",
       "hu": "Végrehajtása az Intel® AMT BIOS reset-et?",
+      "de": "Intel® AMT Reset ins BIOS durchführen?",
       "xloc": [
         "default.handlebars->47->1189"
       ]
@@ -54893,6 +54956,7 @@
       "pl": "Port",
       "fr": "Port",
       "hu": "Port",
+      "de": "Port",
       "xloc": [
         "default.handlebars->47->1145",
         "default.handlebars->47->1146"
@@ -58177,6 +58241,7 @@
       "hu": "Távvezérlés és Relay",
       "nl": "Extern beheer & Relay",
       "pl": "Zdalne Sterowanie i Przekierowanie",
+      "de": "Entfernte Ausführung & Weiterleitung",
       "xloc": [
         "default.handlebars->47->2133"
       ]
@@ -59618,6 +59683,7 @@
       "hu": "Üzenetküldés eltávolítása",
       "nl": "Berichtenservice verwijderen",
       "pl": "Usuń obsługę komunikatora",
+      "de": "Benachrichtigen entfernen",
       "xloc": [
         "default.handlebars->47->1582"
       ]
@@ -60036,6 +60102,7 @@
       "hu": "{0} felhasználó üzenetküldő fiókja eltávolítva",
       "nl": "Berichtenaccount van gebruiker {0} verwijderd",
       "pl": "Usunięto konto komunikatora użytkownika {0}",
+      "de": "Benachrichtigen für den Benutzer {0} entfernt",
       "xloc": [
         "default.handlebars->47->2462"
       ]
@@ -60565,6 +60632,7 @@
       "pl": "Prośba:",
       "fr": "Demande :",
       "hu": "Segítségkérés:",
+      "de": "Anforderung:",
       "xloc": [
         "device-help.html->2->5"
       ]
@@ -60576,6 +60644,7 @@
       "pl": "Prośba: \"[[[HELPREQUEST]]]\"",
       "fr": "Demande : \"[[[HELPREQUEST]]]\"",
       "hu": "Segítség kérés: \"[[[HELPREQUEST]]]\"",
+      "de": "Anforderung: \"[[[HELPREQUEST]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -61527,6 +61596,7 @@
       "pl": "Wykonaj",
       "fr": "Exécuter",
       "hu": "Parancs futtatás",
+      "de": "Ausführen",
       "xloc": [
         "default.handlebars->47->933"
       ]
@@ -61595,6 +61665,7 @@
       "pl": "Wykonaj skrypt na tym komputerze",
       "fr": "Exécuter un script sur cet appareil",
       "hu": "Szkript futtatása ezen a számítógépen",
+      "de": "Ein Skript auf diesem Computer ausführen",
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->1"
       ]
@@ -62291,6 +62362,7 @@
       "hu": "SMS sikeresen elküldve.",
       "nl": "SMS succesvol verzonden.",
       "pl": "Sukces wysyłania SMS.",
+      "de": "SMS erfolgreich gesendet.",
       "xloc": [
         "default.handlebars->47->3058"
       ]
@@ -63523,6 +63595,7 @@
       "pl": "Walidacja Bezpieczeństwa:",
       "fr": "Vérification de la sécurité :",
       "hu": "Biztonsági ellenőrzés:",
+      "de": "Sicherheitsprüfung:",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1->newAccountCaptcha->nuCaptcha",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1->newAccountCaptcha->nuCaptcha",
@@ -63591,6 +63664,7 @@
       "pl": "Walidacja bezpieczeństwa",
       "fr": "Vérification de la sécurité",
       "hu": "Biztonsági ellenőrzés",
+      "de": "Sicherheitsprüfung",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->createpanel->1->1->9->1",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->createpanel->1->9->1",
@@ -64169,6 +64243,7 @@
       "hu": "Üzenet küldése",
       "nl": "Bericht versturen",
       "pl": "Wyślij Wiadomość",
+      "de": "Nachricht senden",
       "xloc": [
         "default.handlebars->47->2538"
       ]
@@ -64260,6 +64335,7 @@
       "hu": "Üzenet küldése ennek a felhasználónak",
       "nl": "Stuur een bericht naar deze gebruiker",
       "pl": "Wyślij wiadomość do tego użytkownika",
+      "de": "Eine Nachricht an diesen Benutzer senden",
       "xloc": [
         "default.handlebars->47->2771"
       ]
@@ -64433,6 +64509,7 @@
       "hu": "Token küldése üzenetküldő alkalmazásnak?",
       "nl": "Token naar berichtentoepassing verzenden?",
       "pl": "Wysłac token na komunikator?",
+      "de": "Token an Nachrichten-App senden?",
       "xloc": [
         "login.handlebars->5->33",
         "login2.handlebars->7->40"
@@ -65459,6 +65536,7 @@
       "pl": "Serwer nie może pobrać zapisów z bazy danych.",
       "fr": "Le serveur ne peut pas récupérer les enregistrements dans la base de données.",
       "hu": "A kiszolgáló nem tudja lekérni a felvételeket az adatbázisból.",
+      "de": "Der Server konnte keine Aufzeichnungen aus der Datenbank laden.",
       "xloc": [
         "default.handlebars->47->2886"
       ]
@@ -65470,6 +65548,7 @@
       "pl": "Serwer nie może odczytać zapisów z folderu.",
       "fr": "Le serveur ne peut pas lire dans répertoire d'enregistrement.",
       "hu": "A kiszolgáló nem tud olvasni a felvételek mappából.",
+      "de": "Der Server konnte keine Datei aus dem Aufzeichnungsordner laden.",
       "xloc": [
         "default.handlebars->47->2885"
       ]
@@ -65481,6 +65560,7 @@
       "pl": "Zapisy statystyk serwera",
       "fr": "Enregistrements des statistiques du serveur",
       "hu": "Kiszolgálói statisztikai rekordok",
+      "de": "Aufzeichnungen zu Serverstatistiken",
       "xloc": [
         "default.handlebars->47->3005"
       ]
@@ -65571,6 +65651,7 @@
       "hu": "Szolgáltatás",
       "nl": "Service",
       "pl": "Usługa",
+      "de": "Dienst",
       "xloc": [
         "default.handlebars->47->1592",
         "default.handlebars->47->2799"
@@ -67475,6 +67556,7 @@
       "hu": "Signal",
       "nl": "Signal",
       "pl": "Signal",
+      "de": "Signal",
       "xloc": [
         "default.handlebars->47->1595",
         "default.handlebars->47->2802"
@@ -71233,6 +71315,7 @@
       "fr": "Telegram",
       "hu": "Telegram",
       "pl": "Telegram",
+      "de": "Telegram",
       "xloc": [
         "default.handlebars->47->1585",
         "default.handlebars->47->2792"
@@ -71574,6 +71657,7 @@
       "pl": "Zapisy notatek tekstowych",
       "fr": "Enregistrements des notes",
       "hu": "Szöveges jegyzetek rekordok",
+      "de": "Aufzeichnungen zu Textnotizen",
       "xloc": [
         "default.handlebars->47->2999"
       ]
@@ -71987,6 +72071,7 @@
       "hu": "Ez a NodeJS-verzió nem támogatja a Discord.js-t.",
       "nl": "Deze NodeJS versie ondersteunt geen Discord.js.",
       "pl": "Obecna wersja NodeJS nie wspiera Discord.js.",
+      "de": "Diese NodeJS Version unterstützt Discord.js nicht.",
       "xloc": [
         "default.handlebars->47->110"
       ]
@@ -71998,6 +72083,7 @@
       "pl": "Obecna wersja NodeJS nie wspiera OpenID.",
       "fr": "Cette version de NodeJS ne supporte pas OpenID.",
       "hu": "Ez a NodeJS-verzió nem támogatja az OpenID-t.",
+      "de": "Diese NodeJS Version unterstützt OpenID nicht.",
       "xloc": [
         "default.handlebars->47->109"
       ]
@@ -75023,6 +75109,7 @@
       "pl": "Nie moge załadować pliku ikony agenta: {0}.",
       "fr": "Impossible de charger l'icône de l'agent : {0}.",
       "hu": "Nem sikerült betölteni az Agent ikon fájlt: {0}.",
+      "de": "Konnte die Icon-Datei für den Agenten nicht laden: {0}.",
       "xloc": [
         "default.handlebars->47->107"
       ]
@@ -75034,6 +75121,7 @@
       "pl": "Nie moge załadować pliku logo agenta: {0}.",
       "fr": "Impossible de charger le logo de l'agent : {0}.",
       "hu": "Nem sikerült betölteni az Agent logo fájlt: {0}.",
+      "de": "Konnte die Logo-Datei für den Agenten nicht laden: {0}.",
       "xloc": [
         "default.handlebars->47->108"
       ]
@@ -76561,6 +76649,7 @@
       "hu": "Használja mint Relay",
       "nl": "Gebruik als relay",
       "pl": "Używaj do Przekierowania",
+      "de": "Als Relay benutzen",
       "xloc": [
         "default.handlebars->47->2151"
       ]
@@ -76832,6 +76921,7 @@
       "pl": "Dziennik Autentykacji Użytkownika",
       "fr": "Journaux d'authentification utilisateurs",
       "hu": "Felhasználó hitelesítési napló",
+      "de": "Benutzerauthentifizierungs-Log",
       "xloc": [
         "default.handlebars->47->3147"
       ]
@@ -77592,6 +77682,7 @@
       "pl": "Zapisy grupy użytkownika",
       "fr": "Enregistrements des groupes de l'utilisateur",
       "hu": "Felhasználói csoport rekordok",
+      "de": "Benutzergruppen-Log",
       "xloc": [
         "default.handlebars->47->3006"
       ]
@@ -77634,6 +77725,7 @@
       "hu": "Felhasználó kulcs",
       "nl": "Gebruikerssleutel",
       "pl": "Klucz Użytkownika",
+      "de": "Nutzerschlüssel",
       "xloc": [
         "default.handlebars->47->1604",
         "default.handlebars->47->2811"
@@ -77727,6 +77819,7 @@
       "pl": "Zapisy użytkownika",
       "fr": "Enregistrements des utilisateurs",
       "hu": "Felhasználói rekordok",
+      "de": "Benutzeraufzeichnungen",
       "xloc": [
         "default.handlebars->47->2996"
       ]
@@ -77766,6 +77859,7 @@
       "pl": "Użytkownik:",
       "fr": "Utilisateur :",
       "hu": "Felhsználó:",
+      "de": "Benutzer:",
       "xloc": [
         "device-help.html->2->5"
       ]
@@ -77777,6 +77871,7 @@
       "pl": "Użytkownik: \"[[[HELPUSERNAME]]]\"",
       "fr": "Utilistateur : \"[[[HELPUSERNAME]]]\"",
       "hu": "Felhasználó: \"[[[HELPUSERNAME]]]\"",
+      "de": "Benutzer:  \"[[[HELPUSERNAME]]]\"",
       "xloc": [
         "device-help.txt"
       ]
@@ -77986,6 +78081,7 @@
       "fr": "Nom d'utilisateur : 0000",
       "hu": "Felhasználónév:0000",
       "pl": "Username:0000",
+      "de": "Benutzername:0000",
       "xloc": [
         "default.handlebars->47->1601",
         "default.handlebars->47->2808"
@@ -78470,6 +78566,7 @@
       "hu": "Megerősített Kezelő",
       "nl": "Geverifieerde handeling",
       "pl": "Zweryfikowano logowanie",
+      "de": "Verifizierte Nutzerkennung",
       "xloc": [
         "default.handlebars->47->1581"
       ]
@@ -78480,6 +78577,7 @@
       "hu": "Megerősített üzenetküldő fiók",
       "nl": "Geverifieerd berichtenaccount",
       "pl": "Zweryfikowano konto komunikatora",
+      "de": "Verifizierter Benachrichtigungsaccount",
       "xloc": [
         "default.handlebars->47->2523"
       ]
@@ -78490,6 +78588,7 @@
       "hu": "{0} felhasználó megerősített üzenetküldő fiókja",
       "nl": "Geverifieerd berichtenaccount van gebruiker {0}",
       "pl": "Zweryfikowano konto komunikatora użytkownika {0}",
+      "de": "Verifizierter Benachrichtigungsaccount des Benutzers {0}",
       "xloc": [
         "default.handlebars->47->2461"
       ]
@@ -80006,6 +80105,7 @@
       "hu": "Whatsapp",
       "nl": "Whatsapp",
       "pl": "Whatsapp",
+      "de": "WhatsApp",
       "xloc": [
         "default.handlebars->47->1596",
         "default.handlebars->47->2803"
@@ -80827,6 +80927,7 @@
     {
       "en": "Windows ARM (64bit)",
       "nl": "Windows ARM (64bit)",
+      "de": "Windows ARM (64bit)",
       "xloc": [
         "default.handlebars->47->1229"
       ]
@@ -80834,6 +80935,7 @@
     {
       "en": "Windows ARM 64bit console",
       "nl": "Windows ARM 64bit console",
+      "de": "Windows ARM (64bit) Konsole",
       "xloc": [
         "default-mobile.handlebars->11->48",
         "default.handlebars->47->55"
@@ -80842,6 +80944,7 @@
     {
       "en": "Windows ARM 64bit service",
       "nl": "Windows ARM 64bit service",
+      "de": "Windows ARM (64bit) Dienst",
       "xloc": [
         "default-mobile.handlebars->11->49",
         "default.handlebars->47->56"
@@ -80850,6 +80953,7 @@
     {
       "en": "Windows ARM-64 (.exe)",
       "nl": "Windows ARM-64 (.exe)",
+      "de": "Windows ARM (64bit) .exe",
       "xloc": [
         "default.handlebars->47->585"
       ]
@@ -81106,6 +81210,7 @@
     {
       "en": "Windows x86 (32bit)",
       "nl": "Windows x86 (32bit)",
+      "de": "Windows x86 (32bit)",
       "xloc": [
         "default.handlebars->47->1228"
       ]
@@ -81113,6 +81218,7 @@
     {
       "en": "Windows x86 (64bit)",
       "nl": "Windows x86 (64bit)",
+      "de": "Windows x86 (64bit)",
       "xloc": [
         "default.handlebars->47->1227"
       ]
@@ -81120,6 +81226,7 @@
     {
       "en": "Windows x86-32 (.exe)",
       "nl": "Windows x86-32 (.exe)",
+      "de": "Windows x86-32 (.exe)",
       "xloc": [
         "default.handlebars->47->577"
       ]
@@ -81127,6 +81234,7 @@
     {
       "en": "Windows x86-64 (.exe)",
       "nl": "Windows x86-64 (.exe)",
+      "de": "Windows x86-64 (.exe)",
       "xloc": [
         "default.handlebars->47->581"
       ]
@@ -84736,6 +84844,7 @@
       "pl": "by nawigować do tego urządzenia.",
       "fr": "pour naviguer vers cet appareil.",
       "hu": "az eszközhöz való navigáláshoz.",
+      "de": "um zu diesem Gerät zu navigieren.",
       "xloc": [
         "device-help.html->2->7"
       ]
@@ -84941,6 +85050,7 @@
       "hu": "felasznalonev@example.com",
       "nl": "gebruikersnaam@voorbeeld.com",
       "pl": "nazwauzytkownika@domena.pl",
+      "de": "benutzername@beispiel.de",
       "xloc": [
         "default.handlebars->47->1606",
         "default.handlebars->47->2813"
@@ -84952,6 +85062,7 @@
       "hu": "felhasznalonev@valami.com",
       "nl": "gebruikersnaam@server.nl",
       "pl": "nazwauzytkownika@serwer.pl",
+      "de": "benutzername@server.de",
       "xloc": [
         "default.handlebars->47->1602",
         "default.handlebars->47->2809"
@@ -85054,6 +85165,7 @@
     {
       "en": "x86 32bit version of the MeshAgent",
       "nl": "x86 32bit versie van de MeshAgent",
+      "de": "x86 32bit Version des MeshAgent",
       "xloc": [
         "default.handlebars->47->576"
       ]
@@ -85061,6 +85173,7 @@
     {
       "en": "x86 64bit version of the MeshAgent",
       "nl": "x86 64bit versie van de MeshAgent",
+      "de": "x86 64bit Version des MeshAgent",
       "xloc": [
         "default.handlebars->47->580"
       ]
