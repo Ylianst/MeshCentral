@@ -51,7 +51,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.meshIderHandler = require('./amt/amt-ider.js');
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
-    obj.uaparser = require('./ua-parser');
+    obj.uaparser = require('ua-parser-js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Setup WebAuthn / FIDO2
