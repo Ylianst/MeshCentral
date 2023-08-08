@@ -241,7 +241,6 @@
     <Compile Include="redirserver.js" />
     <Compile Include="taskmanager.js" />
     <Compile Include="translate\translate.js" />
-    <Compile Include="ua-parser.js" />
     <Compile Include="webauthn.js" />
     <Compile Include="webrelayserver.js" />
     <Compile Include="webserver.js" />
