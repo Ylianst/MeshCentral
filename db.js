@@ -3081,13 +3081,9 @@ module.exports.CreateDB = function (parent, func) {
                         var folderFound = false;
                         for (var i in files) { if ((files[i].basename == webdavfolderName) && (files[i].type == 'directory')) { folderFound = true; } }
                         if (folderFound == false) {
-                            client.createDirectory(webdavfolderName).then(function (a) {
-                                if (a.statusText == 'Created') {
-                                    if (func) { func('WebDAV folder created'); }
-                                    performWebDavUpload(client, filename);
-                                } else {
-                                    if (func) { func('WebDAV (createDirectory) status: ' + a.statusText); }
-                                }
+                            client.createDirectory(webdavfolderName).then((a) => {
+                                if (func) { func('WebDAV folder created'); }
+                                performWebDavUpload(client, filename);
                             }).catch(function (err) {
                                 if (func) { func('WebDAV (createDirectory) error: ' + err); }
                             });
