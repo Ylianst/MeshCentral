@@ -943,6 +943,7 @@
         },
         "amtProvisioningServer": {
           "type": "object",
+          "additionalProperties": false,
           "required": [
             "deviceGroup",
             "newMebxPassword",
@@ -2451,7 +2452,10 @@
                   }
                 }
               }
-            }
+            },
+            "required": [
+              "certs"
+            ]
           },
           "amtAcmActivation": {
             "type": "object",
