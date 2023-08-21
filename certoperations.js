@@ -634,9 +634,17 @@ module.exports.CertificateOperations = function (parent) {
     };
 
     // Return the SHA384 hash of the certificate public key
-    obj.getPublicKeyHashBinary = function (cert) {
-        var publickey = obj.pki.certificateFromPem(cert).publicKey;
-        return obj.pki.getPublicKeyFingerprint(publickey, { encoding: 'binary', md: obj.forge.md.sha384.create() });
+    obj.getPublicKeyHashBinary = function (pem) {
+        const { X509Certificate } = require('crypto');
+        if (X509Certificate == null) {
+            // This version of NodeJS (<v15.6.0) does not support X509 certs, use Node-Forge instead which only supports RSA certs.
+            var publickey = obj.pki.certificateFromPem(pem).publicKey;
+            return obj.pki.getPublicKeyFingerprint(publickey, { encoding: 'binary', md: obj.forge.md.sha384.create() });
+        } else {
+            // This version of NodeJS supports x509 certificates
+            // TODO: THIS IS NOT CORRECT, this is SHA254 of the entire cert.
+            return Buffer.from(new X509Certificate(pem).fingerprint256.split(':').join(''), 'hex');
+        }
     };
 
     // Return the SHA384 hash of the certificate, return binary
@@ -741,7 +749,7 @@ module.exports.CertificateOperations = function (parent) {
     }
 
     // Return true if the name is found in the certificates names, we support wildcard certificates
-    obj.compareCertificateNames = function(certNames, name) {
+    obj.compareCertificateNames = function (certNames, name) {
         if (certNames == null) return false;
         name = name.toLowerCase();
         var xcertNames = [];
@@ -759,10 +767,100 @@ module.exports.CertificateOperations = function (parent) {
 
     // Return true if the certificate is valid
     obj.checkCertificate = function (pem, key) {
-        var cert = null;
-        try { cert = obj.pki.certificateFromPem(pem); } catch (ex) { return false; } // Unable to decode certificate
-        if (cert.serialNumber == '') return false; // Empty serial number is not allowed.
+        const { X509Certificate } = require('crypto');
+        if (X509Certificate == null) {
+            // This version of NodeJS (<v15.6.0) does not support X509 certs, use Node-Forge instead which only supports RSA certs.
+            var cert = null;
+            try { cert = obj.pki.certificateFromPem(pem); } catch (ex) { return false; } // Unable to decode certificate
+            if (cert.serialNumber == '') return false; // Empty serial number is not allowed.
+        } else {
+            // This version of NodeJS supports x509 certificates
+            try {
+                const cert = new X509Certificate(pem);
+                if ((cert.serialNumber == '') || (cert.serialNumber == null)) return false; // Empty serial number is not allowed.
+            } catch (ex) { return false; } // Unable to decode certificate
+        }
         return true;
+    }
+
+    // Get the Common Name from a certificate
+    obj.getCertificateCommonName = function (pem, field) {
+        if (field == null) { field = 'CN'; }
+        const { X509Certificate } = require('crypto');
+        if (X509Certificate == null) {
+            // This version of NodeJS (<v15.6.0) does not support X509 certs, use Node-Forge instead which only supports RSA certs.
+            var cert = obj.pki.certificateFromPem(pem);
+            if (cert.subject.getField(field) != null) return cert.subject.getField(field).value;
+        } else {
+            // This version of NodeJS supports x509 certificates
+            const subjects = new X509Certificate(pem).subject.split('\n');
+            for (var i in subjects) { if (subjects[i].startsWith(field + '=')) { return subjects[i].substring(field.length + 1); } }
+        }
+        return null;
+    }
+
+    // Get the Issuer Common Name from a certificate
+    obj.getCertificateIssuerCommonName = function (pem, field) {
+        if (field == null) { field = 'CN'; }
+        const { X509Certificate } = require('crypto');
+        if (X509Certificate == null) {
+            // This version of NodeJS (<v15.6.0) does not support X509 certs, use Node-Forge instead which only supports RSA certs.
+            var cert = obj.pki.certificateFromPem(pem);
+            if (cert.issuer.getField(field) != null) return cert.issuer.getField(field).value;
+        } else {
+            // This version of NodeJS supports x509 certificates
+            const subjects = new X509Certificate(pem).issuer.split('\n');
+            for (var i in subjects) { if (subjects[i].startsWith(field + '=')) { return subjects[i].substring(field.length + 1); } }
+        }
+        return null;
+    }
+
+    // Get the Common Name and alternate names from a certificate
+    obj.getCertificateAltNames = function (pem) {
+        const altNamesResults = [];
+        const { X509Certificate } = require('crypto');
+        if (X509Certificate == null) {
+            // This version of NodeJS (<v15.6.0) does not support X509 certs, use Node-Forge instead which only supports RSA certs.
+            var cert = obj.pki.certificateFromPem(pem);
+            if (cert.subject.getField('CN') != null) { altNamesResults.push(cert.subject.getField('CN').value); }
+            var altNames = cert.getExtension('subjectAltName');
+            if (altNames) {
+                for (i = 0; i < altNames.altNames.length; i++) {
+                    if ((altNames.altNames[i] != null) && (altNames.altNames[i].type === 2) && (typeof altNames.altNames[i].value === 'string')) {
+                        var acn = altNames.altNames[i].value.toLowerCase();
+                        if (altNamesResults.indexOf(acn) == -1) { altNamesResults.push(acn); }
+                    }
+                }
+            }
+        } else {
+            // This version of NodeJS supports x509 certificates
+            const cert = new X509Certificate(pem);
+            const subjects = cert.subject.split('\n');
+            for (var i in subjects) { if (subjects[i].startsWith('CN=')) { altNamesResults.push(subjects[i].substring(3)); } }
+            var subjectAltNames = cert.subjectAltName;
+            if (subjectAltNames != null) {
+                subjectAltNames = subjectAltNames.split(', ');
+                for (var i = 0; i < subjectAltNames.length; i++) {
+                    if (subjectAltNames[i].startsWith('DNS:') && altNamesResults.indexOf(subjectAltNames[i].substring(4)) == -1) {
+                        altNamesResults.push(subjectAltNames[i].substring(4));
+                    }
+                }
+            }
+        }
+        return altNamesResults;
+    }
+
+    // Get the expiration time from a certificate
+    obj.getCertificateExpire = function (pem) {
+        const altNamesResults = [];
+        const { X509Certificate } = require('crypto');
+        if (X509Certificate == null) {
+            // This version of NodeJS (<v15.6.0) does not support X509 certs, use Node-Forge instead which only supports RSA certs.
+            return Date.parse(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.web.cert).validity.notAfter);
+        } else {
+            // This version of NodeJS supports x509 certificates
+            return Date.parse(new X509Certificate(pem).validTo);
+        }
     }
 
     // Decrypt private key if needed
@@ -921,22 +1019,11 @@ module.exports.CertificateOperations = function (parent) {
 
         if (rcount === rcountmax) {
             // Fetch the certificates names for the main certificate
-            r.AmtMpsName = obj.pki.certificateFromPem(r.mps.cert).subject.getField('CN').value;
-            var webCertificate = obj.pki.certificateFromPem(r.web.cert);
-            if (webCertificate.issuer.getField('CN') != null) { r.WebIssuer = webCertificate.issuer.getField('CN').value; } else { r.WebIssuer = null; }
-            r.CommonName = webCertificate.subject.getField('CN').value;
-            r.CommonNames = [ r.CommonName ];
-            var altNames = webCertificate.getExtension('subjectAltName');
-            if (altNames) {
-                for (i = 0; i < altNames.altNames.length; i++) {
-                    if ((altNames.altNames[i] != null) && (altNames.altNames[i].type === 2) && (typeof altNames.altNames[i].value === 'string')) {
-                        var acn = altNames.altNames[i].value.toLowerCase();
-                        if (r.CommonNames.indexOf(acn) == -1) { r.CommonNames.push(acn); }
-                    }
-                }
-            }
-            var rootCertificate = obj.pki.certificateFromPem(r.root.cert);
-            r.RootName = rootCertificate.subject.getField('CN').value;
+            r.AmtMpsName = obj.getCertificateCommonName(r.mps.cert);
+            r.WebIssuer = obj.getCertificateIssuerCommonName(r.web.cert);
+            r.CommonName = obj.getCertificateCommonName(r.web.cert);
+            r.CommonNames = obj.getCertificateAltNames(r.web.cert);
+            r.RootName = obj.getCertificateCommonName(r.root.cert);
 
             // If the "cert" name is not set, try to use the certificate CN instead (ok if the certificate is not wildcard).
             if (commonName == 'un-configured') {
@@ -989,10 +1076,8 @@ module.exports.CertificateOperations = function (parent) {
         // If we have all the certificates we need, stop here.
         if (rcount === rcountmax) {
             if ((certargs == null) && (mpscertargs == null)) { if (func != undefined) { func(r); } return r; } // If no certificate arguments are given, keep the certificate
-            var xcountry, xcountryField = webCertificate.subject.getField('C');
-            if (xcountryField != null) { xcountry = xcountryField.value; }
-            var xorganization, xorganizationField = webCertificate.subject.getField('O');
-            if (xorganizationField != null) { xorganization = xorganizationField.value; }
+            const xcountry = obj.getCertificateCommonName(r.web.cert, 'C');
+            const xorganization = obj.getCertificateCommonName(r.web.cert, 'O');
             if (certargs == null) { commonName = r.CommonName; country = xcountry; organization = xorganization; }
 
             // Check if we have correct certificates.
