@@ -564,7 +564,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 } else {
                     ws._socket.pause(); // Hold traffic until the other connection
                     parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
-                    parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 60000) };
+                    parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 15000) };
                 }
 
                 // Check if a peer server has this connection
