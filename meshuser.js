@@ -1528,10 +1528,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         break;
                     }
 
-                    // We only create Agent-less Intel AMT mesh (Type1), or Agent mesh (Type2)
-                    parent.crypto.randomBytes(48, function (err, buf) {
                         // Create new device group identifier
-                        var ugrpid = 'ugrp/' + ugrpdomain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                        var ugrpid = 'ugrp/' + ugrpdomain.id + '/' + parent.crypto.createHash('sha384').update(command.name).digest('base64').replace(/\+/g, '@').replace(/\//g, '$');
 
                         // Create the new device group
                         var ugrp = { type: 'ugrp', _id: ugrpid, name: command.name, desc: command.desc, domain: ugrpdomain.id, links: {} };
@@ -1590,7 +1588,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (parent.parent.authlog) { parent.parent.authLog('https', 'User ' + user.name + ' created user group ' + ugrp.name); }
 
                         try { ws.send(JSON.stringify({ action: 'createusergroup', responseid: command.responseid, result: 'ok', ugrpid: ugrpid, links: ugrp.links })); } catch (ex) { }
-                    });
+                    
                     break;
                 }
             case 'deleteusergroup':
