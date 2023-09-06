@@ -3064,39 +3064,37 @@ module.exports.CreateDB = function (parent, func) {
 
             // Upload to the WebDAV folder
             function performWebDavUpload(client, filepath) {
-                var fileStream = require('fs').createReadStream(filepath);
-                fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
-                fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
-                fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath)));
-                if (func) { func('Uploading using WebDAV...'); }
+                require('fs').stat(filepath, function(err,stat){
+                    var fileStream = require('fs').createReadStream(filepath);
+                    fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
+                    fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
+                    fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath), { headers: { "Content-Length": stat.size } }));
+                    if (func) { func('Uploading using WebDAV...'); }
+                });
             }
 
             if (func) { func('Attempting WebDAV upload...'); }
             const { createClient } = require('webdav');
-            const client = createClient(parent.config.settings.autobackup.webdav.url, { username: parent.config.settings.autobackup.webdav.username, password: parent.config.settings.autobackup.webdav.password });
-            var directoryItems = client.getDirectoryContents('/');
-            directoryItems.then(
-                function (files) {
-                    var folderFound = false;
-                    for (var i in files) { if ((files[i].basename == webdavfolderName) && (files[i].type == 'directory')) { folderFound = true; } }
-                    if (folderFound == false) {
-                        client.createDirectory(webdavfolderName).then(function (a) {
-                            if (a.statusText == 'Created') {
-                                if (func) { func('WebDAV folder created'); }
-                                performWebDavUpload(client, filename);
-                            } else {
-                                if (func) { func('WebDAV (createDirectory) status: ' + a.statusText); }
-                            }
-                        }).catch(function (err) {
-                            if (func) { func('WebDAV (createDirectory) error: ' + err); }
-                        });
-                    } else {
-                        performWebDavCleanup(client);
+            const client = createClient(parent.config.settings.autobackup.webdav.url, {
+                username: parent.config.settings.autobackup.webdav.username,
+                password: parent.config.settings.autobackup.webdav.password,
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity
+            });
+            client.exists(webdavfolderName).then(function(a){
+                if(a){
+                    performWebDavCleanup(client);
+                    performWebDavUpload(client, filename);
+                }else{
+                    client.createDirectory(webdavfolderName, {recursive: true}).then(function (a) {
+                        if (func) { func('WebDAV folder created'); }
                         performWebDavUpload(client, filename);
-                    }
+                    }).catch(function (err) {
+                        if (func) { func('WebDAV (createDirectory) error: ' + err); }
+                    });
                 }
-            ).catch(function (err) {
-                if (func) { func('WebDAV (getDirectoryContents) error: ' + err); }
+            }).catch(function (err) {
+                if (func) { func('WebDAV (exists) error: ' + err); }
             });
         }
 
