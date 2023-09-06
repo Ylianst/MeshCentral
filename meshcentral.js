@@ -863,6 +863,7 @@ function CreateMeshCentralServer(config, args) {
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                             const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
                             delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
+                            delete user.msghandle; // Disable users 2fa messaging too
                             if (obj.args.hashpass) {
                                 // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
                                 var hashpasssplit = obj.args.hashpass.split(',');
