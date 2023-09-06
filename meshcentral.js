@@ -4027,7 +4027,7 @@ function mainStart() {
         if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
         // Enable WebDAV Support
         if (typeof config.settings.autobackup.webdav == 'object') {
-            if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.2'); }
+            if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.3'); }
         }
 
         // Setup common password blocking
