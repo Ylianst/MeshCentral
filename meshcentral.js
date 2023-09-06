@@ -4022,12 +4022,12 @@ function mainStart() {
         // Setup encrypted zip support if needed
         if (config.settings.autobackup && config.settings.autobackup.zippassword) {
             modules.push('archiver-zip-encrypted');
-            // Enable Google Drive Support
-            if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
-            // Enable WebDAV Support
-            if (typeof config.settings.autobackup.webdav == 'object') {
-                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.2'); }
-            }
+        }
+        // Enable Google Drive Support
+        if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
+        // Enable WebDAV Support
+        if (typeof config.settings.autobackup.webdav == 'object') {
+            if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.2'); }
         }
 
         // Setup common password blocking
