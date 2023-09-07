@@ -984,6 +984,11 @@
       "items": {
         "type": "object",
         "properties": {
+          "dns": {
+            "type": "string",
+            "default": null,
+            "description": "The DNS name used to access this domain instead of accessing it via a subfolder"
+          },
           "siteStyle": {
             "type": "integer",
             "default": 2,
