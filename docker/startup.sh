@@ -22,7 +22,7 @@ else
     sed -i "s/\"WebRTC\": false/\"WebRTC\": $WEBRTC/" meshcentral-data/"${CONFIG_FILE}"
     sed -i "s/\"AllowFraming\": false/\"AllowFraming\": $IFRAME/" meshcentral-data/"${CONFIG_FILE}"
     if [ -z "$SESSION_KEY" ]; then
-        SESSION_KEY="$(cat /dev/urandom | tr -dc 'A-Za-z0-9!#$%&()*+,-./:;<=>?@[\]^_`{|}~' | fold -w 32 | head -n 1)"
+        SESSION_KEY="$(cat /dev/urandom | tr -dc 'A-Z0-9' | fold -w 48 | head -n 1)"
     fi
     sed -i "s/\"_sessionKey\": \"MyReallySecretPassword1\"/\"sessionKey\": \"$SESSION_KEY\"/" meshcentral-data/"${CONFIG_FILE}"
     if [ "$REVERSE_PROXY" != "false" ]; then
