@@ -3181,7 +3181,10 @@ module.exports.CreateDB = function (parent, func) {
 
     // Transfer NeDB data into the current database
     obj.nedbtodb = function (func) {
-        var nedbDatastore = require('nedb');
+        var nedbDatastore = null;
+        try { nedbDatastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
+        if (nedbDatastore == null) { nedbDatastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
+
         var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
         // If a DB encryption key is provided, perform database encryption
