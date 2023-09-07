@@ -86,6 +86,19 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
         }
         if (args.sessiontime != null) { sessionOptions.maxAge = (args.sessiontime * 60000); } // sessiontime is minutes
         obj.app.use(require('cookie-session')(sessionOptions));
+        obj.app.use(function(request, response, next) { // Patch for passport 0.6.0 - https://github.com/jaredhanson/passport/issues/904
+            if (request.session && !request.session.regenerate) {
+                request.session.regenerate = function (cb) {
+                    cb()
+                }
+            }
+            if (request.session && !request.session.save) {
+                request.session.save = function (cb) {
+                    cb()
+                }
+            }
+            next()
+        });
 
         // Add HTTP security headers to all responses
         obj.app.use(function (req, res, next) {
