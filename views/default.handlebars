@@ -41,6 +41,8 @@
     <script type="text/javascript" src="mstsc/canvas.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/u2f-api{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/moment{{min}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/chartjs-adapter-moment{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
@@ -578,11 +580,11 @@
                     <strong>Server Statistics</strong><br /><br />
                     <div id="serverStats">
                         <div id="serverCpuChartView" style="display:none">
-                            <div class="chartViewCanvas"><canvas id="serverCpuChart"></canvas></div>
+                            <div class="chartViewCanvas" style="height:40px; text-align:center"><canvas id="serverCpuChart" style="display:inline-block"></canvas></div>
                             <div class="chartViewText" id="serverCpuChartText"></div>
                         </div>
                         <div id="serverMemoryChartView" style="display:none">
-                            <div class="chartViewCanvas"><canvas id="serverMemoryChart"></canvas></div>
+                            <div class="chartViewCanvas" style="height:40px; text-align:center"><canvas id="serverMemoryChart" style="display:inline-block"></canvas></div>
                             <div class="chartViewText" id="serverMemoryChartText"></div>
                         </div><br /><br />
                         <div id="serverStatsTable"></div>
@@ -11364,8 +11366,8 @@
                 tooltips: { enabled: false },
                 elements: { line: { cubicInterpolationMode: 'monotone' } },
                 scales: {
-                    xAxes: [{ type: 'linear', display: true, scaleLabel: { display: false, labelString: '' }, ticks: { min: 0, max: 100, reverse: true } }],
-                    yAxes: [{ type: 'linear', display: true, scaleLabel: { display: false, labelString: '' }, ticks: { min: 0, max: 100 } }]
+                    x: { type: 'linear', display: true, title: { display: false, text: '' }, min: 0, max: 100, reverse: true },
+                    y: { type: 'linear', display: true, title: { display: false, text: '' }, min: 0, max: 100 }
                 }
             }
         };
@@ -13773,43 +13775,25 @@
         //
 
         function setupMeshSummaryStats() {
-            var draw = Chart.controllers.doughnut.prototype.draw;
-            Chart.controllers.doughnut = Chart.controllers.doughnut.extend({
-                draw: function() {
-                    draw.apply(this, arguments);
-                    var ctx = this.chart.chart.ctx;
-                    var _fill = ctx.fill;
-                    ctx.fill = function() {
-                        ctx.save();
-                        ctx.shadowColor = 'blue';
-                        ctx.shadowBlur = 10;
-                        ctx.shadowOffsetX = 2;
-                        ctx.shadowOffsetY = 2;
-                        _fill.apply(this, arguments)
-                        ctx.restore();
-                    }
-                }
-            });
-
             window.meshPowerChart = new Chart(document.getElementById('meshPowerChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }] },
-                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
+                options: { shadowColor: 'blue', responsive: true, plugins: { legend: { display: false } }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
             window.meshOsChart = new Chart(document.getElementById('meshOsChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#30E', '#40D', '#50C', '#60B', '#70A', '#809', '#908', '#A07', '#B06', '#C05'] }] },
-                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
+                options: { responsive: true, plugins: { legend: { display: false } }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
             window.meshConnChart = new Chart(document.getElementById('meshConnChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }], labels: ["Not Connected", "Agent", "Intel&reg; AMT", "Agent + Intel&reg; AMT"] },
-                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
+                options: { responsive: true, plugins: { legend: { display: false } }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
             window.meshSecurityChart = new Chart(document.getElementById('meshSecurityChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#20F', '#40D', '#60B', '#809', '#A07', '#C05'] }], labels: ["OK", "Anti-virus not active", "No automatic update", "Firewall not active", "Multiple Issues"] },
-                options: { responsive: true, legend: { position: 'none' }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
+                options: { responsive: true, plugins: { legend: { display: false } }, animation: { animateScale: true, animateRotate: true }, layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } } }
             });
         }
 
@@ -17168,12 +17152,12 @@
             window.serverStatCpu = new Chart(document.getElementById('serverCpuChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ["Used", "Free"] },
-                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '40px' }
+                options: { events: [], responsive: true, plugins: { legend: { display: false, } }, animation: { animateScale: true, animateRotate: true }, width: '40px' }
             });
             window.serverStatMemory = new Chart(document.getElementById('serverMemoryChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ["Used", "Free"] },
-                options: { events: [], responsive: true, legend: { position: 'none', }, animation: { animateScale: true, animateRotate: true }, width: '40px' }
+                options: { events: [], responsive: true, plugins: { legend: { display: false, } }, animation: { animateScale: true, animateRotate: true }, width: '40px' }
             });
         }
 
@@ -17256,9 +17240,8 @@
                 maintainAspectRatio: false,
                 elements: { line: { cubicInterpolationMode: 'monotone' } },
                 scales: {
-                    y: { stacked: true },
-                    xAxes: [{ type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, scaleLabel: { display: false, labelString: '' } }],
-                    yAxes: [{ type: 'linear', display: true, scaleLabel: { display: true, labelString: '' } }]
+                    x: { type: 'time', time: { tooltipFormat: 'll HH:mm' }, display: true, title: { display: false, text: '' } },
+                    y: { type: 'linear', display: true, title: { display: true, text: '' }, stacked: true }
                 }
             }
         };
@@ -17304,8 +17287,8 @@
             updateServerTimelineHours();
         }
         function updateServerTimelineHours() {
-            serverTimelineConfig.options.scales.yAxes[0].type = (Q('p40log').checked ? 'logarithmic' : 'linear');
-            serverTimelineConfig.options.scales.xAxes[0].time = { min: pastDate(Q('p40time').value) };
+            serverTimelineConfig.options.scales.y.type = (Q('p40log').checked ? 'logarithmic' : 'linear');
+            serverTimelineConfig.options.scales.x.min = pastDate(Q('p40time').value);
             window.serverMainStats.update();
         }
 
@@ -17320,10 +17303,10 @@
 
             var data, chartType = Q('p40type').value, timeAfter = pastDate(Q('p40time').value), servers = [], selectedServer = null, serverEmptyExists = false, serverAutoSelect = true;
             if (Q('p40server').value != null) { selectedServer = decodeURIComponent(Q('p40server').value); if (selectedServer == "") { selectedServer = null; } serverAutoSelect = false; }
-            serverTimelineConfig.options.scales.xAxes[0].time = { min: timeAfter };
-            serverTimelineConfig.options.scales.yAxes[0].stacked = ((chartType == 3) || (chartType == 4));
+            serverTimelineConfig.options.scales.x.min = timeAfter;
+            serverTimelineConfig.options.scales.y.stacked = ((chartType == 3) || (chartType == 4));
             if (chartType == 0) { // Connections
-                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Connection Count";
+                serverTimelineConfig.options.scales.y.title.text = "Connection Count";
                 data = {
                     labels: [pastDate(0), timeAfter],
                     datasets: [
@@ -17358,7 +17341,7 @@
                     }
                 }
             } else if (chartType == 1) { // Memory
-                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Megabytes";
+                serverTimelineConfig.options.scales.y.title.text = "Megabytes";
                 data = {
                     labels: [pastDate(0), timeAfter],
                     datasets: [
@@ -17387,7 +17370,7 @@
                     data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].mem.rss / (1024 * 1024) });
                 }
             } else if ((chartType == 3) || (chartType == 4)) { // Inbound/Outbound traffic
-                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Megabytes";
+                serverTimelineConfig.options.scales.y.title.text = "Megabytes";
                 data = { labels: [pastDate(0), timeAfter], datasets: [] };
                 var seriesWithData = 0;
 
@@ -17463,7 +17446,7 @@
                     }
                 }
             } else if (chartType == 5) { // CPU
-                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = "Usage";
+                serverTimelineConfig.options.scales.y.title.text = "Usage";
                 data = {
                     labels: [pastDate(0), timeAfter],
                     datasets: [
@@ -17486,7 +17469,7 @@
                 }
             }
             /*else if (chartType == 2) { // Database
-                serverTimelineConfig.options.scales.yAxes[0].scaleLabel.labelString = 'Records';
+                serverTimelineConfig.options.scales.y.title.text = 'Records';
                 data = {
                     labels: [pastDate(0), timeAfter],
                     datasets: [
