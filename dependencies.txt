@@ -11,6 +11,6 @@
     "multiparty": "^4.2.1",
     "@yetzt/nedb": "^1.8.0",
     "node-forge": "^1.0.0",
-	"ua-parser-js": "^1.0.35",
+    "ua-parser-js": "^1.0.35",
     "ws": "^5.2.3",
     "yauzl": "^2.10.0"
