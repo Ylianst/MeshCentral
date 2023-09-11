@@ -59,7 +59,8 @@
     "ua-parser-js": "^1.0.35",
     "ws": "^5.2.3",
     "yauzl": "^2.10.0",
-    "zulip": "^0.1.0"
+    "zulip": "^0.1.0",
+    "@snyk/protect": "latest"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -68,5 +69,10 @@
     "type": "git",
     "url": "https://github.com/Ylianst/MeshCentral.git"
   },
-  "readme": "readme.md"
+  "readme": "readme.md",
+  "scripts": {
+    "prepublish": "npm run snyk-protect",
+    "snyk-protect": "snyk-protect"
+  },
+  "snyk": true
 }

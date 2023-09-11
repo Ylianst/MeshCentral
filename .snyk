@@ -1,0 +1,34 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:hawk:20160119':
+    - zulip > request > hawk:
+        patched: '2023-09-11T16:50:24.048Z'
+        id: 'npm:hawk:20160119'
+        path: zulip > request > hawk
+  'npm:http-signature:20150122':
+    - zulip > request > http-signature:
+        patched: '2023-09-11T16:50:24.048Z'
+        id: 'npm:http-signature:20150122'
+        path: zulip > request > http-signature
+  'npm:mime:20170907':
+    - zulip > request > mime:
+        patched: '2023-09-11T16:50:24.048Z'
+        id: 'npm:mime:20170907'
+        path: zulip > request > mime
+    - zulip > request > form-data > mime:
+        patched: '2023-09-11T16:50:24.048Z'
+        id: 'npm:mime:20170907'
+        path: zulip > request > form-data > mime
+  'npm:qs:20140806-1':
+    - zulip > request > qs:
+        patched: '2023-09-11T16:50:24.048Z'
+        id: 'npm:qs:20140806-1'
+        path: zulip > request > qs
+  'npm:request:20160119':
+    - zulip > request:
+        patched: '2023-09-11T16:50:24.048Z'
+        id: 'npm:request:20160119'
+        path: zulip > request
