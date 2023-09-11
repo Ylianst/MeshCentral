@@ -4020,15 +4020,15 @@ function mainStart() {
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
 
-        // Setup encrypted zip support if needed
-        if (config.settings.autobackup && config.settings.autobackup.zippassword) {
-            modules.push('archiver-zip-encrypted');
-        }
-        // Enable Google Drive Support
-        if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
-        // Enable WebDAV Support
-        if (typeof config.settings.autobackup.webdav == 'object') {
-            if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.3'); }
+        if (typeof config.settings.autobackup == 'object') {
+            // Setup encrypted zip support if needed
+            if (config.settings.autobackup.zippassword) { modules.push('archiver-zip-encrypted'); }
+            // Enable Google Drive Support
+            if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
+            // Enable WebDAV Support
+            if (typeof config.settings.autobackup.webdav == 'object') {
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.3'); }
+            }
         }
 
         // Setup common password blocking

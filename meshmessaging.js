@@ -245,7 +245,7 @@ module.exports.CreateServer = function (parent) {
     }
 
     // Pushover client setup (https://pushover.net)
-    if (parent.config.messaging.pushover) {
+    if (typeof parent.config.messaging.pushover == 'object') {
         // Validate Pushover configuration values
         var pushoverOK = true;
         if (typeof parent.config.messaging.pushover.token != 'string') { console.log('Invalid or missing Pushover token.'); pushoverOK = false; }
