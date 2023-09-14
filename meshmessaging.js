@@ -286,7 +286,7 @@ module.exports.CreateServer = function (parent) {
             var guild = await value.fetch();
             const guildMembers = await guild.members.search({ query: username });
             guildMembers.forEach(async function (value, key) {
-                if ((value.user.username + (value.user.discriminator != 0 ? '#' + value.user.discriminator : ''))== userTag) { func(key); return; }
+                if ((value.user.username + (value.user.discriminator != '0' ? '#' + value.user.discriminator : ''))== userTag) { func(key); return; }
             });
         });
     }
