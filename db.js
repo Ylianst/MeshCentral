@@ -3252,7 +3252,6 @@ module.exports.CreateDB = function (parent, func) {
                     for (var i in docs) {
                         obj.pendingTransfer++;
                         eventRecordsTransferCount++;
-                        for (var b in docs[i].ids) { if (docs[i].ids[b] != '*') { obj.pendingTransfer++; } }
                         obj.StoreEvent(docs[i], function () { obj.pendingTransfer--; });
                     }
                 }
