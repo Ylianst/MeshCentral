@@ -1474,6 +1474,7 @@ module.exports.CreateDB = function (parent, func) {
                     if ((err == null) && (docs[0].id)) {
                         for (var i in event.ids) {
                             if (event.ids[i] != '*') {
+                                obj.pendingTransfer++;
                                 sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs[0].id, event.ids[i]], function(){ if(func){ func(); } });
                             }
                         }
@@ -1889,7 +1890,14 @@ module.exports.CreateDB = function (parent, func) {
             obj.StoreEvent = function (event, func) {
                 obj.dbCounters.eventsSet++;
                 sqlDbQuery('INSERT INTO events VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING id', [event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, event], function (err, docs) {
-                    if (docs.id) { for (var i in event.ids) { if (event.ids[i] != '*') { sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs.id, event.ids[i]]); } } }
+                    if (docs.id) {
+                        for (var i in event.ids) {
+                            if (event.ids[i] != '*') {
+                                obj.pendingTransfer++;
+                                sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs.id, event.ids[i]], function(){ if(func){ func(); } });
+                            }
+                        }
+                    }
                 });
             };
             obj.GetEvents = function (ids, domain, func) {
@@ -3225,16 +3233,16 @@ module.exports.CreateDB = function (parent, func) {
         var eventRecordsTransferCount = 0;
         var powerRecordsTransferCount = 0;
         var statsRecordsTransferCount = 0;
-        var pendingTransfer = 0;
+        obj.pendingTransfer = 0;
 
         // Transfer the data from main database
         nedbfile.find({}, function (err, docs) {
             if ((err == null) && (docs.length > 0)) {
                 performTypedRecordDecrypt(docs)
                 for (var i in docs) {
-                    pendingTransfer++;
+                    obj.pendingTransfer++;
                     normalRecordsTransferCount++;
-                    obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { pendingTransfer--; });
+                    obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { obj.pendingTransfer--; });
                 }
             }
 
@@ -3242,10 +3250,9 @@ module.exports.CreateDB = function (parent, func) {
             nedbeventsfile.find({}, function (err, docs) {
                 if ((err == null) && (docs.length > 0)) {
                     for (var i in docs) {
-                        pendingTransfer++;
+                        obj.pendingTransfer++;
                         eventRecordsTransferCount++;
-                        for (var b in docs[i].ids) { if (docs[i].ids[b] != '*') { pendingTransfer++; } }
-                        obj.StoreEvent(docs[i], function () { pendingTransfer--; });
+                        obj.StoreEvent(docs[i], function () { obj.pendingTransfer--; });
                     }
                 }
 
@@ -3253,9 +3260,9 @@ module.exports.CreateDB = function (parent, func) {
                 nedbpowerfile.find({}, function (err, docs) {
                     if ((err == null) && (docs.length > 0)) {
                         for (var i in docs) {
-                            pendingTransfer++;
+                            obj.pendingTransfer++;
                             powerRecordsTransferCount++;
-                            obj.storePowerEvent(docs[i], null, function () { pendingTransfer--; });
+                            obj.storePowerEvent(docs[i], null, function () { obj.pendingTransfer--; });
                         }
                     }
 
@@ -3263,15 +3270,15 @@ module.exports.CreateDB = function (parent, func) {
                     nedbserverstatsfile.find({}, function (err, docs) {
                         if ((err == null) && (docs.length > 0)) {
                             for (var i in docs) {
-                                pendingTransfer++;
+                                obj.pendingTransfer++;
                                 statsRecordsTransferCount++;
-                                obj.SetServerStats(docs[i], function () { pendingTransfer--; });
+                                obj.SetServerStats(docs[i], function () { obj.pendingTransfer--; });
                             }
                         }
 
                         // Only exit when all the records are stored.
                         setInterval(function () {
-                            if (pendingTransfer == 0) { func("Done. " + normalRecordsTransferCount + " record(s), " + eventRecordsTransferCount + " event(s), " + powerRecordsTransferCount + " power change(s), " + statsRecordsTransferCount + " stat(s)."); }
+                            if (obj.pendingTransfer == 0) { func("Done. " + normalRecordsTransferCount + " record(s), " + eventRecordsTransferCount + " event(s), " + powerRecordsTransferCount + " power change(s), " + statsRecordsTransferCount + " stat(s)."); }
                         }, 200)
                     });
                 });
