@@ -644,7 +644,7 @@ module.exports.CreateServer = function (parent) {
 
         // Get the user and domain
         const user = parent.webserver.users[userid];
-        if ((user == null) || (user.email == null) || (user.emailVerified !== true)) return;
+        if ((user == null) || (user.msghandle == null)) return;
         const domain = obj.parent.config.domains[user.domain];
         if (domain == null) return;
 
