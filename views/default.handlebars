@@ -8709,6 +8709,7 @@
                 Q('Desk').addEventListener('mousewheel', function (e) { return dmousewheel(e); });
             }
             desktopNode = currentNode;
+            if(desktop){ desktop.m.onDisplayinfo = deskDisplayInfo; deskDisplayInfo(desktop.m, desktop.m.displays, desktop.m.selectedDisplay); }
             updateDesktopButtons();
             deskAdjust();
             updateMetadata(desktop, 'deskmetadata');
@@ -8955,7 +8956,7 @@
                     if (desktopsettings.swapmouse) { desktop.m.SwapMouse = desktopsettings.swapmouse; }
                     if (desktopsettings.rmw) { desktop.m.ReverseMouseWheel = desktopsettings.rmw; }
                     if (desktopsettings.remotekeymap == true) { desktop.m.remoteKeyMap = desktopsettings.remotekeymap; }
-                    desktop.m.onDisplayinfo = deskDisplayInfo;
+                    //desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
                     desktop.latency.callback = function(ms) { console.log('latency', ms); updateSessionTime(); };
