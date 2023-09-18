@@ -262,7 +262,7 @@ module.exports.CertificateOperations = function (parent) {
                         acmconfig.cn = certCommonName.value;
                     }
                 }
-                if(r.certs[0].md.algorithm){
+                if(r.certs[0].md){
                     acmconfig.hashAlgorithm = r.certs[0].md.algorithm;
                 }
                 
