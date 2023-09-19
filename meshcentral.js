@@ -3913,7 +3913,10 @@ var childProcess = null;
 var previouslyInstalledModules = {};
 function mainStart() {
     // Check the NodeJS is version 10 or better.
-    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 10) { console.log("MeshCentral requires Node v10 or above, current version is " + process.version + "."); return; }
+    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 10) { console.log("MeshCentral requires Node v10 or above, your current version is " + process.version + "."); return; }
+
+    // Check the NodeJS is using at least 16 or better 2023
+    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 16) { console.warn("MeshCentral will require Node v16 or above in the future, your current version is " + process.version + "."); }
 
     // If running within the node_modules folder, move working directory to the parent of the node_modules folder.
     if (__dirname.endsWith('\\node_modules\\meshcentral') || __dirname.endsWith('/node_modules/meshcentral')) { process.chdir(require('path').join(__dirname, '..', '..')); }
