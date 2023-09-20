@@ -1820,7 +1820,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // If this account is settings locked, return here.
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
-
+                    
+                    // Do not allow change password if sspi or ldap
+                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
+                    
                     // Change our own password
                     if (common.validateString(command.oldpass, 1, 256) == false) break;
                     if (common.validateString(command.newpass, 1, 256) == false) break;
