@@ -3854,7 +3854,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    child_process.exec(npmpath + ` install --no-audit --no-package-lock --no-optional ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    child_process.exec(npmpath + ` install --no-audit --no-package-lock --no-optional --save-exact ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
@@ -3994,7 +3994,7 @@ function mainStart() {
         }
 
         // Build the list of required modules
-        var modules = ['ws@5.2.3', 'cbor@5.2.0', '@yetzt/nedb', 'https', 'yauzl', 'ipcheck', 'express', 'archiver@5.3.2', 'multiparty', 'node-forge', 'express-ws@4.0.0', 'compression', 'body-parser', 'cookie-session@2.0.0', 'express-handlebars', 'ua-parser-js@1.0.35'];
+        var modules = ['archiver@5.3.2','body-parser@1.20.2','cbor@5.2.0','compression@1.7.4','cookie-session@2.0.0','express@4.18.2','express-handlebars@5.3.5','express-ws@5.0.2','ipcheck@0.1.0','minimist@1.2.8','multiparty@4.2.3','@yetzt/nedb','node-forge@1.3.1','ua-parser-js@1.0.36','ws@8.14.2','yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2'); } }
