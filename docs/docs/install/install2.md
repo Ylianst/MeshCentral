@@ -13,7 +13,7 @@ For some who want to skip this document entirely, there are quick install script
 For Amazon EC2 users, that want to manage 100 devices or less. Launch a t3.nano or t3.micro EC2 instance with Amazon Linux 2 with TCP ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 4433 (CIRA) open. Then login as `ec2-user` and enter the following commands:
 
 ```
-wget http://info.meshcentral.com/scripts/mc-aws-linux2.sh
+wget https://meshcentral.com/scripts/mc-aws-linux2.sh
 chmod 755 mc-aws-linux2.sh
 ./mc-aws-linux2.sh
 ```
@@ -21,7 +21,7 @@ chmod 755 mc-aws-linux2.sh
 This will download the fast install script and once run, will install nodejs, meshcentral, setup systemd and start the server. For a larger instance like a t3.small, t3.medium or larger you can run the following that does the same but also installs MongoDB.
 
 ```
-wget http://info.meshcentral.com/scripts/mc-aws-linux2-mongo.sh
+wget https://meshcentral.com/scripts/mc-aws-linux2-mongo.sh
 chmod 755 mc-aws-linux2-mongo.sh
 ./mc-aws-linux2-mongo.sh
 ```
@@ -33,7 +33,7 @@ After these scripts are run, try accessing the server using a browser. MeshCentr
 For 100 devices or less, launch an instance of Ubuntu 18.04 using a small B1s instance. Set the username to `default` in all lower case and open ports 22, 80, 443 and 3389 using the basic network profile. Then start the instance and run the following lines.
 
 ```
-wget http://info.meshcentral.com/scripts/mc-azure-ubuntu1804.sh
+wget https://meshcentral.com/scripts/mc-azure-ubuntu1804.sh
 chmod 755 mc-azure-ubuntu1804.sh
 ./mc-azure-ubuntu1804.sh
 ```
