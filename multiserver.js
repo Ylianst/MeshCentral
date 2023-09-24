@@ -101,7 +101,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                     switch (cmd) {
                         case 1: {
                             // Server authentication request
-                            if (msg.length != 98) { obj.parent.parent.debug('peer', 'OutPeer: BAD MESSAGE(A1)'); return; }
+                            if (msg.length != 98) { obj.parent.parent.debug('peer', 'OutPeer: Bad server authentication message, length = ' + msg.length + ', should be 98. HEX: ' + Buffer.from(msg.substring(0, 4096), 'binary').toString('hex')); return; }
 
                             // Check that the server hash matches the TLS server certificate public key hash
                             if (obj.url.toLowerCase().startsWith('wss://') && (obj.serverCertHash != msg.substring(2, 50))) { obj.parent.parent.debug('peer', 'OutPeer: Server hash mismatch.'); disconnect(); return; }
