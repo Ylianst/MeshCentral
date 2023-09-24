@@ -45,6 +45,8 @@ ALLOWPLUGINS=false
 LOCALSESSIONRECORDING=false
 # set to enable or disable minification of json, reduces traffic
 MINIFY=true
+# set this value to add extra arguments to meshcentral on startup (e.g --debug ldap)
+ARGS=
 ```
 
 ## docker-compose.yml
