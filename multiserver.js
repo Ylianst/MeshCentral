@@ -86,7 +86,7 @@ module.exports.CreateMultiServer = function (parent, args) {
 
                 // Start authenticate the peer server by sending a auth nonce & server TLS cert hash.
                 // Send 384 bits SHA384 hash of TLS cert public key + 384 bits nonce
-                obj.ws.send(obj.common.ShortToStr(1) + obj.serverCertHash + obj.nonce); // Command 1, hash + nonce
+                obj.ws.send(Buffer.from(obj.common.ShortToStr(1) + obj.serverCertHash + obj.nonce, 'binary')); // Command 1, hash + nonce
             });
 
             // If a message is received
@@ -110,7 +110,7 @@ module.exports.CreateMultiServer = function (parent, args) {
                             // Perform the hash signature using the server agent certificate
                             obj.parent.parent.certificateOperations.acceleratorPerformSignature(0, msg.substring(2) + obj.nonce, null, function (tag, signature) {
                                 // Send back our certificate + signature
-                                if (obj.ws != null) { obj.ws.send(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + signature); } // Command 2, certificate + signature
+                                if (obj.ws != null) { obj.ws.send(Buffer.from(obj.common.ShortToStr(2) + obj.common.ShortToStr(obj.agentCertificateAsn1.length) + obj.agentCertificateAsn1 + signature, 'binary')); } // Command 2, certificate + signature
                             });
 
                             break;
