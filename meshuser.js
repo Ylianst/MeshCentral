@@ -1490,6 +1490,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     var ugrpdomain, err = null;
                     try {
+                        // Check if we are in a mode that does not allow manual user group creation
+                        if (domain.auth == 'ldap') { err = "Not allowed in LDAP mode"; }
+
                         // Check if we have new group restriction
                         if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = "Permission denied"; }
 
