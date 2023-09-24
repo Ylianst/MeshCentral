@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -f "meshcentral-data/${CONFIG_FILE}" ]; then
-    node meshcentral/meshcentral --configfile "${CONFIG_FILE}"
+    node meshcentral/meshcentral --configfile "${CONFIG_FILE}" ${ARGS}
 else
     cp config.json.template meshcentral-data/"${CONFIG_FILE}"
     if [ -n "$USE_MONGODB" ] && [ "$USE_MONGODB" == "true" ]; then
@@ -30,5 +30,5 @@ else
         node meshcentral/meshcentral --configfile "${CONFIG_FILE}"
         exit
     fi
-    node meshcentral/meshcentral --configfile "${CONFIG_FILE}" --cert "$HOSTNAME"
+    node meshcentral/meshcentral --configfile "${CONFIG_FILE}" --cert "$HOSTNAME" ${ARGS}
 fi
