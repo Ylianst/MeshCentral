@@ -1491,7 +1491,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var ugrpdomain, err = null;
                     try {
                         // Check if we are in a mode that does not allow manual user group creation
-                        if (domain.auth == 'ldap') { err = "Not allowed in LDAP mode"; }
+                        if (
+                            (typeof domain.authstrategies == 'object') &&
+                            (typeof domain.authstrategies['oidc'] == 'object') &&
+                            (typeof domain.authstrategies['oidc'].groups == 'object') &&
+                            ((domain.authstrategies['oidc'].groups.sync == true) || ((typeof domain.authstrategies['oidc'].groups.sync == 'object') && (domain.authstrategies['oidc'].groups.sync.enabled == true)))
+                        ) {
+                            err = "Not allowed in OIDC mode with user group sync.";
+                        }
 
                         // Check if we have new group restriction
                         if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = "Permission denied"; }
