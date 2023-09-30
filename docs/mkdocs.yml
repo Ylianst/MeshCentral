@@ -20,6 +20,7 @@ nav:
       - 'Tokens': 'meshcentral/tokens.md'
       - 'FAQ': 'meshcentral/faq.md'
       - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
+      - 'Messaging': 'messaging/index.md'
       
   - Design and Architecture:
     - design/index.md
