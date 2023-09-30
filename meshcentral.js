@@ -863,7 +863,8 @@ function CreateMeshCentralServer(config, args) {
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                             const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
                             delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
-                            delete user.msghandle; // Disable users 2fa messaging toovar config = getConfig(false);
+                            delete user.msghandle; // Disable users 2fa messaging too
+                            var config = getConfig(false);
                             if(config.domains[user.domain].auth || config.domains[user.domain].authstrategies){
                                 console.log('This users domain has external authentication methods enabled so the password will not be changed if you set one')
                                 obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
