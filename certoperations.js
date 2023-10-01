@@ -640,12 +640,11 @@ module.exports.CertificateOperations = function (parent) {
         const { X509Certificate } = require('crypto');
         if (X509Certificate == null) {
             // This version of NodeJS (<v15.6.0) does not support X509 certs, use Node-Forge instead which only supports RSA certs.
-            var publickey = obj.pki.certificateFromPem(pem).publicKey;
-            return obj.pki.getPublicKeyFingerprint(publickey, { encoding: 'binary', md: obj.forge.md.sha384.create() });
+            return obj.pki.getPublicKeyFingerprint(obj.pki.certificateFromPem(pem).publicKey, { encoding: 'binary', md: obj.forge.md.sha384.create() });
         } else {
             // This version of NodeJS supports x509 certificates
-            // TODO: THIS IS NOT CORRECT, this is SHA254 of the entire cert.
-            return Buffer.from(new X509Certificate(pem).fingerprint256.split(':').join(''), 'hex');
+            var cert = new X509Certificate(pem);
+            return obj.crypto.createHash('sha384').update(cert.publicKey.export({ type: ((cert.publicKey.asymmetricKeyType == 'rsa') ? 'pkcs1' : 'spki'), format: 'der' })).digest('binary');
         }
     };
 
