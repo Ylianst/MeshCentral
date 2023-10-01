@@ -1814,10 +1814,10 @@ function getSystemInformation(func) {
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
-        results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-        func(results);
+        // results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
+        // func(results);
 
-        /*
+        
         // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
@@ -1828,14 +1828,14 @@ function getSystemInformation(func) {
                 var p = require('identifiers').volumes_promise();
                 p.then(function (res)
                 {
-                    results.volumes = res;
+                    results.hardware.windows.volumes = res;
                     results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
             }
             else if (require('identifiers').volumes != null)
             {
-                results.volumes = require('identifiers').volumes();
+                results.hardware.windows.volumes = require('identifiers').volumes();
                 results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
@@ -1850,7 +1850,7 @@ function getSystemInformation(func) {
             results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
             func(results);
         }
-        */
+        
     } catch (ex) { func(null, ex); }
 }
 
