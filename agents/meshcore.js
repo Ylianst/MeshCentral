@@ -654,6 +654,21 @@ var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
 
+// Get Volumes and BitLocker if Windows
+try {
+    if (process.platform == 'win32'){
+        if (require('identifiers').volumes_promise != null){
+            var p = require('identifiers').volumes_promise();
+            p.then(function (res){
+                meshCoreObj.volumes = res;
+                meshCoreObjChanged();
+            });
+        }else if (require('identifiers').volumes != null){
+            meshCoreObj.volumes = require('identifiers').volumes();
+            meshCoreObjChanged();
+        }
+    }
+} catch(e) { }
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 try {
