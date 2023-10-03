@@ -12628,7 +12628,7 @@
 
         function server_showConfigDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "MeshCentral Config", 1, null, "Loading...", 'MeshCentralServerConfig');
+            setDialogMode(2, "MeshCentral Server Config", 1, null, "Loading...", 'MeshCentralServerConfig');
             meshserver.send({ action: 'serverconfig' });
             return false;
         }
