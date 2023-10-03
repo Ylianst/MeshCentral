@@ -2,7 +2,7 @@
 
 ![](images/2022-05-15-12-57-36.png)
 
-Design and Architecture Guide [as .pdf](https://meshcentral.com/info/docs/MeshCentral2DesignArchitecture.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral Design & Architecture v0.0.4.odt?raw=true)
+Design and Architecture Guide [as .pdf](https://meshcentral.com/docs/MeshCentral2DesignArchitecture.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral Design & Architecture v0.0.4.odt?raw=true)
 ## Video Walkthru
 
 <div class="video-wrapper">
