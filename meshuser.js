@@ -4939,6 +4939,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (typeof n.wsc == 'object') {
                                             output += ',' + csvClean(n.wsc.antiVirus ? n.wsc.antiVirus : '') + ',' + csvClean(n.wsc.autoUpdate ? n.wsc.autoUpdate : '') + ',' + csvClean(n.wsc.firewall ? n.wsc.firewall : '')
                                         } else { output += ',,,'; }
+                                        if (typeof n.volumes == 'object') {
+                                            var bitlockerdetails = '', firstbitlocker = true;
+                                            for (var a in n.volumes) { if (typeof n.volumes[a].protectionStatus !== 'undefined') { if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; } bitlockerdetails += a + '/' + n.volumes[a].volumeStatus; } }
+                                            output += ',' + csvClean(bitlockerdetails);
+                                        } else {
+                                            output += ',';
+                                        }
                                         if (typeof n.av == 'object') {
                                             var avdetails = '', firstav = true;
                                             for (var a in n.av) { if (typeof n.av[a].product == 'string') { if (firstav) { firstav = false; } else { avdetails += '|'; } avdetails += (n.av[a].product + '/' + ((n.av[a].enabled) ? 'enabled' : 'disabled') + '/' + ((n.av[a].updated) ? 'updated' : 'notupdated')); } }
@@ -4946,7 +4953,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         }
                                         else { output += ','; }
                                     } else {
-                                        output += ',,,,,,,,,,,';
+                                        output += ',,,,,,,,,,,,';
                                     }
 
                                     // System infomation
