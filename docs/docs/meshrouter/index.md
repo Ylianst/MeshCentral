@@ -2,7 +2,7 @@
 
 ![](images/Aspose.Words.954ea56c-626b-416a-8b2a-efde10ebd3a9.002.png)
 
-MeshCentral Router Guide [as .pdf](https://meshcentral.com/info/docs/MeshCentral2RouterUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral%20Router%20User%20Guide%20v0.0.2.odt?raw=true)
+MeshCentral Router Guide [as .pdf](https://meshcentral.com/docs/MeshCentral2RouterUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral%20Router%20User%20Guide%20v0.0.2.odt?raw=true)
 
 ## Video Walkthru
 
@@ -21,7 +21,7 @@ MeshCentral is a remote management web site that connects users to remote comput
 ## Downloading
 
 MeshCentral router is a Windows application that comes built-into the MeshCentral server or can
-be downloaded at: <https://meshcentral.com/info/tools/MeshCentralRouter.exe>
+be downloaded at: <https://meshcentral.com/tools/MeshCentralRouter.exe>
 
 It’s probably best to use the MeshCentral router that comes with your version of the MeshCentral
 server as the two will likely be most compatible. A given MeshCentral Router version may not
