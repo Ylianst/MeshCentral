@@ -5840,6 +5840,21 @@
                     x += addDetailItem("Antivirus", y.join('<br />'));
                 }
 
+                // Volumes and Bitlocker
+                if (node.volumes){
+                    var bitlocker = [];
+                    for (var i in node.volumes) {
+                        if (typeof node.volumes[i].protectionStatus !== 'undefined' && node.volumes[i].protectionStatus == 'On'){
+                            bitlocker.push(i + ' - <span style=color:green>' + node.volumes[i].volumeStatus + '</span>');
+                        }else if (typeof node.volumes[i].protectionStatus !== 'undefined'){
+                            bitlocker.push(i + ' - <span style=color:red>' + node.volumes[i].volumeStatus + '</span>');
+                        }
+                    }
+                    if(bitlocker.length > 0){
+                        x += addDetailItem("BitLocker", bitlocker.join('<br />'));
+                    }
+                }
+
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
             }
 
