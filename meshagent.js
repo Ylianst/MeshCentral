@@ -1936,6 +1936,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
                 }
 
+                // Volumes and BitLocker
+                if(command.volumes != null){
+                    if(!device.volumes) { device.volumes = {}; }
+                    if (JSON.stringify(device.volumes) != JSON.stringify(command.volumes)) { /*changes.push('Volumes status');*/ device.volumes = command.volumes; change = 1; log = 1; }
+                }
+
                 // If there are changes, event the new device
                 if (change == 1) {
                     // Do some clean up if needed, these values should not be in the database.

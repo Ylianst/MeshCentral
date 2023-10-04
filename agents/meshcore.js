@@ -654,6 +654,21 @@ var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
 
+// Get Volumes and BitLocker if Windows
+try {
+    if (process.platform == 'win32'){
+        if (require('identifiers').volumes_promise != null){
+            var p = require('identifiers').volumes_promise();
+            p.then(function (res){
+                meshCoreObj.volumes = res;
+                meshCoreObjChanged();
+            });
+        }else if (require('identifiers').volumes != null){
+            meshCoreObj.volumes = require('identifiers').volumes();
+            meshCoreObjChanged();
+        }
+    }
+} catch(e) { }
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 try {
@@ -1814,10 +1829,10 @@ function getSystemInformation(func) {
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
-        results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-        func(results);
+        // results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
+        // func(results);
 
-        /*
+        
         // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
@@ -1828,14 +1843,14 @@ function getSystemInformation(func) {
                 var p = require('identifiers').volumes_promise();
                 p.then(function (res)
                 {
-                    results.volumes = res;
+                    results.hardware.windows.volumes = res;
                     results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
             }
             else if (require('identifiers').volumes != null)
             {
-                results.volumes = require('identifiers').volumes();
+                results.hardware.windows.volumes = require('identifiers').volumes();
                 results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
@@ -1850,7 +1865,7 @@ function getSystemInformation(func) {
             results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
             func(results);
         }
-        */
+        
     } catch (ex) { func(null, ex); }
 }
 
