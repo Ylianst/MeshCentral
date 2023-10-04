@@ -202,7 +202,8 @@ For [self-hosting your own ntfy server](https://ntfy.sh/docs/install/) with [ACL
   "messaging": {
     "ntfy": {
       "host": "https://[my]ntfy.sh",
-      "userurl": "https://[my]ntfy.sh/userhelp"
+      "userurl": "https://[my]ntfy.sh/userhelp",
+      "authorization": "Basic cGhpbDpteXBhc3M=" 
     }
   }
 }
