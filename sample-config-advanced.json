@@ -289,7 +289,8 @@
         "Upgrade": false,
         "ErrorLog": false,
         "Console": false,
-        "Trace": false
+        "Trace": false,
+        "Config": false
       },
       "_passwordRequirements": {
         "min": 8,

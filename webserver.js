@@ -3063,7 +3063,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
                 // Server features
-                var serverFeatures = 127;
+                var serverFeatures = 255;
                 if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
                 else if (typeof domain.myserver == 'object') {
                     if (domain.myserver.backup !== true) { serverFeatures -= 1; } // Disallow simple server backups
@@ -3072,6 +3072,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain.myserver.errorlog !== true) { serverFeatures -= 8; } // Disallow show server crash log
                     if (domain.myserver.console !== true) { serverFeatures -= 16; } // Disallow server console
                     if (domain.myserver.trace !== true) { serverFeatures -= 32; } // Disallow server tracing
+                    if (domain.myserver.config !== true) { serverFeatures -= 128; } // Disallow server configuration
                 }
                 if (obj.db.databaseType != 1) { // If not using NeDB, we can't backup using the simple system.
                     if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups

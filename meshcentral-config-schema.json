@@ -1414,6 +1414,11 @@
                 "type": "boolean",
                 "default": true,
                 "description": "Allows administrators to access the server trace tab from from the My Server tab."
+              },
+              "Config": {
+                "type": "boolean",
+                "default": true,
+                "description": "Allows administrators remotely view server configuration on the My Server tab."
               }
             }
           },
