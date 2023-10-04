@@ -55,7 +55,7 @@ function av()
     child.stdin.write('ForEach-Object -Process { ');
     child.stdin.write('$Bytes = [System.Text.Encoding]::UTF8.GetBytes($_.displayName); ');
     child.stdin.write('$EncodedText =[Convert]::ToBase64String($Bytes); ');
-    child.stdin.write('Write-Host ("{0},{1}" -f $_.productState,$EncodedText); }\r\n');
+    child.stdin.write('Write-Output ("{0},{1}" -f $_.productState,$EncodedText); }\r\n');
     child.stdin.write('exit\r\n');
     child.waitExit();
 
