@@ -628,6 +628,11 @@
     "_discord": {
       "serverurl": "https://discord.gg/xxxxxxxxx",
       "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "_ntfy": {
+      "host": "https://[my]ntfy.sh",
+      "userurl": "https://[my]ntfy.sh/userhelp",
+      "authorization": "Basic xxxxxxxxxxxxxxxxxxxx" 
     }
   }
 }
