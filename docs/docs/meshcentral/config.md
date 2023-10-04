@@ -3410,6 +3410,10 @@ See description for information about each item.
             "userurl": {
               "type": "string",
               "description": "A URL given to users to help them setup this service."
+            },
+            "authorization": {
+              "type": "string",
+              "description": "Authorization Header to include in the request"
             }
           },
           "description": "Enabled ntfy.sh integration support."
