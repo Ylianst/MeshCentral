@@ -6513,10 +6513,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandServerConfig(command) {
-        // Load the server config
-        var configFilePath = common.joinPath(parent.parent.datapath, (parent.parent.args.configfile ? parent.parent.args.configfile : 'config.json'));
-        if (userHasSiteUpdate())
+        // Load the server config.json. This is a sensitive file so care must be taken to only send to trusted administrators.
+        if (userHasSiteUpdate() && (domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.config === true))) {
+            const configFilePath = common.joinPath(parent.parent.datapath, (parent.parent.args.configfile ? parent.parent.args.configfile : 'config.json'));
             fs.readFile(configFilePath, 'utf8', function (err, data) { obj.send({ action: 'serverconfig', data: data }); });
+        }
     }
 
     function serverCommandServerStats(command) {

@@ -574,7 +574,7 @@
                             <div id="p2ServerActionsGoogleBackup" style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
                             <div id="p2ServerActionsErrors"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
-                            <div id="p2ServerActionsConfig"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showConfigDlg()">Show server config</a></div>
+                            <div id="p2ServerActionsConfig"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showConfigDlg()">Show server configuration</a></div>
                         </div>
                         <br />
                     </div>
@@ -2151,14 +2151,14 @@
             //QV('p2AccountImage', ((features & 4) == 0) && (serverinfo.domainauth == false)); // If account actions are not visible, also remove the image on that panel
             QV('accountCreateLoginTokenSpan', features2 & 0x00000080);
             QV('p2AccountImageFrame', !accountSettingsLocked)
-            QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 15) != 0));
+            QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
             QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
             QV('p2ServerActionsErrors', (siteRights & 16) && ((serverFeatures & 8) != 0));
-            QV('p2ServerActionsConfig', (siteRights & 16) && ((serverFeatures & 8) != 0));
+            QV('p2ServerActionsConfig', (siteRights & 16) && ((serverFeatures & 128) != 0));
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
@@ -2746,7 +2746,7 @@
                 case 'servererrors': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerErrors')) {
                         if (message.data == null) {
-                            setDialogMode(2, "MeshCentral Server Errors", 1, null, "Server has no error log.");
+                            setDialogMode(2, "Server Errors", 1, null, "Server has no error log.");
                         } else {
                             var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
                             x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
@@ -2760,11 +2760,14 @@
                 case 'serverconfig': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerConfig')) {
                         if (message.data == null) {
-                            setDialogMode(2, "MeshCentral Server Config", 1, null, "Server has no config file.");
+                            setDialogMode(2, "Server Configuration", 1, null, "Server has no config file.");
                         } else {
-                            var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerConfigPre style=overflow:auto>' + EscapeHtml(message.data) + '</pre></div>';
-                            x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download server config" + '" style=cursor:pointer onclick=d2CopyServerConfigToClip()></div>';
-                            setDialogMode(2, "MeshCentral Server Config", 3, null, x);
+                            setDialogMode(4, "Server Configuration", 2);
+                            QV('d4EncodingButton', false);
+                            QS('dialog').width = 'auto';
+                            QS('dialog').bottom = '80px';
+                            QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
+                            Q('d4editorarea').value = message.data;
                         }
                     }
                     break;
@@ -2998,6 +3001,7 @@
                         meshserver.send({ action: 'fileoperation', fileop: 'set', path: tag.path, file: tag.file, data: btoa(data) });
                     }
                     setDialogMode(4, EscapeHtml(message.file), 3, p5editSaveBack, null, message);
+                    QV('d4EncodingButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -11073,6 +11077,7 @@
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
                     setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    QV('d4EncodingButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -12640,7 +12645,7 @@
 
         function server_showErrorsDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "MeshCentral Errors", 1, null, "Loading...", 'MeshCentralServerErrors');
+            setDialogMode(2, "Server Errors", 1, null, "Loading...", 'MeshCentralServerErrors');
             meshserver.send({ action: 'servererrors' });
             return false;
         }
@@ -12650,7 +12655,7 @@
 
         function server_showConfigDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "MeshCentral Server Config", 1, null, "Loading...", 'MeshCentralServerConfig');
+            setDialogMode(2, "Server Configuration", 1, null, "Loading...", 'MeshCentralServerConfig');
             meshserver.send({ action: 'serverconfig' });
             return false;
         }
