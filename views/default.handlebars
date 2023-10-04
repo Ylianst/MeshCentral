@@ -574,6 +574,7 @@
                             <div id="p2ServerActionsGoogleBackup" style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
                             <div id="p2ServerActionsErrors"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showErrorsDlg()">Show server error log</a></div>
+                            <div id="p2ServerActionsConfig"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showConfigDlg()">Show server config</a></div>
                         </div>
                         <br />
                     </div>
@@ -2157,6 +2158,7 @@
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
             QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
             QV('p2ServerActionsErrors', (siteRights & 16) && ((serverFeatures & 8) != 0));
+            QV('p2ServerActionsConfig', (siteRights & 16) && ((serverFeatures & 8) != 0));
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
@@ -2751,6 +2753,18 @@
                             x += '<div><label><input id=d2clearErrorsCheck type=checkbox onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
                             setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x);
                             server_showErrorsDlgUpdate();
+                        }
+                    }
+                    break;
+                }
+                case 'serverconfig': {
+                    if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerConfig')) {
+                        if (message.data == null) {
+                            setDialogMode(2, "MeshCentral Server Config", 1, null, "Server has no config file.");
+                        } else {
+                            var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerConfigPre style=overflow:auto>' + EscapeHtml(message.data) + '</pre></div>';
+                            x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download server config" + '" style=cursor:pointer onclick=d2CopyServerConfigToClip()></div>';
+                            setDialogMode(2, "MeshCentral Server Config", 3, null, x);
                         }
                     }
                     break;
@@ -12611,6 +12625,14 @@
         function server_showErrorsDlgUpdate() { QE('idx_dlgOkButton', Q('d2clearErrorsCheck').checked); }
         function server_showErrorsDlgEx() { meshserver.send({ action: 'serverclearerrorlog' }); }
         function d2CopyServerErrorsToClip() { saveAs(new Blob([Q('d2ServerErrorsLogPre').innerText], { type: 'application/octet-stream' }), "servererrors.txt"); }
+
+        function server_showConfigDlg() {
+            if (xxdialogMode) return false;
+            setDialogMode(2, "MeshCentral Server Config", 1, null, "Loading...", 'MeshCentralServerConfig');
+            meshserver.send({ action: 'serverconfig' });
+            return false;
+        }
+        function d2CopyServerConfigToClip() { saveAs(new Blob([Q('d2ServerConfigPre').innerText], { type: 'application/octet-stream' }), "config.json"); }
 
         //
         // MY MESHS

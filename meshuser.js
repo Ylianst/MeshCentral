@@ -5292,6 +5292,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverclearerrorlog': serverCommandServerClearErrorLog,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
+        'serverconfig': serverCommandServerConfig,
         'serverstats': serverCommandServerStats,
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
@@ -6502,6 +6503,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Load the server error log
         if (userHasSiteUpdate() && domainHasMyServerErrorLog())
             fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { obj.send({ action: 'servererrors', data: data }); });
+    }
+
+    function serverCommandServerConfig(command) {
+        // Load the server config
+        var configFilePath = common.joinPath(parent.parent.datapath, (parent.parent.args.configfile ? parent.parent.args.configfile : 'config.json'));
+        if (userHasSiteUpdate())
+            fs.readFile(configFilePath, 'utf8', function (err, data) { obj.send({ action: 'serverconfig', data: data }); });
     }
 
     function serverCommandServerStats(command) {
