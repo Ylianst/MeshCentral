@@ -1376,7 +1376,7 @@
           "certUrl": {
             "type": "string",
             "format": "uri",
-            "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral."
+            "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral. You can set this to file:// but it must be followed by the full path to the certificate file."
           },
           "myServer": {
             "type": [
