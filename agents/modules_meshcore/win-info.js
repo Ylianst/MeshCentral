@@ -53,9 +53,23 @@ function av()
     child.stdin.write('[reflection.Assembly]::LoadWithPartialName("system.core")\r\n');
     child.stdin.write('Get-WmiObject -Namespace "root/SecurityCenter2" -Class AntiVirusProduct | ');
     child.stdin.write('ForEach-Object -Process { ');
+    child.stdin.write('$matches = [regex]::Matches($_.pathToSignedProductExe, "%(.*?)%"); ');
+    child.stdin.write('$modifiedPath = $_.pathToSignedProductExe; ');
+    child.stdin.write('foreach ($match in $matches) { ');
+    child.stdin.write('$modifiedPath = $modifiedPath -replace [regex]::Escape($match.Value), [System.Environment]::GetEnvironmentVariable($match.Groups[1].Value, "Process") ');
+    child.stdin.write('} ');
+    child.stdin.write('$flag = $true; ');
+    child.stdin.write('if ($modifiedPath -ne "windowsdefender://"){ ');
+    child.stdin.write('if (-not (Test-Path -Path $modifiedPath -PathType Leaf)) { ');
+    child.stdin.write('$flag = $false; ');
+    child.stdin.write('} ');
+    child.stdin.write('} ');
+    child.stdin.write('if ($flag -eq $true) { ')
     child.stdin.write('$Bytes = [System.Text.Encoding]::UTF8.GetBytes($_.displayName); ');
     child.stdin.write('$EncodedText =[Convert]::ToBase64String($Bytes); ');
-    child.stdin.write('Write-Output ("{0},{1}" -f $_.productState,$EncodedText); }\r\n');
+    child.stdin.write('Write-Output ("{0},{1}" -f $_.productState,$EncodedText); ');
+    child.stdin.write('} ');
+    child.stdin.write('}\r\n ');
     child.stdin.write('exit\r\n');
     child.waitExit();
 
