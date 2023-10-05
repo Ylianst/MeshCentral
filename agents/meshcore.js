@@ -2565,27 +2565,24 @@ function kvm_consentpromise_resolved(always)
                 MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
             }
         }
-        if (this.ws.httprequest.desktop.kvm.connectionBar)
+        try {
+			if (this.ws.httprequest.desktop.kvm.connectionBar) {
+				this.ws.httprequest.desktop.kvm.connectionBar.httprequest = this.ws.httprequest;
+				this.ws.httprequest.desktop.kvm.connectionBar.on('close', function () {
+					MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+					for (var i in this.httprequest.desktop.kvm._pipedStreams) {
+						this.httprequest.desktop.kvm._pipedStreams[i].end();
+					}
+					this.httprequest.desktop.kvm.end();
+				});
+			}
+		}
+		catch (ex)
         {
-            this.ws.httprequest.desktop.kvm.connectionBar.state =
+            if (process.platform != 'darwin')
             {
-                userid: this.ws.httprequest.userid,
-                xuserid: this.ws.httprequest.xuserid,
-                username: this.ws.httprequest.username,
-                sessionid: this.ws.httprequest.sessionid,
-                remoteaddr: this.ws.httprequest.remoteaddr,
-                guestname: this.ws.httprequest.guestname,
-                desktop: this.ws.httprequest.desktop
-            };
-            this.ws.httprequest.desktop.kvm.connectionBar.on('close', function ()
-            {
-                MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.state.remoteaddr + ")", state);
-                for (var i in this.state.desktop.kvm._pipedStreams)
-                {
-                    this.state.desktop.kvm._pipedStreams[i].end();
-                }
-                this.state.desktop.kvm.end();
-            });
+                MeshServerLogEx(32, null, "Failed2(" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+            }
         }
     }
     this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
