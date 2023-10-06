@@ -1642,10 +1642,10 @@ See description for information about each item.
             "type": "object",
             "description": "LDAP options passed to ldapauth-fork"
           },
-          "hidePowerState": {
+          "hidePowerTimeline": {
             "type": "boolean",
             "default": false,
-            "description": "When enabled, this will hide the power state table in the web ui"
+            "description": "When enabled, this will hide the power timeline in the web ui"
           },
           "agentInviteCodes": {
             "type": "boolean",

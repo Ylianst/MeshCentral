@@ -189,7 +189,7 @@
       "_agentKey": [ "abc", "123" ],
       "_ipkvm": false,
       "minify": true,
-      "_hidePowerState": true,
+      "_hidePowerTimeline": true,
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
       "_userNameIsEmail": true,
