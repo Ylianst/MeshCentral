@@ -4928,7 +4928,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (type == 'csv') {
                             try {
                                 // Create the CSV file
-                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
+                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,tags,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
                                 for (var i = 0; i < results.length; i++) {
                                     const nodeinfo = results[i];
 
@@ -4950,10 +4950,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             var avdetails = '', firstav = true;
                                             for (var a in n.av) { if (typeof n.av[a].product == 'string') { if (firstav) { firstav = false; } else { avdetails += '|'; } avdetails += (n.av[a].product + '/' + ((n.av[a].enabled) ? 'enabled' : 'disabled') + '/' + ((n.av[a].updated) ? 'updated' : 'notupdated')); } }
                                             output += ',' + csvClean(avdetails);
+                                        } else {
+                                            output += ',';
                                         }
-                                        else { output += ','; }
+                                        if (typeof n.tags == 'object') {
+                                            var tagsdetails = '', firsttags = true;
+                                            for (var a in n.tags) { if (firsttags) { firsttags = false; } else { tagsdetails += '|'; } tagsdetails += n.tags[a]; }
+                                            output += ',' + csvClean(tagsdetails);
+                                        } else {
+                                            output += ',';
+                                        }
                                     } else {
-                                        output += ',,,,,,,,,,,,';
+                                        output += ',,,,,,,,,,,,,';
                                     }
 
                                     // System infomation
