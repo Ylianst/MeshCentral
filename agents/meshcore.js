@@ -1825,6 +1825,15 @@ function getSystemInformation(func) {
                 if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
+            try { 
+                var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
+                results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
+            } catch (ex) { }
+        }
+        if(results.hardware && results.hardware.linux) {
+            if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
+                results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+            }
         }
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);

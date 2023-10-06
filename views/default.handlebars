@@ -11665,6 +11665,7 @@
                 // BIOS
                 if (ident.bios_vendor) { x += addDetailItem("Vendor", EscapeHtml(ident.bios_vendor), s); }
                 if (ident.bios_version) { x += addDetailItem("Version", EscapeHtml(ident.bios_version), s); }
+                if (ident.bios_serial) { x += addDetailItem("Serial", EscapeHtml(ident.bios_serial), s); }
                 if (x != '') { sections.push({ name: "BIOS", html: x, img: 'chip64.png' }); }
 
                 // Motherboard
