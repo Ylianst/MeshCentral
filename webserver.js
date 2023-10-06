@@ -3104,7 +3104,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
                     webRelayPort: ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
-                    webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : '')
+                    webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : ''),
+                    hidePowerState: (domain.hidepowerstate ? 'true' : 'false')
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
