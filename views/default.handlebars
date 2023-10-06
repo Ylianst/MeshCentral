@@ -1474,6 +1474,7 @@
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
+        var hidePowerTimeline = {{{hidePowerTimeline}}};
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
@@ -8270,7 +8271,7 @@
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if ((currentNode == null) || (xxcurrentView < 10) || (xxcurrentView > 19) || (currentNode.mtype == 3)) return;
+            if ((currentNode == null) || (xxcurrentView < 10) || (xxcurrentView > 19) || (currentNode.mtype == 3) || (hidePowerTimeline)) return;
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
