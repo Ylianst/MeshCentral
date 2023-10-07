@@ -854,7 +854,7 @@ function CreateMeshCentralServer(config, args) {
                         return;
                     }
                     if (obj.args.resetaccount) { // Unlock a user account, set a new password and remove 2FA
-                        if ((typeof obj.args.resetaccount != 'string') || ((obj.args.pass == null) && (obj.args.hashpass == null)) || (obj.args.pass == '') || (obj.args.hashpass == '') || (obj.args.resetaccount.indexOf(' ') >= 0)) { console.log("Usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
+                        if ((typeof obj.args.resetaccount != 'string') || (obj.args.resetaccount.indexOf(' ') >= 0)) { console.log("Usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                         var userid = 'user/' + (obj.args.domain ? obj.args.domain : '') + '/' + obj.args.resetaccount.toLowerCase();
                         if (obj.args.resetaccount.startsWith('user/')) { userid = obj.args.resetaccount; }
                         if (userid.split('/').length != 3) { console.log("Invalid userid."); process.exit(); return; }
@@ -864,16 +864,29 @@ function CreateMeshCentralServer(config, args) {
                             const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
                             delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
                             delete user.msghandle; // Disable users 2fa messaging too
-                            if (obj.args.hashpass) {
-                                // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
-                                var hashpasssplit = obj.args.hashpass.split(',');
-                                if (hashpasssplit.length != 2) { console.log("Invalid hashed password."); process.exit(); return; }
-                                user.salt = hashpasssplit[0];
-                                user.hash = hashpasssplit[1];
-                                obj.db.Set(user, function () { console.log("Done. This command will only work if MeshCentral is stopped."); process.exit(); return; });
-                            } else {
-                                // Hash the password and reset the account.
-                                require('./pass').hash(String(obj.args.pass), user.salt, function (err, hash, tag) { if (err) { console.log("Unable to reset password: " + err); process.exit(); return; } user.hash = hash; obj.db.Set(user, function () { console.log("Done."); process.exit(); return; }); }, 0);
+                            var config = getConfig(false);
+                            if(config.domains[user.domain].auth || config.domains[user.domain].authstrategies){
+                                console.log('This users domain has external authentication methods enabled so the password will not be changed if you set one')
+                                obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
+                            }else{
+                                if (obj.args.hashpass && (typeof obj.args.hashpass == 'string')) {
+                                    // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
+                                    var hashpasssplit = obj.args.hashpass.split(',');
+                                    if (hashpasssplit.length != 2) { console.log("Invalid hashed password."); process.exit(); return; }
+                                    user.salt = hashpasssplit[0];
+                                    user.hash = hashpasssplit[1];
+                                    obj.db.Set(user, function () { console.log("Done. This command will only work if MeshCentral is stopped."); process.exit(); return; });
+                                } else if(obj.args.pass && (typeof obj.args.pass == 'string')) {
+                                    // Hash the password and reset the account.
+                                    require('./pass').hash(String(obj.args.pass), user.salt, function (err, hash, tag) {
+                                        if (err) { console.log("Unable to reset password: " + err); process.exit(); return; }
+                                        user.hash = hash;
+                                        obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
+                                    }, 0);
+                                }else{
+                                    console.log('Not setting a users password');
+                                    obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
+                                }
                             }
                         });
                         return;
