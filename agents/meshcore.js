@@ -1843,12 +1843,16 @@ function getSystemInformation(func) {
             }
         }
         if(results.hardware && results.hardware.linux) {
-            if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
-                results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+            if (!results.hardware.identifiers['bios_serial']) {
+                if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
+                    results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+                }
             }
-            try {
-                results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
-            } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            if (!results.hardware.identifiers['bios_mode']) {
+                try {
+                    results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
+                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            }
         }
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);
