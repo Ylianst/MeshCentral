@@ -1829,11 +1829,22 @@ function getSystemInformation(func) {
                 var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
                 results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
             } catch (ex) { }
+            try {
+                results.hardware.identifiers['bios_mode'] = 'Legacy';
+                for (var i in results.hardware.windows.partitions) {
+                    if (results.hardware.windows.partitions[i].Description=='GPT: System') {
+                        results.hardware.identifiers['bios_mode'] = 'UEFI';
+                    }
+                }
+            } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
         }
         if(results.hardware && results.hardware.linux) {
             if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
                 results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
             }
+            try {
+                results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
+            } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
         }
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);
