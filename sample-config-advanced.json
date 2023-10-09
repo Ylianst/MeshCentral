@@ -183,6 +183,7 @@
       "_maxDeviceView": 1000,
       "_unknownUserRootRedirect": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE",
       "_nightMode": 1,
+      "_scrollToTop": true,
       "_userQuota": 1048576,
       "_meshQuota": 248576,
       "_loginKey": [ "abc", "123" ],

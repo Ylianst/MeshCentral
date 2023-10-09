@@ -1039,6 +1039,11 @@
             "default": 0,
             "description": "0 = User selects day/night mode, 1 = Always night mode, 2 = Always day mode"
           },
+          "scrollToTop": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, a Scroll To Top button in the devices tab."
+          },
           "userQuota": {
             "type": "integer"
           },
