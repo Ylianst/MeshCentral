@@ -4792,7 +4792,7 @@
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.mtype != 3));
-            QV('connectbutton2sspan', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4));
+            QV('connectbutton2sspan', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3));
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
