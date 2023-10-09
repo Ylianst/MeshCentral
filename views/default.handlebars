@@ -10574,7 +10574,8 @@
         }
 
         function onFilesStateChange(xfiles, state) {
-            QV('p13Connect', (state == 0) && (files == null) && (filesNode.mtype == 2));
+            setSessionActivity();
+            QV('p13Connect', (state == 0) && (filesNode.mtype == 2));
             QV('p13Connects', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', state != 0);
             var str = StatusStrs[state];
