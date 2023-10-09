@@ -1825,14 +1825,33 @@ function getSystemInformation(func) {
                 if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
-            try { 
-                var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
-                results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
-            } catch (ex) { }
+            if (!results.hardware.identifiers['bios_serial']) {
+                try { 
+                    var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
+                    results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
+                } catch (ex) { }
+            }
+            if (!results.hardware.identifiers['bios_mode']) {
+                try {
+                    results.hardware.identifiers['bios_mode'] = 'Legacy';
+                    for (var i in results.hardware.windows.partitions) {
+                        if (results.hardware.windows.partitions[i].Description=='GPT: System') {
+                            results.hardware.identifiers['bios_mode'] = 'UEFI';
+                        }
+                    }
+                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            }
         }
         if(results.hardware && results.hardware.linux) {
-            if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
-                results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+            if (!results.hardware.identifiers['bios_serial']) {
+                if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
+                    results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+                }
+            }
+            if (!results.hardware.identifiers['bios_mode']) {
+                try {
+                    results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
+                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
             }
         }
         results.hardware.agentvers = process.versions;
