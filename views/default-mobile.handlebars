@@ -5971,6 +5971,7 @@
                 if (ident.bios_vendor) { x += addDetailItem("Vendor", EscapeHtml(ident.bios_vendor), s); }
                 if (ident.bios_version) { x += addDetailItem("Version", EscapeHtml(ident.bios_version), s); }
                 if (ident.bios_serial) { x += addDetailItem("Serial", EscapeHtml(ident.bios_serial), s); }
+                if (ident.bios_mode) { x += addDetailItem("Mode", EscapeHtml(ident.bios_mode), s); }
                 if (x != '') { sections.push({ name: "BIOS", html: x, img: 'chip' }); }
 
                 // Motherboard
