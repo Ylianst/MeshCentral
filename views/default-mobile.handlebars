@@ -6017,6 +6017,7 @@
                     x += '<table style=width:100%>';
                     for (var i in hardware.linux.memory.Memory_Device) {
                         var m = hardware.linux.memory.Memory_Device[i];
+                        if(m.Size && (m.Size == 'No Module Installed')) continue;
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.Locator ? m.Locator : 'Unknown')) + '</b></div>';
                         if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0}, {1}", m.Size, m.Speed), s); }
