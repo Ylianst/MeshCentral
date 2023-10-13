@@ -856,6 +856,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton value="Zip" onclick="p13zipFiles()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton value="Refresh" onclick="p13folderup(9999)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton value="Find" onclick="p13findfile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton value="GoTo" onclick="p13gotofolder()" />
                             </div>
                         </td>
                     </tr>
@@ -10835,6 +10836,15 @@
             p13setActions();
         }
 
+        function p13gotofolder() {
+            setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput style=width:100% placeholder="'+(isWindowsNode(currentNode) ? 'C:\\' : '/var/www')+'" />');
+            focusTextBox('p13folderinput');
+        }
+        function p13gotofolderEx() { 
+            p13targetpath = Q('p13folderinput').value.split('\\').join('/'); 
+            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+        }
+
         function p13folderset(x) {
             p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
             if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
@@ -10919,6 +10929,7 @@
                 QE('p13CopyButton', false);
                 QE('p13ZipButton', false);
                 QE('p13PasteButton', false);
+                QE('p13GoToFolderButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
                 var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
@@ -10935,6 +10946,7 @@
                 QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
+                QE('p13GoToFolderButton', true);
             }
             var filesState = ((files != null) && (files.state != 0));
             if (((filesState == true) && (files.contype != 2)) || (filesNode.agent == null) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
