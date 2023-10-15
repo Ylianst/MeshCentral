@@ -2968,7 +2968,15 @@
                 gotKeyPressEvent = false;
                 var k = 0;
                 if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
-                if (k == 8) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
+                if (k == 8) { // Enter and backspace
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k));
+                    }
+                }
                 else if (e.ctrlKey && (k >= 64) && (k <= 95)) {
                     // Ctrl keys
                     if (terminal.urlname == 'sshterminalrelay.ashx') {
