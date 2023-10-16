@@ -11477,7 +11477,7 @@
             if (message != null) {
                 if (Array.isArray(message.thermals) && (message.thermals.length > 0)) {
                     var x = '&nbsp;';
-                    for (var i in message.thermals) { x += '<div class=thermalSensor>' +  parseFloat(message.thermals[i]).toFixed(2) + '&deg;C / ' + parseFloat((message.thermals[i] * 1.8) + 32).toFixed(2) + '&deg;F' + '</div>'; }
+                    for (var i in message.thermals) { x += '<div class=thermalSensor title="'+message.thermals[i].InstanceName+'">' +  parseFloat(message.thermals[i].CurrentTemperature).toFixed(2) + '&deg;C / ' + parseFloat((message.thermals[i].CurrentTemperature * 1.8) + 32).toFixed(2) + '&deg;F' + '</div>'; }
                     QV('extraGraphValues', true);
                     QH('extraGraphValues', x);
                 }
