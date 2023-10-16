@@ -229,8 +229,7 @@ function windows_thermals()
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
     child.waitExit();
-
-    if(child.stdout.str.trim!='')
+    if(child.stdout.str.trim()!='')
     {
         var lines = child.stdout.str.trim().split('\r\n');
         var keys = lines[0].trim().split(',');
@@ -256,7 +255,7 @@ function linux_thermals()
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
     child.stdin.write("for folder in /sys/class/thermal/thermal_zone*/; do [ -e \"$folder/temp\" ] && echo \"$(cat \"$folder/temp\"),$(cat \"$folder/type\")\"; done\nexit\n");
     child.waitExit();
-    if(child.stdout.str.trim!='')
+    if(child.stdout.str.trim()!='')
     {
         var lines = child.stdout.str.trim().split('\n');
         for (var i = 0; i < lines.length; ++i)
@@ -276,7 +275,6 @@ function macos_thermals()
     child.stderr.on('data', function () { });
     child.stdin.write('powermetrics --help | grep SMC\nexit\n');
     child.waitExit();
-    
     if (child.stdout.str.trim() != '')
     {
         child = require('child_process').execFile('/bin/sh', ['sh']);
