@@ -11446,7 +11446,7 @@
 
         function deviceDetailsStatsClear() {
             QV('p17graph', false);
-            if (window.deviceDetailsStatsChart != null) { delete window.deviceDetailsStatsChart; }
+            if (window.deviceDetailsStatsChart != null) { window.deviceDetailsStatsChart.destroy(); delete window.deviceDetailsStatsChart; }
             if (deviceDetailsStatsTimer != null) { clearInterval(deviceDetailsStatsTimer); deviceDetailsStatsTimer = null; }
             deviceDetailsStatsData = [];
             deviceDetailsStatsDraw();
