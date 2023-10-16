@@ -264,6 +264,20 @@ function linux_thermals()
             ret.push({CurrentTemperature: (parseFloat(line[0])/1000), InstanceName: line[1]});
         }
     }
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write("for mon in /sys/class/hwmon/hwmon*; do for label in \"$mon\"/temp*_label; do if [ -f $label ]; then echo $(cat \"$label\")___$(cat \"${label%_*}_input\"); fi; done; done;\nexit\n");
+    child.waitExit();
+    if(child.stdout.str.trim()!='')
+    {
+        var lines = child.stdout.str.trim().split('\n');
+        for (var i = 0; i < lines.length; ++i)
+        {
+            var line = lines[i].trim().split('___');
+            ret.push({ CurrentTemperature: (parseFloat(line[1])/1000), InstanceName: line[0] });
+        }
+    }
     return (ret);
 }
 
