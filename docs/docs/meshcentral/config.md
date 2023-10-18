@@ -400,7 +400,9 @@ See description for information about each item.
         },
         "allowLoginToken": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "When set to true, MeshCentral will allow login tokens to be used in the URL as a replacement for user login. This is useful along with \"allowFraming\" option to embed MeshCentral features into another website"
+
         },
         "StrictTransportSecurity": {
           "type": [
