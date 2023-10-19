@@ -3949,6 +3949,7 @@
             x += '<label><input id=d2c9 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('agver') >= 0)?' checked':'') + '>' + "Agent Version" + '</label><br />';
             x += '<label><input id=d2c6 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('desc') >= 0)?' checked':'') + '>' + "Device Description" + '</label><br />';
             x += '<label><input id=d2c5 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('os') >= 0)?' checked':'') + '>' + "Operating System" + '</label><br />';
+            x += '<label><input id=d2c10 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('tags') >= 0)?' checked':'') + '>' + "Tags" + '</label><br />';
             x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
@@ -3968,6 +3969,7 @@
             if (Q('d2c7').checked) { cols.push('lastseen'); }
             if (Q('d2c8').checked) { cols.push('agtype'); }
             if (Q('d2c9').checked) { cols.push('agver'); }
+            if (Q('d2c10').checked) { cols.push('tags'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
             mainUpdate(4);
@@ -4404,6 +4406,7 @@
                         if (deviceViewSettings.devsCols.indexOf('agtype') >= 0) { colums += '<th style=color:gray;width:100px>' + "Agent Type"; }
                         if (deviceViewSettings.devsCols.indexOf('agver') >= 0) { colums += '<th style=color:gray;width:100px>' + "Agent Version"; }
                         if (deviceViewSettings.devsCols.indexOf('os') >= 0) { colums += '<th style=color:gray;width:160px>' + "OS"; }
+                        if (deviceViewSettings.devsCols.indexOf('tags') >= 0) { colums += '<th style=color:gray;width:120px>' + "Tags"; }
                         if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=color:gray;width:120px>' + "Links"; }
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
@@ -4696,6 +4699,16 @@
                     } else {
                         r += '<td style=text-align:center;font-size:x-small title="' + EscapeHtml(node.osdesc?node.osdesc:'') + '">' + EscapeHtml(node.osdesc?node.osdesc:'');
                     }
+                }
+                if (deviceViewSettings.devsCols.indexOf('tags') >= 0) { // Tags
+                    r += '<td style=text-align:center;font-size:x-small>';
+                    var groupingTags = '';
+                    if (node.tags != null) { 
+                        for (var i in node.tags) {
+                            groupingTags += '<span style="background-color:lightgray;padding:3px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span> ';
+                        }
+                    }
+                    r += '<span style=line-height:20px>' + groupingTags + '</span>';
                 }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
