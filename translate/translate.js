@@ -158,9 +158,9 @@ if (directRun && (NodeJSVer >= 12)) {
 if (directRun) { setup(); }
 
 function setup() {
-    var libs = ['jsdom', 'esprima', 'minify-js'];
-    if (minifyLib == 1) { libs.push('minify-js'); }
-    if (minifyLib == 2) { libs.push('html-minifier'); }
+    var libs = ['jsdom@22.1.0', 'esprima@4.0.1', 'minify-js@0.0.4'];
+    if (minifyLib == 1) { libs.push('minify-js@0.0.4'); }
+    if (minifyLib == 2) { libs.push('html-minifier@4.0.0'); }
     InstallModules(libs, start);
 }
 
@@ -1079,25 +1079,24 @@ function format(format) { var args = Array.prototype.slice.call(arguments, 1); r
 
 // Check if a list of modules are present and install any missing ones
 var InstallModuleChildProcess = null;
-var previouslyInstalledModules = {};
 function InstallModules(modules, func) {
     var missingModules = [];
-    if (previouslyInstalledModules == null) { previouslyInstalledModules = {}; }
     if (modules.length > 0) {
         for (var i in modules) {
             try {
                 var xxmodule = require(modules[i]);
             } catch (e) {
-                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(modules[i]); }
+                missingModules.push(modules[i]);
             }
         }
-        if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
+        if (missingModules.length > 0) { InstallModuleEx(modules, func); } else { func(); }
     }
 }
 
 // Check if a module is present and install it if missing
-function InstallModule(modulename, func, tag1, tag2) {
-    log('Installing ' + modulename + '...');
+function InstallModuleEx(modulenames, func) {
+    log('Installing modules...');
+    var names = modulenames.join(' ');
     var child_process = require('child_process');
     var parentpath = __dirname;
 
@@ -1105,15 +1104,14 @@ function InstallModule(modulename, func, tag1, tag2) {
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
     // Looks like we need to keep a global reference to the child process object for this to work correctly.
-    InstallModuleChildProcess = child_process.exec('npm install --no-optional ' + modulename, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    InstallModuleChildProcess = child_process.exec(`npm install --no-audit --no-package-lock --no-optional --omit=optional --no-save ${names}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if ((error != null) && (error != '')) {
-            log('ERROR: Unable to install required module "' + modulename + '". May not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
+            log('ERROR: Unable to install required modules. May not have access to npm, or npm may not have suffisent rights to load the new modules. Try "npm install ' + names + '" to manualy install the modules.\r\n');
             process.exit();
             return;
         }
-        previouslyInstalledModules[modulename] = true;
-        func(tag1, tag2);
+        func();
         return;
     });
 }
