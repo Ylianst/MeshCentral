@@ -3830,8 +3830,8 @@ function getConfig(createSampleConfig) {
 }
 
 // Check if a list of modules are present and install any missing ones
-function InstallModules(modules, func) {
-    const missingModules = [];
+function InstallModules(modules, args, func) {
+    var missingModules = [];
     if (modules.length > 0) {
         const dependencies = require('./package.json').dependencies;
         for (var i in modules) {
@@ -3852,32 +3852,39 @@ function InstallModules(modules, func) {
                     require(moduleName);
                 }
             } catch (ex) {
-                if (previouslyInstalledModules[modules[i]] !== true) { missingModules.push(moduleNameAndVersion); }
+                missingModules.push(moduleNameAndVersion);
             }
         }
-        if (missingModules.length > 0) { InstallModule(missingModules.shift(), InstallModules, modules, func); } else { func(); }
+        
+        if (missingModules.length > 0) { if (args.debug) { console.log('Missing Modules: ' + missingModules.join(', ')); } InstallModuleEx(modules, args, func); } else { func(); }
     }
 }
 
-// Check if a module is present and install it if missing
-function InstallModule(modulename, func, tag1, tag2) {
-    console.log('Installing ' + modulename + '...');
+// Install all missing modules at once. We will be running "npm install" once, with a full list of all modules we need, no matter if they area already installed or not,
+// this is to make sure NPM gives us exactly what we need. Also, we install the meshcentral with current version, so that NPM does not update it - which it will do if obmitted.
+function InstallModuleEx(modulenames, args, func) {
+    var names = modulenames.join(' ');
+    console.log('Installing modules...');
     const child_process = require('child_process');
     var parentpath = __dirname;
+    function getCurrentVersion() { try { return JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'package.json'), 'utf8')).version; } catch (ex) { } return null; } // Fetch server version
+    const meshCentralVersion = getCurrentVersion();
+    if (meshCentralVersion != null) { names = 'meshcentral@' + getCurrentVersion() + ' ' + names; }
 
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    child_process.exec(npmpath + ` install --no-audit --no-package-lock --no-optional --save-exact ${modulename}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    if (args.debug) { console.log('NPM Command Line: ' + npmpath + ` install --no-audit --no-package-lock --omit=optional --no-save --no-fund ${names}`); }
+
+    child_process.exec(npmpath + ` install --no-audit --no-package-lock --no-optional --omit=optional --no-save ${names}`, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
-            console.log('ERROR: Unable to install required module "' + modulename + '". MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. To manualy install this module try:\r\n\r\n   cd "' + mcpath + '"\r\n   npm install ' + modulename + '\r\n   node node_modules' + ((require('os').platform() == 'win32') ? '\\' : '/') + 'meshcentral');
+            console.log('ERROR: Unable to install required modules. MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. To manualy install this module try:\r\n\r\n   cd "' + mcpath + '"\r\n   npm install ' + names + '\r\n   node node_modules' + ((require('os').platform() == 'win32') ? '\\' : '/') + 'meshcentral');
             process.exit();
             return;
         }
-        previouslyInstalledModules[modulename] = true;
-        func(tag1, tag2);
+        func();
         return;
     });
 }
@@ -3933,7 +3940,7 @@ function mainStart() {
     if (__dirname.endsWith('\\node_modules\\meshcentral') || __dirname.endsWith('/node_modules/meshcentral')) { process.chdir(require('path').join(__dirname, '..', '..')); }
 
     // Check for any missing modules.
-    InstallModules(['minimist'], function () {
+    InstallModules(['minimist'], {}, function () {
         // Parse inbound arguments
         const args = require('minimist')(process.argv.slice(2));
 
@@ -4009,36 +4016,36 @@ function mainStart() {
 
         // Build the list of required modules
         var modules = ['archiver@5.3.2','body-parser@1.20.2','cbor@5.2.0','compression@1.7.4','cookie-session@2.0.0','express@4.18.2','express-handlebars@5.3.5','express-ws@4.0.0','ipcheck@0.1.0','minimist@1.2.8','multiparty@4.2.3','@yetzt/nedb','node-forge@1.3.1','ua-parser-js@1.0.36','ws@8.14.2','yauzl@2.10.0'];
-        if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
-        if (ldap == true) { modules.push('ldapauth-fork'); }
-        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2'); } }
+        if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
+        if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
+        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2@1.14.0'); } }
         if (passport != null) { modules.push(...passport); }
-        if (captcha == true) { modules.push('svg-captcha'); }
+        if (captcha == true) { modules.push('svg-captcha@1.4.0'); }
 
-        if (sessionRecording == true) { modules.push('image-size'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
+        if (sessionRecording == true) { modules.push('image-size@1.0.2'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { modules.push('acme-client@4.2.5'); } // Add acme-client module. We need to force v4.2.4 or higher since olver versions using SHA-1 which is no longer supported by Let's Encrypt.
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
-        if (config.settings.mysql != null) { modules.push('mysql2'); } // Add MySQL.
-        //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb@4.13.0'); modules.push('saslprep'); } // Add MongoDB, official driver.
+        if (config.settings.mysql != null) { modules.push('mysql2@3.6.2'); } // Add MySQL.
+        //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.13.0'); modules.push('saslprep@1.0.3'); } // Add MongoDB, official driver.
         if (config.settings.postgres != null) { modules.push('pg@8.7.1'); modules.push('pgtools@0.3.2'); } // Add Postgres, Postgres driver.
-        if (config.settings.mariadb != null) { modules.push('mariadb'); } // Add MariaDB, official driver.
-        if (config.settings.acebase != null) { modules.push('acebase'); } // Add AceBase, official driver.
-        if (config.settings.sqlite3 != null) { modules.push('sqlite3'); } // Add sqlite3, official driver.
-        if (config.settings.vault != null) { modules.push('node-vault'); } // Add official HashiCorp's Vault module.
-        if (config.settings.plugins != null) { modules.push('semver'); } // Required for version compat testing and update checks
-        if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent'); } // Required for HTTP/HTTPS proxy support
-        else if (config.settings.xmongodb != null) { modules.push('mongojs'); } // Add MongoJS, old driver.
-        if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer'); } // Add SMTP support
+        if (config.settings.mariadb != null) { modules.push('mariadb@3.2.2'); } // Add MariaDB, official driver.
+        if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.
+        if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.6'); } // Add sqlite3, official driver.
+        if (config.settings.vault != null) { modules.push('node-vault@0.10.2'); } // Add official HashiCorp's Vault module.
+        if (config.settings.plugins != null) { modules.push('semver@7.5.4'); } // Required for version compat testing and update checks
+        if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent@7.0.2'); } // Required for HTTP/HTTPS proxy support
+        else if (config.settings.xmongodb != null) { modules.push('mongojs@3.1.0'); } // Add MongoJS, old driver.
+        if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.9.6'); } // Add SMTP support
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if (args.translate) { modules.push('jsdom'); modules.push('esprima'); modules.push('minify-js'); modules.push('html-minifier'); } // Translation support
-        if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
+        if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer@0.1.0'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
 
         if (typeof config.settings.autobackup == 'object') {
             // Setup encrypted zip support if needed
-            if (config.settings.autobackup.zippassword) { modules.push('archiver-zip-encrypted'); }
+            if (config.settings.autobackup.zippassword) { modules.push('archiver-zip-encrypted@1.0.11'); }
             // Enable Google Drive Support
-            if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis'); }
+            if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
                 if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.3'); }
@@ -4051,46 +4058,46 @@ function mainStart() {
         // Setup 2nd factor authentication
         if (config.settings.no2factorauth !== true) {
             // Setup YubiKey OTP if configured
-            if (yubikey == true) { modules.push('yubikeyotp'); } // Add YubiKey OTP support
+            if (yubikey == true) { modules.push('yubikeyotp@0.2.0'); } // Add YubiKey OTP support
             if (allsspi == false) { modules.push('otplib@10.2.3'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
         // Desktop multiplexor support
-        if (config.settings.desktopmultiplex === true) { modules.push('image-size'); }
+        if (config.settings.desktopmultiplex === true) { modules.push('image-size@1.0.2'); }
 
         // SMS support
         if (config.sms != null) {
-            if (config.sms.provider == 'twilio') { modules.push('twilio'); }
-            if (config.sms.provider == 'plivo') { modules.push('plivo'); }
-            if (config.sms.provider == 'telnyx') { modules.push('telnyx'); }
+            if (config.sms.provider == 'twilio') { modules.push('twilio@4.19.0'); }
+            if (config.sms.provider == 'plivo') { modules.push('plivo@4.58.0'); }
+            if (config.sms.provider == 'telnyx') { modules.push('telnyx@1.25.5'); }
         }
 
         // Messaging support
         if (config.messaging != null) {
-            if (config.messaging.telegram != null) { modules.push('telegram'); modules.push('input'); }
+            if (config.messaging.telegram != null) { modules.push('telegram@2.19.8'); modules.push('input@1.0.1'); }
             if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
-            if (config.messaging.xmpp != null) { modules.push('@xmpp/client'); }
-            if (config.messaging.pushover != null) { modules.push('node-pushover'); }
-            if (config.messaging.zulip != null) { modules.push('zulip'); }
+            if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.1'); }
+            if (config.messaging.pushover != null) { modules.push('node-pushover@1.0.0'); }
+            if (config.messaging.zulip != null) { modules.push('zulip@0.1.0'); }
         }
 
         // Setup web based push notifications
-        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push'); }
+        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.6'); }
 
         // Firebase Support
         // Avoid 0.1.8 due to bugs: https://github.com/guness/node-xcs/issues/43
         if (config.firebase != null) { modules.push('node-xcs@0.1.7'); }
 
         // Syslog support
-        if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog'); }
-        if (config.settings.syslogtcp) { modules.push('syslog'); }
+        if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog@1.2.0'); }
+        if (config.settings.syslogtcp) { modules.push('syslog@0.1.1-1'); }
 
         // Setup heapdump support if needed, useful for memory leak debugging
         // https://www.arbazsiddiqui.me/a-practical-guide-to-memory-leaks-in-nodejs/
-        if (config.settings.heapdump === true) { modules.push('heapdump'); }
+        if (config.settings.heapdump === true) { modules.push('heapdump@0.3.15'); }
 
         // Install any missing modules and launch the server
-        InstallModules(modules, function () {
+        InstallModules(modules, args, function () {
             if (require('os').platform() == 'win32') { try { require('node-windows'); } catch (ex) { console.log("Module node-windows can't be loaded. Restart MeshCentral."); process.exit(); return; } }
             meshserver = CreateMeshCentralServer(config, args);
             meshserver.Start();
