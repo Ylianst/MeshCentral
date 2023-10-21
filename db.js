@@ -768,13 +768,13 @@ module.exports.CreateDB = function (parent, func) {
         } else if (parent.args.mysql) {
             // Use MySQL
             obj.databaseType = 5;
-            var tempDatastore = require('mysql').createPool(connectionObject);
+            var tempDatastore = require('mysql2').createPool(connectionObject);
             tempDatastore.query('CREATE DATABASE IF NOT EXISTS ' + dbname, function (error) {
                 if (error != null) {
                     console.log('Auto-create database failed: ' + error);
                 }
                 connectionObject.database = dbname;
-                Datastore = require('mysql').createPool(connectionObject);
+                Datastore = require('mysql2').createPool(connectionObject);
                 createTablesIfNotExist(dbname);
             });
             setTimeout(function () { tempDatastore.end(); }, 2000);
@@ -1244,7 +1244,7 @@ module.exports.CreateDB = function (parent, func) {
                     var docs = [];
                     for (var i in results) {
                         if (results[i].doc) {
-                            docs.push(JSON.parse(results[i].doc));
+                            docs.push(results[i].doc);
                         } else if ((results.length == 1) && (results[i]['COUNT(doc)'] != null)) {
                             // This is a SELECT COUNT() operation
                             docs = results[i]['COUNT(doc)'];
@@ -1314,7 +1314,7 @@ module.exports.CreateDB = function (parent, func) {
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
         } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL
             var Promises = [];
-            for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.query(queries[i])); } else { Promises.push(Datastore.query(queries[i][0], queries[i][1])); } }
+            for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.promise().query(queries[i])); } else { Promises.push(Datastore.promise().query(queries[i][0], queries[i][1])); } }
             Promise.all(Promises)
                 .then(function (error, results, fields) { if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
                 .catch(function (error, results, fields) { if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
