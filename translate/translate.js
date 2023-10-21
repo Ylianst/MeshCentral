@@ -1083,13 +1083,17 @@ function InstallModules(modules, func) {
     var missingModules = [];
     if (modules.length > 0) {
         for (var i in modules) {
+            var moduleName = modules[i].split('@')[0];
             try {
-                var xxmodule = require(modules[i]);
+                var xxmodule = require(moduleName);
             } catch (e) {
                 missingModules.push(modules[i]);
             }
         }
-        if (missingModules.length > 0) { InstallModuleEx(modules, func); } else { func(); }
+        if (missingModules.length > 0) {
+            console.log('Missing modules: ' + missingModules.join(', ') + '.');
+            InstallModuleEx(modules, func);
+        } else { func(); }
     }
 }
 

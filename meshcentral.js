@@ -139,7 +139,7 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (ex) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores'];
+        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores', 'dev'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         for (i in obj.config.settings) { obj.args[i] = obj.config.settings[i]; } // Place all settings into arguments, arguments have already been placed into settings so arguments take precedence.
@@ -3869,7 +3869,7 @@ function InstallModuleEx(modulenames, args, func) {
     var parentpath = __dirname;
     function getCurrentVersion() { try { return JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'package.json'), 'utf8')).version; } catch (ex) { } return null; } // Fetch server version
     const meshCentralVersion = getCurrentVersion();
-    if (meshCentralVersion != null) { names = 'meshcentral@' + getCurrentVersion() + ' ' + names; }
+    if ((meshCentralVersion != null) && (args.dev == null)) { names = 'meshcentral@' + getCurrentVersion() + ' ' + names; }
 
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
@@ -3880,7 +3880,7 @@ function InstallModuleEx(modulenames, args, func) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
-            console.log('ERROR: Unable to install required modules. MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. To manualy install this module try:\r\n\r\n   cd "' + mcpath + '"\r\n   npm install ' + names + '\r\n   node node_modules' + ((require('os').platform() == 'win32') ? '\\' : '/') + 'meshcentral');
+            console.log('ERROR: Unable to install required modules. MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. To manualy install this module try:\r\n\r\n   cd "' + mcpath + '"\r\n   npm install --no-audit --no-package-lock --no-optional --omit=optional --no-save ' + names + '\r\n   node node_modules' + ((require('os').platform() == 'win32') ? '\\' : '/') + 'meshcentral');
             process.exit();
             return;
         }
@@ -3898,7 +3898,7 @@ function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg
 
 /*
 var ServerWarnings = {
-    1: "MeshCentral SSH support requires NodeJS 11 or higher.",
+    1: "",
     2: "Missing WebDAV parameters.",
     3: "Unrecognized configuration option \"{0}\".",
     4: "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
@@ -3934,7 +3934,7 @@ var childProcess = null;
 var previouslyInstalledModules = {};
 function mainStart() {
     // Check the NodeJS is version 10 or better.
-    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 10) { console.log("MeshCentral requires Node v10 or above, current version is " + process.version + "."); return; }
+    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 11) { console.log("MeshCentral requires Node v11 or above, current version is " + process.version + "."); return; }
 
     // If running within the node_modules folder, move working directory to the parent of the node_modules folder.
     if (__dirname.endsWith('\\node_modules\\meshcentral') || __dirname.endsWith('/node_modules/meshcentral')) { process.chdir(require('path').join(__dirname, '..', '..')); }
@@ -3996,7 +3996,7 @@ function mainStart() {
             if (config.domains[i].yubikey != null) { yubikey = true; }
             if (config.domains[i].auth == 'ldap') { ldap = true; }
             if (mstsc == false) { config.domains[i].mstsc = false; }
-            if (config.domains[i].ssh == true) { if (nodeVersion < 11) { config.domains[i].ssh = false; } ssh = true; }
+            if (config.domains[i].ssh == true) { ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
                 if (passport == null) { passport = ['passport']; } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
@@ -4018,7 +4018,7 @@ function mainStart() {
         var modules = ['archiver@5.3.2','body-parser@1.20.2','cbor@5.2.0','compression@1.7.4','cookie-session@2.0.0','express@4.18.2','express-handlebars@5.3.5','express-ws@4.0.0','ipcheck@0.1.0','minimist@1.2.8','multiparty@4.2.3','@yetzt/nedb','node-forge@1.3.1','ua-parser-js@1.0.36','ws@8.14.2','yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
-        if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2@1.14.0'); } }
+        if (ssh == true) { modules.push('ssh2@1.14.0'); }
         if (passport != null) { modules.push(...passport); }
         if (captcha == true) { modules.push('svg-captcha@1.4.0'); }
 
@@ -4038,7 +4038,7 @@ function mainStart() {
         else if (config.settings.xmongodb != null) { modules.push('mongojs@3.1.0'); } // Add MongoJS, old driver.
         if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.9.6'); } // Add SMTP support
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
-        if (args.translate) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('minify-js@0.0.4'); modules.push('html-minifier@4.0.0'); } // Translation support
+        if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('minify-js@0.0.4'); modules.push('html-minifier@4.0.0'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer@0.1.0'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
 
         if (typeof config.settings.autobackup == 'object') {
