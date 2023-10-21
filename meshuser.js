@@ -5697,6 +5697,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             return;
         }
 
+        for(var x in parent.users) {
+            if(parent.users[x].email==command.email){
+                displayNotificationMessage("Email address already in use", "New Account", "ServerNotify");
+                return;
+            }
+        }
+
         // Check if we exceed the maximum number of user accounts
         db.isMaxType(newuserdomain.limits.maxuseraccounts, 'user', newuserdomain.id, function (maxExceed) {
             if (maxExceed) {
