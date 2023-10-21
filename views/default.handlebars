@@ -862,6 +862,13 @@
                     <tr>
                         <td class="areaHead3">
                             <div class="toright2">
+                                <select id=p13sizedropdown onchange=p13updateFiles()>
+                                    <option value=0 selected="selected">Human Readble</option>
+                                    <option value=1 title=Bytes>Bytes</option>
+                                    <option value=10 title=KB>Kilobytes</option>
+                                    <option value=20 title=MB>Megabytes</option>
+                                    <option value=30 title=GB>Gigabyte</option>
+                                </select>
                                 <select id=p13sortdropdown onchange=p13updateFiles()>
                                     <option value=1 selected="selected">Sort by name</option>
                                     <option value=2>Sort by size</option>
@@ -10784,7 +10791,7 @@
 
         function p13updateFiles(checkedNames) {
             var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p13folderup(0)">' + "Root" + '</a>', fullPath = 'Root';
-
+            if(p13filetree==null) return;
             // Work on parsing the file path
             var x = p13filetree.path.split('\\');
             p13filetreelocation = [];
@@ -10811,7 +10818,22 @@
 
                 // Figure out the size
                 var fsize = '';
-                if (f.s != null) { fsize = getFileSizeStr(f.s); }
+                if (f.s != null) { 
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                    const i = parseInt(Math.floor(Math.log(Math.abs(f.s)) / Math.log(1024)), 10);
+                    const option = Q('p13sizedropdown').options[Q('p13sizedropdown').selectedIndex];
+                    if(Q('p13sizedropdown').value==0){
+                        if (f.s === 0){
+                            fsize = 'n/a';
+                        }else{
+                            fsize = (i === 0 ? `${f.s} ${sizes[i]}` : `${(f.s / (1024 ** i)).toFixed(2)} ${sizes[i]}`);
+                        }
+                    }else if(Q('p13sizedropdown').value==1){
+                        fsize = getFileSizeStr(f.s);
+                    }else{
+                        fsize = `${(f.s / (2 ** option.value)).toFixed(2)} ${option.title}`;
+                    }
+                }
 
                 var h = '';
                 if (f.t < 3) {
