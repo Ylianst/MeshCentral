@@ -4008,7 +4008,7 @@ function mainStart() {
         }
 
         // Build the list of required modules
-        var modules = ['archiver@5.3.2','body-parser@1.20.2','cbor@5.2.0','compression@1.7.4','cookie-session@2.0.0','express@4.18.2','express-handlebars@5.3.5','express-ws@5.0.2','ipcheck@0.1.0','minimist@1.2.8','multiparty@4.2.3','@yetzt/nedb','node-forge@1.3.1','ua-parser-js@1.0.36','ws@8.14.2','yauzl@2.10.0'];
+        var modules = ['archiver@5.3.2','body-parser@1.20.2','cbor@5.2.0','compression@1.7.4','cookie-session@2.0.0','express@4.18.2','express-handlebars@5.3.5','express-ws@4.0.0','ipcheck@0.1.0','minimist@1.2.8','multiparty@4.2.3','@yetzt/nedb','node-forge@1.3.1','ua-parser-js@1.0.36','ws@8.14.2','yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows'); if (sspi == true) { modules.push('node-sspi'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork'); }
         if (ssh == true) { if (nodeVersion < 11) { addServerWarning('MeshCentral SSH support requires NodeJS 11 or higher.', 1); } else { modules.push('ssh2'); } }
