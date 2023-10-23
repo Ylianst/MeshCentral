@@ -664,6 +664,16 @@
             height: 28px;
             width: 28px;
         }
+
+        .tagSpan {
+            background-color: lightgray;
+            padding: 3px;
+            border-radius: 5px;
+        }
+
+        .night .tagSpan {
+            color: black;
+        }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -3633,7 +3643,7 @@
 
                 // Node tags
                 var groupingTags = '<i>' + "None" + '</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span> '; } }
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class=tagSpan>' + EscapeHtml(node.tags[i]) + '</span> '; } }
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer;color:black>' + groupingTags + '</span>');
                 } else {
