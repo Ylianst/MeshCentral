@@ -1314,10 +1314,12 @@ module.exports.CreateDB = function (parent, func) {
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
         } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL
             var Promises = [];
-            for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.promise().query(queries[i])); } else { Promises.push(Datastore.promise().query(queries[i][0], queries[i][1])); } }
-            Promise.all(Promises)
-                .then(function (error, results, fields) { if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
-                .catch(function (error, results, fields) { if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
+            Datastore.getConnection(function(err, connection) {
+                for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(connection.promise().query(queries[i])); } else { Promises.push(connection.promise().query(queries[i][0], queries[i][1])); } }
+                Promise.all(Promises)
+                    .then(function (error, results, fields) { connection.release(); if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
+                    .catch(function (error, results, fields) { connection.release(); if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
+            });
         }
     }
 
