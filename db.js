@@ -1313,8 +1313,9 @@ module.exports.CreateDB = function (parent, func) {
                 })
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
         } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL
-            var Promises = [];
             Datastore.getConnection(function(err, connection) {
+                if (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } return; }
+                var Promises = [];
                 for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(connection.promise().query(queries[i])); } else { Promises.push(connection.promise().query(queries[i][0], queries[i][1])); } }
                 Promise.all(Promises)
                     .then(function (error, results, fields) { connection.release(); if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
