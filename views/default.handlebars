@@ -11565,6 +11565,21 @@
                         else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
                         else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
                     }
+                    if(m.LastBootUpTime){
+                        const year = parseInt(m.LastBootUpTime.substring(0, 4));
+                        const month = parseInt(m.LastBootUpTime.substring(4, 6)) - 1; // Months are 0-based in JavaScript (0 - January, 11 - December)
+                        const day = parseInt(m.LastBootUpTime.substring(6, 8));
+                        const hours = parseInt(m.LastBootUpTime.substring(8, 10));
+                        const minutes = parseInt(m.LastBootUpTime.substring(10, 12));
+                        const seconds = parseInt(m.LastBootUpTime.substring(12, 14));
+                        const milliseconds = parseInt(m.LastBootUpTime.substring(15, 21));
+                        const offsetHours = parseInt(m.LastBootUpTime.substring(21, 24));
+                        const offsetMinutes = parseInt(m.LastBootUpTime.substring(24, 26));
+                        const date = new Date(Date.UTC(year, month, day, hours, minutes, seconds, milliseconds));
+                        date.setHours(date.getHours() + offsetHours);
+                        date.setMinutes(date.getMinutes() + offsetMinutes);
+                        x += addDetailItem("Last Boot Up Time", date.toString());
+                    }
                 }
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png'}); }
             }
