@@ -1262,6 +1262,9 @@ function handleServerCommand(data) {
                         // Requestion details information about a process
                         if (data.pid) {
                             var info = {}; // TODO: Replace with real data. Feel free not to give all values if not available.
+                            try {
+                                info = processManager.getProcessInfo(data.pid);
+                            }catch(e){ }
                             /*
                             info.processUser = "User"; // String
                             info.processDomain = "Domain"; // String

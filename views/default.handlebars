@@ -2627,6 +2627,11 @@
                                     var x = '<div style=max-height:200px;overflow-y:auto>';
                                     //x += addHtmlValue4("Process ID", message.pid);
                                     if ((typeof message.value == 'object') && (Object.keys(message.value).length > 0)) {
+                                        // lets fix agent psinfo not being camelcase
+                                        message.value = jsonToCamel(message.value);
+                                        if(!message.value.cmd && message.value.path){ message.value.cmd = message.value.path }
+                                        if(!message.value.processUser && message.value.userName){ message.value.processUser = message.value.userName.split("\\")[1]; }
+                                        if(!message.value.processDomain && message.value.userName){ message.value.processDomain = message.value.userName.split("\\")[0]; }                                    
                                         if (message.value.processName) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Process Name" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.processName + '</b></div></div>'; }
                                         if (message.value.machineName) { x += addHtmlValue5("Machine Name", message.value.machineName); }
                                         if (message.value.cmd) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Command Line" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.cmd + '</b></div></div>'; }
