@@ -158,6 +158,7 @@ Once enabled, users see the new "CallMeBot" option when trying to enable messagi
   - [Signal Messenger](https://www.callmebot.com/blog/free-api-signal-send-messages/)
   - [Whatsapp](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
   - [Facebook Messenger](https://www.callmebot.com/blog/free-api-facebook-messenger/)
+  - [Telegram](https://www.callmebot.com/blog/telegram-text-messages/)
 
 Once the user has enabled their account, they can cut & paste the CallMeBot URI into MeshCentral to validate their account.
 
