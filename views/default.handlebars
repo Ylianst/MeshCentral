@@ -11565,6 +11565,18 @@
                         else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
                         else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
                     }
+                    if(m.LastBootUpTime){
+                        var thedate = {
+                            year: parseInt(m.LastBootUpTime.substring(0, 4)),
+                            month: parseInt(m.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
+                            day: parseInt(m.LastBootUpTime.substring(6, 8)),
+                            hours: parseInt(m.LastBootUpTime.substring(8, 10)),
+                            minutes: parseInt(m.LastBootUpTime.substring(10, 12)),
+                            seconds: parseInt(m.LastBootUpTime.substring(12, 14)),
+                        };
+                        const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
+                        x += addDetailItem("Last Boot Up Time", date);
+                    }
                 }
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png'}); }
             }
