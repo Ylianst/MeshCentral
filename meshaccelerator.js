@@ -32,7 +32,20 @@ module.exports.processMessage = function(message) {
                 const sign = crypto.createSign('SHA384');
                 sign.end(Buffer.from(message.data, 'binary'));
                 process.send(sign.sign(message.key).toString('binary'));
-            } catch (e) { process.send(null); }
+            } catch (ex) {
+                // If this exception happens, try again.
+                if (ex.code == 'ERR_OSSL_DSO_COULD_NOT_LOAD_THE_SHARED_LIBRARY') {
+                    try {
+                        const sign = crypto.createSign('SHA384');
+                        sign.end(Buffer.from(message.data, 'binary'));
+                        process.send(sign.sign(message.key).toString('binary'));
+                    } catch (ex) {
+                        process.send(null);
+                    }
+                } else {
+                    process.send(null);
+                }
+            }
             break;
         }
         case 'setState': {
