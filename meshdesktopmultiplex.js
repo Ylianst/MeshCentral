@@ -342,7 +342,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 parent.parent.fs.close(fd);
 
                 // Now that the recording file is closed, check if we need to index this file.
-                if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', filename); }
+                if (domain.sessionrecording.index && domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', filename); }
 
                 // Add a event entry about this recording
                 var basefile = parent.parent.path.basename(filename);
