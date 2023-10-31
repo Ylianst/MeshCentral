@@ -1244,7 +1244,11 @@ module.exports.CreateDB = function (parent, func) {
                     var docs = [];
                     for (var i in results) {
                         if (results[i].doc) {
-                            docs.push(results[i].doc);
+                            if (typeof results[i].doc == 'string') {
+                                docs.push(JSON.parse(results[i].doc));
+                            } else {
+                                docs.push(results[i].doc);
+                            }
                         } else if ((results.length == 1) && (results[i]['COUNT(doc)'] != null)) {
                             // This is a SELECT COUNT() operation
                             docs = results[i]['COUNT(doc)'];
