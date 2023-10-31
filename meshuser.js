@@ -2738,8 +2738,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     for (i in command.nodeids) {
+                        var nodeid = command.nodeids[i], err = null;
+
+                        // Argument validation
+                        if (common.validateString(nodeid, 1, 1024) == false) { err = 'Invalid nodeid'; }  // Check nodeid
+                        else {
+                            if (nodeid.indexOf('/') == -1) { nodeid = 'node/' + domain.id + '/' + nodeid; }
+                            if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                        }
+                        if (err != null) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: err })); } catch (ex) { } }
+                            continue;
+                        }
                         // Get the node and the rights for this node
-                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                        parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
                             if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
 
