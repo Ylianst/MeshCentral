@@ -12169,7 +12169,7 @@
             var x;
             if (userinfo.msghandle != null) {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/messaging40.png" style=padding:8px>';
-                x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.msghandle) + '</div>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-weight:bold>' + EscapeHtml(userinfo.msghandle) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
                 setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingRemove, x);
                 account_managePhoneRemoveValidate();
