@@ -183,12 +183,14 @@
       "_maxDeviceView": 1000,
       "_unknownUserRootRedirect": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE",
       "_nightMode": 1,
+      "_scrollToTop": true,
       "_userQuota": 1048576,
       "_meshQuota": 248576,
       "_loginKey": [ "abc", "123" ],
       "_agentKey": [ "abc", "123" ],
       "_ipkvm": false,
       "minify": true,
+      "_hidePowerTimeline": true,
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
       "_userNameIsEmail": true,
@@ -289,7 +291,8 @@
         "Upgrade": false,
         "ErrorLog": false,
         "Console": false,
-        "Trace": false
+        "Trace": false,
+        "Config": false
       },
       "_passwordRequirements": {
         "min": 8,
@@ -441,7 +444,7 @@
         "Strict-Transport-Security": "max-age=360000",
         "x-frame-options": "SAMEORIGIN"
       },
-      "_agentConfig": [ "webSocketMaskOverride=1", "coreDumpEnabled=1" ],
+      "_agentConfig": [ "coreDumpEnabled=1" ],
       "_assistantConfig": [ "disableUpdate=1" ],
       "_sessionRecording": {
         "_onlySelectedUsers": true,
@@ -627,6 +630,11 @@
     "_discord": {
       "serverurl": "https://discord.gg/xxxxxxxxx",
       "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "_ntfy": {
+      "host": "https://[my]ntfy.sh",
+      "userurl": "https://[my]ntfy.sh/userhelp",
+      "authorization": "Basic xxxxxxxxxxxxxxxxxxxx" 
     }
   }
 }

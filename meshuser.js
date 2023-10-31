@@ -1395,7 +1395,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
                         if ((command.msghandle != null) && (typeof command.msghandle == 'string')) {
-                            if (command.msghandle.startsWith('callmebot:https://')) { const h = parent.parent.msgserver.callmebotUrlToHandle(command.msghandle.substring(10)); if (h) { command.msghandle = h; } else { command.msghandle = ''; } }
+                            if (command.msghandle.startsWith('callmebot:http')) { const h = parent.parent.msgserver.callmebotUrlToHandle(command.msghandle.substring(10)); if (h) { command.msghandle = h; } else { command.msghandle = ''; } }
                             if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; }
                             change = 1;
                         }
@@ -1490,6 +1490,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     var ugrpdomain, err = null;
                     try {
+                        // Check if we are in a mode that does not allow manual user group creation
+                        if (
+                            (typeof domain.authstrategies == 'object') &&
+                            (typeof domain.authstrategies['oidc'] == 'object') &&
+                            (typeof domain.authstrategies['oidc'].groups == 'object') &&
+                            ((domain.authstrategies['oidc'].groups.sync == true) || ((typeof domain.authstrategies['oidc'].groups.sync == 'object') && (domain.authstrategies['oidc'].groups.sync.enabled == true)))
+                        ) {
+                            err = "Not allowed in OIDC mode with user group sync.";
+                        }
+
                         // Check if we have new group restriction
                         if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = "Permission denied"; }
 
@@ -1820,7 +1830,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // If this account is settings locked, return here.
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
-
+                    
+                    // Do not allow change password if sspi or ldap
+                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
+                    
                     // Change our own password
                     if (common.validateString(command.oldpass, 1, 256) == false) break;
                     if (common.validateString(command.newpass, 1, 256) == false) break;
@@ -4915,7 +4928,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (type == 'csv') {
                             try {
                                 // Create the CSV file
-                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,avdetails,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
+                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,tags,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
                                 for (var i = 0; i < results.length; i++) {
                                     const nodeinfo = results[i];
 
@@ -4926,14 +4939,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (typeof n.wsc == 'object') {
                                             output += ',' + csvClean(n.wsc.antiVirus ? n.wsc.antiVirus : '') + ',' + csvClean(n.wsc.autoUpdate ? n.wsc.autoUpdate : '') + ',' + csvClean(n.wsc.firewall ? n.wsc.firewall : '')
                                         } else { output += ',,,'; }
+                                        if (typeof n.volumes == 'object') {
+                                            var bitlockerdetails = '', firstbitlocker = true;
+                                            for (var a in n.volumes) { if (typeof n.volumes[a].protectionStatus !== 'undefined') { if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; } bitlockerdetails += a + '/' + n.volumes[a].volumeStatus; } }
+                                            output += ',' + csvClean(bitlockerdetails);
+                                        } else {
+                                            output += ',';
+                                        }
                                         if (typeof n.av == 'object') {
                                             var avdetails = '', firstav = true;
                                             for (var a in n.av) { if (typeof n.av[a].product == 'string') { if (firstav) { firstav = false; } else { avdetails += '|'; } avdetails += (n.av[a].product + '/' + ((n.av[a].enabled) ? 'enabled' : 'disabled') + '/' + ((n.av[a].updated) ? 'updated' : 'notupdated')); } }
                                             output += ',' + csvClean(avdetails);
+                                        } else {
+                                            output += ',';
                                         }
-                                        else { output += ','; }
+                                        if (typeof n.tags == 'object') {
+                                            var tagsdetails = '', firsttags = true;
+                                            for (var a in n.tags) { if (firsttags) { firsttags = false; } else { tagsdetails += '|'; } tagsdetails += n.tags[a]; }
+                                            output += ',' + csvClean(tagsdetails);
+                                        } else {
+                                            output += ',';
+                                        }
                                     } else {
-                                        output += ',,,,,,,,,,,';
+                                        output += ',,,,,,,,,,,,,';
                                     }
 
                                     // System infomation
@@ -5279,6 +5307,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverclearerrorlog': serverCommandServerClearErrorLog,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
+        'serverconfig': serverCommandServerConfig,
         'serverstats': serverCommandServerStats,
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
@@ -5666,6 +5695,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 displayNotificationMessage(err, "New Account", 'ServerNotify', 1, errid, args);
             }
             return;
+        }
+
+        for(var x in parent.users) {
+            if(parent.users[x].email==command.email){
+                displayNotificationMessage("Email address already in use", "New Account", "ServerNotify");
+                return;
+            }
         }
 
         // Check if we exceed the maximum number of user accounts
@@ -6489,6 +6525,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         // Load the server error log
         if (userHasSiteUpdate() && domainHasMyServerErrorLog())
             fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { obj.send({ action: 'servererrors', data: data }); });
+    }
+
+    function serverCommandServerConfig(command) {
+        // Load the server config.json. This is a sensitive file so care must be taken to only send to trusted administrators.
+        if (userHasSiteUpdate() && (domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.config === true))) {
+            const configFilePath = common.joinPath(parent.parent.datapath, (parent.parent.args.configfile ? parent.parent.args.configfile : 'config.json'));
+            fs.readFile(configFilePath, 'utf8', function (err, data) { obj.send({ action: 'serverconfig', data: data }); });
+        }
     }
 
     function serverCommandServerStats(command) {

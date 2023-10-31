@@ -51,7 +51,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.meshIderHandler = require('./amt/amt-ider.js');
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
-    obj.uaparser = require('./ua-parser');
+    obj.uaparser = require('ua-parser-js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Setup WebAuthn / FIDO2
@@ -151,7 +151,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.webCertificateHashBase64 = Buffer.from(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.webCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
     obj.webCertificateFullHashs = { '': obj.webCertificateFullHash };
-    obj.webCertificateExpire = { '': Date.parse(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.web.cert).validity.notAfter) };
+    obj.webCertificateExpire = { '': parent.certificateOperations.getCertificateExpire(parent.certificates.web.cert) };
     obj.agentCertificateHashHex = parent.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert);
     obj.agentCertificateHashBase64 = Buffer.from(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
     obj.agentCertificateAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
@@ -2813,7 +2813,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
-                if ((userid != null) && (err == null)) {
+                // 2FA is not supported in URL authentication method. If user has 2FA enabled, this login method fails.
+				var user = obj.users[userid];
+                if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
+                    handleRootRequestEx(req, res, domain, direct);
+                } else if ((userid != null) && (err == null)) {
                     // Login success
                     parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
                     req.session.userid = userid;
@@ -3059,7 +3063,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
                 // Server features
-                var serverFeatures = 127;
+                var serverFeatures = 255;
                 if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
                 else if (typeof domain.myserver == 'object') {
                     if (domain.myserver.backup !== true) { serverFeatures -= 1; } // Disallow simple server backups
@@ -3068,6 +3072,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain.myserver.errorlog !== true) { serverFeatures -= 8; } // Disallow show server crash log
                     if (domain.myserver.console !== true) { serverFeatures -= 16; } // Disallow server console
                     if (domain.myserver.trace !== true) { serverFeatures -= 32; } // Disallow server tracing
+                    if (domain.myserver.config !== true) { serverFeatures -= 128; } // Disallow server configuration
                 }
                 if (obj.db.databaseType != 1) { // If not using NeDB, we can't backup using the simple system.
                     if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
@@ -3099,7 +3104,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
                     webRelayPort: ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
-                    webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : '')
+                    webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : ''),
+                    hidePowerTimeline: (domain.hidepowertimeline ? 'true' : 'false')
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
@@ -3218,6 +3224,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((typeof domain.terminal == 'object') && (domain.terminal.sshconnect === false)) { features2 += 0x01000000; } // Remove the "SSH Connect" button in the "Terminal" tab when the device is agent managed
         if ((parent.msgserver != null) && (parent.msgserver.providers != 0)) { features2 += 0x02000000; } // User messaging server is enabled
         if ((parent.msgserver != null) && (parent.msgserver.providers != 0) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false))) { features2 += 0x04000000; } // User messaging 2FA is allowed
+        if (domain.scrolltotop == true) { features2 += 0x08000000; } // Show the "Scroll to top" button
         return { features: features, features2: features2 };
     }
 
@@ -5295,6 +5302,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Get the agent filename
                 var meshagentFilename = argentInfo.rname;
                 if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+                if (argentInfo.rname.endsWith('.apk') && !meshagentFilename.endsWith('.apk')) { meshagentFilename = meshagentFilename + '.apk'; }
                 if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
                 if (req.query.zip == 1) { if (argentInfo.zdata != null) { setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename + '.zip', null, 'meshagent.zip'); res.send(argentInfo.zdata); } else { try { res.sendStatus(404); } catch (ex) { } } return; } // Send compressed agent
                 setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
@@ -6111,6 +6119,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60000); } // sessiontime is minutes
         obj.app.use(require('cookie-session')(sessionOptions));
+        obj.app.use(function(request, response, next) { // Patch for passport 0.6.0 - https://github.com/jaredhanson/passport/issues/904
+            if (request.session && !request.session.regenerate) {
+                request.session.regenerate = function (cb) {
+                    cb()
+                }
+            }
+            if (request.session && !request.session.save) {
+                request.session.save = function (cb) {
+                    cb()
+                }
+            }
+            next()
+        });
 
         // Handle all incoming web sockets, see if some need to be handled as web relays
         obj.app.ws('/*', function (ws, req, next) {
@@ -6247,7 +6268,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self'"
+                'Content-Security-Policy': "default-src 'none'; font-src 'self'; script-src 'self' 'unsafe-inline'" + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline'; frame-src 'self' mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self'; manifest-src 'self'"
             };
             if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
             if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
@@ -7116,6 +7137,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 clientSecret: domain.authstrategies.oidc.clientsecret,
                 scope: ['profile', 'email'],
             };
+            if (typeof domain.authstrategies.oidc.authorizationurl == 'string') {options.authorizationURL = domain.authstrategies.oidc.authorizationurl; }
+            if (typeof domain.authstrategies.oidc.tokenurl == 'string') { options.tokenURL = domain.authstrategies.oidc.tokenurl; }
+            if (typeof domain.authstrategies.oidc.userinfourl == 'string') { options.userInfoURL = domain.authstrategies.oidc.userinfourl; }
+            if (typeof domain.authstrategies.oidc.callbackurl == 'string') { options.callbackURL = domain.authstrategies.oidc.callbackurl; }
+
             const discoverOptions = async function(options){
                 if ((typeof domain.authstrategies.oidc.authorizationurl != 'string') || (typeof domain.authstrategies.oidc.tokenurl != 'string') || (typeof domain.authstrategies.oidc.userinfourl != 'string')) {
                     const Issuer = require('openid-client').Issuer;

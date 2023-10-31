@@ -654,6 +654,21 @@ var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
 
+// Get Volumes and BitLocker if Windows
+try {
+    if (process.platform == 'win32'){
+        if (require('identifiers').volumes_promise != null){
+            var p = require('identifiers').volumes_promise();
+            p.then(function (res){
+                meshCoreObj.volumes = res;
+                meshCoreObjChanged();
+            });
+        }else if (require('identifiers').volumes != null){
+            meshCoreObj.volumes = require('identifiers').volumes();
+            meshCoreObjChanged();
+        }
+    }
+} catch(e) { }
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 try {
@@ -1247,6 +1262,9 @@ function handleServerCommand(data) {
                         // Requestion details information about a process
                         if (data.pid) {
                             var info = {}; // TODO: Replace with real data. Feel free not to give all values if not available.
+                            try {
+                                info = processManager.getProcessInfo(data.pid);
+                            }catch(e){ }
                             /*
                             info.processUser = "User"; // String
                             info.processDomain = "Domain"; // String
@@ -1481,33 +1499,33 @@ function handleServerCommand(data) {
                     if (options.uid == null) break;
                     if (((require('user-sessions').minUid != null) && (options.uid < require('user-sessions').minUid()))) break; // This command can only run as user.
                 }
-
+                var replydata = "";
                 if (process.platform == 'win32') {
                     if (data.type == 1) {
                         // Windows command shell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd'], options);
                         mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
-                        mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
-                        mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
+                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
                     } else if (data.type == 2) {
                         // Windows Powershell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], options);
                         mesh.cmdchild.descriptorMetadata = 'UserCommandsPowerShell';
-                        mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
-                        mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
+                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
                     }
                 } else if (data.type == 3) {
                     // Linux shell
                     mesh.cmdchild = require('child_process').execFile('/bin/sh', ['sh'], options);
                     mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
-                    mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
-                    mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
+                    mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                    mesh.cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
                     mesh.cmdchild.stdin.write(data.cmds.split('\r').join('') + '\nexit\n');
-                    mesh.cmdchild.on('exit', function () { sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                    mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
                 }
                 break;
             }
@@ -1810,14 +1828,42 @@ function getSystemInformation(func) {
                 if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
+            if (!results.hardware.identifiers['bios_serial']) {
+                try { 
+                    var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
+                    results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
+                } catch (ex) { }
+            }
+            if (!results.hardware.identifiers['bios_mode']) {
+                try {
+                    results.hardware.identifiers['bios_mode'] = 'Legacy';
+                    for (var i in results.hardware.windows.partitions) {
+                        if (results.hardware.windows.partitions[i].Description=='GPT: System') {
+                            results.hardware.identifiers['bios_mode'] = 'UEFI';
+                        }
+                    }
+                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            }
+        }
+        if(results.hardware && results.hardware.linux) {
+            if (!results.hardware.identifiers['bios_serial']) {
+                if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
+                    results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+                }
+            }
+            if (!results.hardware.identifiers['bios_mode']) {
+                try {
+                    results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
+                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            }
         }
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
-        results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-        func(results);
+        // results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
+        // func(results);
 
-        /*
+        
         // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
@@ -1828,14 +1874,14 @@ function getSystemInformation(func) {
                 var p = require('identifiers').volumes_promise();
                 p.then(function (res)
                 {
-                    results.volumes = res;
+                    results.hardware.windows.volumes = res;
                     results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
             }
             else if (require('identifiers').volumes != null)
             {
-                results.volumes = require('identifiers').volumes();
+                results.hardware.windows.volumes = require('identifiers').volumes();
                 results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
@@ -1850,7 +1896,7 @@ function getSystemInformation(func) {
             results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
             func(results);
         }
-        */
+        
     } catch (ex) { func(null, ex); }
 }
 
@@ -2550,27 +2596,24 @@ function kvm_consentpromise_resolved(always)
                 MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
             }
         }
-        if (this.ws.httprequest.desktop.kvm.connectionBar)
+        try {
+			if (this.ws.httprequest.desktop.kvm.connectionBar) {
+				this.ws.httprequest.desktop.kvm.connectionBar.httprequest = this.ws.httprequest;
+				this.ws.httprequest.desktop.kvm.connectionBar.on('close', function () {
+					MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+					for (var i in this.httprequest.desktop.kvm._pipedStreams) {
+						this.httprequest.desktop.kvm._pipedStreams[i].end();
+					}
+					this.httprequest.desktop.kvm.end();
+				});
+			}
+		}
+		catch (ex)
         {
-            this.ws.httprequest.desktop.kvm.connectionBar.state =
+            if (process.platform != 'darwin')
             {
-                userid: this.ws.httprequest.userid,
-                xuserid: this.ws.httprequest.xuserid,
-                username: this.ws.httprequest.username,
-                sessionid: this.ws.httprequest.sessionid,
-                remoteaddr: this.ws.httprequest.remoteaddr,
-                guestname: this.ws.httprequest.guestname,
-                desktop: this.ws.httprequest.desktop
-            };
-            this.ws.httprequest.desktop.kvm.connectionBar.on('close', function ()
-            {
-                MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.state.remoteaddr + ")", state);
-                for (var i in this.state.desktop.kvm._pipedStreams)
-                {
-                    this.state.desktop.kvm._pipedStreams[i].end();
-                }
-                this.state.desktop.kvm.end();
-            });
+                MeshServerLogEx(32, null, "Failed2(" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+            }
         }
     }
     this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });

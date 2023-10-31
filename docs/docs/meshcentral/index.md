@@ -1,8 +1,8 @@
 # Meshcentral2 Guide
 
-[MeshCentral2 Guide](https://meshcentral.com/info/docs/MeshCentral2UserGuide.pdf)
+[MeshCentral2 Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
 
-MeshCmd Guide [as .pdf](https://meshcentral.com/info/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
+MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
 
 ## Video Walkthru
 
@@ -1014,8 +1014,7 @@ First we will start with the MeshCentral configuration, here is a minimal config
   },
   "domains": {
     "": {
-      "certUrl": "https://127.0.0.1:443/",
-      "agentConfig": [ "webSocketMaskOverride=1" ],
+      "certUrl": "https://127.0.0.1:443/"
     }
   }
 }

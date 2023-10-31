@@ -664,6 +664,16 @@
             height: 28px;
             width: 28px;
         }
+
+        .tagSpan {
+            background-color: lightgray;
+            padding: 3px;
+            border-radius: 5px;
+        }
+
+        .night .tagSpan {
+            color: black;
+        }
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -672,7 +682,7 @@
         <div id=mastheadx></div>
         <div id=masthead style="background:url(logo.png) 0px 0px;background-size:341px 50px;background-color:#036;background-repeat:no-repeat;height:50px;width:100%;overflow:hidden">
             <div style="width:calc(100% - 50px);overflow:hidden">
-                <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:6px">
+                <div style="float:left;height:66px;color:#c8c8c8;padding-left:10px;padding-top:6px" onclick="go(2)">
                     <strong><font style="font-size:36px;font-family:Arial,Helvetica,sans-serif;text-shadow: 1px 1px 2px #000;">{{{title1}}}</font></strong>
                 </div>
                 <div style="float:left;height:66px;color:#c8c8c8;padding-left:5px;padding-top:10px">
@@ -733,6 +743,7 @@
                                     <div style="margin-left:9px;margin-bottom:8px">
                                         <div id="managePhoneNumber1" style="margin-top:5px;display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a> <span id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div>
                                         <div id="manageEmail2FA" style="margin-top:5px;display:none"><a onclick="account_manageAuthEmail()" style="cursor:pointer">Manage email authentication</a> <span id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div>
+                                        <div style="margin-top:5px"><a href=# onclick="account_showLocalizationSettings()">Localization Settings</a></div>
                                         <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a> <span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div>
                                         <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a> <span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div>
                                         <div style="margin-top:5px"><a href=# onclick="return account_viewPreviousLogins()">View previous logins</a></div>
@@ -1249,6 +1260,7 @@
         var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
+        var hidePowerTimeline = {{{hidePowerTimeline}}};
         var webRelayDns = '{{{webRelayDns}}}';
         var meshserver = null;
         var xdr = null;
@@ -2305,6 +2317,51 @@
             }, "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox ' + (emailU2Fenabled ? 'checked' : '') + '/>' + "Enable email two-factor authentication." + '</label>');
         }
 
+        var loclist = { 'af': "Afrikaans", 'sq': "Albanian", 'ar': "Arabic (Standard)", 'ar-dz': "Arabic (Algeria)", 'ar-bh': "Arabic (Bahrain)", 'ar-eg': "Arabic (Egypt)", 'ar-iq': "Arabic (Iraq)", 'ar-jo': "Arabic (Jordan)", 'ar-kw': "Arabic (Kuwait)", 'ar-lb': "Arabic (Lebanon)", 'ar-ly': "Arabic (Libya)", 'ar-ma': "Arabic (Morocco)", 'ar-om': "Arabic (Oman)", 'ar-qa': "Arabic (Qatar)", 'ar-sa': "Arabic (Saudi Arabia)", 'ar-sy': "Arabic (Syria)", 'ar-tn': "Arabic (Tunisia)", 'ar-ae': "Arabic (U.A.E.)", 'ar-ye': "Arabic (Yemen)", 'an': "Aragonese", 'hy': "Armenian", 'as': "Assamese", 'ast': "Asturian", 'az': "Azerbaijani", 'eu': "Basque", 'bg': "Bulgarian", 'be': "Belarusian", 'bn': "Bengali", 'bs': "Bosnian", 'br': "Breton", 'my': "Burmese", 'ca': "Catalan", 'ch': "Chamorro", 'ce': "Chechen", 'zh': "Chinese", 'zh-hk': "Chinese (Hong Kong)", 'zh-cn': "Chinese (PRC)", 'zh-sg': "Chinese (Singapore)", 'zh-tw': "Chinese (Taiwan)", 'cv': "Chuvash", 'co': "Corsican", 'cr': "Cree", 'hr': "Croatian", 'cs': "Czech", 'da': "Danish", 'nl': "Dutch (Standard)", 'nl-be': "Dutch (Belgian)", 'en': "English", 'en-au': "English (Australia)", 'en-bz': "English (Belize)", 'en-ca': "English (Canada)", 'en-ie': "English (Ireland)", 'en-jm': "English (Jamaica)", 'en-nz': "English (New Zealand)", 'en-ph': "English (Philippines)", 'en-za': "English (South Africa)", 'en-tt': "English (Trinidad & Tobago)", 'en-gb': "English (United Kingdom)", 'en-us': "English (United States)", 'en-zw': "English (Zimbabwe)", 'eo': "Esperanto", 'et': "Estonian", 'fo': "Faeroese", 'fa': "Farsi (Persian)", 'fj': "Fijian", 'fi': "Finnish", 'fr': "French (Standard)", 'fr-be': "French (Belgium)", 'fr-ca': "French (Canada)", 'fr-fr': "French (France)", 'fr-lu': "French (Luxembourg)", 'fr-mc': "French (Monaco)", 'fr-ch': "French (Switzerland)", 'fy': "Frisian", 'fur': "Friulian", 'gd': "Gaelic (Scots)", 'gd-ie': "Gaelic (Irish)", 'gl': "Galacian", 'ka': "Georgian", 'de': "German (Standard)", 'de-at': "German (Austria)", 'de-de': "German (Germany)", 'de-li': "German (Liechtenstein)", 'de-lu': "German (Luxembourg)", 'de-ch': "German (Switzerland)", 'el': "Greek", 'gu': "Gujurati", 'ht': "Haitian", 'he': "Hebrew", 'hi': "Hindi", 'hu': "Hungarian", 'is': "Icelandic", 'id': "Indonesian", 'iu': "Inuktitut", 'ga': "Irish", 'it': "Italian (Standard)", 'it-ch': "Italian (Switzerland)", 'ja': "Japanese", 'kn': "Kannada", 'ks': "Kashmiri", 'kk': "Kazakh", 'km': "Khmer", 'ky': "Kirghiz", 'tlh': "Klingon", 'ko': "Korean", 'ko-kp': "Korean (North Korea)", 'ko-kr': "Korean (South Korea)", 'la': "Latin", 'lv': "Latvian", 'lt': "Lithuanian", 'lb': "Luxembourgish", 'mk': "FYRO Macedonian", 'ms': "Malay", 'ml': "Malayalam", 'mt': "Maltese", 'mi': "Maori", 'mr': "Marathi", 'mo': "Moldavian", 'nv': "Navajo", 'ng': "Ndonga", 'ne': "Nepali", 'no': "Norwegian", 'nb': "Norwegian (Bokmal)", 'nn': "Norwegian (Nynorsk)", 'oc': "Occitan", 'or': "Oriya", 'om': "Oromo", 'fa-ir': "Persian/Iran", 'pl': "Polish", 'pt': "Portuguese", 'pt-br': "Portuguese (Brazil)", 'pa': "Punjabi", 'pa-in': "Punjabi (India)", 'pa-pk': "Punjabi (Pakistan)", 'qu': "Quechua", 'rm': "Rhaeto-Romanic", 'ro': "Romanian", 'ro-mo': "Romanian (Moldavia)", 'ru': "Russian", 'ru-mo': "Russian (Moldavia)", 'sz': "Sami (Lappish)", 'sg': "Sango", 'sa': "Sanskrit", 'sc': "Sardinian", 'sd': "Sindhi", 'si': "Singhalese", 'sr': "Serbian", 'sk': "Slovak", 'sl': "Slovenian", 'so': "Somani", 'sb': "Sorbian", 'es': "Spanish", 'es-ar': "Spanish (Argentina)", 'es-bo': "Spanish (Bolivia)", 'es-cl': "Spanish (Chile)", 'es-co': "Spanish (Colombia)", 'es-cr': "Spanish (Costa Rica)", 'es-do': "Spanish (Dominican Republic)", 'es-ec': "Spanish (Ecuador)", 'es-sv': "Spanish (El Salvador)", 'es-gt': "Spanish (Guatemala)", 'es-hn': "Spanish (Honduras)", 'es-mx': "Spanish (Mexico)", 'es-ni': "Spanish (Nicaragua)", 'es-pa': "Spanish (Panama)", 'es-py': "Spanish (Paraguay)", 'es-pe': "Spanish (Peru)", 'es-pr': "Spanish (Puerto Rico)", 'es-es': "Spanish (Spain)", 'es-uy': "Spanish (Uruguay)", 'es-ve': "Spanish (Venezuela)", 'sx': "Sutu", 'sw': "Swahili", 'sv': "Swedish", 'sv-fi': "Swedish (Finland)", 'sv-sv': "Swedish (Sweden)", 'ta': "Tamil", 'tt': "Tatar", 'te': "Teluga", 'th': "Thai", 'tig': "Tigre", 'ts': "Tsonga", 'tn': "Tswana", 'tr': "Turkish", 'tk': "Turkmen", 'uk': "Ukrainian", 'hsb': "Upper Sorbian", 'ur': "Urdu", 've': "Venda", 'vi': "Vietnamese", 'vo': "Volapuk", 'wa': "Walloon", 'cy': "Welsh", 'xh': "Xhosa", 'ji': "Yiddish", 'zu': "Zulu" };
+        var loclistex = { 'zh-chs': "Chinese (Simplified)", 'zh-cht': "Chinese (Traditional)" };
+        function account_showLocalizationSettings() {
+            if (xxdialogMode) return false;
+            var n = getstore('loctag', 0), y = '';
+            var x = '<select id=d2locselect style=width:180px><option value="*">' + "User browser value" + '</option>';
+            for (var i in loclist) { x += '<option value="' + i + '"' + ((n == i)?' selected':'') + '>' + i + ' - ' + loclist[i] + '</option>'; }
+            x += '</select>';
+            if (serverinfo.languages && serverinfo.languages.length > 0) {
+                y += "Changing the language will require a refresh of the page." + '<br /><br />';
+                var z = '<select id=d2langselect style=width:180px><option value="*">' + "User browser value" + '</option>';
+                for (var i in serverinfo.languages) {
+                    var lang = serverinfo.languages[i];
+                    z += '<option value="' + lang + '"' + ((userinfo.lang == lang)?' selected':'') + '>' + lang + ' - ' + (loclist[lang]?loclist[lang]:loclistex[lang]) + '</option>';
+                }
+                z += '</select>';
+                y += addHtmlValue("Language", z);
+            }
+            y += addHtmlValue("Dates & Time", x);
+
+            if ((userinfo.siteadmin == 0xFFFFFFFF) && (domain == '')) {
+                y += '<br /><a rel="noreferrer noopener" target="_blank" href="translator.htm">' + "Help translate MeshCentral" + '</a>';
+            }
+
+            setDialogMode(2, "Localization Settings", 3, account_showLocalizationSettingsEx, y);
+            return false;
+        }
+
+        function account_showLocalizationSettingsEx() {
+            // Set user language
+            var lang = Q('d2langselect').value;
+            if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
+            if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
+
+            // Set date localization
+            var n = getstore('loctag', 0);
+            var m = Q('d2locselect').value;
+            if (n != m) {
+                if (m != '*') { args.locale = m; } else { delete args.locale; }
+                putstore('loctag', args.locale);
+                mainUpdate(0xFFFFFFFF); // Refresh everything.
+            }
+        }
+
+
         function account_manageAuthApp() {
             if (xxdialogMode || ((features & 4096) == 0)) return;
             if (userinfo.otpsecret == 1) { account_removeOtp(); } else { account_addOtp(); }
@@ -2921,7 +2978,15 @@
                 gotKeyPressEvent = false;
                 var k = 0;
                 if (e.charCode != 0) { k = e.charCode; } else if (e.keyCode != 0) { k = e.keyCode; }
-                if (k == 8) { terminal.sendText(String.fromCharCode(k)); } // Enter and backspace
+                if (k == 8) { // Enter and backspace
+                    if (terminal.urlname == 'sshterminalrelay.ashx') {
+                        // SSH
+                        terminal.socket.send('~' + String.fromCharCode(k));
+                    } else {
+                        // Agent
+                        terminal.sendText(String.fromCharCode(k));
+                    }
+                }
                 else if (e.ctrlKey && (k >= 64) && (k <= 95)) {
                     // Ctrl keys
                     if (terminal.urlname == 'sshterminalrelay.ashx') {
@@ -3578,7 +3643,7 @@
 
                 // Node tags
                 var groupingTags = '<i>' + "None" + '</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span style="background-color:lightgray;padding:3px;border-radius:5px">' + EscapeHtml(node.tags[i]) + '</span> '; } }
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class=tagSpan>' + EscapeHtml(node.tags[i]) + '</span> '; } }
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer;color:black>' + groupingTags + '</span>');
                 } else {
@@ -3871,7 +3936,7 @@
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if (currentNode.mtype == 3) { QH('p10html2', '<br />'); return; }
+            if (currentNode.mtype == 3 || hidePowerTimeline) { QH('p10html2', '<br />'); return; }
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
@@ -4354,7 +4419,7 @@
             QH('deskButtonMenu', x);
         }
 
-        var keyStrings = { 8  : "BackSpace", 9  : "Tab", 13 : "Enter", 27 : "Escape", 44 : "Print Screen", 45 : "Insert", 46 : "Del", 36 : "Home", 35 : "End", 32 : "Espace", 33 : "Page Up", 34 : "Page Down", 37 : "Left", 38 : "Up", 39 : "Right", 40 : "Down", 0  : "None" }
+        var keyStrings = { 8: "BackSpace", 9: "Tab", 13: "Enter", 27: "Escape", 32: "Space", 44: "Print Screen", 45: "Insert", 46: "Del", 36: "Home", 35: "End", 32: "Espace", 33: "Page Up", 34: "Page Down", 37: "Left", 38: "Up", 39: "Right", 40: "Down", 0: "None" }
 
         function keyShortcutTotext(n) {
             var x = [];
@@ -4745,7 +4810,7 @@
             // Show the right buttons
             QV('disconnectbutton2span', (termState == true));
             QV('connectbutton2span', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.mtype != 3));
-            QV('connectbutton2sspan', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3) && (terminalNode.agent.id != 4));
+            QV('connectbutton2sspan', (termState == false) && (terminalNode.agent != null) && (terminalNode.agent.caps & 2) && (terminalNode.agent.id != 3));
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
@@ -4886,7 +4951,9 @@
                         case 'sessionerror': { p12setConsoleMsg("Session expired", 5000); break; }
                         case 'sessiontimeout': { p12setConsoleMsg("Session timeout", 5000); break; }
                     }
-                } else if (data[0] == '~') { xterm.writeUtf8(data.substring(1)); }
+                } else if (data[0] == '~') {
+                    if (xterm.writeUtf8) { xterm.writeUtf8(data.substring(1)); } else { xterm.write(data.substring(1)); }
+                }
             }
         }
 
@@ -5792,6 +5859,21 @@
                     x += addDetailItem("Antivirus", y.join('<br />'));
                 }
 
+                // Volumes and Bitlocker
+                if (node.volumes){
+                    var bitlocker = [];
+                    for (var i in node.volumes) {
+                        if (typeof node.volumes[i].protectionStatus !== 'undefined' && node.volumes[i].protectionStatus == 'On'){
+                            bitlocker.push(i + ' - <span style=color:green>' + node.volumes[i].volumeStatus + '</span>');
+                        }else if (typeof node.volumes[i].protectionStatus !== 'undefined'){
+                            bitlocker.push(i + ' - <span style=color:red>' + node.volumes[i].volumeStatus + '</span>');
+                        }
+                    }
+                    if(bitlocker.length > 0){
+                        x += addDetailItem("BitLocker", bitlocker.join('<br />'));
+                    }
+                }
+
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
             }
 
@@ -5906,6 +5988,8 @@
                 // BIOS
                 if (ident.bios_vendor) { x += addDetailItem("Vendor", EscapeHtml(ident.bios_vendor), s); }
                 if (ident.bios_version) { x += addDetailItem("Version", EscapeHtml(ident.bios_version), s); }
+                if (ident.bios_serial) { x += addDetailItem("Serial", EscapeHtml(ident.bios_serial), s); }
+                if (ident.bios_mode) { x += addDetailItem("Mode", EscapeHtml(ident.bios_mode), s); }
                 if (x != '') { sections.push({ name: "BIOS", html: x, img: 'chip' }); }
 
                 // Motherboard
@@ -5930,7 +6014,7 @@
                     for (var i in hardware.windows.memory) {
                         var m = hardware.windows.memory[i];
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.BankLabel) + '</b></div>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown'))) + '</b></div>';
                         if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
                         else if (m.Capacity) { x += addDetailItem("Capacity", format("{0} Mb", (m.Capacity / 1024 / 1024)), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + EscapeHtml(m.PartNumber), s); }
@@ -5939,6 +6023,29 @@
                     x += '</table>';
 
                     if (x != '') { sections.push({ name: "Memory", html: x, img: 'ram' }); }
+                }
+            }
+
+            if (hardware.linux) {
+                if (hardware.linux.memory && (hardware.linux.memory.Memory_Device.length > 0)) {
+                    var x = '';
+                    // Sort Memory
+                    hardware.linux.memory.Memory_Device.sort(function(a, b) { if (a.Locator > b.Locator) return 1; if (a.Locator < b.Locator) return -1; return 0; });
+
+                    x += '<table style=width:100%>';
+                    for (var i in hardware.linux.memory.Memory_Device) {
+                        var m = hardware.linux.memory.Memory_Device[i];
+                        if(m.Size && (m.Size == 'No Module Installed')) continue;
+                        x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.Locator ? m.Locator : 'Unknown')) + '</b></div>';
+                        if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0}, {1}", m.Size, m.Speed), s); }
+                        else if (m.Size) { x += addDetailItem("Capacity", format("{0}", (m.Size)), s); }
+                        if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
+                        x += '</div>';
+                    }
+                    x += '</table>';
+
+                    if (x != '') { sections.push({ name: "Memory", html: x, img: 'ram'}); }
                 }
             }
 

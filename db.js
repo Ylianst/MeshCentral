@@ -768,13 +768,13 @@ module.exports.CreateDB = function (parent, func) {
         } else if (parent.args.mysql) {
             // Use MySQL
             obj.databaseType = 5;
-            var tempDatastore = require('mysql').createPool(connectionObject);
+            var tempDatastore = require('mysql2').createPool(connectionObject);
             tempDatastore.query('CREATE DATABASE IF NOT EXISTS ' + dbname, function (error) {
                 if (error != null) {
                     console.log('Auto-create database failed: ' + error);
                 }
                 connectionObject.database = dbname;
-                Datastore = require('mysql').createPool(connectionObject);
+                Datastore = require('mysql2').createPool(connectionObject);
                 createTablesIfNotExist(dbname);
             });
             setTimeout(function () { tempDatastore.end(); }, 2000);
@@ -1244,7 +1244,7 @@ module.exports.CreateDB = function (parent, func) {
                     var docs = [];
                     for (var i in results) {
                         if (results[i].doc) {
-                            docs.push(JSON.parse(results[i].doc));
+                            docs.push(results[i].doc);
                         } else if ((results.length == 1) && (results[i]['COUNT(doc)'] != null)) {
                             // This is a SELECT COUNT() operation
                             docs = results[i]['COUNT(doc)'];
@@ -1313,11 +1313,14 @@ module.exports.CreateDB = function (parent, func) {
                 })
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
         } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL
-            var Promises = [];
-            for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.query(queries[i])); } else { Promises.push(Datastore.query(queries[i][0], queries[i][1])); } }
-            Promise.all(Promises)
-                .then(function (error, results, fields) { if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
-                .catch(function (error, results, fields) { if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
+            Datastore.getConnection(function(err, connection) {
+                if (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } return; }
+                var Promises = [];
+                for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(connection.promise().query(queries[i])); } else { Promises.push(connection.promise().query(queries[i][0], queries[i][1])); } }
+                Promise.all(Promises)
+                    .then(function (error, results, fields) { connection.release(); if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
+                    .catch(function (error, results, fields) { connection.release(); if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
+            });
         }
     }
 
@@ -1470,7 +1473,15 @@ module.exports.CreateDB = function (parent, func) {
             obj.StoreEvent = function (event, func) {
                 obj.dbCounters.eventsSet++;
                 sqlDbQuery('INSERT INTO events VALUES (NULL, $1, $2, $3, $4, $5, $6) RETURNING id', [event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, JSON.stringify(event)], function (err, docs) {
-                    if ((err == null) && (docs[0].id)) { for (var i in event.ids) { if (event.ids[i] != '*') { sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs[0].id, event.ids[i]]); } } }
+                    if(func){ func(); }
+                    if ((err == null) && (docs[0].id)) {
+                        for (var i in event.ids) {
+                            if (event.ids[i] != '*') {
+                                obj.pendingTransfer++;
+                                sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs[0].id, event.ids[i]], function(){ if(func){ func(); } });
+                            }
+                        }
+                    }
                 });
             };
             obj.GetEvents = function (ids, domain, func) {
@@ -1882,7 +1893,14 @@ module.exports.CreateDB = function (parent, func) {
             obj.StoreEvent = function (event, func) {
                 obj.dbCounters.eventsSet++;
                 sqlDbQuery('INSERT INTO events VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING id', [event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, event], function (err, docs) {
-                    if (docs.id) { for (var i in event.ids) { if (event.ids[i] != '*') { sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs.id, event.ids[i]]); } } }
+                    if (docs.id) {
+                        for (var i in event.ids) {
+                            if (event.ids[i] != '*') {
+                                obj.pendingTransfer++;
+                                sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs.id, event.ids[i]], function(){ if(func){ func(); } });
+                            }
+                        }
+                    }
                 });
             };
             obj.GetEvents = function (ids, domain, func) {
@@ -3064,39 +3082,37 @@ module.exports.CreateDB = function (parent, func) {
 
             // Upload to the WebDAV folder
             function performWebDavUpload(client, filepath) {
-                var fileStream = require('fs').createReadStream(filepath);
-                fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
-                fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
-                fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath)));
-                if (func) { func('Uploading using WebDAV...'); }
+                require('fs').stat(filepath, function(err,stat){
+                    var fileStream = require('fs').createReadStream(filepath);
+                    fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
+                    fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
+                    fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath), { headers: { "Content-Length": stat.size } }));
+                    if (func) { func('Uploading using WebDAV...'); }
+                });
             }
 
             if (func) { func('Attempting WebDAV upload...'); }
             const { createClient } = require('webdav');
-            const client = createClient(parent.config.settings.autobackup.webdav.url, { username: parent.config.settings.autobackup.webdav.username, password: parent.config.settings.autobackup.webdav.password });
-            var directoryItems = client.getDirectoryContents('/');
-            directoryItems.then(
-                function (files) {
-                    var folderFound = false;
-                    for (var i in files) { if ((files[i].basename == webdavfolderName) && (files[i].type == 'directory')) { folderFound = true; } }
-                    if (folderFound == false) {
-                        client.createDirectory(webdavfolderName).then(function (a) {
-                            if (a.statusText == 'Created') {
-                                if (func) { func('WebDAV folder created'); }
-                                performWebDavUpload(client, filename);
-                            } else {
-                                if (func) { func('WebDAV (createDirectory) status: ' + a.statusText); }
-                            }
-                        }).catch(function (err) {
-                            if (func) { func('WebDAV (createDirectory) error: ' + err); }
-                        });
-                    } else {
-                        performWebDavCleanup(client);
+            const client = createClient(parent.config.settings.autobackup.webdav.url, {
+                username: parent.config.settings.autobackup.webdav.username,
+                password: parent.config.settings.autobackup.webdav.password,
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity
+            });
+            client.exists(webdavfolderName).then(function(a){
+                if(a){
+                    performWebDavCleanup(client);
+                    performWebDavUpload(client, filename);
+                }else{
+                    client.createDirectory(webdavfolderName, {recursive: true}).then(function (a) {
+                        if (func) { func('WebDAV folder created'); }
                         performWebDavUpload(client, filename);
-                    }
+                    }).catch(function (err) {
+                        if (func) { func('WebDAV (createDirectory) error: ' + err); }
+                    });
                 }
-            ).catch(function (err) {
-                if (func) { func('WebDAV (getDirectoryContents) error: ' + err); }
+            }).catch(function (err) {
+                if (func) { func('WebDAV (exists) error: ' + err); }
             });
         }
 
@@ -3181,7 +3197,10 @@ module.exports.CreateDB = function (parent, func) {
 
     // Transfer NeDB data into the current database
     obj.nedbtodb = function (func) {
-        var nedbDatastore = require('nedb');
+        var nedbDatastore = null;
+        try { nedbDatastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
+        if (nedbDatastore == null) { nedbDatastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
+
         var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
         // If a DB encryption key is provided, perform database encryption
@@ -3217,16 +3236,16 @@ module.exports.CreateDB = function (parent, func) {
         var eventRecordsTransferCount = 0;
         var powerRecordsTransferCount = 0;
         var statsRecordsTransferCount = 0;
-        var pendingTransfer = 0;
+        obj.pendingTransfer = 0;
 
         // Transfer the data from main database
         nedbfile.find({}, function (err, docs) {
             if ((err == null) && (docs.length > 0)) {
                 performTypedRecordDecrypt(docs)
                 for (var i in docs) {
-                    pendingTransfer++;
+                    obj.pendingTransfer++;
                     normalRecordsTransferCount++;
-                    obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { pendingTransfer--; });
+                    obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { obj.pendingTransfer--; });
                 }
             }
 
@@ -3234,9 +3253,9 @@ module.exports.CreateDB = function (parent, func) {
             nedbeventsfile.find({}, function (err, docs) {
                 if ((err == null) && (docs.length > 0)) {
                     for (var i in docs) {
-                        pendingTransfer++;
+                        obj.pendingTransfer++;
                         eventRecordsTransferCount++;
-                        obj.StoreEvent(docs[i], function () { pendingTransfer--; });
+                        obj.StoreEvent(docs[i], function () { obj.pendingTransfer--; });
                     }
                 }
 
@@ -3244,9 +3263,9 @@ module.exports.CreateDB = function (parent, func) {
                 nedbpowerfile.find({}, function (err, docs) {
                     if ((err == null) && (docs.length > 0)) {
                         for (var i in docs) {
-                            pendingTransfer++;
+                            obj.pendingTransfer++;
                             powerRecordsTransferCount++;
-                            obj.storePowerEvent(docs[i], null, function () { pendingTransfer--; });
+                            obj.storePowerEvent(docs[i], null, function () { obj.pendingTransfer--; });
                         }
                     }
 
@@ -3254,15 +3273,15 @@ module.exports.CreateDB = function (parent, func) {
                     nedbserverstatsfile.find({}, function (err, docs) {
                         if ((err == null) && (docs.length > 0)) {
                             for (var i in docs) {
-                                pendingTransfer++;
+                                obj.pendingTransfer++;
                                 statsRecordsTransferCount++;
-                                obj.SetServerStats(docs[i], function () { pendingTransfer--; });
+                                obj.SetServerStats(docs[i], function () { obj.pendingTransfer--; });
                             }
                         }
 
                         // Only exit when all the records are stored.
                         setInterval(function () {
-                            if (pendingTransfer == 0) { func("Done. " + normalRecordsTransferCount + " record(s), " + eventRecordsTransferCount + " event(s), " + powerRecordsTransferCount + " power change(s), " + statsRecordsTransferCount + " stat(s)."); }
+                            if (obj.pendingTransfer == 0) { func("Done. " + normalRecordsTransferCount + " record(s), " + eventRecordsTransferCount + " event(s), " + powerRecordsTransferCount + " power change(s), " + statsRecordsTransferCount + " stat(s)."); }
                         }, 200)
                     });
                 });

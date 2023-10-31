@@ -52,7 +52,7 @@
     "zenity": "Zkuste nainstalovat / aktualizovat Zenity a spustit znovu",
     "status": [
       "NENÍ INSTALOVÁN",
-      "BĚH",
+      "SPUŠTĚNO",
       "NEFUNGUJE"
     ],
     "statusDescription": "Aktuální stav agenta",

@@ -245,7 +245,7 @@ module.exports.CreateServer = function (parent) {
     }
 
     // Pushover client setup (https://pushover.net)
-    if (parent.config.messaging.pushover) {
+    if (typeof parent.config.messaging.pushover == 'object') {
         // Validate Pushover configuration values
         var pushoverOK = true;
         if (typeof parent.config.messaging.pushover.token != 'string') { console.log('Invalid or missing Pushover token.'); pushoverOK = false; }
@@ -286,7 +286,7 @@ module.exports.CreateServer = function (parent) {
             var guild = await value.fetch();
             const guildMembers = await guild.members.search({ query: username });
             guildMembers.forEach(async function (value, key) {
-                if ((value.user.username + '#' + value.user.discriminator) == userTag) { func(key); return; }
+                if ((value.user.username + (value.user.discriminator != '0' ? '#' + value.user.discriminator : ''))== userTag) { func(key); return; }
             });
         });
     }
@@ -328,6 +328,9 @@ module.exports.CreateServer = function (parent) {
             } else if ((toData[0] == 'facebook') && (toData.length == 2)) {
                 var url = 'https://api.callmebot.com/facebook/send.php?apikey=' + encodeURIComponent(toData[1]) + '&text=' + encodeURIComponent(msg);
                 require('https').get(url, function (r) { if (func != null) { func(r.statusCode == 200); } });
+            } else if ((toData[0] == 'telegram') && (toData.length == 2)) {
+                var url = 'https://api.callmebot.com/text.php?user=' + encodeURIComponent(toData[1]) + '&text=' + encodeURIComponent(msg);
+                require('https').get(url, function (r) { if (func != null) { func(r.statusCode == 200); } });
             }
         } else if ((to.startsWith('pushover:')) && (obj.pushoverClient != null)) { // Pushover
             const Pushover = require('node-pushover');
@@ -335,7 +338,8 @@ module.exports.CreateServer = function (parent) {
             push.send(domain.title ? domain.title : 'MeshCentral', msg, function (err, res) { if (func != null) { func(err == null); } });
         } else if ((to.startsWith('ntfy:')) && (obj.ntfyClient != null)) { // ntfy
             const url = 'https://' + (((typeof parent.config.messaging.ntfy == 'object') && (typeof parent.config.messaging.ntfy.host == 'string')) ? parent.config.messaging.ntfy.host : 'ntfy.sh') + '/' + encodeURIComponent(to.substring(5));
-            const req = require('https').request(new URL(url), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
+            const headers = (typeof parent.config.messaging.ntfy.authorization  == 'string') ? { 'Authorization': parent.config.messaging.ntfy.authorization } : {};
+            const req = require('https').request(new URL(url), { method: 'POST', headers: headers }, function (res) { if (func != null) { func(true); } });
             req.on('error', function (err) { if (func != null) { func(false); } });
             req.end(msg);
         } else if ((to.startsWith('zulip:')) && (obj.zulipClient != null)) { // zulip
@@ -356,15 +360,17 @@ module.exports.CreateServer = function (parent) {
     obj.callmebotUrlToHandle = function (xurl) {
         var url = null;
         try { url = require('url').parse(xurl); } catch (ex) { return; }
-        if ((url == null) || (url.host != 'api.callmebot.com') || (url.protocol != 'https:') || (url.query == null)) return;
+        if ((url == null) || (url.host != 'api.callmebot.com') || (url.query == null)) return;
         var urlArgs = {}, urlArgs2 = url.query.split('&');
         for (var i in urlArgs2) { var j = urlArgs2[i].indexOf('='); if (j > 0) { urlArgs[urlArgs2[i].substring(0, j)] = urlArgs2[i].substring(j + 1); } }
         if ((urlArgs['phone'] != null) && (urlArgs['phone'].indexOf('|') >= 0)) return;
         if ((urlArgs['apikey'] != null) && (urlArgs['apikey'].indexOf('|') >= 0)) return;
-        // Signal Messenger, Whatapp and Facebook
+        if ((urlArgs['user'] != null) && (urlArgs['user'].indexOf('|') >= 0)) return;
+        // Signal Messenger, Whatapp, Facebook and Telegram
         if (url.path.startsWith('/signal') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:signal|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
         if (url.path.startsWith('/whatsapp') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:whatsapp|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
         if (url.path.startsWith('/facebook') && (urlArgs['apikey'] != null)) { return 'callmebot:facebook|' + urlArgs['apikey']; }
+        if (url.path.startsWith('/text') && (urlArgs['user'] != null)) { return 'callmebot:telegram|' + urlArgs['user']; }
         return null;
     }
 
@@ -644,7 +650,7 @@ module.exports.CreateServer = function (parent) {
 
         // Get the user and domain
         const user = parent.webserver.users[userid];
-        if ((user == null) || (user.email == null) || (user.emailVerified !== true)) return;
+        if ((user == null) || (user.msghandle == null)) return;
         const domain = obj.parent.config.domains[user.domain];
         if (domain == null) return;
 

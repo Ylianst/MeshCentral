@@ -733,7 +733,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 return;
                             } else {
                                 // Attempts reverse DNS loopup on the device IP address
-                                require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                const reverseDnsLookupHandler = function (err, hostnames) {
                                     var hostname = socket.remoteAddr;
                                     if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
 
@@ -752,7 +752,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                     addedDeviceCount++;
                                     var change = 'Added CIRA device ' + socket.tag.name + ' to group ' + initialMesh.name;
                                     obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: initialMesh.domain });
-                                });
+                                }
+                                try { require('dns').reverse(socket.remoteAddr, reverseDnsLookupHandler); } catch (ex) { reverseDnsLookupHandler(ex, null); }
                             }
                         } else {
                             // Node is already present
