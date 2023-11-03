@@ -745,7 +745,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         parent.parent.fs.close(logfile.fd);
 
                         // Now that the recording file is closed, check if we need to index this file.
-                        if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
+                        if (domain.sessionrecording.index && domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
 
                         // Compute session length
                         var sessionLength = null;
