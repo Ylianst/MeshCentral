@@ -6016,6 +6016,18 @@
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard' }); }
             }
 
+            // TPM
+            if (hardware.tpm) {
+                var x = '', tpm = hardware.tpm;
+                if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
+                if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
+                if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", EscapeHtml(tpm.IsActivated), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", EscapeHtml(tpm.IsEnabled), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", EscapeHtml(tpm.IsOwned), s); }
+                if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm'}); }
+            }
+
             if (hardware.windows) {
                 if (hardware.windows.memory && (hardware.windows.memory.length > 0)) {
                     var x = '';

@@ -1844,6 +1844,22 @@ function getSystemInformation(func) {
                     }
                 } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
             }
+            if (!results.hardware.tpm) {
+                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
+                try {
+                    var values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftTpm', "SELECT * FROM Win32_Tpm", ['IsActivated_InitialValue','IsEnabled_InitialValue','IsOwned_InitialValue','ManufacturerId','ManufacturerVersion','SpecVersion']);
+                    if(values[0]) {
+                        results.hardware.tpm = {
+                            SpecVersion: values[0].SpecVersion.split(",")[0],
+                            ManufacturerId: IntToStr(values[0].ManufacturerId).replace(/[^\x00-\x7F]/g, ""),
+                            ManufacturerVersion: values[0].ManufacturerVersion,
+                            IsActivated: values[0].IsActivated_InitialValue,
+                            IsEnabled: values[0].IsEnabled_InitialValue,
+                            IsOwned: values[0].IsOwned_InitialValue,
+                        }
+                    }
+                } catch (ex) { }
+            }
         }
         if(results.hardware && results.hardware.linux) {
             if (!results.hardware.identifiers['bios_serial']) {
@@ -1855,6 +1871,16 @@ function getSystemInformation(func) {
                 try {
                     results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
                 } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            }
+            if (!results.hardware.tpm) {
+                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
+                try {
+                    if (require('fs').statSync('/sys/class/tpm/tpm0').isDirectory()){
+                        results.hardware.tpm = {
+                            SpecVersion: require('fs').readFileSync('/sys/class/tpm/tpm0/tpm_version_major').toString().trim()
+                        }
+                    }
+                } catch (ex) { }
             }
         }
         results.hardware.agentvers = process.versions;
