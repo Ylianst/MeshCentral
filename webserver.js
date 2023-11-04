@@ -6656,6 +6656,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Generic OpenID Connect
                 if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.oidc) != 0) {
+                    var flash = require('connect-flash');
+                    obj.app.use(flash());
                     obj.app.get(url + 'auth-oidc', function (req, res, next) {
                         var domain = getDomain(req);
                         if (domain.passport == null) { next(); return; }
