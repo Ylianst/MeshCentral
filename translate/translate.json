@@ -8242,7 +8242,7 @@
       "da": "Admin Realms",
       "de": "Admin-Bereiche",
       "en": "Admin Realms",
-      "es": "Reinos del Administrador",
+      "es": "Administrador de dominio",
       "fi": "Pääkäyttäjän alueet",
       "fr": "Domaines d'administration",
       "hi": "प्रशासन के दायरे",
@@ -8297,7 +8297,7 @@
       "da": "Administrative Realms",
       "de": "Administrative Bereiche",
       "en": "Administrative Realms",
-      "es": "Reinos Administrativos",
+      "es": "Administrador de Dominios",
       "fi": "Hallinnollinen alue",
       "fr": "Domaines administratifs",
       "hi": "प्रशासनिक क्षेत्र",
@@ -15052,6 +15052,7 @@
       "hu": "Ellenőrizze az üzenetküldő alkalmazást, és írja be az megerősítő kódot.",
       "pl": "Sprawdź swoją aplikacje wiadomości i wprowadź kod weryfikacyjny.",
       "de": "Prüfen Sie Ihre Messenger-App und geben Sie den Verifikationscode ein.",
+      "es": "Verifica el mensaje en la aplicación e ingresa el código de verificación recibido.",
       "xloc": [
         "default.handlebars->47->252"
       ]
@@ -27232,7 +27233,8 @@
       "pl": "Prośba Pomocy Email",
       "fr": "Demande d'aide par courrier électronique",
       "hu": "Segítségkérés e-mailben",
-      "de": "E-Mail Hilfeanforderung"
+      "de": "E-Mail Hilfeanforderung",
+      "es": "Solicitud de ayuda por correo"
     },
     {
       "bs": "Obavještenja putem e-pošte",
@@ -28666,7 +28668,7 @@
       "da": "Indtast en kommasepareret liste over administrative realms navne.",
       "de": "Geben Sie eine durch Kommas getrennte Liste der Namen der Verwaltungsbereiche ein.",
       "en": "Enter a comma seperate list of administrative realms names.",
-      "es": "Ingresa una lista separada por comas de nombres de reinos administrativos.",
+      "es": "Ingresa los administradores de dominio separados por comas.",
       "fi": "Syötä pilkulla eroteltu luettelo hallinnollisten alueiden nimistä.",
       "fr": "Saisir une liste séparée par des virgules de noms de domaines administratifs.",
       "hi": "प्रशासनिक क्षेत्र के नामों की अल्पविराम से अलग सूची दर्ज करें।",
@@ -34227,6 +34229,7 @@
       "fr": "Demandes d'aide",
       "hu": "Segítség kérések",
       "de": "Hilfeanforderungen",
+      "es": "Solicitud de ayuda",
       "xloc": [
         "default.handlebars->47->1052",
         "default.handlebars->47->1056",
@@ -44874,6 +44877,7 @@
       "hu": "Üzenetküldés kezelése",
       "pl": "Zarządzanie wiadomościami",
       "de": "Benachrichtigungen verwalten",
+      "es": "Administrar Mensajes o Notificaciones",
       "xloc": [
         "default.handlebars->container->column_l->p2->p2info->p2AccountActions->3->manageMessaging2->0",
         "default.handlebars->container->column_l->p2->p2info->p2AccountSecurity->3->manageMessaging1->1->0"
@@ -46720,6 +46724,7 @@
       "hu": "Üzenet hiba",
       "pl": "Błąd wiadomości",
       "de": "Fehler bei Nachricht",
+      "es": "Error en el mensaje",
       "xloc": [
         "default.handlebars->47->3095"
       ]
@@ -46731,6 +46736,7 @@
       "hu": "Üzenet hiba: {0}",
       "pl": "Błąd wiadomości: {0}",
       "de": "Fehler bei Nachricht: {0}",
+      "es": "Error en el mensaje: {0}",
       "xloc": [
         "default.handlebars->47->3096"
       ]
@@ -46742,6 +46748,7 @@
       "hu": "Üzenet elküldve.",
       "pl": "Wiadomość wysłana.",
       "de": "Nachricht gesendet.",
+      "es": "Mensaje enviado.",
       "xloc": [
         "login.handlebars->5->6",
         "login2.handlebars->7->7"
@@ -46754,6 +46761,7 @@
       "hu": "Az üzenet sikeresen elküldve.",
       "pl": "Wiadomość wysłana.",
       "de": "Nachricht erfolgreich gesendet.",
+      "es": "Mensaje enviado correctamente.",
       "xloc": [
         "default.handlebars->47->3094"
       ]
@@ -57253,7 +57261,7 @@
       "da": "Realms",
       "de": "Bereiche",
       "en": "Realms",
-      "es": "Reinos",
+      "es": "Dominios",
       "fi": "Alueet",
       "fr": "Royaumes",
       "hi": "रियल्म्स",
@@ -64467,6 +64475,7 @@
       "nl": "Stuur een bericht naar deze gebruiker",
       "pl": "Wyślij wiadomość do tego użytkownika",
       "de": "Eine Nachricht an diesen Benutzer senden",
+      "es": "Enviar mensaje al usuario",
       "xloc": [
         "default.handlebars->47->2801"
       ]
@@ -64641,6 +64650,7 @@
       "nl": "Token naar berichtentoepassing verzenden?",
       "pl": "Wysłac token na komunikator?",
       "de": "Token an Nachrichten-App senden?",
+      "es": "¿Enviar token a la applicacion al nick de Telegram registrado?",
       "xloc": [
         "login.handlebars->5->33",
         "login2.handlebars->7->40"
@@ -82327,6 +82337,7 @@
       "pl": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Prośba Pomocy",
       "fr": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Demande d'assistance",
       "hu": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Segítség kérés",
+      "es": "[[[SERVERNAME]]] - \"[[[DEVICENAME]]]\" Solicitud de ayuda",
       "xloc": [
         "device-help.html->0"
       ]
@@ -82451,6 +82462,7 @@
       "pl": "[[[SERVERNAME]]] - Prośba Pomocy Urządzenia",
       "fr": "[[[SERVERNAME]]] - Demande d'assistance sur l'appareil",
       "hu": "[[[SERVERNAME]]] - Segítség kérés",
+      "es": "[[[SERVERNAME]]] - Solicitud de ayuda del dispositivo",
       "xloc": [
         "device-help.txt"
       ]
@@ -82519,6 +82531,7 @@
       "pl": "[[[SERVERNAME]]] - Prośba Pomocy",
       "fr": "[[[SERVERNAME]]] - Demande d'assistance",
       "hu": "[[[SERVERNAME]]] - Segítség kérés",
+      "es": "[[[SERVERNAME]]] - Solicitud de ayuda",
       "xloc": [
         "device-help.html->2->1->1->0->1->1"
       ]
