@@ -1316,7 +1316,7 @@ module.exports.CreateDB = function (parent, func) {
                         .catch(function (err) { conn.release(); if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
                 })
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
-        } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL
+        } else if (obj.databaseType == 5) { // MySQL
             Datastore.getConnection(function(err, connection) {
                 if (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } return; }
                 var Promises = [];
@@ -1325,6 +1325,12 @@ module.exports.CreateDB = function (parent, func) {
                     .then(function (error, results, fields) { connection.release(); if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
                     .catch(function (error, results, fields) { connection.release(); if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
             });
+        } else if (obj.databaseType == 6) { // Postgres
+            var Promises = [];
+            for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.query(queries[i])); } else { Promises.push(Datastore.query(queries[i][0], queries[i][1])); } }
+            Promise.all(Promises)
+                .then(function (error, results, fields) { if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
+                .catch(function (error, results, fields) { if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
         }
     }
 
