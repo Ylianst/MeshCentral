@@ -7829,12 +7829,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function StartAltWebServer(port, addr) {
         if ((port < 1) || (port > 65535)) return;
         var agentAliasPort = null;
+        var agentAliasDns = null;
         if (args.agentaliasport != null) { agentAliasPort = args.agentaliasport; }
+        if (args.agentaliasdns != null) { agentAliasDns = args.agentaliasdns; }
         if (obj.tlsAltServer != null) {
             if (obj.args.lanonly == true) {
                 obj.tcpAltServer = obj.tlsAltServer.listen(port, addr, function () { console.log('MeshCentral HTTPS agent-only server running on port ' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             } else {
-                obj.tcpAltServer = obj.tlsAltServer.listen(port, addr, function () { console.log('MeshCentral HTTPS agent-only server running on ' + certificates.CommonName + ':' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
+                obj.tcpAltServer = obj.tlsAltServer.listen(port, addr, function () { console.log('MeshCentral HTTPS agent-only server running on ' + ((agentAliasDns != null) ? agentAliasDns : certificates.CommonName) + ':' + port + ((agentAliasPort != null) ? (', alias port ' + agentAliasPort) : '') + '.'); });
             }
             obj.parent.authLog('https', 'Server listening on 0.0.0.0 port ' + port + '.');
             obj.parent.updateServerState('https-agent-port', port);
