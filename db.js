@@ -1578,7 +1578,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.getPlugins = function (func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin', null, func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin WHERE id = $1', [id], func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
+                obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE plugin SET doc=JSON_SET(doc,"$.status",$1) WHERE id=$2', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc=json_patch(doc,$1) WHERE id=$2', [JSON.stringify(args),id], func); };
             }
         } else if (obj.databaseType == 7) {
@@ -1993,12 +1993,12 @@ module.exports.CreateDB = function (parent, func) {
 
             // Plugin operations
             if (obj.pluginsActive) {
-                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUES (DEFAULT, $2)', [value], func); }; // Add a plugin
-                obj.getPlugins = function (func) { sqlDbQuery('SELECT doc FROM plugin', null, func); }; // Get all plugins
-                obj.getPlugin = function (id, func) { sqlDbQuery('SELECT doc FROM plugin WHERE id = $1', [id], func); }; // Get plugin
+                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUES (DEFAULT, $1)', [plugin], func); }; // Add a plugin
+                obj.getPlugins = function (func) { sqlDbQuery("SELECT doc::jsonb || ('{\"_id\":' || plugin.id || '}')::jsonb as doc FROM plugin", null, func); }; // Get all plugins
+                obj.getPlugin = function (id, func) { sqlDbQuery("SELECT doc::jsonb || ('{\"_id\":' || plugin.id || '}')::jsonb as  doc FROM plugin WHERE id = $1", [id], func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
-                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('INSERT INTO plugin VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', [id, args], func); };
+                obj.setPluginStatus = function (id, status, func) { sqlDbQuery("UPDATE plugin SET doc= jsonb_set(doc::jsonb,'{status}',$1) WHERE id=$2", [status,id], func); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc= doc::jsonb || ($1) WHERE id=$2', [args,id], func); };
             }
         } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
             // Database actions on the main collection (MariaDB or MySQL)
@@ -2167,7 +2167,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.getPlugins = function (func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin', null, func); }; // Get all plugins
                 obj.getPlugin = function (id, func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin WHERE id = ?', [id], func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = ?', [id], func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
+                obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_SET(doc,"$.status",?) WHERE id=?', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_MERGE_PATCH(doc,?) WHERE id=?', [JSON.stringify(args),id], func); };
             }
         } else if (obj.databaseType == 3) {
