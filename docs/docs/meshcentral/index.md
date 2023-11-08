@@ -1258,7 +1258,7 @@ You can also customize the Agent to add your own logo.
 ![](images/2022-08-24-06-42-40.png)
 
 ```json
- "agentCustomization": {
+"agentCustomization": {
  	"displayName": {
  		"type": "string",
  		"default": "MeshCentral Agent",
@@ -1304,8 +1304,8 @@ You can also customize the Agent to add your own logo.
  		"default": null,
  		"description": "Background color, valid values are RBG in format 0,0,0 to 255,255,255 or format #000000 to #FFFFFF."
  	}
- }
- ```
+}
+```
 
 ![agent icon](images/agentico.png)
 
