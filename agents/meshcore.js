@@ -3733,6 +3733,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
+                    try { require('win-info'); availcommands += ',installedapps'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -5032,6 +5033,12 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     }
                 } else {
                     response = "Proper usage: plugin [pluginName] [args].";
+                }
+                break;
+            }
+            case 'installedapps': {
+                if(process.platform == 'win32'){
+                    require('win-info').installedApps().then(function (apps){ sendConsoleText(JSON.stringify(apps,null,1)); });
                 }
                 break;
             }
