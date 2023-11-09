@@ -402,7 +402,6 @@ See description for information about each item.
           "type": "boolean",
           "default": false,
           "description": "When set to true, MeshCentral will allow login tokens to be used in the URL as a replacement for user login. This is useful along with \"allowFraming\" option to embed MeshCentral features into another website"
-
         },
         "StrictTransportSecurity": {
           "type": [
@@ -1048,6 +1047,11 @@ See description for information about each item.
             "default": 0,
             "description": "0 = User selects day/night mode, 1 = Always night mode, 2 = Always day mode"
           },
+          "scrollToTop": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, a Scroll To Top button in the devices tab."
+          },
           "userQuota": {
             "type": "integer"
           },
@@ -1385,7 +1389,7 @@ See description for information about each item.
           "certUrl": {
             "type": "string",
             "format": "uri",
-            "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral."
+            "description": "https url when to get the TLS certificate that MeshAgent's will see when connecting to this server. This setting is used when a reverse proxy like NGINX is used in front of MeshCentral. You can set this to file:// but it must be followed by the full path to the certificate file."
           },
           "myServer": {
             "type": [
@@ -1423,6 +1427,11 @@ See description for information about each item.
                 "type": "boolean",
                 "default": true,
                 "description": "Allows administrators to access the server trace tab from from the My Server tab."
+              },
+              "Config": {
+                "type": "boolean",
+                "default": true,
+                "description": "Allows administrators remotely view server configuration on the My Server tab."
               }
             }
           },
@@ -3449,5 +3458,4 @@ See description for information about each item.
     }
   }
 }
-
 ```
