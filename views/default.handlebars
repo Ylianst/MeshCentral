@@ -3969,6 +3969,9 @@
             x += '<label><input id=d2c6 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('desc') >= 0)?' checked':'') + '>' + "Device Description" + '</label><br />';
             x += '<label><input id=d2c5 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('os') >= 0)?' checked':'') + '>' + "Operating System" + '</label><br />';
             x += '<label><input id=d2c10 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('tags') >= 0)?' checked':'') + '>' + "Tags" + '</label><br />';
+            x += '<label><input id=d2c11 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsav') >= 0)?' checked':'') + '>' + "Windows AV" + '</label><br />';
+            x += '<label><input id=d2c12 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0)?' checked':'') + '>' + "Windows Update" + '</label><br />';
+            x += '<label><input id=d2c13 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0)?' checked':'') + '>' + "Windows Firewall" + '</label><br />';
             x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
@@ -3989,6 +3992,9 @@
             if (Q('d2c8').checked) { cols.push('agtype'); }
             if (Q('d2c9').checked) { cols.push('agver'); }
             if (Q('d2c10').checked) { cols.push('tags'); }
+            if (Q('d2c11').checked) { cols.push('windowsav'); }
+            if (Q('d2c12').checked) { cols.push('windowsupdate'); }
+            if (Q('d2c13').checked) { cols.push('windowsfirewall'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
             mainUpdate(4);
@@ -4426,6 +4432,9 @@
                         if (deviceViewSettings.devsCols.indexOf('agver') >= 0) { colums += '<th style=color:gray;width:100px>' + "Agent Version"; }
                         if (deviceViewSettings.devsCols.indexOf('os') >= 0) { colums += '<th style=color:gray;width:160px>' + "OS"; }
                         if (deviceViewSettings.devsCols.indexOf('tags') >= 0) { colums += '<th style=color:gray;width:120px>' + "Tags"; }
+                        if (deviceViewSettings.devsCols.indexOf('windowsav') >= 0) { colums += '<th style=color:gray;width:100px>' + "Windows AV"; }
+                        if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Update"; }
+                        if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Firewall"; }
                         if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=color:gray;width:120px>' + "Links"; }
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
@@ -4728,6 +4737,15 @@
                         }
                     }
                     r += '<span style=line-height:20px>' + groupingTags + '</span>';
+                }
+                if (deviceViewSettings.devsCols.indexOf('windowsav') >= 0) { // Windows AV
+                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.antiVirus == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>OK</span>") : "");
+                }
+                if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) {// Windows Update
+                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.autoUpdate == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>OK</span>") : "");
+                }
+                if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { // Windows Firewall
+                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.firewall == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>OK</span>") : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
