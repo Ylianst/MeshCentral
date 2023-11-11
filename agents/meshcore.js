@@ -1356,11 +1356,13 @@ function handleServerCommand(data) {
                                     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
                                     child.stderr.on('data', function () { });
                                     child.waitExit();
+                                    mesh.SendCommand({ action: 'msg', type: 'deskBackground', sessionid: data.sessionid, data: (current != '' ? "" : require('MeshAgent')._wallpaper), });
                                 } else {
                                     var id = require('user-sessions').consoleUid();
                                     var current = require('linux-gnome-helpers').getDesktopWallpaper(id);
                                     if (current != '/dev/null') { require('MeshAgent')._wallpaper = current; }
                                     require('linux-gnome-helpers').setDesktopWallpaper(id, current != '/dev/null' ? undefined : require('MeshAgent')._wallpaper);
+                                    mesh.SendCommand({ action: 'msg', type: 'deskBackground', sessionid: data.sessionid, data: (current != '/dev/null' ? "" : require('MeshAgent')._wallpaper), });
                                 }
                             } catch (ex) {
                                 sendConsoleText(ex);
