@@ -726,7 +726,7 @@
                             <span id=DeskNotifyButton title="Display a notification on the remote computer"><img class="desktopButtons" src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:2px /></span>
                             <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png' class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
                             <span id=DeskOpenWebButton title="Open a web address on the remote computer"><img class="desktopButtons" src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 /></span>
-                            <span id=DeskBackgroundButton title="Toggle remote desktop background"><img class="desktopButtons" src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 /></span>
+                            <span id=DeskBackgroundButton title="Toggle remote desktop background"><img class="desktopButtons" id=DeskBackgroundButtonImage src='images/icon-background.png' onclick=deviceToggleBackground(event) height=16 width=16 /></span>
                             <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img class="desktopButtons" src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 /></span>
                             <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none"><img class="desktopButtons" id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 /></span>
                             <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"><img class="desktopButtons" id=DeskClipboardInButtonImage src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16 width=16 /></span>
@@ -2659,6 +2659,12 @@
                                     }
                                     x += '</div>';
                                     QH('id_dialogOptions', x);
+                                }
+                            } else if (message.type === 'deskBackground') {
+                                if(message.data != "") {
+                                    Q('DeskBackgroundButtonImage').src = 'images/icon-background.png';
+                                }else{
+                                    Q('DeskBackgroundButtonImage').src = 'images/icon-background-red.png';
                                 }
                             }
                         }
