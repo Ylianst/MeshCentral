@@ -2047,6 +2047,8 @@
             setNightMode();
         }
 
+        if(window.matchMedia) { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setNightMode); }
+
         function setNightMode() {
             // Set night mode
             var nNightMode = getstore('nightMode', '0')
