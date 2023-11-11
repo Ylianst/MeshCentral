@@ -66,5 +66,9 @@ If you are having issues with the following other products, you should file a re
 [MeshAgent](https://github.com/Ylianst/MeshAgent/issues)  
 [MeshRouter](https://github.com/Ylianst/MeshCentralRouter/issues)
 
+## Unofficial chatrooms
+- Discord Server: https://discord.gg/8wHC6ASWAc
+- Telegram Channel: https://t.me/meshcentral
+
 ## License
 This software is licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0).
