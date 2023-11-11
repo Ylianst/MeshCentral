@@ -4739,13 +4739,13 @@
                     r += '<span style=line-height:20px>' + groupingTags + '</span>';
                 }
                 if (deviceViewSettings.devsCols.indexOf('windowsav') >= 0) { // Windows AV
-                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.antiVirus == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>OK</span>") : "");
+                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.antiVirus == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>BAD</span>") : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) {// Windows Update
-                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.autoUpdate == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>OK</span>") : "");
+                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.autoUpdate == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>BAD</span>") : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { // Windows Firewall
-                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.firewall == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>OK</span>") : "");
+                    r += '<td style=text-align:center>' + (node.wsc ? (node.wsc.firewall == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>BAD</span>") : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
