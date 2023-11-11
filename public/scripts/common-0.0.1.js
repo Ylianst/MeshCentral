@@ -125,7 +125,7 @@ function parseUriArgs(decodeUrl) {
         name = arg.substring(0, i);
         r[name] = arg.substring(i + 1);
         if (decodeUrl) { r[name] = decodeURIComponent(arg.substring(i + 1)); }
-        if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+        if (!isSafeString2(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
     }
     return r;
 }
