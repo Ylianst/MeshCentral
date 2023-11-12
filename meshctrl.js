@@ -74,7 +74,7 @@ if (args['_'].length == 0) {
     console.log("  --url [wss://server]        - Server url, wss://localhost:443 is default.");
     console.log("                              - Use wss://localhost:443?key=xxx if login key is required.");
     console.log("  --loginuser [username]      - Login username, admin is default.");
-    console.log("  --loginpass [password]      - Login password.");
+    console.log("  --loginpass [password]      - Login password OR Leave blank to enter password at prompt");
     console.log("  --token [number]            - 2nd factor authentication token.");
     console.log("  --loginkey [hex]            - Server login key in hex.");
     console.log("  --loginkeyfile [file]       - File containing server login key in hex.");
@@ -990,7 +990,46 @@ if (args['_'].length == 0) {
         }
     }
 
-    if (ok) { serverConnect(); }
+    if (ok) {
+        if(args.loginpass===true){
+            const readline = require('readline');
+            const rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout,
+                terminal: false
+            });
+            process.stdout.write('Enter your password: ');
+            const stdin = process.openStdin();
+            stdin.setRawMode(true); // Set raw mode to prevent echoing of characters
+            stdin.resume();
+            args.loginpass = '';
+            process.stdin.on('data', (char) => {
+                char = char + '';
+                switch (char) {
+                    case '\n':
+                    case '\r':
+                    case '\u0004': // They've finished entering their password
+                        stdin.setRawMode(false);
+                        stdin.pause();
+                        process.stdout.clearLine(); process.stdout.cursorTo(0);
+                        rl.close();
+                        serverConnect();
+                        break;
+                    case '\u0003': // Ctrl+C
+                        process.stdout.write('\n');
+                        process.exit();
+                        break;
+                    default: // Mask the password with "*"
+                        args.loginpass += char;
+                        process.stdout.clearLine(); process.stdout.cursorTo(0);
+                        process.stdout.write('Enter your password: ' + '*'.repeat(args.loginpass.length));
+                        break;
+                }
+            });
+        }else{
+            serverConnect();
+        }
+    }
 }
 
 function displayConfigHelp() {
