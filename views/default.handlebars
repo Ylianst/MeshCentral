@@ -6157,15 +6157,27 @@
                 // Device name search
                 try {
                     var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
-                    for (var d in nodes) {
+                      for (var d in nodes) {
                         if (features2 & 0x00008000) { // Both server and client names must match
-                            if (rx.test(nodes[d].name.toLowerCase()) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
-                        } else {
-                            if (showRealNames) {
-                                if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(d); }
-                            } else {
-                                if (rx.test(nodes[d].name.toLowerCase())) { r.push(d); }
+                            if(features2 & 0x10000000){
+                                if (rx.test(nodes[d].name.toLowerCase()) || rx.test(meshes[nodes[d].meshid].name.toLowerCase()) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
+                            }else {
+                                if (rx.test(nodes[d].name.toLowerCase()) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
                             }
+                        } else {
+                            if(features2 & 0x10000000){
+                                if (showRealNames) {
+                                    if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase()) || rx.test(meshes[nodes[d].meshid].name.toLowerCase()) ) { r.push(d); }
+                                } else {
+                                    if (rx.test(nodes[d].name.toLowerCase()) || rx.test(meshes[nodes[d].meshid].name.toLowerCase()) ) { r.push(d); }
+                                }
+                            }else {
+                                if (showRealNames) {
+                                    if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(d); }
+                                } else {
+                                    if (rx.test(nodes[d].name.toLowerCase())) { r.push(d); }
+                                }
+                            }       
                         }
                     }
                 } catch (ex) { for (var d in nodes) { r.push(d); } }
