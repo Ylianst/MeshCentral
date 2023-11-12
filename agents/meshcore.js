@@ -3727,7 +3727,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4871,6 +4871,21 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     sendWakeOnLanEx([args['_'][0]]);
                     sendWakeOnLanEx([args['_'][0]]);
                     response = 'Sending wake-on-lan on ' + count + ' interface(s).';
+                }
+                break;
+            }
+            case 'display': {
+                 if (args['_'].length != 1) {
+                    response = 'Proper usage: display (sleep | awake)".';
+                } else {
+                    var sleepawake = [args['_'][0]];
+                    if(sleepawake=='sleep'){
+                        require('power-monitor').sleepDisplay()
+                    }else if(sleepawake=='awake'){
+                        require('power-monitor').wakeDisplay()
+
+                    }
+                    response = 'Setting Display To ' + sleepawake;
                 }
                 break;
             }
