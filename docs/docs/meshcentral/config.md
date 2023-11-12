@@ -1658,6 +1658,11 @@ See description for information about each item.
             "default": false,
             "description": "When enabled, this will hide the power timeline in the web ui"
           },
+          "showNotesPanel": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, this will show the notes panel in the device view"
+          },
           "agentInviteCodes": {
             "type": "boolean",
             "default": false,

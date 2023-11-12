@@ -611,6 +611,18 @@
                             <td style=width:auto valign=top>
                                 <div id=p10html></div>
                             </td>
+                            <td style=width:100px;display:none id=notesPanel valign=top>
+                                <table>
+                                    <thead>
+                                        <tr><th>Notes</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><textarea id=notesPanelArea readonly style=width:300px;height:200px;resize:none;overflow-y:scroll></textarea></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
                             <td style=width:20px></td>
                             <td style=width:200px;vertical-align:top;position:relative valign=top>
                                 <div class="deviceNotifyLargeDot">
@@ -1485,6 +1497,7 @@
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
         var hidePowerTimeline = {{{hidePowerTimeline}}};
+        var showNotesPanel = {{{showNotesPanel}}};
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
@@ -2871,6 +2884,9 @@
                             QV('idx_dlgOkButton', true);
                             focusTextBox('d2devNotes');
                         }
+                    }else{
+                        if (message.notes) { QH('notesPanelArea', decodeURIComponent(message.notes)); } else { QH('notesPanelArea', ''); }
+                        if (showNotesPanel && message.notes) { QV('notesPanel',true); }else{ QV('notesPanel', false); }
                     }
                     break;
                 }
@@ -7680,6 +7696,7 @@
                     meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
                     meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
                     meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
+                    meshserver.send({ action: 'getNotes', id: currentNode._id });
                     QH('p17info2', '');
                 }
 
@@ -7964,7 +7981,11 @@
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 
-        function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) }); }
+        function showNotesEx(buttons, tag) {
+            QH('notesPanelArea', Q('d2devNotes').value);
+            meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) });
+            if (showNotesPanel && Q('d2devNotes').value != '') { QV('notesPanel',true); }else{ QV('notesPanel', false); }
+        }
 
         function openIpKvmRemoteControl(nodeid) {
             if (xxdialogMode) return;
