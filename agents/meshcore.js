@@ -4876,7 +4876,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'display': {
                  if (args['_'].length != 1) {
-                    response = 'Proper usage: display (sleep | awake)".';
+                    response = 'Proper usage: display (sleep | awake)';
                 } else {
                     var sleepawake = [args['_'][0]];
                     if(sleepawake=='sleep'){
