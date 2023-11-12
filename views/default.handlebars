@@ -5024,20 +5024,20 @@
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][state]); } catch (ex) {} }
         function onDeviceSearchChanged(e) { 
             var url = new URL(window.location.href);
-            if (e != null) { 
+            if ((e != null) && (e.target.value != '')) { 
                 if (e.target.id == 'SearchInput') { 
                     Q('KvmSearchInput').value = Q('SearchInput').value;
                 } else {
                     Q('SearchInput').value = Q('KvmSearchInput').value;
                 }
                 url.searchParams.set('filter', e.target.value);
-                if(urlargs.filter){ urlargs.filter = e.target.value; }
-            }else{
+                if (urlargs.filter) { urlargs.filter = e.target.value; }
+            } else {
                 url.searchParams.delete('filter');
-                if(urlargs.filter){ delete urlargs.filter; }
+                if (urlargs.filter) { delete urlargs.filter; }
             } 
             if (((features & 0x10000000) == 0) && (xxcurrentView > 0)) {
-                try { window.history.replaceState({}, document.title, decodeURIComponent(url.toString())); } catch(e) { }
+                try { window.history.replaceState({}, document.title, decodeURIComponent(url.toString())); } catch(ex) { }
             }
             mainUpdate(5);
         }
