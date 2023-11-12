@@ -191,6 +191,7 @@
       "_ipkvm": false,
       "minify": true,
       "_hidePowerTimeline": true,
+      "_showNotesPanel": true,
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
       "_userNameIsEmail": true,

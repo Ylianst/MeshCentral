@@ -3248,3 +3248,23 @@ a {
     border: 1px solid #ccc;
     border-top: none;
 }
+
+#notesPanel table {
+        color: black;
+        background-color: #EEE;
+        border-color: #AAA;
+        border-width: 1px;
+        border-style: solid;
+        border-collapse: collapse;
+        width: 100%;
+}
+
+#notesPanel thead {
+    background-color: #AAA;
+    font-weight: bold;
+}
+
+#notesPanel thead tr {
+    background-color: #AAA;
+    font-weight: bold;
+}
