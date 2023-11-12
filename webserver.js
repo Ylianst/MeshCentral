@@ -3226,6 +3226,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((parent.msgserver != null) && (parent.msgserver.providers != 0)) { features2 += 0x02000000; } // User messaging server is enabled
         if ((parent.msgserver != null) && (parent.msgserver.providers != 0) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false))) { features2 += 0x04000000; } // User messaging 2FA is allowed
         if (domain.scrolltotop == true) { features2 += 0x08000000; } // Show the "Scroll to top" button
+        if (domain.devicesearchbargroupname === true) { features2 += 0x10000000; } // Search bar will find by group name too
         return { features: features, features2: features2 };
     }
 

@@ -2904,12 +2904,24 @@
                     var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
                     for (var d in nodes) {
                         if (features2 & 0x00008000) {
-                            nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()));
+                            if(features2 & 0x10000000){
+                                nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()));
+                            }else {
+                                nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()));
+                            }
                         } else {
-                            if (showRealNames) {
-                                nodes[d].v = (nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase());
-                            } else {
-                                nodes[d].v = rx.test(nodes[d].name.toLowerCase());
+                            if(features2 & 0x10000000){
+                                if (showRealNames) {
+                                    nodes[d].v = (nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase()));
+                                } else {
+                                    nodes[d].v = rx.test(nodes[d].name.toLowerCase()) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase()));
+                                }
+                            }else{
+                                if (showRealNames) {
+                                    nodes[d].v = (nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase());
+                                } else {
+                                    nodes[d].v = rx.test(nodes[d].name.toLowerCase());
+                                }
                             }
                         }
                     }

@@ -1204,6 +1204,11 @@ See description for information about each item.
             "default": false,
             "description": "When set to true, the devices search box will match on both the server name and client name of a device."
           },
+          "deviceSearchBarGroupName": {
+            "type": "boolean",
+            "default": false,
+            "description": "When set to true, the devices search box will match on group name too."
+          },
           "agentSelfGuestSharing": {
             "type": [
               "boolean",
