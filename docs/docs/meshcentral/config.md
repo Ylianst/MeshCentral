@@ -385,6 +385,11 @@ See description for information about each item.
           ],
           "description": "The HTTP proxy to use when contacting the time stamping server, if false, no proxy is used. By default, the npmproxy value is used."
         },
+        "lockAgentDownload": {
+          "type": "boolean",
+          "default": false,
+          "description": "When enabled, MeshCentral will block all downloads of MeshAgent including install scripts, if the user is not logged in"
+        },
         "ignoreAgentHashCheck": {
           "type": [
             "boolean",
@@ -1699,6 +1704,11 @@ See description for information about each item.
                 "description": "Action taken if one of the lines in meshagent.tag contains ~ServerTags:tag1,tag2,tag3. 0=Ignore, 1=Set, 2=SetIfEmpty, 3=Append."
               }
             }
+          },
+          "lockAgentDownload": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, MeshCentral will block all downloads of MeshAgent including install scripts, if the user is not logged in"
           },
           "geoLocation": {
             "type": "boolean",
