@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -16195,20 +16195,20 @@
             x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
             setDialogMode(2, "Messaging Notifications", 3, p30editMessagingEx, x, 'verifyMessaging');
             Q('d2handleinput').focus();
-            if (userinfo.msghandle) {
-                if (userinfo.msghandle.startsWith('telegram:') && ((serverinfo.userMsgProviders & 1) != 0)) { Q('d2serviceselect').value = 1; Q('d2handleinput').value = userinfo.msghandle.substring(10); }
-                if (userinfo.msghandle.startsWith('discord:') && ((serverinfo.userMsgProviders & 4) != 0)) { Q('d2serviceselect').value = 4; Q('d2handleinput').value = userinfo.msghandle.substring(8); }
-                if (userinfo.msghandle.startsWith('xmpp:') && ((serverinfo.userMsgProviders & 8) != 0)) { Q('d2serviceselect').value = 8; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
-                if (userinfo.msghandle.startsWith('callmebot:') && ((serverinfo.userMsgProviders & 16) != 0)) {
+            if (currentUser.msghandle) {
+                if (currentUser.msghandle.startsWith('telegram:') && ((serverinfo.userMsgProviders & 1) != 0)) { Q('d2serviceselect').value = 1; Q('d2handleinput').value = currentUser.msghandle.substring(10); }
+                if (currentUser.msghandle.startsWith('discord:') && ((serverinfo.userMsgProviders & 4) != 0)) { Q('d2serviceselect').value = 4; Q('d2handleinput').value = currentUser.msghandle.substring(8); }
+                if (currentUser.msghandle.startsWith('xmpp:') && ((serverinfo.userMsgProviders & 8) != 0)) { Q('d2serviceselect').value = 8; Q('d2handleinput').value = currentUser.msghandle.substring(5); }
+                if (currentUser.msghandle.startsWith('callmebot:') && ((serverinfo.userMsgProviders & 16) != 0)) {
                     Q('d2serviceselect').value = 16;
-                    var toData = userinfo.msghandle.substring(10).split('|');
+                    var toData = currentUser.msghandle.substring(10).split('|');
                     if ((toData[0] == 'signal') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/signal/send.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
                     if ((toData[0] == 'whatsapp') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/whatsapp.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
                     if ((toData[0] == 'facebook') && (toData.length == 2)) { Q('d2handleinput').value = 'https://api.callmebot.com/facebook/send.php?apikey=' + decodeURIComponent(toData[1]); }
                 }
-                if (userinfo.msghandle.startsWith('pushover:') && ((serverinfo.userMsgProviders & 32) != 0)) { Q('d2serviceselect').value = 32; Q('d2handleinput').value = userinfo.msghandle.substring(9); }
-                if (userinfo.msghandle.startsWith('ntfy:') && ((serverinfo.userMsgProviders & 64) != 0)) { Q('d2serviceselect').value = 64; Q('d2handleinput').value = userinfo.msghandle.substring(5); }
-                if (userinfo.msghandle.startsWith('zulip:') && ((serverinfo.userMsgProviders & 128) != 0)) { Q('d2serviceselect').value = 128; Q('d2handleinput').value = userinfo.msghandle.substring(6); }
+                if (currentUser.msghandle.startsWith('pushover:') && ((serverinfo.userMsgProviders & 32) != 0)) { Q('d2serviceselect').value = 32; Q('d2handleinput').value = currentUser.msghandle.substring(9); }
+                if (currentUser.msghandle.startsWith('ntfy:') && ((serverinfo.userMsgProviders & 64) != 0)) { Q('d2serviceselect').value = 64; Q('d2handleinput').value = currentUser.msghandle.substring(5); }
+                if (currentUser.msghandle.startsWith('zulip:') && ((serverinfo.userMsgProviders & 128) != 0)) { Q('d2serviceselect').value = 128; Q('d2handleinput').value = currentUser.msghandle.substring(6); }
             }
             p30editMessagingValidate();
         }
