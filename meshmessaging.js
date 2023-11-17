@@ -365,7 +365,6 @@ module.exports.CreateServer = function (parent) {
             });
             if (func != null) { func(true); }
         }else if ((to.startsWith('slack:')) && (obj.slackClient != null)) { //slack
-            // https://hooks.slack.com/services/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
             const req = require('https').request(new URL(to.substring(6)), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
             req.on('error', function (err) { if (func != null) { func(false); } });
             req.write(JSON.stringify({"text": msg }));
