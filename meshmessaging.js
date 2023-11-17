@@ -107,13 +107,20 @@
   }
 }
 
+// For Slack Webhook
+{
+  "messaging": {
+    "slack": true
+  }
+}
+
 */
 
 // Construct a messaging server object
 module.exports.CreateServer = function (parent) {
     var obj = {};
     obj.parent = parent;
-    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP, 16 = CallMeBot, 32 = Pushover, 64 = ntfy, 128 = Zulip
+    obj.providers = 0; // 1 = Telegram, 2 = Signal, 4 = Discord, 8 = XMPP, 16 = CallMeBot, 32 = Pushover, 64 = ntfy, 128 = Zulip, 256 = Slack
     obj.telegramClient = null;
     obj.discordClient = null;
     obj.discordUrl = null;
@@ -122,6 +129,7 @@ module.exports.CreateServer = function (parent) {
     obj.callMeBotClient = null;
     obj.pushoverClient = null;
     obj.zulipClient = null;
+    obj.slackClient = null;
     const sortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
 
     // Telegram client setup
@@ -270,6 +278,12 @@ module.exports.CreateServer = function (parent) {
         obj.providers += 128; // Enable zulip messaging
     }
 
+    // Slack Webhook setup (https://slack.com)
+    if (parent.config.messaging.slack) {
+        obj.slackClient = true;
+        obj.providers += 256; // Enable slack messaging
+    }
+
     // Send a direct message to a specific userid
     async function discordSendMsg(userId, message) {
         const user = await obj.discordClient.users.fetch(userId).catch(function () { return null; });
@@ -350,6 +364,12 @@ module.exports.CreateServer = function (parent) {
                 subject: domain.title ? domain.title : 'MeshCentral'
             });
             if (func != null) { func(true); }
+        }else if ((to.startsWith('slack:')) && (obj.slackClient != null)) { //slack
+            // https://hooks.slack.com/services/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
+            const req = require('https').request(new URL(to.substring(6)), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
+            req.on('error', function (err) { if (func != null) { func(false); } });
+            req.write(JSON.stringify({"text": msg }));
+            req.end();
         } else {
             // No providers found
             if (func != null) { func(false, "No messaging providers found for this message."); }

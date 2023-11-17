@@ -228,6 +228,21 @@ You can enable the MeshCentral [Zulip](https://zulip.com/) integration with the 
 }
 ```
 
+## Slack setup
+
+[Slack](https://slack.com/) integration is achieved by the use of Incoming Webhooks.
+You can get started by following the Slack guide [here](https://api.slack.com/messaging/webhooks) and getting your URL
+
+Once you have your incoming webhooks url, You can enable the [Slack](https://slack.com/) integration with the following config.json section
+
+```json
+{
+  "messaging": {
+    "slack": true
+  }
+}
+```
+
 ## User Setup
 
 Once one or more messaging systems are setup with MeshCentral, users will be able to register their handle and verify that they own that account by typing in a 6 digit code.
