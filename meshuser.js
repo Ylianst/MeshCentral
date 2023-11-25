@@ -1,4 +1,4 @@
-﻿/**
+/**
 * @description MeshCentral MeshAgent
 * @author Ylian Saint-Hilaire & Bryan Roe
 * @copyright Intel Corporation 2018-2022
@@ -6775,6 +6775,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if ((command.service == 32) && ((parent.parent.msgserver.providers & 32) != 0)) { handle = 'pushover:' + command.handle; }
         if ((command.service == 64) && ((parent.parent.msgserver.providers & 64) != 0)) { handle = 'ntfy:' + command.handle; }
         if ((command.service == 128) && ((parent.parent.msgserver.providers & 128) != 0)) { handle = 'zulip:' + command.handle; }
+        if ((command.service == 256) && ((parent.parent.msgserver.providers & 256) != 0)) { handle = 'slack:' + command.handle; }
         if (handle == null) return;
 
         // Send a verification message
@@ -6921,6 +6922,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:[userkey]\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 64) != 0) { r.push("Usage: MSG \"ntfy:[topic]\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 128) != 0) { r.push("Usage: MSG \"zulip:[topic]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 256) != 0) { r.push("Usage: MSG \"slack:[webhook]\" \"Message\"."); }
                 cmdData.result = r.join('\r\n');
             } else {
                 parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], domain, function (status, msg) {
