@@ -3419,6 +3419,11 @@ See description for information about each item.
           "default": false,
           "description": "Enabled CallMeBot integration support."
         },
+        "slack": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enabled Slack integration support."
+        },
         "pushover": {
           "type": "object",
           "description": "Configure Pushover messaging system",
