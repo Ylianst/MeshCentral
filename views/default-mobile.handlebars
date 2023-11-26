@@ -5862,7 +5862,7 @@
                     var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
                     var thedate = {
                         year: lastBootUpTime.getFullYear(),
-                        month: lastBootUpTime.getMonth() + 1, // Months are zero-based
+                        month: lastBootUpTime.getMonth(),
                         day: lastBootUpTime.getDate(),
                         hours: lastBootUpTime.getHours(),
                         minutes: lastBootUpTime.getMinutes(),
