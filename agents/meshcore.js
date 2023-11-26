@@ -1894,6 +1894,20 @@ function getSystemInformation(func) {
                 } catch (ex) { }
             }
         }
+        if(process.platform=='darwin'){
+            try {
+                var child = require('child_process').execFile('/usr/sbin/sysctl', ['', 'kern.boottime']); // must include blank value at begining for some reason?
+                child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                child.stderr.on('data', function () { });
+                child.waitExit();
+                const timestampMatch = /\{ sec = (\d+), usec = \d+ \}/.exec(child.stdout.str.trim());
+                if(!results.hardware.darwin){
+                    results.hardware.darwin = { LastBootUpTime: parseInt(timestampMatch[1]) };
+                }else{
+                    results.hardware.darwin.LastBootUpTime = parseInt(timestampMatch[1]);
+                }
+            } catch (ex) { }
+        }
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();

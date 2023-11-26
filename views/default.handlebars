@@ -11669,6 +11669,18 @@
                         year: lastBootUpTime.getFullYear(),
                         month: lastBootUpTime.getMonth(),
                         day: lastBootUpTime.getDate(),
+                        hours: lastBootUpTime.getHours(),
+                        minutes: lastBootUpTime.getMinutes(),
+                        seconds: lastBootUpTime.getSeconds()
+                    };
+                    const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
+                    x += addDetailItem("Last Boot Up Time", date);
+                }
+                if(hardware.darwin && hardware.darwin.LastBootUpTime){
+                    var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
+                    var thedate = {
+                        year: lastBootUpTime.getFullYear(),
+                        month: lastBootUpTime.getMonth(),
                         day: lastBootUpTime.getDate(),
                         hours: lastBootUpTime.getHours(),
                         minutes: lastBootUpTime.getMinutes(),
