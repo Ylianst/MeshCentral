@@ -11663,6 +11663,19 @@
                         x += addDetailItem("Last Boot Up Time", date);
                     }
                 }
+                if(hardware.linux && hardware.linux.LastBootUpTime){
+                    var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
+                    var thedate = {
+                        year: lastBootUpTime.getFullYear(),
+                        month: lastBootUpTime.getMonth() + 1, // Months are zero-based
+                        day: lastBootUpTime.getDate(),
+                        hours: lastBootUpTime.getHours(),
+                        minutes: lastBootUpTime.getMinutes(),
+                        seconds: lastBootUpTime.getSeconds()
+                    };
+                    const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
+                    x += addDetailItem("Last Boot Up Time", date);
+                }
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png'}); }
             }
 

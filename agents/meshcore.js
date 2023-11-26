@@ -1884,6 +1884,15 @@ function getSystemInformation(func) {
                     }
                 } catch (ex) { }
             }
+            if(!results.hardware.linux.LastBootUpTime) {
+                try {
+                    var child = require('child_process').execFile('/usr/bin/uptime', ['', '-s']); // must include blank value at begining for some reason?
+                    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                    child.stderr.on('data', function () { });
+                    child.waitExit();
+                    results.hardware.linux.LastBootUpTime = child.stdout.str.trim();
+                } catch (ex) { }
+            }
         }
         results.hardware.agentvers = process.versions;
         replaceSpacesWithUnderscoresRec(results);
