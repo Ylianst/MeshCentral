@@ -34,3 +34,8 @@ While this is a huge step up, it's not perfect. If you notice, there are some in
 Hopefully this will help verify your config is syntactically correct and prevent needless formatting errors, misspellings, etc.
 
 ![](images/2023-02-24vscodejsonediting.png)
+
+## Downloading Folders
+
+If you would like to download folders via Files simply select folder/files then use the zip and download the zip file by clicking on it.
+
