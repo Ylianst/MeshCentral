@@ -3368,6 +3368,14 @@ See description for information about each item.
             },
             "session": {
               "type": "string"
+            },
+            "useWSS": {
+              "type": "boolean",
+              "description": "Whether to try to connect over Wss (or 443 port) or not"
+            },
+            "connectionRetries": {
+              "type": "number",
+              "description": "How many times the reconnection should retry, either on the initial connection or when Telegram disconnects us. May be set to a negative value for infinite retries, but this is not recommended. Defaults to 5"
             }
           }
         },

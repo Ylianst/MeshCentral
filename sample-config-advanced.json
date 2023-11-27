@@ -628,7 +628,9 @@
     "_telegram": {
       "apiid": 0,
       "apihash": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "useWSS": "false",
+      "connectionRetries": 60
     },
     "_discord": {
       "serverurl": "https://discord.gg/xxxxxxxxx",
