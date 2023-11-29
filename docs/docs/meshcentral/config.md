@@ -36,3 +36,7 @@ Some options you can find relate to:
 * Remote Desktop Configuration
 
 and more!
+
+![Server Options](<images/2023-11-29_140845 - mesh json1.png>)
+
+![Domain Options](<images/2023-11-29_140845 - mesh json2.png>)
