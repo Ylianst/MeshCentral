@@ -39,3 +39,7 @@ Hopefully this will help verify your config is syntactically correct and prevent
 
 If you would like to download folders via Files simply select folder/files then use the zip and download the zip file by clicking on it.
 
+## Share device groups with AD logins
+If you would like to share device groups with different AD users.
+
+In the config.json set "ldapuserkey" to "sAMAccountName".
