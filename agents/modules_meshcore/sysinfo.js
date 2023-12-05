@@ -159,7 +159,7 @@ function linux_memUtilization()
             case 'MemTotal:':
                 ret.total = parseInt(tokens[tokens.length - 2]);
                 break;
-            case 'MemFree:':
+            case 'MemAvailable:':
                 ret.free = parseInt(tokens[tokens.length - 2]);
                 break;
         }
