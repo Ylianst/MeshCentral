@@ -195,6 +195,12 @@ Once Intel AMT is in a situation where ACM activation can occur, the activation 
 
 The best way to test this feature is to create an “Intel AMT only” device group and run the MeshCMD command on the remote system to perform activation. If there is a problem, this process should clearly display why ACM activation fails.
 
+!!!note
+  Activation over wifi has some additional issues.<br>
+  First you need to add your WiFi access point to that wifi configuration to allow CSME to take over WiFi when OS is not functioning. Then it should work.<br>
+  Please also make sure you install Intel WiFi driver and Intel LMS package. It should work. You can detach the ethernet and then try connecting to that device using the IP address acquired by WiFi interface.
+  See [Open AMT Cloud Toolkit](https://www.intel.com/content/www/us/en/developer/topic-technology/edge-5g/tools/open-amt-cloud-toolkit.html) project - a close relative to this project. It has an AMT activation component and newer remote provisioning client can activate locally and also can manage Wi-Fi profile.
+
 ## Intel AMT MEI and LMS
 
 Intel Active Management Technology (Intel AMT) can communicate to the local platform using the Management Engine Interface (MEI). We show how your can use that to get Intel AMT information. For more advanced usages, you need to connect using TCP and TLS which requires Intel Local Manageability Service (LMS). We show how MeshCentral's Mesh Agent and MeshCMD have a small version of LMS built-in and how it works

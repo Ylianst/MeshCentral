@@ -36,7 +36,7 @@ No, you haven't.
 
 6. Here are some examples of what that looks like.
 
-# Can't login on server after first setup
+## Can't login on server after first setup
 
 You're sure you're typing in everything right, giving it 2FA code and can't login
 
@@ -44,9 +44,25 @@ You're sure you're typing in everything right, giving it 2FA code and can't logi
 
 ![](images/2022-08-04-18-19-19.png)
 
-# Branding and Customization
+## Branding and Customization
 
 You can brand and customize MeshCentral almost as much as you like without delving into the code, a few changes in the config.json file and uploading images can change the way your system looks. Read more [here](https://ylianst.github.io/MeshCentral/meshcentral/#branding-terms-of-use)
 
 !!!note
     You will need to reinstall the agent for agent customizations to take effect.
+
+## Mac Clients
+
+You have to manually grant Mac permissions outside of the agent install process due to the MacOS security system under Security & Privacy > Privacy
+
+To see the screen (otherwise you just see the menu bar, and otherwise blank)
+
+![](images/2023-11-29-12-57-15.png)
+
+To be able to transfer files
+
+![](images/2023-11-29-12-58-05.png)
+
+To be able to control keyboard and mouse
+
+![](images/2023-11-29-12-58-36.png)
