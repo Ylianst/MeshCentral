@@ -7,6 +7,10 @@
 // Polyfill Uint8Array.slice() for IE
 if (!Uint8Array.prototype.slice) { Object.defineProperty(Uint8Array.prototype, 'slice', { value: function (begin, end) { return new Uint8Array(Array.prototype.slice.call(this, begin, end)); } }); }
 
+function isWindowsBrowser() {
+    return navigator && !!(/win/i).exec(navigator.platform);
+}
+
 // Construct a MeshServer object
 var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     var obj = {}
@@ -37,6 +41,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.localKeyMap = true;
     obj.remoteKeyMap = false; // If false, the remote keyboard mapping is not used.
     obj.pressedKeys = [];
+    obj._altGrArmed = false;       // Windows AltGr detection
+    obj._altGrTimeout = 0;
+    obj.isWindowsBrowser = isWindowsBrowser();
 
     obj.sessionid = 0;
     obj.username;
@@ -403,7 +410,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (!event) { event = window.event; }
 
         var extendedKey = false; // Test feature, add ?extkeys=1 to url to use.
-        if ((obj.UseExtendedKeyFlag || (urlargs.extkeys == 1)) && (typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) { extendedKey = true; }
+
+        if ((obj.UseExtendedKeyFlag || (urlargs.extkeys == 1)) && (typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) {
+            extendedKey = true; 
+        }
+
+        if (obj.isWindowsBrowser) {
+            if( obj.checkAltGr(obj, event, action) ) {
+              return;
+            }; 
+        }
 
         if ((extendedKey == false) && event.code && (event.code.startsWith('NumPad') == false) && (obj.localKeyMap == false)) {
             // Convert "event.code" into a scancode. This works the same regardless of the keyboard language.
@@ -419,6 +435,44 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             else if (kc == 61) { kc = 187; } // Fix the '=' key for Firefox
             obj.SendKeyMsgKC(action, kc, extendedKey);
         }
+    }
+
+    const ControlLeftKc = 17;
+    const AltGrKc = 225;
+    //return true: Key is alredy handled. 
+    obj.checkAltGr = function (obj, event, action) {
+        // Windows doesn't have a proper AltGr, but handles it using
+        // fake Ctrl+Alt. However the remote end might not be Windows,
+        // so we need to merge those into a single AltGr event. We
+        // detect this case by seeing the two key events directly after
+        // each other with a very short time between them (<50ms).
+        if (obj._altGrArmed) {
+            obj._altGrArmed = false;
+            clearTimeout(obj._altGrTimeout);
+
+            if ((event.code === "AltRight") &&  ((event.timeStamp - obj._altGrCtrlTime) < 50)) {
+                //AltGr detected.
+                obj.SendKeyMsgKC( action, AltGrKc, false);
+                return true;
+            } 
+        }
+
+        // Possible start of AltGr sequence? 
+        if ((event.code === "ControlLeft") && !(ControlLeftKc in obj.pressedKeys)) {
+          obj._altGrArmed = true;
+            obj._altGrCtrlTime = event.timeStamp;
+          if( action == 1 ) {
+            obj._altGrTimeout = setTimeout(obj._handleAltGrTimeout.bind(obj), 100);
+            return true;
+          }
+        }
+        return false;
+    }
+
+    obj._handleAltGrTimeout = function () { //Windows and no Ctrl+Alt -> send only Ctrl.
+        obj._altGrArmed = false;
+        clearTimeout(obj._altGrTimeout);
+        obj.SendKeyMsgKC( 1, ControlLeftKc, false); // (KeyDown, "ControlLeft", false)
     }
 
     // Send remote input lock. 0 = Unlock, 1 = Lock, 2 = Query
@@ -456,7 +510,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.SendKeyUnicode = function (action, val) {
         if (obj.State != 3) return;
-        if (obj.debugmode > 0) { console.log('Sending UnicodeKey ' + val); }
+        if (obj.debugmode > 0) { console.log('Sending UnicodeKey ' + val + ', action ' + action); }
         obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x07, (action - 1)) + ShortToStr(val));
     }
 
