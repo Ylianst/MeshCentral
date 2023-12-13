@@ -27,7 +27,7 @@ else
     sed -i "s/\"_sessionKey\": \"MyReallySecretPassword1\"/\"sessionKey\": \"$SESSION_KEY\"/" meshcentral-data/"${CONFIG_FILE}"
     if [ "$REVERSE_PROXY" != "false" ]; then
         sed -i "s/\"_certUrl\": \"my\.reverse\.proxy\"/\"certUrl\": \"https:\/\/$REVERSE_PROXY:$REVERSE_PROXY_TLS_PORT\"/" meshcentral-data/"${CONFIG_FILE}"
-        node meshcentral/meshcentral --configfile "${CONFIG_FILE}"
+        node meshcentral/meshcentral --configfile "${CONFIG_FILE}" ${ARGS}
         exit
     fi
     node meshcentral/meshcentral --configfile "${CONFIG_FILE}" --cert "$HOSTNAME" ${ARGS}
