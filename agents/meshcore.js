@@ -1469,7 +1469,7 @@ function handleServerCommand(data) {
                     case 'alertbox': {
                         // Display an old style alert box
                         if (data.title && data.msg) {
-                            MeshServerLogEx(18, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
+                            MeshServerLogEx(158, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
                             try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
                         }
                         break;
