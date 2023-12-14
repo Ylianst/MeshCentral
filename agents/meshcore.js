@@ -1466,6 +1466,14 @@ function handleServerCommand(data) {
                         sendConsoleText('localappMsg: ' + data.appid + ', ' + JSON.stringify(data.value));
                         if (data.appid != null) { sendToRegisteredApp(data.appid, data.value); } else { broadcastToRegisteredApps(data.value); }
                         break;
+                    case 'alertbox': {
+                        // Display an old style alert box
+                        if (data.title && data.msg) {
+                            MeshServerLogEx(18, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
+                            try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
+                        }
+                        break;
+                    }
                     default:
                         // Unknown action, ignore it.
                         break;
