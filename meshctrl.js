@@ -2572,7 +2572,7 @@ function connectTunnel(url) {
         // node meshctrl download --id oL4Y6Eg0qjnpHFrp1AxfxnBPenbDGnDSkC@HSOnAheIyd51pKhqSCUgJZakzwfKl --file c:\temp\MC-8Languages.png --target c:\temp\bob.png
         settings.tunnelws.on('message', function (rawdata) {
             if (settings.tunnelwsstate == 1) {
-                if ((rawdata.length > 0) && (rawdata[0] != '{')) {
+                if ((rawdata.length > 0) && (rawdata.toString()[0] != '{')) {
                     // This is binary data, this test is ok because 4 first bytes is a control value.
                     if ((rawdata.length > 4) && (settings.downloadFile != null)) { settings.downloadSize += (rawdata.length - 4); require('fs').writeSync(settings.downloadFile, rawdata, 4, rawdata.length - 4); }
                     if ((rawdata[3] & 1) != 0) { // Check end flag
