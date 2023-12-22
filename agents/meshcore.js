@@ -1822,7 +1822,6 @@ function replaceSpacesWithUnderscoresRec(o) {
 function getSystemInformation(func) {
     try {
         var results = { hardware: require('computer-identifiers').get() }; // Hardware info
-
         if (results.hardware && results.hardware.windows) {
             // Remove extra entries and things that change quickly
             var x = results.hardware.windows.osinfo;
@@ -1873,9 +1872,11 @@ function getSystemInformation(func) {
         }
         if(results.hardware && results.hardware.linux) {
             if (!results.hardware.identifiers['bios_serial']) {
-                if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
-                    results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
-                }
+                try {
+                    if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
+                        results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+                    }
+                } catch (ex) { }
             }
             if (!results.hardware.identifiers['bios_mode']) {
                 try {

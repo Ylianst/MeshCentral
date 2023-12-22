@@ -69,35 +69,47 @@ function linux_identifiers()
     var ret = {};
     var values = {};
 
-    if (!require('fs').existsSync('/sys/class/dmi/id')) { throw ('this platform does not have DMI statistics'); }
-
-    var entries = require('fs').readdirSync('/sys/class/dmi/id');
-    for(var i in entries)
-    {
-        if (require('fs').statSync('/sys/class/dmi/id/' + entries[i]).isFile())
-        {
-            try
-            {
-                ret[entries[i]] = require('fs').readFileSync('/sys/class/dmi/id/' + entries[i]).toString().trim();
+    if (!require('fs').existsSync('/sys/class/dmi/id')) {         
+        if(require('fs').existsSync('/sys/firmware/devicetree/base/model')){
+            if(require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim().startsWith('Raspberry')){
+                identifiers['board_vendor'] = 'Raspberry Pi';
+                identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
+                identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
+            }else{
+                throw('Unknown board');
             }
-            catch(z)
-            {
-            }
-            if (ret[entries[i]] == 'None') { delete ret[entries[i]];}
+        }else {
+            throw ('this platform does not have DMI statistics');
         }
-    }
-    entries = null;
+    } else {
+        var entries = require('fs').readdirSync('/sys/class/dmi/id');
+        for(var i in entries)
+        {
+            if (require('fs').statSync('/sys/class/dmi/id/' + entries[i]).isFile())
+            {
+                try
+                {
+                    ret[entries[i]] = require('fs').readFileSync('/sys/class/dmi/id/' + entries[i]).toString().trim();
+                }
+                catch(z)
+                {
+                }
+                if (ret[entries[i]] == 'None') { delete ret[entries[i]];}
+            }
+        }
+        entries = null;
 
-    identifiers['bios_date'] = ret['bios_date'];
-    identifiers['bios_vendor'] = ret['bios_vendor'];
-    identifiers['bios_version'] = ret['bios_version'];
-    identifiers['bios_serial'] = ret['product_serial'];
-    identifiers['board_name'] = ret['board_name'];
-    identifiers['board_serial'] = ret['board_serial'];
-    identifiers['board_vendor'] = ret['board_vendor'];
-    identifiers['board_version'] = ret['board_version'];
-    identifiers['product_uuid'] = ret['product_uuid'];
-    identifiers['product_name'] = ret['product_name'];
+        identifiers['bios_date'] = ret['bios_date'];
+        identifiers['bios_vendor'] = ret['bios_vendor'];
+        identifiers['bios_version'] = ret['bios_version'];
+        identifiers['bios_serial'] = ret['product_serial'];
+        identifiers['board_name'] = ret['board_name'];
+        identifiers['board_serial'] = ret['board_serial'];
+        identifiers['board_vendor'] = ret['board_vendor'];
+        identifiers['board_version'] = ret['board_version'];
+        identifiers['product_uuid'] = ret['product_uuid'];
+        identifiers['product_name'] = ret['product_name'];
+    }
 
     try {
         identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
@@ -130,7 +142,6 @@ function linux_identifiers()
     values.linux = ret;
     trimIdentifiers(values.identifiers);
     child = null;
-
 
     var dmidecode = require('lib-finder').findBinary('dmidecode');
     if (dmidecode != null)
@@ -192,16 +203,18 @@ function linux_identifiers()
                 }
             }
 
-            var mem = {};
-            for (i = 0; i < j.length; ++i)
-            {
-                for (key in j[i])
+            if(j.length > 0){
+                var mem = {};
+                for (i = 0; i < j.length; ++i)
                 {
-                    if (mem[key] == null) { mem[key] = []; }
-                    mem[key].push(j[i][key]);
+                    for (key in j[i])
+                    {
+                        if (mem[key] == null) { mem[key] = []; }
+                        mem[key].push(j[i][key]);
+                    }
                 }
+                values.linux.memory = mem;
             }
-            values.linux.memory = mem;
         }
         catch (e)
         { }
