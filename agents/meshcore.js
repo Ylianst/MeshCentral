@@ -622,7 +622,7 @@ if ((require('fs').existsSync(process.cwd() + 'batterystate.txt')) && (require('
 else {
     try {
         // Setup normal battery monitoring
-        if (require('identifiers').isBatteryPowered && require('identifiers').isBatteryPowered()) {
+        if (require('computer-identifiers').isBatteryPowered && require('computer-identifiers').isBatteryPowered()) {
             require('MeshAgent')._battLevelChanged = function _battLevelChanged(val) {
                 _battLevelChanged.self._currentBatteryLevel = val;
                 _battLevelChanged.self.SendCommand({ action: 'battery', state: _battLevelChanged.self._currentPowerState, level: val });
@@ -657,14 +657,14 @@ try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreO
 // Get Volumes and BitLocker if Windows
 try {
     if (process.platform == 'win32'){
-        if (require('identifiers').volumes_promise != null){
-            var p = require('identifiers').volumes_promise();
+        if (require('computer-identifiers').volumes_promise != null){
+            var p = require('computer-identifiers').volumes_promise();
             p.then(function (res){
                 meshCoreObj.volumes = res;
                 meshCoreObjChanged();
             });
-        }else if (require('identifiers').volumes != null){
-            meshCoreObj.volumes = require('identifiers').volumes();
+        }else if (require('computer-identifiers').volumes != null){
+            meshCoreObj.volumes = require('computer-identifiers').volumes();
             meshCoreObjChanged();
         }
     }
@@ -1813,7 +1813,7 @@ function onFileWatcher(a, b) {
 */
 
 // Replace all key name spaces with _ in an object recursively.
-// This is a workaround since require('identifiers').get() returns key names with spaces in them on Linux.
+// This is a workaround since require('computer-identifiers').get() returns key names with spaces in them on Linux.
 function replaceSpacesWithUnderscoresRec(o) {
     if (typeof o != 'object') return;
     for (var i in o) { if (i.indexOf(' ') >= 0) { o[i.split(' ').join('_')] = o[i]; delete o[i]; } replaceSpacesWithUnderscoresRec(o[i]); }
@@ -1821,7 +1821,7 @@ function replaceSpacesWithUnderscoresRec(o) {
 
 function getSystemInformation(func) {
     try {
-        var results = { hardware: require('identifiers').get() }; // Hardware info
+        var results = { hardware: require('computer-identifiers').get() }; // Hardware info
 
         if (results.hardware && results.hardware.windows) {
             // Remove extra entries and things that change quickly
@@ -1928,9 +1928,9 @@ function getSystemInformation(func) {
         {
             results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
 
-            if (require('identifiers').volumes_promise != null)
+            if (require('computer-identifiers').volumes_promise != null)
             {
-                var p = require('identifiers').volumes_promise();
+                var p = require('computer-identifiers').volumes_promise();
                 p.then(function (res)
                 {
                     results.hardware.windows.volumes = res;
@@ -1938,9 +1938,9 @@ function getSystemInformation(func) {
                     func(results);
                 });
             }
-            else if (require('identifiers').volumes != null)
+            else if (require('computer-identifiers').volumes != null)
             {
-                results.hardware.windows.volumes = require('identifiers').volumes();
+                results.hardware.windows.volumes = require('computer-identifiers').volumes();
                 results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
@@ -4250,7 +4250,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'vm':
-                response = 'Virtual Machine = ' + require('identifiers').isVM();
+                response = 'Virtual Machine = ' + require('computer-identifiers').isVM();
                 break;
             case 'startupoptions':
                 response = JSON.stringify(require('MeshAgent').getStartupOptions());
