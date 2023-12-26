@@ -5623,6 +5623,14 @@ function sendPeriodicServerUpdate(flags, force) {
                 });
             } catch (ex) { }
         }
+        // Get Defender for Windows Server
+        try { 
+            var d = require('win-info').defender();
+            d.then(function(res){
+                meshCoreObj.defender = res;
+                meshCoreObjChanged();
+            });
+        } catch (ex){ }
     }
 
     // Send available data right now
