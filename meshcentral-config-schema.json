@@ -3112,6 +3112,16 @@
                 ]
               }
             }
+          },
+          "showLanguageSelect": {
+            "type": "string",
+            "default": null,
+            "description": "Show Language Selector on Login Page, \"top\" inside Login Box or \"bottom\" at Bottom of Page",
+            "enum": [
+              null,
+              "top",
+              "bottom"
+            ]
           }
         }
       }
