@@ -51,7 +51,7 @@
     "@yetzt/nedb": "1.8.0",
     "node-forge": "1.3.1",
     "ua-parser-js": "1.0.37",
-    "ws": "8.14.2",
+    "ws": "8.15.0",
     "yauzl": "2.10.0"
   },
   "engines": {
