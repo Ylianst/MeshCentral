@@ -18585,14 +18585,12 @@
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
         function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34,42,43].indexOf(node.agent.id) >= 0); }
 
-        // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
-        // So we do that for all browsers except FireFox
         function downloadFile(link, name, closeDialog) {
             var element = document.createElement('a');
             element.setAttribute('href', link);
             element.setAttribute('rel', 'noreferrer noopener');
             element.setAttribute('target', 'fileDownloadFrame');
-            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name?name:'')); }
+            element.setAttribute('download', decodeURIComponent(name?name:''));
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
