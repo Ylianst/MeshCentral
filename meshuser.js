@@ -4977,7 +4977,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
 
                                     // System infomation
-                                    if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.windows)) {
+                                    if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows)) {
                                         // Windows
                                         output += ',';
                                         if (nodeinfo.sys.hardware.windows.cpu && (nodeinfo.sys.hardware.windows.cpu.length > 0) && (typeof nodeinfo.sys.hardware.windows.cpu[0].Name == 'string')) { output += csvClean(nodeinfo.sys.hardware.windows.cpu[0].Name); }
@@ -5042,11 +5042,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         output += ',';
                                         output += ',';
                                         output += ',';
-                                    } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.linux)) {
+                                    } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.linux)) {
                                         // Linux
                                         output += ',';
-                                        output += ',';
-                                        output += ',';
+                                        if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.cpu_name)) { output += csvClean(nodeinfo.sys.hardware.identifiers.cpu_name); }
+                                        output += ',,';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_date); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_vendor); }
@@ -5073,6 +5073,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         output += ',';
                                         if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsOwned) { output += csvClean(nodeinfo.sys.hardware.tpm.IsOwned ? 'true' : 'false'); }
                                         output += ',';
+                                        if (nodeinfo.sys.hardware.linux.memory) {
+                                            if (nodeinfo.sys.hardware.linux.memory.Memory_Device) {
+                                                var totalMemory = 0;
+                                                for (var j in nodeinfo.sys.hardware.linux.memory.Memory_Device) {
+                                                    if (nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size) {
+                                                        if (typeof nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size == 'number') { totalMemory += nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size; }
+                                                        if (typeof nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size == 'string') { totalMemory += parseInt(nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size); }
+                                                    }
+                                                }
+                                                output += csvClean('' + (totalMemory * Math.pow(1024, 3)));
+                                            }
+                                        }
                                     } else {
                                         output += ',,,,,,,,,,,,,,,,';
                                     }
