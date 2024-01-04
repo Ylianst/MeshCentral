@@ -7396,6 +7396,14 @@
                     x += addDeviceAttribute("Windows Security", y.join(', '));
                 }
 
+                // Defender for Windows Server
+                if(node.defender && !node.wsc) {
+                    var y = [];
+                    if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    x += addDeviceAttribute("Windows Defender", y.join(', '));
+                }
+
                 // Antivirus
                 if (node.av && node.av.length > 0) {
                     var y = [];
