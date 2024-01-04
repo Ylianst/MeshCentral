@@ -11950,6 +11950,10 @@
                             if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
                             if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
                         }
+                        if(hardware.windows && hardware.windows.drives && m.Model){
+                            const foundObject = hardware.windows.drives.find(obj => obj['Model'] === m.Model);
+                            if(foundObject) x += addDetailItem("Status", EscapeHtml(foundObject.Status), s);
+                        }
                         x += '</div>';
                     }
                 }
