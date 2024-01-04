@@ -3341,7 +3341,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
                 loginpicture: (typeof domain.loginpicture == 'string'),
-                tokenTimeout: twoFactorTimeout // Two-factor authentication screen timeout in milliseconds
+                tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
+                renderLanguages: obj.renderLanguages,
+                showLanguageSelect: domain.showlanguageselect ? domain.showlanguageselect : false,
             }, req, domain, (domain.sitestyle == 2) ? 'login2' : 'login'));
     }
 
