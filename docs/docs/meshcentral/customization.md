@@ -1,14 +1,12 @@
 # Customization
 
-## Branding & Terms of use
-
 Whitelabeling your MeshCentral installation to personalize it to your companies brand, as well as having your own terms of use is one of the first things many people do after installation.
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/xUZ1w9RSKpQ" frameborder="0" allowfullscreen></iframe>
 </div>
 
-### Branding
+## Web Branding
 
 You can put you own logo on the top of the web page. To get started, get the file “logoback.png” from the folder “node_modules/meshcentral/public/images” and copy it to your “meshcentral-data” folder. In this example, we will change the name of the file “logoback.png” to “title-mycompany.png”. Then use any image editor to change the image and place your logo.
 
@@ -53,14 +51,12 @@ If, for example, MeshCentral is running on a Raspberry Pi. You may want to put a
 
 This is great to personalize the look of the server within the web site.
 
-### Agent Branding
+## Agent Branding
 
 You can customize the Agent to add your own logo, change the title bar, install text, the service name, or even colors!
 
 !!!note
-	The Customization must be done FIRST and BEFORE you deploy your agents!
-	Once the agents have been deployed, any customization made afterwards, will not sync!
-	This is because the setup files are customized on the fly, then when you install the agents, the exe and .msh file with the customizations in are copied over to the required folder
+	The Customization must be done FIRST and BEFORE you deploy your agents! Once the agents have been deployed, any customization made afterwards, will not sync! This is because the setup files are customized on the fly, then when you install the agents, the exe and .msh file with the customizations in are copied over to the required folder, so you will need to reinstall the agent for agent customizations to take effect.
 
 ![](images/2022-08-24-06-42-40.png)
 
@@ -84,10 +80,7 @@ You can customize the Agent to add your own logo, change the title bar, install 
 
 ![agent icon](images/agentico.png)
 
-!!!note
-    You will need to reinstall the agent for agent customizations to take effect.
-
-### Terms of use
+## Terms of use
 
 You can change the terms of use of the web site by adding a “terms.txt” file in the “meshcentral-data” folder. The file can include HTML markup. Once set, the server does not need to be restarted, the updated terms.txt file will get used the next time it’s requested.
 
