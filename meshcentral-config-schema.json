@@ -1389,6 +1389,11 @@
               }
             }
           },
+          "assistantTypeAgentInvite": {
+            "type": "integer",
+            "default": 0,
+            "description": "0 = System Tray, Connect on user request, 1 = System Tray, Always Connected, 2 = Application, Connect on user request, 3 = Application, Always connected, 4 = System Tray, Monitor Only"
+          },
           "certUrl": {
             "type": "string",
             "format": "uri",

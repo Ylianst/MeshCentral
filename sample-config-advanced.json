@@ -248,6 +248,7 @@
           }
         ]
       },
+      "_assistantTypeAgentInvite": 2,
       "PreconfiguredScripts": [
         {
           "name": "Run NotePad as user",
