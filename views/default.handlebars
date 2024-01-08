@@ -10057,7 +10057,28 @@
             if (sel == 1) meshserver.send({ action: 'msg', type: 'services', nodeid: currentNode._id });
         }
         function refreshDeskToolsEx() { QV('DeskToolsRefreshButton', true); }
-        var deskTools = { sort: 1, ssort: 1, msg: null, smsg: null };
+        var deskTools = { sort: 1, ssort: 1, msg: null, smsg: null, resizing: false };
+        Q('DeskTools').addEventListener('mousemove', function (event) {
+            var mouseX = event.clientX - Q('DeskTools').getBoundingClientRect().left;
+            var borderThickness = 5; // Assuming a 5px border
+            if (mouseX < borderThickness) {
+                Q('DeskTools').style.cursor = 'col-resize';
+            } else {
+                Q('DeskTools').style.cursor = 'default';
+            }
+        });
+        Q('DeskTools').addEventListener('mousedown', function (event) {
+            if (Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = true;
+        });
+        document.addEventListener('mouseup', function () {
+            if(deskTools.resizing===true && Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = false;
+        });
+        document.addEventListener('mousemove', function (event) {
+            if (deskTools.resizing) {
+                var newWidth = Q('DeskTools').getBoundingClientRect().right - event.clientX;
+                if(newWidth < (Q('DeskParent').clientWidth-10)) Q('DeskTools').style.width = newWidth + 'px';
+            }
+        });
         function sortProcess(sort) { deskTools.sort = sort; showDeskToolsProcesses(deskTools.msg); }
         function sortService(sort) { deskTools.ssort = sort; showDeskToolsServices(deskTools.smsg); }
         function sortProcessPid(a, b) { if (a.p > b.p) return 1; if (a.p < b.p) return (-1); return sortProcessName(a, b); }
@@ -10075,8 +10096,12 @@
                 for (var i in p) {
                     if (p[i].p != 0) {
                         var c = p[i].c;
-                        if (c.length > 30) { c = '<span onclick=showProcessDetails(' + p[i].p + ') title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0,30)) + '...</span>' } else { c = EscapeHtml(c); }
-                        x += '<div onclick=showProcessDetails(' + p[i].p + ') class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
+                        x += '<div onclick=showProcessDetails(' + p[i].p + ') class=deskToolsBar>';
+                        x += '<div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div>';
+                        x += '<a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a>';
+                        x += '<div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:5px" title="' + EscapeHtml(c) + '">' + c + '</div>';
+                        x += '</div>';
                     }
                 }
                 QH('DeskToolsProcesses', x);
@@ -10110,10 +10135,12 @@
                 for (var i in s) {
                     if (s[i].p != 0) {
                         var c = s[i].d, ss = s[i].p;
-                        if (c.length > 30) { c = '<span title="' + c + '">' + c.substring(0, 30) + '...</span>' } else { c = EscapeHtml(c); }
                         if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
                         else if (ss == 'Running') { ss = "Running"; }
-                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar><div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div><div>' + c + '</div></div>';
+                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar>';
+                        x += '<div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + c + '">' + EscapeHtml(c) + '</div>';
+                        x += '</div>';
                     }
                 }
                 QH('DeskToolsServices', x);
