@@ -8141,12 +8141,25 @@
 
         function deviceToastFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
-            Q('d2devToast').focus();
+            var x = '<select id=d2deviceop style=width:100%><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+            x += '<br /><input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100% />';
+            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll></textarea>';
+            setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, x);
+            Q('d2notifyMsg').focus();
         }
 
         function deviceToastFunctionEx() {
-            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devToast').value });
+            var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value;
+            if (msg.length == 0) return;
+            if (title == '') { title = decodeURIComponent('{{{extitle}}}'); }
+            if (title == '') { title = "MeshCentral"; }
+            if (op == 1) { // MessageBox
+                meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: title, msg: msg });
+            } else if (op == 2) { // Toast
+                meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: title, msg: msg });
+            } else if (op == 3) { // Old Style MessageBox
+                meshserver.send({ action: 'msg', type: 'alertbox', nodeid: currentNode._id, title: title, msg: msg });
+            }
         }
 
         // Lock desktop
