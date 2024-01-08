@@ -430,6 +430,26 @@ function windows_volumes()
                 {
                     ret[key].volumeStatus = tokens[1].split('"')[1];
                     ret[key].protectionStatus = tokens[2].split('"')[1];
+                    try {
+                        var str = '';
+                        var foundMarkedLine = false;
+                        var password = '';
+                        var child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ', tokens[0].split('"')[1], ' -Type recoverypassword'], {});
+                        child.stdout.on('data', function (chunk) { str += chunk.toString(); });
+                        child.stderr.on('data', function (chunk) { str += chunk.toString(); });
+                        child.waitExit();
+                        var lines = str.split(/\r?\n/);
+                        for (var i = 0; i < lines.length; i++) {
+                            if (lines[i].trim() !== '' && lines[i].includes('Password:') && !lines[i].includes('Numerical Password:')) {
+                                if (i + 1 < lines.length && lines[i + 1].trim() !== '') {
+                                    password = lines[i + 1].trim();
+                                    foundMarkedLine = true;
+                                }
+                                if (foundMarkedLine) break;
+                            }
+                        }
+                        ret[key].recoveryPassword = (foundMarkedLine ? password : '');
+                    } catch(ex) { }
                 }
             }
             this.promise._res(ret);
