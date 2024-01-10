@@ -43,7 +43,7 @@ RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN apk update \
-    && apk add --no-cache --update tzdata nodejs npm bash \
+    && apk add --no-cache --update tzdata nodejs npm bash python3 make gcc g++ \
     && rm -rf /var/cache/apk/*
 RUN npm install -g npm@latest
 
