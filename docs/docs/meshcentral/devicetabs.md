@@ -57,6 +57,7 @@ Legend
 * **_Black color_**: Device is powered on (Intel AMT & agents)
 * **_Purple color_**: Device is in sleep state (Intel AMT agents only)
 * **_Teal color_**: Device is connected through AMT/CIRA, but not powered on (Intel AMT agents only)
+* **_DarkGreen color_**: Device is connected through AMT/CIRA and has a power state such as Hibernating/Sleeping (Intel AMT agents only)
 * **_Grey color_**: Device is powered off (Intel AMT & agents)
 
 ### Text Links
