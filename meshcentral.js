@@ -471,7 +471,8 @@ function CreateMeshCentralServer(config, args) {
                 const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
                 const env = Object.assign({}, process.env); // Shallow clone
                 if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-                const xxprocess = child_process.exec(npmpath + ' install --no-audit meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
+                // always use --save-exact - https://stackoverflow.com/a/64507176/1210734
+                const xxprocess = child_process.exec(npmpath + ' install --save-exact --no-audit meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
                     if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
                 });
                 xxprocess.data = '';
@@ -3857,7 +3858,7 @@ function InstallModules(modules, args, func) {
             }
         }
         
-        if (missingModules.length > 0) { if (args.debug) { console.log('Missing Modules: ' + missingModules.join(', ')); } InstallModuleEx(modules, args, func); } else { func(); }
+        if (missingModules.length > 0) { if (args.debug) { console.log('Missing Modules: ' + missingModules.join(', ')); } InstallModuleEx(missingModules, args, func); } else { func(); }
     }
 }
 
@@ -3865,7 +3866,7 @@ function InstallModules(modules, args, func) {
 // this is to make sure NPM gives us exactly what we need. Also, we install the meshcentral with current version, so that NPM does not update it - which it will do if obmitted.
 function InstallModuleEx(modulenames, args, func) {
     var names = modulenames.join(' ');
-    console.log('Installing modules...');
+    console.log('Installing modules', modulenames);
     const child_process = require('child_process');
     var parentpath = __dirname;
     function getCurrentVersion() { try { return JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'package.json'), 'utf8')).version; } catch (ex) { } return null; } // Fetch server version
@@ -3875,9 +3876,9 @@ function InstallModuleEx(modulenames, args, func) {
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    if (args.debug) { console.log('NPM Command Line: ' + npmpath + ` install --no-audit --omit=optional --no-fund ${names}`); }
-
-    child_process.exec(npmpath + ` install --no-audit --no-optional --omit=optional ${names}`, { maxBuffer: 512000, timeout: 300000, cwd: parentpath }, function (error, stdout, stderr) {
+    if (args.debug) { console.log('NPM Command Line: ' + npmpath + ` install --save-exact --no-audit --omit=optional --no-fund ${names}`); }
+    // always use --save-exact - https://stackoverflow.com/a/64507176/1210734
+    child_process.exec(npmpath + ` install --save-exact --no-audit --no-optional --omit=optional ${names}`, { maxBuffer: 512000, timeout: 300000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
