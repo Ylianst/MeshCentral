@@ -3869,15 +3869,15 @@ function InstallModuleEx(modulenames, args, func) {
     const child_process = require('child_process');
     var parentpath = __dirname;
     function getCurrentVersion() { try { return JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'package.json'), 'utf8')).version; } catch (ex) { } return null; } // Fetch server version
-    const meshCentralVersion = getCurrentVersion();
-    if ((meshCentralVersion != null) && (args.dev == null)) { names = 'meshcentral@' + getCurrentVersion() + ' ' + names; }
+    //const meshCentralVersion = getCurrentVersion();
+    //if ((meshCentralVersion != null) && (args.dev == null)) { names = 'meshcentral@' + getCurrentVersion() + ' ' + names; }
 
     // Get the working directory
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
-    if (args.debug) { console.log('NPM Command Line: ' + npmpath + ` install --no-audit --no-package-lock --omit=optional --no-save --no-fund ${names}`); }
+    if (args.debug) { console.log('NPM Command Line: ' + npmpath + ` install --no-audit --omit=optional --no-fund ${names}`); }
 
-    child_process.exec(npmpath + ` install --no-audit --no-package-lock --no-optional --omit=optional --no-save ${names}`, { maxBuffer: 512000, timeout: 300000, cwd: parentpath }, function (error, stdout, stderr) {
+    child_process.exec(npmpath + ` install --no-audit --no-optional --omit=optional ${names}`, { maxBuffer: 512000, timeout: 300000, cwd: parentpath }, function (error, stdout, stderr) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
