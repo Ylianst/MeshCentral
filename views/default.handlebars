@@ -5766,10 +5766,10 @@
                 setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionTagsExec, x);
             } else if (op == 108) {
                 // Device notification
-                var x = "Perform batch device notification" + '<br /><br />';
-                x += '<select id=d2deviceop style=width:100%><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
-                x += '<br /><input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100% />';
-                x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll></textarea>';
+                var x = "<div style=margin-bottom:4px>Perform batch device notification</div>";
+                x += '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+                x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
+                x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
                 x += '<select style=width:100% id=d2notifyTimeout>';
                 x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
                 x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
@@ -8104,15 +8104,14 @@
         function deviceMessageFunction() {
             if (xxdialogMode) return;
             var x = '<div style=margin-bottom:4px>Display a message box on the remote device.</div>';
-            x += '<textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll></textarea>';
+            x += '<textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
             x += '<select style=width:100% id=d2devTimeout>';
-            x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
             x += '<option value=10>' + "Show for 10 minutes" + '</option>';
             x += '<option value=30>' + "Show for 30 minutes" + '</option>';
             x += '<option value=60>' + "Show for 60 minutes" + '</option>';
             x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
-            x += '</div>';
+            x += '</select>';
             setDialogMode(2, "Device Message", 3, deviceMessageFunctionEx, x);
             Q('d2devMessage').focus();
         }
@@ -8162,9 +8161,9 @@
 
         function deviceToastFunction() {
             if (xxdialogMode) return;
-            var x = '<select id=d2deviceop style=width:100%><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
-            x += '<br /><input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100% />';
-            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll></textarea>';
+            var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+            x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
+            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
             x += '<select style=width:100% id=d2notifyTimeout>';
             x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
