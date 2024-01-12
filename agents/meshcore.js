@@ -1230,8 +1230,11 @@ function handleServerCommand(data) {
                                         ipr.message = data.msg;
                                         ipr.username = data.username;
                                         if (data.realname && (data.realname != '')) { ipr.username = data.realname; }
+                                        ipr.timeout = (typeof data.timeout === 'number' ? data.timeout : 120000);
                                         global._clientmessage = ipr.then(function (img) {
-                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, { timeout: 120000, b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground });
+                                            var options = { b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground }
+                                            if (this.timeout != 0) { options.timeout = this.timeout; }
+                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, options);
                                             this.__childPromise.addMessage = this.messagebox.addMessage.bind(this.messagebox);
                                             return (this.messagebox);
                                         });
