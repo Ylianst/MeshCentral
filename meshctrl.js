@@ -941,15 +941,17 @@ if (args['_'].length == 0) {
                         console.log("Display a message on the remote device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\""));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\" --title \"title\""));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\" --title \"title\" --timeout 120000"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
-                            console.log("  --id [deviceid]        - The device identifier.");
+                            console.log("  --id [deviceid]          - The device identifier.");
                         } else {
-                            console.log("  --id '[deviceid]'      - The device identifier.");
+                            console.log("  --id '[deviceid]'        - The device identifier.");
                         }
-                        console.log("  --msg [message]        - The message to display.");
+                        console.log("  --msg [message]          - The message to display.");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --title [title]        - Messagebox title, default is \"MeshCentral\".");
+                        console.log("  --title [title]          - Messagebox title, default is \"MeshCentral\".");
+                        console.log("  --timeout [miliseconds]  - After timeout messagebox vanishes, 0 keeps messagebox open until closed manually, default is 120000 (2 Minutes).");
                         break;
                     }
                     case 'devicetoast': {
@@ -1735,7 +1737,7 @@ function serverConnect() {
                 break;
             }
             case 'devicemessage': {
-                ws.send(JSON.stringify({ action: 'msg', type: 'messagebox', nodeid: args.id, title: args.title ? args.title : "MeshCentral", msg: args.msg, responseid: 'meshctrl' }));
+                ws.send(JSON.stringify({ action: 'msg', type: 'messagebox', nodeid: args.id, title: args.title ? args.title : "MeshCentral", msg: args.msg, timeout: args.timeout ? args.timeout : 120000, responseid: 'meshctrl' }));
                 break;
             }
             case 'devicetoast': {
