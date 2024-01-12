@@ -471,7 +471,7 @@ function CreateMeshCentralServer(config, args) {
                 const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
                 const env = Object.assign({}, process.env); // Shallow clone
                 if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-                const xxprocess = child_process.exec(npmpath + ' install --no-audit --no-package-lock meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
+                const xxprocess = child_process.exec(npmpath + ' install --no-audit meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
                     if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
                 });
                 xxprocess.data = '';
@@ -3881,7 +3881,7 @@ function InstallModuleEx(modulenames, args, func) {
         if ((error != null) && (error != '')) {
             var mcpath = __dirname;
             if (mcpath.endsWith('\\node_modules\\meshcentral') || mcpath.endsWith('/node_modules/meshcentral')) { mcpath = require('path').join(mcpath, '..', '..'); }
-            console.log('ERROR: Unable to install required modules. MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. To manualy install this module try:\r\n\r\n   cd "' + mcpath + '"\r\n   npm install --no-audit --no-package-lock --no-optional --omit=optional --no-save ' + names + '\r\n   node node_modules' + ((require('os').platform() == 'win32') ? '\\' : '/') + 'meshcentral');
+            console.log('ERROR: Unable to install required modules. MeshCentral may not have access to npm, or npm may not have suffisent rights to load the new module. To manualy install this module try:\r\n\r\n   cd "' + mcpath + '"\r\n   npm install --no-audit --no-optional --omit=optional ' + names + '\r\n   node node_modules' + ((require('os').platform() == 'win32') ? '\\' : '/') + 'meshcentral');
             process.exit();
             return;
         }
