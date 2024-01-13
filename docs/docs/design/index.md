@@ -108,29 +108,46 @@ Someone would think the server is rather simple when taking a look at the MeshCe
 ### Code files
 
 ```
- amtevents.js       | Used to scan a local network for Intel AMT machines.    
- amtscanner.js      | Used to run Intel AMT scripts from MeshCommander.       
- amtscript.js       | Used to generate and perform certificate operations.    
- certoperations.js  | Various commonly used methods.                          
- common.js          | Used to access the MongoDB or NeDB database.            
- db.js              | Used to modify windows executables.                     
- exeHandler.js      | Used to insert credentials in an HTTP stream.           
- interceptor.js     | Used to obtain and use a Let’s Encrypt certificate.     
- letsencrypt.js     | Used to offload RSA sign to other CPU cores.            
- meshaccelerator.js | Used to communicate to agents.                          
- meshagent.js       | The is the main module, gets the server started.        
- meshcentral.js     | Used to send SMTP mails.                                
- meshmail.js        | Used to relay agent and browser web socket connections. 
- meshrelay.js       | MeshCentral server discovery when in LAN mode.          
- meshscanner.js     | Used to communicate with browsers.                      
- meshuser.js        | Used to communicate to Intel® AMT CIRA.                 
- mpsserver.js       | Used for server-to-server communication.                
- multiserver.js     | Performs password hash + salt.                          
- pass.js            | Used to handle HTTP traffic.                            
- redirserver.js     | Used to upgrade legacy MeshCentralv1 agents.            
- swarmserver.js     | Handles HTTPS traffic.                                  
- webserver.js       | Server background install on Windows.                   
- winservice.js      | Server background install on Windows.                   
+ amtevents.js             | Used to decode Intel AMT WSMAN events.
+ amtmanager.js            | Used to handle Intel AMT/CIRA things.
+ amtprovisioningserver.js | Used to Provision Intel AMT on a Local Network.
+ amtscanner.js            | Used to scan a local network for Intel AMT machines.    
+ amtscript.js             | Used to run Intel AMT scripts from MeshCommander.       
+ certoperations.js        | Used to generate and perform certificate operations.    
+ common.js                | Various commonly used methods.
+ crowdsec.js              | Used to handle all crowdsec security features                     
+ db.js                    | Used to access the MongoDB or NeDB database.            
+ exeHandler.js            | Used to modify windows executables.
+ firebase.js              | Used to handle Google Firebase things.
+ interceptor.js           | Used to insert credentials in an HTTP stream.           
+ letsencrypt.js           | Used to obtain and use a Let’s Encrypt certificate.
+ mcrec.js                 | Standalone Session Recording Indexer.
+ meshaccelerator.js       | Used to offload RSA sign to other CPU cores.            
+ meshagent.js             | Used to communicate to agents.
+ meshbot.js               | Sample bot to connect to meshcentral and preform various tasks                     
+ meshcentral.js           | The is the main module, gets the server started.
+ meshctrl.js              | MeshCtrl performs command line actions on a MeshCentral server.
+ meshcore.js              | Main Agent Code that runs on your remote devices.
+ meshdesktopmultiplex.js  | Used to handle remote desktop multiplexing.
+ meshdevicefile.js        | Used to handle file download requests.
+ meshipkvm.js             | Used to handle IP KVM integration
+ meshmail.js              | Used to send SMTP mails.
+ meshmessaging.js         | Used to handle all users messaging methods like 2FA.
+ meshrelay.js             | Used to relay agent and browser web socket connections. 
+ meshscanner.js           | MeshCentral server discovery when in LAN mode.
+ meshsms.js               | Used to handle all users sms methods.
+ meshuser.js              | Used to communicate with browsers.                      
+ mpsserver.js             | Used to communicate to Intel® AMT CIRA.
+ mqttbroker.js            | Used to create/handle an MQTT broker (beta)               
+ multiserver.js           | Used for server-to-server communication.                
+ pass.js                  | Performs password hash + salt.                          
+ redirserver.js           | Used to handle HTTP traffic.                            
+ swarmserver.js           | Used to upgrade legacy MeshCentralv1 agents. 
+ webauthn.js              | Handles all WebAuthN things.
+ webrelayserver.js        | Used for all HTTP/HTTPS web relaying from agents.          
+ webserver.js             | Handles HTTPS traffic.                                  
+ winservice.js            | Server background install on Windows.
+                    
 ```
 
 At a high level, the MeshCentral.js file will get the server started. By default, it will start the webserver.js on port 443, redirectserver.js on port 80 and mpssrver.js on port 4433. The webserver.js file will create a meshuser.js or meshagent.js instance each time a user or agent connects. The other files support various usages, but this is the basic working on the server. 
