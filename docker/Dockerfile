@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM node:current-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 RUN mkdir -p /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
@@ -34,7 +34,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 
-FROM --platform=$TARGETPLATFORM alpine:latest
+FROM --platform=$TARGETPLATFORM alpine:3.19
 
 #Add non-root user, add installation directories and assign proper permissions
 RUN mkdir -p /opt/meshcentral/meshcentral
