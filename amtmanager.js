@@ -750,7 +750,8 @@ module.exports.CreateAmtManager = function (parent) {
                                                 // Start power polling if not connected to LMS
                                                 var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
                                                 ppfunc.dev = dev;
-                                                dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                                if(dev.polltimer){ clearInterval(dev.polltimer); delete dev.polltimer; }
+                                                dev.polltimer = new setInterval(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
                                                 fetchPowerState(dev);
                                             } else {
                                                 // For LMS connections, close now.
@@ -931,7 +932,7 @@ module.exports.CreateAmtManager = function (parent) {
                     else if (response.Body.OSPowerSavingState == 3) { meshPowerState = 2; } // Modern standby (We are going to call this S1);
 
                     // Set OS power state
-                    if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, meshPowerState, null, { name: dev.name }); }
+                    if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 2, meshPowerState, null, { name: dev.name }); }
                 });
             } else {
                 // Convert the power state
@@ -941,7 +942,7 @@ module.exports.CreateAmtManager = function (parent) {
                 if (powerstate < powerConversionTable.length) { meshPowerState = powerConversionTable[powerstate]; } else { powerstate = 6; }
 
                 // Set power state
-                if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, meshPowerState, null, { name: dev.name }); }
+                if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 2, meshPowerState, null, { name: dev.name }); }
             }
         });
     }
