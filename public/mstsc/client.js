@@ -18,6 +18,7 @@
  */
 /*
  * added get clipboard from remote RDP - Simon Smith 2024
+ * added set clipboard to remote RDP - Simon Smith 2024
  */
 
 (function() {
@@ -176,6 +177,19 @@
                     options: options,
                     locale: Mstsc.locale()
                 }]));
+                self.prevClipboardText = null;
+                self.clipboardReadTimer = setInterval(function(){
+                    if(navigator.clipboard.readText != null){
+                        navigator.clipboard.readText()
+                        .then(function(data){
+                            if(data != self.prevClipboard){
+                                self.prevClipboard = data;
+                                if (self.socket) { self.socket.send(JSON.stringify(['clipboard', data])); }
+                            }
+                        })
+                        .catch(function(){ });
+                    }
+                }, 1000);
             };
             this.socket.onmessage = function (evt) {
                 if (typeof evt.data == 'string') {
@@ -226,6 +240,8 @@
             this.socket.onclose = function () {
                 //console.log("WS-CLOSE");
                 self.activeSession = false;
+                clearInterval(self.clipboardReadTimer);
+                self.prevClipboardText = null;
                 next(null);
             };
 		}
