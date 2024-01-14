@@ -3544,7 +3544,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
 
                         var domainName = parent.certificates.CommonName;
-                        if (domain.dns != null) { domainName = domain.dns; }
+                        if (domain.dns != null) { 
+                            domainName = domain.dns;
+                        } else if (domain.dns == null && domain.id != '') {
+                            domainName += "/" + domain.id;
+                        }
                         ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(encodeURIComponent(user.name), domainName, secret) }));
                     }
                     break;
