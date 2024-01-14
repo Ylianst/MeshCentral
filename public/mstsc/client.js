@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+/*
+ * added get clipboard from remote RDP - Simon Smith 2024
+ */
 
 (function() {
 	/**
@@ -204,6 +207,14 @@
                             console.log('[mstsc.js] error : ' + err.code + '(' + err.message + ')');
                             self.activeSession = false;
                             next(err);
+                            break;
+                        }
+                        case 'rdp-clipboard': {
+                            if ((msg[1] != null) && (navigator.clipboard.writeText != null)) { 
+                                navigator.clipboard.writeText(msg[1]) // Put remote clipboard data into our clipboard
+                                .then(function() { })
+                                .catch(function(err) { console.log('clipboard.writeText Error', err); });
+                            }
                             break;
                         }
                     }
