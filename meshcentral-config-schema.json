@@ -983,11 +983,11 @@
       }
     },
     "domaindefaults": {
-      "$ref": "#/properties/domains/items"
+      "$ref": "#/properties/domains/additionalProperties"
     },
     "domains": {
       "type": "object",
-      "items": {
+      "additionalProperties": {
         "type": "object",
         "properties": {
           "dns": {
