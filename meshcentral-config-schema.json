@@ -943,7 +943,6 @@
         },
         "amtProvisioningServer": {
           "type": "object",
-          "additionalProperties": false,
           "required": [
             "deviceGroup",
             "newMebxPassword",
@@ -2752,11 +2751,9 @@
           },
           "authStrategies": {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
               "twitter": {
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "callbackurl": {
                     "type": "string",
