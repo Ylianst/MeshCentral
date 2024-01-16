@@ -524,6 +524,7 @@
                                 <input type=button id=p5ViewFileButton disabled="disabled" value="Edit" onclick="p5viewfile()" />&nbsp;
                                 <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
                                 <input type=button id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
+                                <input type=button id=p5DownloadButton disabled="disabled" value="Download" onclick="p5downloadButton()" />&nbsp;
                                 <input type=button id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
                                 <input type=button id=p5CopyButton disabled="disabled" value="Copy" onclick="p5copyFile(0)" />&nbsp;
                                 <input type=button id=p5PasteButton disabled="disabled" value="Paste" onclick="p5pasteFile()" />&nbsp;
@@ -862,6 +863,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton value="Edit" onclick="p13viewfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton value="New Folder" onclick="p13createfolder()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton value="Upload" onclick="p13uploadFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton value="Download" onclick="p13downloadButton()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton value="Cut" onclick="p13copyFile(1)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton value="Copy" onclick="p13copyFile(0)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton value="Paste" onclick="p13pasteFile()" />
@@ -11135,6 +11137,7 @@
                 QE('p13ZipButton', false);
                 QE('p13PasteButton', false);
                 QE('p13GoToFolderButton', false);
+                QE('p13DownloadButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
                 var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
@@ -11152,6 +11155,7 @@
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', true);
+                QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
             }
             var filesState = ((files != null) && (files.state != 0));
             if (((filesState == true) && (files.contype != 2)) || (filesNode.agent == null) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
@@ -11330,6 +11334,20 @@
                 }
             } else {
                 files.sendText({ action: 'download', sub: 'ack', id: gdownloadFile.id }); // Send the ACK
+            }
+        }
+
+        function p13downloadButton() {
+            var checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) { 
+                if (checkboxes[i].checked) { 
+                    var thefile = p13filetree.dir[checkboxes[i].value];
+                    var link = 'devicefile.ashx?c=' + authCookie;
+                    link += '&m=' + currentNode.meshid.split('/')[2];
+                    link += '&n=' + currentNode._id.split('/')[2];
+                    link += '&f=' + encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n);
+                    downloadFile(link,encodeURIComponentEx(thefile.n));
+                }
             }
         }
 
@@ -14439,6 +14457,7 @@
             QE('p5ViewFileButton', (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
             QE('p5NewFolderButton', filetreelocation.length > 0);
             QE('p5UploadButton', filetreelocation.length > 0);
+            QE('p5DownloadButton', (cc > 0) && (cc == sfc) && (filetreelocation.length > 0));
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? "Select None" : "Select All");
@@ -14605,6 +14624,16 @@
                 //QV('p5fileCatchAllInput', false);
             } else {
                 p5dragtimer = setTimeout(function () { QV('bigfail',false); QV('bigok',false); p5dragtimer=null; }, 10);
+            }
+        }
+
+        function p5downloadButton() {
+            var checkboxes = document.getElementsByName('fc');
+            for (var i = 0; i < checkboxes.length; i++) { 
+                if (checkboxes[i].checked) { 
+                    var link = 'downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + checkboxes[i].value);
+                    downloadFile(link);
+                }
             }
         }
 
