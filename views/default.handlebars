@@ -6326,9 +6326,9 @@
         function cmaction(action, event) {
             var nodeid;
             if (Q('viewselect').value == 1) {
-                nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onclick.value;
+                nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onmouseup.value;
             } else {
-                nodeid = contextelement.children[1].attributes.onclick.value;
+                nodeid = contextelement.children[1].attributes.onmouseup.value;
             }
             nodeid = nodeid.substring(12, nodeid.length - 18);
             if (action == 9) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
