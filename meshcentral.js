@@ -1830,8 +1830,8 @@ function CreateMeshCentralServer(config, args) {
                         // Setup the push messaging relay
                         obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
                     } else if (obj.config.settings.publicpushnotifications === true) {
-                        // Setup the Firebase push messaging relay using https://meshcentral.com, this is the public push notification server.
-                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://meshcentral.com/firebaserelay.aspx');
+                        // Setup the Firebase push messaging relay using https://alt.meshcentral.com, this is the public push notification server.
+                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://alt.meshcentral.com/firebaserelay.aspx');
                     }
 
                     // Start periodic maintenance
