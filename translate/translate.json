@@ -25100,6 +25100,8 @@
       "zh-cht": "下載",
       "hu": "Letöltés",
       "xloc": [
+        "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
+        "default.handlebars->container->column_l->p5->p5toolbar->1->0->p5filehead->3",
         "download.handlebars->container->page_content->column_l->1",
         "messenger.handlebars->remoteImage->3->12"
       ]
