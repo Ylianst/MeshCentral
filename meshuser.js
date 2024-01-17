@@ -898,8 +898,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                             // Copy or move of one or many files
-                            if (common.validateArray(command.name, 1) == false) return;
-                            var scpath = meshPathToRealPath(command.path, user); // This will also check access rights
+                            if (common.validateArray(command.names, 1) == false) return;
+                            var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
                             if (scpath == null) break;
                             // TODO: Check quota if this is a copy
                             for (i in command.names) {
