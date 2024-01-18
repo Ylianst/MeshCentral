@@ -13658,7 +13658,7 @@
 
             var urights = -1, meshRightsActive = ((userid != 4) && (userid != 5) && (userid != 6) && (userid != 7));
 
-            x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray">';
+            x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray;resize:vertical;">';
             if (meshRightsActive) {
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
