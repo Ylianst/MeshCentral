@@ -827,6 +827,11 @@ In this example, we will:
 - MeshCentral will read the NGINX web certificate so agents will perform correct server authentication.
 - NGINX will be setup with long timeouts, because agents have long standard web socket connections.
 
+Note: With SELinux, NGINX reverse proxy requires 'setsebool -P httpd_can_network_relay 1'
+Caution: httpd_can_network_relay only allows certain ports
+              Confirm you are using ports from this subset in Mesh Central
+              If you want to use a different port then you will need to add it to http_port_t
+
 Let’s get started by configuring MeshCentral with the following values in config.json:
 
 ```json
