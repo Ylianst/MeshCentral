@@ -1659,7 +1659,7 @@ Enabling SAML will require MeshCentral to install extra modules from NPM, so dep
 
 !!!note
     MeshCentral only supports "POST". [For example Authentik's](https://github.com/Ylianst/MeshCentral/issues/4725) default setting is to use "Redirect" as a "Service Provider Binding".
-    
+
 ### Generic OpenID Connect Setup
 
 Generally, if you are using an IdP that supports OpenID Connect (OIDC), you can use a very basic configuration to get started, and if needed, add more specific or advanced configurations later. Here is what your config file will look like with a basic, generic, configuration.
