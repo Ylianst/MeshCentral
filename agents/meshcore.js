@@ -1921,6 +1921,7 @@ function getSystemInformation(func) {
             } catch (ex) { }
         }
         results.hardware.agentvers = process.versions;
+        results.hardware.network = { dns: require('os').dns() }; 
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
         // results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
