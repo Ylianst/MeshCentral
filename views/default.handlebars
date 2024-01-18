@@ -8984,6 +8984,7 @@
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             QE('connectbutton1r', online || (currentNode.mtype == 3));
+            Q('connectbutton1r').value = 'RDP Connect' + ((currentNode.rdpport && currentNode.rdpport != 3389) ? ' ('+currentNode.rdpport + ')' : '');
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
