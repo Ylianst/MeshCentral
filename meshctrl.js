@@ -941,15 +941,17 @@ if (args['_'].length == 0) {
                         console.log("Display a message on the remote device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\""));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\" --title \"title\""));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceMessage --id 'deviceid' --msg \"message\" --title \"title\" --timeout 120000"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
-                            console.log("  --id [deviceid]        - The device identifier.");
+                            console.log("  --id [deviceid]          - The device identifier.");
                         } else {
-                            console.log("  --id '[deviceid]'      - The device identifier.");
+                            console.log("  --id '[deviceid]'        - The device identifier.");
                         }
-                        console.log("  --msg [message]        - The message to display.");
+                        console.log("  --msg [message]          - The message to display.");
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --title [title]        - Messagebox title, default is \"MeshCentral\".");
+                        console.log("  --title [title]          - Messagebox title, default is \"MeshCentral\".");
+                        console.log("  --timeout [miliseconds]  - After timeout messagebox vanishes, 0 keeps messagebox open until closed manually, default is 120000 (2 Minutes).");
                         break;
                     }
                     case 'devicetoast': {
@@ -1735,7 +1737,7 @@ function serverConnect() {
                 break;
             }
             case 'devicemessage': {
-                ws.send(JSON.stringify({ action: 'msg', type: 'messagebox', nodeid: args.id, title: args.title ? args.title : "MeshCentral", msg: args.msg, responseid: 'meshctrl' }));
+                ws.send(JSON.stringify({ action: 'msg', type: 'messagebox', nodeid: args.id, title: args.title ? args.title : "MeshCentral", msg: args.msg, timeout: args.timeout ? args.timeout : 120000, responseid: 'meshctrl' }));
                 break;
             }
             case 'devicetoast': {
@@ -2572,7 +2574,7 @@ function connectTunnel(url) {
         // node meshctrl download --id oL4Y6Eg0qjnpHFrp1AxfxnBPenbDGnDSkC@HSOnAheIyd51pKhqSCUgJZakzwfKl --file c:\temp\MC-8Languages.png --target c:\temp\bob.png
         settings.tunnelws.on('message', function (rawdata) {
             if (settings.tunnelwsstate == 1) {
-                if ((rawdata.length > 0) && (rawdata[0] != '{')) {
+                if ((rawdata.length > 0) && (rawdata.toString()[0] != '{')) {
                     // This is binary data, this test is ok because 4 first bytes is a control value.
                     if ((rawdata.length > 4) && (settings.downloadFile != null)) { settings.downloadSize += (rawdata.length - 4); require('fs').writeSync(settings.downloadFile, rawdata, 4, rawdata.length - 4); }
                     if ((rawdata[3] & 1) != 0) { // Check end flag

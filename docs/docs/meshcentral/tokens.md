@@ -8,8 +8,18 @@
 
 ## Software Integration Tokens
 
-Currently, the login tokens in the user manual section 14.1 can't be tracked, deleted or revoked. They are generated with:
+!!!note
+    You can only generate a SINGLE loginTokenKey!
+    So if you regenerate a loginTokenKey, the old one will be revoked/deleted!
+
+You can generate the Login Token Key with the following:
 
 ```bash
-node meshcentral --loginTokenKey
+node node_modules/meshcentral --loginTokenKey
+```
+
+You can then revoke/renew the Login Token Key with the following:
+
+```bash
+node node_modules/meshcentral --loginTokenKey --loginTokenGen
 ```

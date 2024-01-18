@@ -622,7 +622,7 @@ if ((require('fs').existsSync(process.cwd() + 'batterystate.txt')) && (require('
 else {
     try {
         // Setup normal battery monitoring
-        if (require('identifiers').isBatteryPowered && require('identifiers').isBatteryPowered()) {
+        if (require('computer-identifiers').isBatteryPowered && require('computer-identifiers').isBatteryPowered()) {
             require('MeshAgent')._battLevelChanged = function _battLevelChanged(val) {
                 _battLevelChanged.self._currentBatteryLevel = val;
                 _battLevelChanged.self.SendCommand({ action: 'battery', state: _battLevelChanged.self._currentPowerState, level: val });
@@ -657,14 +657,14 @@ try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreO
 // Get Volumes and BitLocker if Windows
 try {
     if (process.platform == 'win32'){
-        if (require('identifiers').volumes_promise != null){
-            var p = require('identifiers').volumes_promise();
+        if (require('computer-identifiers').volumes_promise != null){
+            var p = require('computer-identifiers').volumes_promise();
             p.then(function (res){
                 meshCoreObj.volumes = res;
                 meshCoreObjChanged();
             });
-        }else if (require('identifiers').volumes != null){
-            meshCoreObj.volumes = require('identifiers').volumes();
+        }else if (require('computer-identifiers').volumes != null){
+            meshCoreObj.volumes = require('computer-identifiers').volumes();
             meshCoreObjChanged();
         }
     }
@@ -1230,8 +1230,11 @@ function handleServerCommand(data) {
                                         ipr.message = data.msg;
                                         ipr.username = data.username;
                                         if (data.realname && (data.realname != '')) { ipr.username = data.realname; }
+                                        ipr.timeout = (typeof data.timeout === 'number' ? data.timeout : 120000);
                                         global._clientmessage = ipr.then(function (img) {
-                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, { timeout: 120000, b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground });
+                                            var options = { b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground }
+                                            if (this.timeout != 0) { options.timeout = this.timeout; }
+                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, options);
                                             this.__childPromise.addMessage = this.messagebox.addMessage.bind(this.messagebox);
                                             return (this.messagebox);
                                         });
@@ -1466,6 +1469,14 @@ function handleServerCommand(data) {
                         sendConsoleText('localappMsg: ' + data.appid + ', ' + JSON.stringify(data.value));
                         if (data.appid != null) { sendToRegisteredApp(data.appid, data.value); } else { broadcastToRegisteredApps(data.value); }
                         break;
+                    case 'alertbox': {
+                        // Display an old style alert box
+                        if (data.title && data.msg) {
+                            MeshServerLogEx(158, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
+                            try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
+                        }
+                        break;
+                    }
                     default:
                         // Unknown action, ignore it.
                         break;
@@ -1805,7 +1816,7 @@ function onFileWatcher(a, b) {
 */
 
 // Replace all key name spaces with _ in an object recursively.
-// This is a workaround since require('identifiers').get() returns key names with spaces in them on Linux.
+// This is a workaround since require('computer-identifiers').get() returns key names with spaces in them on Linux.
 function replaceSpacesWithUnderscoresRec(o) {
     if (typeof o != 'object') return;
     for (var i in o) { if (i.indexOf(' ') >= 0) { o[i.split(' ').join('_')] = o[i]; delete o[i]; } replaceSpacesWithUnderscoresRec(o[i]); }
@@ -1813,8 +1824,7 @@ function replaceSpacesWithUnderscoresRec(o) {
 
 function getSystemInformation(func) {
     try {
-        var results = { hardware: require('identifiers').get() }; // Hardware info
-
+        var results = { hardware: require('computer-identifiers').get() }; // Hardware info
         if (results.hardware && results.hardware.windows) {
             // Remove extra entries and things that change quickly
             var x = results.hardware.windows.osinfo;
@@ -1865,9 +1875,11 @@ function getSystemInformation(func) {
         }
         if(results.hardware && results.hardware.linux) {
             if (!results.hardware.identifiers['bios_serial']) {
-                if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
-                    results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
-                }
+                try {
+                    if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
+                        results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+                    }
+                } catch (ex) { }
             }
             if (!results.hardware.identifiers['bios_mode']) {
                 try {
@@ -1909,6 +1921,7 @@ function getSystemInformation(func) {
             } catch (ex) { }
         }
         results.hardware.agentvers = process.versions;
+        results.hardware.network = { dns: require('os').dns() }; 
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
         // results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
@@ -1920,9 +1933,9 @@ function getSystemInformation(func) {
         {
             results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
 
-            if (require('identifiers').volumes_promise != null)
+            if (require('computer-identifiers').volumes_promise != null)
             {
-                var p = require('identifiers').volumes_promise();
+                var p = require('computer-identifiers').volumes_promise();
                 p.then(function (res)
                 {
                     results.hardware.windows.volumes = res;
@@ -1930,9 +1943,9 @@ function getSystemInformation(func) {
                     func(results);
                 });
             }
-            else if (require('identifiers').volumes != null)
+            else if (require('computer-identifiers').volumes != null)
             {
-                results.hardware.windows.volumes = require('identifiers').volumes();
+                results.hardware.windows.volumes = require('computer-identifiers').volumes();
                 results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
@@ -2569,7 +2582,7 @@ function tunnel_kvm_end()
                 this.httprequest.desktop.kvm.users.splice(i, 1);
                 this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                 this.httprequest.desktop.kvm.connectionBar.close();
-                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
                 this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                 this.httprequest.desktop.kvm.connectionBar.on('close', function ()
                 {
@@ -2638,7 +2651,7 @@ function kvm_consentpromise_resolved(always)
         }
         try
         {
-            this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+            this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
         } catch (ex)
         {
@@ -3024,7 +3037,7 @@ function onTunnelData(data)
                         }
                         try
                         {
-                            this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+                            this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
                             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         } catch (ex) {
                             MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
@@ -4242,7 +4255,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'vm':
-                response = 'Virtual Machine = ' + require('identifiers').isVM();
+                response = 'Virtual Machine = ' + require('computer-identifiers').isVM();
                 break;
             case 'startupoptions':
                 response = JSON.stringify(require('MeshAgent').getStartupOptions());
@@ -5614,6 +5627,14 @@ function sendPeriodicServerUpdate(flags, force) {
                 });
             } catch (ex) { }
         }
+        // Get Defender for Windows Server
+        try { 
+            var d = require('win-info').defender();
+            d.then(function(res){
+                meshCoreObj.defender = res;
+                meshCoreObjChanged();
+            });
+        } catch (ex){ }
     }
 
     // Send available data right now

@@ -898,8 +898,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                             // Copy or move of one or many files
-                            if (common.validateArray(command.name, 1) == false) return;
-                            var scpath = meshPathToRealPath(command.path, user); // This will also check access rights
+                            if (common.validateArray(command.names, 1) == false) return;
+                            var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
                             if (scpath == null) break;
                             // TODO: Check quota if this is a copy
                             for (i in command.names) {
@@ -3544,7 +3544,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
 
                         var domainName = parent.certificates.CommonName;
-                        if (domain.dns != null) { domainName = domain.dns; }
+                        if (domain.dns != null) { 
+                            domainName = domain.dns;
+                        } else if (domain.dns == null && domain.id != '') {
+                            domainName += "/" + domain.id;
+                        }
                         ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(encodeURIComponent(user.name), domainName, secret) }));
                     }
                     break;
@@ -4940,7 +4944,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (type == 'csv') {
                             try {
                                 // Create the CSV file
-                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,tags,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
+                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,tags,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,tpmversion,tpmmanufacturer,tpmmanufacturerversion,tpmisactivated,tpmisenabled,tpmisowned,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
                                 for (var i = 0; i < results.length; i++) {
                                     const nodeinfo = results[i];
 
@@ -4973,11 +4977,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                         }
                                     } else {
-                                        output += ',,,,,,,,,,,,,';
+                                        output += ',,,,,,,,,,,,,,,,,,,';
                                     }
 
                                     // System infomation
-                                    if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.windows)) {
+                                    if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows)) {
                                         // Windows
                                         output += ',';
                                         if (nodeinfo.sys.hardware.windows.cpu && (nodeinfo.sys.hardware.windows.cpu.length > 0) && (typeof nodeinfo.sys.hardware.windows.cpu[0].Name == 'string')) { output += csvClean(nodeinfo.sys.hardware.windows.cpu[0].Name); }
@@ -4997,6 +5001,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_version)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_version); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.identifiers.product_uuid); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.SpecVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.SpecVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerId) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerId); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsActivated) { output += csvClean(nodeinfo.sys.hardware.tpm.IsActivated ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsEnabled) { output += csvClean(nodeinfo.sys.hardware.tpm.IsEnabled ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsOwned) { output += csvClean(nodeinfo.sys.hardware.tpm.IsOwned ? 'true' : 'false'); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.windows.memory) {
                                             var totalMemory = 0;
@@ -5024,11 +5040,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         output += ',';
                                         if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.id)) { output += csvClean(nodeinfo.sys.hardware.mobile.id); }
                                         output += ',';
-                                    } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.linux)) {
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                    } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.linux)) {
                                         // Linux
                                         output += ',';
-                                        output += ',';
-                                        output += ',';
+                                        if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.cpu_name)) { output += csvClean(nodeinfo.sys.hardware.identifiers.cpu_name); }
+                                        output += ',,';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_date); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_vendor); }
@@ -5043,8 +5065,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         output += ',';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.linux.product_uuid); }
                                         output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.SpecVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.SpecVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerId) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerId); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsActivated) { output += csvClean(nodeinfo.sys.hardware.tpm.IsActivated ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsEnabled) { output += csvClean(nodeinfo.sys.hardware.tpm.IsEnabled ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsOwned) { output += csvClean(nodeinfo.sys.hardware.tpm.IsOwned ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.linux.memory) {
+                                            if (nodeinfo.sys.hardware.linux.memory.Memory_Device) {
+                                                var totalMemory = 0;
+                                                for (var j in nodeinfo.sys.hardware.linux.memory.Memory_Device) {
+                                                    if (nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size) {
+                                                        if (typeof nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size == 'number') { totalMemory += nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size; }
+                                                        if (typeof nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size == 'string') { totalMemory += parseInt(nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size); }
+                                                    }
+                                                }
+                                                output += csvClean('' + (totalMemory * Math.pow(1024, 3)));
+                                            }
+                                        }
                                     } else {
-                                        output += ',,,,,,,,,,';
+                                        output += ',,,,,,,,,,,,,,,,';
                                     }
 
                                     // Agent information

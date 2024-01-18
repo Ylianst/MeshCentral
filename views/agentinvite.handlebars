@@ -389,7 +389,7 @@
             QH('unlinuxinstall', linuxUnInstall);
 
             // MeshCentral Assistant
-            url = 'meshagents?id=10006&meshid=' + meshid;
+            url = 'meshagents?id=10006&meshid=' + meshid + '&ac={{{assistanttype}}}';
             Q('assisturl').href = url;
 
             // Android Setup

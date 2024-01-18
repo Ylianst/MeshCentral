@@ -896,7 +896,7 @@
                     <img id="deskkeybutton2a" src="images/mobile-desk-keyboard-open.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
                     <img id="deskkeybutton2b" src="images/mobile-desk-keyboard-close.png" class="deskButton" style="top:210px;display:none" onclick="toggleKeyboard()" />
                     <div style="position:absolute;top:0;left:0;z-index:200;opacity:0;width:1px;height:1px">
-                        <input id="softKeyboard" autocapitalize="off" autocomplete="off" type="text" spellcheck="false" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" />
+                        <input id="softKeyboard" autocapitalize="off" autocomplete="off" type="text" inputmode="text" spellcheck="false" style="z-index:200;opacity:0;width:1px;height:1px" onfocus="keyboardFocusChange()" onblur="keyboardFocusChange()" />
                     </div>
                     <div id="deskButtonMenu" style="display:none;position:absolute;top:10px;left:10px;right:55px;bottom:10px;z-index:1000"></div>
                     <div id=p10desktop style="overflow:hidden;position:absolute;top:55px;bottom:0px;width:100%;display:none">
@@ -3902,7 +3902,7 @@
             } else if (op == 302) { // Intel AMT power on
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power on?");
             } else if (op == 308) { // Intel AMT power off
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?");
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>");
             } else if (op == 310) { // Intel AMT reset
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
             } else if ((op == 400) || (op == 401)) {
@@ -5894,6 +5894,14 @@
                     x += addDetailItem("Windows Security", y.join(', '));
                 }
 
+                // Defender for Windows Server
+                if(node.defender && !node.wsc) {
+                    var y = [];
+                    if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    x += addDetailItem("Windows Defender", y.join(', '));
+                }
+
                 // Antivirus
                 if (node.av && node.av.length > 0) {
                     var y = [];
@@ -6007,7 +6015,12 @@
                             if (iplayer.family == 'IPv6') { x += addDetailItem("IPv6 Layer", items.join(", ")); }
                         }
                     }
-                    x += '</div>';
+                    x += '</div></td></tr>';
+                }
+                if (hardware.network && hardware.network.dns) {
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += addDetailItem("<b>DNS Servers</b>", hardware.network.dns.join(", "));
+                    x += '</div></td></tr>';
                 }
                 x += '</table>';
                 if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking' }); }
@@ -6128,6 +6141,10 @@
                             if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
                             if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
                             if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
+                        }
+                        if(hardware.windows && hardware.windows.drives && m.Model){
+                            const foundObject = hardware.windows.drives.find(obj => obj['Model'] === m.Model);
+                            if(foundObject) x += addDetailItem("Status", EscapeHtml(foundObject.Status), s);
                         }
                         x += '</div>';
                     }

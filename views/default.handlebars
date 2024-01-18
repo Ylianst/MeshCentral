@@ -164,22 +164,22 @@
         </div>
         <div id="page_leftbar">
             <div style="height:16px"></div>
-            <div id=LeftMenuMyDevices tabindex=0 class="lbbutton lbbuttonsel" title="My Devices" onclick=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }">
+            <div id=LeftMenuMyDevices tabindex=0 class="lbbutton lbbuttonsel" title="My Devices" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }">
                 <div class="lbtg lb2"></div>
             </div>
-            <div id=LeftMenuMyAccount tabindex=0 class="lbbutton" title="My Account" onclick=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }">
+            <div id=LeftMenuMyAccount tabindex=0 class="lbbutton" title="My Account" onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }">
                 <div class="lbtg lb1"></div>
             </div>
-            <div id=LeftMenuMyEvents tabindex=0 class="lbbutton" title="My Events" onclick=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }">
+            <div id=LeftMenuMyEvents tabindex=0 class="lbbutton" title="My Events" onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }">
                 <div class="lbtg lb3"></div>
             </div>
-            <div id=LeftMenuMyFiles tabindex=0 class="lbbutton" style="display:none" title="My Files" onclick=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }">
+            <div id=LeftMenuMyFiles tabindex=0 class="lbbutton" style="display:none" title="My Files" onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }">
                 <div class="lbtg lb4"></div>
             </div>
-            <div id=LeftMenuMyUsers tabindex=0 class="lbbutton" style="display:none" title="My Users" onclick=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }">
+            <div id=LeftMenuMyUsers tabindex=0 class="lbbutton" style="display:none" title="My Users" onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }">
                 <div class="lbtg lb5"></div>
             </div>
-            <div id=LeftMenuMyServer tabindex=0 class="lbbutton" style="display:none" title="My Server" onclick=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }">
+            <div id=LeftMenuMyServer tabindex=0 class="lbbutton" style="display:none" title="My Server" onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }">
                 <div class="lbtg lb6"></div>
             </div>
         </div>
@@ -208,27 +208,27 @@
                     </div>
                     <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
                         <tr>
-                            <td tabindex=0 id=MainMenuMyDevices class="topbar_td style3x" onclick=go(1,event) onkeypress="if (event.key == 'Enter') go(1)">My Devices</td>
-                            <td tabindex=0 id=MainMenuMyAccount class="topbar_td style3x" onclick=go(2,event) onkeypress="if (event.key == 'Enter') go(2)">My Account</td>
-                            <td tabindex=0 id=MainMenuMyEvents class="topbar_td style3x" onclick=go(3,event) onkeypress="if (event.key == 'Enter') go(3)">My Events</td>
-                            <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onclick=go(5,event) onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
-                            <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
-                            <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onclick=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
+                            <td tabindex=0 id=MainMenuMyDevices class="topbar_td style3x" onmouseup=go(1,event) onkeypress="if (event.key == 'Enter') go(1)">My Devices</td>
+                            <td tabindex=0 id=MainMenuMyAccount class="topbar_td style3x" onmouseup=go(2,event) onkeypress="if (event.key == 'Enter') go(2)">My Account</td>
+                            <td tabindex=0 id=MainMenuMyEvents class="topbar_td style3x" onmouseup=go(3,event) onkeypress="if (event.key == 'Enter') go(3)">My Events</td>
+                            <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onmouseup=go(5,event) onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
+                            <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onmouseup=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
+                            <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onmouseup=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
                             <td class="topbar_td_end style3">&nbsp;</td>
                         </tr>
                     </table>
                     <div id=MainSubMenuSpan style="display:none">
                         <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=MainDev class="topbar_td style3x" onclick=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
-                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onclick=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
-                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onclick=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
-                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onclick=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
-                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onclick=go(16,event) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
-                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onclick=go(17,event) onkeypress="if (event.key == 'Enter') go(17)">Details</td>
-                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onclick=go(14,event) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
-                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onclick=go(15,event) onkeypress="if (event.key == 'Enter') go(15)">Console</td>
-                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onclick=go(19,event) onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
+                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event) onkeypress="if (event.key == 'Enter') go(17)">Details</td>
+                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
+                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event) onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event) onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -236,8 +236,8 @@
                     <div id=MeshSubMenuSpan style="display:none">
                         <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=MeshGeneral class="topbar_td style3x" onclick=go(20,event) onkeypress="if (event.key == 'Enter') go(20)">General</td>
-                                <td tabindex=0 id=MeshSummary class="topbar_td style3x" onclick=go(21,event) onkeypress="if (event.key == 'Enter') go(21)">Summary</td>
+                                <td tabindex=0 id=MeshGeneral class="topbar_td style3x" onmouseup=go(20,event) onkeypress="if (event.key == 'Enter') go(20)">General</td>
+                                <td tabindex=0 id=MeshSummary class="topbar_td style3x" onmouseup=go(21,event) onkeypress="if (event.key == 'Enter') go(21)">Summary</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -245,8 +245,8 @@
                     <div id=EventsSubMenuSpan style="display:none">
                         <table id=EventsSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=EventsLive class="topbar_td style3x" onclick=go(3,event) onkeypress="if (event.key == 'Enter') go(3)">Events</td>
-                                <td tabindex=0 id=EventsReport class="topbar_td style3x" onclick=go(60,event) onkeypress="if (event.key == 'Enter') go(60)">Reports</td>
+                                <td tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event) onkeypress="if (event.key == 'Enter') go(3)">Events</td>
+                                <td tabindex=0 id=EventsReport class="topbar_td style3x" onmouseup=go(60,event) onkeypress="if (event.key == 'Enter') go(60)">Reports</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -254,8 +254,8 @@
                     <div id=UserSubMenuSpan style="display:none">
                         <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=UserGeneral class="topbar_td style3x" onclick=go(30,event) onkeypress="if (event.key == 'Enter') go(30)">General</td>
-                                <td tabindex=0 id=UserEvents class="topbar_td style3x" onclick=go(31,event) onkeypress="if (event.key == 'Enter') go(31)">Events</td>
+                                <td tabindex=0 id=UserGeneral class="topbar_td style3x" onmouseup=go(30,event) onkeypress="if (event.key == 'Enter') go(30)">General</td>
+                                <td tabindex=0 id=UserEvents class="topbar_td style3x" onmouseup=go(31,event) onkeypress="if (event.key == 'Enter') go(31)">Events</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -263,9 +263,9 @@
                     <div id=UsersSubMenuSpan style="display:none">
                         <table id=UsersSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=UsersGeneral class="topbar_td style3x" onclick=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">Users</td>
-                                <td tabindex=0 id=UsersGroups class="topbar_td style3x" onclick=go(50,event) onkeypress="if (event.key == 'Enter') go(50)">Groups</td>
-                                <td tabindex=0 id=UsersRecordings class="topbar_td style3x" onclick=go(52,event) onkeypress="if (event.key == 'Enter') go(52)">Recordings</td>
+                                <td tabindex=0 id=UsersGeneral class="topbar_td style3x" onmouseup=go(4,event) onkeypress="if (event.key == 'Enter') go(4)">Users</td>
+                                <td tabindex=0 id=UsersGroups class="topbar_td style3x" onmouseup=go(50,event) onkeypress="if (event.key == 'Enter') go(50)">Groups</td>
+                                <td tabindex=0 id=UsersRecordings class="topbar_td style3x" onmouseup=go(52,event) onkeypress="if (event.key == 'Enter') go(52)">Recordings</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -273,11 +273,11 @@
                     <div id=ServerSubMenuSpan style="display:none">
                         <table id=ServerSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=ServerGeneral class="topbar_td style3x" onclick=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">General</td>
-                                <td tabindex=0 id=ServerStats class="topbar_td style3x" onclick=go(40,event) onkeypress="if (event.key == 'Enter') go(40)">Stats</td>
-                                <td tabindex=0 id=ServerConsole class="topbar_td style3x" onclick=go(115,event) onkeypress="if (event.key == 'Enter') go(115)">Console</td>
-                                <td tabindex=0 id=ServerTrace class="topbar_td style3x" onclick=go(41,event) onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
-                                <td tabindex=0 id=ServerPlugins class="topbar_td style3x" onclick=go(42,event) onkeypress="if (event.key == 'Enter') go(42)">Plugins</td>
+                                <td tabindex=0 id=ServerGeneral class="topbar_td style3x" onmouseup=go(6,event) onkeypress="if (event.key == 'Enter') go(6)">General</td>
+                                <td tabindex=0 id=ServerStats class="topbar_td style3x" onmouseup=go(40,event) onkeypress="if (event.key == 'Enter') go(40)">Stats</td>
+                                <td tabindex=0 id=ServerConsole class="topbar_td style3x" onmouseup=go(115,event) onkeypress="if (event.key == 'Enter') go(115)">Console</td>
+                                <td tabindex=0 id=ServerTrace class="topbar_td style3x" onmouseup=go(41,event) onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
+                                <td tabindex=0 id=ServerPlugins class="topbar_td style3x" onmouseup=go(42,event) onkeypress="if (event.key == 'Enter') go(42)">Plugins</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
                         </table>
@@ -524,6 +524,7 @@
                                 <input type=button id=p5ViewFileButton disabled="disabled" value="Edit" onclick="p5viewfile()" />&nbsp;
                                 <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
                                 <input type=button id=p5UploadButton disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
+                                <input type=button id=p5DownloadButton disabled="disabled" value="Download" onclick="p5downloadButton()" />&nbsp;
                                 <input type=button id=p5CutButton disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
                                 <input type=button id=p5CopyButton disabled="disabled" value="Copy" onclick="p5copyFile(0)" />&nbsp;
                                 <input type=button id=p5PasteButton disabled="disabled" value="Paste" onclick="p5pasteFile()" />&nbsp;
@@ -862,6 +863,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton value="Edit" onclick="p13viewfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton value="New Folder" onclick="p13createfolder()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton value="Upload" onclick="p13uploadFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton value="Download" onclick="p13downloadButton()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton value="Cut" onclick="p13copyFile(1)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton value="Copy" onclick="p13copyFile(0)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton value="Paste" onclick="p13pasteFile()" />
@@ -876,7 +878,7 @@
                         <td class="areaHead3">
                             <div class="toright2">
                                 <select id=p13sizedropdown onchange=p13updateFiles()>
-                                    <option value=0 selected="selected">Human Readble</option>
+                                    <option value=0 selected="selected">Human Readable</option>
                                     <option value=1 title=Bytes>Bytes</option>
                                     <option value=10 title=KB>Kilobytes</option>
                                     <option value=20 title=MB>Megabytes</option>
@@ -1189,7 +1191,7 @@
                 <div id="pluginNoneNotice" style="width:100%;text-align:center;padding-top:10px;display:none"><i>No plugins on server.</i></div>
             </div>
             <div id=p43 style="display:none">
-                <div id="p43BackButton"><div class="backButton" tabindex=0 onclick=go(42) title="Back" onkeypress="if (event.key == 'Enter') go(42)"><div class="backButtonEx"></div></div></div>
+                <div id="p43BackButton"><div class="backButton" tabindex=0 onmouseup=go(42) title="Back" onkeypress="if (event.key == 'Enter') go(42)"><div class="backButtonEx"></div></div></div>
                 <h1>My Server Plugins - <span id="p43title"></span></h1>
                 <iframe id="p43iframe" frameBorder=0 style="width:100%;height:calc(100vh - 245px);max-height:calc(100vh - 245px)"></iframe>
             </div>
@@ -1625,7 +1627,7 @@
             // Setup logout control
             var logoutControl = '';
             if (logoutControls) {
-                if (logoutControls.name != null) { logoutControl = ('<span onclick=go(2) CLASS="LogoffLinkColor" style="cursor:pointer">' + format("Welcome {0}.", logoutControls.name) + '</span>'); }
+                if (logoutControls.name != null) { logoutControl = ('<span onmouseup=go(2) CLASS="LogoffLinkColor" style="cursor:pointer">' + format("Welcome {0}.", logoutControls.name) + '</span>'); }
                 if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" CLASS="LogoffLinkColor">' + "Logout" + '</a>'); }
             }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
@@ -4693,7 +4695,7 @@
             if (((!node.conn) || (node.conn == 0)) && (node.mtype != 3)) { icon += ' gray'; }
 
             if (view == 1) {
-                div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id]?' checked':'') + '></td><td><table onclick=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t style=width:' + ((div.clientWidth) - 120) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
+                div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id]?' checked':'') + '></td><td><table onmouseup=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t style=width:' + ((div.clientWidth) - 120) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
             } else if (view == 2) {
                 var states = [];
                 if (node.conn) {
@@ -4730,9 +4732,9 @@
                 var collapsed = (sort != 3) & (sort != 4) & CollapsedGroups[collapseName];
                 var r = '<td style=position:relative><div id=devs cmenu=devsContentMenu class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
                 r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" value=devid_' + node._id + ' type=checkbox onchange=p1devcheck(event) ' + (checkedNodeids[node._id]?' checked':'') + '></div>';
-                r += '<div class=deviceBarIcon onclick=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
+                r += '<div class=deviceBarIcon onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                 r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                r += '<div class=style10 style=cursor:pointer;font-size:14px;max-height:18px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap title="' + title + '" onclick=gotoDevice(\'' + node._id + '\',null,null,event)>' + name + '</div></div>' + devNotify + '</td>';
+                r += '<div class=style10 style=cursor:pointer;font-size:14px;max-height:18px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap title="' + title + '" onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)>' + name + '</div></div>' + devNotify + '</td>';
 
                 // Use defaults if needed
                 if (deviceViewSettings == null) { deviceViewSettings = {}; }
@@ -4777,10 +4779,10 @@
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
                 // Draw the device and canvas
-                var r = '<div id=devs cmenu=devsContentMenu style=display:inline-block;position:relative;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div tabindex=0 style=padding:3px;cursor:pointer onclick=gotoDevice(\'' + node._id + '\',11,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',11,null,event)">' + devNotify;
+                var r = '<div id=devs cmenu=devsContentMenu style=display:inline-block;position:relative;margin:1px;background-color:lightgray;border-radius:5px;position:relative><div tabindex=0 style=padding:3px;cursor:pointer onmouseup=gotoDevice(\'' + node._id + '\',11,null,event) onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',11,null,event)">' + devNotify;
                 //r += '<input class="' + node.meshid + ' DeviceCheckbox" onclick=p1updateInfo() value=devid_' + node._id + ' type=checkbox style=float:left>';
                 r += '<div class="j' + icon + '" style=width:16px;float:left></div>&nbsp;' + name + '</div>';
-                r += '<span onclick=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' tabindex=0 style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:10;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\') onkeypress="if (event.key==\'Enter\') toggleKvmDevice(\'' + node._id + '\')">' + "Disconnected" + '</div></div>';
+                r += '<span onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)></span><div id=xkvmid_' + node._id.split('/')[2] + '><div id=skvmid_' + node._id.split('/')[2] + ' tabindex=0 style="position:absolute;color:white;left:5px;top:27px;text-shadow:0px 0px 5px #000;z-index:10;cursor:default" onclick=toggleKvmDevice(\'' + node._id + '\') onkeypress="if (event.key==\'Enter\') toggleKvmDevice(\'' + node._id + '\')">' + "Disconnected" + '</div></div>';
                 r += '</div>';
                 return r;
             }
@@ -5766,10 +5768,18 @@
                 setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionTagsExec, x);
             } else if (op == 108) {
                 // Device notification
-                var x = "Perform batch device notification" + '<br /><br />';
-                x += '<select id=d2deviceop style=width:100%><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option></select>';
-                x += '<br /><input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100% />';
-                x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll></textarea>';
+                var x = "<div style=margin-bottom:4px>Perform batch device notification</div>";
+                x += '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+                x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
+                x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
+                x += '<select style=width:100% id=d2notifyTimeout>';
+                x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
+                x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
+                x += '<option value=10>' + "Show for 10 minutes" + '</option>';
+                x += '<option value=30>' + "Show for 30 minutes" + '</option>';
+                x += '<option value=60>' + "Show for 60 minutes" + '</option>';
+                x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
+                x += '</select>';
                 setDialogMode(2, "Device Notification", 3, d2groupActionFunctionNotifyExec, x);
                 Q('d2notifyMsg').focus();
             } else if (op == 109) {
@@ -5812,14 +5822,17 @@
         function d2groupActionFunctionAgentDefaultCodeExec() { meshserver.send({ action: 'uploadagentcore', nodeids: getCheckedDevices(), type: 'default' }); }
 
         function d2groupActionFunctionNotifyExec() {
-            var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, chkNodeIds = getCheckedDevices();
+            var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, chkNodeIds = getCheckedDevices(), timeout = parseFloat(Q('d2notifyTimeout').value);
             if (msg.length == 0) return;
             if (title == '') { title = decodeURIComponent('{{{extitle}}}'); }
             if (title == '') { title = "MeshCentral"; }
+            if (isNaN(timeout)) { timeout = 2; }
             if (op == 1) { // MessageBox
-                for (var i = 0; i < chkNodeIds.length; i++) { meshserver.send({ action: 'msg', type: 'messagebox', nodeid: chkNodeIds[i], title: title, msg: msg }); }
+                for (var i = 0; i < chkNodeIds.length; i++) { meshserver.send({ action: 'msg', type: 'messagebox', nodeid: chkNodeIds[i], title: title, msg: msg, timeout: (timeout * 60000) }); }
             } else if (op == 2) { // Toast
                 meshserver.send({ action: 'toast', nodeids: chkNodeIds, title: title, msg: msg });
+            } else if (op == 3) { // Old Style MessageBox
+                for (var i = 0; i < chkNodeIds.length; i++) { meshserver.send({ action: 'msg', type: 'alertbox', nodeid: chkNodeIds[i], title: title, msg: msg }); }
             }
         }
 
@@ -6264,9 +6277,9 @@
                     // Get the node and set the menu options
                     var nodeid;
                     if (Q('viewselect').value == 1) {
-                        nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onclick.value;
+                        nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onmouseup.value;
                     } else {
-                        nodeid = contextelement.children[1].attributes.onclick.value;
+                        nodeid = contextelement.children[1].attributes.onmouseup.value;
                     }
                     var node = getNodeFromId(nodeid.substring(12, nodeid.length - 18));
                     var rights = GetNodeRights(node);
@@ -6315,9 +6328,9 @@
         function cmaction(action, event) {
             var nodeid;
             if (Q('viewselect').value == 1) {
-                nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onclick.value;
+                nodeid = contextelement.children[0].children[0].children[1].children[0].attributes.onmouseup.value;
             } else {
-                nodeid = contextelement.children[1].attributes.onclick.value;
+                nodeid = contextelement.children[1].attributes.onmouseup.value;
             }
             nodeid = nodeid.substring(12, nodeid.length - 18);
             if (action == 9) { Q('viewselect').value = 3; Q('viewselect').onchange(); Q('autoConnectDesktopCheckbox').checked = true; Q('autoConnectDesktopCheckbox').onclick(); } // Multi-Desktop
@@ -7192,13 +7205,14 @@
         
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh, event) {
+            if(event && ((event.which == 3) || (event.button == 2))) return; // ignore right click events here as handled elsewhere
             // Remind the user to verify the email address
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
 
             // Remind the user to add two factor authentication
             if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
 
-            if (event && (event.shiftKey == true)) {
+            if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1))) {
                 // Open the device in a different tab
                 safeNewWindow(window.location.origin + '?node=' + nodeid.split('/')[2] + '&viewmode=10&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + nodeid);
                 return;
@@ -7392,6 +7406,14 @@
                     if (node.wsc.autoUpdate != null) { if (node.wsc.autoUpdate == 'OK') { y.push("Update" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Update" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
                     if (node.wsc.firewall != null) { if (node.wsc.firewall == 'OK') { y.push("Firewall" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Firewall" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
                     x += addDeviceAttribute("Windows Security", y.join(', '));
+                }
+
+                // Defender for Windows Server
+                if(node.defender && !node.wsc) {
+                    var y = [];
+                    if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    x += addDeviceAttribute("Windows Defender", y.join(', '));
                 }
 
                 // Antivirus
@@ -8083,17 +8105,27 @@
 
         function deviceMessageFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Device Message", 3, deviceMessageFunctionEx, '<div style=margin-bottom:4px>' + "Display a message box on the remote device." + '</div><textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
+            var x = '<div style=margin-bottom:4px>Display a message box on the remote device.</div>';
+            x += '<textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
+            x += '<select style=width:100% id=d2devTimeout>';
+            x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
+            x += '<option value=10>' + "Show for 10 minutes" + '</option>';
+            x += '<option value=30>' + "Show for 30 minutes" + '</option>';
+            x += '<option value=60>' + "Show for 60 minutes" + '</option>';
+            x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
+            x += '</select>';
+            setDialogMode(2, "Device Message", 3, deviceMessageFunctionEx, x);
             Q('d2devMessage').focus();
         }
 
         function deviceMessageFunctionEx() {
-            var title = decodeURIComponent('{{{extitle}}}');
+            var title = decodeURIComponent('{{{extitle}}}'), timeout = parseFloat(Q('d2devTimeout').value);
             if (title == '') { title = "MeshCentral"; }
+            if(isNaN(timeout)){ timeout = 2; }
             if (currentNode.pmt == 1) {
                 meshserver.send({ action: 'pushmessage', nodeid: currentNode._id, title: title, msg: Q('d2devMessage').value });
             } else {
-                meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: title, msg: Q('d2devMessage').value });
+                meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: title, msg: Q('d2devMessage').value, timeout: (timeout * 60000) });
             }
         }
 
@@ -8131,12 +8163,34 @@
 
         function deviceToastFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, '<textarea id=d2devToast style=width:100%;height:80px;resize:none;overflow-y:scroll></textarea>');
-            Q('d2devToast').focus();
+            var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+            x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
+            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
+            x += '<select style=width:100% id=d2notifyTimeout>';
+            x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
+            x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
+            x += '<option value=10>' + "Show for 10 minutes" + '</option>';
+            x += '<option value=30>' + "Show for 30 minutes" + '</option>';
+            x += '<option value=60>' + "Show for 60 minutes" + '</option>';
+            x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
+            x += '</select>';
+            setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, x);
+            Q('d2notifyMsg').focus();
         }
 
         function deviceToastFunctionEx() {
-            meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: decodeURIComponent('{{{extitle}}}'), msg: Q('d2devToast').value });
+            var op = Q('d2deviceop').value, title = Q('dp2notifyTitle').value, msg = Q('d2notifyMsg').value, timeout = parseFloat(Q('d2notifyTimeout').value);
+            if (msg.length == 0) return;
+            if (title == '') { title = decodeURIComponent('{{{extitle}}}'); }
+            if (title == '') { title = "MeshCentral"; }
+            if(isNaN(timeout)){ timeout = 2; }
+            if (op == 1) { // MessageBox
+                meshserver.send({ action: 'msg', type: 'messagebox', nodeid: currentNode._id, title: title, msg: msg, timeout: (timeout * 60000) });
+            } else if (op == 2) { // Toast
+                meshserver.send({ action: 'toast', nodeids: [ currentNode._id ], title: title, msg: msg });
+            } else if (op == 3) { // Old Style MessageBox
+                meshserver.send({ action: 'msg', type: 'alertbox', nodeid: currentNode._id, title: title, msg: msg });
+            }
         }
 
         // Lock desktop
@@ -8337,7 +8391,7 @@
             } else if (op == 302) { // Intel AMT power on
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power on?");
             } else if (op == 308) { // Intel AMT power off
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?");
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>");
             } else if (op == 310) { // Intel AMT reset
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
             } else if (op == 311) { // Intel AMT power on to BIOS
@@ -10047,7 +10101,28 @@
             if (sel == 1) meshserver.send({ action: 'msg', type: 'services', nodeid: currentNode._id });
         }
         function refreshDeskToolsEx() { QV('DeskToolsRefreshButton', true); }
-        var deskTools = { sort: 1, ssort: 1, msg: null, smsg: null };
+        var deskTools = { sort: 1, ssort: 1, msg: null, smsg: null, resizing: false };
+        Q('DeskTools').addEventListener('mousemove', function (event) {
+            var mouseX = event.clientX - Q('DeskTools').getBoundingClientRect().left;
+            var borderThickness = 5; // Assuming a 5px border
+            if (mouseX < borderThickness) {
+                Q('DeskTools').style.cursor = 'col-resize';
+            } else {
+                Q('DeskTools').style.cursor = 'default';
+            }
+        });
+        Q('DeskTools').addEventListener('mousedown', function (event) {
+            if (Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = true;
+        });
+        document.addEventListener('mouseup', function () {
+            if(deskTools.resizing===true && Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = false;
+        });
+        document.addEventListener('mousemove', function (event) {
+            if (deskTools.resizing) {
+                var newWidth = Q('DeskTools').getBoundingClientRect().right - event.clientX;
+                if(newWidth < (Q('DeskParent').clientWidth-10)) Q('DeskTools').style.width = newWidth + 'px';
+            }
+        });
         function sortProcess(sort) { deskTools.sort = sort; showDeskToolsProcesses(deskTools.msg); }
         function sortService(sort) { deskTools.ssort = sort; showDeskToolsServices(deskTools.smsg); }
         function sortProcessPid(a, b) { if (a.p > b.p) return 1; if (a.p < b.p) return (-1); return sortProcessName(a, b); }
@@ -10065,8 +10140,12 @@
                 for (var i in p) {
                     if (p[i].p != 0) {
                         var c = p[i].c;
-                        if (c.length > 30) { c = '<span onclick=showProcessDetails(' + p[i].p + ') title="' + EscapeHtml(c) + '">' + EscapeHtml(c.substring(0,30)) + '...</span>' } else { c = EscapeHtml(c); }
-                        x += '<div onclick=showProcessDetails(' + p[i].p + ') class=deskToolsBar><div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div><a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a><div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div><div>' + c + '</div></div>';
+                        x += '<div onclick=showProcessDetails(' + p[i].p + ') class=deskToolsBar>';
+                        x += '<div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div>';
+                        x += '<a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a>';
+                        x += '<div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:5px" title="' + EscapeHtml(c) + '">' + c + '</div>';
+                        x += '</div>';
                     }
                 }
                 QH('DeskToolsProcesses', x);
@@ -10100,10 +10179,12 @@
                 for (var i in s) {
                     if (s[i].p != 0) {
                         var c = s[i].d, ss = s[i].p;
-                        if (c.length > 30) { c = '<span title="' + c + '">' + c.substring(0, 30) + '...</span>' } else { c = EscapeHtml(c); }
                         if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
                         else if (ss == 'Running') { ss = "Running"; }
-                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar><div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div><div>' + c + '</div></div>';
+                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar>';
+                        x += '<div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + c + '">' + EscapeHtml(c) + '</div>';
+                        x += '</div>';
                     }
                 }
                 QH('DeskToolsServices', x);
@@ -11056,6 +11137,7 @@
                 QE('p13ZipButton', false);
                 QE('p13PasteButton', false);
                 QE('p13GoToFolderButton', false);
+                QE('p13DownloadButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
                 var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
@@ -11073,6 +11155,7 @@
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', true);
+                QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
             }
             var filesState = ((files != null) && (files.state != 0));
             if (((filesState == true) && (files.contype != 2)) || (filesNode.agent == null) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
@@ -11251,6 +11334,20 @@
                 }
             } else {
                 files.sendText({ action: 'download', sub: 'ack', id: gdownloadFile.id }); // Send the ACK
+            }
+        }
+
+        function p13downloadButton() {
+            var checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) { 
+                if (checkboxes[i].checked) { 
+                    var thefile = p13filetree.dir[checkboxes[i].value];
+                    var link = 'devicefile.ashx?c=' + authCookie;
+                    link += '&m=' + currentNode.meshid.split('/')[2];
+                    link += '&n=' + currentNode._id.split('/')[2];
+                    link += '&f=' + encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n);
+                    downloadFile(link,encodeURIComponentEx(thefile.n));
+                }
             }
         }
 
@@ -11780,7 +11877,7 @@
                             if (ipv4layer.v4addr) { x += addDetailItem("IPv4 Layer", format("IP: {0}", EscapeHtml(ipv4layer.v4addr))); }
                         }
                     }
-                    x += '</div>';
+                    x += '</div></td></tr>';
                 }
                 x += '</table>';
                 if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking64.png'}); }
@@ -11818,7 +11915,12 @@
                             if (iplayer.family == 'IPv6') { x += addDetailItem("IPv6 Layer", items.join(", ")); }
                         }
                     }
-                    x += '</div>';
+                    x += '</div></td></tr>';
+                }
+                if (hardware.network && hardware.network.dns) {
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += addDetailItem("<b>DNS Servers</b>", hardware.network.dns.join(", "));
+                    x += '</div></td></tr>';
                 }
                 x += '</table>';
                 if (x != '') { sections.push({ name: "Networking", html: x, img: 'networking64.png'}); }
@@ -11939,6 +12041,10 @@
                             if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
                             if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
                             if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
+                        }
+                        if(hardware.windows && hardware.windows.drives && m.Model){
+                            const foundObject = hardware.windows.drives.find(obj => obj['Model'] === m.Model);
+                            if(foundObject) x += addDetailItem("Status", EscapeHtml(foundObject.Status), s);
                         }
                         x += '</div>';
                     }
@@ -13557,7 +13663,7 @@
 
             var urights = -1, meshRightsActive = ((userid != 4) && (userid != 5) && (userid != 6) && (userid != 7));
 
-            x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray">';
+            x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray;resize:vertical;">';
             if (meshRightsActive) {
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
                 x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
@@ -14356,6 +14462,7 @@
             QE('p5ViewFileButton', (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
             QE('p5NewFolderButton', filetreelocation.length > 0);
             QE('p5UploadButton', filetreelocation.length > 0);
+            QE('p5DownloadButton', (cc > 0) && (cc == sfc) && (filetreelocation.length > 0));
             QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? "Select None" : "Select All");
@@ -14522,6 +14629,16 @@
                 //QV('p5fileCatchAllInput', false);
             } else {
                 p5dragtimer = setTimeout(function () { QV('bigfail',false); QV('bigok',false); p5dragtimer=null; }, 10);
+            }
+        }
+
+        function p5downloadButton() {
+            var checkboxes = document.getElementsByName('fc');
+            for (var i = 0; i < checkboxes.length; i++) { 
+                if (checkboxes[i].checked) { 
+                    var link = 'downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + checkboxes[i].value);
+                    downloadFile(link);
+                }
             }
         }
 
@@ -14695,7 +14812,8 @@
             154: "Account changed to sync with LDAP data.",
             155: "Denied user login from {0}, {1}, {2}",
             156: "Verified messaging account of user {0}",
-            157: "Removed messaging account of user {0}"
+            157: "Removed messaging account of user {0}",
+            158: "Displaying alert box, title=\"{0}\", message=\"{1}\""
         };
 
         var eventsShortMessageId = {
@@ -17963,6 +18081,7 @@
         }
 
         function go(x, event) {
+            if(event && ((event.which == 3) || (event.button == 2))) return; // ignore right clicks as they are handled elsewhere
             // Remind the user to add two factor authentication
             if ((features & 0x00040000) && (count2factoraAuths() == 0) && (x > 2)) { x = 2; setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); }
 
@@ -17972,7 +18091,7 @@
             QV('uiMenu', false);
 
             // If "shift" is pressed, open a new tab.
-            if (event && (event.shiftKey == true) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
+            if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
                 if ((x >= 10) && (x <= 19)) {
                     if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentNode._id); }
@@ -18582,14 +18701,12 @@
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
         function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34,42,43].indexOf(node.agent.id) >= 0); }
 
-        // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
-        // So we do that for all browsers except FireFox
         function downloadFile(link, name, closeDialog) {
             var element = document.createElement('a');
             element.setAttribute('href', link);
             element.setAttribute('rel', 'noreferrer noopener');
             element.setAttribute('target', 'fileDownloadFrame');
-            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name?name:'')); }
+            element.setAttribute('download', decodeURIComponent(name?name:''));
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);

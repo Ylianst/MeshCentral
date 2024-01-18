@@ -248,6 +248,7 @@
           }
         ]
       },
+      "_assistantTypeAgentInvite": 2,
       "PreconfiguredScripts": [
         {
           "name": "Run NotePad as user",
@@ -628,7 +629,9 @@
     "_telegram": {
       "apiid": 0,
       "apihash": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "useWSS": "false",
+      "connectionRetries": 60
     },
     "_discord": {
       "serverurl": "https://discord.gg/xxxxxxxxx",

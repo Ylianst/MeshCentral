@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM node:current-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 RUN mkdir -p /opt/meshcentral/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
@@ -34,7 +34,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 
-FROM --platform=$TARGETPLATFORM alpine:latest
+FROM --platform=$TARGETPLATFORM alpine:3.19
 
 #Add non-root user, add installation directories and assign proper permissions
 RUN mkdir -p /opt/meshcentral/meshcentral
@@ -43,7 +43,7 @@ RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN apk update \
-    && apk add --no-cache --update tzdata nodejs npm bash \
+    && apk add --no-cache --update tzdata nodejs npm bash python3 make gcc g++ \
     && rm -rf /var/cache/apk/*
 RUN npm install -g npm@latest
 
@@ -86,8 +86,9 @@ COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 # install dependencies from package.json and nedb
 RUN cd meshcentral && npm install && npm install nedb
 
-RUN if ! [ -z "$INCLUDE_MONGODBTOOLS" ]; then cd meshcentral && npm install mongodb@4.13.0; fi
-RUN if ! [ -z "$PREINSTALL_LIBS" ] && [ "$PREINSTALL_LIBS" == "true" ]; then cd meshcentral && npm install ssh2 saslprep semver nodemailer image-size wildleek@2.0.0 otplib@10.2.3 yubikeyotp; fi
+# NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentral.js mainStart()
+RUN if ! [ -z "$INCLUDE_MONGODBTOOLS" ]; then cd meshcentral && npm install mongodb@4.13.0 saslprep@1.0.3; fi
+RUN if ! [ -z "$PREINSTALL_LIBS" ] && [ "$PREINSTALL_LIBS" == "true" ]; then cd meshcentral && npm install ssh2@1.15.0 semver@7.5.4 nodemailer@6.9.8 image-size@1.0.2 wildleek@2.0.0 otplib@10.2.3 yubikeyotp@0.2.0; fi
 
 EXPOSE 80 443 4433
 

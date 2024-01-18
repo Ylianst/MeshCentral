@@ -16,6 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+/*
+ * added get clipboard from remote RDP - Simon Smith 2024
+ * added set clipboard to remote RDP - Simon Smith 2024
+ */
 
 (function() {
 	/**
@@ -173,6 +177,19 @@
                     options: options,
                     locale: Mstsc.locale()
                 }]));
+                self.prevClipboardText = null;
+                self.clipboardReadTimer = setInterval(function(){
+                    if(navigator.clipboard.readText != null){
+                        navigator.clipboard.readText()
+                        .then(function(data){
+                            if(data != self.prevClipboard){
+                                self.prevClipboard = data;
+                                if (self.socket) { self.socket.send(JSON.stringify(['clipboard', data])); }
+                            }
+                        })
+                        .catch(function(){ });
+                    }
+                }, 1000);
             };
             this.socket.onmessage = function (evt) {
                 if (typeof evt.data == 'string') {
@@ -206,6 +223,14 @@
                             next(err);
                             break;
                         }
+                        case 'rdp-clipboard': {
+                            if ((msg[1] != null) && (navigator.clipboard.writeText != null)) { 
+                                navigator.clipboard.writeText(msg[1]) // Put remote clipboard data into our clipboard
+                                .then(function() { })
+                                .catch(function(err) { console.log('clipboard.writeText Error', err); });
+                            }
+                            break;
+                        }
                     }
                 } else {
                     // This is binary bitmap data, store it.
@@ -215,6 +240,8 @@
             this.socket.onclose = function () {
                 //console.log("WS-CLOSE");
                 self.activeSession = false;
+                clearInterval(self.clipboardReadTimer);
+                self.prevClipboardText = null;
                 next(null);
             };
 		}
