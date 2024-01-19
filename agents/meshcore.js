@@ -3767,7 +3767,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',cs,wpfhwacceleration,uac,volumes';
+                    availcommands += ',cs,wpfhwacceleration,uac,volumes,rdpport';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
@@ -4050,6 +4050,44 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'timerinfo':
                 response = require('ChainViewer').getTimerInfo();
+                break;
+            case 'rdpport':
+                if (process.platform != 'win32') {
+                    response = 'Unknown command "rdpport", type "help" for list of available commands.';
+                    return;
+                }
+                if (args['_'].length == 0) {
+                    response = 'Proper usage: rdpport [get|default|PORTNUMBER]';
+                } else {
+                    switch (args['_'][0].toLocaleLowerCase()) {
+                        case 'get':
+                            var rdpport = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp', 'PortNumber');
+                            response = "Current RDP Port Set To: " + rdpport + '\r\n';
+                            break;
+                        case 'default':
+                            try {
+                                require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp', 'PortNumber', 3389);
+                                response = 'RDP Port Set To 3389, Please Dont Forget To Restart Your Computer To Fully Apply';
+                            } catch (ex) {
+                                response = 'Unable to Set RDP Port To: 3389';
+                            }
+                            break;
+                        default:
+                            if (isNaN(parseFloat(args['_'][0]))){
+                                response = 'Proper usage: rdpport [get|default|PORTNUMBER]';
+                            } else if(parseFloat(args['_'][0]) < 0 || args['_'][0] > 65535) {
+                                response = 'RDP Port Must Be More Than 0 And Less Than 65535';
+                            } else {
+                                try {
+                                    require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp', 'PortNumber', parseFloat(args['_'][0]));
+                                    response = 'RDP Port Set To ' + args['_'][0] + ', Please Dont Forget To Restart Your Computer To Fully Apply';
+                                } catch (ex) {
+                                    response = 'Unable to Set RDP Port To: '+args['_'][0];
+                                }
+                            }
+                            break;
+                    }
+                }
                 break;
             case 'find':
                 if (args['_'].length <= 1) {
