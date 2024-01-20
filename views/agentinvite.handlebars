@@ -82,6 +82,7 @@
                     <button id="twintab64" class="tablinks" onclick="openTab(event, 'wintab64')">Windows 64bit</button>
                     <button id="twintab32" class="tablinks" onclick="openTab(event, 'wintab32')">Windows 32bit</button>
                     <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux</button>
+                    <button id="tlinuxbinarytab" class="tablinks" onclick="openTab(event, 'linuxbinarytab')">Linux Binary</button>
                     <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">MacOS</button>
                     <button id="tandrotab" class="tablinks" onclick="openTab(event, 'androtab')">Android</button>
                     <button id="tassistab" class="tablinks" onclick="openTab(event, 'assistab')">Assistant</button>
@@ -113,6 +114,8 @@
                     <input type="button" value="Copy to clipboard" style="margin-left:30px;margin-top:4px" onclick="copyToClipLinuxUnInstall()" />
                     <br /><br />
                 </div>
+
+                <div id="linuxbinarytab" class="tabcontent" style="background-color:white;color:black"></div>
 
                 <div id="macostab" class="tabcontent" style="background-color:white;color:black">
                     <h3>Apple&trade; MacOS</h3>
@@ -222,28 +225,68 @@
 
             // Setup visible tabs
             var tabcount = 0, tabselect = null;
-            var tab1 = (showAgents == 0) || (showAgents & 1);
-            var tab2 = (showAgents == 0) || (showAgents & 1);
-            var tab3 = (showAgents == 0) || (showAgents & 2);
-            var tab4 = (showAgents == 0) || (showAgents & 4);
-            var tab5 = (showAgents == 0) || (showAgents & 16);
-            var tab6 = (showAgents == 0) || (showAgents & 8);
-            if (tab6) { tabcount++; tabselect = 'assistab'; }
-            if (tab5) { tabcount++; tabselect = 'androtab'; }
-            if (tab4) { tabcount++; tabselect = 'macostab'; }
+            var tab1 = (showAgents == 0) || (showAgents & 1); //win64
+            var tab2 = (showAgents == 0) || (showAgents & 1); //win32
+            var tab3 = (showAgents == 0) || (showAgents & 2); //linux
+            var tab4 = (showAgents == 0) || (showAgents & 2); //linuxbinary
+            var tab5 = (showAgents == 0) || (showAgents & 4); //macos
+            var tab6 = (showAgents == 0) || (showAgents & 16); //android
+            var tab7 = (showAgents == 0) || (showAgents & 8); //assistant
+            if (tab7) { tabcount++; tabselect = 'assistab'; }
+            if (tab6) { tabcount++; tabselect = 'androtab'; }
+            if (tab5) { tabcount++; tabselect = 'macostab'; }
+            if (tab4) { tabcount++; tabselect = 'linuxbinarytab'; }
             if (tab3) { tabcount++; tabselect = 'linuxtab'; }
             if (tab2) { tabcount++; tabselect = 'wintab32'; }
             if (tab1) { tabcount++; tabselect = 'wintab64'; }
             QV('twintab64', tab1 && (tabcount > 1));
             QV('twintab32', tab2 && (tabcount > 1));
             QV('tlinuxtab', tab3 && (tabcount > 1));
-            QV('tmacostab', tab4 && (tabcount > 1));
-            QV('tandrotab', tab5 && (tabcount > 1));
-            QV('tassistab', tab6 && (tabcount > 1));
+            QV('tlinuxbinarytab', tab4 && (tabcount > 1));
+            QV('tmacostab', tab5 && (tabcount > 1));
+            QV('tandrotab', tab6 && (tabcount > 1));
+            QV('tassistab', tab7 && (tabcount > 1));
 
             userInterfaceSelectMenu();
             setup();
             openTab(null, tabselect);
+        }
+
+        function linuxBinarySetup() {
+            var x = '<h3>Linux Binary</h3>', moreoptions = '';
+            var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px>';
+            opts += '<option value=5 selected>' + "Linux / BSD / macOS Binary Installer" + '</option>';
+            opts += '</select>';
+            x += '<table style=display:none><td style=width:120px><td><b>' + opts + '</b></table>';
+            var servername = window.location.hostname;
+            if ((servername.indexOf('.') == -1)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var portStr = (serverPort == 443) ? '' : (':' + serverPort);
+            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41 ];
+            var binaryInstallAgents = { 5 : 'Linux x86-32', 6 : 'Linux x86-64', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)' };
+            for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
+            x += '<div id=aginsSysTypeDiv>';
+            x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
+            x += '</div>';
+            x += '<div id=aginsTypeDiv>';
+            x += addHtmlValue("Installation Type", '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+            x += '</div><hr>';
+            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file." + '<br /><br />';
+            x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk name="meshagents?id=' + meshid + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid + '&installflags=",1)>');
+            x += addHtmlValue("Command", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent ' + ((serverNoProxy != 0) ?'--no-proxy':'') + ' --no-check-certificate \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('$').join('%24').split('@').join('%40') + '\' /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
+            x += '</div>';
+            QH('linuxbinarytab', x);
+            addAgentToMeshClick();
+        }
+
+        function addAgentToMeshClick() {
+            var v = Q('aginsSelect').value;
+            QV('agins_linux_un', v == 4);
+            QV('agins_linux_inst', v == 5);
+            QV('aginsSysTypeDiv', v == 5);
+            Q('aginsbinlnk').onclick = function() { downloadFile((Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value); };
+            Q('aginsbincmd').value = (Q('aginsbincmd').value.split('&installflags=')[0]) + '&installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value + '\"';
+            QV('aginsTypeDiv', (v == 0) || (v == 5));
+            QV('asinsTypeDiv', (v == 7));
         }
 
         // Create the QR code
@@ -388,6 +431,9 @@
             QH('linuxinstall', linuxInstall);
             QH('unlinuxinstall', linuxUnInstall);
 
+            // Linux Binary Setup
+            linuxBinarySetup();
+
             // MeshCentral Assistant
             url = 'meshagents?id=10006&meshid=' + meshid + '&ac={{{assistanttype}}}';
             Q('assisturl').href = url;
@@ -412,6 +458,30 @@
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function escapeHtml(string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' }[s]; }); };
         function escapeHtmlBreaks(string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;', '\r': '<br />', '\n': '' }[s]; }); };
+        function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }     
+        function downloadFile(link, name, closeDialog) {
+            var element = document.createElement('a');
+            element.setAttribute('href', link);
+            element.setAttribute('rel', 'noreferrer noopener');
+            element.setAttribute('target', 'fileDownloadFrame');
+            element.setAttribute('download', decodeURIComponent(name?name:''));
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            if (closeDialog) { setDialogMode(0); }
+        }
+        function copyAgentUrl(url,addflag) {
+            var servername = window.location.hostname;
+            if ((servername.indexOf('.') == -1)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var portStr = (serverPort == 443) ? '' : (':' + serverPort);
+            var c = 'https://' + servername + portStr + domainUrl + url;
+            if (addflag == 1) c += Q('aginsType').value;
+            c += (urlargs.key?('&key=' + urlargs.key):'');
+            if (Q('aginsSelect').value == 5) { c += '&meshinstall=' + Q('aginsSysType').value; }
+            if (Q('aginsSelect').value == 7) { c += '&ac=' + Q('asinsType').value; }
+            copyTextToClip(c);
+        }
+        function copyAgentIdValue(id) { copyTextToClip(Q(id).value); }
     </script>
 </body>
 </html>
