@@ -5,48 +5,56 @@ on:
       - master
   release:
     types: [published]
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   check-token:
     runs-on: ubuntu-latest
     outputs:
-      token: ${{ steps.token.outputs.defined }}
+      token_defined: ${{ steps.token_check.outputs.token_defined }}
     steps:
-      - id: token
+      - name: Check token
+        id: token_check
         env:
-            MY_TOKEN: ${{ secrets.MY_TOKEN }}
+          MY_TOKEN: ${{ secrets.MY_TOKEN }}
         if: "${{ env.MY_TOKEN != '' }}"
-        run: echo "::set-output name=defined::true"
+        run: echo "token_defined=true" >> "$GITHUB_OUTPUT"
         
   build:
     name: Release
     runs-on: ubuntu-latest
     needs: [check-token]
-    if: needs.check-token.outputs.token == 'true'
+    if: needs.check-token.outputs.token_defined == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to the Container registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.MY_TOKEN }}
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: docker/Dockerfile
