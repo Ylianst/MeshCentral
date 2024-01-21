@@ -1304,6 +1304,26 @@ function handleServerCommand(data) {
                         }
                         break;
                     }
+                    case 'service': {
+                        // return information about the service
+                        try {
+                            var service = require('service-manager').manager.getService(data.serviceName);
+                            if (service != null) {
+                                var reply = {
+                                    name: service.name,
+                                    status: service.status,
+                                    installedBy: service.installedBy,
+                                    installedDate: service.installedDate,
+                                    user: service.user,
+                                    startType: service.startType,
+                                    failureActions: service.failureActions
+                                };
+                                mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
+                            }
+                        } catch (ex) { 
+                            mesh.SendCommand({ action: 'msg', type: 'service', value: '', error: ex, sessionid: data.sessionid })
+                        }
+                    }
                     case 'services': {
                         // Return the list of installed services
                         var services = null;

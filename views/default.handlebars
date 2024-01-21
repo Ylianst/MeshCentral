@@ -2616,6 +2616,8 @@
                                 showDeskToolsProcesses(message);
                             } else if (message.type === 'services') {
                                 showDeskToolsServices(message);
+                            } else if (message.type === 'service') {
+                                showServiceDetailsDialog(message);
                             } else if ((message.type === 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 if ((message.tag == 1) && (xxdialogTag === 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
@@ -10154,7 +10156,7 @@
         }
         function showProcessDetails(pid) {
             if (xxdialogMode) return;
-            setDialogMode(2, format("Process Details, #{0}", pid), 1, null, "Requesting details...", 'ps|' + currentNode._id + '|' + pid);
+            setDialogMode(2, format("Process Details, #{0}", pid), 1, null, "Requesting Process Details...", 'ps|' + currentNode._id + '|' + pid);
             meshserver.send({ action: 'msg', type: 'psinfo', nodeid: currentNode._id, pid: pid });
         }
         function showDeskToolsServices(message) {
@@ -10182,7 +10184,7 @@
                         var c = s[i].d, ss = s[i].p;
                         if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
                         else if (ss == 'Running') { ss = "Running"; }
-                        x += '<div onclick=showServiceDetailsDialog(' + s[i].i + ') class=deskToolsBar>';
+                        x += '<div onclick=showServiceWaitDialog(' + s[i].i + ') class=deskToolsBar>';
                         x += '<div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div>';
                         x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + c + '">' + EscapeHtml(c) + '</div>';
                         x += '</div>';
@@ -10192,30 +10194,48 @@
             }
         }
 
-        function showServiceDetailsDialog(index) {
-            if (xxdialogMode) return;
+        function showServiceDetailsDialog(data) {
+            if (xxdialogMode && (xxdialogTag.indexOf('service_') != -1)) {
+                var index = xxdialogTag.replace('service_','')
+                // var org_service = deskTools.services[index];
+                var service = data.value ? JSON.parse(data.value) : deskTools.services[index];
+                if(data.value) service.displayName = deskTools.services[index].displayName;
+                if (service != null) {
+                    var x = '';
+                    if (service.name) { x += addHtmlValue("Name", service.name); }
+                    if (service.displayName) { x += addHtmlValue("Display name", service.displayName); }
+                    if (service.status) {
+                        var ss = capitalizeFirstLetter(service.status.state.toLowerCase());
+                        if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
+                        else if (ss == 'Running') { ss = "Running"; }
+                        if (service.status.state) { x += addHtmlValue("State", ss); }
+                        if (service.status.pid) { x += addHtmlValue("PID", service.status.pid); }
+                        var serviceTypes = [];
+                        if (service.status.isFileSystemDriver === true) { serviceTypes.push("FileSystemDriver"); }
+                        if (service.status.isInteractive === true) { serviceTypes.push("Interactive"); }
+                        if (service.status.isKernelDriver === true) { serviceTypes.push("KernelDriver"); }
+                        if (service.status.isOwnProcess === true) { serviceTypes.push("OwnProcess"); }
+                        if (service.status.isSharedProcess === true) { serviceTypes.push("SharedProcess"); }
+                        if (serviceTypes.length > 0) { x += addHtmlValue("Type", serviceTypes.join(', ')); }
+                    }
+                    if (service.startType) { x += addHtmlValue("Start Type", service.startType); }
+                    if (service.user) { x += addHtmlValue("User", service.user); }
+                    if (service.installedBy) { x += addHtmlValue("Installed By", service.installedBy); }
+                    if (service.installedDate) { x += addHtmlValue("Installed Date", printDateTime(new Date(service.installedDate))); }
+                    x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
+                    setDialogMode(2, "Service Details", 8, null, x, "service_"+index);
+                }
+            }
+        }
+
+        function showServiceWaitDialog(index) {
+            if (xxdialogMode) return false;
             var service = deskTools.services[index];
             if (service != null) {
-                var x = '';
-                if (service.name) { x += addHtmlValue("Name", service.name); }
-                if (service.displayName) { x += addHtmlValue("Display name", service.displayName); }
-                if (service.status) {
-                    var ss = capitalizeFirstLetter(service.status.state.toLowerCase());
-                    if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
-                    else if (ss == 'Running') { ss = "Running"; }
-                    if (service.status.state) { x += addHtmlValue("State", ss); }
-                    if (service.status.pid) { x += addHtmlValue("PID", service.status.pid); }
-                    var serviceTypes = [];
-                    if (service.status.isFileSystemDriver === true) { serviceTypes.push("FileSystemDriver"); }
-                    if (service.status.isInteractive === true) { serviceTypes.push("Interactive"); }
-                    if (service.status.isKernelDriver === true) { serviceTypes.push("KernelDriver"); }
-                    if (service.status.isOwnProcess === true) { serviceTypes.push("OwnProcess"); }
-                    if (service.status.isSharedProcess === true) { serviceTypes.push("SharedProcess"); }
-                    if (serviceTypes.length > 0) { x += addHtmlValue("Type", serviceTypes.join(', ')); }
-                }
-                x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
-                setDialogMode(2, "Service Details", 8, null, x, name);
+                meshserver.send({ action: 'msg', type: 'service', nodeid: currentNode._id, serviceName: service.name });
+                setDialogMode(2, "Service Details", 1, null, "Requesting Service Details...", "service_" + index);
             }
+            return false;
         }
 
         function showServiceDetailsDialogEx(action, index) {
