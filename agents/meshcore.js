@@ -1310,15 +1310,15 @@ function handleServerCommand(data) {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) {
                                 var reply = {
-                                    name: service.name,
-                                    status: service.status,
-                                    installedBy: service.installedBy,
-                                    installedDate: service.installedDate,
-                                    user: service.user,
-                                    startType: service.startType,
-                                    failureActions: service.failureActions
+                                    name: (service.name ? service.name : ''),
+                                    status: (service.status ? service.status : ''),
+                                    startType: (service.startType ? service.startType : ''),
+                                    failureActions: (service.failureActions ? service.failureActions : ''),
+                                    installedDate: (service.installedDate ? service.installedDate : ''),
+                                    installedBy: (service.installedBy ? service.installedBy : '') ,
+                                    user: (service.user ? service.user : '')
                                 };
-                                if (service.installedBy.indexOf('S-1-5') != -1) {
+                                if(reply.installedBy.indexOf('S-1-5') != -1) {
                                     var cmd = "(Get-WmiObject -Class win32_userAccount -Filter \"SID='"+service.installedBy+"'\").Caption";
                                     var replydata = "";
                                     var pws = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
@@ -1331,12 +1331,12 @@ function handleServerCommand(data) {
                                         mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
                                         delete pws;
                                     });
-                                }else{
+                                } else {
                                     mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
                                 }
                             }
                         } catch (ex) { 
-                            mesh.SendCommand({ action: 'msg', type: 'service', value: '', error: ex, sessionid: data.sessionid })
+                            mesh.SendCommand({ action: 'msg', type: 'service', error: ex, sessionid: data.sessionid })
                         }
                     }
                     case 'services': {
