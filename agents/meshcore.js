@@ -1318,7 +1318,22 @@ function handleServerCommand(data) {
                                     startType: service.startType,
                                     failureActions: service.failureActions
                                 };
-                                mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
+                                if (service.installedBy.indexOf('S-1-5') != -1) {
+                                    var cmd = "(Get-WmiObject -Class win32_userAccount -Filter \"SID='"+service.installedBy+"'\").Caption";
+                                    var replydata = "";
+                                    var pws = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
+                                    pws.descriptorMetadata = 'UserSIDPowerShell';
+                                    pws.stdout.on('data', function (c) { replydata += c.toString(); });
+                                    pws.stderr.on('data', function (c) { replydata += c.toString(); });
+                                    pws.stdin.write(cmd + '\r\nexit\r\n');
+                                    pws.on('exit', function () { 
+                                        if (replydata != "") reply.installedBy = replydata;
+                                        mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
+                                        delete pws;
+                                    });
+                                }else{
+                                    mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
+                                }
                             }
                         } catch (ex) { 
                             mesh.SendCommand({ action: 'msg', type: 'service', value: '', error: ex, sessionid: data.sessionid })
