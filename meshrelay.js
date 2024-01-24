@@ -1249,8 +1249,14 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
     };
 
     // Send a PING/PONG message
-    function sendPing() { try { obj.ws.send('{"ctrlChannel":"102938","type":"ping"}'); } catch (ex) { } }
-    function sendPong() { try { obj.ws.send('{"ctrlChannel":"102938","type":"pong"}'); } catch (ex) { } }
+    // TODO: The following functions attempt to keep the WebSocket open, but end up injecting JSON plain text
+    //       into an encrypted SSH data stream. That causes the connection to get dropped upon the first
+    //       PING that is being sent.
+    //       I don't know how to fix this correctly, but in any case, it's preferable to disable PING/PONG for
+    //       SSH than to outright drop the connection. At least, that allows limited use of SSH and it also
+    //       allows to use PING/PONG for other types of connections (e.g. RDP or VNC).
+    function sendPing() { try { /* obj.ws.send('{"ctrlChannel":"102938","type":"ping"}'); */ } catch (ex) { } }
+    function sendPong() { try { /* obj.ws.send('{"ctrlChannel":"102938","type":"pong"}'); */ } catch (ex) { } }
 
     function performRelay() {
         ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
