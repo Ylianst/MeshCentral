@@ -931,8 +931,8 @@ module.exports.CreateAmtManager = function (parent) {
                     if (response.Body.OSPowerSavingState == 2) { meshPowerState = 1; } // Fully powered (S0);
                     else if (response.Body.OSPowerSavingState == 3) { meshPowerState = 2; } // Modern standby (We are going to call this S1);
 
-                    // Set OS power state
-                    if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 2, meshPowerState, null, { name: dev.name }); }
+                    // Set OS power state - connType: 0 = CIRA, 1 = CIRA-Relay, 2 = CIRA-LMS, 3 = LAN
+                    if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), (dev.connType == 3 ? 4 : 2), meshPowerState, null, { name: dev.name }); }
                 });
             } else {
                 // Convert the power state
@@ -941,8 +941,8 @@ module.exports.CreateAmtManager = function (parent) {
                 var meshPowerState = -1, powerConversionTable = [-1, -1, 1, 2, 3, 6, 6, 5, 6];
                 if (powerstate < powerConversionTable.length) { meshPowerState = powerConversionTable[powerstate]; } else { powerstate = 6; }
 
-                // Set power state
-                if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 2, meshPowerState, null, { name: dev.name }); }
+                // Set power state - connType: 0 = CIRA, 1 = CIRA-Relay, 2 = CIRA-LMS, 3 = LAN
+                if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), (dev.connType == 3 ? 4 : 2), meshPowerState, null, { name: dev.name }); }
             }
         });
     }
