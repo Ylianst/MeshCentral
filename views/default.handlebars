@@ -10222,6 +10222,16 @@
                     if (service.user) { x += addHtmlValue("User", service.user); }
                     if (service.installedBy) { x += addHtmlValue("Installed By", service.installedBy); }
                     if (service.installedDate) { x += addHtmlValue("Installed Date", printDateTime(new Date(service.installedDate))); }
+                    if (service.failureActions) { 
+                        if (service.failureActions.resetPeriod) { 
+                            var abc = ((service.failureActions.resetPeriod < 86400 ? 0 : service.failureActions.resetPeriod) / (24 * 60 * 60));
+                            x += addHtmlValue("Restart Fail Count After ", abc + ' Day' + (abc != 1 ? 's': '')); }
+                        if (service.failureActions.actions) {
+                            if (service.failureActions.actions[0]) { x += addHtmlValue("First Failure",service.failureActions.actions[0].type); }
+                            if (service.failureActions.actions[1]) { x += addHtmlValue("Second Failure",service.failureActions.actions[1].type); }
+                            if (service.failureActions.actions[2]) { x += addHtmlValue("Subsequent Failures",service.failureActions.actions[2].type); }
+                        }
+                    }
                     x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
                     setDialogMode(2, "Service Details", 8, null, x, "service_"+index);
                 }
