@@ -111,8 +111,15 @@ CheckInstallAgent() {
         fi
         if [ $machinetype == 'aarch64' ]
         then
-          # RaspberryPi 3B+ running Ubuntu 64 (aarch64)
-          machineid=26
+          bitlen=$( getconf LONG_BIT )
+          if [ $bitlen == '32' ]
+          then
+            # 32bit user space on a 64bit kernel
+            machineid=25
+          else
+            # RaspberryPi 3B+ running Ubuntu 64 (aarch64)
+            machineid=26
+          fi
         fi
         # Add more machine types, detect KVM support... here.
       fi
