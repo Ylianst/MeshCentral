@@ -6550,9 +6550,11 @@
 
         function p20installAndroidDialog() {
             if (xxdialogMode) return;
-            var x = '<div>' + "Install the MeshCentral Agent on your Android device. Once installed, click the pairing link to connect your device to this server." + '</div>';
-            x += '<br /><div><a href="https://play.google.com/store/apps/details?id=com.meshcentral.agent2"><b>' + "MeshCentral Agent for Android" + '</b></a><div>';
-            x += '<br /><div><a href="' + serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + currentMesh._id.split('/')[2] + '"><b>' + "Device Pairing Link" + '</b></a><div>';
+            var x = '<div style=text-align:center><p>' + "Install the MeshCentral Agent on your Android device. Once installed, click the pairing link to connect your device to this server." + '</p>';
+            x += '<p><a rel=\"noreferrer noopener\" target=_blank href=\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\"><img style=cursor:pointer src=\"images/google-play-140.png\" width=140 srcset=\"images/google-play-280.png 2x\" /></a></p>';
+            x += '<p><a rel=\"noreferrer noopener\" target=_blank href=\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\"><img style=cursor:pointer src=\"images/amazon-appstore-140.png\"  width=140 srcset=\"images/amazon-appstore-280.png 2x\" /></a></p>';
+            x += '<p><a rel=\"noreferrer noopener\" target=_blank href="meshagents?id=14' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "APK version of the MeshAgent" + '">' + "Android APK" + '</a></p>';
+            x += '<p><a href="' + serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + currentMesh._id.split('/')[2] + '"><b>' + "Device Pairing Link" + '</b></a></p></div>';
             setDialogMode(2, "Android Installation", 1, null, x);
         }
 
