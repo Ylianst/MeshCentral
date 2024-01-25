@@ -990,9 +990,9 @@ if (args['_'].length == 0) {
                         console.log(winRemoveSingleQuotes("  MeshCtrl GroupMessage --id 'devicegroupid' --msg \"message\" --title \"title\" --timeout 120000"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
-                            console.log("  --id [devicegroupid]          - The device identifier.");
+                            console.log("  --id [devicegroupid]     - The device identifier.");
                         } else {
-                            console.log("  --id '[devicegroupid]'        - The device identifier.");
+                            console.log("  --id '[devicegroupid]'   - The device identifier.");
                         }
                         console.log("  --msg [message]          - The message to display.");
                         console.log("\r\nOptional arguments:\r\n");
@@ -1006,9 +1006,9 @@ if (args['_'].length == 0) {
                         console.log(winRemoveSingleQuotes("  MeshCtrl GroupToast --id 'devicegroupid' --msg \"message\" --title \"title\""));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
-                            console.log("  --id [devicegroupid]        - The device identifier.");
+                            console.log("  --id [devicegroupid]   - The device identifier.");
                         } else {
-                            console.log("  --id '[devicegroupid]'      - The device identifier.");
+                            console.log("  --id '[devicegroupid]' - The device identifier.");
                         }
                         console.log("  --msg [message]        - The message to display.");
                         console.log("\r\nOptional arguments:\r\n");
