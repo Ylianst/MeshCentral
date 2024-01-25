@@ -8,17 +8,17 @@
 
 ## Software Integration Tokens
 
-!!!note
-    You can only generate a SINGLE loginTokenKey!
+!!!warning
+    You can only have a SINGLE loginTokenKey for your meshcentral server!<br>
     So if you regenerate a loginTokenKey, the old one will be revoked/deleted!
 
-You can generate the Login Token Key with the following:
+You can create/view the Login Token Key with the following:
 
 ```bash
 node node_modules/meshcentral --loginTokenKey
 ```
 
-You can then revoke/renew the Login Token Key with the following:
+You can then reset/revoke/renew the Login Token Key with the following to create a new one:
 
 ```bash
 node node_modules/meshcentral --loginTokenKey --loginTokenGen
