@@ -117,9 +117,16 @@ function linux_identifiers()
 
     var child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
-    child.stdin.write('cat /proc/cpuinfo | grep "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
+    child.stdin.write('cat /proc/cpuinfo | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
     child.waitExit();
     identifiers['cpu_name'] = child.stdout.str.trim();
+    if (identifiers['cpu_name'] == "") { // CPU BLANK, check lscpu instead
+        child = require('child_process').execFile('/bin/sh', ['sh']);
+        child.stdout.str = ''; child.stdout.on('data', dataHandler);
+        child.stdin.write('lscpu | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
+        child.waitExit();
+        identifiers['cpu_name'] = child.stdout.str.trim();
+    }
     child = null;
 
 
