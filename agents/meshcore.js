@@ -4757,6 +4757,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var oldNodeId = db.Get('OldNodeId');
                 if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                 if (process.platform == 'linux' || process.platform == 'freebsd') { response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.'; }
+                response += '\r\nApplication Location: ' + process.cwd();
                 //response += '\r\Debug Console: ' + debugConsole + '.';
                 break;
             }
