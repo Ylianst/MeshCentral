@@ -1046,7 +1046,11 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                         if ((k == 14) || (k == 28)) { ok = true; } // Enter and backspace
                         if (ok == false) return;
                     }
-                    if (rdpClient && (obj.viewonly != true)) { rdpClient.sendKeyEventScancode(msg[1], msg[2]); } break;
+                    var extended = false;
+                    var extendedkeys = [57419,57421,57416,57424,57426,57427,57417,57425,57372,57397,57415,57423,57373,57400,57399];
+                    // left,right,up,down,insert,delete,pageup,pagedown,numpadenter,numpaddivide,home,end,controlright,altright,printscreen
+                    if (extendedkeys.includes(msg[1])) extended=true;
+                    if (rdpClient && (obj.viewonly != true)) { rdpClient.sendKeyEventScancode(msg[1], msg[2], extended); } break;
                 }
                 case 'unicode': { if (rdpClient && (obj.viewonly != true)) { rdpClient.sendKeyEventUnicode(msg[1], msg[2]); } break; }
                 case 'utype': {
