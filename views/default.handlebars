@@ -12075,7 +12075,7 @@
                         }
                         if(hardware.windows && hardware.windows.drives && m.Model){
                             const foundObject = hardware.windows.drives.find(obj => obj['Model'] === m.Model);
-                            if(foundObject) x += addDetailItem("Status", EscapeHtml(foundObject.Status), s);
+                            if(foundObject && foundObject.Status) x += addDetailItem("Status", EscapeHtml(foundObject.Status), s);
                         }
                         x += '</div>';
                     }
