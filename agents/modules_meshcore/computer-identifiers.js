@@ -438,18 +438,19 @@ function windows_volumes()
                     ret[key].volumeStatus = tokens[1].split('"')[1];
                     ret[key].protectionStatus = tokens[2].split('"')[1];
                     try {
-                        var str = '';
                         var foundMarkedLine = false;
                         var password = '';
-                        var child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ', tokens[0].split('"')[1], ' -Type recoverypassword'], {});
-                        child.stdout.on('data', function (chunk) { str += chunk.toString(); });
-                        child.stderr.on('data', function (chunk) { str += chunk.toString(); });
-                        child.waitExit();
-                        var lines = str.split(/\r?\n/);
-                        for (var i = 0; i < lines.length; i++) {
-                            if (lines[i].trim() !== '' && lines[i].includes('Password:') && !lines[i].includes('Numerical Password:')) {
-                                if (i + 1 < lines.length && lines[i + 1].trim() !== '') {
-                                    password = lines[i + 1].trim();
+                        var keychild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ', tokens[0].split('"')[1], ' -Type recoverypassword'], {});
+                        keychild.stdout.str = ''; keychild.stdout.on('data', function (c) { this.str += c.toString(); });
+                        keychild.waitExit();
+                        var lines = keychild.stdout.str.trim().split('\r\n');
+                        for (var x = 0; x < lines.length; x++) {
+                            var abc = lines[x].trim();
+                            var englishpass = (abc !== '' && abc.includes('Password:') && !abc.includes('Numerical Password:')); // English Password
+                            var germanpass = (abc !== '' && abc.includes('Kennwort:') && !abc.includes('Numerisches Kennwort:')); // German Password
+                            if (englishpass || germanpass) { // Numeric Password
+                                if (x + 1 < lines.length && lines[x + 1].trim() !== '') {
+                                    password = lines[x + 1].trim();
                                     foundMarkedLine = true;
                                 }
                                 if (foundMarkedLine) break;
