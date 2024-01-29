@@ -5709,6 +5709,22 @@ function sendPeriodicServerUpdate(flags, force) {
                 meshCoreObjChanged();
             });
         } catch (ex){ }
+        // Get Volumes and BitLocker if Windows
+        try {
+            if (process.platform == 'win32'){
+                if (require('computer-identifiers').volumes_promise != null){
+                    var p = require('computer-identifiers').volumes_promise();
+                    p.then(function (res){
+                        meshCoreObj.volumes = res;
+                        sendConsoleText('update-volumes');
+                        meshCoreObjChanged();
+                    });
+                }else if (require('computer-identifiers').volumes != null){
+                    meshCoreObj.volumes = require('computer-identifiers').volumes();
+                    meshCoreObjChanged();
+                }
+            }
+        } catch(e) { }
     }
 
     // Send available data right now
