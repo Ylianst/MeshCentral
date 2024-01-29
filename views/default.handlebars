@@ -3425,6 +3425,7 @@
                                 }
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
+                                if (message.event.node.volumes != null) { node.volumes = message.event.node.volumes; }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
@@ -7438,13 +7439,13 @@
                     var bitlocker = [];
                     for (var i in node.volumes) {
                         if (typeof node.volumes[i].protectionStatus !== 'undefined' && node.volumes[i].protectionStatus == 'On'){
-                            bitlocker.push(i + ' - <span style=color:green>' + node.volumes[i].volumeStatus + '</span>');
+                            bitlocker.push('<div style=margin-bottom:2px>' + addKeyLinkConditional(i + ' - <span style=color:green>' + node.volumes[i].volumeStatus + '</span>',"p10showBitlockerKey('"+i+"')", (userinfo.siteadmin == 0xFFFFFFFF)) + '</div>');
                         }else if (typeof node.volumes[i].protectionStatus !== 'undefined'){
-                            bitlocker.push(i + ' - <span style=color:red>' + node.volumes[i].volumeStatus + '</span>');
+                            bitlocker.push('<div style=margin-bottom:2px>' + i + ' - <span style=color:red>' + node.volumes[i].volumeStatus + '</span>' + '</div>');
                         }
                     }
                     if(bitlocker.length > 0){
-                        x += addDeviceAttribute("BitLocker", bitlocker.join(', '));
+                        x += addDeviceAttribute("BitLocker", bitlocker.join(' '));
                     }
                 }
 
@@ -7898,6 +7899,18 @@
             } else {
                 setDialogMode(2, "Power Operation", 3, function() { meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] }); }, "Perform power on?"); // Turn on
             }
+        }
+
+        function p10showBitlockerKey(drive) {
+            if (xxdialogMode) return false;
+            var x = '<div>';
+                x += '<p>BitLocker Identifier For <b>' + drive + ':</b></p>';
+            x += '<p style=user-select:text;font-weight:bold>' + (currentNode.volumes[drive].identifier ? currentNode.volumes[drive].identifier : 'Unknown') + '</p>';
+
+            x += '<p>BitLocker Recovery Password For <b>' + drive + ':</b></p>';
+            x += '<p style=user-select:text;font-weight:bold>' + (currentNode.volumes[drive].recoveryPassword ? currentNode.volumes[drive].recoveryPassword : 'Unknown') + '</p>';
+            x += '</div>'
+            setDialogMode(2, "BitLocker Information", 1, null, x, '');
         }
 
         function p20editDeviceNotify() {
@@ -18675,6 +18688,8 @@
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
+        function addKeyLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <img class=hoverButton src=images/key16.png></span>'; }
+        function addKeyLinkConditional(x, f, c) { if (c) return addKeyLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement('option'); option.text = t; option.value = i; Q(q).add(option); }
         function passwordcheck(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
