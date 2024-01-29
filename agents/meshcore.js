@@ -3798,7 +3798,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4143,7 +4143,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'coreinfoupdate': {
-                sendPeriodicServerUpdate();
+                sendPeriodicServerUpdate(null, true);
+                response = "Core Info Update Requested"
                 break;
             }
             case 'agentmsg': {
@@ -5669,6 +5670,7 @@ function sendNetworkUpdate(force) {
 function sendPeriodicServerUpdate(flags, force) {
     if (meshServerConnectionState == 0) return; // Not connected to server, do nothing.
     if (!flags) { flags = 0xFFFFFFFF; }
+    if (!force) { force = false; }
 
     // If we have a connected MEI, get Intel ME information
     if ((flags & 1) && (amt != null) && (amt.state == 2)) {
@@ -5711,17 +5713,15 @@ function sendPeriodicServerUpdate(flags, force) {
         } catch (ex){ }
         // Get Volumes and BitLocker if Windows
         try {
-            if (process.platform == 'win32'){
-                if (require('computer-identifiers').volumes_promise != null){
-                    var p = require('computer-identifiers').volumes_promise();
-                    p.then(function (res){
-                        meshCoreObj.volumes = res;
-                        meshCoreObjChanged();
-                    });
-                }else if (require('computer-identifiers').volumes != null){
-                    meshCoreObj.volumes = require('computer-identifiers').volumes();
+            if (require('computer-identifiers').volumes_promise != null){
+                var p = require('computer-identifiers').volumes_promise();
+                p.then(function (res){
+                    meshCoreObj.volumes = res;
                     meshCoreObjChanged();
-                }
+                });
+            }else if (require('computer-identifiers').volumes != null){
+                meshCoreObj.volumes = require('computer-identifiers').volumes();
+                meshCoreObjChanged();
             }
         } catch(e) { }
     }
