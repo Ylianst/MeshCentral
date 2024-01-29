@@ -5716,7 +5716,6 @@ function sendPeriodicServerUpdate(flags, force) {
                     var p = require('computer-identifiers').volumes_promise();
                     p.then(function (res){
                         meshCoreObj.volumes = res;
-                        sendConsoleText('update-volumes');
                         meshCoreObjChanged();
                     });
                 }else if (require('computer-identifiers').volumes != null){
