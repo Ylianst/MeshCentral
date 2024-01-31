@@ -438,25 +438,30 @@ function windows_volumes()
                     ret[key].volumeStatus = tokens[1].split('"')[1];
                     ret[key].protectionStatus = tokens[2].split('"')[1];
                     try {
-                        var foundMarkedLine = false;
-                        var password = '';
+                        var foundIDMarkedLine = false, foundMarkedLine = false, identifier = '', password = '';
                         var keychild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ', tokens[0].split('"')[1], ' -Type recoverypassword'], {});
                         keychild.stdout.str = ''; keychild.stdout.on('data', function (c) { this.str += c.toString(); });
                         keychild.waitExit();
                         var lines = keychild.stdout.str.trim().split('\r\n');
-                        for (var x = 0; x < lines.length; x++) {
+                        for (var x = 0; x < lines.length; x++) { // Loop each line
                             var abc = lines[x].trim();
+                            var englishidpass = (abc !== '' && abc.includes('Numerical Password:')); // English ID
+                            var germanidpass = (abc !== '' && abc.includes('Numerisches Kennwort:')); // German ID
                             var englishpass = (abc !== '' && abc.includes('Password:') && !abc.includes('Numerical Password:')); // English Password
                             var germanpass = (abc !== '' && abc.includes('Kennwort:') && !abc.includes('Numerisches Kennwort:')); // German Password
-                            if (englishpass || germanpass) { // Numeric Password
-                                if (x + 1 < lines.length && lines[x + 1].trim() !== '') {
-                                    password = lines[x + 1].trim();
+                            if (englishidpass || germanidpass || englishpass || germanpass) {
+                                var nextline = lines[x + 1].trim();
+                                if (x + 1 < lines.length && (nextline !== '' && nextline.startsWith('ID:'))) {
+                                    identifier = nextline.replace('ID:','').trim();
+                                    foundIDMarkedLine = true;
+                                }else if (x + 1 < lines.length && nextline !== '') {
+                                    password = nextline;
                                     foundMarkedLine = true;
                                 }
-                                if (foundMarkedLine) break;
                             }
                         }
-                        ret[key].recoveryPassword = (foundMarkedLine ? password : '');
+                        ret[key].identifier = (foundIDMarkedLine ? identifier : ''); // Set Bitlocker Identifier
+                        ret[key].recoveryPassword = (foundMarkedLine ? password : ''); // Set Bitlocker Password
                     } catch(ex) { }
                 }
             }
