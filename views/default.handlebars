@@ -7701,8 +7701,22 @@
                 QH('MainComputerState', powerstate);
 
                 // Set the node icon
-                Q('MainComputerImage').setAttribute('src', 'images/icons256-' + node.icon + '-1.png');
-                Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
+                 if (node.agent.id == 4) {
+                        Q('MainComputerImage').setAttribute('src', 'images/icons256-window.png');
+                        Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
+                    }
+                    else if (node.agent.id == 6) {
+                        Q('MainComputerImage').setAttribute('src', 'images/icons256-linux.png');
+                        Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
+                    }
+                    else if (node.agent.id == 29) {
+                        Q('MainComputerImage').setAttribute('src', 'images/icons256-mac.png');
+                        Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
+                    }
+                    else{
+                        Q('MainComputerImage').setAttribute('src', 'images/icons256-' + node.icon + '-1.png');
+                        Q('MainComputerImage').className = ((((!node.conn) || (node.conn == 0)) && (node.mtype != 3))?'gray':'');
+                    }
 
                 // If we are looking at a local non-windows device, enable terminal capability.
                 if ((node.mtype == 3) && (node.agent != null) && (node.agent.id > 4) && (features2 & 0x00000200)) { node.agent.caps = 6; } // 1 = Terminal, 2 = Desktop, 4 = files
