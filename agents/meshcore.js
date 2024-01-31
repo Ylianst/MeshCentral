@@ -2005,11 +2005,10 @@ function getDirectoryInfo(reqpath) {
     if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
         // List all the drives in the root, or the root itself
         var results = null;
-        try { results = fs.readDrivesSync(); } catch (ex) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
+        try { results = fs.readDrivesSync(); } catch (ex) { }
         if (results != null) {
             for (var i = 0; i < results.length; ++i) {
-                var drive = { n: results[i].name, t: 1 };
-                if (results[i].type == 'REMOVABLE') { drive.dt = 'removable'; } // TODO: See if this is USB/CDROM or something else, we can draw icons.
+                var drive = { n: results[i].name, t: 1, dt: results[i].type, s: (results[i].size ? results[i].size : 0), f: (results[i].free ? results[i].free : 0) };
                 response.dir.push(drive);
             }
         }
