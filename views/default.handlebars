@@ -9187,7 +9187,7 @@
                     //desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
-                    desktop.latency.callback = function(ms) { console.log('latency', ms); updateSessionTime(); };
+                    desktop.latency.callback = function(ms) { /* console.log('latency', ms); */ updateSessionTime(); };
                     desktop.contype = 1;
                 } else if (contype == 3) {
                     // Ask for user sessions

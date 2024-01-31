@@ -81,6 +81,17 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.xxOnSocketConnected = function () {
         if (obj.debugmode == 1) { console.log('onSocketConnected'); }
         //obj.debug('Agent Redir Socket Connected');
+        if (!obj.latency.lastSend){ 
+            obj.latency.lastSend = setInterval(function(){
+                if (obj.latency.current == -1) {
+                    clearInterval(obj.latency.lastSend);
+                    obj.latency.lastSend = null;
+                } else {
+                    obj.sendCtrlMsg(JSON.stringify({ctrlChannel:102938,type:"rtt",time:(new Date().getTime())}));
+                }
+            }, 10000);
+        }
+        obj.sendCtrlMsg(JSON.stringify({ctrlChannel:102938,type:"rtt",time:(new Date().getTime())}));
         obj.xxStateChange(2);
     }
 
@@ -97,7 +108,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             if (obj.onMetadataChange) obj.onMetadataChange(obj.metadata);
         } else if ((controlMsg.type == 'rtt') && (typeof controlMsg.time == 'number')) {
             obj.latency.current = (new Date().getTime()) - controlMsg.time;
-            if (obj.latency.callbacks != null) { obj.latency.callback(obj.latency.current); }
+            if (obj.latency.callback != null) { obj.latency.callback(obj.latency.current); }
         } else if (obj.webrtc != null) {
             if (controlMsg.type == 'answer') {
                 obj.webrtc.setRemoteDescription(new RTCSessionDescription(controlMsg), function () { /*console.log('WebRTC remote ok');*/ }, obj.xxCloseWebRTC);
@@ -292,6 +303,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
 
         // Clean up WebRTC
         obj.xxCloseWebRTC();
+        
+        // clear RTT timer
+        obj.latency.current = -1;
 
         //obj.debug('Agent Redir Socket Stopped');
         obj.connectstate = -1;
