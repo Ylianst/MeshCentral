@@ -730,7 +730,7 @@
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
-                            <span id="DeskLatency" title="Desktop Session Latency"></span>
+                            <span id="DeskLatency" style="line-height:22px;width:50px" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" style="line-height:22px" title="Session time"></span>
                             <input id=DeskToolsButton type=button value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span>&nbsp;</span>
@@ -9014,6 +9014,8 @@
             QV('deskkeys', inputAllowed);
             QE('deskkeys', desktop != null);
             QV('DeskTimer', deskState == 3);
+            QV('DeskLatency', deskState == 3);
+            QS('DeskLatency').display = (deskState == 3 ? 'inline-block' : 'none');
 
             // Enable browser clipboard read if supported
             var autoclipboard = ((desktop) && (desktop.contype == 4)) ? desktopsettings.rdpautoclipboard : desktopsettings.autoclipboard;
@@ -9420,9 +9422,10 @@
             // Desktop
             var latencyStr = '', seconds = 0;
             if (desktop && desktop.startTime) {
-                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
-                QH('DeskTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('DeskLatency', latencyStr);
                 // Auto-clipboard
                 if ((((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true))) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                     try {
@@ -9437,6 +9440,7 @@
                 }
             } else {
                 QH('DeskTimer', '');
+                QH('DeskLatency', '');
             }
 
             // Terminal
