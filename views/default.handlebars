@@ -12409,7 +12409,7 @@
 
         function account_manageImageEx2(b, userid) {
             // Send updated image, or 0 if we pressed the delete button
-            meshserver.send({ action: 'updateUserImage', userid: userid, image: (b == 2)?0:Q('p2canvas').toDataURL('image/jpeg', 0.8) });
+            meshserver.send({ action: 'updateUserImage', userid: userid, image: (b == 2)?0:Q('p2canvas').toDataURL(Q('p2file').files[0].type) });
             //meshserver.send({ action: 'updateUserImage', image: (b == 2)?0:Q('p2canvas').toDataURL('image/png', 0.8) });
         }
 
