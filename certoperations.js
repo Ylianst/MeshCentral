@@ -1407,20 +1407,15 @@ module.exports.CertificateOperations = function (parent) {
 
     // Perform any general operation
     obj.acceleratorPerformOperation = function (operation, data, tag, func) {
-        if (acceleratorTotalCount <= 1) {
-            // No accelerators available
-            require(program).processMessage({ action: operation, data: data, tag: tag, func: func });
+        var acc = obj.getAccelerator();
+        if (acc == null) {
+            // Add to pending accelerator workload
+            acceleratorPerformSignaturePushFuncCall++;
+            pendingAccelerator.push({ action: operation, data: data, tag: tag, func: func });
         } else {
-            var acc = obj.getAccelerator();
-            if (acc == null) {
-                // Add to pending accelerator workload
-                acceleratorPerformSignaturePushFuncCall++;
-                pendingAccelerator.push({ action: operation, data: data, tag: tag, func: func });
-            } else {
-                // Send to accelerator now
-                acceleratorPerformSignatureRunFuncCall++;
-                acc.send(acc.x = { action: operation, data: data, tag: tag, func: func });
-            }
+            // Send to accelerator now
+            acceleratorPerformSignatureRunFuncCall++;
+            acc.send(acc.x = { action: operation, data: data, tag: tag, func: func });
         }
     };
 
