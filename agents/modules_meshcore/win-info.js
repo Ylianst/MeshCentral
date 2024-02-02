@@ -228,6 +228,14 @@ function installedApps()
         catch(e)\
         {\
         }\
+        try\
+        {\
+            val.installdate = reg.QueryKey(reg.HKEY.LocalMachine, 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\' + items.subkeys[key], 'InstallDate');\
+            if (val.installdate == '') { delete val.installdate; }\
+        }\
+        catch(e)\
+        {\
+        }\
         result.push(val);\
     }\
     console.log(JSON.stringify(result,'', 1));process.exit();";
