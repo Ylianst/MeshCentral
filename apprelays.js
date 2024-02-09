@@ -1283,16 +1283,14 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') {
-                        // Forward any ping/pong commands to the browser
+                    try { // Forward any ping/pong commands to the browser
                         var cmd = null;
-                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        cmd = JSON.parse(data);
                         if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { obj.ws.send(data); }
                         return;
+                    } catch(ex) { // Relay WS --> SSH instead
+                        if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                     }
-
-                    // Relay WS --> SSH
-                    if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
             obj.wsClient.on('close', function () { parent.parent.debug('relay', 'SSH: Relay websocket closed'); obj.close(); });
@@ -1623,16 +1621,14 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') {
-                        // Forward any ping/pong commands to the browser
+                    try { // Forward any ping/pong commands to the browser
                         var cmd = null;
-                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        cmd = JSON.parse(data);
                         if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { try { obj.ws.send(data); } catch (ex) { console.log(ex); } }
                         return;
+                    } catch (ex) { // Relay WS --> SSH
+                        if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                     }
-
-                    // Relay WS --> SSH
-                    if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
             obj.wsClient.on('close', function () {
@@ -1971,16 +1967,15 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') {
+                    try {
                         // Forward any ping/pong commands to the browser
                         var cmd = null;
-                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        cmd = JSON.parse(data);
                         if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { obj.ws.send(data); }
                         return;
+                    } catch (ex) { // Relay WS --> SSH
+                        if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                     }
-
-                    // Relay WS --> SSH
-                    if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
             obj.wsClient.on('close', function () {
