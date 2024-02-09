@@ -4,6 +4,17 @@
 
 This guide is specifically intended to help users install MeshCentral from start to finish. Once installed, you can take a look at the MeshCentral user’s guide for information on how to configure MeshCentral for your specific use. In this document, we will look at installing MeshCentral on AWS Linux, Raspberry Pi and Ubuntu.
 
+## Docker
+
+<https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral>
+
+```
+docker pull ghcr.io/ylianst/meshcentral:master
+```
+
+!!!warning
+    Do not use the built in mesh update function. Update docker the docker way.
+
 ## Quick Start
 
 For some who want to skip this document entirely, there are quick install scripts that will get a MeshCentral2 instance up and running on Linux in a few minutes. These scripts will pretty much do what this document explains very rapidly. Right now, there are two such scripts available:
