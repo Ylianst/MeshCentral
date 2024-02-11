@@ -352,3 +352,11 @@ wpfhwacceleration (ON|OFF|STATUS)
 ```
 zip (output file name), input1 [, input n]
 ```
+
+## Agent msh options
+
+You can find a full list of options for the agent [here](https://github.com/Ylianst/MeshAgent?tab=readme-ov-file#msh-format)
+
+`skipmaccheck=1`: Will not regenerate the agents nodeid and cause duplication of the agent when the MAC address changes.
+
+You can add options to your .msh on agent install with [this](https://github.com/Ylianst/MeshCentral/blob/15ff7d12a1e4e5d78936b473ea207b7e02b8ff26/meshcentral-config-schema.json#L2504)
