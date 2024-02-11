@@ -1,4 +1,4 @@
-﻿/**
+/**
 * @description MeshCentral MSTSC & SSH relay
 * @author Ylian Saint-Hilaire & Bryan Roe
 * @copyright Intel Corporation 2018-2022
@@ -845,19 +845,21 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                         if (typeof data == 'string') {
                             // Forward any ping/pong commands to the browser
                             var cmd = null;
-                            try { cmd = JSON.parse(data); } catch (ex) { }
-                            if ((cmd != null) && (cmd.ctrlChannel == '102938')) {
-                                if (cmd.type == 'ping') { send(['ping']); }
-                                else if (cmd.type == 'pong') { send(['pong']); }
+                            try {  // Forward any ping/pong commands to the browser
+                                cmd = JSON.parse(data); 
+                                if ((cmd != null) && (cmd.ctrlChannel == '102938')) {
+                                    if (cmd.type == 'ping') { send(['ping']); }
+                                    else if (cmd.type == 'pong') { send(['pong']); }
+                                }
+                                return;
+                            } catch (ex) { // You are not JSON data so just send over relaySocket
+                                obj.wsClient._socket.pause();
+                                try {
+                                    obj.relaySocket.write(data, function () {
+                                        if (obj.wsClient && obj.wsClient._socket) { try { obj.wsClient._socket.resume(); } catch (ex) { console.log(ex); } }
+                                    });
+                                } catch (ex) { console.log(ex); obj.close(); }
                             }
-                            return;
-                        }
-                        obj.wsClient._socket.pause();
-                        try {
-                            obj.relaySocket.write(data, function () {
-                                if (obj.wsClient && obj.wsClient._socket) { try { obj.wsClient._socket.resume(); } catch (ex) { console.log(ex); } }
-                            });
-                        } catch (ex) { console.log(ex); obj.close(); }
                     }
                 });
                 obj.wsClient.on('close', function () { parent.parent.debug('relay', 'RDP: Relay websocket closed'); obj.close(); });
@@ -1281,16 +1283,14 @@ module.exports.CreateSshRelay = function (parent, db, ws, req, args, domain) {
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') {
-                        // Forward any ping/pong commands to the browser
+                    try { // Forward any ping/pong commands to the browser
                         var cmd = null;
-                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        cmd = JSON.parse(data);
                         if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { obj.ws.send(data); }
                         return;
+                    } catch(ex) { // Relay WS --> SSH instead
+                        if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                     }
-
-                    // Relay WS --> SSH
-                    if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
             obj.wsClient.on('close', function () { parent.parent.debug('relay', 'SSH: Relay websocket closed'); obj.close(); });
@@ -1621,16 +1621,14 @@ module.exports.CreateSshTerminalRelay = function (parent, db, ws, req, domain, u
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') {
-                        // Forward any ping/pong commands to the browser
+                    try { // Forward any ping/pong commands to the browser
                         var cmd = null;
-                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        cmd = JSON.parse(data);
                         if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { try { obj.ws.send(data); } catch (ex) { console.log(ex); } }
                         return;
+                    } catch (ex) { // Relay WS --> SSH
+                        if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                     }
-
-                    // Relay WS --> SSH
-                    if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
             obj.wsClient.on('close', function () {
@@ -1969,16 +1967,15 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         ws._socket.resume();
                     }
                 } else {
-                    if (typeof data == 'string') {
+                    try {
                         // Forward any ping/pong commands to the browser
                         var cmd = null;
-                        try { cmd = JSON.parse(data); } catch (ex) { }
+                        cmd = JSON.parse(data);
                         if ((cmd != null) && (cmd.ctrlChannel == '102938') && ((cmd.type == 'ping') || (cmd.type == 'pong'))) { obj.ws.send(data); }
                         return;
+                    } catch (ex) { // Relay WS --> SSH
+                        if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                     }
-
-                    // Relay WS --> SSH
-                    if ((data.length > 0) && (obj.ser != null)) { try { obj.ser.updateBuffer(data); } catch (ex) { console.log(ex); } }
                 }
             });
             obj.wsClient.on('close', function () {
