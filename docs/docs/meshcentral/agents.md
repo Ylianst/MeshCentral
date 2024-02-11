@@ -352,3 +352,7 @@ wpfhwacceleration (ON|OFF|STATUS)
 ```
 zip (output file name), input1 [, input n]
 ```
+
+## Agent msh options
+
+`skipmaccheck=1`: Will not regenerate the agents nodeid and cause duplication of the agent when the MAC address changes.
