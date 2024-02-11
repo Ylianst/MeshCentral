@@ -54,10 +54,11 @@ Chat
 
 Legend
 
-* **_Black color_**: Device is powered on (Intel AMT & agents)
-* **_Purple color_**: Device is in sleep state (Intel AMT agents only)
-* **_Teal color_**: Device is connected through AMT/CIRA, but not powered on (Intel AMT agents only)
-* **_Grey color_**: Device is powered off (Intel AMT & agents)
+* **_Black color_**: Device is Powered On on (Intel AMT & agents)
+* **_Purple color_**: Device is in sleep state such as Hibernating (Intel AMT agents only)
+* **_Teal color_**: Device is connected through AMT/CIRA, but the Power State is UNKNOWN (Intel AMT agents only)
+* **_DarkGreen color_**: Device is connected through AMT/CIRA and is in Soft-Off Power State (Intel AMT agents only)
+* **_Grey color_**: Device is Powered Off/Not Connected To MeshCentral (Intel AMT & agents)
 
 ### Text Links
 
@@ -210,3 +211,60 @@ Note you can show CPU and Memory usage info by clicking the icon in the top righ
 For debugging and communicating with the mesh agent.
 
 It allows JS commands to be issued to the device but also run extra commands from the meshcore. Type `help` for all available options
+
+- 2falock
+- acceleratorsstats
+- agentissues
+- agentstats
+- amtacm
+- amtmanager
+- amtpasswords
+- amtstats
+- args
+- autobackup
+- backupconfig
+- bad2fa
+- badlogins
+- certexpire
+- certhashes
+- closeusersessions
+- cores
+- dbcounters
+- dbstats
+- dispatchtable
+- dropallcira
+- dupagents
+- email
+- emailnotifications
+- firebase
+- heapdump
+- heapdump2
+- help
+- info
+- le
+- lecheck
+- leevents
+- maintenance
+- migrationagents
+- mps
+- mpsstats
+- msg
+- nodeconfig
+- print
+- relays
+- removeinactivedevices
+- resetserver
+- serverupdate
+- setmaxtasks
+- showpaths
+- sms
+- swarmstats
+- tasklimiter
+- trafficdelta
+- trafficstats
+- updatecheck
+- usersessions
+- versions
+- watchdog
+- webpush
+- webstats

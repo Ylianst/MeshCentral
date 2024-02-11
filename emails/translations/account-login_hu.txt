@@ -1,0 +1,4 @@
+[[[SERVERNAME]]] - Bejelentkezés a fiókba
+Az Ön bejelentkezési tokenje: [[[TOKEN]]]
+~
+Ez a token csak egyszer használható, és 5 percig érvényes.

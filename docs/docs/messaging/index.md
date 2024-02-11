@@ -158,6 +158,7 @@ Once enabled, users see the new "CallMeBot" option when trying to enable messagi
   - [Signal Messenger](https://www.callmebot.com/blog/free-api-signal-send-messages/)
   - [Whatsapp](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
   - [Facebook Messenger](https://www.callmebot.com/blog/free-api-facebook-messenger/)
+  - [Telegram](https://www.callmebot.com/blog/telegram-text-messages/)
 
 Once the user has enabled their account, they can cut & paste the CallMeBot URI into MeshCentral to validate their account.
 
@@ -194,8 +195,23 @@ Once setup, the server will offer users the "Pushover" option when setting up me
   }
 }
 ```
-
 No setup is reqired to enable this. When using ntfy, make sure you use a suffisently random topic name so that others can't guess the name and subscribe to it to receive your messages.
+
+For [self-hosting your own ntfy server](https://ntfy.sh/docs/install/) with [ACL support](https://ntfy.sh/docs/config/#access-control)
+
+You can set `host` to the DNS name of your server, `userurl` to the url to provide to users to setup access to your server and `authorization` to the Basic base64 User+Pass authenttication for your server
+
+```json
+{
+  "messaging": {
+    "ntfy": {
+      "host": "myntfyserver.com",
+      "userurl": "https://myntfyserver.com/userhelp",
+      "authorization": "Basic cGhpbDpteXBhc3M="
+    }
+  }
+}
+```
 
 ![](images/MC2-Ntfy1.png)
 
@@ -206,9 +222,26 @@ You can enable the MeshCentral [Zulip](https://zulip.com/) integration with the 
 ```json
 {
   "messaging": {
-    "site": "https://api.zulip.com",
-    "email": "your-bot@zulip.com",
-    "api_key": "your_32_character_api_key"
+    "zulip": {
+      "site": "https://api.zulip.com",
+      "email": "your-bot@zulip.com",
+      "api_key": "your_32_character_api_key"
+    }
+  }
+}
+```
+
+## Slack setup
+
+[Slack](https://slack.com/) integration is achieved by the use of Incoming Webhooks.
+You can get started by following the Slack guide [here](https://api.slack.com/messaging/webhooks) and getting your URL
+
+Once you have your incoming webhooks url, You can enable the [Slack](https://slack.com/) integration with the following config.json section
+
+```json
+{
+  "messaging": {
+    "slack": true
   }
 }
 ```

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://info.meshcentral.com/downloads/meshcentral-config-schema.json",
+  "$schema": "https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json",
   "__comment__": "This is a sample configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
   "settings": {
     "_cert": "myserver.mydomain.com",
@@ -101,6 +101,7 @@
     "_mpsTlsOffload": true,
     "_mpsHighSecurity": true,
     "_no2FactorAuth": true,
+    "_lockAgentDownload": true, 
     "_runOnServerStarted": "c:\\tmp\\mcstart.bat",
     "_runOnServerUpdated": "c:\\tmp\\mcupdate.bat",
     "_runOnServerError": "c:\\tmp\\mcerror.bat",
@@ -183,12 +184,15 @@
       "_maxDeviceView": 1000,
       "_unknownUserRootRedirect": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE",
       "_nightMode": 1,
+      "_scrollToTop": true,
       "_userQuota": 1048576,
       "_meshQuota": 248576,
       "_loginKey": [ "abc", "123" ],
       "_agentKey": [ "abc", "123" ],
       "_ipkvm": false,
       "minify": true,
+      "_hidePowerTimeline": true,
+      "_showNotesPanel": true,
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
       "_userNameIsEmail": true,
@@ -244,6 +248,7 @@
           }
         ]
       },
+      "_assistantTypeAgentInvite": 2,
       "PreconfiguredScripts": [
         {
           "name": "Run NotePad as user",
@@ -289,7 +294,8 @@
         "Upgrade": false,
         "ErrorLog": false,
         "Console": false,
-        "Trace": false
+        "Trace": false,
+        "Config": false
       },
       "_passwordRequirements": {
         "min": 8,
@@ -308,6 +314,7 @@
       "_twoFactorCookieDurationDays": 30,
       "_agentInviteCodes": true,
       "_agentNoProxy": true,
+      "_lockAgentDownload": true, 
       "_geoLocation": true,
       "_novnc": false,
       "_mstsc": true,
@@ -441,7 +448,7 @@
         "Strict-Transport-Security": "max-age=360000",
         "x-frame-options": "SAMEORIGIN"
       },
-      "_agentConfig": [ "webSocketMaskOverride=1", "coreDumpEnabled=1" ],
+      "_agentConfig": [ "coreDumpEnabled=1" ],
       "_assistantConfig": [ "disableUpdate=1" ],
       "_sessionRecording": {
         "_onlySelectedUsers": true,
@@ -583,16 +590,19 @@
     "___tlscertcheck__": "When set to false, the TLS certificate of the SMTP server is not checked.",
     "_tlscertcheck": false,
     "__tlsstrict__": "When set to true, TLS cypher setup is more limited, SSLv2 and SSLv3 are not allowed.",
-    "_tlsstrict": true
+    "_tlsstrict": true,
+    "_emailDelaySeconds": 300
   },
   "_sendgrid": {
     "from": "myemail@myserver.com",
-    "apikey": "***********"
+    "apikey": "***********",
+    "_emailDelaySeconds": 300
   },
   "_sendmail": {
     "newline": "unix",
     "path": "/usr/sbin/sendmail",
-    "_args": [ "-f", "foo@example.com" ]
+    "_args": [ "-f", "foo@example.com" ],
+    "_emailDelaySeconds": 300
   },
   "_sms": {
     "provider": "twilio",
@@ -619,11 +629,18 @@
     "_telegram": {
       "apiid": 0,
       "apihash": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "useWSS": "false",
+      "connectionRetries": 60
     },
     "_discord": {
       "serverurl": "https://discord.gg/xxxxxxxxx",
       "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "_ntfy": {
+      "host": "https://[my]ntfy.sh",
+      "userurl": "https://[my]ntfy.sh/userhelp",
+      "authorization": "Basic xxxxxxxxxxxxxxxxxxxx" 
     }
   }
 }

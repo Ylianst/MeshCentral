@@ -125,7 +125,7 @@ function parseUriArgs(decodeUrl) {
         name = arg.substring(0, i);
         r[name] = arg.substring(i + 1);
         if (decodeUrl) { r[name] = decodeURIComponent(arg.substring(i + 1)); }
-        if (!isSafeString(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+        if (!isSafeString2(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
     }
     return r;
 }
@@ -151,3 +151,29 @@ function check_webp_feature(feature, callback) {
     };
     img.src = 'data:image/webp;base64,' + kTestImages[feature];
 }
+
+// camelCase converter for JSON
+function jsonToCamel(o) {
+    var newO, origKey, newKey, value
+    if (o instanceof Array) {
+      return o.map(function(value) {
+          if (typeof value === "object") {
+            value = jsonToCamel(value)
+          }
+          return value
+      })
+    } else {
+      newO = {}
+      for (origKey in o) {
+        if (o.hasOwnProperty(origKey)) {
+          newKey = (origKey.charAt(0).toLowerCase() + origKey.slice(1) || origKey).toString()
+          value = o[origKey]
+          if (value instanceof Array || (value !== null && value.constructor === Object)) {
+            value = jsonToCamel(value)
+          }
+          newO[newKey] = value
+        }
+      }
+    }
+    return newO
+  }

@@ -274,7 +274,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
             } else {
                 // Direct connect with TLS
-                var options = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
+                var options = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
                 if (obj.xtlsMethod != 0) { options.secureProtocol = 'TLSv1_method'; }
                 if (obj.xtlsoptions) {
                     if (obj.xtlsoptions.ca) { options.ca = obj.xtlsoptions.ca; }

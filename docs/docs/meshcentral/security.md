@@ -17,3 +17,13 @@ Adjust these items in your `config.json`
 ```
 
 ![](images/rate_limiting_logins.png)
+
+## Disabling TLS 1.0/1.1 for AMT
+
+```json
+{
+  "settings": {
+    "mpshighsecurity": true
+  }
+}
+```

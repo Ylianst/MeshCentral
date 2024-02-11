@@ -20,6 +20,8 @@ nav:
       - 'Tokens': 'meshcentral/tokens.md'
       - 'FAQ': 'meshcentral/faq.md'
       - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
+      - 'Messaging': 'messaging/index.md'
+      - 'Customization': 'meshcentral/customization.md'
       
   - Design and Architecture:
     - design/index.md
@@ -42,7 +44,7 @@ nav:
 
 site_description: "A remote monitoring and management tool"
 site_author: "Ylianst"
-site_url: "https://git.meshcentral.com/"
+site_url: "https://ylianst.github.io/MeshCentral/"
 
 dev_addr: "0.0.0.0:8010"
 

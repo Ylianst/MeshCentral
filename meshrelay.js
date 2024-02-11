@@ -564,7 +564,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 } else {
                     ws._socket.pause(); // Hold traffic until the other connection
                     parent.parent.debug('relay', 'Relay holding: ' + obj.id + ' (' + obj.req.clientIp + ') ' + (obj.authenticated ? 'Authenticated' : ''));
-                    parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 60000) };
+                    parent.wsrelays[obj.id] = { peer1: obj, state: 1, timeout: setTimeout(closeBothSides, 15000) };
                 }
 
                 // Check if a peer server has this connection
@@ -741,32 +741,34 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     var logfile = ws.logfile;
                     delete ws.logfile;
                     if (peer.ws) { delete peer.ws.logfile; }
-                    recordingEntry(logfile, 3, 0, 'MeshCentralMCREC', function (logfile, tag) {
-                        parent.parent.fs.close(logfile.fd);
+                    setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
+                        recordingEntry(logfile, 3, 0, 'MeshCentralMCREC', function (logfile, tag) {
+                            parent.parent.fs.closeSync(logfile.fd);
 
-                        // Now that the recording file is closed, check if we need to index this file.
-                        if (domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
+                            // Now that the recording file is closed, check if we need to index this file.
+                            if (domain.sessionrecording.index && domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
 
-                        // Compute session length
-                        var sessionLength = null;
-                        if (tag.logfile.startTime != null) { sessionLength = Math.round((Date.now() - tag.logfile.startTime) / 1000); }
+                            // Compute session length
+                            var sessionLength = null;
+                            if (tag.logfile.startTime != null) { sessionLength = Math.round((Date.now() - tag.logfile.startTime) / 1000); }
 
-                        // Add a event entry about this recording
-                        var basefile = parent.parent.path.basename(tag.logfile.filename);
-                        var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: tag.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: tag.logfile.size };
-                        if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
-                        var xprotocol = (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p);
-                        if ((xprotocol == null) && (logfile.text == 2)) { xprotocol = 200; }
-                        if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
-                        var mesh = parent.meshes[tag.logfile.meshid];
-                        if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
-                        if (tag.logfile.startTime) { event.startTime = tag.logfile.startTime; event.lengthTime = sessionLength; }
-                        if (tag.logfile.name) { event.name = tag.logfile.name; }
-                        if (tag.logfile.icon) { event.icon = tag.logfile.icon; }
-                        parent.parent.DispatchEvent(['*', 'recording', tag.logfile.nodeid, tag.logfile.meshid], obj, event);
+                            // Add a event entry about this recording
+                            var basefile = parent.parent.path.basename(tag.logfile.filename);
+                            var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: tag.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: tag.logfile.size };
+                            if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
+                            var xprotocol = (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p);
+                            if ((xprotocol == null) && (logfile.text == 2)) { xprotocol = 200; }
+                            if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
+                            var mesh = parent.meshes[tag.logfile.meshid];
+                            if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
+                            if (tag.logfile.startTime) { event.startTime = tag.logfile.startTime; event.lengthTime = sessionLength; }
+                            if (tag.logfile.name) { event.name = tag.logfile.name; }
+                            if (tag.logfile.icon) { event.icon = tag.logfile.icon; }
+                            parent.parent.DispatchEvent(['*', 'recording', tag.logfile.nodeid, tag.logfile.meshid], obj, event);
 
-                        cleanUpRecordings();
-                    }, { ws: ws, pws: peer.ws, logfile: logfile });
+                            cleanUpRecordings();
+                        }, { ws: ws, pws: peer.ws, logfile: logfile });
+                    },5000);
                 }
 
                 try { ws.close(); } catch (ex) { }

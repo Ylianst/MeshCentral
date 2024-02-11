@@ -159,7 +159,7 @@ function linux_memUtilization()
             case 'MemTotal:':
                 ret.total = parseInt(tokens[tokens.length - 2]);
                 break;
-            case 'MemFree:':
+            case 'MemAvailable:':
                 ret.free = parseInt(tokens[tokens.length - 2]);
                 break;
         }
@@ -225,17 +225,23 @@ function macos_memUtilization()
 function windows_thermals()
 {
     var ret = [];
-    child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', '/namespace:\\\\root\\wmi', 'PATH', 'MSAcpi_ThermalZoneTemperature', 'get', 'CurrentTemperature']);
+    child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', '/namespace:\\\\root\\wmi', 'PATH', 'MSAcpi_ThermalZoneTemperature', 'get', 'CurrentTemperature,InstanceName', '/FORMAT:CSV']);
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
     child.waitExit();
-
-    if(child.stdout.str.trim!='')
+    if(child.stdout.str.trim()!='')
     {
         var lines = child.stdout.str.trim().split('\r\n');
+        var keys = lines[0].trim().split(',');
         for (var i = 1; i < lines.length; ++i)
         {
-            if (lines[i].trim() != '') { ret.push(((parseFloat(lines[i]) / 10) - 273.15).toFixed(2)); }
+            var obj = {};
+            var tokens = lines[i].trim().split(',');
+            for (var key = 0; key < keys.length; ++key)
+            {
+                if (tokens[key]) {  obj[keys[key]] = key==1 ? ((parseFloat(tokens[key]) / 10) - 273.15).toFixed(2) : tokens[key]; }
+            }
+            ret.push(obj);
         }
     }
     return (ret);
@@ -243,13 +249,35 @@ function windows_thermals()
 
 function linux_thermals()
 {
+    var ret = [];
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.stdin.write("cat /sys/class/thermal/thermal_zone*/temp | awk '{ print $0 / 1000 }'\nexit\n");
+    child.stdin.write("for folder in /sys/class/thermal/thermal_zone*/; do [ -e \"$folder/temp\" ] && echo \"$(cat \"$folder/temp\"),$(cat \"$folder/type\")\"; done\nexit\n");
     child.waitExit();
-    var ret = child.stdout.str.trim().split('\n');
-    if (ret.length == 1 && ret[0] == '') { ret = []; }
+    if(child.stdout.str.trim()!='')
+    {
+        var lines = child.stdout.str.trim().split('\n');
+        for (var i = 0; i < lines.length; ++i)
+        {
+            var line = lines[i].trim().split(',');
+            ret.push({CurrentTemperature: (parseFloat(line[0])/1000), InstanceName: line[1]});
+        }
+    }
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write("for mon in /sys/class/hwmon/hwmon*; do for label in \"$mon\"/temp*_label; do if [ -f $label ]; then echo $(cat \"$label\")___$(cat \"${label%_*}_input\"); fi; done; done;\nexit\n");
+    child.waitExit();
+    if(child.stdout.str.trim()!='')
+    {
+        var lines = child.stdout.str.trim().split('\n');
+        for (var i = 0; i < lines.length; ++i)
+        {
+            var line = lines[i].trim().split('___');
+            ret.push({ CurrentTemperature: (parseFloat(line[1])/1000), InstanceName: line[0] });
+        }
+    }
     return (ret);
 }
 
@@ -261,7 +289,6 @@ function macos_thermals()
     child.stderr.on('data', function () { });
     child.stdin.write('powermetrics --help | grep SMC\nexit\n');
     child.waitExit();
-    
     if (child.stdout.str.trim() != '')
     {
         child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -273,7 +300,7 @@ function macos_thermals()
             {
                 if (tokens[i].split(' die temperature: ').length > 1)
                 {
-                    ret.push(tokens[i].split(' ')[3]);
+                    ret.push({CurrentTemperature: tokens[i].split(' ')[3], InstanceName: tokens[i].split(' ')[0]});
                     this.parent.kill();
                 }
             }

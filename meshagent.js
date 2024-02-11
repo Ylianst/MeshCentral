@@ -1920,6 +1920,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (!device.wsc) { device.wsc = {}; }
                     if (JSON.stringify(device.wsc) != JSON.stringify(command.wsc)) { /*changes.push('Windows Security Center status');*/ device.wsc = command.wsc; change = 1; log = 1; }
                 }
+                if (command.defender != null) { // Defender For Windows Server
+                    if (!device.defender) { device.defender = {}; }
+                    if (JSON.stringify(device.defender) != JSON.stringify(command.defender)) { /*changes.push('Defender status');*/ device.defender = command.defender; change = 1; log = 1; }
+                }
 
                 // Push Messaging Token
                 if ((command.pmt != null) && (typeof command.pmt == 'string') && (device.pmt != command.pmt)) {
@@ -1934,6 +1938,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // In WAN mode, the hostname of a computer is not important. Don't log hostname changes.
                     if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
                     // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
+                }
+
+                // Volumes and BitLocker
+                if(command.volumes != null){
+                    if(!device.volumes) { device.volumes = {}; }
+                    if (JSON.stringify(device.volumes) != JSON.stringify(command.volumes)) { /*changes.push('Volumes status');*/ device.volumes = command.volumes; change = 1; log = 1; }
                 }
 
                 // If there are changes, event the new device

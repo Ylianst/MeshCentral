@@ -1,0 +1,22 @@
+[[[SERVERNAME]]] - Eszköz értesítés
+~<area-header>
+A következő eszközök kapcsolati állapota megváltozott.
+~</area-header>
+~<area-connections>
+~
+Csatlakozott eszközök:
+~
+~[[[CONNECTIONS]]]
+~
+~</area-connections>
+~<area-disconnections>
+~
+Lecsatlakozott eszközök:
+~
+~[[[DISCONNECTIONS]]]
+~
+~</area-disconnections>
+~<area-footer>
+
+A leiratkozáshoz lépjen erre a linkre az üzenet kézhezvételétől számított 1 órán belül: [[[SERVERURL]]][[UNSUBSCRIBELINK]]]
+~</area-footer>

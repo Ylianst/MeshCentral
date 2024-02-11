@@ -26,6 +26,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
     obj.mailCookieEncryptionKey = null;
     obj.verifyemail = false;
     obj.domain = domain;
+    obj.emailDelay = 5 * 60 * 1000; // Default of 5 minute email delay.
     //obj.mailTemplates = {};
     const sortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
     const constants = (obj.parent.crypto.constants ? obj.parent.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
@@ -41,8 +42,10 @@ module.exports.CreateMeshMail = function (parent, domain) {
         obj.sendGridServer = require('@sendgrid/mail');
         obj.sendGridServer.setApiKey(obj.config.sendgrid.apikey);
         if (obj.config.sendgrid.verifyemail == true) { obj.verifyemail = true; }
+        if ((typeof obj.config.sendgrid.emaildelayseconds == 'number') && (obj.config.sendgrid.emaildelayseconds > 0)) { obj.emailDelay = obj.config.sendgrid.emaildelayseconds * 1000; }
     } else if (obj.config.smtp != null) {
         // Setup SMTP mail server
+        if ((typeof obj.config.smtp.emaildelayseconds == 'number') && (obj.config.smtp.emaildelayseconds > 0)) { obj.emailDelay = obj.config.smtp.emaildelayseconds * 1000; }
         if (obj.config.smtp.name == 'console') {
             // This is for debugging, the mails will be displayed on the console
             obj.smtpServer = 'console';
@@ -70,6 +73,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
         }
     } else if (obj.config.sendmail != null) {
         // Setup Sendmail
+        if ((typeof obj.config.sendmail.emaildelayseconds == 'number') && (obj.config.sendmail.emaildelayseconds > 0)) { obj.emailDelay = obj.config.sendmail.emaildelayseconds * 1000; }
         const nodemailer = require('nodemailer');
         var options = { sendmail: true };
         if (typeof obj.config.sendmail.newline == 'string') { options.newline = obj.config.sendmail.newline; }
@@ -571,7 +575,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
     }
 
     //
-    // Device connetion and disconnection notifications
+    // Device connection and disconnection notifications
     //
 
     obj.deviceNotifications = {}; // UserId --> { timer, nodes: nodeid --> connectType }
@@ -584,7 +588,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
         // Add the user and start a timer
         if (obj.deviceNotifications[user._id] == null) {
             obj.deviceNotifications[user._id] = { nodes: {} };
-            obj.deviceNotifications[user._id].timer = setTimeout(function () { sendDeviceNotifications(user._id); }, 5 * 60 * 1000); // 5 minute before email is sent
+            obj.deviceNotifications[user._id].timer = setTimeout(function () { sendDeviceNotifications(user._id); }, obj.emailDelay);
         }
 
         // Add the device
@@ -648,7 +652,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
         // Add the user and start a timer
         if (obj.deviceNotifications[user._id] == null) {
             obj.deviceNotifications[user._id] = { nodes: {} };
-            obj.deviceNotifications[user._id].timer = setTimeout(function () { sendDeviceNotifications(user._id); }, 5 * 60 * 1000); // 5 minute before email is sent
+            obj.deviceNotifications[user._id].timer = setTimeout(function () { sendDeviceNotifications(user._id); }, obj.emailDelay);
         }
 
         // Add the device

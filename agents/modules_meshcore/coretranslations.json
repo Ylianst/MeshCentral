@@ -135,12 +135,12 @@
     "allow": "Permitir",
     "deny": "Negar",
     "autoAllowForFive": "Aceita automaticamente todas as conexões pelos próximos 5 minutos",
-    "terminalConsent": "{0} solicitando acesso ao terminal remoto. Garantir acesso?",
-    "desktopConsent": "{0} solicitando acesso à área de trabalho remota. Garantir acesso?",
-    "fileConsent": "{0} solicitando acesso remoto ao arquivo. Garantir acesso?",
+    "terminalConsent": "{0} está a pedir acesso ao terminal remoto. Conceder acesso?",
+    "desktopConsent": "{0} está a pedir acesso à área de trabalho remota. Conceder acesso?",
+    "fileConsent": "{0} está a pedir acesso remoto aos ficheiros. Conceder acesso?",
     "terminalNotify": "{0} iniciou uma sessão de terminal remoto.",
     "desktopNotify": "{0} iniciou uma sessão de área de trabalho remota.",
-    "fileNotify": "{0} iniciou uma sessão de arquivo remoto.",
+    "fileNotify": "{0} iniciou uma sessão de ficheiro remoto.",
     "privacyBar": "Compartilhando área de trabalho com: {0}"
   },
   "ru": {
@@ -250,5 +250,17 @@
     "desktopNotify": "{0} je započeo sesiju udaljene radne površine.",
     "fileNotify": "{0} je započeo sesiju udaljenog fajla.",
     "privacyBar": "Dijeljenje radne površine sa: {0}"
+  },
+  "hu": {
+    "allow": "Engedélyezés",
+    "deny": "Elutasítás",
+    "autoAllowForFive": "Csatlakozások automatikus elfogadása a következő 5 percben",
+    "terminalConsent": "{0} távoli parancssor,terminál hozzáférést kér. Engedélyezi a hozzáférést?",
+    "desktopConsent": "{0} távoli asztali hozzáférést kér. Engedélyezi a hozzáférést?",
+    "fileConsent": "{0} távoli fájlhozzáférést kér. Engedélyezi a hozzáférést?",
+    "terminalNotify": "{0} távoli parancssor munkamenetet indított.",
+    "desktopNotify": "{0} távoli asztali munkamenetet indított.",
+    "fileNotify": "{0} távoli fájlmunkamenetet indított.",
+    "privacyBar": "Asztal megosztás aktív: {0} felhasználóval"
   }
 }

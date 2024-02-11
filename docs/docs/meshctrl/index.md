@@ -1,6 +1,6 @@
 # MeshCtrl
 
-MeshCmd Guide [as .pdf](https://meshcentral.com/info/docs/MeshCtrlUsersGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCtrl User's Guide v0.0.1.odt?raw=true)
+MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCtrlUsersGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCtrl User's Guide v0.0.1.odt?raw=true)
 
 ## Video Walkthru
 
@@ -274,6 +274,7 @@ devicesharing
 devicepower
 indexagenterrorlog
 agentdownload
+report
 ```
 
 You can get this list by just running MeshCtrl without any argument and can get more information on each action by typing “meshctrl help [action]” 

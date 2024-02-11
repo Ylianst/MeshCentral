@@ -46,7 +46,7 @@
                 <div id=TermParent style="display:none">
                     <pre id=Term></pre>
                 </div>
-                <div id=XTermParent style="display:none;overflow:scroll;max-height:calc(100vh - 58px);height:calc(100vh - 58px)">
+                <div id=XTermParent style="display:none;overflow:scroll;max-height:calc(100vh - 58px);height:calc(100vh - 58px);text-align:left">
                 </div>
                 <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
@@ -1108,10 +1108,10 @@
 
         function writeXTerm(data) {
             if (term == null) return;
-            if (typeof data == 'string') {
-                term.writeUtf8(data);
+            if (term.writeUtf8) {
+                if (typeof data == 'string') { term.writeUtf8(data); } else { term.writeUtf8(new Uint8Array(data)); }
             } else {
-                term.writeUtf8(new Uint8Array(data));
+                if (typeof data == 'string') { term.write(data); } else { term.write(new Uint8Array(data)); }
             }
         }
 

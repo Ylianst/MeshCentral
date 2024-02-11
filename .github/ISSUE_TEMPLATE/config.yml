@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Question
+    url: https://github.com/Ylianst/MeshCentral/discussions
+    about: Ask a question in discussions.
   - name: Unofficial Discord Server
     url: https://discord.gg/8wHC6ASWAc
     about: Please ask here for support questions.

@@ -768,13 +768,13 @@ module.exports.CreateDB = function (parent, func) {
         } else if (parent.args.mysql) {
             // Use MySQL
             obj.databaseType = 5;
-            var tempDatastore = require('mysql').createPool(connectionObject);
+            var tempDatastore = require('mysql2').createPool(connectionObject);
             tempDatastore.query('CREATE DATABASE IF NOT EXISTS ' + dbname, function (error) {
                 if (error != null) {
                     console.log('Auto-create database failed: ' + error);
                 }
                 connectionObject.database = dbname;
-                Datastore = require('mysql').createPool(connectionObject);
+                Datastore = require('mysql2').createPool(connectionObject);
                 createTablesIfNotExist(dbname);
             });
             setTimeout(function () { tempDatastore.end(); }, 2000);
@@ -1244,7 +1244,11 @@ module.exports.CreateDB = function (parent, func) {
                     var docs = [];
                     for (var i in results) {
                         if (results[i].doc) {
-                            docs.push(JSON.parse(results[i].doc));
+                            if (typeof results[i].doc == 'string') {
+                                docs.push(JSON.parse(results[i].doc));
+                            } else {
+                                docs.push(results[i].doc);
+                            }
                         } else if ((results.length == 1) && (results[i]['COUNT(doc)'] != null)) {
                             // This is a SELECT COUNT() operation
                             docs = results[i]['COUNT(doc)'];
@@ -1312,7 +1316,16 @@ module.exports.CreateDB = function (parent, func) {
                         .catch(function (err) { conn.release(); if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
                 })
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
-        } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL
+        } else if (obj.databaseType == 5) { // MySQL
+            Datastore.getConnection(function(err, connection) {
+                if (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } return; }
+                var Promises = [];
+                for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(connection.promise().query(queries[i])); } else { Promises.push(connection.promise().query(queries[i][0], queries[i][1])); } }
+                Promise.all(Promises)
+                    .then(function (error, results, fields) { connection.release(); if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
+                    .catch(function (error, results, fields) { connection.release(); if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
+            });
+        } else if (obj.databaseType == 6) { // Postgres
             var Promises = [];
             for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.query(queries[i])); } else { Promises.push(Datastore.query(queries[i][0], queries[i][1])); } }
             Promise.all(Promises)
@@ -1447,7 +1460,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveMeshDocuments = function (id, func) { sqlDbQuery('DELETE FROM main WHERE extra = $1', [id], function () { sqlDbQuery('DELETE FROM main WHERE id = $1', ['nt' + id], func); }); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { sqlDbQuery('DELETE FROM main WHERE domain = $1', [domain], func); };
-            obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
+            obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) {
                 sqlDbQuery('SELECT doc FROM main WHERE (type = \'node\') AND (extraex IS NOT NULL)', null, function (err, docs) {
@@ -1470,7 +1483,15 @@ module.exports.CreateDB = function (parent, func) {
             obj.StoreEvent = function (event, func) {
                 obj.dbCounters.eventsSet++;
                 sqlDbQuery('INSERT INTO events VALUES (NULL, $1, $2, $3, $4, $5, $6) RETURNING id', [event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, JSON.stringify(event)], function (err, docs) {
-                    if ((err == null) && (docs[0].id)) { for (var i in event.ids) { if (event.ids[i] != '*') { sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs[0].id, event.ids[i]]); } } }
+                    if(func){ func(); }
+                    if ((err == null) && (docs[0].id)) {
+                        for (var i in event.ids) {
+                            if (event.ids[i] != '*') {
+                                obj.pendingTransfer++;
+                                sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs[0].id, event.ids[i]], function(){ if(func){ func(); } });
+                            }
+                        }
+                    }
                 });
             };
             obj.GetEvents = function (ids, domain, func) {
@@ -1553,12 +1574,12 @@ module.exports.CreateDB = function (parent, func) {
 
             // Plugin operations
             if (obj.pluginsActive) {
-                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUES (NULL, $1)', [JSON.stringify(value)], func); }; // Add a plugin
-                obj.getPlugins = function (func) { sqlDbQuery('SELECT doc FROM plugin', null, func); }; // Get all plugins
-                obj.getPlugin = function (id, func) { sqlDbQuery('SELECT doc FROM plugin WHERE id = $1', [id], func); }; // Get plugin
+                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUES (NULL, $1)', [JSON.stringify(plugin)], func); }; // Add a plugin
+                obj.getPlugins = function (func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin', null, func); }; // Get all plugins
+                obj.getPlugin = function (id, func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin WHERE id = $1', [id], func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
-                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('INSERT INTO plugin VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', [id, JSON.stringify(args)], func); };
+                obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE plugin SET doc=JSON_SET(doc,"$.status",$1) WHERE id=$2', [status,id], func); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc=json_patch(doc,$1) WHERE id=$2', [JSON.stringify(args),id], func); };
             }
         } else if (obj.databaseType == 7) {
             // Database actions on the main collection. AceBase: https://github.com/appy-one/acebase
@@ -1629,7 +1650,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveMeshDocuments = function (id) { obj.file.query('meshcentral').filter('meshid', '==', id).remove(); obj.file.ref('meshcentral').child(encodeURIComponent('nt' + id)).remove(); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.query('meshcentral').filter('domain', '==', domain).remove().then(function () { if (func) { func(); } }); };
-            obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
+            obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { obj.file.query('meshcentral').filter('type', '==', 'node').filter('host', 'exists').filter('host', '!=', null).filter('intelamt', 'exists').get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { obj.file.query('meshcentral').filter('type', '==', 'node').filter('domain', '==', domainid).filter('mtype', '!=', mtype).filter('intelamt.uuid', '==', uuid).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
@@ -1871,7 +1892,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveMeshDocuments = function (id, func) { sqlDbQuery('DELETE FROM main WHERE extra = $1', [id], function () { sqlDbQuery('DELETE FROM main WHERE id = $1', ['nt' + id], func); }); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { sqlDbQuery('DELETE FROM main WHERE domain = $1', [domain], func); };
-            obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
+            obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM main WHERE (type = \'node\') AND (extraex IS NOT NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null) { r.push(docs[i]); } } } func(err, r); }); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extraex = $2', [domainid, 'uuid/' + uuid], func); };
@@ -1882,7 +1903,14 @@ module.exports.CreateDB = function (parent, func) {
             obj.StoreEvent = function (event, func) {
                 obj.dbCounters.eventsSet++;
                 sqlDbQuery('INSERT INTO events VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING id', [event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, event], function (err, docs) {
-                    if (docs.id) { for (var i in event.ids) { if (event.ids[i] != '*') { sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs.id, event.ids[i]]); } } }
+                    if (docs.id) {
+                        for (var i in event.ids) {
+                            if (event.ids[i] != '*') {
+                                obj.pendingTransfer++;
+                                sqlDbQuery('INSERT INTO eventids VALUES ($1, $2)', [docs.id, event.ids[i]], function(){ if(func){ func(); } });
+                            }
+                        }
+                    }
                 });
             };
             obj.GetEvents = function (ids, domain, func) {
@@ -1965,12 +1993,12 @@ module.exports.CreateDB = function (parent, func) {
 
             // Plugin operations
             if (obj.pluginsActive) {
-                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUES (DEFAULT, $2)', [value], func); }; // Add a plugin
-                obj.getPlugins = function (func) { sqlDbQuery('SELECT doc FROM plugin', null, func); }; // Get all plugins
-                obj.getPlugin = function (id, func) { sqlDbQuery('SELECT doc FROM plugin WHERE id = $1', [id], func); }; // Get plugin
+                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUES (DEFAULT, $1)', [plugin], func); }; // Add a plugin
+                obj.getPlugins = function (func) { sqlDbQuery("SELECT doc::jsonb || ('{\"_id\":' || plugin.id || '}')::jsonb as doc FROM plugin", null, func); }; // Get all plugins
+                obj.getPlugin = function (id, func) { sqlDbQuery("SELECT doc::jsonb || ('{\"_id\":' || plugin.id || '}')::jsonb as  doc FROM plugin WHERE id = $1", [id], func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
-                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('INSERT INTO plugin VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', [id, args], func); };
+                obj.setPluginStatus = function (id, status, func) { sqlDbQuery("UPDATE plugin SET doc= jsonb_set(doc::jsonb,'{status}',$1) WHERE id=$2", [status,id], func); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc= doc::jsonb || ($1) WHERE id=$2', [args,id], func); };
             }
         } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
             // Database actions on the main collection (MariaDB or MySQL)
@@ -2036,7 +2064,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveMeshDocuments = function (id, func) { sqlDbQuery('DELETE FROM main WHERE extra = ?', [id], function () { sqlDbQuery('DELETE FROM main WHERE id = ?', ['nt' + id], func); } ); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { sqlDbQuery('DELETE FROM main WHERE domain = ?', [domain], func); };
-            obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
+            obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM main WHERE (type = "node") AND (extraex IS NOT NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null) { r.push(docs[i]); } } } func(err, r); }); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extraex = ?', [domainid, 'uuid/' + uuid], func); };
@@ -2135,12 +2163,12 @@ module.exports.CreateDB = function (parent, func) {
 
             // Plugin operations
             if (obj.pluginsActive) {
-                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUE (?, ?)', [null, JSON.stringify(value)], func); }; // Add a plugin
-                obj.getPlugins = function (func) { sqlDbQuery('SELECT doc FROM plugin', null, func); }; // Get all plugins
-                obj.getPlugin = function (id, func) { sqlDbQuery('SELECT doc FROM plugin WHERE id = ?', [id], func); }; // Get plugin
+                obj.addPlugin = function (plugin, func) { sqlDbQuery('INSERT INTO plugin VALUE (?, ?)', [null, JSON.stringify(plugin)], func); }; // Add a plugin
+                obj.getPlugins = function (func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin', null, func); }; // Get all plugins
+                obj.getPlugin = function (id, func) { sqlDbQuery('SELECT JSON_INSERT(doc, "$._id", id) as doc FROM plugin WHERE id = ?', [id], func); }; // Get plugin
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = ?', [id], func); }; // Delete plugin
-                obj.setPluginStatus = function (id, status, func) { obj.getPlugin(id, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].status = status; obj.updatePlugin(id, docs[0], func); } }); };
-                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('REPLACE INTO plugin VALUE (?, ?)', [id, JSON.stringify(args)], func); };
+                obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_SET(doc,"$.status",?) WHERE id=?', [status,id], func); };
+                obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_MERGE_PATCH(doc,?) WHERE id=?', [JSON.stringify(args),id], func); };
             }
         } else if (obj.databaseType == 3) {
             // Database actions on the main collection (MongoDB)
@@ -2287,7 +2315,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveMeshDocuments = function (id) { obj.file.deleteMany({ meshid: id }, { multi: true }); obj.file.deleteOne({ _id: 'nt' + id }); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.deleteMany({ domain: domain }, { multi: true }, func); };
-            obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
+            obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }).toArray(func); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { obj.file.find({ type: 'node', domain: domainid, mtype: mtype, 'intelamt.uuid': uuid }).toArray(func); };
@@ -2490,7 +2518,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.RemoveMeshDocuments = function (id) { obj.file.remove({ meshid: id }, { multi: true }); obj.file.remove({ _id: 'nt' + id }); };
             obj.MakeSiteAdmin = function (username, domain) { obj.Get('user/' + domain + '/' + username, function (err, docs) { if ((err == null) && (docs.length == 1)) { docs[0].siteadmin = 0xFFFFFFFF; obj.Set(docs[0]); } }); };
             obj.DeleteDomain = function (domain, func) { obj.file.remove({ domain: domain }, { multi: true }, func); };
-            obj.SetUser = function (user) { if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
+            obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { obj.file.find({ type: 'node', host: { $exists: true, $ne: null }, intelamt: { $exists: true } }, func); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { obj.file.find({ type: 'node', domain: domainid, mtype: mtype, 'intelamt.uuid': uuid }, func); };
@@ -3064,39 +3092,37 @@ module.exports.CreateDB = function (parent, func) {
 
             // Upload to the WebDAV folder
             function performWebDavUpload(client, filepath) {
-                var fileStream = require('fs').createReadStream(filepath);
-                fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
-                fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
-                fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath)));
-                if (func) { func('Uploading using WebDAV...'); }
+                require('fs').stat(filepath, function(err,stat){
+                    var fileStream = require('fs').createReadStream(filepath);
+                    fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
+                    fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
+                    fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath), { headers: { "Content-Length": stat.size } }));
+                    if (func) { func('Uploading using WebDAV...'); }
+                });
             }
 
             if (func) { func('Attempting WebDAV upload...'); }
             const { createClient } = require('webdav');
-            const client = createClient(parent.config.settings.autobackup.webdav.url, { username: parent.config.settings.autobackup.webdav.username, password: parent.config.settings.autobackup.webdav.password });
-            var directoryItems = client.getDirectoryContents('/');
-            directoryItems.then(
-                function (files) {
-                    var folderFound = false;
-                    for (var i in files) { if ((files[i].basename == webdavfolderName) && (files[i].type == 'directory')) { folderFound = true; } }
-                    if (folderFound == false) {
-                        client.createDirectory(webdavfolderName).then(function (a) {
-                            if (a.statusText == 'Created') {
-                                if (func) { func('WebDAV folder created'); }
-                                performWebDavUpload(client, filename);
-                            } else {
-                                if (func) { func('WebDAV (createDirectory) status: ' + a.statusText); }
-                            }
-                        }).catch(function (err) {
-                            if (func) { func('WebDAV (createDirectory) error: ' + err); }
-                        });
-                    } else {
-                        performWebDavCleanup(client);
+            const client = createClient(parent.config.settings.autobackup.webdav.url, {
+                username: parent.config.settings.autobackup.webdav.username,
+                password: parent.config.settings.autobackup.webdav.password,
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity
+            });
+            client.exists(webdavfolderName).then(function(a){
+                if(a){
+                    performWebDavCleanup(client);
+                    performWebDavUpload(client, filename);
+                }else{
+                    client.createDirectory(webdavfolderName, {recursive: true}).then(function (a) {
+                        if (func) { func('WebDAV folder created'); }
                         performWebDavUpload(client, filename);
-                    }
+                    }).catch(function (err) {
+                        if (func) { func('WebDAV (createDirectory) error: ' + err); }
+                    });
                 }
-            ).catch(function (err) {
-                if (func) { func('WebDAV (getDirectoryContents) error: ' + err); }
+            }).catch(function (err) {
+                if (func) { func('WebDAV (exists) error: ' + err); }
             });
         }
 
@@ -3181,7 +3207,10 @@ module.exports.CreateDB = function (parent, func) {
 
     // Transfer NeDB data into the current database
     obj.nedbtodb = function (func) {
-        var nedbDatastore = require('nedb');
+        var nedbDatastore = null;
+        try { nedbDatastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
+        if (nedbDatastore == null) { nedbDatastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
+
         var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
         // If a DB encryption key is provided, perform database encryption
@@ -3217,16 +3246,16 @@ module.exports.CreateDB = function (parent, func) {
         var eventRecordsTransferCount = 0;
         var powerRecordsTransferCount = 0;
         var statsRecordsTransferCount = 0;
-        var pendingTransfer = 0;
+        obj.pendingTransfer = 0;
 
         // Transfer the data from main database
         nedbfile.find({}, function (err, docs) {
             if ((err == null) && (docs.length > 0)) {
                 performTypedRecordDecrypt(docs)
                 for (var i in docs) {
-                    pendingTransfer++;
+                    obj.pendingTransfer++;
                     normalRecordsTransferCount++;
-                    obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { pendingTransfer--; });
+                    obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { obj.pendingTransfer--; });
                 }
             }
 
@@ -3234,9 +3263,9 @@ module.exports.CreateDB = function (parent, func) {
             nedbeventsfile.find({}, function (err, docs) {
                 if ((err == null) && (docs.length > 0)) {
                     for (var i in docs) {
-                        pendingTransfer++;
+                        obj.pendingTransfer++;
                         eventRecordsTransferCount++;
-                        obj.StoreEvent(docs[i], function () { pendingTransfer--; });
+                        obj.StoreEvent(docs[i], function () { obj.pendingTransfer--; });
                     }
                 }
 
@@ -3244,9 +3273,9 @@ module.exports.CreateDB = function (parent, func) {
                 nedbpowerfile.find({}, function (err, docs) {
                     if ((err == null) && (docs.length > 0)) {
                         for (var i in docs) {
-                            pendingTransfer++;
+                            obj.pendingTransfer++;
                             powerRecordsTransferCount++;
-                            obj.storePowerEvent(docs[i], null, function () { pendingTransfer--; });
+                            obj.storePowerEvent(docs[i], null, function () { obj.pendingTransfer--; });
                         }
                     }
 
@@ -3254,15 +3283,15 @@ module.exports.CreateDB = function (parent, func) {
                     nedbserverstatsfile.find({}, function (err, docs) {
                         if ((err == null) && (docs.length > 0)) {
                             for (var i in docs) {
-                                pendingTransfer++;
+                                obj.pendingTransfer++;
                                 statsRecordsTransferCount++;
-                                obj.SetServerStats(docs[i], function () { pendingTransfer--; });
+                                obj.SetServerStats(docs[i], function () { obj.pendingTransfer--; });
                             }
                         }
 
                         // Only exit when all the records are stored.
                         setInterval(function () {
-                            if (pendingTransfer == 0) { func("Done. " + normalRecordsTransferCount + " record(s), " + eventRecordsTransferCount + " event(s), " + powerRecordsTransferCount + " power change(s), " + statsRecordsTransferCount + " stat(s)."); }
+                            if (obj.pendingTransfer == 0) { func("Done. " + normalRecordsTransferCount + " record(s), " + eventRecordsTransferCount + " event(s), " + powerRecordsTransferCount + " power change(s), " + statsRecordsTransferCount + " stat(s)."); }
                         }, 200)
                     });
                 });

@@ -1,4 +1,4 @@
-﻿/**
+/**
 * @description MeshCentral MeshAgent
 * @author Ylian Saint-Hilaire & Bryan Roe
 * @copyright Intel Corporation 2018-2022
@@ -898,14 +898,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                             // Copy or move of one or many files
-                            if (common.validateArray(command.name, 1) == false) return;
-                            var scpath = meshPathToRealPath(command.path, user); // This will also check access rights
+                            if (common.validateArray(command.names, 1) == false) return;
+                            var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
                             if (scpath == null) break;
                             // TODO: Check quota if this is a copy
                             for (i in command.names) {
                                 if (common.IsFilenameValid(command.names[i]) === true) {
                                     var s = parent.path.join(scpath, command.names[i]), d = parent.path.join(path, command.names[i]);
                                     sendUpdate = false;
+                                    try { fs.mkdirSync(path); } catch (ex) { } // try to create folder first incase folder is missing
                                     copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
                                 }
                             }
@@ -1395,7 +1396,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((command.consent != null) && (typeof command.consent == 'number')) { if (command.consent == 0) { delete chguser.consent; } else { chguser.consent = command.consent; } change = 1; }
                         if ((command.phone != null) && (typeof command.phone == 'string') && ((command.phone == '') || isPhoneNumber(command.phone))) { if (command.phone == '') { delete chguser.phone; } else { chguser.phone = command.phone; } change = 1; }
                         if ((command.msghandle != null) && (typeof command.msghandle == 'string')) {
-                            if (command.msghandle.startsWith('callmebot:https://')) { const h = parent.parent.msgserver.callmebotUrlToHandle(command.msghandle.substring(10)); if (h) { command.msghandle = h; } else { command.msghandle = ''; } }
+                            if (command.msghandle.startsWith('callmebot:http')) { const h = parent.parent.msgserver.callmebotUrlToHandle(command.msghandle.substring(10)); if (h) { command.msghandle = h; } else { command.msghandle = ''; } }
                             if (command.msghandle == '') { delete chguser.msghandle; } else { chguser.msghandle = command.msghandle; }
                             change = 1;
                         }
@@ -1490,6 +1491,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     var ugrpdomain, err = null;
                     try {
+                        // Check if we are in a mode that does not allow manual user group creation
+                        if (
+                            (typeof domain.authstrategies == 'object') &&
+                            (typeof domain.authstrategies['oidc'] == 'object') &&
+                            (typeof domain.authstrategies['oidc'].groups == 'object') &&
+                            ((domain.authstrategies['oidc'].groups.sync == true) || ((typeof domain.authstrategies['oidc'].groups.sync == 'object') && (domain.authstrategies['oidc'].groups.sync.enabled == true)))
+                        ) {
+                            err = "Not allowed in OIDC mode with user group sync.";
+                        }
+
                         // Check if we have new group restriction
                         if ((user.siteadmin & SITERIGHT_USERGROUPS) == 0) { err = "Permission denied"; }
 
@@ -1820,7 +1831,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // If this account is settings locked, return here.
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return;
-
+                    
+                    // Do not allow change password if sspi or ldap
+                    if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) return;
+                    
                     // Change our own password
                     if (common.validateString(command.oldpass, 1, 256) == false) break;
                     if (common.validateString(command.newpass, 1, 256) == false) break;
@@ -2725,8 +2739,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
                     for (i in command.nodeids) {
+                        var nodeid = command.nodeids[i], err = null;
+
+                        // Argument validation
+                        if (common.validateString(nodeid, 1, 1024) == false) { err = 'Invalid nodeid'; }  // Check nodeid
+                        else {
+                            if (nodeid.indexOf('/') == -1) { nodeid = 'node/' + domain.id + '/' + nodeid; }
+                            if ((nodeid.split('/').length != 3) || (nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                        }
+                        if (err != null) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: err })); } catch (ex) { } }
+                            continue;
+                        }
                         // Get the node and the rights for this node
-                        parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
+                        parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
                             if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
 
@@ -2781,6 +2807,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         });
                     }
+
+                    // Send response if required, in this case we always send ok which is not ideal.
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+
                     break;
                 }
             case 'wakedevices':
@@ -3515,7 +3545,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
 
                         var domainName = parent.certificates.CommonName;
-                        if (domain.dns != null) { domainName = domain.dns; }
+                        if (domain.dns != null) { 
+                            domainName = domain.dns;
+                        } else if (domain.dns == null && domain.id != '') {
+                            domainName += "/" + domain.id;
+                        }
                         ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(encodeURIComponent(user.name), domainName, secret) }));
                     }
                     break;
@@ -4543,7 +4577,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else {
                     try {
                         parent.parent.pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
-                    } catch (ex) { console.log('Error loading plugin handler (' + e + ')'); }
+                    } catch (ex) { console.log('Error loading plugin handler (' + ex + ')'); }
                 }
                 break;
             }
@@ -4911,7 +4945,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (type == 'csv') {
                             try {
                                 // Create the CSV file
-                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,avdetails,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
+                                output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,tags,cpu,osbuild,biosDate,biosVendor,biosVersion,boardName,boardVendor,boardVersion,productUuid,tpmversion,tpmmanufacturer,tpmmanufacturerversion,tpmisactivated,tpmisenabled,tpmisowned,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
                                 for (var i = 0; i < results.length; i++) {
                                     const nodeinfo = results[i];
 
@@ -4922,18 +4956,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (typeof n.wsc == 'object') {
                                             output += ',' + csvClean(n.wsc.antiVirus ? n.wsc.antiVirus : '') + ',' + csvClean(n.wsc.autoUpdate ? n.wsc.autoUpdate : '') + ',' + csvClean(n.wsc.firewall ? n.wsc.firewall : '')
                                         } else { output += ',,,'; }
+                                        if (typeof n.volumes == 'object') {
+                                            var bitlockerdetails = '', firstbitlocker = true;
+                                            for (var a in n.volumes) { if (typeof n.volumes[a].protectionStatus !== 'undefined') { if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; } bitlockerdetails += a + '/' + n.volumes[a].volumeStatus; } }
+                                            output += ',' + csvClean(bitlockerdetails);
+                                        } else {
+                                            output += ',';
+                                        }
                                         if (typeof n.av == 'object') {
                                             var avdetails = '', firstav = true;
                                             for (var a in n.av) { if (typeof n.av[a].product == 'string') { if (firstav) { firstav = false; } else { avdetails += '|'; } avdetails += (n.av[a].product + '/' + ((n.av[a].enabled) ? 'enabled' : 'disabled') + '/' + ((n.av[a].updated) ? 'updated' : 'notupdated')); } }
                                             output += ',' + csvClean(avdetails);
+                                        } else {
+                                            output += ',';
                                         }
-                                        else { output += ','; }
+                                        if (typeof n.tags == 'object') {
+                                            var tagsdetails = '', firsttags = true;
+                                            for (var a in n.tags) { if (firsttags) { firsttags = false; } else { tagsdetails += '|'; } tagsdetails += n.tags[a]; }
+                                            output += ',' + csvClean(tagsdetails);
+                                        } else {
+                                            output += ',';
+                                        }
                                     } else {
-                                        output += ',,,,,,,,,,,';
+                                        output += ',,,,,,,,,,,,,,,,,,,';
                                     }
 
                                     // System infomation
-                                    if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.windows)) {
+                                    if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows)) {
                                         // Windows
                                         output += ',';
                                         if (nodeinfo.sys.hardware.windows.cpu && (nodeinfo.sys.hardware.windows.cpu.length > 0) && (typeof nodeinfo.sys.hardware.windows.cpu[0].Name == 'string')) { output += csvClean(nodeinfo.sys.hardware.windows.cpu[0].Name); }
@@ -4953,6 +5002,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_version)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_version); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.identifiers.product_uuid); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.SpecVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.SpecVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerId) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerId); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsActivated) { output += csvClean(nodeinfo.sys.hardware.tpm.IsActivated ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsEnabled) { output += csvClean(nodeinfo.sys.hardware.tpm.IsEnabled ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsOwned) { output += csvClean(nodeinfo.sys.hardware.tpm.IsOwned ? 'true' : 'false'); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.windows.memory) {
                                             var totalMemory = 0;
@@ -4980,11 +5041,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         output += ',';
                                         if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.id)) { output += csvClean(nodeinfo.sys.hardware.mobile.id); }
                                         output += ',';
-                                    } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.windows) && (nodeinfo.sys.hardware.linux)) {
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                        output += ',';
+                                    } else if ((nodeinfo.sys) && (nodeinfo.sys.hardware) && (nodeinfo.sys.hardware.linux)) {
                                         // Linux
                                         output += ',';
-                                        output += ',';
-                                        output += ',';
+                                        if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.cpu_name)) { output += csvClean(nodeinfo.sys.hardware.identifiers.cpu_name); }
+                                        output += ',,';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_date); }
                                         output += ',';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_vendor); }
@@ -4999,8 +5066,32 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         output += ',';
                                         if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.linux.product_uuid); }
                                         output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.SpecVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.SpecVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerId) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerId); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.ManufacturerVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.ManufacturerVersion); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsActivated) { output += csvClean(nodeinfo.sys.hardware.tpm.IsActivated ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsEnabled) { output += csvClean(nodeinfo.sys.hardware.tpm.IsEnabled ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.IsOwned) { output += csvClean(nodeinfo.sys.hardware.tpm.IsOwned ? 'true' : 'false'); }
+                                        output += ',';
+                                        if (nodeinfo.sys.hardware.linux.memory) {
+                                            if (nodeinfo.sys.hardware.linux.memory.Memory_Device) {
+                                                var totalMemory = 0;
+                                                for (var j in nodeinfo.sys.hardware.linux.memory.Memory_Device) {
+                                                    if (nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size) {
+                                                        if (typeof nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size == 'number') { totalMemory += nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size; }
+                                                        if (typeof nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size == 'string') { totalMemory += parseInt(nodeinfo.sys.hardware.linux.memory.Memory_Device[j].Size); }
+                                                    }
+                                                }
+                                                output += csvClean('' + (totalMemory * Math.pow(1024, 3)));
+                                            }
+                                        }
                                     } else {
-                                        output += ',,,,,,,,,,';
+                                        output += ',,,,,,,,,,,,,,,,';
                                     }
 
                                     // Agent information
@@ -5275,6 +5366,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverclearerrorlog': serverCommandServerClearErrorLog,
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
+        'serverconfig': serverCommandServerConfig,
         'serverstats': serverCommandServerStats,
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
@@ -5662,6 +5754,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 displayNotificationMessage(err, "New Account", 'ServerNotify', 1, errid, args);
             }
             return;
+        }
+
+        for(var x in parent.users) {
+            if(parent.users[x].email==command.email){
+                displayNotificationMessage("Email address already in use", "New Account", "ServerNotify");
+                return;
+            }
         }
 
         // Check if we exceed the maximum number of user accounts
@@ -6487,6 +6586,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             fs.readFile(parent.parent.getConfigFilePath('mesherrors.txt'), 'utf8', function (err, data) { obj.send({ action: 'servererrors', data: data }); });
     }
 
+    function serverCommandServerConfig(command) {
+        // Load the server config.json. This is a sensitive file so care must be taken to only send to trusted administrators.
+        if (userHasSiteUpdate() && (domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.config === true))) {
+            const configFilePath = common.joinPath(parent.parent.datapath, (parent.parent.args.configfile ? parent.parent.args.configfile : 'config.json'));
+            fs.readFile(configFilePath, 'utf8', function (err, data) { obj.send({ action: 'serverconfig', data: data }); });
+        }
+    }
+
     function serverCommandServerStats(command) {
         // Only accept if the "My Server" tab is allowed for this domain
         if (domain.myserver === false) return;
@@ -6715,6 +6822,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if ((command.service == 32) && ((parent.parent.msgserver.providers & 32) != 0)) { handle = 'pushover:' + command.handle; }
         if ((command.service == 64) && ((parent.parent.msgserver.providers & 64) != 0)) { handle = 'ntfy:' + command.handle; }
         if ((command.service == 128) && ((parent.parent.msgserver.providers & 128) != 0)) { handle = 'zulip:' + command.handle; }
+        if ((command.service == 256) && ((parent.parent.msgserver.providers & 256) != 0)) { handle = 'slack:' + command.handle; }
         if (handle == null) return;
 
         // Send a verification message
@@ -6861,6 +6969,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((parent.parent.msgserver.providers & 32) != 0) { r.push("Usage: MSG \"pushover:[userkey]\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 64) != 0) { r.push("Usage: MSG \"ntfy:[topic]\" \"Message\"."); }
                 if ((parent.parent.msgserver.providers & 128) != 0) { r.push("Usage: MSG \"zulip:[topic]\" \"Message\"."); }
+                if ((parent.parent.msgserver.providers & 256) != 0) { r.push("Usage: MSG \"slack:[webhook]\" \"Message\"."); }
                 cmdData.result = r.join('\r\n');
             } else {
                 parent.parent.msgserver.sendMessage(cmdData.cmdargs['_'][0], cmdData.cmdargs['_'][1], domain, function (status, msg) {

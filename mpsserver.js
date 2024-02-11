@@ -48,7 +48,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, requestCert: true, rejectUnauthorized: false, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 }, onConnection)
             } else {
                 // Lower security MPS in order to support older Intel AMT CIRA connections, we have to turn on TLSv1.
-                obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, minVersion: 'TLSv1', requestCert: true, rejectUnauthorized: false, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION }, onConnection)
+                obj.server = tls.createServer({ key: certificates.mps.key, cert: certificates.mps.cert, minVersion: 'TLSv1', requestCert: true, rejectUnauthorized: false, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA:@SECLEVEL=0", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION }, onConnection)
             }
             //obj.server.on('error', function () { console.log('MPS tls server error'); });
             obj.server.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
@@ -733,7 +733,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                 return;
                             } else {
                                 // Attempts reverse DNS loopup on the device IP address
-                                require('dns').reverse(socket.remoteAddr, function (err, hostnames) {
+                                const reverseDnsLookupHandler = function (err, hostnames) {
                                     var hostname = socket.remoteAddr;
                                     if ((err == null) && (hostnames != null) && (hostnames.length > 0)) { hostname = hostnames[0]; }
 
@@ -752,7 +752,8 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                                     addedDeviceCount++;
                                     var change = 'Added CIRA device ' + socket.tag.name + ' to group ' + initialMesh.name;
                                     obj.parent.DispatchEvent(['*', socket.tag.meshid], obj, { etype: 'node', action: 'addnode', node: parent.webserver.CloneSafeNode(device), msg: change, domain: initialMesh.domain });
-                                });
+                                }
+                                try { require('dns').reverse(socket.remoteAddr, reverseDnsLookupHandler); } catch (ex) { reverseDnsLookupHandler(ex, null); }
                             }
                         } else {
                             // Node is already present

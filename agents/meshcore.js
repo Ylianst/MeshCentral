@@ -622,7 +622,7 @@ if ((require('fs').existsSync(process.cwd() + 'batterystate.txt')) && (require('
 else {
     try {
         // Setup normal battery monitoring
-        if (require('identifiers').isBatteryPowered && require('identifiers').isBatteryPowered()) {
+        if (require('computer-identifiers').isBatteryPowered && require('computer-identifiers').isBatteryPowered()) {
             require('MeshAgent')._battLevelChanged = function _battLevelChanged(val) {
                 _battLevelChanged.self._currentBatteryLevel = val;
                 _battLevelChanged.self.SendCommand({ action: 'battery', state: _battLevelChanged.self._currentPowerState, level: val });
@@ -654,6 +654,21 @@ var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
 
+// Get Volumes and BitLocker if Windows
+try {
+    if (process.platform == 'win32'){
+        if (require('computer-identifiers').volumes_promise != null){
+            var p = require('computer-identifiers').volumes_promise();
+            p.then(function (res){
+                meshCoreObj.volumes = res;
+                meshCoreObjChanged();
+            });
+        }else if (require('computer-identifiers').volumes != null){
+            meshCoreObj.volumes = require('computer-identifiers').volumes();
+            meshCoreObjChanged();
+        }
+    }
+} catch(e) { }
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 try {
@@ -1215,8 +1230,11 @@ function handleServerCommand(data) {
                                         ipr.message = data.msg;
                                         ipr.username = data.username;
                                         if (data.realname && (data.realname != '')) { ipr.username = data.realname; }
+                                        ipr.timeout = (typeof data.timeout === 'number' ? data.timeout : 120000);
                                         global._clientmessage = ipr.then(function (img) {
-                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, { timeout: 120000, b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground });
+                                            var options = { b64Image: img.split(',').pop(), background: color_options.background, foreground: color_options.foreground }
+                                            if (this.timeout != 0) { options.timeout = this.timeout; }
+                                            this.messagebox = require('win-dialog').create(this.title, this.message, this.username, options);
                                             this.__childPromise.addMessage = this.messagebox.addMessage.bind(this.messagebox);
                                             return (this.messagebox);
                                         });
@@ -1247,6 +1265,9 @@ function handleServerCommand(data) {
                         // Requestion details information about a process
                         if (data.pid) {
                             var info = {}; // TODO: Replace with real data. Feel free not to give all values if not available.
+                            try {
+                                info = processManager.getProcessInfo(data.pid);
+                            }catch(e){ }
                             /*
                             info.processUser = "User"; // String
                             info.processDomain = "Domain"; // String
@@ -1282,6 +1303,41 @@ function handleServerCommand(data) {
                             try { process.kill(data.value); } catch (ex) { sendConsoleText("pskill: " + JSON.stringify(ex)); }
                         }
                         break;
+                    }
+                    case 'service': {
+                        // return information about the service
+                        try {
+                            var service = require('service-manager').manager.getService(data.serviceName);
+                            if (service != null) {
+                                var reply = {
+                                    name: (service.name ? service.name : ''),
+                                    status: (service.status ? service.status : ''),
+                                    startType: (service.startType ? service.startType : ''),
+                                    failureActions: (service.failureActions ? service.failureActions : ''),
+                                    installedDate: (service.installedDate ? service.installedDate : ''),
+                                    installedBy: (service.installedBy ? service.installedBy : '') ,
+                                    user: (service.user ? service.user : '')
+                                };
+                                if(reply.installedBy.indexOf('S-1-5') != -1) {
+                                    var cmd = "(Get-WmiObject -Class win32_userAccount -Filter \"SID='"+service.installedBy+"'\").Caption";
+                                    var replydata = "";
+                                    var pws = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
+                                    pws.descriptorMetadata = 'UserSIDPowerShell';
+                                    pws.stdout.on('data', function (c) { replydata += c.toString(); });
+                                    pws.stderr.on('data', function (c) { replydata += c.toString(); });
+                                    pws.stdin.write(cmd + '\r\nexit\r\n');
+                                    pws.on('exit', function () { 
+                                        if (replydata != "") reply.installedBy = replydata;
+                                        mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
+                                        delete pws;
+                                    });
+                                } else {
+                                    mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
+                                }
+                            }
+                        } catch (ex) { 
+                            mesh.SendCommand({ action: 'msg', type: 'service', error: ex, sessionid: data.sessionid })
+                        }
                     }
                     case 'services': {
                         // Return the list of installed services
@@ -1338,11 +1394,13 @@ function handleServerCommand(data) {
                                     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
                                     child.stderr.on('data', function () { });
                                     child.waitExit();
+                                    mesh.SendCommand({ action: 'msg', type: 'deskBackground', sessionid: data.sessionid, data: (current != '' ? "" : require('MeshAgent')._wallpaper), });
                                 } else {
                                     var id = require('user-sessions').consoleUid();
                                     var current = require('linux-gnome-helpers').getDesktopWallpaper(id);
                                     if (current != '/dev/null') { require('MeshAgent')._wallpaper = current; }
                                     require('linux-gnome-helpers').setDesktopWallpaper(id, current != '/dev/null' ? undefined : require('MeshAgent')._wallpaper);
+                                    mesh.SendCommand({ action: 'msg', type: 'deskBackground', sessionid: data.sessionid, data: (current != '/dev/null' ? "" : require('MeshAgent')._wallpaper), });
                                 }
                             } catch (ex) {
                                 sendConsoleText(ex);
@@ -1446,6 +1504,14 @@ function handleServerCommand(data) {
                         sendConsoleText('localappMsg: ' + data.appid + ', ' + JSON.stringify(data.value));
                         if (data.appid != null) { sendToRegisteredApp(data.appid, data.value); } else { broadcastToRegisteredApps(data.value); }
                         break;
+                    case 'alertbox': {
+                        // Display an old style alert box
+                        if (data.title && data.msg) {
+                            MeshServerLogEx(158, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
+                            try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
+                        }
+                        break;
+                    }
                     default:
                         // Unknown action, ignore it.
                         break;
@@ -1481,33 +1547,33 @@ function handleServerCommand(data) {
                     if (options.uid == null) break;
                     if (((require('user-sessions').minUid != null) && (options.uid < require('user-sessions').minUid()))) break; // This command can only run as user.
                 }
-
+                var replydata = "";
                 if (process.platform == 'win32') {
                     if (data.type == 1) {
                         // Windows command shell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd'], options);
                         mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
-                        mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
-                        mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
+                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
                     } else if (data.type == 2) {
                         // Windows Powershell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], options);
                         mesh.cmdchild.descriptorMetadata = 'UserCommandsPowerShell';
-                        mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
-                        mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
+                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
                     }
                 } else if (data.type == 3) {
                     // Linux shell
                     mesh.cmdchild = require('child_process').execFile('/bin/sh', ['sh'], options);
                     mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
-                    mesh.cmdchild.stdout.on('data', function (c) { sendConsoleText(c.toString()); });
-                    mesh.cmdchild.stderr.on('data', function (c) { sendConsoleText(c.toString()); });
+                    mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                    mesh.cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
                     mesh.cmdchild.stdin.write(data.cmds.split('\r').join('') + '\nexit\n');
-                    mesh.cmdchild.on('exit', function () { sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                    mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
                 }
                 break;
             }
@@ -1785,7 +1851,7 @@ function onFileWatcher(a, b) {
 */
 
 // Replace all key name spaces with _ in an object recursively.
-// This is a workaround since require('identifiers').get() returns key names with spaces in them on Linux.
+// This is a workaround since require('computer-identifiers').get() returns key names with spaces in them on Linux.
 function replaceSpacesWithUnderscoresRec(o) {
     if (typeof o != 'object') return;
     for (var i in o) { if (i.indexOf(' ') >= 0) { o[i.split(' ').join('_')] = o[i]; delete o[i]; } replaceSpacesWithUnderscoresRec(o[i]); }
@@ -1793,8 +1859,7 @@ function replaceSpacesWithUnderscoresRec(o) {
 
 function getSystemInformation(func) {
     try {
-        var results = { hardware: require('identifiers').get() }; // Hardware info
-
+        var results = { hardware: require('computer-identifiers').get() }; // Hardware info
         if (results.hardware && results.hardware.windows) {
             // Remove extra entries and things that change quickly
             var x = results.hardware.windows.osinfo;
@@ -1810,32 +1875,112 @@ function getSystemInformation(func) {
                 if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
+            if (!results.hardware.identifiers['bios_serial']) {
+                try { 
+                    var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
+                    results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
+                } catch (ex) { }
+            }
+            if (!results.hardware.identifiers['bios_mode']) {
+                try {
+                    results.hardware.identifiers['bios_mode'] = 'Legacy';
+                    for (var i in results.hardware.windows.partitions) {
+                        if (results.hardware.windows.partitions[i].Description=='GPT: System') {
+                            results.hardware.identifiers['bios_mode'] = 'UEFI';
+                        }
+                    }
+                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            }
+            if (!results.hardware.tpm) {
+                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
+                try {
+                    var values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftTpm', "SELECT * FROM Win32_Tpm", ['IsActivated_InitialValue','IsEnabled_InitialValue','IsOwned_InitialValue','ManufacturerId','ManufacturerVersion','SpecVersion']);
+                    if(values[0]) {
+                        results.hardware.tpm = {
+                            SpecVersion: values[0].SpecVersion.split(",")[0],
+                            ManufacturerId: IntToStr(values[0].ManufacturerId).replace(/[^\x00-\x7F]/g, ""),
+                            ManufacturerVersion: values[0].ManufacturerVersion,
+                            IsActivated: values[0].IsActivated_InitialValue,
+                            IsEnabled: values[0].IsEnabled_InitialValue,
+                            IsOwned: values[0].IsOwned_InitialValue,
+                        }
+                    }
+                } catch (ex) { }
+            }
+        }
+        if(results.hardware && results.hardware.linux) {
+            if (!results.hardware.identifiers['bios_serial']) {
+                try {
+                    if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
+                        results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
+                    }
+                } catch (ex) { }
+            }
+            if (!results.hardware.identifiers['bios_mode']) {
+                try {
+                    results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
+                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
+            }
+            if (!results.hardware.tpm) {
+                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
+                try {
+                    if (require('fs').statSync('/sys/class/tpm/tpm0').isDirectory()){
+                        results.hardware.tpm = {
+                            SpecVersion: require('fs').readFileSync('/sys/class/tpm/tpm0/tpm_version_major').toString().trim()
+                        }
+                    }
+                } catch (ex) { }
+            }
+            if(!results.hardware.linux.LastBootUpTime) {
+                try {
+                    var child = require('child_process').execFile('/usr/bin/uptime', ['', '-s']); // must include blank value at begining for some reason?
+                    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                    child.stderr.on('data', function () { });
+                    child.waitExit();
+                    results.hardware.linux.LastBootUpTime = child.stdout.str.trim();
+                } catch (ex) { }
+            }
+        }
+        if(process.platform=='darwin'){
+            try {
+                var child = require('child_process').execFile('/usr/sbin/sysctl', ['', 'kern.boottime']); // must include blank value at begining for some reason?
+                child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+                child.stderr.on('data', function () { });
+                child.waitExit();
+                const timestampMatch = /\{ sec = (\d+), usec = \d+ \}/.exec(child.stdout.str.trim());
+                if(!results.hardware.darwin){
+                    results.hardware.darwin = { LastBootUpTime: parseInt(timestampMatch[1]) };
+                }else{
+                    results.hardware.darwin.LastBootUpTime = parseInt(timestampMatch[1]);
+                }
+            } catch (ex) { }
         }
         results.hardware.agentvers = process.versions;
+        results.hardware.network = { dns: require('os').dns() }; 
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
-        results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-        func(results);
+        // results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
+        // func(results);
 
-        /*
+        
         // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
             results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
 
-            if (require('identifiers').volumes_promise != null)
+            if (require('computer-identifiers').volumes_promise != null)
             {
-                var p = require('identifiers').volumes_promise();
+                var p = require('computer-identifiers').volumes_promise();
                 p.then(function (res)
                 {
-                    results.volumes = res;
+                    results.hardware.windows.volumes = res;
                     results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
             }
-            else if (require('identifiers').volumes != null)
+            else if (require('computer-identifiers').volumes != null)
             {
-                results.volumes = require('identifiers').volumes();
+                results.hardware.windows.volumes = require('computer-identifiers').volumes();
                 results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
@@ -1850,7 +1995,7 @@ function getSystemInformation(func) {
             results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
             func(results);
         }
-        */
+        
     } catch (ex) { func(null, ex); }
 }
 
@@ -1860,11 +2005,10 @@ function getDirectoryInfo(reqpath) {
     if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
         // List all the drives in the root, or the root itself
         var results = null;
-        try { results = fs.readDrivesSync(); } catch (ex) { } // TODO: Anyway to get drive total size and free space? Could draw a progress bar.
+        try { results = fs.readDrivesSync(); } catch (ex) { }
         if (results != null) {
             for (var i = 0; i < results.length; ++i) {
-                var drive = { n: results[i].name, t: 1 };
-                if (results[i].type == 'REMOVABLE') { drive.dt = 'removable'; } // TODO: See if this is USB/CDROM or something else, we can draw icons.
+                var drive = { n: results[i].name, t: 1, dt: results[i].type, s: (results[i].size ? results[i].size : 0), f: (results[i].free ? results[i].free : 0) };
                 response.dir.push(drive);
             }
         }
@@ -2472,7 +2616,7 @@ function tunnel_kvm_end()
                 this.httprequest.desktop.kvm.users.splice(i, 1);
                 this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                 this.httprequest.desktop.kvm.connectionBar.close();
-                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+                this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
                 this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                 this.httprequest.desktop.kvm.connectionBar.on('close', function ()
                 {
@@ -2541,7 +2685,7 @@ function kvm_consentpromise_resolved(always)
         }
         try
         {
-            this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+            this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace('{0}', this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.ws.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
         } catch (ex)
         {
@@ -2550,27 +2694,24 @@ function kvm_consentpromise_resolved(always)
                 MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or Not Supported (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
             }
         }
-        if (this.ws.httprequest.desktop.kvm.connectionBar)
+        try {
+			if (this.ws.httprequest.desktop.kvm.connectionBar) {
+				this.ws.httprequest.desktop.kvm.connectionBar.httprequest = this.ws.httprequest;
+				this.ws.httprequest.desktop.kvm.connectionBar.on('close', function () {
+					MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.httprequest.remoteaddr + ")", this.httprequest);
+					for (var i in this.httprequest.desktop.kvm._pipedStreams) {
+						this.httprequest.desktop.kvm._pipedStreams[i].end();
+					}
+					this.httprequest.desktop.kvm.end();
+				});
+			}
+		}
+		catch (ex)
         {
-            this.ws.httprequest.desktop.kvm.connectionBar.state =
+            if (process.platform != 'darwin')
             {
-                userid: this.ws.httprequest.userid,
-                xuserid: this.ws.httprequest.xuserid,
-                username: this.ws.httprequest.username,
-                sessionid: this.ws.httprequest.sessionid,
-                remoteaddr: this.ws.httprequest.remoteaddr,
-                guestname: this.ws.httprequest.guestname,
-                desktop: this.ws.httprequest.desktop
-            };
-            this.ws.httprequest.desktop.kvm.connectionBar.on('close', function ()
-            {
-                MeshServerLogEx(29, null, "Remote Desktop Connection forcefully closed by local user (" + this.state.remoteaddr + ")", state);
-                for (var i in this.state.desktop.kvm._pipedStreams)
-                {
-                    this.state.desktop.kvm._pipedStreams[i].end();
-                }
-                this.state.desktop.kvm.end();
-            });
+                MeshServerLogEx(32, null, "Failed2(" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+            }
         }
     }
     this.ws.httprequest.desktop.kvm.pipe(this.ws, { dataTypeSkip: 1 });
@@ -2930,7 +3071,7 @@ function onTunnelData(data)
                         }
                         try
                         {
-                            this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')), require('MeshAgent')._tsid, color_options);
+                            this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace('{0}', this.httprequest.desktop.kvm.rusers.join(', ')).replace('{1}', this.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
                             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.httprequest.remoteaddr + ")", this.httprequest);
                         } catch (ex) {
                             MeshServerLogEx(32, null, "Remote Desktop Connection Bar Failed or not Supported (" + this.httprequest.remoteaddr + ")", this.httprequest);
@@ -3656,14 +3797,15 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',cs,wpfhwacceleration,uac,volumes';
+                    availcommands += ',cs,wpfhwacceleration,uac,volumes,rdpport';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
+                    try { require('win-info'); availcommands += ',installedapps'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -3680,7 +3822,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'mousetrails':
-                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "mousetrails", type "help" for list of avaialble commands.'; break; }
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "mousetrails", type "help" for list of available commands.'; break; }
                 var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : null;
                 switch (args['_'].length) 
                 {
@@ -3701,7 +3843,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'deskbackground':
-                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "deskbackground", type "help" for list of avaialble commands.'; break; }
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "deskbackground", type "help" for list of available commands.'; break; }
                 var id = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : null;
                 switch (args['_'].length)
                 {
@@ -3718,7 +3860,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'taskbar':
-                try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of avaialble commands.'; break; }
+                try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of available commands.'; break; }
                 switch (args['_'].length) {
                     case 1:
                     case 2:
@@ -3741,7 +3883,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'privacybar':
                 if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null) {
-                    response = 'Unknown command "privacybar", type "help" for list of avaialble commands.';
+                    response = 'Unknown command "privacybar", type "help" for list of available commands.';
                 }
                 else {
                     switch (args['_'].length) {
@@ -3774,7 +3916,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'domaininfo':
                 {
                     if (process.platform != 'win32') {
-                        response = 'Unknown command "cs", type "help" for list of avaialble commands.';
+                        response = 'Unknown command "cs", type "help" for list of available commands.';
                         break;
                     }
                     if (global._domainQuery != null) {
@@ -3822,7 +3964,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.
                 {
-                    try { require('linux-dhcp'); } catch (ex) { response = 'Unknown command "dhcp", type "help" for list of avaialble commands.'; break; }
+                    try { require('linux-dhcp'); } catch (ex) { response = 'Unknown command "dhcp", type "help" for list of available commands.'; break; }
                     if (args['_'].length == 0) {
                         var j = require('os').networkInterfaces();
                         var ifcs = [];
@@ -3849,7 +3991,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
             case 'cs':
                 if (process.platform != 'win32') {
-                    response = 'Unknown command "cs", type "help" for list of avaialble commands.';
+                    response = 'Unknown command "cs", type "help" for list of available commands.';
                     break;
                 }
                 switch (args['_'].length) {
@@ -3929,7 +4071,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'dnsinfo':
                 if (require('os').dns == null) {
-                    response = "Unknown command \"" + cmd + "\", type \"help\" for list of avaialble commands.";
+                    response = "Unknown command \"" + cmd + "\", type \"help\" for list of available commands.";
                 }
                 else {
                     response = 'DNS Servers: ';
@@ -3942,6 +4084,44 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'timerinfo':
                 response = require('ChainViewer').getTimerInfo();
+                break;
+            case 'rdpport':
+                if (process.platform != 'win32') {
+                    response = 'Unknown command "rdpport", type "help" for list of available commands.';
+                    return;
+                }
+                if (args['_'].length == 0) {
+                    response = 'Proper usage: rdpport [get|default|PORTNUMBER]';
+                } else {
+                    switch (args['_'][0].toLocaleLowerCase()) {
+                        case 'get':
+                            var rdpport = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp', 'PortNumber');
+                            response = "Current RDP Port Set To: " + rdpport + '\r\n';
+                            break;
+                        case 'default':
+                            try {
+                                require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp', 'PortNumber', 3389);
+                                response = 'RDP Port Set To 3389, Please Dont Forget To Restart Your Computer To Fully Apply';
+                            } catch (ex) {
+                                response = 'Unable to Set RDP Port To: 3389';
+                            }
+                            break;
+                        default:
+                            if (isNaN(parseFloat(args['_'][0]))){
+                                response = 'Proper usage: rdpport [get|default|PORTNUMBER]';
+                            } else if(parseFloat(args['_'][0]) < 0 || args['_'][0] > 65535) {
+                                response = 'RDP Port Must Be More Than 0 And Less Than 65535';
+                            } else {
+                                try {
+                                    require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp', 'PortNumber', parseFloat(args['_'][0]));
+                                    response = 'RDP Port Set To ' + args['_'][0] + ', Please Dont Forget To Restart Your Computer To Fully Apply';
+                                } catch (ex) {
+                                    response = 'Unable to Set RDP Port To: '+args['_'][0];
+                                }
+                            }
+                            break;
+                    }
+                }
                 break;
             case 'find':
                 if (args['_'].length <= 1) {
@@ -3962,7 +4142,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'coreinfoupdate': {
-                sendPeriodicServerUpdate();
+                sendPeriodicServerUpdate(null, true);
+                response = "Core Info Update Requested"
                 break;
             }
             case 'agentmsg': {
@@ -4112,7 +4293,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'uac':
                 if (process.platform != 'win32') {
-                    response = 'Unknown command "uac", type "help" for list of avaialble commands.';
+                    response = 'Unknown command "uac", type "help" for list of available commands.';
                     break;
                 }
                 if (args['_'].length != 1) {
@@ -4147,14 +4328,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'vm':
-                response = 'Virtual Machine = ' + require('identifiers').isVM();
+                response = 'Virtual Machine = ' + require('computer-identifiers').isVM();
                 break;
             case 'startupoptions':
                 response = JSON.stringify(require('MeshAgent').getStartupOptions());
                 break;
             case 'kvmmode':
                 if (require('MeshAgent').maxKvmTileSize == null) {
-                    response = "Unknown command \"kvmmode\", type \"help\" for list of avaialble commands.";
+                    response = "Unknown command \"kvmmode\", type \"help\" for list of available commands.";
                 }
                 else {
                     if (require('MeshAgent').maxKvmTileSize == 0) {
@@ -4576,6 +4757,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var oldNodeId = db.Get('OldNodeId');
                 if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
                 if (process.platform == 'linux' || process.platform == 'freebsd') { response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.'; }
+                response += '\r\nApplication Location: ' + process.cwd();
                 //response += '\r\Debug Console: ' + debugConsole + '.';
                 break;
             }
@@ -4802,6 +4984,21 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             }
+            case 'display': {
+                 if (args['_'].length != 1) {
+                    response = 'Proper usage: display (sleep | awake)';
+                } else {
+                    var sleepawake = [args['_'][0]];
+                    if(sleepawake=='sleep'){
+                        require('power-monitor').sleepDisplay()
+                    }else if(sleepawake=='awake'){
+                        require('power-monitor').wakeDisplay()
+
+                    }
+                    response = 'Setting Display To ' + sleepawake;
+                }
+                break;
+            }
             case 'sendall': { // Send a message to all consoles on this mesh
                 sendConsoleText(args['_'].join(' '));
                 break;
@@ -4966,8 +5163,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             }
+            case 'installedapps': {
+                if(process.platform == 'win32'){
+                    require('win-info').installedApps().then(function (apps){ sendConsoleText(JSON.stringify(apps,null,1)); });
+                }
+                break;
+            }
             default: { // This is an unknown command, return an error message
-                response = "Unknown command \"" + cmd + "\", type \"help\" for list of avaialble commands.";
+                response = "Unknown command \"" + cmd + "\", type \"help\" for list of available commands.";
                 break;
             }
         }
@@ -5466,6 +5669,7 @@ function sendNetworkUpdate(force) {
 function sendPeriodicServerUpdate(flags, force) {
     if (meshServerConnectionState == 0) return; // Not connected to server, do nothing.
     if (!flags) { flags = 0xFFFFFFFF; }
+    if (!force) { force = false; }
 
     // If we have a connected MEI, get Intel ME information
     if ((flags & 1) && (amt != null) && (amt.state == 2)) {
@@ -5498,6 +5702,27 @@ function sendPeriodicServerUpdate(flags, force) {
                 });
             } catch (ex) { }
         }
+        // Get Defender for Windows Server
+        try { 
+            var d = require('win-info').defender();
+            d.then(function(res){
+                meshCoreObj.defender = res;
+                meshCoreObjChanged();
+            });
+        } catch (ex){ }
+        // Get Volumes and BitLocker if Windows
+        try {
+            if (require('computer-identifiers').volumes_promise != null){
+                var p = require('computer-identifiers').volumes_promise();
+                p.then(function (res){
+                    meshCoreObj.volumes = res;
+                    meshCoreObjChanged();
+                });
+            }else if (require('computer-identifiers').volumes != null){
+                meshCoreObj.volumes = require('computer-identifiers').volumes();
+                meshCoreObjChanged();
+            }
+        } catch(e) { }
     }
 
     // Send available data right now

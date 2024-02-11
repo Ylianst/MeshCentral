@@ -36,7 +36,7 @@ No, you haven't.
 
 6. Here are some examples of what that looks like.
 
-# Can't login on server after first setup
+## Can't login on server after first setup
 
 You're sure you're typing in everything right, giving it 2FA code and can't login
 
@@ -44,7 +44,40 @@ You're sure you're typing in everything right, giving it 2FA code and can't logi
 
 ![](images/2022-08-04-18-19-19.png)
 
-# Branding and Customisation
+## Branding and Customization
 
-You can brand and customise MeshCentral almost as much as you like without delving into the code, a few changes in the config.json file and uplaoding images can change the way your system looks. Read more [here](https://ylianst.github.io/MeshCentral/meshcentral/#branding-terms-of-use)
+You can brand and customize MeshCentral almost as much as you like without delving into the code, a few changes in the config.json file and uploading images can change the way your system looks. Read more [here](https://ylianst.github.io/MeshCentral/meshcentral/#branding-terms-of-use)
+
+!!!note
+    You will need to reinstall the agent for agent customizations to take effect.
+
+## Mac Clients
+
+You have to manually grant Mac permissions outside of the agent install process due to the MacOS security system under Security & Privacy > Privacy
+
+To see the screen (otherwise you just see the menu bar, and otherwise blank)
+
+![](images/2023-11-29-12-57-15.png)
+
+To be able to transfer files
+
+![](images/2023-11-29-12-58-05.png)
+
+To be able to control keyboard and mouse
+
+![](images/2023-11-29-12-58-36.png)
+
+## I'm using cloudflare and I'm getting a black screen but the mouse moves?
+
+If you are using cloudflare for your DNS hosting and your remote screen is black, DONT PANIC!
+
+Unfortunately, MeshCentral currently doesnt work with CloudFlares Proxy DNS Mode, so the remote agent devices have to connect directly to your MeshCentral Server instead of being proxied!
+
+The fix is to simply disable the 'Proxy Status' to OFF inside your DNS A Record.
+
+Simple follow the steps [here](https://developers.cloudflare.com/fundamentals/setup/manage-domains/pause-cloudflare/#disable-proxy-on-dns-records)
+
+Once done, open your firewall for the `port` and `agentPort` ports of where your meshcentral is hosted, then restart your MeshCentral Server
+
+The is currently a PINNED GitHub issue about this [here](https://github.com/Ylianst/MeshCentral/issues/5302)
 

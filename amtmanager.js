@@ -750,7 +750,8 @@ module.exports.CreateAmtManager = function (parent) {
                                                 // Start power polling if not connected to LMS
                                                 var ppfunc = function powerPoleFunction() { fetchPowerState(powerPoleFunction.dev); }
                                                 ppfunc.dev = dev;
-                                                dev.polltimer = new setTimeout(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
+                                                if(dev.polltimer){ clearInterval(dev.polltimer); delete dev.polltimer; }
+                                                dev.polltimer = new setInterval(ppfunc, 290000); // Poll for power state every 4 minutes 50 seconds.
                                                 fetchPowerState(dev);
                                             } else {
                                                 // For LMS connections, close now.
@@ -930,8 +931,8 @@ module.exports.CreateAmtManager = function (parent) {
                     if (response.Body.OSPowerSavingState == 2) { meshPowerState = 1; } // Fully powered (S0);
                     else if (response.Body.OSPowerSavingState == 3) { meshPowerState = 2; } // Modern standby (We are going to call this S1);
 
-                    // Set OS power state
-                    if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, meshPowerState, null, { name: dev.name }); }
+                    // Set OS power state - connType: 0 = CIRA, 1 = CIRA-Relay, 2 = CIRA-LMS, 3 = LAN
+                    if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), (dev.connType == 3 ? 4 : 2), meshPowerState, null, { name: dev.name }); }
                 });
             } else {
                 // Convert the power state
@@ -940,8 +941,8 @@ module.exports.CreateAmtManager = function (parent) {
                 var meshPowerState = -1, powerConversionTable = [-1, -1, 1, 2, 3, 6, 6, 5, 6];
                 if (powerstate < powerConversionTable.length) { meshPowerState = powerConversionTable[powerstate]; } else { powerstate = 6; }
 
-                // Set power state
-                if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), 4, meshPowerState, null, { name: dev.name }); }
+                // Set power state - connType: 0 = CIRA, 1 = CIRA-Relay, 2 = CIRA-LMS, 3 = LAN
+                if (meshPowerState >= 0) { parent.SetConnectivityState(dev.meshid, dev.nodeid, Date.now(), (dev.connType == 3 ? 4 : 2), meshPowerState, null, { name: dev.name }); }
             }
         });
     }
@@ -1318,7 +1319,7 @@ module.exports.CreateAmtManager = function (parent) {
                         }
 
                         // Figure out what index is local & remote
-                        var localNdx = ((dev.policy.tlsSettings[0]['InstanceID'] == 'Intel(r) AMT LMS TLS Settings')) ? 0 : 1, remoteNdx = (1 - localNdx);
+                        var localNdx = ((dev.policy != null) && (dev.policy.tlsSettings != null) && (dev.policy.tlsSettings[0] != null) && (dev.policy.tlsSettings[0]['InstanceID'] == 'Intel(r) AMT LMS TLS Settings')) ? 0 : 1, remoteNdx = (1 - localNdx);
 
                         // Remote TLS settings
                         var xxTlsSettings2 = Clone(dev.policy.tlsSettings);

@@ -1533,9 +1533,8 @@ a {
     opacity: 1;
 }
 
-.lb1 {
-    background: url(../images/leftbar-64.png) -1px -2px;
-    background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
+/*groups all buttons repeated code into one block*/
+.lbtg {
     height: 62px;
     width: 62px;
     cursor: pointer;
@@ -1543,66 +1542,36 @@ a {
     position: absolute;
     top: 6px;
     left: 6px;
+}
+
+.lb1 {
+    background: url(../images/leftbar-64.png) -1px -2px;
+    background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
 }
 
 .lb2 {
     background: url(../images/leftbar-64.png) -66px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb3 {
     background: url(../images/leftbar-64.png) -130px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb4 {
     background: url(../images/leftbar-64.png) -194px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb5 {
     background: url(../images/leftbar-64.png) -257px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .lb6 {
     background: url(../images/leftbar-64.png) -318px -2px;
     background-image: image-set(url(../images/leftbar-64.png) 1x, url(../images/leftbar-128.png) 2x);
-    height: 62px;
-    width: 62px;
-    cursor: pointer;
-    border: none;
-    position: absolute;
-    top: 6px;
-    left: 6px;
 }
 
 .m0 {
@@ -1914,6 +1883,26 @@ a {
 
 .fileIcon4 {
     background: url(../images/meshicon16.png);
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
+.fileIcon5 {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABVklEQVQ4T42Ty22DUBBFzW9PB3EJpoKYDpwKIiQ+YpW4grSQHRIgESqIO3A6CB3YHYQlCz65F/Gslwe2gzTCwNwzd2aetdU/rqIo7KZp7DiOz2q6dk+fpulG1/XPYRhshBuGYSVrbgIkcQ0RY6NCFgEUappWIFiVwpJ3PD+rkBlAqrqerLoUIR6CINhnWXaUIX8AC2IyamEb4lfZSdu2zgVwRSzmNUIQOwyUrTzi95bvRkCSJGvLso54IWwvLYezeIL4heK+770oig4jIM9zrmk3qZjIfbPvRZAQ86PGQ4JefqbMyjRN1/O8etrEt0qAg7NhGA5zRgAGs8Wdk+X1DiclV4iJO/hGgOyklqvPHED44fu+RyicVHB2QpItWlPFI2CawUkMEJBD13Ulpv0mVZ9VFq2NAKUNte2r4osDAWHvyiq/8LxX/0ByhdlRntyseOJuCQXkFwkT7PS0vyFtAAAAAElFTkSuQmCC);
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
+.fileIcon6 {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABCUlEQVQ4T6WT3Q2CMBSFLTAAbiAb4AhuIBvYBEJ40wkcQV/5SXAEN9ANdAPZwL5DwNOENm2xxoQmPLT3nq/3nAaymLnITP3CCqjr2m/bdkUI8ZMkudsumgC4sOu6IwQ7fL4iPAN0MEEaYBTf0BRabmSALNWaBijL8oTi/lcusHSN4zgSPSbgbYzNIGDDMKxUqOd5S0op42cSUBRFiOaHJBPSuK675o1VVb0MyEYEawUAJP3CGgfLXPq+j9I0vWoTjAFyC+p6jhstVLxSkGVZowH4BqPWGJU/n3XB5gUh0q8h/vOMCDAQAU4mEFTLJHeII1VsBQhQnudbx3EYhE9T+NXCL++22uy/8QNYGm0RH2Rb4gAAAABJRU5ErkJggg==);
     height: 16px;
     width: 16px;
     cursor: pointer;
@@ -3079,7 +3068,6 @@ a {
 .tagSpan {
     background-color: lightgray;
     padding: 3px;
-    margin-right: 4px;
     border-radius: 5px;
 }
 
@@ -3233,6 +3221,7 @@ a {
     background-color: gold;
     margin-right: 6px;
     border-radius: 4px;
+    margin-bottom: 5px;
 }
 
 .night .thermalSensor {
@@ -3278,4 +3267,24 @@ a {
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;
+}
+
+#notesPanel table {
+        color: black;
+        background-color: #EEE;
+        border-color: #AAA;
+        border-width: 1px;
+        border-style: solid;
+        border-collapse: collapse;
+        width: 100%;
+}
+
+#notesPanel thead {
+    background-color: #AAA;
+    font-weight: bold;
+}
+
+#notesPanel thead tr {
+    background-color: #AAA;
+    font-weight: bold;
 }

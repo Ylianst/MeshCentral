@@ -49,6 +49,16 @@ Intel® AMT
 
 If you are looking into managing remote computers that would be difficult to physically get access to for remote support or maintenance, one should probably look at getting a PC with Intel AMT.
 
+## Bare-Metal Activation Server
+
+The `AmtProvisioningServer` section in the `settings` section of the config.json will enable this feature. MeshCentral will then listen for activation requests, match against your ACM activation certificates and if everything goes well, will activate and add the device to a Intel AMT only device group. No agent or MeshCMD is involved.
+
+This bare-metal activation server is not enabled by default and only makes sense when activating devices on the local network.
+
+Once enabled, Intel AMT can send “hello” data to the MeshCentral provisioning server on port 9971 and MeshCentral will respond by connecting back, authenticating, and activating Intel AMT. MeshCentral will then log the event, add the device to a pre-defined agent-less device group and complete any remaining configuration. A trusted CA certificate is required to perform this operation fully automatically.
+
+![baremetal](images/amtprovisioningserver.png)
+
 ## MeshCentral Group Types
 
 Once MeshCentral is installed, a user will typically create a new device group. Here is the first hint that MeshCentral supports Intel AMT. Device groups come in two types. You can manage using a software agent, or using Intel AMT only.
@@ -175,11 +185,21 @@ Once setup, Intel AMT will not automatically activate to Intel AMT unless the ri
   - The name “meshcentral.com” by have been set as “Trusted FQDN” in MEBx.
   - The name “meshcentral.com” must have been set using a USB key with a setup.bin file.
 
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/mhq0bsWJEOw" frameborder="0" allowfullscreen></iframe>
+</div>
+
 Once Intel AMT is in a situation where ACM activation can occur, the activation command line can be run or the Mesh Agent will detect this situation and ask the server to perform activation.
 
 ![](images/2022-05-16-23-16-05.png)
 
 The best way to test this feature is to create an “Intel AMT only” device group and run the MeshCMD command on the remote system to perform activation. If there is a problem, this process should clearly display why ACM activation fails.
+
+!!!note
+  Activation over wifi has some additional issues.<br>
+  First you need to add your WiFi access point to that wifi configuration to allow CSME to take over WiFi when OS is not functioning. Then it should work.<br>
+  Please also make sure you install Intel WiFi driver and Intel LMS package. It should work. You can detach the ethernet and then try connecting to that device using the IP address acquired by WiFi interface.
+  See [Open AMT Cloud Toolkit](https://www.intel.com/content/www/us/en/developer/topic-technology/edge-5g/tools/open-amt-cloud-toolkit.html) project - a close relative to this project. It has an AMT activation component and newer remote provisioning client can activate locally and also can manage Wi-Fi profile.
 
 ## Intel AMT MEI and LMS
 

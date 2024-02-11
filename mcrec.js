@@ -13,27 +13,15 @@ var worker = null;
 const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
 var directRun = (require.main === module);
 function log() { if (directRun) { console.log(...arguments); } /*else { if (worker != null) { worker.parentPort.postMessage({ msg: arguments[0] }); } } */ }
+function log2() { if (directRun) { console.log(...arguments); } else { process.send(...arguments); } /*else { if (worker != null) { worker.parentPort.postMessage({ msg: arguments[0] }); } } */ }
 if (directRun && (NodeJSVer >= 12)) { const xworker = require('worker_threads'); try { if (xworker.isMainThread == false) { worker = xworker; } } catch (ex) { log(ex); } }
-function start() { startEx(process.argv); }
-if (directRun) { setup(); }
-
-function setup() { InstallModules(['image-size'], start); }
-function start() { startEx(process.argv); }
-function startEx(argv) {
-    if (argv.length > 2) { indexFile(argv[2]); } else {
-        log("MeshCentral Session Recodings Processor");
-        log("This tool will index a .mcrec file so that the player can seek thru the file.");
-        log("");
-        log("  Usage: node mcrec [file]");
-    }
-}
 
 function indexFile(infile) {
     var state = { recFileName: null, recFile: null, recFileSize: 0, recFilePtr: 0 };
-    if (fs.existsSync(infile) == false) { log("Missing file: " + infile); return; }
+    if (fs.existsSync(infile) == false) { log2("Missing file: " + infile); return; }
     state.recFileName = infile;
     state.recFileSize = fs.statSync(infile).size;
-    if (state.recFileSize < 32) { log("Invalid file: " + infile); return; }
+    if (state.recFileSize < 32) { log2("Invalid file size: " + infile); return; }
     log("Processing file: " + infile + ", " + state.recFileSize + " bytes.");
     state.recFile = fs.openSync(infile, 'r+');
     state.indexTime = 10; // Interval between indexes in seconds
@@ -43,8 +31,8 @@ function indexFile(infile) {
     state.height = 0;
     state.basePtr = null;
     readLastBlock(state, function (state, result, time, extras) {
-        if (result == false) { log("Invalid file: " + infile); return; }
-        if (extras != null) { log("File already indexed: " + infile); return; }
+        if (result == false) { log2("Invalid file: " + infile); return; }
+        if (extras != null) { log2("File already indexed: " + infile); return; }
         state.lastTimeStamp = time;
         readNextBlock(state, processBlock);
     });
@@ -68,7 +56,7 @@ function processBlock(state, block, err) {
         // Error reading the next block, exit now.
         fs.close(state.recFile, function () {
             for (var i in state) { delete state[i]; } // Clear the state.
-            log("Error.");
+            log2("Error.");
         });
         return;
     }
@@ -77,7 +65,7 @@ function processBlock(state, block, err) {
         writeIndex(state, function () {
             fs.close(state.recFile, function () {
                 for (var i in state) { delete state[i]; } // Clear the state.
-                log("Done.");
+                log2("Done.");
             });
         });
         return;
@@ -96,8 +84,8 @@ function processBlock(state, block, err) {
     if (block.type == 1) {
         // Metadata
         state.metadata = JSON.parse(block.data.toString());
-        if (state.metadata.indexInterval != null) { log("This file is already indexed."); return; }
-        if (state.metadata.protocol != 2) { log("Only remote desktop sessions can currently be indexed."); return; }
+        if (state.metadata.indexInterval != null) { log2("This file is already indexed."); return; }
+        if (state.metadata.protocol != 2) { log2("Only remote desktop sessions can currently be indexed."); return; }
         state.metadataFlags = block.flags;
         state.metadataTime = block.time;
         state.recFileProtocol = state.metadata.protocol;
@@ -316,7 +304,7 @@ function InstallModule(modulename, func, tag1, tag2) {
     if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
 
     // Looks like we need to keep a global reference to the child process object for this to work correctly.
-    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) {
+    InstallModuleChildProcess = child_process.exec('npm install --no-optional --save ' + modulename, { maxBuffer: 512000, timeout: 300000, cwd: parentpath }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if ((error != null) && (error != '')) {
             log('ERROR: Unable to install required module "' + modulename + '". May not have access to npm, or npm may not have suffisent rights to load the new module. Try "npm install ' + modulename + '" to manualy install this module.\r\n');
@@ -328,6 +316,18 @@ function InstallModule(modulename, func, tag1, tag2) {
         return;
     });
 }
+
+function setup() { InstallModules(['image-size'], start); }
+function start() { startEx(process.argv); }
+function startEx(argv) {
+    if (argv.length > 2) { indexFile(argv[2]); } else {
+        log("MeshCentral Session Recodings Processor");
+        log("This tool will index a .mcrec file so that the player can seek thru the file.");
+        log("");
+        log("  Usage: node mcrec [file]");
+    }
+}
+if (directRun) { setup(); }
 
 // Export table
 module.exports.startEx = startEx;

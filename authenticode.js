@@ -298,7 +298,7 @@ function createAuthenticodeHandler(path) {
         for (var i = 0; i < obj.header.coff.numberOfSections; i++) {
             var section = {};
             buf = readFileSlice(obj.header.SectionHeadersPtr + (i * 40), 40);
-            if (buf[0] != 46) { obj.close(); return false; }; // Name of the section must start with a dot. If not, something is wrong.
+            if ((buf[0] != 46) && (buf[0] != 95)) { obj.close(); return false; }; // Name of the section must start with a dot or underscore. If not, something is wrong.
             var sectionName = buf.slice(0, 8).toString().trim('\0');
             var j = sectionName.indexOf('\0');
             if (j >= 0) { sectionName = sectionName.substring(0, j); } // Trim any trailing zeroes

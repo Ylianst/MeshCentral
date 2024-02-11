@@ -1,4 +1,4 @@
-[[[SERVERNAME]]] - Device Help Request
+[[[SERVERNAME]]] - Solicitud de ayuda del dispositivo
 Device "[[[DEVICENAME]]]" requested assistance.
 
 User: "[[[HELPUSERNAME]]]"

@@ -241,7 +241,6 @@
     <Compile Include="redirserver.js" />
     <Compile Include="taskmanager.js" />
     <Compile Include="translate\translate.js" />
-    <Compile Include="ua-parser.js" />
     <Compile Include="webauthn.js" />
     <Compile Include="webrelayserver.js" />
     <Compile Include="webserver.js" />
@@ -441,7 +440,6 @@
     <Content Include="LICENSE" />
     <Content Include="meshcentral-config-schema.json" />
     <Content Include="package.json" />
-    <Content Include="plugin_development.md" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.application" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.exe.config.deploy" />
     <Content Include="public\clickonce\minirouter\Application Files\MeshMiniRouter_1_0_0_70\MeshMiniRouter.exe.deploy" />
@@ -718,6 +716,7 @@
     <Folder Include="typings\globals\sprintf-js\" />
     <Folder Include="typings\globals\sqlite3\" />
     <Folder Include="typings\globals\type-check\" />
+    <Folder Include="typings\globals\ua-parser-js\" />
     <Folder Include="typings\globals\underscore\" />
     <Folder Include="typings\globals\uuid\" />
     <Folder Include="typings\globals\window-size\" />
@@ -764,6 +763,7 @@
     <TypeScriptCompile Include="typings\globals\sprintf-js\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\sqlite3\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\type-check\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\ua-parser-js\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\underscore\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\uuid\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\window-size\index.d.ts" />
