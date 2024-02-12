@@ -842,24 +842,21 @@ module.exports.CreateMstscRelay = function (parent, db, ws, req, args, domain) {
                             obj.relaySocket.resume();
                         }
                     } else {
-                        if (typeof data == 'string') {
-                            // Forward any ping/pong commands to the browser
-                            var cmd = null;
-                            try {  // Forward any ping/pong commands to the browser
-                                cmd = JSON.parse(data); 
-                                if ((cmd != null) && (cmd.ctrlChannel == '102938')) {
-                                    if (cmd.type == 'ping') { send(['ping']); }
-                                    else if (cmd.type == 'pong') { send(['pong']); }
-                                }
-                                return;
-                            } catch (ex) { // You are not JSON data so just send over relaySocket
-                                obj.wsClient._socket.pause();
-                                try {
-                                    obj.relaySocket.write(data, function () {
-                                        if (obj.wsClient && obj.wsClient._socket) { try { obj.wsClient._socket.resume(); } catch (ex) { console.log(ex); } }
-                                    });
-                                } catch (ex) { console.log(ex); obj.close(); }
+                        try {  // Forward any ping/pong commands to the browser
+                            var cmd = JSON.parse(data); 
+                            if ((cmd != null) && (cmd.ctrlChannel == '102938')) {
+                                if (cmd.type == 'ping') { send(['ping']); }
+                                else if (cmd.type == 'pong') { send(['pong']); }
                             }
+                            return;
+                        } catch (ex) { // You are not JSON data so just send over relaySocket
+                            obj.wsClient._socket.pause();
+                            try {
+                                obj.relaySocket.write(data, function () {
+                                    if (obj.wsClient && obj.wsClient._socket) { try { obj.wsClient._socket.resume(); } catch (ex) { console.log(ex); } }
+                                });
+                            } catch (ex) { console.log(ex); obj.close(); }
+                        }
                     }
                 });
                 obj.wsClient.on('close', function () { parent.parent.debug('relay', 'RDP: Relay websocket closed'); obj.close(); });
