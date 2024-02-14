@@ -803,24 +803,37 @@
         },
         "autoBackup": {
           "type": "object",
+          "description": "Enable automatic backups of your meshcentral-data",
           "properties": {
             "mongoDumpPath": {
-              "type": "string"
+              "type": "string",
+              "default": "mongodump",
+              "description": "The file path of where \"mongodump\" is located. Default is \"mongodump\""
             },
             "mysqlDumpPath": {
-              "type": "string"
+              "type": "string",
+              "default": "mysqldump",
+              "description": "The file path of where \"mysqldump\" is located. Default is \"mysqldump\""
             },
             "backupIntervalHours": {
-              "type": "integer"
+              "type": "integer",
+              "default": 24,
+              "description": "How often should the autobackup run in hours from the second meshcentral starts up? Default is every 24 hours"
             },
             "keepLastDaysBackup": {
-              "type": "integer"
+              "type": "integer",
+              "default": 10,
+              "description": "How many days of backups should the autobackup keep? Default is 10 Days worth"
             },
             "zipPassword": {
-              "type": "string"
+              "type": "string",
+              "default": null,
+              "description": "When specified, the ZIP backups will be password protected with the zipPassword"
             },
             "backupPath": {
-              "type": "string"
+              "type": "string",
+              "default": "meshcentral-backups",
+              "description": "The file path where backup files are kept. The default is \"meshcentral-backups\" which sits next to \"meshcentral-data\"."
             },
             "googleDrive": {
               "type": "object",
@@ -2554,7 +2567,8 @@
               },
               "filepath": {
                 "type": "string",
-                "description": "The file path where recording files are kept."
+                "default": "meshcentral-recordings",
+                "description": "The file path where recording files are kept. The default is \"meshcentral-recordings\" which sits next to \"meshcentral-data\"."
               },
               "index": {
                 "type": "boolean",
