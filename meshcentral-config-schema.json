@@ -1360,7 +1360,12 @@
                       "type": "string"
                     },
                     "protocol": {
-                      "description": "Protocol. Valid values are: custom,http,https,rdp,ssh,scp,mcrdesktop,mcrfiles.",
+                      "description": "Protocol. Valid values are: custom,http,wr_http,https,wr_https,rdp,ssh,scp,mcrdesktop,mcrfiles.",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "Optional destination path for web relay links to the remote device.",
+                      "default": "",
                       "type": "string"
                     },
                     "port": {
