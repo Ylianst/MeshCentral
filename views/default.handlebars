@@ -4003,6 +4003,8 @@
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
             x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
             x += '<label><input id=d2c7 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0)?' checked':'') + '>' + "Last Seen" + '</label><br />';
+            x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('host') >= 0)?' checked':'') + '>' + "Host" + '</label><br />';
+            x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('activated') >= 0)?' checked':'') + '>' + "Active" + '</label><br />';
             setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
         }
 
@@ -4021,6 +4023,8 @@
             if (Q('d2c11').checked) { cols.push('windowsav'); }
             if (Q('d2c12').checked) { cols.push('windowsupdate'); }
             if (Q('d2c13').checked) { cols.push('windowsfirewall'); }
+            if (Q('d2c15').checked) { cols.push('host'); }
+            if (Q('d2c17').checked) { cols.push('activated'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
             mainUpdate(4);
@@ -4465,6 +4469,8 @@
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
+                        if (deviceViewSettings.devsCols.indexOf('host') >= 0){ colums += '<th style=color:gray;width:100px>' + "Host"; }
+                        if (deviceViewSettings.devsCols.indexOf('activated') >= 0){ colums += '<th style=color:gray;width:100px>' + "Activated"; }
                         if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) {
                             colums += '<th style=color:gray;width:120px>' + "Last Seen";
                             if (requestedLastConnects == false) { requestedLastConnects = true; meshserver.send({ action: 'lastconnects' }); }
