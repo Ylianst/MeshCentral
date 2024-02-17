@@ -6420,8 +6420,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
         function setupHTTPHandlers() {
-            if (parent.parent.pluginHandler != null) {
-                parent.parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
+                
+            // Setup all HTTP handlers
+            if (parent.pluginHandler != null) {
+                parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
             if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req, obj.args.tlsoffload == null); }); }
             for (var i in parent.config.domains) {
@@ -6478,12 +6480,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.ws(url + 'control.ashx', function (ws, req) {
                     getWebsocketArgs(ws, req, function (ws, req) {
                         const domain = getDomain(req);
-                        if (obj.CheckWebServerOriginName(domain, req) == false) {
-                        try { ws.send(JSON.stringify({ action: 'close', cause: 'invalidorigin', msg: 'invalidorigin' })); } catch (ex) { }
-                        try { ws.close(); } catch (ex) { }
-                        return;
-                    }
-                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
+                        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
                         PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                             if (user == null) { // User is not authenticated, perform inner server authentication
                                 if (req.headers['x-meshauth'] === '*') {
@@ -6520,6 +6517,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     });
                 });
+                if (obj.args.wanonly != true) { // If the server is not in WAN mode, allow server relayed connections.
+                    obj.app.ws(url + 'localrelay.ashx', function (ws, req) {
+                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                            if ((user == null) || (cookie == null)) {
+                                try { ws1.close(); } catch (ex) { }
+                            } else {
+                                obj.meshRelayHandler.CreateLocalRelay(obj, ws1, req1, domain, user, cookie); // Local relay
+                            }
+                        });
+                    });
+                }
                 if (domain.agentinvitecodes == true) {
                     obj.app.get(url + 'invite', handleInviteRequest);
                     obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
