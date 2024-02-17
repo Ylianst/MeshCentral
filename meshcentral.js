@@ -1312,6 +1312,7 @@ function CreateMeshCentralServer(config, args) {
             if (typeof obj.config.domains[i].agentallowedip == 'string') { if (obj.config.domains[i].agentallowedip == '') { delete obj.config.domains[i].agentallowedip; } else { obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip.split(','); } }
             if (typeof obj.config.domains[i].agentblockedip == 'string') { if (obj.config.domains[i].agentblockedip == '') { delete obj.config.domains[i].agentblockedip; } else { obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip.split(','); } }
             if (typeof obj.config.domains[i].ignoreagenthashcheck == 'string') { if (obj.config.domains[i].ignoreagenthashcheck == '') { delete obj.config.domains[i].ignoreagenthashcheck; } else { obj.config.domains[i].ignoreagenthashcheck = obj.config.domains[i].ignoreagenthashcheck.split(','); } }
+            if (typeof obj.config.domains[i].allowedorigin == 'string') { if (obj.config.domains[i].allowedorigin == '') { delete obj.config.domains[i].allowedorigin; } else { obj.config.domains[i].allowedorigin = obj.config.domains[i].allowedorigin.split(','); } }
             if ((obj.config.domains[i].passwordrequirements != null) && (typeof obj.config.domains[i].passwordrequirements == 'object')) {
                 if (typeof obj.config.domains[i].passwordrequirements.skip2factor == 'string') {
                     obj.config.domains[i].passwordrequirements.skip2factor = obj.config.domains[i].passwordrequirements.skip2factor.split(',');
