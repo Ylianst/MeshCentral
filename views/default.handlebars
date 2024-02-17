@@ -4004,8 +4004,8 @@
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
             x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
             x += '<label><input id=d2c7 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0)?' checked':'') + '>' + "Last Seen" + '</label><br />';
-            x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('host') >= 0)?' checked':'') + '>' + "Host" + '</label><br />';
-            x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('activated') >= 0)?' checked':'') + '>' + "Active" + '</label><br />';
+            x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0)?' checked':'') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
+            x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0)?' checked':'') + '>' + "Intel&reg; AMT state" + '</label><br />';
             setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
         }
 
@@ -4024,8 +4024,8 @@
             if (Q('d2c11').checked) { cols.push('windowsav'); }
             if (Q('d2c12').checked) { cols.push('windowsupdate'); }
             if (Q('d2c13').checked) { cols.push('windowsfirewall'); }
-            if (Q('d2c15').checked) { cols.push('host'); }
-            if (Q('d2c17').checked) { cols.push('activated'); }
+            if (Q('d2c15').checked) { cols.push('amthost'); }
+            if (Q('d2c17').checked) { cols.push('amtstate'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
             mainUpdate(4);
@@ -4470,8 +4470,8 @@
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
-                        if (deviceViewSettings.devsCols.indexOf('host') >= 0){ colums += '<th style=color:gray;width:100px>' + "Host"; }
-                        if (deviceViewSettings.devsCols.indexOf('activated') >= 0){ colums += '<th style=color:gray;width:100px>' + "Activated"; }
+                        if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT Host"; }
+                        if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT State"; }
                         if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) {
                             colums += '<th style=color:gray;width:120px>' + "Last Seen";
                             if (requestedLastConnects == false) { requestedLastConnects = true; meshserver.send({ action: 'lastconnects' }); }
@@ -4785,6 +4785,18 @@
                 if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center>' + ip; } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
+
+                console.log(node.intelamt);
+                if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
+                if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
+                    var amtstate = '';
+                    if (node.intelamt) {
+                        if (node.intelamt.state == 0) { amtstate = ' <span title="' + "Intel&reg; AMT is not activated" + '">' + "Pre" + '</span>'; }
+                        if (node.intelamt.state == 1) { amtstate = ' <span title="' + "Intel&reg; AMT is in activation mode" + '">' + "In" + '</span>'; }
+                        if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { amtstate = ' <span title="' + "Intel&reg; AMT is activated in Client Control Mode" + '">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { amtstate += ' <span title="' + "Intel&reg; AMT is activated in Admin Control Mode" + '">' + "ACM" + '</span>'; } }
+                    }
+                    r += '<td style=text-align:center>' + amtstate;
+                }
 
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
