@@ -201,8 +201,10 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                 var vs = getInstance(amtlogicalelements, 'AMT')['VersionString'];
                 if (vs != null) {
                     dev.aquired.version = vs;
-                    dev.aquired.versionmajor = parseInt(dev.aquired.version.split('.')[0]);
-                    dev.aquired.versionminor = parseInt(dev.aquired.version.split('.')[1]);
+                    version = parseInt(dev.aquired.version.split('.'));
+                    dev.aquired.versionmajor = parseInt(version[0]);
+                    dev.aquired.versionminor = parseInt(version[1]);
+                    dev.aquired.maintenance = parseInt(version[2]);
                 }
             }
         }
@@ -214,6 +216,7 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                 dev.aquired.version = s[0] + '.' + s[1] + '.' + s[2];
                 dev.aquired.versionmajor = parseInt(s[0]);
                 dev.aquired.versionminor = parseInt(s[1]);
+                dev.aquired.maintenance = parseInt(s[2]);
             }
         }
 

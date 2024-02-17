@@ -707,7 +707,7 @@ module.exports.CreateAmtManager = function (parent) {
             dev.aquired.controlMode = responses['IPS_HostBasedSetupService'].response.CurrentControlMode; // 1 = CCM, 2 = ACM
             if (typeof stack.wsman.comm.amtVersion == 'string') { // Set the Intel AMT version using the HTTP header if present
                 var verSplit = stack.wsman.comm.amtVersion.split('.');
-                if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+                if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); dev.aquired.maintenance=parseInt(verSplit[2]);}
             }
             dev.aquired.realm = stack.wsman.comm.digestRealm;
             dev.aquired.user = dev.intelamt.user = stack.wsman.comm.user;
@@ -2621,7 +2621,7 @@ module.exports.CreateAmtManager = function (parent) {
                     if (domain && domain.amtmanager && (domain.amtmanager.tlsacmactivation == true)) { TlsAcmActivation = true; }
 
                     // Check Intel AMT version
-                    if (typeof dev.intelamt.ver == 'string') { var verSplit = dev.intelamt.ver.split('.'); if (verSplit.length >= 3) { dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); } }
+                    if (typeof dev.intelamt.ver == 'string') { var verSplit = dev.intelamt.ver.split('.'); if (verSplit.length >= 3) { dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); dev.aquired.maintenance = parseInt(verSplit[2]);} }
 
                     // If this is Intel AMT 14 or better and allowed, we are going to attempt a host-based end-to-end TLS activation.
                     if (TlsAcmActivation && (dev.aquired.majorver >= 14)) {
@@ -2677,7 +2677,7 @@ module.exports.CreateAmtManager = function (parent) {
         dev.aquired.controlMode = 1; // 1 = CCM, 2 = ACM
         if (typeof dev.amtstack.wsman.comm.amtVersion == 'string') {
             var verSplit = dev.amtstack.wsman.comm.amtVersion.split('.');
-            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]); }
+            if (verSplit.length >= 3) { dev.aquired.version = verSplit[0] + '.' + verSplit[1] + '.' + verSplit[2]; dev.aquired.majorver = parseInt(verSplit[0]); dev.aquired.minorver = parseInt(verSplit[1]);  dev.aquired.maintenance = parseInt(verSplit[2]);}
         }
         if ((typeof dev.mpsConnection.tag.meiState.OsHostname == 'string') && (typeof dev.mpsConnection.tag.meiState.OsDnsSuffix == 'string')) {
             dev.aquired.host = dev.mpsConnection.tag.meiState.OsHostname + '.' + dev.mpsConnection.tag.meiState.OsDnsSuffix;
@@ -2812,8 +2812,12 @@ module.exports.CreateAmtManager = function (parent) {
                 var vs = getInstance(amtlogicalelements, 'AMT')['VersionString'];
                 if (vs != null) {
                     dev.aquired.version = vs;
-                    dev.aquired.versionmajor = parseInt(dev.aquired.version.split('.')[0]);
-                    dev.aquired.versionminor = parseInt(dev.aquired.version.split('.')[1]);
+                    version = dev.aquired.version.split('.')
+                    dev.aquired.versionmajor = parseInt(version[0]);
+                    dev.aquired.versionminor = parseInt(version[1]);
+                    if(version.length > 2){
+                        dev.aquired.versionmaintenance = version[2];
+                    }
                 }
             }
         }
@@ -2825,6 +2829,7 @@ module.exports.CreateAmtManager = function (parent) {
                 dev.aquired.version = s[0] + '.' + s[1] + '.' + s[2];
                 dev.aquired.versionmajor = parseInt(s[0]);
                 dev.aquired.versionminor = parseInt(s[1]);
+                dev.aquired.versionmaintenance = parseInt(s[2]);
             }
         }
 
