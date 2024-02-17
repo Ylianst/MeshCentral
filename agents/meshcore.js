@@ -656,14 +656,14 @@ try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreO
 
 // Get Volumes and BitLocker if Windows
 try {
-    if (process.platform == 'win32'){
-        if (require('computer-identifiers').volumes_promise != null){
+    if (process.platform == 'win32') {
+        if (require('computer-identifiers').volumes_promise != null) {
             var p = require('computer-identifiers').volumes_promise();
-            p.then(function (res){
+            p.then(function (res) {
                 meshCoreObj.volumes = res;
                 meshCoreObjChanged();
             });
-        }else if (require('computer-identifiers').volumes != null){
+        } else if (require('computer-identifiers').volumes != null) {
             meshCoreObj.volumes = require('computer-identifiers').volumes();
             meshCoreObjChanged();
         }
