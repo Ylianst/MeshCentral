@@ -4785,8 +4785,6 @@
                 if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center>' + ip; } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
-
-                console.log(node.intelamt);
                 if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
                 if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
                     var amtstate = '';
@@ -7453,20 +7451,20 @@
                     x += addDeviceAttribute("Antivirus", y.join('<br />'));
                 }
 
+                /*
                 // Volumes and Bitlocker
                 if (node.volumes){
                     var bitlocker = [];
                     for (var i in node.volumes) {
                         if (typeof node.volumes[i].protectionStatus !== 'undefined' && node.volumes[i].protectionStatus == 'On'){
-                            bitlocker.push('<div style=margin-bottom:2px>' + addKeyLinkConditional(i + ' - <span style=color:green>' + node.volumes[i].volumeStatus + '</span>',"p10showBitlockerKey('"+i+"')", (userinfo.siteadmin == 0xFFFFFFFF)) + '</div>');
-                        }else if (typeof node.volumes[i].protectionStatus !== 'undefined'){
-                            bitlocker.push('<div style=margin-bottom:2px>' + i + ' - <span style=color:red>' + node.volumes[i].volumeStatus + '</span>' + '</div>');
+                            bitlocker.push('<div style=margin-bottom:2px>' + addKeyLinkConditional(i + ' - <span style=color:green>' + EscapeHtml(node.volumes[i].volumeStatus) + '</span>', 'p10showBitlockerKey(\'' + i + '\')', (userinfo.siteadmin == 0xFFFFFFFF)) + '</div>');
+                        } else if (typeof node.volumes[i].protectionStatus !== 'undefined') {
+                            bitlocker.push('<div style=margin-bottom:2px>' + i + ' - <span style=color:red>' + EscapeHtml(node.volumes[i].volumeStatus) + '</span>' + '</div>');
                         }
                     }
-                    if(bitlocker.length > 0){
-                        x += addDeviceAttribute("BitLocker", bitlocker.join(' '));
-                    }
+                    if (bitlocker.length > 0) { x += addDeviceAttribute("BitLocker", bitlocker.join(' ')); }
                 }
+                */
 
                 // Active Users
                 if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
@@ -7922,14 +7920,9 @@
 
         function p10showBitlockerKey(drive) {
             if (xxdialogMode) return false;
-            var x = '<div>';
-                x += '<p>BitLocker Identifier For <b>' + drive + ':</b></p>';
-            x += '<p style=user-select:text;font-weight:bold>' + (currentNode.volumes[drive].identifier ? currentNode.volumes[drive].identifier : 'Unknown') + '</p>';
-
-            x += '<p>BitLocker Recovery Password For <b>' + drive + ':</b></p>';
-            x += '<p style=user-select:text;font-weight:bold>' + (currentNode.volumes[drive].recoveryPassword ? currentNode.volumes[drive].recoveryPassword : 'Unknown') + '</p>';
-            x += '</div>'
-            setDialogMode(2, "BitLocker Information", 1, null, x, '');
+            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(currentNode.volumes[drive].identifier ? currentNode.volumes[drive].identifier : "Unknown") + '</p>';
+            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(currentNode.volumes[drive].recoveryPassword ? currentNode.volumes[drive].recoveryPassword : "Unknown") + '</p></div>';
+            setDialogMode(2, EscapeHtml(drive) + ': ' + "BitLocker Information", 1, null, x, '');
         }
 
         function p20editDeviceNotify() {
@@ -11062,15 +11055,15 @@
                     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
                     const i = parseInt(Math.floor(Math.log(Math.abs(f.s)) / Math.log(1024)), 10);
                     const option = Q('p13sizedropdown').options[Q('p13sizedropdown').selectedIndex];
-                    if(Q('p13sizedropdown').value==0){
+                    if (Q('p13sizedropdown').value == 0) {
                         if (f.s === 0){
                             fsize = 'n/a';
-                        }else{
+                        } else {
                             fsize = (i === 0 ? `${f.s} ${sizes[i]}` : `${(f.s / (1024 ** i)).toFixed(2)} ${sizes[i]}`);
                         }
-                    }else if(Q('p13sizedropdown').value==1){
+                    } else if (Q('p13sizedropdown').value==1) {
                         fsize = getFileSizeStr(f.s);
-                    }else{
+                    } else {
                         fsize = `${(f.s / (2 ** option.value)).toFixed(2)} ${option.title}`;
                     }
                 }
@@ -12127,6 +12120,31 @@
                 x += '</table>';
 
                 if (x != '') { sections.push({ name: "Storage", html: x, img: 'storage64.png'}); }
+            }
+
+            // Volumes and Bitlocker
+            if (node.volumes) {
+                var x = '';
+                for (var i in node.volumes) {
+                    var m = node.volumes[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + i + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
+                    if (m.size) {
+                        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                        var i = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
+                        var fsize = (i === 0 ? `${m.size} ${sizes[i]}` : `${(m.size / (1024 ** i)).toFixed(2)} ${sizes[i]}`);
+                        x += addDetailItem("Capacity", EscapeHtml(fsize), s);
+                    }
+                    if (m.type) { x += addDetailItem("File System", (m.removable == true ? ("Removable" + ' / ') : '') + EscapeHtml(m.type), s); }
+                    if (m.protectionStatus || m.volumeStatus) {
+                        var bitlockerState = [];
+                        if (m.protectionStatus) bitlockerState.push("Enabled");
+                        if (m.volumeStatus) bitlockerState.push(EscapeHtml(m.volumeStatus));
+                        x += addDetailItem("BitLocker", bitlockerState.join(' - '), s);
+                    }
+                    x += '</div>';
+                }
+                if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage64.png'}); }
             }
 
             // Render the sections
