@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -2133,6 +2133,7 @@
                 QV('verifyEmailId2', false);
                 QV('logoutControl', false);
                 if (errorCode == 'noauth') { QH('p0span', "Unable to perform authentication"); return; }
+                if (errorCode == 'invalidorigin') { QH('p0span', "Invalid origin in HTTP request"); return; }
                 if (prevState == 2) { if (autoReconnect) { setTimeout(serverPoll, 5000); } } else { QH('p0span', "Unable to connect web socket"); }
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {

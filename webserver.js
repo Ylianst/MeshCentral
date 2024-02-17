@@ -5734,6 +5734,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return obj.certificates.CommonName;
     }
 
+    // Return true if this is an allowed HTTP request origin hostname.
+    obj.CheckWebServerOriginName = function (domain, req) {
+        if (domain.allowedorigin === true) return true; // Ignore origin
+        if (typeof req.headers.origin != 'string') return true; // No origin in the header, this is a desktop app
+        const originUrl = require('url').parse(req.headers.origin, true);
+        if (typeof originUrl.hostname != 'string') return false; // Origin hostname is not valid
+        if (Array.isArray(domain.allowedorigin)) return (domain.allowedorigin.indexOf(originUrl.hostname) >= 0); // Check if this is an allowed origin from an explicit list
+        if (obj.isTrustedCert(domain) === false) return true; // This server does not have a trusted certificate.
+        if (domain.dns != null) return (domain.dns == originUrl.hostname); // Match the domain DNS
+        return (obj.certificates.CommonName == originUrl.hostname); // Match the default server name
+    }
+
     // Create a OSX mesh agent installer
     obj.handleMeshOsxAgentRequest = function (req, res) {
         const domain = getDomain(req, res);
@@ -6434,6 +6446,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             obj.app.ws(url + 'control.ashx', function (ws, req) {
                 getWebsocketArgs(ws, req, function (ws, req) {
                     const domain = getDomain(req);
+                    if (obj.CheckWebServerOriginName(domain, req) == false) {
+                        try { ws.send(JSON.stringify({ action: 'close', cause: 'invalidorigin', msg: 'invalidorigin' })); } catch (ex) { }
+                        try { ws.close(); } catch (ex) { }
+                        return;
+                    }
                     if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
                     PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                         if (user == null) { // User is not authenticated, perform inner server authentication

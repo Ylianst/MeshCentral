@@ -1134,6 +1134,15 @@
               "type": "string"
             }
           },
+          "allowedOrigin": {
+            "type": [ "array", "boolean" ],
+            "default": false,
+            "uniqueItems": true,
+            "description": "A list of allowed hostnames for HTTP request origin header. If false, a default list is created, if true, all hostnames are allowed.",
+            "items": {
+              "type": "string"
+            }
+          },
           "welcomeText": {
             "type": "string",
             "description": "Text that will be shown on the login screen."
