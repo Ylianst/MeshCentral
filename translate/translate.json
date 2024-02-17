@@ -5022,6 +5022,27 @@
     },
     {
       "en": "</table>",
+      "bs": "</table>",
+      "cs": "</table>",
+      "da": "</table>",
+      "de": "</table>",
+      "es": "</table>",
+      "fi": "</table>",
+      "fr": "</table>",
+      "hi": "</table>",
+      "it": "</table>",
+      "ja": "</table>",
+      "ko": "</table>",
+      "nl": "</table>",
+      "pl": "</table>",
+      "pt": "</table>",
+      "pt-br": "</table>",
+      "ru": "</table>",
+      "sv": "</table>",
+      "tr": "</table>",
+      "zh-chs": "</table>",
+      "zh-cht": "</table>",
+      "hu": "<<",
       "xloc": [
         "default.handlebars->47->620"
       ]
@@ -5190,6 +5211,7 @@
     },
     {
       "en": "<b>DNS Servers</b>",
+      "nl": "<b>DNS Servers</b>",
       "xloc": [
         "default-mobile.handlebars->11->785",
         "default.handlebars->47->1585"
@@ -5197,12 +5219,14 @@
     },
     {
       "en": "<div style=margin-bottom:4px>Perform batch device notification</div>",
+      "nl": "<div style=margin-bottom:4px>Perform batch device notification</div>",
       "xloc": [
         "default.handlebars->47->728"
       ]
     },
     {
       "en": "<span style=color:green>OK</span>",
+      "nl": "<span style=color:green>OK</span>",
       "xloc": [
         "default.handlebars->47->413",
         "default.handlebars->47->415",
@@ -5211,6 +5235,7 @@
     },
     {
       "en": "<span style=color:red>BAD</span>",
+      "nl": "<span style=color:red>FOUT</span>",
       "xloc": [
         "default.handlebars->47->414",
         "default.handlebars->47->416",
@@ -5219,18 +5244,41 @@
     },
     {
       "en": "<table style=width:180px>",
+      "bs": "<table style=width:180px>",
+      "cs": "<table style=width:180px>",
+      "da": "<table style=width:180px>",
+      "de": "<table style=width:180px>",
+      "es": "<table style=width:180px>",
+      "fi": "<table style=width:180px>",
+      "fr": "<table style=width:180px>",
+      "hi": "<table style=width:180px>",
+      "it": "<table style=width:180px>",
+      "ja": "<table style=width:180px>",
+      "ko": "<table style=width:180px>",
+      "nl": "<table style=width:180px>",
+      "pl": "<table style=width:180px>",
+      "pt": "<table style=width:180px>",
+      "pt-br": "<table style=width:180px>",
+      "ru": "<table style=width:180px>",
+      "sv": "<table style=width:180px>",
+      "tr": "<table style=width:180px>",
+      "zh-chs": "<table style=width:180px>",
+      "zh-cht": "<table style=width:180px>",
+      "hu": "<table style=width:180px>",
       "xloc": [
         "default.handlebars->47->617"
       ]
     },
     {
       "en": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=cursor:pointer src=\\\"images/google-play-140.png\\\" width=140 srcset=\\\"images/google-play-280.png 2x\\\" /></a></td></tr>",
+      "nl": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=cursor:pointer src=\\\"images/google-play-140.png\\\" width=140 srcset=\\\"images/google-play-280.png 2x\\\" /></a></td></tr>",
       "xloc": [
         "default.handlebars->47->618"
       ]
     },
     {
       "en": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\\\"><img style=cursor:pointer src=\\\"images/amazon-appstore-140.png\\\"  width=140 srcset=\\\"images/amazon-appstore-280.png 2x\\\" /></a></td></tr>",
+      "nl": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\\\"><img style=cursor:pointer src=\\\"images/amazon-appstore-140.png\\\"  width=140 srcset=\\\"images/amazon-appstore-280.png 2x\\\" /></a></td></tr>",
       "xloc": [
         "default.handlebars->47->619"
       ]
@@ -5474,12 +5522,14 @@
     },
     {
       "en": "APK",
+      "nl": "APK",
       "xloc": [
         "default.handlebars->47->623"
       ]
     },
     {
       "en": "APK version of the MeshAgent",
+      "nl": "APK versie van de MeshAgent",
       "xloc": [
         "default-mobile.handlebars->11->896",
         "default.handlebars->47->622"
@@ -9427,6 +9477,7 @@
     },
     {
       "en": "Alert Box",
+      "nl": "Alert Box",
       "xloc": [
         "default.handlebars->47->1149",
         "default.handlebars->47->731"
@@ -10250,6 +10301,7 @@
     },
     {
       "en": "Android MeshAgent",
+      "nl": "Android MeshAgent",
       "xloc": [
         "default.handlebars->47->566"
       ]
@@ -13001,6 +13053,7 @@
     },
     {
       "en": "BitLocker",
+      "nl": "BitLocker",
       "xloc": [
         "default-mobile.handlebars->11->756",
         "default.handlebars->47->922"
@@ -13370,6 +13423,7 @@
     },
     {
       "en": "Bytes",
+      "nl": "Bytes",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown",
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->3"
@@ -18734,6 +18788,7 @@
     },
     {
       "en": "Copy Secret to clipboard",
+      "nl": "Kopieer geheim naar klembord",
       "xloc": [
         "default.handlebars->47->213"
       ]
@@ -24741,6 +24796,7 @@
     },
     {
       "en": "Displaying alert box, title=\\\"{0}\\\", message=\\\"{1}\\\"",
+      "nl": "Waarschuwingsvenster weergeven, title=\\\"{0}\\\", message=\\\"{1}\\\"",
       "xloc": [
         "default.handlebars->47->2561"
       ]
@@ -30940,6 +30996,7 @@
     },
     {
       "en": "First Failure",
+      "nl": "Eerste fout",
       "xloc": [
         "default.handlebars->47->1422"
       ]
@@ -32183,6 +32240,27 @@
     },
     {
       "en": "GB",
+      "bs": "GB",
+      "cs": "GB",
+      "da": "GB",
+      "de": "GB",
+      "es": "GB",
+      "fi": "GB",
+      "fr": "GB",
+      "hi": "GB",
+      "it": "GB",
+      "ja": "GB",
+      "ko": "GB",
+      "nl": "GB",
+      "pl": "GB",
+      "pt": "GB",
+      "pt-br": "GB",
+      "ru": "GB",
+      "sv": "GB",
+      "tr": "GB",
+      "zh-chs": "GB",
+      "zh-cht": "GB",
+      "hu": "GB",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown"
       ]
@@ -32838,12 +32916,14 @@
     },
     {
       "en": "Gigabyte",
+      "nl": "Gigabyte",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->9"
       ]
     },
     {
       "en": "Go To Folder",
+      "nl": "Ga naar map",
       "xloc": [
         "default.handlebars->47->1487"
       ]
@@ -32954,6 +33034,7 @@
     },
     {
       "en": "GoTo",
+      "nl": "GoTo",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
       ]
@@ -34818,12 +34899,10 @@
     },
     {
       "en": "Human Readable",
+      "nl": "Human Readable",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->1"
       ]
-    },
-    {
-      "en": "Human Readble"
     },
     {
       "bs": "Mađarski",
@@ -36612,12 +36691,14 @@
     },
     {
       "en": "Installed By",
+      "nl": "Geïnstalleerd door",
       "xloc": [
         "default.handlebars->47->1419"
       ]
     },
     {
       "en": "Installed Date",
+      "nl": "Installatie datum",
       "xloc": [
         "default.handlebars->47->1420"
       ]
@@ -39581,6 +39662,7 @@
     },
     {
       "en": "IsActivated",
+      "nl": "IsActivated",
       "xloc": [
         "default-mobile.handlebars->11->821",
         "default.handlebars->47->1621"
@@ -39588,6 +39670,7 @@
     },
     {
       "en": "IsEnabled",
+      "nl": "IsEnabled",
       "xloc": [
         "default-mobile.handlebars->11->822",
         "default.handlebars->47->1622"
@@ -39595,6 +39678,7 @@
     },
     {
       "en": "IsOwned",
+      "nl": "IsOwned",
       "xloc": [
         "default-mobile.handlebars->11->823",
         "default.handlebars->47->1623"
@@ -39835,6 +39919,27 @@
     },
     {
       "en": "KB",
+      "bs": "KB",
+      "cs": "KB",
+      "da": "KB",
+      "de": "KB",
+      "es": "KB",
+      "fi": "KB",
+      "fr": "KB",
+      "hi": "KB",
+      "ja": "KB",
+      "it": "KB",
+      "nl": "KB",
+      "ko": "KB",
+      "pl": "KB",
+      "pt": "KB",
+      "pt-br": "KB",
+      "ru": "KB",
+      "sv": "KB",
+      "tr": "KB",
+      "zh-chs": "KB",
+      "zh-cht": "KB",
+      "hu": "KB",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown"
       ]
@@ -40256,6 +40361,7 @@
     },
     {
       "en": "Kilobytes",
+      "nl": "Kilobytes",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->5"
       ]
@@ -40882,6 +40988,7 @@
     },
     {
       "en": "Last Boot Up Time",
+      "nl": "Tijd van laatste opstart",
       "xloc": [
         "default-mobile.handlebars->11->727",
         "default-mobile.handlebars->11->728",
@@ -42469,6 +42576,7 @@
     },
     {
       "en": "Linux Binary",
+      "nl": "Linux Binary",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tlinuxbinarytab"
       ]
@@ -44117,6 +44225,27 @@
     },
     {
       "en": "MB",
+      "bs": "KB",
+      "cs": "MB",
+      "da": "MB",
+      "de": "MB",
+      "es": "MB",
+      "fi": "MB",
+      "fr": "MB",
+      "hi": "MB",
+      "ja": "MB",
+      "it": "MB",
+      "nl": "MB",
+      "ko": "MB",
+      "pl": "MB",
+      "pt": "MB",
+      "pt-br": "MB",
+      "ru": "MB",
+      "sv": "MB",
+      "tr": "MB",
+      "zh-chs": "MB",
+      "zh-cht": "MB",
+      "hu": "MB",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown"
       ]
@@ -45322,6 +45451,7 @@
     },
     {
       "en": "ManufacturerId",
+      "nl": "ManufacturerId",
       "xloc": [
         "default-mobile.handlebars->11->819",
         "default.handlebars->47->1619"
@@ -45329,6 +45459,7 @@
     },
     {
       "en": "ManufacturerVersion",
+      "nl": "ManufacturerVersion",
       "xloc": [
         "default-mobile.handlebars->11->820",
         "default.handlebars->47->1620"
@@ -47355,6 +47486,7 @@
     },
     {
       "en": "Mode",
+      "nl": "Mode",
       "xloc": [
         "default-mobile.handlebars->11->808",
         "default.handlebars->47->1608"
@@ -52238,6 +52370,7 @@
     },
     {
       "en": "On",
+      "nl": "Aan",
       "xloc": [
         "default-mobile.handlebars->11->744",
         "default-mobile.handlebars->11->748",
@@ -54405,6 +54538,7 @@
     },
     {
       "en": "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>",
+      "nl": "Voer Intel&reg; AMT uit?<br><br><b>LET OP: Als er een actieve AMT-sessie is, wordt het uitschakelcommando afgewezen, dus u moet eerst de verbinding met de AMT-sessie verbreken!</b>",
       "xloc": [
         "default-mobile.handlebars->11->586",
         "default.handlebars->47->1240"
@@ -57528,6 +57662,7 @@
     },
     {
       "en": "RealTimeProtection",
+      "nl": "RealTimeProtection",
       "xloc": [
         "default-mobile.handlebars->11->743",
         "default-mobile.handlebars->11->745",
@@ -61066,12 +61201,14 @@
     },
     {
       "en": "Requesting Process Details...",
+      "nl": "Procesdetails opvragen...",
       "xloc": [
         "default.handlebars->47->1402"
       ]
     },
     {
       "en": "Requesting Service Details...",
+      "nl": "Servicegegevens opvragen...",
       "xloc": [
         "default.handlebars->47->1432"
       ]
@@ -61499,6 +61636,7 @@
     },
     {
       "en": "Restart Fail Count After ",
+      "nl": "Herstart foutteller na ",
       "xloc": [
         "default.handlebars->47->1421"
       ]
@@ -63822,6 +63960,7 @@
     },
     {
       "en": "Scroll To Top",
+      "nl": "Scroll naar boven",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar"
@@ -63913,6 +64052,7 @@
     },
     {
       "en": "Second Failure",
+      "nl": "Tweede fout",
       "xloc": [
         "default.handlebars->47->1423"
       ]
@@ -65324,6 +65464,7 @@
     },
     {
       "en": "Server Configuration",
+      "nl": "Server Configuratie",
       "xloc": [
         "default.handlebars->47->202",
         "default.handlebars->47->2039",
@@ -65386,6 +65527,7 @@
     },
     {
       "en": "Server Errors",
+      "en": "Server fouten",
       "xloc": [
         "default.handlebars->47->197",
         "default.handlebars->47->2036"
@@ -65916,6 +66058,7 @@
     },
     {
       "en": "Server has no config file.",
+      "nl": "Server heeft geen configuratiebestand.",
       "xloc": [
         "default.handlebars->47->203"
       ]
@@ -67661,6 +67804,7 @@
     },
     {
       "en": "Show for 10 minutes",
+      "nl": "Toon gedurende 10 minuten",
       "xloc": [
         "default.handlebars->47->1138",
         "default.handlebars->47->1152",
@@ -67697,6 +67841,7 @@
     },
     {
       "en": "Show for 2 Minutes (Default)",
+      "nl": "Toon gedurende 2 Minuten (Standaard)",
       "xloc": [
         "default.handlebars->47->1137",
         "default.handlebars->47->1151",
@@ -67705,6 +67850,7 @@
     },
     {
       "en": "Show for 30 minutes",
+      "nl": "Toon gedurende 30 Minuten",
       "xloc": [
         "default.handlebars->47->1139",
         "default.handlebars->47->1153",
@@ -83647,6 +83793,27 @@
     },
     {
       "en": "config.json",
+      "bs": "config.json",
+      "cs": "config.json",
+      "da": "config.json",
+      "de": "config.json",
+      "es": "config.json",
+      "fi": "config.json",
+      "fr": "config.json",
+      "hi": "config.json",
+      "it": "config.json",
+      "ja": "config.json",
+      "ko": "config.json",
+      "nl": "config.json",
+      "pl": "config.json",
+      "pt": "config.json",
+      "pt-br": "config.json",
+      "ru": "config.json",
+      "sv": "config.json",
+      "tr": "config.json",
+      "zh-chs": "config.json",
+      "zh-cht": "config.json",
+      "hu": "config.json",
       "xloc": [
         "default.handlebars->47->2041"
       ]
@@ -84333,6 +84500,7 @@
     },
     {
       "en": "https://hooks.slack.com/...",
+      "nl": "https://hooks.slack.com/...",
       "xloc": [
         "default.handlebars->47->1701",
         "default.handlebars->47->2916"
@@ -84487,6 +84655,7 @@
     },
     {
       "en": "id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,bitlocker,avdetails,tags",
+      "nl": "id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,bitlocker,avdetails,tags",
       "xloc": [
         "default.handlebars->47->761"
       ]
@@ -85357,6 +85526,7 @@
     },
     {
       "en": "service_",
+      "nl": "service_",
       "xloc": [
         "default.handlebars->47->1430",
         "default.handlebars->47->1433"
@@ -87423,6 +87593,27 @@
     },
     {
       "en": "{0}, {1}",
+      "bs": "{0}, {1}",
+      "cs": "{0}, {1}",
+      "da": "{0}, {1}",
+      "de": "{0}, {1}",
+      "es": "{0}, {1}",
+      "fi": "{0}, {1}",
+      "fr": "{0}, {1}",
+      "hi": "{0}, {1}",
+      "it": "{0}, {1}",
+      "ja": "{0}, {1}",
+      "ko": "{0}, {1}",
+      "nl": "{0}, {1}",
+      "pl": "{0}, {1}",
+      "pt": "{0}, {1}",
+      "pt-br": "{0}, {1}",
+      "ru": "{0}, {1}",
+      "sv": "{0}, {1}",
+      "tr": "{0}, {1}",
+      "zh-chs": "{0}, {1}",
+      "zh-cht": "{0}, {1}",
+      "hu": "{0}, {1}",
       "xloc": [
         "default-mobile.handlebars->11->832",
         "default.handlebars->47->1632"
