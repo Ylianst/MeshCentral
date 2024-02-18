@@ -1940,21 +1940,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // TODO: Check that the agent has an interface that is the same as the one we got this websocket connection on. Only set if we have a match.
                 }
 
-                // Volumes and BitLocker
-                if (command.volumes != null) {
-                    for (var i in command.volumes) {
-                        // Fix the incoming data and cut down how much data we use
-                        const v = command.volumes[i];
-                        if (typeof v.size == 'string') { v.size = parseInt(v.size); }
-                        if (v.recoveryPassword == '') { delete v.recoveryPassword; }
-                        if (v.identifier == '') { delete v.identifier; }
-                        if (v.name == '') { delete v.name; }
-                        if (v.removable != true) { delete v.removable; }
-                        if (v.protectionStatus == 'On') { v.protectionStatus = true; } else { delete v.protectionStatus; }
-                        if (v.volumeStatus == "FullyDecrypted") { delete v.volumeStatus; }
-                    }
-                    if (JSON.stringify(device.volumes) != JSON.stringify(command.volumes)) { device.volumes = command.volumes; change = 1; }
-                }
+                // Remove old volumes and BitLocker data, this is part of sysinfo.
+                delete device.volumes;
 
                 // If there are changes, event the new device
                 if (change == 1) {

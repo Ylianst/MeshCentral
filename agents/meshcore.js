@@ -654,22 +654,6 @@ var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
 
-// Get Volumes and BitLocker if Windows
-try {
-    if (process.platform == 'win32') {
-        if (require('computer-identifiers').volumes_promise != null) {
-            var p = require('computer-identifiers').volumes_promise();
-            p.then(function (res) {
-                meshCoreObj.volumes = res;
-                meshCoreObjChanged();
-            });
-        } else if (require('computer-identifiers').volumes != null) {
-            meshCoreObj.volumes = require('computer-identifiers').volumes();
-            meshCoreObjChanged();
-        }
-    }
-} catch(e) { }
-
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 try {
     var userSession = require('user-sessions');
@@ -1959,28 +1943,24 @@ function getSystemInformation(func) {
         results.hardware.network = { dns: require('os').dns() }; 
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
-        // results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-        // func(results);
 
-        
         // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
             results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
-
             if (require('computer-identifiers').volumes_promise != null)
             {
                 var p = require('computer-identifiers').volumes_promise();
                 p.then(function (res)
                 {
-                    results.hardware.windows.volumes = res;
+                    results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res);
                     results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
             }
             else if (require('computer-identifiers').volumes != null)
             {
-                results.hardware.windows.volumes = require('computer-identifiers').volumes();
+                results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(require('computer-identifiers').volumes());
                 results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                 func(results);
             }
@@ -3801,7 +3781,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',cs,wpfhwacceleration,uac,volumes,rdpport';
+                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
@@ -3961,6 +3941,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'volumes':
                 response = JSON.stringify(require('win-volumes').getVolumes(), null, 1);
+                break;
+            case 'bitlocker':
+                if (process.platform == 'win32') {
+                    if (require('computer-identifiers').volumes_promise != null) {
+                        var p = require('computer-identifiers').volumes_promise();
+                        p.then(function (res) { sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(res), null, 1), this.session); });
+                        response = "Please wait...";
+                    } else if (require('computer-identifiers').volumes != null) {
+                        sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(require('computer-identifiers').volumes()), null, 1), this.session);
+                    }
+                }
                 break;
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.
                 {
@@ -5702,6 +5693,7 @@ function sendPeriodicServerUpdate(flags, force) {
                 });
             } catch (ex) { }
         }
+
         // Get Defender for Windows Server
         try { 
             var d = require('win-info').defender();
@@ -5709,20 +5701,7 @@ function sendPeriodicServerUpdate(flags, force) {
                 meshCoreObj.defender = res;
                 meshCoreObjChanged();
             });
-        } catch (ex){ }
-        // Get Volumes and BitLocker if Windows
-        try {
-            if (require('computer-identifiers').volumes_promise != null){
-                var p = require('computer-identifiers').volumes_promise();
-                p.then(function (res){
-                    meshCoreObj.volumes = res;
-                    meshCoreObjChanged();
-                });
-            }else if (require('computer-identifiers').volumes != null){
-                meshCoreObj.volumes = require('computer-identifiers').volumes();
-                meshCoreObjChanged();
-            }
-        } catch(e) { }
+        } catch (ex) { }
     }
 
     // Send available data right now
@@ -5734,6 +5713,24 @@ function sendPeriodicServerUpdate(flags, force) {
             mesh.SendCommand(meshCoreObj);
         }
     }
+}
+
+// Sort the names in an object
+function sortObject(obj) { return Object.keys(obj).sort().reduce(function(a, v) { a[v] = obj[v]; return a; }, {}); }
+
+// Fix the incoming data and cut down how much data we use
+function cleanGetBitLockerVolumeInfo(volumes) {
+    for (var i in volumes) {
+        const v = volumes[i];
+        if (typeof v.size == 'string') { v.size = parseInt(v.size); }
+        if (v.identifier == '') { delete v.identifier; }
+        if (v.name == '') { delete v.name; }
+        if (v.removable != true) { delete v.removable; }
+        if (v.protectionStatus == 'On') { v.protectionStatus = true; } else { delete v.protectionStatus; }
+        if (v.volumeStatus == 'FullyDecrypted') { delete v.volumeStatus; }
+        if (v.recoveryPassword == '') { delete v.recoveryPassword; }
+    }
+    return sortObject(volumes);
 }
 
 // Once we are done collecting all the data, send to server if needed

@@ -7451,21 +7451,6 @@
                     x += addDeviceAttribute("Antivirus", y.join('<br />'));
                 }
 
-                /*
-                // Volumes and Bitlocker
-                if (node.volumes){
-                    var bitlocker = [];
-                    for (var i in node.volumes) {
-                        if (typeof node.volumes[i].protectionStatus !== 'undefined' && node.volumes[i].protectionStatus == 'On'){
-                            bitlocker.push('<div style=margin-bottom:2px>' + addKeyLinkConditional(i + ' - <span style=color:green>' + EscapeHtml(node.volumes[i].volumeStatus) + '</span>', 'p10showBitlockerKey(\'' + i + '\')', (userinfo.siteadmin == 0xFFFFFFFF)) + '</div>');
-                        } else if (typeof node.volumes[i].protectionStatus !== 'undefined') {
-                            bitlocker.push('<div style=margin-bottom:2px>' + i + ' - <span style=color:red>' + EscapeHtml(node.volumes[i].volumeStatus) + '</span>' + '</div>');
-                        }
-                    }
-                    if (bitlocker.length > 0) { x += addDeviceAttribute("BitLocker", bitlocker.join(' ')); }
-                }
-                */
-
                 // Active Users
                 if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
 
@@ -7916,13 +7901,6 @@
             } else {
                 setDialogMode(2, "Power Operation", 3, function() { meshserver.send({ action: 'wakedevices', nodeids: [ currentNode._id ] }); }, "Perform power on?"); // Turn on
             }
-        }
-
-        function p10showBitlockerKey(drive) {
-            if (xxdialogMode) return false;
-            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(currentNode.volumes[drive].identifier ? currentNode.volumes[drive].identifier : "Unknown") + '</p>';
-            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(currentNode.volumes[drive].recoveryPassword ? currentNode.volumes[drive].recoveryPassword : "Unknown") + '</p></div>';
-            setDialogMode(2, EscapeHtml(drive) + ': ' + "BitLocker Information", 1, null, x, '');
         }
 
         function p20editDeviceNotify() {
@@ -12123,24 +12101,27 @@
             }
 
             // Volumes and Bitlocker
-            if (node.volumes) {
+            if (hardware.windows && hardware.windows.volumes) {
                 var x = '';
-                for (var i in node.volumes) {
-                    var m = node.volumes[i];
+                for (var i in hardware.windows.volumes) {
+                    var m = hardware.windows.volumes[i];
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + i + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
                     if (m.size) {
                         var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-                        var i = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
-                        var fsize = (i === 0 ? `${m.size} ${sizes[i]}` : `${(m.size / (1024 ** i)).toFixed(2)} ${sizes[i]}`);
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.size} ${sizes[j]}` : `${(m.size / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
                         x += addDetailItem("Capacity", EscapeHtml(fsize), s);
                     }
                     if (m.type) { x += addDetailItem("File System", (m.removable == true ? ("Removable" + ' / ') : '') + EscapeHtml(m.type), s); }
+
                     if (m.protectionStatus || m.volumeStatus) {
                         var bitlockerState = [];
                         if (m.protectionStatus) bitlockerState.push("Enabled");
                         if (m.volumeStatus) bitlockerState.push(EscapeHtml(m.volumeStatus));
-                        x += addDetailItem("BitLocker", bitlockerState.join(' - '), s);
+                        bitlockerState = bitlockerState.join(' - ');
+                        if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
+                        x += addDetailItem("BitLocker", bitlockerState, s);
                     }
                     x += '</div>';
                 }
@@ -12165,6 +12146,13 @@
             } else {
                 QH('p17info2', x);
             }
+        }
+
+        function deviceDetailsShowBitlockerInfo(drive, identifier, password) {
+            if (xxdialogMode) return false;
+            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + (identifier ? decodeURIComponent(identifier) : "Unknown") + '</p>';
+            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + (password ? decodeURIComponent(password) : "Unknown") + '</p></div>';
+            setDialogMode(2, decodeURIComponent(drive) + ': ' + "BitLocker Information", 1, null, x, '');
         }
 
         //
