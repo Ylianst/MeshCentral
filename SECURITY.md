@@ -13,6 +13,7 @@ Any version of MeshCentral 1.x.x is supported.
 
 Please report any concerns or security issue to Ylian Saint-Hilaire (ylianst@gmail.com). If needed, use my PGP key below.
 
+```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: BCPG v1.56
 
@@ -45,3 +46,4 @@ Wowv4eLcc3FwQ+lBElUctKg8vNFb0gD/ZWVWsWwKerNgNnf7RGD9mt8G2CKvdgGG
 oZ2hPP2gU9w=
 =roW4
 -----END PGP PUBLIC KEY BLOCK-----
+```
