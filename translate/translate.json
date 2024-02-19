@@ -5222,6 +5222,7 @@
     {
       "en": "<b>DNS Servers</b>",
       "nl": "<b>DNS Servers</b>",
+	  "pl": "<b>Serwery DNS</b>",
       "xloc": [
         "default-mobile.handlebars->11->785",
         "default.handlebars->47->1599"
@@ -5230,6 +5231,7 @@
     {
       "en": "<div style=margin-bottom:4px>Perform batch device notification</div>",
       "nl": "<div style=margin-bottom:4px>Perform batch device notification</div>",
+	  "pl": "<div style=margin-bottom:4px>Wykonaj wsadowo powiadomienie na maszynach</div>",
       "xloc": [
         "default.handlebars->47->741"
       ]
@@ -5237,6 +5239,7 @@
     {
       "en": "<span style=color:green>OK</span>",
       "nl": "<span style=color:green>OK</span>",
+	  "pl": "<span style=color:green>OK</span>",
       "xloc": [
         "default.handlebars->47->418",
         "default.handlebars->47->420",
@@ -5246,6 +5249,7 @@
     {
       "en": "<span style=color:red>BAD</span>",
       "nl": "<span style=color:red>FOUT</span>",
+	  "pl": "<span style=color:red>NIEPOPRAWNY</span>",
       "xloc": [
         "default.handlebars->47->419",
         "default.handlebars->47->421",
@@ -5282,6 +5286,7 @@
     {
       "en": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=cursor:pointer src=\\\"images/google-play-140.png\\\" width=140 srcset=\\\"images/google-play-280.png 2x\\\" /></a></td></tr>",
       "nl": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=cursor:pointer src=\\\"images/google-play-140.png\\\" width=140 srcset=\\\"images/google-play-280.png 2x\\\" /></a></td></tr>",
+	  "pl": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\\\"><img style=cursor:pointer src=\\\"images/google-play-140.png\\\" width=140 srcset=\\\"images/google-play-280.png 2x\\\" /></a></td></tr>",
       "xloc": [
         "default.handlebars->47->631"
       ]
@@ -5289,6 +5294,7 @@
     {
       "en": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\\\"><img style=cursor:pointer src=\\\"images/amazon-appstore-140.png\\\"  width=140 srcset=\\\"images/amazon-appstore-280.png 2x\\\" /></a></td></tr>",
       "nl": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\\\"><img style=cursor:pointer src=\\\"images/amazon-appstore-140.png\\\"  width=140 srcset=\\\"images/amazon-appstore-280.png 2x\\\" /></a></td></tr>",
+	  "pl": "<tr><td style=text-align:center><a rel=\\\"noreferrer noopener\\\" target=_blank href=\\\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\\\"><img style=cursor:pointer src=\\\"images/amazon-appstore-140.png\\\"  width=140 srcset=\\\"images/amazon-appstore-280.png 2x\\\" /></a></td></tr>",
       "xloc": [
         "default.handlebars->47->632"
       ]
@@ -5452,12 +5458,14 @@
     },
     {
       "en": "AMT Host",
+	  "pl": "Host AMT",
       "xloc": [
         "default.handlebars->47->380"
       ]
     },
     {
       "en": "AMT State",
+	  "pl": "Stan AMT",
       "xloc": [
         "default.handlebars->47->381"
       ]
@@ -5553,6 +5561,7 @@
     {
       "en": "APK version of the MeshAgent",
       "nl": "APK versie van de MeshAgent",
+	  "pl": "Wersja APK MeshAgent",
       "xloc": [
         "default-mobile.handlebars->11->896",
         "default.handlebars->47->635"
@@ -5561,6 +5570,7 @@
     {
       "en": "ARM 64bit version of the MeshAgent",
       "nl": "ARM 64bit versie van de MeshAgent",
+	  "pl": "Meshagent wersja ARM 64bit",
       "de": "ARM 64bit Version des MeshAgents",
       "xloc": [
         "default.handlebars->47->616"
@@ -9501,6 +9511,7 @@
     {
       "en": "Alert Box",
       "nl": "Alert Box",
+	  "pl": "Okno Powiadomienia",
       "xloc": [
         "default.handlebars->47->1161",
         "default.handlebars->47->744"
@@ -13084,6 +13095,7 @@
     },
     {
       "en": "BitLocker Information",
+	  "pl": "Informacje o BitLocker",
       "xloc": [
         "default.handlebars->47->1668"
       ]
@@ -13453,6 +13465,7 @@
     {
       "en": "Bytes",
       "nl": "Bytes",
+	  "pl": "Bajty",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown",
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->3"
@@ -18820,6 +18833,7 @@
     {
       "en": "Copy Secret to clipboard",
       "nl": "Kopieer geheim naar klembord",
+	  "pl": "Kopiuj Tajny Klucz do schowka",
       "xloc": [
         "default.handlebars->47->214"
       ]
@@ -18904,6 +18918,7 @@
     {
       "en": "Copy Windows ARM 64bit agent URL to clipboard",
       "nl": "Kopieer de URL van de Windows ARM 64-bits agent naar het klembord",
+	  "pl": "Kopiuj URL agenta Windows ARM 64bit do schowka",
       "de": "Windows ARM 64bit Agent-URL in die Zwischenablage kopieren",
       "xloc": [
         "default.handlebars->47->618"
@@ -18912,6 +18927,7 @@
     {
       "en": "Copy Windows x86 32bit agent URL to clipboard",
       "nl": "Kopieer de Windows x86 32-bits agent-URL naar het klembord",
+	  "pl": "Kopiuj URL agenta Windows x86 32bit do schowka",
       "de": "Windows x86 32bit Agent-URL in die Zwischenablage kopieren",
       "xloc": [
         "default.handlebars->47->610"
@@ -18920,6 +18936,7 @@
     {
       "en": "Copy Windows x86 64bit agent URL to clipboard",
       "nl": "Kopieer de Windows x86 64-bits agent-URL naar het klembord",
+	  "pl": "Kopiuj URL agenta Windows x86 64bit do schowka",
       "de": "Windows x86 64bit Agent-URL in die Zwischenablage kopieren",
       "xloc": [
         "default.handlebars->47->614"
@@ -22726,7 +22743,7 @@
       "ja": "デバイスメッセージ",
       "ko": "장치 메시지",
       "nl": "Apparaatbericht",
-      "pl": "Wiadomość Urządzenia",
+      "pl": "Wiadomość do Urządzenia",
       "pt": "Mensagem do Dispositivo",
       "pt-br": "Mensagem do Dispositivo",
       "ru": "Сообщение устройства",
@@ -24624,12 +24641,12 @@
       "es": "Mostrar un cuadro de mensaje en el dispositivo remoto.",
       "fi": "Näytä viestiruutu etälaitteessa.",
       "fr": "Afficher un message sur le poste distant",
+	  "pl": "Wyświetl okno komunikatu na urządzeniu zdalnym.",
       "hi": "रिमोट डिवाइस पर एक संदेश बॉक्स प्रदर्शित करें।",
       "it": "Visualizza una finestra di messaggio sul dispositivo remoto.",
       "ja": "リモートデバイスにメッセージボックスを表示します。",
       "ko": "원격 장치에 메시지 상자를 표시합니다.",
       "nl": "Geef een berichtvenster weer op het externe apparaat.",
-      "pl": "Wyświetlić okno komunikatu na urządzeniu zdalnym.",
       "pt": "Exibe uma caixa de mensagem no dispositivo remoto.",
       "pt-br": "Exibe uma caixa de mensagem no dispositivo remoto.",
       "ru": "Показать окно с сообщением на удаленном устройстве.",
@@ -24828,6 +24845,7 @@
     {
       "en": "Displaying alert box, title=\\\"{0}\\\", message=\\\"{1}\\\"",
       "nl": "Waarschuwingsvenster weergeven, title=\\\"{0}\\\", message=\\\"{1}\\\"",
+	  "pl": "Wyświetl okno powiadomienia, tytuł=\\\"{0}\\\", wiadomość=\\\"{1}\\\"",
       "xloc": [
         "default.handlebars->47->2586"
       ]
@@ -29433,6 +29451,7 @@
     {
       "en": "Espace",
       "nl": "Ruimte",
+	  "pl": "Przestrzeń",
       "xloc": [
         "default-mobile.handlebars->11->633"
       ]
@@ -30591,6 +30610,7 @@
     },
     {
       "en": "File System",
+	  "pl": "System Plików",
       "xloc": [
         "default.handlebars->47->1658"
       ]
@@ -31035,6 +31055,7 @@
     {
       "en": "First Failure",
       "nl": "Eerste fout",
+	  "pl": "Pierwsza Awaria",
       "xloc": [
         "default.handlebars->47->1434"
       ]
@@ -32955,6 +32976,7 @@
     {
       "en": "Gigabyte",
       "nl": "Gigabyte",
+	  "pl": "Gigabajty",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->9"
       ]
@@ -32962,6 +32984,7 @@
     {
       "en": "Go To Folder",
       "nl": "Ga naar map",
+	  "pl": "Przejx do Folderu",
       "xloc": [
         "default.handlebars->47->1501"
       ]
@@ -33073,6 +33096,7 @@
     {
       "en": "GoTo",
       "nl": "GoTo",
+	  "pl": "IdźDo",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
       ]
@@ -34938,6 +34962,7 @@
     {
       "en": "Human Readable",
       "nl": "Human Readable",
+	  "pl": "Czytelnie dla człowieka",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->1"
       ]
@@ -36046,6 +36071,7 @@
     },
     {
       "en": "In",
+	  "pl": "W",
       "xloc": [
         "default.handlebars->47->428"
       ]
@@ -36737,6 +36763,7 @@
     {
       "en": "Installed By",
       "nl": "Geïnstalleerd door",
+	  "pl": "Zainstalowano Przez",
       "xloc": [
         "default.handlebars->47->1431"
       ]
@@ -36744,6 +36771,7 @@
     {
       "en": "Installed Date",
       "nl": "Installatie datum",
+	  "pl": "Data Instalacji",
       "xloc": [
         "default.handlebars->47->1432"
       ]
@@ -37632,6 +37660,7 @@
     },
     {
       "en": "Intel&reg; AMT hostname",
+	  "pl": "Nazwa hosta Intel&reg; AMT",
       "xloc": [
         "default.handlebars->47->350"
       ]
@@ -37694,12 +37723,14 @@
     },
     {
       "en": "Intel&reg; AMT is in activation mode",
+	  "pl": "Intel&reg; AMT jest w trybie aktywacji",
       "xloc": [
         "default.handlebars->47->427"
       ]
     },
     {
       "en": "Intel&reg; AMT is not activated",
+	  "pl": "Intel&reg; AMT nie jest aktywowane",
       "xloc": [
         "default.handlebars->47->425"
       ]
@@ -39167,6 +39198,7 @@
     },
     {
       "en": "Invalid origin in HTTP request",
+	  "pl": "Nieprawidłowe źródło w żądaniu HTTP",
       "xloc": [
         "default.handlebars->47->69"
       ]
@@ -39740,6 +39772,7 @@
     {
       "en": "IsActivated",
       "nl": "IsActivated",
+	  "pl": "Aktywny",
       "xloc": [
         "default-mobile.handlebars->11->821",
         "default.handlebars->47->1635"
@@ -39748,6 +39781,7 @@
     {
       "en": "IsEnabled",
       "nl": "IsEnabled",
+	  "pl": "Włączony",
       "xloc": [
         "default-mobile.handlebars->11->822",
         "default.handlebars->47->1636"
@@ -39756,6 +39790,7 @@
     {
       "en": "IsOwned",
       "nl": "IsOwned",
+	  "pl": "Jest Własnością",
       "xloc": [
         "default-mobile.handlebars->11->823",
         "default.handlebars->47->1637"
@@ -40439,6 +40474,7 @@
     {
       "en": "Kilobytes",
       "nl": "Kilobytes",
+	  "pl": "Kilobajty",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->4->1->1->p13sizedropdown->5"
       ]
@@ -41066,6 +41102,7 @@
     {
       "en": "Last Boot Up Time",
       "nl": "Tijd van laatste opstart",
+	  "pl": "Czas Ostatniego Uruchomienia",
       "xloc": [
         "default-mobile.handlebars->11->727",
         "default-mobile.handlebars->11->728",
@@ -42654,6 +42691,7 @@
     {
       "en": "Linux Binary",
       "nl": "Linux Binary",
+	  "pl": "Plik Binrany Linux",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tlinuxbinarytab"
       ]
@@ -45529,6 +45567,7 @@
     {
       "en": "ManufacturerId",
       "nl": "ManufacturerId",
+	  "pl": "ID Producenta",
       "xloc": [
         "default-mobile.handlebars->11->819",
         "default.handlebars->47->1633"
@@ -45537,6 +45576,7 @@
     {
       "en": "ManufacturerVersion",
       "nl": "ManufacturerVersion",
+	  "pl": "Wersja Wydania",
       "xloc": [
         "default-mobile.handlebars->11->820",
         "default.handlebars->47->1634"
@@ -46829,6 +46869,7 @@
     {
       "en": "MeshCmd (Win ARM-64 executable)",
       "nl": "MeshCmd (Win ARM-64 uitvoerbaar)",
+	  "pl": "MeshCmd (plik wykonywalny Win ARM-64)",
       "de": "MeshCmd (Win ARM-64 ausführbare Datei)",
       "xloc": [
         "default.handlebars->47->1316"
@@ -46837,6 +46878,7 @@
     {
       "en": "MeshCmd (Win x86-32 executable)",
       "nl": "MeshCmd (Win x86-32 uitvoerbaar)",
+	  "pl": "MeshCmd (plik wykonywalny Win x86-32)",
       "de": "MeshCmd (Win x86-32 ausführbare Datei)",
       "xloc": [
         "default.handlebars->47->1314"
@@ -46845,6 +46887,7 @@
     {
       "en": "MeshCmd (Win x86-64 executable)",
       "nl": "MeshCmd (Win x86-64 uitvoerbaar)",
+	  "pl": "MeshCmd (plik wykonywalny Win x86-64)",
       "de": "MeshCmd (Win x86-64 ausführbare Datei)",
       "xloc": [
         "default.handlebars->47->1315"
@@ -47564,6 +47607,7 @@
     {
       "en": "Mode",
       "nl": "Mode",
+	  "pl": "Tryb",
       "xloc": [
         "default-mobile.handlebars->11->808",
         "default.handlebars->47->1622"
@@ -52448,6 +52492,7 @@
     {
       "en": "On",
       "nl": "Aan",
+	  "pl": "Włącz",
       "xloc": [
         "default-mobile.handlebars->11->744",
         "default-mobile.handlebars->11->748",
@@ -54616,6 +54661,7 @@
     {
       "en": "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>",
       "nl": "Voer Intel&reg; AMT uit?<br><br><b>LET OP: Als er een actieve AMT-sessie is, wordt het uitschakelcommando afgewezen, dus u moet eerst de verbinding met de AMT-sessie verbreken!</b>",
+	  "pl": "Wykonać wyłączenie poprzez Intel&reg; AMT?<br><br><b>UWAGA: Jeśli istnieje aktywna sesja AMT, polecenie wyłączenia zasilania zostanie odrzucone, musisz więc wcześniej rozłączyć sesje AMT!</b>",
       "xloc": [
         "default-mobile.handlebars->11->586",
         "default.handlebars->47->1252"
@@ -56066,6 +56112,7 @@
     },
     {
       "en": "Pre",
+	  "pl": "Przed",
       "xloc": [
         "default.handlebars->47->426"
       ]
@@ -57301,7 +57348,7 @@
       "ja": "RDP 연결",
       "ko": "RDP 연결",
       "nl": "RDP verbinden",
-      "pl": "Połącz (protokół RDP)",
+      "pl": "Połącz przez RDP",
       "pt": "Conexão RDP",
       "pt-br": "Conexão RDP",
       "ru": "Подключиться по RDP",
@@ -57746,6 +57793,7 @@
     {
       "en": "RealTimeProtection",
       "nl": "RealTimeProtection",
+	  "pl": "Ochrona W Czasie Rzeczywistym",
       "xloc": [
         "default-mobile.handlebars->11->743",
         "default-mobile.handlebars->11->745",
@@ -57951,6 +57999,7 @@
     },
     {
       "en": "Recovery Password",
+	  "pl": "Hasło Odzyskiwania",
       "xloc": [
         "default.handlebars->47->1666"
       ]
@@ -59785,6 +59834,7 @@
     },
     {
       "en": "Removable",
+	  "pl": "Wyjmowane",
       "xloc": [
         "default.handlebars->47->1659"
       ]
@@ -61297,6 +61347,7 @@
     {
       "en": "Requesting Process Details...",
       "nl": "Procesdetails opvragen...",
+	  "pl": "Pobieram Informacje o Procesie...",
       "xloc": [
         "default.handlebars->47->1414"
       ]
@@ -61304,6 +61355,7 @@
     {
       "en": "Requesting Service Details...",
       "nl": "Servicegegevens opvragen...",
+	  "pl": "Pobieram Informacje o Usłudze...",
       "xloc": [
         "default.handlebars->47->1444"
       ]
@@ -61732,6 +61784,7 @@
     {
       "en": "Restart Fail Count After ",
       "nl": "Herstart foutteller na ",
+	  "pl": "Restart licznika niepowodzeń po ",
       "xloc": [
         "default.handlebars->47->1433"
       ]
@@ -64056,6 +64109,7 @@
     {
       "en": "Scroll To Top",
       "nl": "Scroll naar boven",
+	  "pl": "Przewiń Do Góry",
       "xloc": [
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar"
@@ -64148,6 +64202,7 @@
     {
       "en": "Second Failure",
       "nl": "Tweede fout",
+	  "pl": "Druga Awaria",
       "xloc": [
         "default.handlebars->47->1435"
       ]
@@ -65560,6 +65615,7 @@
     {
       "en": "Server Configuration",
       "nl": "Server Configuratie",
+	  "pl": "Konfiguracja Serwera",
       "xloc": [
         "default.handlebars->47->203",
         "default.handlebars->47->205",
@@ -65622,6 +65678,8 @@
     },
     {
       "en": "Server Errors",
+	  "nl": "Server Fouten"
+	  "pl": "Błędy Serwera",
       "xloc": [
         "default.handlebars->47->198",
         "default.handlebars->47->2061"
@@ -66151,11 +66209,9 @@
       ]
     },
     {
-      "en": "Server fouten"
-    },
-    {
       "en": "Server has no config file.",
       "nl": "Server heeft geen configuratiebestand.",
+	  "pl": "Serwer nie ma pliku z konfiguracją.",
       "xloc": [
         "default.handlebars->47->204"
       ]
@@ -67902,6 +67958,7 @@
     {
       "en": "Show for 10 minutes",
       "nl": "Toon gedurende 10 minuten",
+	  "pl": "Pokazuj przez 10 minut",
       "xloc": [
         "default.handlebars->47->1150",
         "default.handlebars->47->1164",
@@ -67939,6 +67996,7 @@
     {
       "en": "Show for 2 Minutes (Default)",
       "nl": "Toon gedurende 2 Minuten (Standaard)",
+	  "pl": "Pokazuj przez 2 minuty (Domyślnie)",
       "xloc": [
         "default.handlebars->47->1149",
         "default.handlebars->47->1163",
@@ -67948,6 +68006,7 @@
     {
       "en": "Show for 30 minutes",
       "nl": "Toon gedurende 30 Minuten",
+	  "pl": "Pokazuj przez 30 minut",
       "xloc": [
         "default.handlebars->47->1151",
         "default.handlebars->47->1165",
@@ -67984,6 +68043,7 @@
     },
     {
       "en": "Show for 60 minutes",
+	  "pl": "Pokazuj przez 60 minut",
       "xloc": [
         "default.handlebars->47->1152",
         "default.handlebars->47->1166",
@@ -68047,6 +68107,7 @@
     },
     {
       "en": "Show server configuration",
+	  "pl": "Pokaż konfigurację serwera",
       "xloc": [
         "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsConfig->1"
       ]
@@ -68666,6 +68727,7 @@
     },
     {
       "en": "Slack",
+	  "pl": "Slack",
       "xloc": [
         "default.handlebars->47->1708",
         "default.handlebars->47->2923"
@@ -68673,6 +68735,7 @@
     },
     {
       "en": "Slack Webhook Setup",
+	  "pl": "Instalacja Slack Webhook",
       "xloc": [
         "default.handlebars->47->1718",
         "default.handlebars->47->2933"
@@ -69278,6 +69341,7 @@
     },
     {
       "en": "Space",
+	  "pl": "Przestrzeń",
       "xloc": [
         "default-mobile.handlebars->11->627",
         "default.handlebars->47->1377"
@@ -69865,6 +69929,7 @@
     },
     {
       "en": "SpecVersion",
+	  "pl": "Wersja",
       "xloc": [
         "default-mobile.handlebars->11->818",
         "default.handlebars->47->1632"
@@ -70038,6 +70103,7 @@
     },
     {
       "en": "Start Type",
+	  "pl": "Typ Rozruchu",
       "xloc": [
         "default.handlebars->47->1429"
       ]
@@ -70903,6 +70969,7 @@
     },
     {
       "en": "Storage Volumes",
+	  "pl": "Woluminy Pamięci",
       "xloc": [
         "default.handlebars->47->1662"
       ]
@@ -71105,6 +71172,7 @@
     },
     {
       "en": "Subsequent Failures",
+	  "pl": "Późniejsze Awarie",
       "xloc": [
         "default.handlebars->47->1436"
       ]
@@ -72126,6 +72194,7 @@
     },
     {
       "en": "TamperProtection",
+	  "pl": "OchronaPrzedManipulacją",
       "xloc": [
         "default-mobile.handlebars->11->747",
         "default-mobile.handlebars->11->749",
@@ -79949,7 +80018,7 @@
       "ja": "以前のログインを表示する",
       "ko": "이전 로그인보기",
       "nl": "Bekijk eerdere aanmeldingen",
-      "pl": "Wyświetlanie poprzednie logowania",
+      "pl": "Wyświetl poprzednie logowania",
       "pt": "Ver logins anteriores",
       "pt-br": "Ver logins anteriores",
       "ru": "Посмотреть предыдущие входы в систему ",
@@ -81803,6 +81872,7 @@
     {
       "en": "Windows ARM (64bit)",
       "nl": "Windows ARM (64bit)",
+	  "pl": "Windows ARM (64bit)",
       "de": "Windows ARM (64bit)",
       "xloc": [
         "default.handlebars->47->1298"
@@ -81811,6 +81881,7 @@
     {
       "en": "Windows ARM 64bit console",
       "nl": "Windows ARM 64bit console",
+	  "pl": "Konsola Windows ARM 64bit",
       "de": "Windows ARM (64bit) Konsole",
       "xloc": [
         "default-mobile.handlebars->11->48",
@@ -81820,6 +81891,7 @@
     {
       "en": "Windows ARM 64bit service",
       "nl": "Windows ARM 64bit service",
+	  "pl": "Usługa Windows ARM 64bit",
       "de": "Windows ARM (64bit) Dienst",
       "xloc": [
         "default-mobile.handlebars->11->49",
@@ -81829,6 +81901,7 @@
     {
       "en": "Windows ARM-64 (.exe)",
       "nl": "Windows ARM-64 (.exe)",
+	  "pl": "Windows ARM-64 (.exe)",
       "de": "Windows ARM (64bit) .exe",
       "xloc": [
         "default.handlebars->47->617"
@@ -81836,6 +81909,7 @@
     },
     {
       "en": "Windows AV",
+	  "pl": "Windows AV",
       "xloc": [
         "default.handlebars->47->342",
         "default.handlebars->47->373"
@@ -83688,7 +83762,7 @@
       "ja": "バイト",
       "ko": "B",
       "nl": "bytes",
-      "pl": "bajtów",
+      "pl": "Bajty",
       "pt": "bytes",
       "pt-br": "bytes",
       "ru": "байт",
@@ -86130,6 +86204,7 @@
     {
       "en": "x86 32bit version of the MeshAgent",
       "nl": "x86 32bit versie van de MeshAgent",
+	  "pl": "MeshAgent wersja x86 32bit",
       "de": "x86 32bit Version des MeshAgent",
       "xloc": [
         "default.handlebars->47->608"
@@ -86138,6 +86213,7 @@
     {
       "en": "x86 64bit version of the MeshAgent",
       "nl": "x86 64bit versie van de MeshAgent",
+	  "pl": "MeshAgent wersja x86 64bit",
       "de": "x86 64bit Version des MeshAgent",
       "xloc": [
         "default.handlebars->47->612"
