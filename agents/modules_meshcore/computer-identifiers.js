@@ -449,7 +449,8 @@ function windows_volumes()
                             var germanidpass = (abc !== '' && abc.includes('Numerisches Kennwort:')); // German ID
                             var englishpass = (abc !== '' && abc.includes('Password:') && !abc.includes('Numerical Password:')); // English Password
                             var germanpass = (abc !== '' && abc.includes('Kennwort:') && !abc.includes('Numerisches Kennwort:')); // German Password
-                            if (englishidpass || germanidpass || englishpass || germanpass) {
+                            var frenchpass = (abc !== '' && abc.includes('Mot de passe:') && !abc.includes('Mot de passe numérique:')); // French Password
+                            if (englishidpass || germanidpass || englishpass || germanpass || frenchpass) {
                                 var nextline = lines[x + 1].trim();
                                 if (x + 1 < lines.length && (nextline !== '' && nextline.startsWith('ID:'))) {
                                     identifier = nextline.replace('ID:','').trim();
