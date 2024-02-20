@@ -684,6 +684,7 @@
                             <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
                             <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
                             <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
+                            <div id="desktopCustomUpperRight" style="float:left;margin-right:6px"></div>
                             <div id="desktopCustomUiButtons" style="float:left"></div>
                         </div>
                         <div>
@@ -781,7 +782,7 @@
                             <td class="areaHead" style="line-height:22px">
                                 <div class="toright2">
                                     <div id="idx_termFullBtn2" onclick=deskToggleFull(event) style="float:right">&nbsp;&#x2716;</div>
-                                    <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                                                                        <div id="termRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
                                     <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     <div id="terminalCustomUiButtons" style="float:left"></div>
@@ -8989,7 +8990,11 @@
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             QE('connectbutton1r', online || (currentNode.mtype == 3));
-            Q('connectbutton1r').value = 'RDP Connect' + ((currentNode.rdpport && currentNode.rdpport != 3389) ? ' ('+currentNode.rdpport + ')' : '');
+            if (currentNode.rdpport && currentNode.rdpport != 3389) {
+                QH('desktopCustomUpperRight', '<a style="cursor:pointer;line-height:22px" onclick="cmaltportaction(1,event)">RDP Port ' + currentNode.rdpport + '</a>');
+            } else {
+                QH('desktopCustomUpperRight', '');
+            }
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
