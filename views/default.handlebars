@@ -9007,7 +9007,7 @@
             QE('connectbutton1', online);
             QE('connectbutton1r', online || (currentNode.mtype == 3));
             if (currentNode.rdpport && currentNode.rdpport != 3389) {
-                QH('desktopCustomUpperRight', '<a style="cursor:pointer;line-height:22px" onclick="cmaltportaction(1,event)">RDP Port ' + currentNode.rdpport + '</a>');
+                QH('desktopCustomUpperRight', '<a style="cursor:pointer;line-height:22px" onclick="cmaltportaction(1,event)">' + format("RDP Port {0}", (currentNode.rdpport?currentNode.rdpport:3389)) + '</a>');
             } else {
                 QH('desktopCustomUpperRight', '');
             }
