@@ -2330,7 +2330,23 @@
         function setSessionActivity() { sessionActivity = Date.now(); QH('idleTimeoutNotify', ''); }
         function checkIdleSessionTimeout() {
             var delta = (Date.now() - sessionActivity);
-            if (delta > serverinfo.timeout) { window.location.href = 'logout'; } else {
+            if (delta > serverinfo.timeout) {
+                if (desktop != null) { // Disconnect remote desktop
+                    desktop.Stop();
+                    webRtcDesktopReset();
+                    desktopNode = desktop = null;
+                    if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
+                }
+                if (terminal != null) { // Disconnect terminal
+                    terminal.Stop();
+                    terminal = null;
+                }
+                if (files != null) { // Disconnect files
+                    files.Stop();
+                    files = null;
+                }
+                window.location.href = 'logout';
+            } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
                 if (ds <= 60) {
                     QH('idleTimeoutNotify', '<br />' + format((ds == 1)?"1 second until disconnect":"{0} seconds until disconnect", ds));
