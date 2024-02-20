@@ -32984,7 +32984,7 @@
     {
       "en": "Go To Folder",
       "nl": "Ga naar map",
-	  "pl": "Przejx do Folderu",
+	  "pl": "Przejdź do Folderu",
       "xloc": [
         "default.handlebars->47->1501"
       ]
