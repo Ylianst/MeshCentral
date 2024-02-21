@@ -8127,7 +8127,7 @@
 
         function deviceMessageFunction() {
             if (xxdialogMode) return;
-            var x = '<div style=margin-bottom:4px>Display a message box on the remote device.</div>';
+            var x = '<div style=margin-bottom:4px>' + "Display a message box on the remote device" + '</div>';
             x += '<textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
             x += '<select style=width:100% id=d2devTimeout>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
@@ -11719,8 +11719,8 @@
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'CPU', backgroundColor: 'rgba(134, 16, 158, .5)', borderColor: 'rgb(134, 16, 158)', data: [], fill: true },
-                    { label: 'Memory', backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }
+                    { label: "CPU", backgroundColor: 'rgba(134, 16, 158, .5)', borderColor: 'rgb(134, 16, 158)', data: [], fill: true },
+                    { label: "Memory", backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }
                 ] },
             options: {
                 events: ['click'],
@@ -12040,9 +12040,9 @@
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
                 if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
                 if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", EscapeHtml(tpm.IsActivated), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", EscapeHtml(tpm.IsEnabled), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", EscapeHtml(tpm.IsOwned), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
                 if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png'}); }
             }
 
@@ -12134,12 +12134,14 @@
                         var fsize = (j === 0 ? `${m.size} ${sizes[j]}` : `${(m.size / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
                         x += addDetailItem("Capacity", EscapeHtml(fsize), s);
                     }
-                    if (m.type) { x += addDetailItem("File System", (m.removable == true ? ("Removable" + ' / ') : '') + EscapeHtml(m.type), s); }
+                    if (m.type) { x += addDetailItem("File System", (m.removable == true ? ("Removable" + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s); }
 
                     if (m.protectionStatus || m.volumeStatus) {
                         var bitlockerState = [];
                         if (m.protectionStatus) bitlockerState.push("Enabled");
-                        if (m.volumeStatus) bitlockerState.push(EscapeHtml(m.volumeStatus));
+                        if (m.volumeStatus && m.volumeStatus == 'FullyDecrypted') bitlockerState.push("Fully Decrypted");
+                        if (m.volumeStatus && m.volumeStatus == 'EncryptionInProgress') bitlockerState.push("Encryption In Progress");
+                        if (m.volumeStatus && m.volumeStatus == 'FullyEncrypted') bitlockerState.push("Fully Encrypted");
                         bitlockerState = bitlockerState.join(' - ');
                         if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
                         x += addDetailItem("BitLocker", bitlockerState, s);
