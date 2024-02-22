@@ -4733,8 +4733,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'sysinfo': { // Return system information
                 getSystemInformation(function (results, err) {
-                    if (results == null) { sendConsoleText(err, this.sessionid); } else {
+                    if (results == null) {
+                        sendConsoleText(err, this.sessionid);
+                    } else {
                         sendConsoleText(JSON.stringify(results, null, 1), this.sessionid);
+                        mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results });
                     }
                 });
                 break;
