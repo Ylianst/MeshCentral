@@ -5723,6 +5723,7 @@ function cleanGetBitLockerVolumeInfo(volumes) {
     for (var i in volumes) {
         const v = volumes[i];
         if (typeof v.size == 'string') { v.size = parseInt(v.size); }
+        if (typeof v.sizeremaining == 'string') { v.sizeremaining = parseInt(v.sizeremaining); }
         if (v.identifier == '') { delete v.identifier; }
         if (v.name == '') { delete v.name; }
         if (v.removable != true) { delete v.removable; }

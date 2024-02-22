@@ -6152,6 +6152,12 @@
                         var fsize = (j === 0 ? `${m.size} ${sizes[j]}` : `${(m.size / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
                         x += addDetailItem("Capacity", EscapeHtml(fsize), s);
                     }
+                    if (m.sizeremaining) {
+                        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.sizeremaining)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.sizeremaining} ${sizes[j]}` : `${(m.sizeremaining / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
+                    }
                     if (m.type) { x += addDetailItem("File System", (m.removable == true ? ("Removable" + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s); }
 
                     if (m.protectionStatus || m.volumeStatus) {
