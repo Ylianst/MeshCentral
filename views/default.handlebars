@@ -12140,7 +12140,10 @@
                         var fsize = (j === 0 ? `${m.sizeremaining} ${sizes[j]}` : `${(m.sizeremaining / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
                         x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
                     }
-                    if (m.type) { x += addDetailItem("File System", (m.removable == true ? ("Removable" + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s); }
+                    if (m.type) {
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
+                    }
 
                     if (m.protectionStatus || m.volumeStatus) {
                         var bitlockerState = [];

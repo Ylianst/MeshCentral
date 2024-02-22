@@ -408,7 +408,8 @@ function windows_volumes()
                         type: tokens[2].split('"')[1],
                         size: tokens[3].split('"')[1],
                         sizeremaining: tokens[4].split('"')[1],
-                        removable: tokens[5].split('"')[1] == 'Removable'
+                        removable: tokens[5].split('"')[1] == 'Removable',
+                        cdrom: tokens[5].split('"')[1] == 'CD-ROM'
                     };
             }
         }
