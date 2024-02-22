@@ -5727,6 +5727,7 @@ function cleanGetBitLockerVolumeInfo(volumes) {
         if (v.identifier == '') { delete v.identifier; }
         if (v.name == '') { delete v.name; }
         if (v.removable != true) { delete v.removable; }
+        if (v.cdrom != true) { delete v.cdrom; }
         if (v.protectionStatus == 'On') { v.protectionStatus = true; } else { delete v.protectionStatus; }
         if (v.volumeStatus == 'FullyDecrypted') { delete v.volumeStatus; }
         if (v.recoveryPassword == '') { delete v.recoveryPassword; }
