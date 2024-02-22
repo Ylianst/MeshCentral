@@ -1037,10 +1037,10 @@
       "zh-cht": "，",
       "hu": ", ",
       "xloc": [
-        "default-mobile.handlebars->11->782",
-        "default-mobile.handlebars->11->784",
-        "default-mobile.handlebars->11->786",
-        "default-mobile.handlebars->11->943",
+        "default-mobile.handlebars->11->781",
+        "default-mobile.handlebars->11->783",
+        "default-mobile.handlebars->11->785",
+        "default-mobile.handlebars->11->963",
         "default.handlebars->47->1600",
         "default.handlebars->47->1602",
         "default.handlebars->47->1604",
@@ -1206,7 +1206,7 @@
       "zh-cht": "，MQTT在線",
       "hu": ", MQTT online",
       "xloc": [
-        "default-mobile.handlebars->11->846",
+        "default-mobile.handlebars->11->866",
         "default.handlebars->47->1686"
       ]
     },
@@ -2126,8 +2126,8 @@
       "zh-cht": "1個位元組",
       "hu": "1 byte",
       "xloc": [
+        "default-mobile.handlebars->11->1007",
         "default-mobile.handlebars->11->356",
-        "default-mobile.handlebars->11->987",
         "default.handlebars->47->2422",
         "download.handlebars->3->1",
         "download2.handlebars->5->1",
@@ -5224,7 +5224,7 @@
       "nl": "<b>DNS Servers</b>",
       "pl": "<b>Serwery DNS</b>",
       "xloc": [
-        "default-mobile.handlebars->11->785",
+        "default-mobile.handlebars->11->784",
         "default.handlebars->47->1603"
       ]
     },
@@ -5563,7 +5563,7 @@
       "nl": "APK versie van de MeshAgent",
       "pl": "Wersja APK MeshAgent",
       "xloc": [
-        "default-mobile.handlebars->11->896",
+        "default-mobile.handlebars->11->916",
         "default.handlebars->47->635"
       ]
     },
@@ -5770,7 +5770,7 @@
       "zh-cht": "拒絕存取",
       "hu": "Hozzáférés megtagadva",
       "xloc": [
-        "default-mobile.handlebars->11->847",
+        "default-mobile.handlebars->11->867",
         "default.handlebars->47->1687"
       ]
     },
@@ -6002,7 +6002,7 @@
       "zh-cht": "帳號設定",
       "hu": "Fiókbeállítások",
       "xloc": [
-        "default-mobile.handlebars->11->954",
+        "default-mobile.handlebars->11->974",
         "default.handlebars->47->3171"
       ]
     },
@@ -6234,7 +6234,7 @@
       "zh-cht": "達到帳戶限制。",
       "hu": "Elérte a fiókkorlátot.",
       "xloc": [
-        "default-mobile.handlebars->11->966",
+        "default-mobile.handlebars->11->986",
         "default.handlebars->47->3183",
         "login-mobile.handlebars->5->6",
         "login.handlebars->5->8",
@@ -6496,7 +6496,7 @@
       "zh-cht": "指令",
       "hu": "Művelet",
       "xloc": [
-        "default-mobile.handlebars->11->853",
+        "default-mobile.handlebars->11->873",
         "default.handlebars->47->1693",
         "default.handlebars->container->column_l->p42->p42tbl->1->0->8"
       ]
@@ -6697,7 +6697,7 @@
       "xloc": [
         "default-mobile.handlebars->11->499",
         "default-mobile.handlebars->11->501",
-        "default-mobile.handlebars->11->792",
+        "default-mobile.handlebars->11->791",
         "default.handlebars->47->1610",
         "default.handlebars->47->883",
         "default.handlebars->47->885"
@@ -7397,7 +7397,7 @@
       "zh-cht": "新增用戶",
       "hu": "Felhasználó hozzáadása",
       "xloc": [
-        "default-mobile.handlebars->11->878",
+        "default-mobile.handlebars->11->898",
         "default.handlebars->47->1050"
       ]
     },
@@ -7509,7 +7509,7 @@
       "zh-cht": "將用戶新增到裝置群",
       "hu": "Felhasználó hozzáadása az eszköz csoporthoz",
       "xloc": [
-        "default-mobile.handlebars->11->919"
+        "default-mobile.handlebars->11->939"
       ]
     },
     {
@@ -8291,7 +8291,7 @@
       "zh-cht": "管理員控制模式（ACM）",
       "hu": "Admin Control Mode (ACM)",
       "xloc": [
-        "default-mobile.handlebars->11->794",
+        "default-mobile.handlebars->11->793",
         "default.handlebars->47->1612"
       ]
     },
@@ -8319,7 +8319,7 @@
       "zh-cht": "管理員憑證",
       "hu": "Adminisztrátor Hitelesítő adatok",
       "xloc": [
-        "default-mobile.handlebars->11->800",
+        "default-mobile.handlebars->11->799",
         "default.handlebars->47->1618"
       ]
     },
@@ -8606,7 +8606,7 @@
       "zh-cht": "代理控制台",
       "hu": "Agent konzol",
       "xloc": [
-        "default-mobile.handlebars->11->925",
+        "default-mobile.handlebars->11->945",
         "default.handlebars->47->2310",
         "default.handlebars->47->781"
       ]
@@ -9223,7 +9223,7 @@
       "zh-cht": "代理離線",
       "hu": "Offline Agent",
       "xloc": [
-        "default-mobile.handlebars->11->845",
+        "default-mobile.handlebars->11->865",
         "default.handlebars->47->1685"
       ]
     },
@@ -9251,7 +9251,7 @@
       "zh-cht": "代理在線",
       "hu": "Online Agent",
       "xloc": [
-        "default-mobile.handlebars->11->844",
+        "default-mobile.handlebars->11->864",
         "default.handlebars->47->1684"
       ]
     },
@@ -10248,7 +10248,7 @@
       "zh-cht": "Android APK",
       "hu": "Android APK",
       "xloc": [
-        "default-mobile.handlebars->11->897",
+        "default-mobile.handlebars->11->917",
         "default.handlebars->47->634"
       ]
     },
@@ -10330,7 +10330,7 @@
       "zh-cht": "安卓安裝",
       "hu": "Android Telepítés",
       "xloc": [
-        "default-mobile.handlebars->11->899"
+        "default-mobile.handlebars->11->919"
       ]
     },
     {
@@ -11342,7 +11342,7 @@
       "zh-cht": "你確定要刪除群{0}嗎？刪除裝置群還將刪除該群中有關裝置的所有訊息。",
       "hu": "Biztos, hogy törölni szeretné a {0} csoportot? Az eszközcsoport törlése a csoportba tartozó eszközökre vonatkozó összes információt is törli.",
       "xloc": [
-        "default-mobile.handlebars->11->885",
+        "default-mobile.handlebars->11->905",
         "default.handlebars->47->2221"
       ]
     },
@@ -12486,7 +12486,7 @@
       "zh-cht": "的BIOS",
       "hu": "BIOS",
       "xloc": [
-        "default-mobile.handlebars->11->809",
+        "default-mobile.handlebars->11->808",
         "default.handlebars->47->1627"
       ]
     },
@@ -13089,7 +13089,7 @@
       "en": "BitLocker",
       "nl": "BitLocker",
       "xloc": [
-        "default-mobile.handlebars->11->756",
+        "default-mobile.handlebars->11->856",
         "default.handlebars->47->1675"
       ]
     },
@@ -13097,6 +13097,7 @@
       "en": "BitLocker Information",
       "pl": "Informacje o BitLocker",
       "xloc": [
+        "default-mobile.handlebars->11->863",
         "default.handlebars->47->1682"
       ]
     },
@@ -13124,7 +13125,7 @@
       "zh-cht": "引導加載程序",
       "hu": "Rendszerbetöltő",
       "xloc": [
-        "default-mobile.handlebars->11->769",
+        "default-mobile.handlebars->11->768",
         "default.handlebars->47->1577"
       ]
     },
@@ -13784,7 +13785,7 @@
       "zh-cht": "CPU",
       "hu": "CPU",
       "xloc": [
-        "default-mobile.handlebars->11->815",
+        "default-mobile.handlebars->11->814",
         "default.handlebars->47->1553",
         "default.handlebars->47->1633",
         "default.handlebars->47->3269",
@@ -14215,10 +14216,11 @@
       "zh-cht": "容量",
       "hu": "Kapacitás",
       "xloc": [
-        "default-mobile.handlebars->11->827",
-        "default-mobile.handlebars->11->833",
+        "default-mobile.handlebars->11->832",
         "default-mobile.handlebars->11->838",
-        "default-mobile.handlebars->11->840",
+        "default-mobile.handlebars->11->843",
+        "default-mobile.handlebars->11->845",
+        "default-mobile.handlebars->11->848",
         "default.handlebars->47->1651",
         "default.handlebars->47->1657",
         "default.handlebars->47->1662",
@@ -14250,8 +14252,8 @@
       "zh-cht": "容量/速度",
       "hu": "Kapacitás / Sebesség",
       "xloc": [
-        "default-mobile.handlebars->11->825",
-        "default-mobile.handlebars->11->831",
+        "default-mobile.handlebars->11->830",
+        "default-mobile.handlebars->11->836",
         "default.handlebars->47->1649",
         "default.handlebars->47->1655"
       ]
@@ -15049,8 +15051,8 @@
       "zh-cht": "聊天並通知",
       "hu": "Csevegés és Értesítés",
       "xloc": [
-        "default-mobile.handlebars->11->915",
         "default-mobile.handlebars->11->935",
+        "default-mobile.handlebars->11->955",
         "default.handlebars->47->2283",
         "default.handlebars->47->2321"
       ]
@@ -15079,7 +15081,7 @@
       "zh-cht": "聊天請求，點擊這裡接受。",
       "hu": "Csevegés kezdeményezés, kattintson ide az elfogadáshoz.",
       "xloc": [
-        "default-mobile.handlebars->11->967",
+        "default-mobile.handlebars->11->987",
         "default.handlebars->47->3184"
       ]
     },
@@ -15778,7 +15780,7 @@
       "zh-cht": "全部清除",
       "hu": "Összes törlése",
       "xloc": [
-        "default-mobile.handlebars->11->950",
+        "default-mobile.handlebars->11->970",
         "default.handlebars->47->3167"
       ]
     },
@@ -15834,7 +15836,7 @@
       "zh-cht": "清除核心",
       "hu": "Core törlése",
       "xloc": [
-        "default-mobile.handlebars->11->855",
+        "default-mobile.handlebars->11->875",
         "default.handlebars->47->1695"
       ]
     },
@@ -15889,7 +15891,7 @@
       "zh-cht": "清除此通知",
       "hu": "Törölje ezt az értesítést",
       "xloc": [
-        "default-mobile.handlebars->11->949",
+        "default-mobile.handlebars->11->969",
         "default.handlebars->47->3166"
       ]
     },
@@ -16294,7 +16296,7 @@
       "zh-cht": "客戶端控制模式（CCM）",
       "hu": "Client Control Mode (CCM)",
       "xloc": [
-        "default-mobile.handlebars->11->793",
+        "default-mobile.handlebars->11->792",
         "default.handlebars->47->1611"
       ]
     },
@@ -16682,7 +16684,7 @@
       "zh-cht": "指令",
       "hu": "Parancsok",
       "xloc": [
-        "default-mobile.handlebars->11->937",
+        "default-mobile.handlebars->11->957",
         "default.handlebars->47->1113",
         "default.handlebars->47->1138",
         "default.handlebars->47->2323"
@@ -16807,7 +16809,7 @@
       "zh-cht": "編譯時間",
       "hu": "Fordítás ideje",
       "xloc": [
-        "default-mobile.handlebars->11->765",
+        "default-mobile.handlebars->11->764",
         "default.handlebars->47->1573"
       ]
     },
@@ -16924,7 +16926,7 @@
       "hu": "Megerősít",
       "xloc": [
         "default-mobile.handlebars->11->603",
-        "default-mobile.handlebars->11->886",
+        "default-mobile.handlebars->11->906",
         "default.handlebars->47->1277",
         "default.handlebars->47->1286",
         "default.handlebars->47->2222",
@@ -17761,7 +17763,7 @@
       "zh-cht": "確認刪除用戶{0}？",
       "hu": "Megerősíti a(z) {0} felhasználó eltávolítását?",
       "xloc": [
-        "default-mobile.handlebars->11->946"
+        "default-mobile.handlebars->11->966"
       ]
     },
     {
@@ -18263,7 +18265,7 @@
       "zh-cht": "現在已連接",
       "hu": "Csatlakoztatva most",
       "xloc": [
-        "default-mobile.handlebars->11->760",
+        "default-mobile.handlebars->11->759",
         "default.handlebars->47->1568"
       ]
     },
@@ -20396,7 +20398,7 @@
       "zh-cht": "當前密碼不正確。",
       "hu": "A jelenlegi jelszó nem megfelelő.",
       "xloc": [
-        "default-mobile.handlebars->11->977",
+        "default-mobile.handlebars->11->997",
         "default.handlebars->47->3194"
       ]
     },
@@ -21067,8 +21069,8 @@
       "zh-cht": "刪除群組",
       "hu": "Csoport törlése",
       "xloc": [
-        "default-mobile.handlebars->11->884",
-        "default-mobile.handlebars->11->887",
+        "default-mobile.handlebars->11->904",
+        "default-mobile.handlebars->11->907",
         "default.handlebars->47->2182",
         "default.handlebars->47->2223"
       ]
@@ -21731,9 +21733,9 @@
         "default-mobile.handlebars->11->485",
         "default-mobile.handlebars->11->486",
         "default-mobile.handlebars->11->611",
-        "default-mobile.handlebars->11->773",
-        "default-mobile.handlebars->11->870",
-        "default-mobile.handlebars->11->893",
+        "default-mobile.handlebars->11->772",
+        "default-mobile.handlebars->11->890",
+        "default-mobile.handlebars->11->913",
         "default.handlebars->47->1331",
         "default.handlebars->47->157",
         "default.handlebars->47->1581",
@@ -22403,7 +22405,7 @@
       "zh-cht": "裝置",
       "hu": "Eszköz",
       "xloc": [
-        "default-mobile.handlebars->11->768",
+        "default-mobile.handlebars->11->767",
         "default.handlebars->47->1576",
         "default.handlebars->47->1754",
         "default.handlebars->47->2263",
@@ -22601,7 +22603,7 @@
       "hu": "Eszköz csoport",
       "xloc": [
         "agent-translations.json",
-        "default-mobile.handlebars->11->955",
+        "default-mobile.handlebars->11->975",
         "default.handlebars->47->2258",
         "default.handlebars->47->2261",
         "default.handlebars->47->2262",
@@ -22639,7 +22641,7 @@
       "zh-cht": "裝置群用戶",
       "hu": "Eszköz Csoport Felhasználó",
       "xloc": [
-        "default-mobile.handlebars->11->944",
+        "default-mobile.handlebars->11->964",
         "default.handlebars->47->2333"
       ]
     },
@@ -22841,7 +22843,7 @@
       "zh-cht": "設備配對鏈接",
       "hu": "Eszköz párosítás link",
       "xloc": [
-        "default-mobile.handlebars->11->898"
+        "default-mobile.handlebars->11->918"
       ]
     },
     {
@@ -26631,11 +26633,11 @@
       "zh-cht": "編輯裝置群",
       "hu": "Eszközcsoport szerkesztés",
       "xloc": [
-        "default-mobile.handlebars->11->888",
-        "default-mobile.handlebars->11->891",
-        "default-mobile.handlebars->11->894",
-        "default-mobile.handlebars->11->901",
+        "default-mobile.handlebars->11->908",
+        "default-mobile.handlebars->11->911",
+        "default-mobile.handlebars->11->914",
         "default-mobile.handlebars->11->921",
+        "default-mobile.handlebars->11->941",
         "default.handlebars->47->2224",
         "default.handlebars->47->2227",
         "default.handlebars->47->2230",
@@ -26750,7 +26752,7 @@
       "zh-cht": "編輯裝置筆記",
       "hu": "Eszköz jegyzetek szerkesztése",
       "xloc": [
-        "default-mobile.handlebars->11->913",
+        "default-mobile.handlebars->11->933",
         "default.handlebars->47->2281"
       ]
     },
@@ -26921,7 +26923,7 @@
       "zh-cht": "編輯筆記",
       "hu": "Jegyzetek szerkesztése",
       "xloc": [
-        "default-mobile.handlebars->11->928",
+        "default-mobile.handlebars->11->948",
         "default.handlebars->47->2313"
       ]
     },
@@ -27551,7 +27553,7 @@
       "zh-cht": "不允許使用電子郵件域 \\\"{0}\\\"。只允許 ({1})",
       "hu": "A \\\"{0}\\\" e-mail domain nem engedélyezett. Csak ({1}) engedélyezett",
       "xloc": [
-        "default-mobile.handlebars->11->986",
+        "default-mobile.handlebars->11->1006",
         "default.handlebars->47->3203"
       ]
     },
@@ -27739,7 +27741,7 @@
       "zh-cht": "電郵已發送。",
       "hu": "E-mail elküldve.",
       "xloc": [
-        "default-mobile.handlebars->11->970",
+        "default-mobile.handlebars->11->990",
         "default.handlebars->47->3187",
         "login-mobile.handlebars->5->2",
         "login.handlebars->5->2",
@@ -28097,6 +28099,7 @@
       "zh-cht": "已啟用",
       "hu": "Engedélyezve",
       "xloc": [
+        "default-mobile.handlebars->11->852",
         "default.handlebars->47->129",
         "default.handlebars->47->1671",
         "default.handlebars->47->3061"
@@ -28240,6 +28243,7 @@
     {
       "en": "Encryption In Progress",
       "xloc": [
+        "default-mobile.handlebars->11->854",
         "default.handlebars->47->1673"
       ]
     },
@@ -29318,7 +29322,7 @@
       "zh-cht": "錯誤，邀請碼 \\\"{0}\\\" 已在使用中。",
       "hu": "Hiba, a \\\"{0}\\\" meghívókód már használatban van.",
       "xloc": [
-        "default-mobile.handlebars->11->978",
+        "default-mobile.handlebars->11->998",
         "default.handlebars->47->3195"
       ]
     },
@@ -29346,7 +29350,7 @@
       "zh-cht": "錯誤，密碼未更改。",
       "hu": "Hiba, a jelszó nem módosult.",
       "xloc": [
-        "default-mobile.handlebars->11->975",
+        "default-mobile.handlebars->11->995",
         "default.handlebars->47->3192"
       ]
     },
@@ -29374,7 +29378,7 @@
       "zh-cht": "錯誤，無法更改為常用密碼。",
       "hu": "Hiba, nem lehet átváltani a gyakran használt jelszóra.",
       "xloc": [
-        "default-mobile.handlebars->11->974",
+        "default-mobile.handlebars->11->994",
         "default.handlebars->47->3191"
       ]
     },
@@ -29402,7 +29406,7 @@
       "zh-cht": "錯誤，無法更改為以前使用的密碼。",
       "hu": "Hiba, nem lehet átváltani a korábban használt jelszóra.",
       "xloc": [
-        "default-mobile.handlebars->11->973",
+        "default-mobile.handlebars->11->993",
         "default.handlebars->47->3190"
       ]
     },
@@ -30177,7 +30181,7 @@
       "zh-cht": "更改電子郵件地址失敗，另一個帳戶已在使用：{0}。",
       "hu": "Nem sikerült megváltoztatni az e-mail címet, mert egy másik fiók már használja: {0}.",
       "xloc": [
-        "default-mobile.handlebars->11->969",
+        "default-mobile.handlebars->11->989",
         "default.handlebars->47->3186"
       ]
     },
@@ -30625,6 +30629,7 @@
       "en": "File System",
       "pl": "System Plików",
       "xloc": [
+        "default-mobile.handlebars->11->849",
         "default.handlebars->47->1668"
       ]
     },
@@ -32085,9 +32090,9 @@
       "hu": "Teljes körű adminisztrátor",
       "xloc": [
         "default-mobile.handlebars->11->343",
-        "default-mobile.handlebars->11->882",
-        "default-mobile.handlebars->11->900",
+        "default-mobile.handlebars->11->902",
         "default-mobile.handlebars->11->920",
+        "default-mobile.handlebars->11->940",
         "default.handlebars->47->2046",
         "default.handlebars->47->2266",
         "default.handlebars->47->2730"
@@ -32313,12 +32318,14 @@
     {
       "en": "Fully Decrypted",
       "xloc": [
+        "default-mobile.handlebars->11->853",
         "default.handlebars->47->1672"
       ]
     },
     {
       "en": "Fully Encrypted",
       "xloc": [
+        "default-mobile.handlebars->11->855",
         "default.handlebars->47->1674"
       ]
     },
@@ -32373,7 +32380,7 @@
       "zh-cht": "GPU",
       "hu": "GPU",
       "xloc": [
-        "default-mobile.handlebars->11->816",
+        "default-mobile.handlebars->11->815",
         "default.handlebars->47->1634"
       ]
     },
@@ -32514,7 +32521,7 @@
       "zh-cht": "網關：{0}",
       "hu": "Átjáró: {0}",
       "xloc": [
-        "default-mobile.handlebars->11->780",
+        "default-mobile.handlebars->11->779",
         "default.handlebars->47->1598"
       ]
     },
@@ -34262,7 +34269,7 @@
       "zh-cht": "強行斷開代理",
       "hu": "Agent kényszerített lecsatlakoztatása",
       "xloc": [
-        "default-mobile.handlebars->11->860",
+        "default-mobile.handlebars->11->880",
         "default.handlebars->47->1700"
       ]
     },
@@ -34946,8 +34953,8 @@
         "default-mobile.handlebars->11->481",
         "default-mobile.handlebars->11->483",
         "default-mobile.handlebars->11->610",
-        "default-mobile.handlebars->11->771",
-        "default-mobile.handlebars->11->875",
+        "default-mobile.handlebars->11->770",
+        "default-mobile.handlebars->11->895",
         "default.handlebars->47->1330",
         "default.handlebars->47->1579",
         "default.handlebars->47->2035",
@@ -35302,7 +35309,7 @@
       "zh-cht": "IP-KVM 設備",
       "hu": "IP-KVM eszköz",
       "xloc": [
-        "default-mobile.handlebars->11->867",
+        "default-mobile.handlebars->11->887",
         "default.handlebars->47->2088"
       ]
     },
@@ -35330,7 +35337,7 @@
       "zh-cht": "通過代理中繼的 IP-KVM 設備",
       "hu": "IP-KVM eszköz továbbítva ügynökön keresztül",
       "xloc": [
-        "default-mobile.handlebars->11->868",
+        "default-mobile.handlebars->11->888",
         "default.handlebars->47->2089"
       ]
     },
@@ -35440,7 +35447,7 @@
       "zh-cht": "IP：{0}",
       "hu": "IP: {0}",
       "xloc": [
-        "default-mobile.handlebars->11->778",
+        "default-mobile.handlebars->11->777",
         "default.handlebars->47->1589",
         "default.handlebars->47->1596"
       ]
@@ -35496,7 +35503,7 @@
       "zh-cht": "IPv4層",
       "hu": "IPv4 réteg",
       "xloc": [
-        "default-mobile.handlebars->11->781",
+        "default-mobile.handlebars->11->780",
         "default.handlebars->47->1586",
         "default.handlebars->47->1588",
         "default.handlebars->47->1599"
@@ -35610,7 +35617,7 @@
       "zh-cht": "IPv6層",
       "hu": "IPv6 réteg",
       "xloc": [
-        "default-mobile.handlebars->11->783",
+        "default-mobile.handlebars->11->782",
         "default.handlebars->47->1601"
       ]
     },
@@ -35776,8 +35783,9 @@
       "zh-cht": "識別符",
       "hu": "Azonosító",
       "xloc": [
-        "default-mobile.handlebars->11->770",
-        "default-mobile.handlebars->11->814",
+        "default-mobile.handlebars->11->769",
+        "default-mobile.handlebars->11->813",
+        "default-mobile.handlebars->11->859",
         "default.handlebars->47->1578",
         "default.handlebars->47->1632",
         "default.handlebars->47->1678"
@@ -36674,7 +36682,7 @@
       "zh-cht": "在此設備上安裝",
       "hu": "Telepítés erre az eszközre",
       "xloc": [
-        "default-mobile.handlebars->11->879"
+        "default-mobile.handlebars->11->899"
       ]
     },
     {
@@ -36701,7 +36709,7 @@
       "zh-cht": "在您的 Android 設備上安裝 MeshCentral Agent。安裝後，單擊配對鏈接將您的設備連接到此服務器。",
       "hu": "Telepítse a MeshCentral Agent alkalmazást Android-eszközére. A telepítés után kattintson a párosítási linkre, hogy eszközét ehhez a kiszolgálóhoz csatlakoztassa.",
       "xloc": [
-        "default-mobile.handlebars->11->895"
+        "default-mobile.handlebars->11->915"
       ]
     },
     {
@@ -37918,7 +37926,7 @@
       "zh-cht": "僅限Intel&reg; AMT，無代理",
       "hu": "Csak Intel® AMT, agent nélkül",
       "xloc": [
-        "default-mobile.handlebars->11->863",
+        "default-mobile.handlebars->11->883",
         "default.handlebars->47->2029",
         "default.handlebars->47->2084"
       ]
@@ -38031,7 +38039,7 @@
       "zh-cht": "Intel &reg; Active Management Technology（Intel&reg; AMT）",
       "hu": "Intel&reg; Active Management Technology (Intel&reg; AMT)",
       "xloc": [
-        "default-mobile.handlebars->11->804",
+        "default-mobile.handlebars->11->803",
         "default.handlebars->47->1622"
       ]
     },
@@ -38169,7 +38177,7 @@
       "zh-cht": "英特爾&reg; 標準可管理性（英特爾&reg; SM）",
       "hu": "Intel&reg; Standard Manageability (Intel&reg; SM)",
       "xloc": [
-        "default-mobile.handlebars->11->803",
+        "default-mobile.handlebars->11->802",
         "default.handlebars->47->1621"
       ]
     },
@@ -38958,7 +38966,7 @@
       "zh-cht": "短信無效",
       "hu": "Érvénytelen SMS üzenet",
       "xloc": [
-        "default-mobile.handlebars->11->981",
+        "default-mobile.handlebars->11->1001",
         "default.handlebars->47->3198"
       ]
     },
@@ -39042,7 +39050,7 @@
       "zh-cht": "無效域",
       "hu": "Érvénytelen domain",
       "xloc": [
-        "default-mobile.handlebars->11->961",
+        "default-mobile.handlebars->11->981",
         "default.handlebars->47->3178"
       ]
     },
@@ -39094,7 +39102,7 @@
       "zh-cht": "不合規電郵",
       "hu": "Érvénytelen email",
       "xloc": [
-        "default-mobile.handlebars->11->960",
+        "default-mobile.handlebars->11->980",
         "default.handlebars->47->3177"
       ]
     },
@@ -39253,7 +39261,7 @@
       "hu": "Érvénytelen jelszó",
       "xloc": [
         "default-mobile.handlebars->11->87",
-        "default-mobile.handlebars->11->959",
+        "default-mobile.handlebars->11->979",
         "default.handlebars->47->3176",
         "default.handlebars->47->326"
       ]
@@ -39296,7 +39304,7 @@
       "zh-cht": "無效的網站權限",
       "hu": "Érvénytelen webhelyengedélyek",
       "xloc": [
-        "default-mobile.handlebars->11->962",
+        "default-mobile.handlebars->11->982",
         "default.handlebars->47->3179"
       ]
     },
@@ -39380,7 +39388,7 @@
       "zh-cht": "無效的用戶名",
       "hu": "Érvénytelen felhasználónév",
       "xloc": [
-        "default-mobile.handlebars->11->958",
+        "default-mobile.handlebars->11->978",
         "default.handlebars->47->3175"
       ]
     },
@@ -39620,7 +39628,7 @@
       "zh-cht": "邀請碼",
       "hu": "Meghívó kódok",
       "xloc": [
-        "default-mobile.handlebars->11->956",
+        "default-mobile.handlebars->11->976",
         "default.handlebars->47->2128",
         "default.handlebars->47->2340",
         "default.handlebars->47->2351",
@@ -39799,7 +39807,7 @@
       "nl": "IsActivated",
       "pl": "Aktywny",
       "xloc": [
-        "default-mobile.handlebars->11->821",
+        "default-mobile.handlebars->11->820",
         "default.handlebars->47->1639"
       ]
     },
@@ -39808,7 +39816,7 @@
       "nl": "IsEnabled",
       "pl": "Włączony",
       "xloc": [
-        "default-mobile.handlebars->11->822",
+        "default-mobile.handlebars->11->823",
         "default.handlebars->47->1642"
       ]
     },
@@ -39817,7 +39825,7 @@
       "nl": "IsOwned",
       "pl": "Jest Własnością",
       "xloc": [
-        "default-mobile.handlebars->11->823",
+        "default-mobile.handlebars->11->826",
         "default.handlebars->47->1645"
       ]
     },
@@ -40586,7 +40594,7 @@
       "zh-cht": "已知的",
       "hu": "Ismert",
       "xloc": [
-        "default-mobile.handlebars->11->802",
+        "default-mobile.handlebars->11->801",
         "default.handlebars->47->1620"
       ]
     },
@@ -41271,9 +41279,9 @@
       "zh-cht": "上次代理地址",
       "hu": "Utolsó Agent cím",
       "xloc": [
+        "default-mobile.handlebars->11->761",
         "default-mobile.handlebars->11->762",
         "default-mobile.handlebars->11->763",
-        "default-mobile.handlebars->11->764",
         "default.handlebars->47->149",
         "default.handlebars->47->151",
         "default.handlebars->47->153",
@@ -41306,8 +41314,8 @@
       "zh-cht": "上次代理連接",
       "hu": "Utolsó Agent kapcsolat",
       "xloc": [
-        "default-mobile.handlebars->11->759",
-        "default-mobile.handlebars->11->761",
+        "default-mobile.handlebars->11->758",
+        "default-mobile.handlebars->11->760",
         "default.handlebars->47->148",
         "default.handlebars->47->1567",
         "default.handlebars->47->1569"
@@ -42263,7 +42271,7 @@
       "zh-cht": "有限輸入",
       "hu": "Korlátozott bevitel",
       "xloc": [
-        "default-mobile.handlebars->11->933",
+        "default-mobile.handlebars->11->953",
         "default.handlebars->47->1102",
         "default.handlebars->47->1127",
         "default.handlebars->47->2319"
@@ -42293,7 +42301,7 @@
       "zh-cht": "僅有限輸入",
       "hu": "Csak korlátozott bevitel",
       "xloc": [
-        "default-mobile.handlebars->11->906",
+        "default-mobile.handlebars->11->926",
         "default.handlebars->47->2272"
       ]
     },
@@ -43294,7 +43302,7 @@
       "zh-cht": "本地設備，無代理",
       "hu": "Helyi eszközök, agent nélkül",
       "xloc": [
-        "default-mobile.handlebars->11->865",
+        "default-mobile.handlebars->11->885",
         "default.handlebars->47->2023",
         "default.handlebars->47->2086"
       ]
@@ -44269,8 +44277,8 @@
       "zh-cht": "MAC層",
       "hu": "MAC réteg",
       "xloc": [
-        "default-mobile.handlebars->11->774",
-        "default-mobile.handlebars->11->776",
+        "default-mobile.handlebars->11->773",
+        "default-mobile.handlebars->11->775",
         "default.handlebars->47->1582",
         "default.handlebars->47->1584",
         "default.handlebars->47->1592",
@@ -44329,7 +44337,7 @@
       "zh-cht": "MAC：{0}",
       "hu": "MAC: {0}",
       "xloc": [
-        "default-mobile.handlebars->11->777",
+        "default-mobile.handlebars->11->776",
         "default.handlebars->47->1585",
         "default.handlebars->47->1595"
       ]
@@ -44358,7 +44366,7 @@
       "zh-cht": "MAC：{0}，網關：{1}",
       "hu": "MAC: {0}, Átjáró: {1}",
       "xloc": [
-        "default-mobile.handlebars->11->775",
+        "default-mobile.handlebars->11->774",
         "default.handlebars->47->1583",
         "default.handlebars->47->1593"
       ]
@@ -44524,8 +44532,8 @@
       "xloc": [
         "default-mobile.handlebars->11->467",
         "default-mobile.handlebars->11->524",
-        "default-mobile.handlebars->11->848",
-        "default-mobile.handlebars->11->850",
+        "default-mobile.handlebars->11->868",
+        "default-mobile.handlebars->11->870",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10console->consoleTable->1->4->1->1->1->0->p15outputselecttd->p15outputselect->p15outputselect2",
         "default.handlebars->47->1688",
         "default.handlebars->47->1690",
@@ -45106,8 +45114,8 @@
       "zh-cht": "管理裝置群電腦",
       "hu": "Eszközcsoport számítógépeinek kezelése",
       "xloc": [
-        "default-mobile.handlebars->11->903",
         "default-mobile.handlebars->11->923",
+        "default-mobile.handlebars->11->943",
         "default.handlebars->47->2269",
         "default.handlebars->47->2308"
       ]
@@ -45136,8 +45144,8 @@
       "zh-cht": "管理裝置群用戶",
       "hu": "Eszközcsoport felhasználók kezelése",
       "xloc": [
-        "default-mobile.handlebars->11->902",
         "default-mobile.handlebars->11->922",
+        "default-mobile.handlebars->11->942",
         "default.handlebars->47->2268",
         "default.handlebars->47->2307"
       ]
@@ -45510,7 +45518,7 @@
       "zh-cht": "使用軟體代理進行管理",
       "hu": "Szoftver agent segítségével kezelt",
       "xloc": [
-        "default-mobile.handlebars->11->864",
+        "default-mobile.handlebars->11->884",
         "default.handlebars->47->2085"
       ]
     },
@@ -45594,7 +45602,7 @@
       "nl": "ManufacturerId",
       "pl": "ID Producenta",
       "xloc": [
-        "default-mobile.handlebars->11->819",
+        "default-mobile.handlebars->11->818",
         "default.handlebars->47->1637"
       ]
     },
@@ -45603,7 +45611,7 @@
       "nl": "ManufacturerVersion",
       "pl": "Wersja Wydania",
       "xloc": [
-        "default-mobile.handlebars->11->820",
+        "default-mobile.handlebars->11->819",
         "default.handlebars->47->1638"
       ]
     },
@@ -45764,7 +45772,7 @@
       "zh-cht": "掩碼：{0}",
       "hu": "Hálózati maszk: {0}",
       "xloc": [
-        "default-mobile.handlebars->11->779",
+        "default-mobile.handlebars->11->778",
         "default.handlebars->47->1597"
       ]
     },
@@ -45934,8 +45942,8 @@
       "zh-cht": "記憶體",
       "hu": "Memória",
       "xloc": [
-        "default-mobile.handlebars->11->830",
-        "default-mobile.handlebars->11->836",
+        "default-mobile.handlebars->11->835",
+        "default-mobile.handlebars->11->841",
         "default.handlebars->47->1554",
         "default.handlebars->47->1654",
         "default.handlebars->47->1660",
@@ -45970,8 +45978,8 @@
         "agentinvite.handlebars->3->11",
         "default-mobile.handlebars->11->496",
         "default-mobile.handlebars->11->551",
-        "default-mobile.handlebars->11->758",
-        "default-mobile.handlebars->11->766",
+        "default-mobile.handlebars->11->757",
+        "default-mobile.handlebars->11->765",
         "default.handlebars->47->1566",
         "default.handlebars->47->1574",
         "default.handlebars->47->607",
@@ -46009,7 +46017,7 @@
       "zh-cht": "網格代理控制台",
       "hu": "Konzol",
       "xloc": [
-        "default-mobile.handlebars->11->910",
+        "default-mobile.handlebars->11->930",
         "default.handlebars->47->2278"
       ]
     },
@@ -47599,7 +47607,7 @@
       "zh-cht": "移動設備",
       "hu": "Mobile Eszköz",
       "xloc": [
-        "default-mobile.handlebars->11->772",
+        "default-mobile.handlebars->11->771",
         "default.handlebars->47->1580"
       ]
     },
@@ -47635,7 +47643,7 @@
       "nl": "Mode",
       "pl": "Tryb",
       "xloc": [
-        "default-mobile.handlebars->11->808",
+        "default-mobile.handlebars->11->807",
         "default.handlebars->47->1626"
       ]
     },
@@ -47663,8 +47671,8 @@
       "zh-cht": "模型",
       "hu": "Model",
       "xloc": [
-        "default-mobile.handlebars->11->767",
-        "default-mobile.handlebars->11->837",
+        "default-mobile.handlebars->11->766",
+        "default-mobile.handlebars->11->842",
         "default.handlebars->47->1575",
         "default.handlebars->47->1661",
         "default.handlebars->47->2032"
@@ -47774,7 +47782,7 @@
       "zh-cht": "母板",
       "hu": "Alaplap",
       "xloc": [
-        "default-mobile.handlebars->11->817",
+        "default-mobile.handlebars->11->816",
         "default.handlebars->47->1635"
       ]
     },
@@ -48603,9 +48611,9 @@
         "default-mobile.handlebars->11->335",
         "default-mobile.handlebars->11->479",
         "default-mobile.handlebars->11->720",
-        "default-mobile.handlebars->11->811",
-        "default-mobile.handlebars->11->869",
-        "default-mobile.handlebars->11->892",
+        "default-mobile.handlebars->11->810",
+        "default-mobile.handlebars->11->889",
+        "default-mobile.handlebars->11->912",
         "default.handlebars->47->1403",
         "default.handlebars->47->1419",
         "default.handlebars->47->1555",
@@ -48858,7 +48866,7 @@
       "zh-cht": "網路",
       "hu": "Hálózat",
       "xloc": [
-        "default-mobile.handlebars->11->787",
+        "default-mobile.handlebars->11->786",
         "default.handlebars->47->1590",
         "default.handlebars->47->1605"
       ]
@@ -48943,7 +48951,7 @@
       "zh-cht": "新賬戶",
       "hu": "Új fiók",
       "xloc": [
-        "default-mobile.handlebars->11->951",
+        "default-mobile.handlebars->11->971",
         "default.handlebars->47->3168"
       ]
     },
@@ -49284,6 +49292,9 @@
     {
       "en": "No",
       "xloc": [
+        "default-mobile.handlebars->11->822",
+        "default-mobile.handlebars->11->825",
+        "default-mobile.handlebars->11->828",
         "default.handlebars->47->1641",
         "default.handlebars->47->1644",
         "default.handlebars->47->1647"
@@ -49588,7 +49599,7 @@
       "zh-cht": "不能存取檔案",
       "hu": "Nincs Fájl hozzáférés",
       "xloc": [
-        "default-mobile.handlebars->11->908",
+        "default-mobile.handlebars->11->928",
         "default.handlebars->47->2276",
         "default.handlebars->47->2962"
       ]
@@ -49617,7 +49628,7 @@
       "zh-cht": "沒有檔案",
       "hu": "Nincs Fájlelérés",
       "xloc": [
-        "default-mobile.handlebars->11->931",
+        "default-mobile.handlebars->11->951",
         "default.handlebars->47->1100",
         "default.handlebars->47->1125",
         "default.handlebars->47->2317",
@@ -49676,8 +49687,8 @@
       "zh-cht": "沒有Intel&reg; AMT",
       "hu": "Nincs Intel&reg; AMT",
       "xloc": [
-        "default-mobile.handlebars->11->909",
-        "default-mobile.handlebars->11->932",
+        "default-mobile.handlebars->11->929",
+        "default-mobile.handlebars->11->952",
         "default.handlebars->47->2277",
         "default.handlebars->47->2318"
       ]
@@ -50028,8 +50039,8 @@
       "hu": "Nincsenek jogok",
       "xloc": [
         "default-mobile.handlebars->11->344",
-        "default-mobile.handlebars->11->883",
-        "default-mobile.handlebars->11->939",
+        "default-mobile.handlebars->11->903",
+        "default-mobile.handlebars->11->959",
         "default.handlebars->47->1118",
         "default.handlebars->47->1143",
         "default.handlebars->47->2047",
@@ -50113,7 +50124,7 @@
       "zh-cht": "沒有終端",
       "hu": "Nincs terminál",
       "xloc": [
-        "default-mobile.handlebars->11->930",
+        "default-mobile.handlebars->11->950",
         "default.handlebars->47->1099",
         "default.handlebars->47->1124",
         "default.handlebars->47->2316",
@@ -50144,7 +50155,7 @@
       "zh-cht": "不能訪問終端",
       "hu": "Nincs Terminál hozzáférés",
       "xloc": [
-        "default-mobile.handlebars->11->907",
+        "default-mobile.handlebars->11->927",
         "default.handlebars->47->2275",
         "default.handlebars->47->2961"
       ]
@@ -50308,7 +50319,7 @@
       "zh-cht": "沒有代理設備通過代理中繼",
       "hu": "No agent devices relayed thru agent",
       "xloc": [
-        "default-mobile.handlebars->11->866",
+        "default-mobile.handlebars->11->886",
         "default.handlebars->47->2024",
         "default.handlebars->47->2087"
       ]
@@ -50749,7 +50760,7 @@
       "zh-cht": "沒有此裝置的訊息。",
       "hu": "Nincs információ erről az eszközről.",
       "xloc": [
-        "default-mobile.handlebars->11->843",
+        "default-mobile.handlebars->11->858",
         "default.handlebars->47->1677"
       ]
     },
@@ -51022,7 +51033,7 @@
       "zh-cht": "沒有此用戶的電話號碼",
       "hu": "Ennek a felhasználónak nincs telefonszáma",
       "xloc": [
-        "default-mobile.handlebars->11->982",
+        "default-mobile.handlebars->11->1002",
         "default.handlebars->47->3199"
       ]
     },
@@ -51104,7 +51115,7 @@
       "zh-cht": "沒有可用的中繼設備。",
       "hu": "Nem állnak rendelkezésre relay eszközök.",
       "xloc": [
-        "default-mobile.handlebars->11->889",
+        "default-mobile.handlebars->11->909",
         "default.handlebars->47->2225"
       ]
     },
@@ -51234,7 +51245,7 @@
       "zh-cht": "沒有用戶管理權限",
       "hu": "Nincs felhasználói kezelői jog",
       "xloc": [
-        "default-mobile.handlebars->11->980",
+        "default-mobile.handlebars->11->1000",
         "default.handlebars->47->3197"
       ]
     },
@@ -51407,7 +51418,7 @@
         "default-mobile.handlebars->11->526",
         "default-mobile.handlebars->11->640",
         "default-mobile.handlebars->11->688",
-        "default-mobile.handlebars->11->871",
+        "default-mobile.handlebars->11->891",
         "default.handlebars->47->1391",
         "default.handlebars->47->2081",
         "default.handlebars->47->2092",
@@ -51636,7 +51647,7 @@
       "hu": "Not Activated (In)",
       "xloc": [
         "default-mobile.handlebars->11->498",
-        "default-mobile.handlebars->11->791",
+        "default-mobile.handlebars->11->790",
         "default.handlebars->47->882"
       ]
     },
@@ -51665,7 +51676,7 @@
       "hu": "Not Activated (Pre)",
       "xloc": [
         "default-mobile.handlebars->11->497",
-        "default-mobile.handlebars->11->790",
+        "default-mobile.handlebars->11->789",
         "default.handlebars->47->881"
       ]
     },
@@ -51721,7 +51732,7 @@
       "zh-cht": "未知",
       "hu": "Nem ismert",
       "xloc": [
-        "default-mobile.handlebars->11->801",
+        "default-mobile.handlebars->11->800",
         "default.handlebars->47->1619"
       ]
     },
@@ -51860,7 +51871,7 @@
       "xloc": [
         "default-mobile.handlebars->11->539",
         "default-mobile.handlebars->11->590",
-        "default-mobile.handlebars->11->877",
+        "default-mobile.handlebars->11->897",
         "default.handlebars->47->1109",
         "default.handlebars->47->1134",
         "default.handlebars->47->1147",
@@ -52377,7 +52388,7 @@
       "zh-cht": "發生在{0}",
       "hu": "Történt {0}",
       "xloc": [
-        "default-mobile.handlebars->11->948",
+        "default-mobile.handlebars->11->968",
         "default.handlebars->47->3165"
       ]
     },
@@ -53125,7 +53136,7 @@
       "zh-cht": "操作系統",
       "hu": "Operációs rendszer ",
       "xloc": [
-        "default-mobile.handlebars->11->757",
+        "default-mobile.handlebars->11->756",
         "default.handlebars->47->1308",
         "default.handlebars->47->1565",
         "default.handlebars->47->3097",
@@ -53587,7 +53598,7 @@
       "zh-cht": "推",
       "hu": "PUSH",
       "xloc": [
-        "default-mobile.handlebars->11->849",
+        "default-mobile.handlebars->11->869",
         "default.handlebars->47->1689"
       ]
     },
@@ -53698,8 +53709,8 @@
       "zh-cht": "零件號",
       "hu": "Cikkszám",
       "xloc": [
-        "default-mobile.handlebars->11->829",
-        "default-mobile.handlebars->11->835",
+        "default-mobile.handlebars->11->834",
+        "default-mobile.handlebars->11->840",
         "default.handlebars->47->1653",
         "default.handlebars->47->1659"
       ]
@@ -53804,7 +53815,7 @@
       "hu": "Részleges jogok",
       "xloc": [
         "default-mobile.handlebars->11->342",
-        "default-mobile.handlebars->11->881",
+        "default-mobile.handlebars->11->901",
         "default.handlebars->47->2045"
       ]
     },
@@ -54059,7 +54070,7 @@
       "zh-cht": "密碼已更改。",
       "hu": "A jelszó megváltozott.",
       "xloc": [
-        "default-mobile.handlebars->11->976",
+        "default-mobile.handlebars->11->996",
         "default.handlebars->47->3193"
       ]
     },
@@ -54492,7 +54503,7 @@
       "zh-cht": "執行代理指令",
       "hu": "Agent művelet végrehajtása",
       "xloc": [
-        "default-mobile.handlebars->11->852",
+        "default-mobile.handlebars->11->872",
         "default.handlebars->47->1692"
       ]
     },
@@ -54970,7 +54981,7 @@
       "zh-cht": "沒有權限",
       "hu": "Hozzáférés megtagadva",
       "xloc": [
-        "default-mobile.handlebars->11->957",
+        "default-mobile.handlebars->11->977",
         "default.handlebars->47->3174"
       ]
     },
@@ -54998,7 +55009,7 @@
       "zh-cht": "權限",
       "hu": "Jogosultságok",
       "xloc": [
-        "default-mobile.handlebars->11->942",
+        "default-mobile.handlebars->11->962",
         "default.handlebars->47->2331",
         "default.handlebars->47->2637"
       ]
@@ -56886,7 +56897,7 @@
       "zh-cht": "配置狀態",
       "hu": "Telepítés (Provisioning) Állapot",
       "xloc": [
-        "default-mobile.handlebars->11->795",
+        "default-mobile.handlebars->11->794",
         "default.handlebars->47->1613"
       ]
     },
@@ -58041,6 +58052,7 @@
       "en": "Recovery Password",
       "pl": "Hasło Odzyskiwania",
       "xloc": [
+        "default-mobile.handlebars->11->861",
         "default.handlebars->47->1680"
       ]
     },
@@ -58411,8 +58423,8 @@
       "zh-cht": "繼電器裝置",
       "hu": "Relay Eszköz",
       "xloc": [
-        "default-mobile.handlebars->11->874",
-        "default-mobile.handlebars->11->890",
+        "default-mobile.handlebars->11->894",
+        "default-mobile.handlebars->11->910",
         "default.handlebars->47->2030",
         "default.handlebars->47->2095",
         "default.handlebars->47->2226"
@@ -58926,7 +58938,7 @@
       "zh-cht": "遠程命令",
       "hu": "Távoli parancsok",
       "xloc": [
-        "default-mobile.handlebars->11->917",
+        "default-mobile.handlebars->11->937",
         "default.handlebars->47->2285"
       ]
     },
@@ -58956,8 +58968,8 @@
       "xloc": [
         "default-mobile.handlebars->11->544",
         "default-mobile.handlebars->11->545",
-        "default-mobile.handlebars->11->904",
         "default-mobile.handlebars->11->924",
+        "default-mobile.handlebars->11->944",
         "default.handlebars->47->1000",
         "default.handlebars->47->1001",
         "default.handlebars->47->2309"
@@ -59527,7 +59539,7 @@
       "zh-cht": "遠程網格用戶",
       "hu": "Távoli Mesh Felhasználó",
       "xloc": [
-        "default-mobile.handlebars->11->945"
+        "default-mobile.handlebars->11->965"
       ]
     },
     {
@@ -59731,8 +59743,8 @@
       "zh-cht": "僅遠程查看",
       "hu": "Csak távoli megtekintés",
       "xloc": [
-        "default-mobile.handlebars->11->905",
-        "default-mobile.handlebars->11->929",
+        "default-mobile.handlebars->11->925",
+        "default-mobile.handlebars->11->949",
         "default.handlebars->47->2271",
         "default.handlebars->47->2314",
         "default.handlebars->47->2960"
@@ -59876,6 +59888,7 @@
       "en": "Removable",
       "pl": "Wyjmowane",
       "xloc": [
+        "default-mobile.handlebars->11->850",
         "default.handlebars->47->1669"
       ]
     },
@@ -61618,7 +61631,7 @@
       "zh-cht": "重置/關閉電源",
       "hu": "Újraindítás / Kikapcsolás",
       "xloc": [
-        "default-mobile.handlebars->11->918",
+        "default-mobile.handlebars->11->938",
         "default.handlebars->47->2286"
       ]
     },
@@ -61787,7 +61800,7 @@
       "zh-cht": "重置/關閉",
       "hu": "Újraindítás / Kikapcsolás",
       "xloc": [
-        "default-mobile.handlebars->11->938",
+        "default-mobile.handlebars->11->958",
         "default.handlebars->47->1114",
         "default.handlebars->47->1139",
         "default.handlebars->47->2324"
@@ -62950,7 +62963,7 @@
       "zh-cht": "短信錯誤",
       "hu": "SMS hiba",
       "xloc": [
-        "default-mobile.handlebars->11->984",
+        "default-mobile.handlebars->11->1004",
         "default.handlebars->47->3201"
       ]
     },
@@ -62978,7 +62991,7 @@
       "zh-cht": "短信錯誤：{0}",
       "hu": "SMS hiba: {0}",
       "xloc": [
-        "default-mobile.handlebars->11->985",
+        "default-mobile.handlebars->11->1005",
         "default.handlebars->47->3202"
       ]
     },
@@ -63033,7 +63046,7 @@
       "zh-cht": "短信網關未啟用",
       "hu": "SMS átjáró nincs engedélyezve",
       "xloc": [
-        "default-mobile.handlebars->11->979",
+        "default-mobile.handlebars->11->999",
         "default.handlebars->47->3196"
       ]
     },
@@ -63152,7 +63165,7 @@
       "zh-cht": "短信成功發送。",
       "hu": "SMS sikeresen elküldve.",
       "xloc": [
-        "default-mobile.handlebars->11->983"
+        "default-mobile.handlebars->11->1003"
       ]
     },
     {
@@ -64329,7 +64342,7 @@
       "zh-cht": "已使用TLS保安",
       "hu": "TLS használatával védett",
       "xloc": [
-        "default-mobile.handlebars->11->798",
+        "default-mobile.handlebars->11->797",
         "default.handlebars->47->1616"
       ]
     },
@@ -64358,7 +64371,7 @@
       "hu": "Biztonság",
       "xloc": [
         "default-mobile.handlebars->11->597",
-        "default-mobile.handlebars->11->797",
+        "default-mobile.handlebars->11->796",
         "default.handlebars->47->1266",
         "default.handlebars->47->1615",
         "default.handlebars->47->2395",
@@ -64432,7 +64445,7 @@
       "zh-cht": "安全警告",
       "hu": "Biztonsági figyelmeztetés",
       "xloc": [
-        "default-mobile.handlebars->11->953",
+        "default-mobile.handlebars->11->973",
         "default.handlebars->47->3170"
       ]
     },
@@ -64875,7 +64888,7 @@
       "zh-cht": "僅自我事件",
       "hu": "Csak saját események",
       "xloc": [
-        "default-mobile.handlebars->11->934",
+        "default-mobile.handlebars->11->954",
         "default.handlebars->47->2320"
       ]
     },
@@ -65568,8 +65581,8 @@
       "zh-cht": "序列號",
       "hu": "Sorozatszám",
       "xloc": [
-        "default-mobile.handlebars->11->807",
-        "default-mobile.handlebars->11->812",
+        "default-mobile.handlebars->11->806",
+        "default-mobile.handlebars->11->811",
         "default.handlebars->47->1625",
         "default.handlebars->47->1630"
       ]
@@ -65749,8 +65762,8 @@
       "zh-cht": "伺服器檔案",
       "hu": "Kiszolgáló fájlok",
       "xloc": [
-        "default-mobile.handlebars->11->911",
-        "default-mobile.handlebars->11->926",
+        "default-mobile.handlebars->11->931",
+        "default-mobile.handlebars->11->946",
         "default.handlebars->47->1107",
         "default.handlebars->47->1132",
         "default.handlebars->47->2279",
@@ -65809,7 +65822,7 @@
       "zh-cht": "服務器限制",
       "hu": "Kiszolgáló Limit",
       "xloc": [
-        "default-mobile.handlebars->11->952",
+        "default-mobile.handlebars->11->972",
         "default.handlebars->47->3169"
       ]
     },
@@ -67777,7 +67790,7 @@
       "zh-cht": "只顯示自己的事件",
       "hu": "Csak saját események megjelenítése",
       "xloc": [
-        "default-mobile.handlebars->11->914",
+        "default-mobile.handlebars->11->934",
         "default.handlebars->47->2282"
       ]
     },
@@ -69038,7 +69051,7 @@
       "zh-cht": "軟斷開代理",
       "hu": "Agent lecsatlakoztatása",
       "xloc": [
-        "default-mobile.handlebars->11->859",
+        "default-mobile.handlebars->11->879",
         "default.handlebars->47->1699"
       ]
     },
@@ -69971,7 +69984,7 @@
       "en": "SpecVersion",
       "pl": "Wersja",
       "xloc": [
-        "default-mobile.handlebars->11->818",
+        "default-mobile.handlebars->11->817",
         "default.handlebars->47->1636"
       ]
     },
@@ -70815,7 +70828,7 @@
       "zh-cht": "狀態",
       "hu": "Státusz",
       "xloc": [
-        "default-mobile.handlebars->11->841",
+        "default-mobile.handlebars->11->846",
         "default.handlebars->47->1665",
         "default.handlebars->47->2972",
         "default.handlebars->47->3050",
@@ -71003,7 +71016,7 @@
       "zh-cht": "儲存",
       "hu": "Háttértár",
       "xloc": [
-        "default-mobile.handlebars->11->842",
+        "default-mobile.handlebars->11->847",
         "default.handlebars->47->1666"
       ]
     },
@@ -71011,6 +71024,7 @@
       "en": "Storage Volumes",
       "pl": "Woluminy Pamięci",
       "xloc": [
+        "default-mobile.handlebars->11->857",
         "default.handlebars->47->1676"
       ]
     },
@@ -72016,7 +72030,7 @@
       "zh-cht": "未設置TLS",
       "hu": "TLS nincs beállítva",
       "xloc": [
-        "default-mobile.handlebars->11->799",
+        "default-mobile.handlebars->11->798",
         "default.handlebars->47->1617"
       ]
     },
@@ -72052,7 +72066,7 @@
     {
       "en": "TPM",
       "xloc": [
-        "default-mobile.handlebars->11->824",
+        "default-mobile.handlebars->11->829",
         "default.handlebars->47->1648"
       ]
     },
@@ -72921,7 +72935,7 @@
       "zh-cht": "目前沒有任何通知",
       "hu": "Jelenleg nincsenek értesítések",
       "xloc": [
-        "default-mobile.handlebars->11->947",
+        "default-mobile.handlebars->11->967",
         "default.handlebars->47->3164"
       ]
     },
@@ -72949,7 +72963,7 @@
       "zh-cht": "自上次登錄以來，此帳戶有 {0} 次登錄嘗試失敗。",
       "hu": "A legutóbbi bejelentkezés óta {0} sikertelen bejelentkezési kísérlet történt ebbe a fiókba.",
       "xloc": [
-        "default-mobile.handlebars->11->968",
+        "default-mobile.handlebars->11->988",
         "default.handlebars->47->3185"
       ]
     },
@@ -75394,7 +75408,7 @@
       "hu": "Típus",
       "xloc": [
         "default-mobile.handlebars->11->336",
-        "default-mobile.handlebars->11->872",
+        "default-mobile.handlebars->11->892",
         "default.handlebars->47->1184",
         "default.handlebars->47->1430",
         "default.handlebars->47->2027",
@@ -75778,7 +75792,7 @@
       "zh-cht": "此模式下無法添加用戶",
       "hu": "Ebben a módban nem lehet felhasználót hozzáadni",
       "xloc": [
-        "default-mobile.handlebars->11->964",
+        "default-mobile.handlebars->11->984",
         "default.handlebars->47->3181"
       ]
     },
@@ -76314,7 +76328,7 @@
       "hu": "Eltávolítás",
       "xloc": [
         "agent-translations.json",
-        "default-mobile.handlebars->11->936",
+        "default-mobile.handlebars->11->956",
         "default.handlebars->47->1112",
         "default.handlebars->47->1137",
         "default.handlebars->47->2322"
@@ -76344,7 +76358,7 @@
       "zh-cht": "卸載代理",
       "hu": "Agent eltávolítása",
       "xloc": [
-        "default-mobile.handlebars->11->916",
+        "default-mobile.handlebars->11->936",
         "default.handlebars->47->1237",
         "default.handlebars->47->708"
       ]
@@ -76432,9 +76446,12 @@
         "default-mobile.handlebars->11->45",
         "default-mobile.handlebars->11->468",
         "default-mobile.handlebars->11->6",
-        "default-mobile.handlebars->11->789",
-        "default-mobile.handlebars->11->796",
-        "default-mobile.handlebars->11->873",
+        "default-mobile.handlebars->11->788",
+        "default-mobile.handlebars->11->795",
+        "default-mobile.handlebars->11->851",
+        "default-mobile.handlebars->11->860",
+        "default-mobile.handlebars->11->862",
+        "default-mobile.handlebars->11->893",
         "default.handlebars->47->13",
         "default.handlebars->47->1607",
         "default.handlebars->47->1614",
@@ -76488,7 +76505,7 @@
       "zh-cht": "未知＃{0}",
       "hu": "Ismeretlen #{0}",
       "xloc": [
-        "default-mobile.handlebars->11->862",
+        "default-mobile.handlebars->11->882",
         "default.handlebars->47->2083"
       ]
     },
@@ -77091,7 +77108,7 @@
       "zh-cht": "上載mesh agent核心",
       "hu": "Mesh Agent Core feltöltése",
       "xloc": [
-        "default-mobile.handlebars->11->861",
+        "default-mobile.handlebars->11->881",
         "default.handlebars->47->1701"
       ]
     },
@@ -77119,7 +77136,7 @@
       "zh-cht": "上載核心檔案",
       "hu": "Core fájl feltöltése",
       "xloc": [
-        "default-mobile.handlebars->11->858",
+        "default-mobile.handlebars->11->878",
         "default.handlebars->47->1698"
       ]
     },
@@ -77147,7 +77164,7 @@
       "zh-cht": "上載默認伺服器核心",
       "hu": "Alapértelmezett server core feltöltése",
       "xloc": [
-        "default-mobile.handlebars->11->854",
+        "default-mobile.handlebars->11->874",
         "default.handlebars->47->1694",
         "default.handlebars->47->720",
         "default.handlebars->47->763"
@@ -77258,7 +77275,7 @@
       "zh-cht": "上傳恢復核心",
       "hu": "Recovery core feltöltése",
       "xloc": [
-        "default-mobile.handlebars->11->856",
+        "default-mobile.handlebars->11->876",
         "default.handlebars->47->1696"
       ]
     },
@@ -77313,7 +77330,7 @@
       "zh-cht": "上傳小核心",
       "hu": "Tiny core feltöltése",
       "xloc": [
-        "default-mobile.handlebars->11->857",
+        "default-mobile.handlebars->11->877",
         "default.handlebars->47->1697"
       ]
     },
@@ -77931,7 +77948,7 @@
       "zh-cht": "用戶授權",
       "hu": "Felhasználó és Csoport jogosultságok",
       "xloc": [
-        "default-mobile.handlebars->11->880",
+        "default-mobile.handlebars->11->900",
         "default.handlebars->47->1052",
         "default.handlebars->47->2153"
       ]
@@ -78078,7 +78095,7 @@
       "zh-cht": "用戶識別碼",
       "hu": "User ID",
       "xloc": [
-        "default-mobile.handlebars->11->941"
+        "default-mobile.handlebars->11->961"
       ]
     },
     {
@@ -78243,7 +78260,7 @@
       "zh-cht": "用戶名",
       "hu": "Felhasználó Név",
       "xloc": [
-        "default-mobile.handlebars->11->940",
+        "default-mobile.handlebars->11->960",
         "default.handlebars->47->2329"
       ]
     },
@@ -78541,7 +78558,7 @@
       "zh-cht": "用戶已存在",
       "hu": "A felhasználó már létezik",
       "xloc": [
-        "default-mobile.handlebars->11->963",
+        "default-mobile.handlebars->11->983",
         "default.handlebars->47->3180"
       ]
     },
@@ -78829,7 +78846,7 @@
       "zh-cht": "未找到用戶 {0}。",
       "hu": "{0} felhasználó nem található.",
       "xloc": [
-        "default-mobile.handlebars->11->971",
+        "default-mobile.handlebars->11->991",
         "default.handlebars->47->3188"
       ]
     },
@@ -78910,7 +78927,7 @@
       "xloc": [
         "default-mobile.handlebars->11->595",
         "default-mobile.handlebars->11->665",
-        "default-mobile.handlebars->11->876",
+        "default-mobile.handlebars->11->896",
         "default.handlebars->47->1264",
         "default.handlebars->47->1356",
         "default.handlebars->47->1466",
@@ -79176,7 +79193,7 @@
       "zh-cht": "未找到用戶 {0}。",
       "hu": "{0} felhasználók nem találhatóak.",
       "xloc": [
-        "default-mobile.handlebars->11->972",
+        "default-mobile.handlebars->11->992",
         "default.handlebars->47->3189"
       ]
     },
@@ -79341,7 +79358,7 @@
       "zh-cht": "驗證異常",
       "hu": "Érvényesítési kivétel",
       "xloc": [
-        "default-mobile.handlebars->11->965",
+        "default-mobile.handlebars->11->985",
         "default.handlebars->47->3182"
       ]
     },
@@ -79452,8 +79469,8 @@
       "zh-cht": "供應商",
       "hu": "Forgalmazó",
       "xloc": [
-        "default-mobile.handlebars->11->805",
-        "default-mobile.handlebars->11->810",
+        "default-mobile.handlebars->11->804",
+        "default-mobile.handlebars->11->809",
         "default.handlebars->47->1623",
         "default.handlebars->47->1628"
       ]
@@ -79711,9 +79728,9 @@
       "hu": "Verzió",
       "xloc": [
         "default-mobile.handlebars->11->721",
-        "default-mobile.handlebars->11->788",
-        "default-mobile.handlebars->11->806",
-        "default-mobile.handlebars->11->813",
+        "default-mobile.handlebars->11->787",
+        "default-mobile.handlebars->11->805",
+        "default-mobile.handlebars->11->812",
         "default.handlebars->47->1556",
         "default.handlebars->47->1606",
         "default.handlebars->47->1624",
@@ -80438,8 +80455,8 @@
       "zh-cht": "喚醒裝置",
       "hu": "Eszközök felébresztése",
       "xloc": [
-        "default-mobile.handlebars->11->912",
-        "default-mobile.handlebars->11->927",
+        "default-mobile.handlebars->11->932",
+        "default-mobile.handlebars->11->947",
         "default.handlebars->47->2280",
         "default.handlebars->47->2312"
       ]
@@ -82563,6 +82580,9 @@
     {
       "en": "Yes",
       "xloc": [
+        "default-mobile.handlebars->11->821",
+        "default-mobile.handlebars->11->824",
+        "default-mobile.handlebars->11->827",
         "default.handlebars->47->1640",
         "default.handlebars->47->1643",
         "default.handlebars->47->1646"
@@ -84094,7 +84114,7 @@
       "zh-cht": "console.txt",
       "hu": "console.txt",
       "xloc": [
-        "default-mobile.handlebars->11->851",
+        "default-mobile.handlebars->11->871",
         "default.handlebars->47->1691"
       ]
     },
@@ -86316,7 +86336,7 @@
       "zh-cht": "{0}",
       "hu": "{0}",
       "xloc": [
-        "default-mobile.handlebars->11->834",
+        "default-mobile.handlebars->11->839",
         "default.handlebars->47->1658"
       ]
     },
@@ -86572,8 +86592,8 @@
       "zh-cht": "{0} Mb",
       "hu": "{0} Mb",
       "xloc": [
-        "default-mobile.handlebars->11->828",
-        "default-mobile.handlebars->11->839",
+        "default-mobile.handlebars->11->833",
+        "default-mobile.handlebars->11->844",
         "default.handlebars->47->1652",
         "default.handlebars->47->1663",
         "default.handlebars->47->2409",
@@ -86604,7 +86624,7 @@
       "zh-cht": "{0} Mb，{1} Mhz",
       "hu": "{0} Mb, {1} Mhz",
       "xloc": [
-        "default-mobile.handlebars->11->826",
+        "default-mobile.handlebars->11->831",
         "default.handlebars->47->1650"
       ]
     },
@@ -87872,7 +87892,7 @@
       "zh-cht": "{0}, {1}",
       "hu": "{0}, {1}",
       "xloc": [
-        "default-mobile.handlebars->11->832",
+        "default-mobile.handlebars->11->837",
         "default.handlebars->47->1656"
       ]
     },

@@ -5917,21 +5917,6 @@
                     x += addDetailItem("Antivirus", y.join('<br />'));
                 }
 
-                // Volumes and Bitlocker
-                if (node.volumes){
-                    var bitlocker = [];
-                    for (var i in node.volumes) {
-                        if (typeof node.volumes[i].protectionStatus !== 'undefined' && node.volumes[i].protectionStatus == 'On'){
-                            bitlocker.push(i + ' - <span style=color:green>' + node.volumes[i].volumeStatus + '</span>');
-                        }else if (typeof node.volumes[i].protectionStatus !== 'undefined'){
-                            bitlocker.push(i + ' - <span style=color:red>' + node.volumes[i].volumeStatus + '</span>');
-                        }
-                    }
-                    if(bitlocker.length > 0){
-                        x += addDetailItem("BitLocker", bitlocker.join('<br />'));
-                    }
-                }
-
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
             }
 
@@ -6073,9 +6058,9 @@
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
                 if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
                 if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", EscapeHtml(tpm.IsActivated), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", EscapeHtml(tpm.IsEnabled), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", EscapeHtml(tpm.IsOwned), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
                 if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm'}); }
             }
 
@@ -6154,6 +6139,36 @@
                 if (x != '') { sections.push({ name: "Storage", html: x, img: 'storage' }); }
             }
 
+            // Volumes and Bitlocker
+            if (hardware.windows && hardware.windows.volumes) {
+                var x = '';
+                for (var i in hardware.windows.volumes) {
+                    var m = hardware.windows.volumes[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + i + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
+                    if (m.size) {
+                        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.size} ${sizes[j]}` : `${(m.size / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        x += addDetailItem("Capacity", EscapeHtml(fsize), s);
+                    }
+                    if (m.type) { x += addDetailItem("File System", (m.removable == true ? ("Removable" + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s); }
+
+                    if (m.protectionStatus || m.volumeStatus) {
+                        var bitlockerState = [];
+                        if (m.protectionStatus) bitlockerState.push("Enabled");
+                        if (m.volumeStatus && m.volumeStatus == 'FullyDecrypted') bitlockerState.push("Fully Decrypted");
+                        if (m.volumeStatus && m.volumeStatus == 'EncryptionInProgress') bitlockerState.push("Encryption In Progress");
+                        if (m.volumeStatus && m.volumeStatus == 'FullyEncrypted') bitlockerState.push("Fully Encrypted");
+                        bitlockerState = bitlockerState.join(' - ');
+                        if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
+                        x += addDetailItem("BitLocker", bitlockerState, s);
+                    }
+                    x += '</div>';
+                }
+                if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage'}); }
+            }
+
             // Render the sections
             var x = '';
             for (var i in sections) {
@@ -6172,6 +6187,13 @@
             } else {
                 QH('p10detailshtml', x);
             }
+        }
+
+        function deviceDetailsShowBitlockerInfo(drive, identifier, password) {
+            if (xxdialogMode) return false;
+            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + (identifier ? decodeURIComponent(identifier) : "Unknown") + '</p>';
+            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + (password ? decodeURIComponent(password) : "Unknown") + '</p></div>';
+            setDialogMode(2, decodeURIComponent(drive) + ': ' + "BitLocker Information", 1, null, x, '');
         }
 
 
@@ -7116,6 +7138,8 @@
         function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
         function addLink(x, f) { return '<a style=cursor:pointer;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
+        function addKeyLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <img class=hoverButton src=images/key16.png></span>'; }
+        function addKeyLinkConditional(x, f, c) { if (c) return addKeyLink(x, f); return x; }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
         function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format('{0} bytes', size); }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
