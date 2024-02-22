@@ -390,7 +390,7 @@ function windows_volumes()
     p1.child = child;
     child.promise = p1;
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stdin.write('Get-Volume | Select-Object -Property DriveLetter,FileSystemLabel,FileSystemType,Size,DriveType | ConvertTo-Csv -NoTypeInformation\nexit\n');
+    child.stdin.write('Get-Volume | Select-Object -Property DriveLetter,FileSystemLabel,FileSystemType,Size,SizeRemaining,DriveType | ConvertTo-Csv -NoTypeInformation\nexit\n');
     child.on('exit', function (c)
     {
         var a, i, tokens, key;
@@ -407,7 +407,8 @@ function windows_volumes()
                         name: tokens[1].split('"')[1],
                         type: tokens[2].split('"')[1],
                         size: tokens[3].split('"')[1],
-                        removable: tokens[4].split('"')[1] == 'Removable'
+                        sizeremaining: tokens[4].split('"')[1],
+                        removable: tokens[5].split('"')[1] == 'Removable'
                     };
             }
         }
