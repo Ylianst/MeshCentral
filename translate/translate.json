@@ -787,8 +787,8 @@
       "zh-chs": "'",
       "hu": "'",
       "xloc": [
-        "agentinvite.handlebars->3->16",
-        "agentinvite.handlebars->3->17"
+        "agentinvite.handlebars->3->17",
+        "agentinvite.handlebars->3->18"
       ]
     },
     {
@@ -12632,7 +12632,7 @@
       "zh-cht": "背景與互動",
       "hu": "Háttérben és interaktív módon",
       "xloc": [
-        "agentinvite.handlebars->3->7",
+        "agentinvite.handlebars->3->8",
         "default.handlebars->47->597"
       ]
     },
@@ -12690,7 +12690,7 @@
       "zh-cht": "僅背景",
       "hu": "Csak háttérben",
       "xloc": [
-        "agentinvite.handlebars->3->8",
+        "agentinvite.handlebars->3->9",
         "default.handlebars->47->2351",
         "default.handlebars->47->2358",
         "default.handlebars->47->561",
@@ -16643,7 +16643,7 @@
       "zh-cht": "命令",
       "hu": "Parancs",
       "xloc": [
-        "agentinvite.handlebars->3->14",
+        "agentinvite.handlebars->3->15",
         "default.handlebars->47->659"
       ]
     },
@@ -19021,8 +19021,8 @@
       "zh-cht": "將代理URL複製到剪貼板",
       "hu": "Agent URL másolása a vágólapra",
       "xloc": [
-        "agentinvite.handlebars->3->13",
-        "agentinvite.handlebars->3->15",
+        "agentinvite.handlebars->3->14",
+        "agentinvite.handlebars->3->16",
         "default.handlebars->47->658",
         "default.handlebars->47->660"
       ]
@@ -36798,7 +36798,7 @@
       "zh-cht": "安裝方式",
       "hu": "Telepítés típusa",
       "xloc": [
-        "agentinvite.handlebars->3->6",
+        "agentinvite.handlebars->3->7",
         "default.handlebars->47->2349",
         "default.handlebars->47->2356",
         "default.handlebars->47->559",
@@ -38534,7 +38534,7 @@
       "zh-cht": "僅限互動",
       "hu": "Csak internaktív",
       "xloc": [
-        "agentinvite.handlebars->3->9",
+        "agentinvite.handlebars->3->10",
         "default.handlebars->47->2352",
         "default.handlebars->47->2359",
         "default.handlebars->47->562",
@@ -42453,7 +42453,6 @@
       "zh-cht": "Linux",
       "hu": "Linux",
       "xloc": [
-        "agentinvite.handlebars->container->column_l->5->1->tlinuxtab",
         "agentinvite.handlebars->container->column_l->5->linuxtab->1",
         "default-mobile.handlebars->11->492",
         "default.handlebars->47->58",
@@ -42542,6 +42541,12 @@
       ]
     },
     {
+      "en": "Linux / BSD / macOS Binary",
+      "xloc": [
+        "agentinvite.handlebars->container->column_l->5->1->tlinuxbinarytab"
+      ]
+    },
+    {
       "bs": "Linux / BSD / macOS binarni instalacijski program",
       "cs": "Linux / BSD / macOS binární instalační program",
       "da": "Linux / BSD / macOS Binary Installer",
@@ -42566,7 +42571,14 @@
       "hu": "Linux / BSD / macOS Binary Telepítő",
       "xloc": [
         "agentinvite.handlebars->3->4",
+        "agentinvite.handlebars->3->5",
         "default.handlebars->47->588"
+      ]
+    },
+    {
+      "en": "Linux / BSD Scripts",
+      "xloc": [
+        "agentinvite.handlebars->container->column_l->5->1->tlinuxtab"
       ]
     },
     {
@@ -42738,10 +42750,7 @@
     {
       "en": "Linux Binary",
       "nl": "Linux Binary",
-      "pl": "Plik Binrany Linux",
-      "xloc": [
-        "agentinvite.handlebars->container->column_l->5->1->tlinuxbinarytab"
-      ]
+      "pl": "Plik Binrany Linux"
     },
     {
       "bs": "Linux MeshAgent",
@@ -45989,7 +45998,7 @@
       "zh-cht": "Mesh Agent",
       "hu": "Mesh Agent",
       "xloc": [
-        "agentinvite.handlebars->3->11",
+        "agentinvite.handlebars->3->12",
         "default-mobile.handlebars->11->496",
         "default-mobile.handlebars->11->551",
         "default-mobile.handlebars->11->757",
@@ -71800,7 +71809,7 @@
       "zh-cht": "系統類型",
       "hu": "Rendszer típusa",
       "xloc": [
-        "agentinvite.handlebars->3->5",
+        "agentinvite.handlebars->3->6",
         "default.handlebars->47->595"
       ]
     },
@@ -73188,7 +73197,7 @@
       "zh-cht": "這是OS圖形用戶界面上的可執行檔案。你需要'chmod + x meshagent'並運行此檔案。",
       "hu": "Ez egy futtatható szoftver, grafikus felhasználói felülettel rendelkező operációs rendszerekhez. A 'chmod +x meshagent' paranccsal kell futtatni ezt a fájlt.",
       "xloc": [
-        "agentinvite.handlebars->3->10",
+        "agentinvite.handlebars->3->11",
         "default.handlebars->47->655"
       ]
     },
@@ -85424,7 +85433,7 @@
       "zh-cht": "MeshAgent",
       "hu": "MeshAgent",
       "xloc": [
-        "agentinvite.handlebars->3->12",
+        "agentinvite.handlebars->3->13",
         "default.handlebars->47->657"
       ]
     },
