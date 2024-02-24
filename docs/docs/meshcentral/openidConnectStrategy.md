@@ -30,7 +30,7 @@ OpenID Connect is a simple identity layer built on top of the OAuth2 protocol. I
 
 OpenID Connect allows clients of all types, including Web-based, mobile, and JavaScript clients, to request and receive information about authenticated sessions and end-users. The specification suite is extensible, allowing participants to use optional features such as encryption of identity data, discovery of OpenID Providers, and logout, when it makes sense for them.
 
-That description was straigt from [OpenID Connect Documentation](https://openid.net/connect/), but basically, OAuth2 is the foundation upon which OpenID Connect was built, allowing for wide ranging compatability and interconnection. OpenID Connect appends the secure user *authentication* OAuth2 is known for, with user *authorization* by allowing the request of additional *scopes* that provide additional *claims* or access to API's in an easily expandable way.
+That description was straight from [OpenID Connect Documentation](https://openid.net/connect/), but basically, OAuth2 is the foundation upon which OpenID Connect was built, allowing for wide ranging compatability and interconnection. OpenID Connect appends the secure user *authentication* OAuth2 is known for, with user *authorization* by allowing the request of additional *scopes* that provide additional *claims* or access to API's in an easily expandable way.
 
 ## Basic Config
 
@@ -76,7 +76,7 @@ In this most basic of setups, you only need the URL of the issuer, as well as a 
 
 ### Overview
 
-There are plenty of options at your disposal if you need them. In fact, you can configure any property that node-openid-client supports. The openid-client module supports far more customization than I know what to do with, if you want to know more check out [node-openid-client on GitHub]() for expert level configuration details. There are plenty of things you can configure with this strategy and there is a lot of decumentation behind the tools used to make this all happen. I strongly recommend you explore the [config schema](), and if you have a complicated config maybe check out the [openid-client readme](). Theres a list of resources at the end if you want more information on any specific topics. In the meantime, let’s take a look at an example of what your config file could look with a slightly more complicated configuration, including multiple manually defined endpoints.
+There are plenty of options at your disposal if you need them. In fact, you can configure any property that node-openid-client supports. The openid-client module supports far more customization than I know what to do with, if you want to know more check out [node-openid-client on GitHub](https://github.com/panva/node-openid-client) for expert level configuration details. There are plenty of things you can configure with this strategy and there is a lot of decumentation behind the tools used to make this all happen. I strongly recommend you explore the [config schema](https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json), and if you have a complicated config maybe check out the [openid-client readme](https://github.com/panva/node-openid-client/blob/main/docs/README.md). Theres a list of resources at the end if you want more information on any specific topics. In the meantime, let’s take a look at an example of what your config file could look with a slightly more complicated configuration, including multiple manually defined endpoints.
 
 #### *Advanced Config File Example*
 
@@ -594,7 +594,7 @@ As with all other types of configuration for the OIDC strategy, the Azure preset
 
 #### Introduction
 
-As of [MeshCentral `v1.0.86`]() and the writing of this documentation, the node module that handles everything was changed from [passport-openid-connect]() to [openid-client](). As a result of this change multiple properties in the config have been depcrecated. Basically this means some options in the strategy arent being used anymore. These are often referred to as "old configs" by this documentation. 
+As of [MeshCentral `v1.0.86`]() and the writing of this documentation, the node module that handles everything was changed from [passport-openid-connect](https://github.com/jaredhanson/passport-openidconnect) to [openid-client](https://github.com/panva/node-openid-client). As a result of this change, multiple properties in the config have been depcrecated; this means some options in the strategy arent being used anymore. These are often referred to as "old configs" by this documentation. 
 
 #### *Migrating Old Configs*
 
@@ -647,4 +647,8 @@ https://www.onelogin.com/learn/authentication-vs-authorization
 
 https://auth0.com/docs/authenticate/protocols/openid-connect-protocol
 
-> You just read `openidConnectStrategy.ms v0.0.1` by [@mstrhakr]()
+https://github.com/panva/node-openid-client
+
+https://openid.net/connect/
+
+> You just read `openidConnectStrategy.ms v1.0.1` by [@mstrhakr](https://github.com/mstrhakr)
