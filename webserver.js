@@ -2582,10 +2582,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // This is called after a successful Oauth to Twitter, Google, GitHub...
     function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
-        const strategy = typeof req.user.strategy == 'string' ? domain.authstrategies[req.user.strategy] : null;
-        if (domain == null || strategy == null) { return; }
-        const groups = { 'enabled': typeof strategy.groups == 'object' }
-        if ((req.user != null) && (req.user.sid != null)) {
+        if (domain == null) { return; }
+        if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
+            const strategy = domain.authstrategies[req.user.strategy];
+            const groups = { 'enabled': typeof strategy.groups == 'object' }
             parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
             if (groups.enabled) { // Groups only available for OIDC strategy currently
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups)
@@ -7124,6 +7124,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Setup OpenID Connect Authentication Strategy
         if (obj.common.validateObject(domain.authstrategies.oidc)) {
+            parent.authLog('setupDomainAuthStrategy', `OIDC: Setting up strategy for domain: ${domain.id}`);
             // Ensure required objects exist
             let initStrategy = domain.authstrategies.oidc
             if (typeof initStrategy.issuer == 'string') { initStrategy.issuer = { 'issuer': initStrategy.issuer } }
@@ -7169,6 +7170,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Discover additional information if available, use endpoints from config if present
             let issuer
             try {
+                parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer}`);
                 issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
             } catch (err) {
                 let error = new Error('OIDC: Discovery failed.', { cause: err });
