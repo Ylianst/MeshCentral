@@ -26,6 +26,7 @@
     },
     {
       "en": " (",
+      "nl": " (",
       "xloc": [
         "default.handlebars->47->1501"
       ]
@@ -5458,6 +5459,7 @@
     },
     {
       "en": "AMT Host",
+      "nl": "AMT Host",
       "pl": "Host AMT",
       "xloc": [
         "default.handlebars->47->380"
@@ -5465,6 +5467,7 @@
     },
     {
       "en": "AMT State",
+      "nl": "AMT status",
       "pl": "Stan AMT",
       "xloc": [
         "default.handlebars->47->381"
@@ -13095,6 +13098,7 @@
     },
     {
       "en": "BitLocker Information",
+      "nl": "BitLocker informatie",
       "pl": "Informacje o BitLocker",
       "xloc": [
         "default-mobile.handlebars->11->865",
@@ -13625,6 +13629,7 @@
     },
     {
       "en": "CD-ROM",
+      "nl": "CD-ROM",
       "xloc": [
         "default-mobile.handlebars->11->851",
         "default.handlebars->47->1670"
@@ -14267,6 +14272,7 @@
     },
     {
       "en": "Capacity Remaining",
+      "nl": "Resterende capaciteit",
       "xloc": [
         "default-mobile.handlebars->11->849",
         "default.handlebars->47->1668"
@@ -24651,6 +24657,7 @@
     },
     {
       "en": "Display a message box on the remote device",
+      "nl": "Geef een berichtvenster weer op het externe apparaat.",
       "xloc": [
         "default.handlebars->47->1149"
       ]
@@ -28256,6 +28263,7 @@
     },
     {
       "en": "Encryption In Progress",
+      "nl": "Versleuteling wordt uitgevoerd",
       "xloc": [
         "default-mobile.handlebars->11->856",
         "default.handlebars->47->1675"
@@ -30641,6 +30649,7 @@
     },
     {
       "en": "File System",
+      "nl": "Bestandssysteem",
       "pl": "System Plików",
       "xloc": [
         "default-mobile.handlebars->11->852",
@@ -32331,6 +32340,7 @@
     },
     {
       "en": "Fully Decrypted",
+      "nl": "Volledig gedecodeerd",
       "xloc": [
         "default-mobile.handlebars->11->855",
         "default.handlebars->47->1674"
@@ -32338,6 +32348,7 @@
     },
     {
       "en": "Fully Encrypted",
+      "nl": "Volledig gecodeerd",
       "xloc": [
         "default-mobile.handlebars->11->857",
         "default.handlebars->47->1676"
@@ -36118,6 +36129,7 @@
     },
     {
       "en": "In",
+      "nl": "In",
       "pl": "W",
       "xloc": [
         "default.handlebars->47->428"
@@ -37707,6 +37719,7 @@
     },
     {
       "en": "Intel&reg; AMT hostname",
+      "nl": "Intel&reg; AMT hostnaam",
       "pl": "Nazwa hosta Intel&reg; AMT",
       "xloc": [
         "default.handlebars->47->350"
@@ -37770,6 +37783,7 @@
     },
     {
       "en": "Intel&reg; AMT is in activation mode",
+      "nl": "Intel&reg; AMT is in activeringsmodus",
       "pl": "Intel&reg; AMT jest w trybie aktywacji",
       "xloc": [
         "default.handlebars->47->427"
@@ -37777,6 +37791,7 @@
     },
     {
       "en": "Intel&reg; AMT is not activated",
+      "nl": "Intel&reg; AMT is niet geactiveerd",
       "pl": "Intel&reg; AMT nie jest aktywowane",
       "xloc": [
         "default.handlebars->47->425"
@@ -37974,6 +37989,7 @@
     },
     {
       "en": "Intel&reg; AMT state",
+      "nl": "Intel&reg; AMT status",
       "xloc": [
         "default.handlebars->47->351"
       ]
@@ -39245,6 +39261,7 @@
     },
     {
       "en": "Invalid origin in HTTP request",
+      "nl": "Ongeldige herkomst in HTTP-verzoek",
       "pl": "Nieprawidłowe źródło w żądaniu HTTP",
       "xloc": [
         "default.handlebars->47->69"
@@ -42542,6 +42559,7 @@
     },
     {
       "en": "Linux / BSD / macOS Binary",
+      "nl": "Linux / BSD / macOS Binary",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tlinuxbinarytab"
       ]
@@ -42577,6 +42595,7 @@
     },
     {
       "en": "Linux / BSD Scripts",
+      "nl": "Linux / BSD Scripts",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->1->tlinuxtab"
       ]
@@ -49314,6 +49333,7 @@
     },
     {
       "en": "No",
+      "nl": "Nee",
       "xloc": [
         "default-mobile.handlebars->11->822",
         "default-mobile.handlebars->11->825",
@@ -56180,6 +56200,7 @@
     },
     {
       "en": "Pre",
+      "nl": "Pre",
       "pl": "Przed",
       "xloc": [
         "default.handlebars->47->426"
@@ -57509,6 +57530,7 @@
     },
     {
       "en": "RDP Port {0}",
+      "nl": "RDP Poort {0}",
       "xloc": [
         "default.handlebars->47->1335"
       ]
@@ -58073,6 +58095,7 @@
     },
     {
       "en": "Recovery Password",
+      "nl": "Herstelwachtwoord",
       "pl": "Hasło Odzyskiwania",
       "xloc": [
         "default-mobile.handlebars->11->863",
@@ -59909,6 +59932,7 @@
     },
     {
       "en": "Removable",
+      "nl": "Verwijderbaar",
       "pl": "Wyjmowane",
       "xloc": [
         "default-mobile.handlebars->11->850",
@@ -68119,6 +68143,7 @@
     },
     {
       "en": "Show for 60 minutes",
+      "nl": "Toon gedurende 60 minuten",
       "pl": "Pokazuj przez 60 minut",
       "xloc": [
         "default.handlebars->47->1153",
@@ -68183,6 +68208,7 @@
     },
     {
       "en": "Show server configuration",
+      "nl": "Serverconfiguratie weergeven",
       "pl": "Pokaż konfigurację serwera",
       "xloc": [
         "default.handlebars->container->column_l->p6->p6info->p2ServerActions->3->p2ServerActionsConfig->1"
@@ -68803,6 +68829,7 @@
     },
     {
       "en": "Slack",
+      "nl": "Slack",
       "pl": "Slack",
       "xloc": [
         "default.handlebars->47->1724",
@@ -68811,6 +68838,7 @@
     },
     {
       "en": "Slack Webhook Setup",
+      "nl": "Slack Webhook Setup",
       "pl": "Instalacja Slack Webhook",
       "xloc": [
         "default.handlebars->47->1734",
@@ -69417,6 +69445,7 @@
     },
     {
       "en": "Space",
+      "nl": "Spatie",
       "pl": "Przestrzeń",
       "xloc": [
         "default-mobile.handlebars->11->627",
@@ -70005,6 +70034,7 @@
     },
     {
       "en": "SpecVersion",
+      "nl": "SpecVersion",
       "pl": "Wersja",
       "xloc": [
         "default-mobile.handlebars->11->817",
@@ -70179,6 +70209,7 @@
     },
     {
       "en": "Start Type",
+      "nl": "Start Type",
       "pl": "Typ Rozruchu",
       "xloc": [
         "default.handlebars->47->1431"
@@ -71045,6 +71076,7 @@
     },
     {
       "en": "Storage Volumes",
+      "nl": "Opslagvolumes",
       "pl": "Woluminy Pamięci",
       "xloc": [
         "default-mobile.handlebars->11->859",
@@ -71249,6 +71281,7 @@
     },
     {
       "en": "Subsequent Failures",
+      "nl": "Vervolgfouten",
       "pl": "Późniejsze Awarie",
       "xloc": [
         "default.handlebars->47->1438"
@@ -72088,6 +72121,7 @@
     },
     {
       "en": "TPM",
+      "nl": "TPM",
       "xloc": [
         "default-mobile.handlebars->11->829",
         "default.handlebars->47->1648"
@@ -72271,6 +72305,7 @@
     },
     {
       "en": "TamperProtection",
+      "nl": "Pauzeer bescherming",
       "pl": "OchronaPrzedManipulacją",
       "xloc": [
         "default-mobile.handlebars->11->747",
@@ -81990,6 +82025,7 @@
     },
     {
       "en": "Windows AV",
+      "nl": "Windows AV",
       "pl": "Windows AV",
       "xloc": [
         "default.handlebars->47->342",
@@ -82026,6 +82062,7 @@
     },
     {
       "en": "Windows Defender",
+      "nl": "Windows Defender",
       "xloc": [
         "default-mobile.handlebars->11->751",
         "default.handlebars->47->930"
@@ -82033,6 +82070,7 @@
     },
     {
       "en": "Windows Firewall",
+      "nl": "Windows Firewall",
       "xloc": [
         "default.handlebars->47->344",
         "default.handlebars->47->375"
@@ -82207,6 +82245,7 @@
     },
     {
       "en": "Windows Update",
+      "nl": "Windows Update",
       "xloc": [
         "default.handlebars->47->343",
         "default.handlebars->47->374"
@@ -82602,6 +82641,7 @@
     },
     {
       "en": "Yes",
+      "nl": "Ja",
       "xloc": [
         "default-mobile.handlebars->11->821",
         "default-mobile.handlebars->11->824",
