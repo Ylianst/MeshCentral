@@ -10,7 +10,7 @@ Esentially its because its both based on a industry standard authorization proto
 
 In this document, we will learn about the OpenID Connect specification at a high level, and then use that information to configure the OpenID Connect strategy for MeshCentral using a generic OpenID Connect compatible IdP. After that we will go over some advanced configurations and then continue by explaining how to use the new presets for popular IdPs, specifically Google or Azure. Then we will explore the configuration and usage of the groups feature.
 
-> ATTENTION: As of MeshCentral `v1.0.86` there are multiple config options being depreciated. Using any of the old configs will only generate a warning in the authlog and will not stop you from using this strategy at this time. If there is information found in both the new and old config locations the new config location will be used. We will go over the specifics later, now lets jump in.
+> ATTENTION: As of MeshCentral `v1.1.22` there are multiple config options being depreciated. Using any of the old configs will only generate a warning in the authlog and will not stop you from using this strategy at this time. If there is information found in both the new and old config locations the new config location will be used. We will go over the specifics later, now lets jump in.
 
 ### Chart of Frequently Used Terms and Acronyms
 | Term | AKA | Descriptions |
@@ -594,11 +594,11 @@ As with all other types of configuration for the OIDC strategy, the Azure preset
 
 #### Introduction
 
-As of [MeshCentral `v1.0.86`]() and the writing of this documentation, the node module that handles everything was changed from [passport-openid-connect](https://github.com/jaredhanson/passport-openidconnect) to [openid-client](https://github.com/panva/node-openid-client). As a result of this change, multiple properties in the config have been depcrecated; this means some options in the strategy arent being used anymore. These are often referred to as "old configs" by this documentation. 
+As of MeshCentral `v1.1.22` and the writing of this documentation, the node module that handles everything was changed from [passport-openid-connect](https://github.com/jaredhanson/passport-openidconnect) to [openid-client](https://github.com/panva/node-openid-client). As a result of this change, multiple properties in the config have been depcrecated; this means some options in the strategy arent being used anymore. These are often referred to as "old configs" by this documentation. 
 
 #### *Migrating Old Configs*
 
-We upgraded but what about all the existing users, we couldn't just invalidate every config pre `1.0.86`. So in an effort to allow greater flexibility to all users of MeshCentral, and what futures scholars will all agree was an obvious move, all the depreciated configs will continue working as expected. Using any of the old options will just generate a warning in the authlog and will not stop you from using this the OIDC strategy with outdated configs, however if both the equivalent new and old config are set the new config will be used.
+We upgraded but what about all the existing users, we couldn't just invalidate every config pre `v1.1.22`. So in an effort to allow greater flexibility to all users of MeshCentral, and what futures scholars will all agree was an obvious move, all the depreciated configs will continue working as expected. Using any of the old options will just generate a warning in the authlog and will not stop you from using this the OIDC strategy with outdated configs, however if both the equivalent new and old config are set the new config will be used.
 
 #### *Old Config Example*
 ```json
@@ -635,9 +635,9 @@ This example was chosen because I wanted to highlight an advantage of supporting
 },
 ```
 
-#### *Upgrading to v1.0.86*
+#### *Upgrading to v1.1.22*
 
-If you were already using a meticulusly configured oidc strategy, all of your configs will still be used. You will simply see a warning in the logs if any depreciated properties were used. If you check the authLog there are additional details about the old config and provide the new place to put that information. In this advanced config, even the groups will continue to work just as they did before without any user intervention when upgrading from a version of MeshCentral pre v1.0.86. There are no step to take and no action is needed, moving the configs to the new locations is completely optional at the moment.
+If you were already using a meticulusly configured oidc strategy, all of your configs will still be used. You will simply see a warning in the logs if any depreciated properties were used. If you check the authLog there are additional details about the old config and provide the new place to put that information. In this advanced config, even the groups will continue to work just as they did before without any user intervention when upgrading from a version of MeshCentral pre v1.1.22. There are no step to take and no action is needed, moving the configs to the new locations is completely optional at the moment.
 
 # Links
 
