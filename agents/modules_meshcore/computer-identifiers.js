@@ -563,7 +563,7 @@ function windows_identifiers()
 }
 function macos_identifiers()
 {
-    var ret = { identifiers: {} };
+    var ret = { identifiers: {}, darwin: {} };
     var child;
 
     child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -602,12 +602,101 @@ function macos_identifiers()
     child.waitExit();
     ret.identifiers.cpu_name = child.stdout.str.trim();
 
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write('system_profiler SPMemoryDataType\nexit\n');
+    child.waitExit();
+    var lines = child.stdout.str.trim().split('\n');
+    if(lines.length > 0) {
+        const memorySlots = [];
+        if(lines[2].trim().includes('Memory Slots:')) { // OLD MACS WITH SLOTS
+            const Memory = [];
+            const bankMatches = child.stdout.str.trim().match(/BANK \d+\/DIMM\d+:[\s\S]*?(?=(BANK|$))/g);
+            bankMatches.forEach(function(match, index) {
+                const bankInfo = match.match(/BANK (\d+)\/DIMM(\d+):[\s\S]*?Size: (\d+ \w+)[\s\S]*?Type: (\w+)[\s\S]*?Speed: (\d+ \w+)[\s\S]*?Status: (\w+)[\s\S]*?Manufacturer: (0x[0-9A-Fa-f]+)[\s\S]*?Part Number: (0x[0-9A-Fa-f]+)[\s\S]*?Serial Number: (.+)/);
+                if (bankInfo) {
+                    const bankIndex = bankInfo[1].trim();
+                    const dimmIndex = bankInfo[2].trim();
+                    const size = bankInfo[3].trim();
+                    const type = bankInfo[4].trim();
+                    const speed = bankInfo[5].trim();
+                    const status = bankInfo[6].trim();
+                    const manufacturer = bankInfo[7].trim();
+                    const partNumber = bankInfo[8].trim();
+                    const serialNumber = bankInfo[9].trim();
+                    Memory.push({
+                        DeviceLocator: "BANK " + bankIndex + "/DIMM" + dimmIndex,
+                        Size: size,
+                        Type: type,
+                        Speed: speed,
+                        Status: status,
+                        Manufacturer: hexToAscii(manufacturer),
+                        PartNumber: hexToAscii(partNumber),
+                        SerialNumber: serialNumber,
+                    });
+                }
+            });
+            memorySlots = Memory;  
+        } else { // NEW MACS WITHOUT SLOTS
+            memorySlots.push({ DeviceLocator: "Onboard Memory", Size: lines[2].split(":")[1].trim(), PartNumber: lines[3].split(":")[1].trim(), Manufacturer: lines[4].split(":")[1].trim() })
+        }
+        ret.darwin.memory = memorySlots;
+    }
+
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write('diskutil info -all\nexit\n');
+    child.waitExit();
+    var sections = child.stdout.str.split('**********\n');
+    if(sections.length > 0){
+        var devices = [];
+        for (var i = 0; i < sections.length; i++) {
+            var lines = sections[i].split('\n');
+            var deviceInfo = {};
+            var wholeYes = false;
+            var physicalYes = false;
+            var oldmac = false;
+            for (var j = 0; j < lines.length; j++) {
+                var keyValue = lines[j].split(':');
+                var key = keyValue[0].trim();
+                var value = keyValue[1] ? keyValue[1].trim() : '';
+                if (key === 'Virtual') oldmac = true;
+                if (key === 'Whole' && value === 'Yes') wholeYes = true;
+                if (key === 'Virtual' && value === 'No') physicalYes = true;
+                if(value && key === 'Device / Media Name'){
+                    deviceInfo['Caption'] = value;
+                }
+                if(value && key === 'Disk Size'){
+                    deviceInfo['Size'] = value.split(' ')[0] + ' ' + value.split(' ')[1];
+                }
+            }
+            if (wholeYes) {
+                if (oldmac) {
+                    if (physicalYes) devices.push(deviceInfo);
+                } else {
+                    devices.push(deviceInfo);
+                }
+            }
+        }
+        ret.identifiers.storage_devices = devices;
+    }
 
     trimIdentifiers(ret.identifiers);
 
 
     child = null;
     return (ret);
+}
+
+function hexToAscii(hexString) {
+    hexString = hexString.startsWith('0x') ? hexString.slice(2) : hexString;
+    var str = '';
+    for (var i = 0; i < hexString.length; i += 2) {
+        var hexPair = hexString.substr(i, 2);
+        str += String.fromCharCode(parseInt(hexPair, 16));
+    }
+    str = str.replace(/[\u007F-\uFFFF]/g, ''); // Remove characters from 0x0080 to 0xFFFF
+    return str.trim();
 }
 
 function win_chassisType()
