@@ -12091,6 +12091,26 @@
                 }
             }
 
+            if (hardware.darwin) {
+                if (hardware.darwin.memory && (hardware.darwin.memory.length > 0)) {
+                    var x = '';
+                    x += '<table style=width:100%>';
+                    for (var i in hardware.darwin.memory) {
+                        var m = hardware.darwin.memory[i];
+                        if(m.Size && (m.Size == 'No Module Installed')) continue;
+                        x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.DeviceLocator ? m.DeviceLocator : 'Unknown')) + '</b></div>';
+                        if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0}, {1}", m.Size, m.Speed), s); }
+                        else if (m.Size) { x += addDetailItem("Capacity", format("{0}", (m.Size)), s); }
+                        console.log(m.Manufacturer);
+                        if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != '')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
+                        x += '</div>';
+                    }
+                    x += '</table>';
+                    if (x != '') { sections.push({ name: "Memory", html: x, img: 'ram64.png'}); }
+                }
+            }
+
             // Storage
             if (hardware.identifiers && hardware.identifiers.storage_devices) {
                 var x = '';
