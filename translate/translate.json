@@ -793,9 +793,6 @@
       ]
     },
     {
-      "en": "')"
-    },
-    {
       "cs": "(",
       "da": "(",
       "de": "(",
@@ -83136,9 +83133,6 @@
       ]
     },
     {
-      "en": "[[0]] verification code is: [[1]]\n[[0]] access token is: [[1]]\n"
-    },
-    {
       "bs": "[[[VEZE]]]",
       "cs": "[[[CONNECTIONS]]]",
       "da": "[[[CONNECTIONS]]]",
@@ -83322,9 +83316,6 @@
       ]
     },
     {
-      "en": "[[[SERVERNAME]]] - Account Invitation\nAn account was created for you on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]), you can access it now with username \"[[[ACCOUNTNAME]]]\" and password \"[[[PASSWORD]]]\".\n~\nBest regards,\n~[[[USERNAME]]]"
-    },
-    {
       "bs": "[[[SERVERNAME]]] - Prijava na račun",
       "cs": "[[[SERVERNAME]]] - Přihlášení k účtu",
       "da": "[[[SERVERNAME]]] - Konto login",
@@ -83354,9 +83345,6 @@
       ]
     },
     {
-      "en": "[[[SERVERNAME]]] - Account Login\nYour login token is: [[[TOKEN]]]\n~\nThis token can only be used once and is valid for 5 minutes."
-    },
-    {
       "bs": "[[[SERVERNAME]]] - Resetiranje računa",
       "cs": "[[[SERVERNAME]]] - Reset účtu",
       "da": "[[[SERVERNAME]]] - Konto reset",
@@ -83383,9 +83371,6 @@
         "account-reset.html->0",
         "account-reset.txt"
       ]
-    },
-    {
-      "en": "[[[SERVERNAME]]] - Account Reset\nHi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is requesting an account password reset. Nagivate to the following link to complete the process:\n~\n~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]\n~\nIf you did not initiate this request, please ignore this mail."
     },
     {
       "bs": "[[[SERVERNAME]]] - Instalacija agenta",
@@ -83427,9 +83412,6 @@
       ]
     },
     {
-      "en": "[[[SERVERNAME]]] - Device Help Request\nDevice \"[[[DEVICENAME]]]\" requested assistance.\n\nUser: \"[[[HELPUSERNAME]]]\"\nRequest: \"[[[HELPREQUEST]]]\"\n\n[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]"
-    },
-    {
       "bs": "[[[SERVERNAME]]] - Obavještenje uređaja",
       "cs": "[[[SERVERNAME]]] - Oznámení zařízení",
       "da": "[[[SERVERNAME]]] - Enheds Notifikation",
@@ -83459,9 +83441,6 @@
       ]
     },
     {
-      "en": "[[[SERVERNAME]]] - Device Notification\n~<area-header>\nThe following devices have changed their connection state.\n~</area-header>\n~<area-connections>\n~\nConnected devices:\n~\n~[[[CONNECTIONS]]]\n~\n~</area-connections>\n~<area-disconnections>\n~\nDisconnected devices:\n~\n~[[[DISCONNECTIONS]]]\n~\n~</area-disconnections>\n~<area-footer>\n\nTo unsubscribe, load this link within 1 hour of getting this message: [[[SERVERURL]]][[[UNSUBSCRIBELINK]]]\n~</area-footer>"
-    },
-    {
       "bs": "[[[SERVERNAME]]] - Potvrda e-pošte",
       "cs": "[[[SERVERNAME]]] - Ověření e-mailem",
       "da": "[[[SERVERNAME]]] - Email verificering",
@@ -83488,9 +83467,6 @@
         "account-check.html->0",
         "account-check.txt"
       ]
-    },
-    {
-      "en": "[[[SERVERNAME]]] - Email Verification\nHi [[[USERNAME]]], [[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) is performing an e-mail verification. Nagivate to the following link to complete the process:\n~\n~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]\n~\nIf you did not initiate this request, please ignore this mail."
     },
     {
       "bs": "[[[SERVERNAME]]] - Zahtjev za pomoć",
@@ -83531,9 +83507,6 @@
         "mesh-invite.html->0",
         "mesh-invite.txt"
       ]
-    },
-    {
-      "en": "[[[SERVERNAME]]] - Invitation\n~<area-name>\nHello [[[NAME]]],\n~</area-name>\nUser [[[USERNAME]]] on server [[[SERVERNAME]]] ([[[SERVERURL]]]/[[[URLARGS1]]]) is requesting you install software to start the remote control session.\n~<area-msg>\n~\nMessage: [[[MSG]]]\n~\n~</area-msg>\n~<area-windows>\nFor Windows, nagivate to the following link to complete the process:\n~\n~[[[SERVERURL]]]/meshagents?id=4&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]\n~\n~</area-windows>\n~<area-osx>\nFor Apple OSX, nagivate to the following link to complete the process:\n~\n~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]\n~\n~</area-osx>\n~<area-linux>\nFor Linux, cut & paste the following in a terminal to install the agent:\n~\n~wget -q \"[[[SERVERURL]]]/meshagents?script=1\" --no-check-certificate -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh [[[SERVERURL]]] '[[[MESHIDHEX]]]'\n~\n~</area-linux>\n~<area-assistant>\nFor MeshCentral Assistant on Windows, nagivate to the following link to complete the process:\n~\n~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]\n~\n~</area-assistant>\n~<area-link>\nTo install the software, navigate to [[[SERVERURL]]][[[LINKURL]]][[[URLARGS2]]] and follow the instructions.\n~</area-link>\nIf you did not initiate this request, please ignore this mail.\n~\nBest regards,\n~[[[USERNAME]]]"
     },
     {
       "bs": "[[[SERVERNAME]]] - Potvrda",
@@ -85757,9 +85730,6 @@
       "xloc": [
         "player.handlebars->3->15"
       ]
-    },
-    {
-      "en": "p10showBitlockerKey('"
     },
     {
       "bs": "safari",
