@@ -563,7 +563,7 @@ function windows_identifiers()
 }
 function macos_identifiers()
 {
-    var ret = { identifiers: {} };
+    var ret = { identifiers: {}, darwin: {} };
     var child;
 
     child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -640,8 +640,47 @@ function macos_identifiers()
         } else { // NEW MACS WITHOUT SLOTS
             memorySlots.push({ DeviceLocator: "Onboard Memory", Size: lines[2].split(":")[1].trim(), PartNumber: lines[3].split(":")[1].trim(), Manufacturer: lines[4].split(":")[1].trim() })
         }
-        ret.darwin = { memory: memorySlots };
+        ret.darwin.memory = memorySlots;
     }
+
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write('diskutil info -all\nexit\n');
+    child.waitExit();
+    var sections = child.stdout.str.split('**********\n');
+    if(sections.length > 0){
+        var devices = [];
+        for (var i = 0; i < sections.length; i++) {
+            var lines = sections[i].split('\n');
+            var deviceInfo = {};
+            var wholeYes = false;
+            var physicalYes = false;
+            var oldmac = false;
+            for (var j = 0; j < lines.length; j++) {
+                var keyValue = lines[j].split(':');
+                var key = keyValue[0].trim();
+                var value = keyValue[1] ? keyValue[1].trim() : '';
+                if (key === 'Virtual') oldmac = true;
+                if (key === 'Whole' && value === 'Yes') wholeYes = true;
+                if (key === 'Virtual' && value === 'No') physicalYes = true;
+                if(value && key === 'Device / Media Name'){
+                    deviceInfo['Caption'] = value;
+                }
+                if(value && key === 'Disk Size'){
+                    deviceInfo['Size'] = value.split(' ')[0] + ' ' + value.split(' ')[1];
+                }
+            }
+            if (wholeYes) {
+                if (oldmac) {
+                    if (physicalYes) devices.push(deviceInfo);
+                } else {
+                    devices.push(deviceInfo);
+                }
+            }
+        }
+        ret.identifiers.storage_devices = devices;
+    }
+
     trimIdentifiers(ret.identifiers);
 
 
