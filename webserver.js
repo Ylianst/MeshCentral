@@ -7134,14 +7134,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof strategy.custom.tenant_id == 'string') { strategy.custom.preset = preset = 'azure' }
                 if (strategy.custom.customer_id || strategy.custom.identitysource || strategy.client.client_id.split('.')[2] == 'googleusercontent') { strategy.custom.preset = preset = 'google' }
             }
+            
             // Check issuer url
+            let presetIssuer
+            if (preset == 'azure') { presetIssuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0'; }
+            if (preset == 'google') { presetIssuer = 'https://accounts.google.com'; }
             if (!obj.common.validateString(strategy.issuer.issuer)) {
-                if (preset == 'azure') { strategy.issuer.issuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0'; }
-                if (preset == 'google') { strategy.issuer.issuer = 'https://accounts.google.com'; }
                 if (!preset) {
                     let error = new Error('OIDC: Missing issuer URI.');
                     parent.authLog('error', `${error.message} STRATEGY: ${JSON.stringify(strategy)}`);
                     throw error;
+                } else {
+                    strategy.issuer.issuer = presetIssuer
+                    parent.authLog('setupDomainAuthStrategy', `OIDC: PRESET: ${preset.toUpperCase()}: Using preset issuer: ${presetIssuer}`);
                 }
             } else if ((typeof strategy.issuer.issuer == 'string') && (typeof strategy.custom.preset == 'string')) {
                 let error = new Error(`OIDC: PRESET: ${strategy.custom.preset.toUpperCase()}: PRESET OVERRIDDEN: CONFIG ISSUER: ${strategy.issuer.issuer} PRESET ISSUER: ${presetIssuer}`);
