@@ -524,8 +524,8 @@
             "end_session_endpoint": "https://sso.server.com/logout"
           },
           "client": {
-            "clientid": "00000000-0000-0000-0000-000000000000",
-            "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "client_id": "00000000-0000-0000-0000-000000000000",
+            "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
           },
           "groups": {
             "required": [ "groupA", "groupB", "groupC" ],
