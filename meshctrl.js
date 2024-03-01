@@ -890,7 +890,7 @@ if (args['_'].length == 0) {
                         console.log("  --add [guestname]               - Add a device sharing link.");
                         console.log("  --type [desktop,terminal,files] - Type of sharing to add, can be combined. default is desktop.");
                         console.log("  --viewonly                      - Make desktop sharing view only.");
-                        console.log("  --consent [notify,prompt]       - Consent flags, default is notify.");
+                        console.log("  --consent [notify,prompt,none]  - Consent flags, default is notify.");
                         console.log("  --start [yyyy-mm-ddThh:mm:ss]   - Start time, default is now.");
                         console.log("  --end [yyyy-mm-ddThh:mm:ss]     - End time.");
                         console.log("  --duration [minutes]            - Duration of the share, default is 60 minutes.");
