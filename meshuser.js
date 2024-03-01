@@ -4304,7 +4304,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // If we have view only remote desktop rights, force view-only on the guest share.
-                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; command.p = (command.p & 1); }
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; }
 
                     // Create cookie
                     var publicid = getRandomPassword(), startTime = null, expireTime = null, duration = null;
