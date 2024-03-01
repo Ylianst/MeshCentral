@@ -8272,7 +8272,7 @@
             x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
             x += '</div>';
-            if (currentNode.agent.caps & 1) { x += '<div id=d2userConsentSelector>' + addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>') + '</div>'; }
+            if (currentNode.agent.caps & 1) { x += '<div id=d2userConsentSelector>' + addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=0>' + "Notify Only" + '<option value=1>' + "Prompt for consent" + '</option><option value=2>' + "No Consent" + '</option></select>') + '</div>'; }
             x += '<div id=d2httpPortSelector>' + addHtmlValue("Port", '<input id=d2httpPort style=float:right;width:250px value=80 onkeyup=showShareDeviceValidate()></input>') + '</div>';
             x += '<div id=d2httpsPortSelector>' + addHtmlValue("Port", '<input id=d2httpsPort style=float:right;width:250px value=443 onkeyup=showShareDeviceValidate()></input>') + '</div>';
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
@@ -8308,14 +8308,17 @@
             if (q & 1) {
                 consent |= 0x0002; // Terminal notify
                 if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0010; } // Terminal prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 2)) { consent = 0; } // Terminal with no user consent
             }
             if (q & 2) {
                 consent |= 0x0041; // Desktop connection toolbar + Desktop notify
                 if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0008; } // Desktop prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 2)) { consent = 0; } // Desktop with no user consent
             }
             if (q & 4) {
                 consent |= 0x0004; // Files notify
                 if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0020; } // Files prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 2)) { consent = 0; } // Files prompt for user consent
             }
 
             if (Q('d2timeRange').value == 0) {
