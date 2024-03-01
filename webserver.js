@@ -2815,7 +2815,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
                 // 2FA is not supported in URL authentication method. If user has 2FA enabled, this login method fails.
 				var user = obj.users[userid];
-                if (checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
+                if ((err == null) && checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
                     handleRootRequestEx(req, res, domain, direct);
                 } else if ((userid != null) && (err == null)) {
                     // Login success
