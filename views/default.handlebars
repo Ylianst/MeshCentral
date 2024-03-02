@@ -869,7 +869,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton value="Copy" onclick="p13copyFile(0)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton value="Paste" onclick="p13pasteFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton value="Zip" onclick="p13zipFiles()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnZipButton value="UnZip" onclick="p13unzipFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnzipButton value="Unzip" onclick="p13unzipFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton value="Refresh" onclick="p13folderup(9999)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton value="Find" onclick="p13findfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton value="GoTo" onclick="p13gotofolder()" />
@@ -11231,7 +11231,7 @@
                 QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
-                QE('p13UnZipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
+                QE('p13UnzipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', true);
                 QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -11247,7 +11247,7 @@
             QV('p13CutButton', filesNode.mtype != 3);
             QV('p13CopyButton', filesNode.mtype != 3);
             QV('p13ZipButton', filesNode.mtype != 3);
-            QV('p13UnZipButton', filesNode.mtype != 3);
+            QV('p13UnzipButton', filesNode.mtype != 3);
             QV('p13PasteButton', filesNode.mtype != 3);
         }
 
@@ -11282,12 +11282,12 @@
             var dest, input, checkboxes = document.getElementsByName('fd');
             for (var i = 0; i < checkboxes.length; i++) {
                 if (checkboxes[i].checked) {
-                    var slash = isWindowsNode(currentNode) ? "\\" : "/";
-                    dest = (isWindowsNode(currentNode) ? "" : "/") + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n.split(".zip")[0] + slash;
-                    input = (isWindowsNode(currentNode) ? "" : "/") + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n;
+                    var slash = isWindowsNode(currentNode) ? '\\' : '/';
+                    dest = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n.split('.zip')[0] + slash;
+                    input = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n;
                 }
             }
-            setDialogMode(2, "UnZip To Folder", 3, p13unzipFileEx, '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />', { action: 'unzip', input: input });
+            setDialogMode(2, "Unzip To Folder", 3, p13unzipFileEx, '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />', { action: 'unzip', input: input });
             focusTextBox('p13unzipfolderinput');
         }
 
