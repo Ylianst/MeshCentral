@@ -869,6 +869,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton value="Copy" onclick="p13copyFile(0)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton value="Paste" onclick="p13pasteFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton value="Zip" onclick="p13zipFiles()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnZipButton value="UnZip" onclick="p13unzipFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton value="Refresh" onclick="p13folderup(9999)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton value="Find" onclick="p13findfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton value="GoTo" onclick="p13gotofolder()" />
@@ -10962,10 +10963,16 @@
                     setDialogMode(0); // Close the dialog box
                 } else if ((data.msg == 'zipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + "Compressing files..." + '<div>', 'fileMsgDialog');
+                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + "Compressing files..." + '</div>', 'fileMsgDialog');
+                } else if ((data.msg == 'unzipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    setDialogMode(2, "File Operation", 10, null, '<div style=margin:10px>' + "Unzipping file..." + '</div>', 'fileMsgDialog');
+                } else if ((data.msg == 'unziperror') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    setDialogMode(2, "File Operation", 10, null, '<div style=margin:10px>' + "Unzipping Error" + '</div><br />' + EscapeHtml(data.error), 'fileMsgDialog');
                 } else if ((data.msg == 'zippingFile') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + EscapeHtml(data.file) + '<div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />', 'fileMsgDialog');
+                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + EscapeHtml(data.file) + '</div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />', 'fileMsgDialog');
                 }
                 return;
             }
@@ -11205,6 +11212,7 @@
                 QE('p13CutButton', false);
                 QE('p13CopyButton', false);
                 QE('p13ZipButton', false);
+                QE('p13UnZipButton', false);
                 QE('p13PasteButton', false);
                 QE('p13GoToFolderButton', false);
                 QE('p13DownloadButton', false);
@@ -11223,6 +11231,7 @@
                 QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13UnZipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', true);
                 QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -11238,12 +11247,14 @@
             QV('p13CutButton', filesNode.mtype != 3);
             QV('p13CopyButton', filesNode.mtype != 3);
             QV('p13ZipButton', filesNode.mtype != 3);
+            QV('p13UnZipButton', filesNode.mtype != 3);
             QV('p13PasteButton', filesNode.mtype != 3);
         }
 
         function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
         function p13getFileSelDirCount() { var cc = 0, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '999')) cc++; } return cc; }
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
+        function p13getFileSelAllowedExt(ext) { var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (!p13filetree.dir[checkboxes[i].value].n.endsWith(ext))) return false; } return true; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
@@ -11265,6 +11276,24 @@
                     break;
                 }
             }
+        }
+
+        function p13unzipFile() {
+            var dest, input, checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    var slash = isWindowsNode(currentNode) ? "\\" : "/";
+                    dest = (isWindowsNode(currentNode) ? "" : "/") + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n.split(".zip")[0] + slash;
+                    input = (isWindowsNode(currentNode) ? "" : "/") + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n;
+                }
+            }
+            setDialogMode(2, "UnZip To Folder", 3, p13unzipFileEx, '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />', { action: 'unzip', input: input });
+            focusTextBox('p13unzipfolderinput');
+        }
+
+        function p13unzipFileEx(a, tag) {
+            tag.dest = Q('p13unzipfolderinput').value;
+            files.sendText(tag);
         }
 
         function p13zipFiles() {
