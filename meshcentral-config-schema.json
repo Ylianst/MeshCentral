@@ -3087,7 +3087,7 @@
                       "array"
                     ],
                     "depreciated": true,
-                    "description": "REPLACED WITH 'options.params.scope': A list of scopes to request from the issuer."
+                    "description": "REPLACED WITH 'custom.scope': A list of scopes to request from the issuer."
                   },
                   "callbackURL": {
                     "type": "string",
