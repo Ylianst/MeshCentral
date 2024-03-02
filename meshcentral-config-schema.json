@@ -1135,7 +1135,10 @@
             }
           },
           "allowedOrigin": {
-            "type": [ "array", "boolean" ],
+            "type": [
+              "array",
+              "boolean"
+            ],
             "default": false,
             "uniqueItems": true,
             "description": "A list of allowed hostnames for HTTP request origin header. If false, a default list is created, if true, all hostnames are allowed.",
@@ -2782,7 +2785,10 @@
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
                   }
                 },
-                "required": ["clientid", "clientsecret"]
+                "required": [
+                  "clientid",
+                  "clientsecret"
+                ]
               },
               "google": {
                 "type": "object",
@@ -2814,7 +2820,10 @@
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
                   }
                 },
-                "required": ["clientid", "clientsecret"]
+                "required": [
+                  "clientid",
+                  "clientsecret"
+                ]
               },
               "github": {
                 "type": "object",
@@ -2846,7 +2855,10 @@
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
                   }
                 },
-                "required": ["clientid", "clientsecret"]
+                "required": [
+                  "clientid",
+                  "clientsecret"
+                ]
               },
               "reddit": {
                 "type": "object",
@@ -2878,7 +2890,10 @@
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
                   }
                 },
-                "required": ["clientid", "clientsecret"]
+                "required": [
+                  "clientid",
+                  "clientsecret"
+                ]
               },
               "azure": {
                 "type": "object",
@@ -2913,7 +2928,11 @@
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
                   }
                 },
-                "required": ["clientid", "clientsecret", "tenantid"]
+                "required": [
+                  "clientid",
+                  "clientsecret",
+                  "tenantid"
+                ]
               },
               "jumpcloud": {
                 "type": "object",
@@ -2949,7 +2968,11 @@
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
                   }
                 },
-                "required": ["entityid", "idpurl", "cert"]
+                "required": [
+                  "entityid",
+                  "idpurl",
+                  "cert"
+                ]
               },
               "saml": {
                 "type": "object",
@@ -2995,7 +3018,11 @@
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
                   }
                 },
-                "required": ["entityid", "idpurl", "cert"]
+                "required": [
+                  "entityid",
+                  "idpurl",
+                  "cert"
+                ]
               },
               "oidc": {
                 "type": "object",
