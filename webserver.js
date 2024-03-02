@@ -6480,6 +6480,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.ws(url + 'control.ashx', function (ws, req) {
                     getWebsocketArgs(ws, req, function (ws, req) {
                         const domain = getDomain(req);
+                        if (obj.CheckWebServerOriginName(domain, req) == false) {
+                            try { ws.send(JSON.stringify({ action: 'close', cause: 'invalidorigin', msg: 'invalidorigin' })); } catch (ex) { }
+                            try { ws.close(); } catch (ex) { }
+                            return;
+                        }
                         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
                         PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                             if (user == null) { // User is not authenticated, perform inner server authentication
