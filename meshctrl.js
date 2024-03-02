@@ -879,6 +879,7 @@ if (args['_'].length == 0) {
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --start " + localISOTime + " --duration 30"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --start " + localISOTime + " --duration 30 --daily"));
                         console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --type desktop,terminal --consent prompt"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl DeviceSharing --id 'deviceid' --add Guest --type http --port 80"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]                - The device identifier.");
@@ -886,16 +887,17 @@ if (args['_'].length == 0) {
                             console.log("  --id '[deviceid]'              - The device identifier.");
                         }
                         console.log("\r\nOptional arguments:\r\n");
-                        console.log("  --remove [shareid]              - Remove a device sharing link.");
-                        console.log("  --add [guestname]               - Add a device sharing link.");
-                        console.log("  --type [desktop,terminal,files] - Type of sharing to add, can be combined. default is desktop.");
-                        console.log("  --viewonly                      - Make desktop sharing view only.");
-                        console.log("  --consent [notify,prompt,none]  - Consent flags, default is notify.");
-                        console.log("  --start [yyyy-mm-ddThh:mm:ss]   - Start time, default is now.");
-                        console.log("  --end [yyyy-mm-ddThh:mm:ss]     - End time.");
-                        console.log("  --duration [minutes]            - Duration of the share, default is 60 minutes.");
-                        console.log("  --daily                         - Add recurring daily device share.");
-                        console.log("  --weekly                        - Add recurring weekly device share.");
+                        console.log("  --remove [shareid]                         - Remove a device sharing link.");
+                        console.log("  --add [guestname]                          - Add a device sharing link.");
+                        console.log("  --type [desktop,terminal,files,http,https] - Type of sharing to add, can be combined. default is desktop.");
+                        console.log("  --viewonly                                 - Make desktop sharing view only.");
+                        console.log("  --consent [notify,prompt,none]             - Consent flags, default is notify.");
+                        console.log("  --start [yyyy-mm-ddThh:mm:ss]              - Start time, default is now.");
+                        console.log("  --end [yyyy-mm-ddThh:mm:ss]                - End time.");
+                        console.log("  --duration [minutes]                       - Duration of the share, default is 60 minutes.");
+                        console.log("  --daily                                    - Add recurring daily device share.");
+                        console.log("  --weekly                                   - Add recurring weekly device share.");
+                        console.log("  --port [portnumber]                        - Set alternative port for http or https, default is 80 for http and 443 for https.");
                         break;
                     }
                     case 'agentdownload': {
@@ -1707,10 +1709,12 @@ function serverConnect() {
                     var p = 0;
                     if (args.type != null) {
                         var shareTypes = args.type.toLowerCase().split(',');
-                        for (var i in shareTypes) { if ((shareTypes[i] != 'terminal') && (shareTypes[i] != 'desktop') && (shareTypes[i] != 'files')) { console.log("Unknown sharing type: " + shareTypes[i]); process.exit(1); } }
+                        for (var i in shareTypes) { if ((shareTypes[i] != 'terminal') && (shareTypes[i] != 'desktop') && (shareTypes[i] != 'files') && (shareTypes[i] != 'http') && (shareTypes[i] != 'https')) { console.log("Unknown sharing type: " + shareTypes[i]); process.exit(1); } }
                         if (shareTypes.indexOf('terminal') >= 0) { p |= 1; }
                         if (shareTypes.indexOf('desktop') >= 0) { p |= 2; }
                         if (shareTypes.indexOf('files') >= 0) { p |= 4; }
+                        if (shareTypes.indexOf('http') >= 0) { p |= 8; }
+                        if (shareTypes.indexOf('https') >= 0) { p |= 16; }
                     }
                     if (p == 0) { p = 2; } // Desktop
 
@@ -1745,6 +1749,19 @@ function serverConnect() {
                         }
                     }
 
+                    var port = null;
+                    // Set Port Number if http or https
+                    if ((p & 8) || (p & 16)) {
+                        if (typeof args.port == 'number') {
+                            if ((args.port < 1) || (args.port > 65535)) { console.log("Port number must be between 1 and 65535."); process.exit(1); }
+                            port = args.port;
+                        } else if ((p & 8)) {
+                            port = 80;
+                        } else if ((p & 16)) {
+                            port = 443;
+                        }
+                    }
+
                     // Start and end time
                     var start = null, end = null;
                     if (args.start) { start = Math.floor(Date.parse(args.start) / 1000); end = start + (60 * 60); }
@@ -1761,14 +1778,14 @@ function serverConnect() {
                         if ((typeof args.duration != 'number') || (args.duration < 1)) { console.log("Invalid duration value."); process.exit(1); return; }
 
                         // Recurring sharing
-                        ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, expire: args.duration, recurring: recurring, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                        ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, expire: args.duration, recurring: recurring, viewOnly: viewOnly, port: port, responseid: 'meshctrl' }));
                     } else {
                         if ((start == null) && (end == null)) {
                             // Unlimited sharing
-                            ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, expire: 0, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                            ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, expire: 0, viewOnly: viewOnly, port: port, responseid: 'meshctrl' }));
                         } else {
                             // Time limited sharing
-                            ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, end: end, viewOnly: viewOnly, responseid: 'meshctrl' }));
+                            ws.send(JSON.stringify({ action: 'createDeviceShareLink', nodeid: args.id, guestname: args.add, p: p, consent: consent, start: start, end: end, viewOnly: viewOnly, port: port, responseid: 'meshctrl' }));
                         }
                     }
                 } else if (args.remove) {
