@@ -3438,6 +3438,24 @@ function onTunnelData(data)
                     this.zip.on('progress', require('events').moderated(function (name, p) { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'zippingFile', file: ((process.platform == 'win32') ? (name.split('/').join('\\')) : name), progress: p }))); }, 1000));
                     this.zip.pipe(out);
                     break;
+                case 'unzip':
+                    if (this.unzip != null) return; // Unzip operating is currently running, exit now.
+                    this.unzip = require('zip-reader').read(cmd.input);
+                    this.unzip._dest = cmd.dest;
+                    this.unzip.xws = this;
+                    this.unzip.then(function (zipped) {
+                        this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'unzipping' })));
+                        zipped.xws = this.xws;
+                        zipped.extractAll(this._dest).then(function () { // finished extracting
+                            zipped.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: null })));
+                            zipped.xws.write(Buffer.from(JSON.stringify({ action: 'refresh' })));
+                            delete zipped.xws.unzip;
+                        }, function (e) { // error extracting
+                            zipped.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'unziperror', error: e })));
+                            delete zipped.xws.unzip;
+                        });
+                    }, function (e) { this.xws.write(Buffer.from(JSON.stringify({ action: 'dialogmessage', msg: 'unziperror', error: e }))); delete this.xws.unzip });
+                    break;
                 case 'cancel':
                     // Cancel zip operation if present
                     try { this.zipcancel = true; this.zip.cancel(function () { }); } catch (ex) { }
@@ -4247,12 +4265,12 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'unzip':
                 if (args['_'].length == 0) {
-                    response = "Proper usage: unzip input, destination"; // Display usage
+                    response = "Proper usage: unzip input,destination"; // Display usage
                 } else {
                     var p = args['_'].join(' ').split(',');
-                    if (p.length != 2) { response = "Proper usage: unzip input, destination"; break; } // Display usage
-                    var prom = require('zip-reader').read(p[0]);
-                    prom._dest = p[1];
+                    if (p.length != 2) { response = "Proper usage: unzip input,destination"; break; } // Display usage
+                    var prom = require('zip-reader').read(p[0].trim());
+                    prom._dest = p[1].trim();
                     prom.self = this;
                     prom.sessionid = sessionid;
                     prom.then(function (zipped) {
