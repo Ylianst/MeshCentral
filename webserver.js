@@ -6606,7 +6606,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (obj.parent.config.firebase.pushrelayserver) { parent.debug('email', 'Firebase-pushrelay-handler'); obj.app.post(url + 'firebaserelay.aspx', obj.bodyParser.urlencoded({ extended: false }), handleFirebasePushOnlyRelayRequest); }
                     if (obj.parent.config.firebase.relayserver) { parent.debug('email', 'Firebase-relay-handler'); obj.app.ws(url + 'firebaserelay.aspx', handleFirebaseRelayRequest); }
                 }
-                
+
                 // Setup auth strategies using passport if needed
                 if (typeof domain.authstrategies == 'object') {
                     // Twitter
@@ -7541,7 +7541,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     data = data.groups;
                                 }
                                 let groups = []
-                                console.log(data)
                                 for (var i in data) {
                                     if (typeof data[i].displayName == 'string') {
                                         groups.push(data[i].displayName);
