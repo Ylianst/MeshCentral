@@ -2704,7 +2704,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (groups.enabled === true) {
                         // Sync the user groups if enabled
                         if (groups.syncEnabled === true) {
-                            syncExternalUserGroups(domain, user, groups.syncMemberships, req.user.strategy)
+                            // Set groupType to the preset name if it exists, otherwise use the strategy name
+                            const groupType = domain.authstrategies[req.user.strategy].custom?.preset ? domain.authstrategies[req.user.strategy].custom.preset : req.user.strategy;
+                            syncExternalUserGroups(domain, user, groups.syncMemberships, groupType);
                         }
                         // See if the user is a member of the site admin group.
                         if (groups.grantAdmin === true) {
