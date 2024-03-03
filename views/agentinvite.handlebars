@@ -81,8 +81,8 @@
                 <div class="tab">
                     <button id="twintab64" class="tablinks" onclick="openTab(event, 'wintab64')">Windows 64bit</button>
                     <button id="twintab32" class="tablinks" onclick="openTab(event, 'wintab32')">Windows 32bit</button>
-                    <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux</button>
-                    <button id="tlinuxbinarytab" class="tablinks" onclick="openTab(event, 'linuxbinarytab')">Linux Binary</button>
+                    <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux / BSD Scripts</button>
+                    <button id="tlinuxbinarytab" class="tablinks" onclick="openTab(event, 'linuxbinarytab')">Linux / BSD / macOS Binary</button>
                     <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">MacOS</button>
                     <button id="tandrotab" class="tablinks" onclick="openTab(event, 'androtab')">Android</button>
                     <button id="tassistab" class="tablinks" onclick="openTab(event, 'assistab')">Assistant</button>
@@ -253,7 +253,7 @@
         }
 
         function linuxBinarySetup() {
-            var x = '<h3>Linux Binary</h3>', moreoptions = '';
+            var x = '<h3>' + "Linux / BSD / macOS Binary Installer" + '</h3>', moreoptions = '';
             var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px>';
             opts += '<option value=5 selected>' + "Linux / BSD / macOS Binary Installer" + '</option>';
             opts += '</select>';
@@ -261,8 +261,8 @@
             var servername = window.location.hostname;
             if ((servername.indexOf('.') == -1)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
             var portStr = (serverPort == 443) ? '' : (':' + serverPort);
-            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41 ];
-            var binaryInstallAgents = { 5 : 'Linux x86-32', 6 : 'Linux x86-64', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)' };
+            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 16, 29 ];
+            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
             for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id=aginsSysTypeDiv>';
             x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
