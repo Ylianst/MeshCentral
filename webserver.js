@@ -7359,14 +7359,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 let error = new Error('OIDC: Discovery failed.', { cause: err });
                 parent.authLog('setupDomainAuthStrategy', `ERROR: ${JSON.stringify(error)} ISSUER_URI: ${strategy.issuer.issuer}`);
                 throw error
-            } finally {
-                if (Object.keys(strategy.issuer).length > 1) {
-                    parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
-                    issuer = new strategy.obj.openidClient.Issuer(Object.assign(issuer.metadata, strategy.issuer));
-                }
-                strategy.issuer = issuer.metadata
-                strategy.obj.issuer = issuer
             }
+            if (Object.keys(strategy.issuer).length > 1) {
+                parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
+                issuer = new strategy.obj.openidClient.Issuer(Object.assign(issuer?.metadata, strategy.issuer));
+            }
+            strategy.issuer = issuer?.metadata
+            strategy.obj.issuer = issuer
+
             // Make sure redirect_uri and post_logout_redirect_uri exist before continuing
             if (!strategy.client.redirect_uri) {
                 strategy.client.redirect_uri = 'https://' + parent.config.settings.cert + url + 'auth-oidc-callback';
@@ -7374,6 +7374,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (!strategy.client.post_logout_redirect_uri) {
                 strategy.client.post_logout_redirect_uri = 'https://' + parent.config.settings.cert + url + 'login';
             }
+
             // Create client and overwrite in options
             let client = new issuer.Client(strategy.client)
             strategy.options = Object.assign(strategy.options, { 'client': client });
