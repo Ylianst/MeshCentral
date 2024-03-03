@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 //const zlib = require('zlib');
 var performCheck = false;
 var translationTable = null;
@@ -563,13 +564,13 @@ function totext(source, target, lang) {
 
     if (splitOutputPtr == 1) {
         // Save the target back
-        fs.writeFileSync(target + '-' + lang + '.txt', output.join('\r\n'), { flag: 'w+' });
+        fs.writeFileSync(target + '-' + lang + '.txt', output.join(os.EOL), { flag: 'w+' });
         log('Done.');
     } else {
         // Save the text in 1000 string bunches
         for (var i in splitOutput) {
             log('Writing ' + target + '-' + lang + '-' + i + '.txt...');
-            fs.writeFileSync(target + '-' + lang + '-' + i + '.txt', splitOutput[i].join('\r\n'), { flag: 'w+' });
+            fs.writeFileSync(target + '-' + lang + '-' + i + '.txt', splitOutput[i].join(os.EOL), { flag: 'w+' });
         }
         log('Done.');
     }
@@ -585,7 +586,7 @@ function fromtext(source, target, lang) {
 
     // Read raw text
     var rawText = fs.readFileSync(target).toString('utf8');
-    var rawTextArray = rawText.split('\r\n');
+    var rawTextArray = rawText.split(/\r?\n/);
     var rawTextPtr = 0;
 
     log('Translation file: ' + sourceLangFileData.strings.length + ' string(s)');
@@ -733,7 +734,7 @@ function extract(langFile, sources) {
 
 function extractFromTxt(file) {
     log("Processing TXT: " + path.basename(file));
-    var lines = fs.readFileSync(file).toString().split('\r\n');
+    var lines = fs.readFileSync(file).toString().split(/\r?\n/);
     var name = path.basename(file);
     for (var i in lines) {
         var line = lines[i];
@@ -847,7 +848,7 @@ function getStringFromJavaScript(name, script) {
 
 function translateFromTxt(lang, file, createSubDir) {
     log("Translating TXT (" + lang + "): " + path.basename(file));
-    var lines = fs.readFileSync(file).toString().split('\r\n'), outlines = [];
+    var lines = fs.readFileSync(file).toString().split(/\r?\n/), outlines = [];
     for (var i in lines) {
         var line = lines[i];
         if ((line.length > 1) && (line[0] != '~')) {
@@ -857,7 +858,7 @@ function translateFromTxt(lang, file, createSubDir) {
         }
     }
 
-    var outname = file, out = outlines.join('\r\n');
+    var outname = file, out = outlines.join(os.EOL);
     if (createSubDir != null) {
         var outfolder = path.join(path.dirname(file), createSubDir);
         if (fs.existsSync(outfolder) == false) { fs.mkdirSync(outfolder); }

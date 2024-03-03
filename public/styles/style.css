@@ -1311,6 +1311,10 @@ NoMeshesPanel img {
     width: 250px;
 }
 
+#d2netinfo .dialogText {
+    padding-right: 10px;
+}
+
 #p12warning, #p12warning2, #p11warning, #p11warning2 {
     max-width: 100%;
     display: none;
