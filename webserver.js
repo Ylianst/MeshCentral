@@ -2602,7 +2602,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 let groupMessage = ''
                 if (groups.userMemberships.length == 1) { groupMessage = ` Found membership: "${groups.userMemberships[0]}"` }
                 else { groupMessage = ` Found ${groups.userMemberships.length} memberships: ["${groups.userMemberships.join('", "')}"]` }
-                parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}"` + groupMessage);
+                parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}"` + groupMessage);
 
                 // Check user membership in required groups
                 if (groups.requiredGroups != null) {
@@ -2610,11 +2610,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     for (var i in groups.requiredGroups) {
                         if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
                             match = true;
-                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Membership to required group found: "${groups.requiredGroups[i]}"`);
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Membership to required group found: "${groups.requiredGroups[i]}"`);
                         }
                     }
                     if (match === false) {
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Login denied. No memberhip to required group.`);
+                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Login denied. No memberhip to required group.`);
                         req.session.loginmode = 1;
                         req.session.messageid = 111; // Access Denied.
                         res.redirect(domain.url + getQueryPortion(req));
@@ -2627,7 +2627,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     groups.grantAdmin = false;
                     for (var i in strategy.groups.siteadmin) {
                         if (groups.userMemberships.indexOf(strategy.groups.siteadmin[i]) >= 0) {
-                            parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" User membership found in site admin group: "${strategy.groups.siteadmin[i]}"`);
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" User membership found in site admin group: "${strategy.groups.siteadmin[i]}"`);
                             groups.siteAdmin = strategy.groups.siteadmin[i];
                             groups.grantAdmin = true;
                             break;
@@ -2641,11 +2641,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
                     }
                     if (groups.syncMemberships.length > 0) {
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" Filtered user memberships from config to sync: ${groups.syncMemberships.join(', ')}`);
+                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Filtered user memberships from config to sync: ${groups.syncMemberships.join(', ')}`);
                     } else {
                         groups.syncMemberships = null;
                         groups.syncEnabled = false
-                        parent.authLog('handleStrategyLogin', `OIDC: GROUPS: USER: "${req.user.sid}" No sync memberships found after filter: ${strategy.groups.sync.filter.join(', ')}`);
+                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" No sync memberships found after filter: ${strategy.groups.sync.filter.join(', ')}`);
                     }
                 }
             }
