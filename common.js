@@ -159,10 +159,22 @@ module.exports.objKeysToLower = function (obj, exceptions, parent) {
 module.exports.escapeFieldName = function (name) { if ((name.indexOf('%') == -1) && (name.indexOf('.') == -1) && (name.indexOf('$') == -1)) return name; return name.split('%').join('%25').split('.').join('%2E').split('$').join('%24'); };
 module.exports.unEscapeFieldName = function (name) { if (name.indexOf('%') == -1) return name; return name.split('%2E').join('.').split('%24').join('$').split('%25').join('%'); };
 
-// Escape all links
-module.exports.escapeLinksFieldNameEx = function (docx) { if (docx.links == null) { return docx; } var doc = Object.assign({}, docx); doc.links = Object.assign({}, doc.links); for (var i in doc.links) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.links[ue] = doc.links[i]; delete doc.links[i]; } } return doc; };
-module.exports.escapeLinksFieldName = function (docx) { var doc = Object.assign({}, docx); if (doc.links != null) { doc.links = Object.assign({}, doc.links); for (var i in doc.links) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.links[ue] = doc.links[i]; delete doc.links[i]; } } } return doc; };
-module.exports.unEscapeLinksFieldName = function (doc) { if (doc.links != null) { for (var j in doc.links) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.links[ue] = doc.links[j]; delete doc.links[j]; } } } return doc; };
+// Escape all links, SSH and RDP usernames
+// This is required for databases like NeDB that don't accept "." as part of a feild name.
+module.exports.escapeLinksFieldNameEx = function (docx) { if ((docx.links == null) && (docx.ssh == null) && (docx.rdp == null)) { return docx; } return module.exports.escapeLinksFieldName(docx); };
+module.exports.escapeLinksFieldName = function (docx) {
+    var doc = Object.assign({}, docx);
+    if (doc.links != null) { doc.links = Object.assign({}, doc.links); for (var i in doc.links) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.links[ue] = doc.links[i]; delete doc.links[i]; } } }
+    if (doc.ssh != null) { doc.ssh = Object.assign({}, doc.ssh); for (var i in doc.ssh) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.ssh[ue] = doc.ssh[i]; delete doc.ssh[i]; } } }
+    if (doc.rdp != null) { doc.rdp = Object.assign({}, doc.rdp); for (var i in doc.rdp) { var ue = module.exports.escapeFieldName(i); if (ue !== i) { doc.rdp[ue] = doc.rdp[i]; delete doc.rdp[i]; } } }
+    return doc;
+};
+module.exports.unEscapeLinksFieldName = function (doc) {
+    if (doc.links != null) { for (var j in doc.links) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.links[ue] = doc.links[j]; delete doc.links[j]; } } }
+    if (doc.ssh != null) { for (var j in doc.ssh) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.ssh[ue] = doc.ssh[j]; delete doc.ssh[j]; } } }
+    if (doc.rdp != null) { for (var j in doc.rdp) { var ue = module.exports.unEscapeFieldName(j); if (ue !== j) { doc.rdp[ue] = doc.rdp[j]; delete doc.rdp[j]; } } }
+    return doc;
+};
 //module.exports.escapeAllLinksFieldName = function (docs) { for (var i in docs) { module.exports.escapeLinksFieldName(docs[i]); } return docs; };
 module.exports.unEscapeAllLinksFieldName = function (docs) { for (var i in docs) { docs[i] = module.exports.unEscapeLinksFieldName(docs[i]); } return docs; };
 
