@@ -5849,6 +5849,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             meshfilename = meshfilename.split('meshagent').join(domain.agentcustomization.filename).split('MeshAgent').join(domain.agentcustomization.filename);
         }
 
+        // Customise the mesh agent display name
+        var meshdisplayname = 'Mesh Agent';
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.displayname == 'string')) {
+            meshdisplayname = meshdisplayname.split('Mesh Agent').join(domain.agentcustomization.displayname);
+        }
+
         // Set the agent download including the mesh name.
         setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
         archive.pipe(res);
@@ -5869,9 +5875,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             readStream.on('data', function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
                             readStream.on('end', function () {
                                 var meshname = mesh.name.split(']').join('').split('[').join(''); // We can't have ']]' in the string since it will terminate the CDATA.
-                                var welcomemsg = 'Welcome to the MeshCentral agent for MacOS\n\nThis installer will install the mesh agent for "' + meshname + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to https://www.meshcommander.com/meshcentral2.\n\nThis software is provided under Apache 2.0 license.\n';
+                                var welcomemsg = 'Welcome to the MeshCentral agent for MacOS\n\nThis installer will install the mesh agent for "' + meshname + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to https://meshcentral.com.\n\nThis software is provided under Apache 2.0 license.\n';
                                 var installsize = Math.floor((argentInfo.size + meshsettings.length) / 1024);
-                                archive.append(readStream.xxdata.toString().split('###WELCOMEMSG###').join(welcomemsg).split('###INSTALLSIZE###').join(installsize), { name: entry.fileName });
+                                archive.append(readStream.xxdata.toString().split('###DISPLAYNAME###').join(meshdisplayname).split('###WELCOMEMSG###').join(welcomemsg).split('###INSTALLSIZE###').join(installsize), { name: entry.fileName });
                                 zipfile.readEntry();
                             });
                         });
