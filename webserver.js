@@ -5843,8 +5843,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
         archive.on('error', function (err) { throw err; });
 
+        // Customize the mesh agent file name
+        var meshfilename = 'MeshAgent-' + mesh.name + '.zip'
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
+            meshfilename = meshfilename.split('meshagent').join(domain.agentcustomization.filename).split('MeshAgent').join(domain.agentcustomization.filename);
+        }
+
         // Set the agent download including the mesh name.
-        setContentDispositionHeader(res, 'application/octet-stream', 'MeshAgent-' + mesh.name + '.zip', null, 'MeshAgent.zip');
+        setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
         archive.pipe(res);
 
         // Opens the "MeshAgentOSXPackager.zip"
