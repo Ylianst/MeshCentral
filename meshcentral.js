@@ -3758,9 +3758,9 @@ function CreateMeshCentralServer(config, args) {
         if (obj.authlogfile != null) { // Write authlog to file
             try {
                 const d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
-                msg = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
-                obj.fs.write(obj.authlogfile, msg, function (err, written, string) { });
-            } catch (ex) { console.log(ex); }
+                str = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
+                obj.fs.write(obj.authlogfile, str, function (err, written, string) { if (err) {console.error(err); } });
+            } catch (ex) { console.error(ex); }
         }
     }
 
@@ -4001,14 +4001,22 @@ function mainStart() {
             if (mstsc == false) { config.domains[i].mstsc = false; }
             if (config.domains[i].ssh == true) { ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
-                if (passport == null) { passport = ['passport']; } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904
+                if (passport == null) { passport = ['passport@0.5.3']; } // Passport v0.6.0 is broken with cookie-session, see https://github.com/jaredhanson/passport/issues/904
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
                 if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20'); }
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
                 if ((typeof config.domains[i].authstrategies.reddit == 'object') && (typeof config.domains[i].authstrategies.reddit.clientid == 'string') && (typeof config.domains[i].authstrategies.reddit.clientsecret == 'string') && (passport.indexOf('passport-reddit') == -1)) { passport.push('passport-reddit'); }
                 if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
-                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (typeof config.domains[i].authstrategies.oidc.clientid == 'string') && (typeof config.domains[i].authstrategies.oidc.clientsecret == 'string') && (typeof config.domains[i].authstrategies.oidc.issuer == 'string') && (passport.indexOf('@mstrhakr/passport-openidconnect') == -1)) {
-                    if ((nodeVersion >= 17) || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13)) || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15)) || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) { passport.push('@mstrhakr/passport-openidconnect'); passport.push('openid-client'); passport.push('connect-flash'); } else { addServerWarning('This NodeJS version does not support OpenID.', 25); delete config.domains[i].authstrategies.oidc; }
+                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client') == -1)) {
+                    if ((nodeVersion >= 17) 
+                        || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13)) 
+                        || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15)) 
+                        || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) { 
+                            passport.push('openid-client');
+                    } else {
+                        addServerWarning('This NodeJS version does not support OpenID Connect on MeshCentral.', 25);
+                        delete config.domains[i].authstrategies.oidc;
+                    }
                 }
                 if ((typeof config.domains[i].authstrategies.saml == 'object') || (typeof config.domains[i].authstrategies.jumpcloud == 'object')) { passport.push('passport-saml'); }
             }
