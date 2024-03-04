@@ -485,13 +485,6 @@
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
-        "reddit": {
-          "_callbackurl": "https://server/auth-reddit-callback",
-          "newAccounts": true,
-          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
-          "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
-          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        },
         "azure": {
           "_callbackurl": "https://server/auth-azure-callback",
           "newAccounts": true,

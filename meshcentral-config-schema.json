@@ -2860,41 +2860,6 @@
                   "clientsecret"
                 ]
               },
-              "reddit": {
-                "type": "object",
-                "properties": {
-                  "callbackurl": {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  "newAccounts": {
-                    "type": "boolean",
-                    "default": false
-                  },
-                  "newAccountsUserGroups": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "clientid": {
-                    "type": "string"
-                  },
-                  "clientsecret": {
-                    "type": "string"
-                  },
-                  "logouturl": {
-                    "type": "string",
-                    "format": "uri",
-                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
-                  }
-                },
-                "required": [
-                  "clientid",
-                  "clientsecret"
-                ]
-              },
               "azure": {
                 "type": "object",
                 "properties": {
