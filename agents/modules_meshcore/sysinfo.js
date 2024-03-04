@@ -305,9 +305,14 @@ function macos_thermals()
                 }
             }
         });
-        child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-        child.stdin.write('powermetrics -s smc\n');
-        child.waitExit(5000);
+        child.stderr.on('data', function (c) {
+            if (c.toString().split('unable to get smc values').length > 1) { // error getting sensors so just kill
+                this.parent.kill();
+                return;
+            }
+        });
+        child.stdin.write('powermetrics -s smc -i 500 -n 1\n');
+        child.waitExit(2000);
     }
     return (ret);
 }

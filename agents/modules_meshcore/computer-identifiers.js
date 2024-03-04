@@ -610,33 +610,26 @@ function macos_identifiers()
     if(lines.length > 0) {
         const memorySlots = [];
         if(lines[2].trim().includes('Memory Slots:')) { // OLD MACS WITH SLOTS
-            const Memory = [];
-            const bankMatches = child.stdout.str.trim().match(/BANK \d+\/DIMM\d+:[\s\S]*?(?=(BANK|$))/g);
-            bankMatches.forEach(function(match, index) {
-                const bankInfo = match.match(/BANK (\d+)\/DIMM(\d+):[\s\S]*?Size: (\d+ \w+)[\s\S]*?Type: (\w+)[\s\S]*?Speed: (\d+ \w+)[\s\S]*?Status: (\w+)[\s\S]*?Manufacturer: (0x[0-9A-Fa-f]+)[\s\S]*?Part Number: (0x[0-9A-Fa-f]+)[\s\S]*?Serial Number: (.+)/);
-                if (bankInfo) {
-                    const bankIndex = bankInfo[1].trim();
-                    const dimmIndex = bankInfo[2].trim();
-                    const size = bankInfo[3].trim();
-                    const type = bankInfo[4].trim();
-                    const speed = bankInfo[5].trim();
-                    const status = bankInfo[6].trim();
-                    const manufacturer = bankInfo[7].trim();
-                    const partNumber = bankInfo[8].trim();
-                    const serialNumber = bankInfo[9].trim();
-                    Memory.push({
-                        DeviceLocator: "BANK " + bankIndex + "/DIMM" + dimmIndex,
-                        Size: size,
-                        Type: type,
-                        Speed: speed,
-                        Status: status,
-                        Manufacturer: hexToAscii(manufacturer),
-                        PartNumber: hexToAscii(partNumber),
-                        SerialNumber: serialNumber,
-                    });
+            var memorySlots1 = child.stdout.str.split(/\n{2,}/).slice(3);
+            memorySlots1.forEach(function(slot,index) {
+                var lines = slot.split('\n');
+                if(lines.length == 1){ // start here
+                    if(lines[0].trim()!=''){
+                        var slotObj = { DeviceLocator: lines[0].trim().replace(/:$/, '') }; // Initialize name as an empty string
+                        var nextline = memorySlots1[index+1].split('\n');
+                        nextline.forEach(function(line) {
+                            if (line.trim() !== '') {
+                                var parts = line.split(':');
+                                var key = parts[0].trim();
+                                var value = parts[1].trim();
+                                value = (key == 'Part Number' || key == 'Manufacturer') ? hexToAscii(parts[1].trim()) : parts[1].trim();
+                                slotObj[key] = value; // Store attribute in the slot object
+                            }
+                        });
+                        memorySlots.push(slotObj);
+                    }
                 }
             });
-            memorySlots = Memory;  
         } else { // NEW MACS WITHOUT SLOTS
             memorySlots.push({ DeviceLocator: "Onboard Memory", Size: lines[2].split(":")[1].trim(), PartNumber: lines[3].split(":")[1].trim(), Manufacturer: lines[4].split(":")[1].trim() })
         }
@@ -683,12 +676,12 @@ function macos_identifiers()
 
     trimIdentifiers(ret.identifiers);
 
-
     child = null;
     return (ret);
 }
 
 function hexToAscii(hexString) {
+    if(!hexString.startsWith('0x')) return hexString.trim();
     hexString = hexString.startsWith('0x') ? hexString.slice(2) : hexString;
     var str = '';
     for (var i = 0; i < hexString.length; i += 2) {
