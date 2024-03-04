@@ -3308,7 +3308,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof domain.authstrategies.twitter == 'object') { authStrategies.push('twitter'); }
             if (typeof domain.authstrategies.google == 'object') { authStrategies.push('google'); }
             if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
-            if (typeof domain.authstrategies.reddit == 'object') { authStrategies.push('reddit'); }
             if (typeof domain.authstrategies.azure == 'object') { authStrategies.push('azure'); }
             if (typeof domain.authstrategies.oidc == 'object') {
                 if (obj.common.validateObject(domain.authstrategies.oidc.custom) && obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
@@ -6661,32 +6660,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }, handleStrategyLogin);
                     }
 
-                    // Reddit
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.reddit) != 0) {
-                        obj.app.get(url + 'auth-reddit', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('reddit-' + domain.id, { state: obj.parent.encodeCookie({ 'p': 'reddit' }, obj.parent.loginCookieEncryptionKey), duration: 'permanent' })(req, res, next);
-                        });
-                        obj.app.get(url + 'auth-reddit-callback', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
-                                // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
-                                var url = req.url;
-                                if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
-                                res.set('Content-Type', 'text/html');
-                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
-                            } else {
-                                if (req.query.state != null) {
-                                    var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
-                                    if ((c != null) && (c.p == 'reddit')) { domain.passport.authenticate('reddit-' + domain.id, { failureRedirect: '/' })(req, res, next); return; }
-                                }
-                                next();
-                            }
-                        }, handleStrategyLogin);
-                    }
-
                     // Azure
                     if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.azure) != 0) {
                         obj.app.get(url + 'auth-azure', function (req, res, next) {
@@ -7089,7 +7062,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         twitter: 1,
         google: 2,
         github: 3,
-        reddit: 8,
+        reddit: 8, // Deprecated
         azure: 16,
         oidc: 32,
         saml: 64,
@@ -7160,23 +7133,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             ));
             authStrategyFlags |= domainAuthStrategyConsts.github;
-        }
-
-        // Reddit
-        if ((typeof domain.authstrategies.reddit == 'object') && (typeof domain.authstrategies.reddit.clientid == 'string') && (typeof domain.authstrategies.reddit.clientsecret == 'string')) {
-            const RedditStrategy = require('passport-reddit');
-            let options = { clientID: domain.authstrategies.reddit.clientid, clientSecret: domain.authstrategies.reddit.clientsecret };
-            if (typeof domain.authstrategies.reddit.callbackurl == 'string') { options.callbackURL = domain.authstrategies.reddit.callbackurl; } else { options.callbackURL = url + 'auth-reddit-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Reddit SSO with options: ' + JSON.stringify(options));
-            passport.use('reddit-' + domain.id, new RedditStrategy.Strategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.authLog('setupDomainAuthStrategy', 'Reddit profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~reddit:' + profile.id, name: profile.name, strategy: 'reddit' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.reddit;
         }
 
         // Azure
