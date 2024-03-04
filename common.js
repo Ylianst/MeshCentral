@@ -387,3 +387,16 @@ module.exports.moveOldFiles = function (filelist) {
     } while (extOk == false);
     for (var i in filelist) { try { fs.renameSync(filelist[i], filelist[i] + oldFileExt); } catch (ex) { } }
 }
+
+// Convert strArray to Array, returns array if strArray or null if any other type
+module.exports.convertStrArray = function (object, split) {
+    if (split && typeof object === 'string') {
+        return object.split(split)
+    } else if (typeof object === 'string') {
+        return Array(object);
+    } else if (Array.isArray(object)) {
+        return object
+    } else {
+        return []
+    }
+}
