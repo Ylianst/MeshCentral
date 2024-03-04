@@ -155,12 +155,12 @@ module.exports.objKeysToLower = function (obj, exceptions, parent) {
     return obj;
 };
 
-// Escape and unescape feild names so there are no invalid characters for MongoDB
+// Escape and unescape field names so there are no invalid characters for MongoDB
 module.exports.escapeFieldName = function (name) { if ((name.indexOf('%') == -1) && (name.indexOf('.') == -1) && (name.indexOf('$') == -1)) return name; return name.split('%').join('%25').split('.').join('%2E').split('$').join('%24'); };
 module.exports.unEscapeFieldName = function (name) { if (name.indexOf('%') == -1) return name; return name.split('%2E').join('.').split('%24').join('$').split('%25').join('%'); };
 
 // Escape all links, SSH and RDP usernames
-// This is required for databases like NeDB that don't accept "." as part of a feild name.
+// This is required for databases like NeDB that don't accept "." as part of a field name.
 module.exports.escapeLinksFieldNameEx = function (docx) { if ((docx.links == null) && (docx.ssh == null) && (docx.rdp == null)) { return docx; } return module.exports.escapeLinksFieldName(docx); };
 module.exports.escapeLinksFieldName = function (docx) {
     var doc = Object.assign({}, docx);
