@@ -2587,7 +2587,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const strategy = domain.authstrategies[req.user.strategy];
             const groups = { 'enabled': typeof strategy.groups == 'object' }
             parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
-            if (groups.enabled) { // Groups only available for OIDC strategy currently
+            if (groups.enabled) {
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups)
                 groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false
                 groups.syncMemberships = []
@@ -2839,7 +2839,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
                 // 2FA is not supported in URL authentication method. If user has 2FA enabled, this login method fails.
-				var user = obj.users[userid];
+                var user = obj.users[userid];
                 if ((err == null) && checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
                     handleRootRequestEx(req, res, domain, direct);
                 } else if ((userid != null) && (err == null)) {
@@ -6542,18 +6542,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
                     obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
                 }
-    
+
                 // New account CAPTCHA request
                 if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
                     obj.app.get(url + 'newAccountCaptcha.ashx', handleNewAccountCaptchaRequest);
                 }
-    
+
                 // Check CrowdSec Bounser if configured
                 if (parent.crowdSecBounser != null) {
                     obj.app.get(url + 'captcha.ashx', handleCaptchaGetRequest);
                     obj.app.post(url + 'captcha.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCaptchaPostRequest);
                 }
-    
+
                 // Setup IP-KVM relay if supported
                 if (domain.ipkvm) {
                     obj.app.ws(url + 'ipkvm.ashx/*', function (ws, req) {
@@ -6567,7 +6567,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         parent.ipKvmManager.handleIpKvmGet(domain, req, res, next);
                     });
                 }
-    
+
                 // Setup RDP unless indicated as disabled
                 if (domain.mstsc !== false) {
                     obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, 'mstsc'); });
@@ -6579,7 +6579,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         try { require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
                     });
                 }
-    
+
                 // Setup SSH if needed
                 if (domain.ssh === true) {
                     obj.app.get(url + 'ssh.html', function (req, res) { handleMSTSCRequest(req, res, 'ssh'); });
@@ -6601,7 +6601,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         });
                     });
                 }
-    
+
                 // Setup firebase push only server
                 if ((obj.parent.firebase != null) && (obj.parent.config.firebase)) {
                     if (obj.parent.config.firebase.pushrelayserver) { parent.debug('email', 'Firebase-pushrelay-handler'); obj.app.post(url + 'firebaserelay.aspx', obj.bodyParser.urlencoded({ extended: false }), handleFirebasePushOnlyRelayRequest); }
@@ -6751,10 +6751,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }, handleStrategyLogin);
                     }
                 }
-    
+
                 // Server redirects
                 if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { if (j[0] != '_') { obj.app.get(url + j, obj.handleDomainRedirect); } } }
-    
+
                 // Server picture
                 obj.app.get(url + 'serverpic.ashx', function (req, res) {
                     // Check if we have "server.jpg" in the data folder, if so, use that.
@@ -6782,7 +6782,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
                 });
-    
+
                 // Receive mesh agent connections
                 obj.app.ws(url + 'agent.ashx', function (ws, req) {
                     var domain = checkAgentIpAddress(ws, req);
@@ -6791,7 +6791,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     //console.log('Agent connect: ' + req.clientIp);
                     try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
                 });
-    
+
                 // Setup MQTT broker over websocket
                 if (obj.parent.mqttbroker != null) {
                     obj.app.ws(url + 'mqtt.ashx', function (ws, req) {
@@ -6807,11 +6807,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.parent.mqttbroker.handle(serialtunnel); // Pass socket wrapper to MQTT broker
                     });
                 }
-    
+
                 // Setup any .well-known folders
                 var p = obj.parent.path.join(obj.parent.datapath, '.well-known' + ((parent.config.domains[i].id == '') ? '' : ('-' + parent.config.domains[i].id)));
                 if (obj.parent.fs.existsSync(p)) { obj.app.use(url + '.well-known', obj.express.static(p)); }
-    
+
                 // Setup the alternative agent-only port
                 if (obj.agentapp) {
                     // Receive mesh agent connections on alternate port
@@ -6821,7 +6821,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
                         try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
                     });
-    
+
                     // Setup mesh relay on alternative agent-only port
                     obj.agentapp.ws(url + 'meshrelay.ashx', function (ws, req) {
                         PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
@@ -6832,41 +6832,41 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             }
                         });
                     });
-    
+
                     // Allows agents to transfer files
                     obj.agentapp.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
-    
+
                     // Setup agent to/from server file transfer handler
                     obj.agentapp.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
-    
+
                     // Setup agent downloads for meshcore updates
                     obj.agentapp.get(url + 'meshagents', obj.handleMeshAgentRequest);
                 }
-    
+
                 // Setup web relay on this web server if needed
                 // We set this up when a DNS name is used as a web relay instead of a port
                 if (obj.args.relaydns != null) {
                     obj.webRelayRouter = require('express').Router();
-    
+
                     // This is the magic URL that will setup the relay session
                     obj.webRelayRouter.get('/control-redirect.ashx', function (req, res, next) {
                         if (obj.args.relaydns.indexOf(req.hostname) == -1) { res.sendStatus(404); return; }
                         if ((req.session.userid == null) && obj.args.user && obj.users['user//' + obj.args.user.toLowerCase()]) { req.session.userid = 'user//' + obj.args.user.toLowerCase(); } // Use a default user if needed
                         res.set({ 'Cache-Control': 'no-store' });
                         parent.debug('web', 'webRelaySetup');
-    
+
                         // Decode the relay cookie
                         if (req.query.c == null) { res.sendStatus(404); return; }
-    
+
                         // Decode and check if this relay cookie is valid
                         var userid, domainid, domain, nodeid, addr, port, appid, webSessionId, expire, publicid;
                         const urlCookie = obj.parent.decodeCookie(req.query.c, parent.loginCookieEncryptionKey, 32); // Allow cookies up to 32 minutes old. The web page will renew this cookie every 30 minutes.
                         if (urlCookie == null) { res.sendStatus(404); return; }
-    
+
                         // Decode the incoming cookie
                         if ((urlCookie.ruserid != null) && (urlCookie.x != null)) {
                             if (parent.webserver.destroyedSessions[urlCookie.ruserid + '/' + urlCookie.x] != null) { res.sendStatus(404); return; }
-    
+
                             // This is a standard user, figure out what our web relay will be.
                             if (req.session.x != urlCookie.x) { req.session.x = urlCookie.x; } // Set the sessionid if missing
                             if (req.session.userid != urlCookie.ruserid) { req.session.userid = urlCookie.ruserid; } // Set the session userid if missing
@@ -6879,7 +6879,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             port = parseInt(req.query.p);
                             appid = parseInt(req.query.appid);
                             webSessionId = req.session.userid + '/' + req.session.x;
-    
+
                             // Check that all the required arguments are present
                             if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || (parent.webserver.destroyedSessions[webSessionId] != null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
                         } else if (urlCookie.r == 8) {
@@ -6899,10 +6899,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             expire = urlCookie.expire;
                             if ((expire != null) && (expire <= Date.now())) { parent.debug('webrelay', 'expired link'); res.sendStatus(404); return; }
                         }
-    
+
                         // No session identifier was setup, exit now
                         if (webSessionId == null) { res.sendStatus(404); return; }
-    
+
                         // Check that we have an exact session on any of the relay DNS names
                         var xrelaySessionId, xrelaySession, freeRelayHost, oldestRelayTime, oldestRelayHost;
                         for (var hostIndex in obj.args.relaydns) {
@@ -6926,7 +6926,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     }
                                     return;
                                 }
-    
+
                                 // Keep a record of the oldest web relay session, this could be useful.
                                 if (oldestRelayHost == null) {
                                     // Oldest host not set yet, set it
@@ -6941,12 +6941,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 }
                             }
                         }
-    
+
                         // Check that the user has rights to access this device
                         parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
                             // If there is no remote control or relay rights, reject this web relay
                             if ((rights & 0x00200008) == 0) { res.sendStatus(404); return; } // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY
-    
+
                             // Check if there is a free relay DNS name we can use
                             var selectedHost = null;
                             if (freeRelayHost != null) {
@@ -6957,12 +6957,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 selectedHost = oldestRelayHost;
                             }
                             xrelaySessionId = webSessionId + '/' + selectedHost;
-    
+
                             if (selectedHost == req.hostname) {
                                 // If this web relay session id is not free, close it now
                                 xrelaySession = webRelaySessions[xrelaySessionId];
                                 if (xrelaySession != null) { xrelaySession.close(); delete webRelaySessions[xrelaySessionId]; }
-    
+
                                 // Create a web relay session
                                 const relaySession = require('./apprelays.js').CreateWebRelaySession(obj, db, req, args, domain, userid, nodeid, addr, port, appid, xrelaySessionId, expire, node.mtype);
                                 relaySession.xpublicid = publicid;
@@ -6972,13 +6972,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     // If there are not more relay sessions, clear the cleanup timer
                                     if ((Object.keys(webRelaySessions).length == 0) && (obj.cleanupTimer != null)) { clearInterval(webRelayCleanupTimer); obj.cleanupTimer = null; }
                                 }
-    
+
                                 // Set the multi-tunnel session
                                 webRelaySessions[xrelaySessionId] = relaySession;
-    
+
                                 // Setup the cleanup timer if needed
                                 if (obj.cleanupTimer == null) { webRelayCleanupTimer = setInterval(checkWebRelaySessionsTimeout, 10000); }
-    
+
                                 // Redirect to root.
                                 res.redirect('/');
                             } else {
@@ -6993,26 +6993,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             }
                         });
                     });
-    
+
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.get('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
-    
+
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.post('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
-    
+
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.put('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
-    
+
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.delete('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
-    
+
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.options('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
-    
+
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.head('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
                 }
-    
+
                 // Indicates to ExpressJS that the override public folder should be used to serve static files.
                 if (parent.config.domains[i].webpublicpath != null) {
                     // Use domain public path
@@ -7021,10 +7021,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Use override path
                     obj.app.use(url, obj.express.static(obj.parent.webPublicOverridePath));
                 }
-    
+
                 // Indicates to ExpressJS that the default public folder should be used to serve static files.
                 obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
-    
+
                 // Start regular disconnection list flush every 2 minutes.
                 obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
             }
@@ -7151,7 +7151,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
                         if (typeof userex.email == 'string') { user.email = userex.email; }
                     }
-                    return done(null, user);
+
+                    // Get groups from API if needed then return
+                    if (domain.authstrategies.azure.groups) {
+                        getGroups('azure', { accessToken: accessToken }, domain.authstrategies.azure).then((groups) => {
+                            user = Object.assign(user, { 'groups': groups });
+                            return done(null, user);
+                        }).catch((err) => {
+                            let error = new Error('AZURE: GROUPS: No groups found due to error:', { cause: err });
+                            parent.debug('error', `${JSON.stringify(error)}`);
+                            parent.authLog('setupDomainAuthStrategy', error.message);
+                            user.groups = [];
+                            return done(null, user);
+                        });
+                    } else {
+                        return done(null, user);
+                    }
                 }
             ));
             authStrategyFlags |= domainAuthStrategyConsts.azure;
@@ -7268,7 +7283,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof strategy.custom.tenant_id == 'string') { strategy.custom.preset = preset = 'azure' }
                 if (strategy.custom.customer_id || strategy.custom.identitysource || strategy.client.client_id.split('.')[2] == 'googleusercontent') { strategy.custom.preset = preset = 'google' }
             }
-            
+
             // Check issuer url
             let presetIssuer
             if (preset == 'azure') { presetIssuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0'; }
@@ -7320,7 +7335,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
                 issuer = new strategy.obj.openidClient.Issuer(Object.assign(issuer?.metadata, strategy.issuer));
             }
-            strategy.issuer = issuer?.metadata
+            strategy.issuer = issuer.metadata
             strategy.obj.issuer = issuer
 
             // Make sure redirect_uri and post_logout_redirect_uri exist before continuing
@@ -7430,7 +7445,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup presets and groups, get groups from API if needed then return
                 if (strategy.groups && typeof user.preset == 'string') {
-                    getGroups(user.preset, tokenset).then((groups) => {
+                    getGroups(user.preset, tokenset, strategy).then((groups) => {
                         user = Object.assign(user, { 'groups': groups });
                         return verified(null, user);
                     }).catch((err) => {
@@ -7443,87 +7458,88 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 } else {
                     return verified(null, user);
                 }
+            }
+            async function getGroups(preset, tokenset, strategy) {
+                let url = '';
+                if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
+                if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null; }
+                return new Promise((resolve, reject) => {
+                    const options = {
+                        'headers': { authorization: 'Bearer ' + tokenset.access_token }
+                    }
+                    const req = require('https').get(url, options, (res) => {
+                        let data = []
+                        res.on('data', (chunk) => {
+                            data.push(chunk);
+                        });
+                        res.on('end', () => {
+                            if (res.statusCode < 200 || res.statusCode >= 300) {
+                                let error = new Error('OIDC: GROUPS: Bad response code from API, statusCode: ' + res.statusCode);
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
+                            if (data.length == 0) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
+                            try {
+                                if (Buffer.isBuffer(data[0])) {
+                                    data = Buffer.concat(data);
+                                    data = data.toString();
+                                } else { // else if (typeof data[0] == 'string') 
+                                    data = data.join();
+                                }
+                            } catch (err) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
 
-                async function getGroups(preset, tokenset) {
-                    let url = '';
-                    if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
-                    if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null; }
-                    return new Promise((resolve, reject) => {
-                        const options = {
-                            'headers': { authorization: 'Bearer ' + tokenset.access_token }
-                        }
-                        const req = require('https').get(url, options, (res) => {
-                            let data = []
-                            res.on('data', (chunk) => {
-                                data.push(chunk);
-                            });
-                            res.on('end', () => {
-                                if (res.statusCode < 200 || res.statusCode >= 300) {
-                                    let error = new Error('OIDC: GROUPS: Bad response code from API, statusCode: ' + res.statusCode);
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                    console.error(error);
-                                    reject(error);
+                            if (preset == 'google') {
+                                data = data.split('\n');
+                                data = data.join('');
+                            }
+                            data = JSON.parse(data);
+                            if (data.error) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error parsing JSON response data.', { cause: data.error });
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
+                            if (preset == 'azure') {
+                                data = data.value;
+                            }
+                            if (preset == 'google') {
+                                data = data.groups;
+                            }
+                            let groups = []
+                            for (var i in data) {
+                                if (typeof data[i].displayName == 'string') {
+                                    groups.push(data[i].displayName);
                                 }
-                                if (data.length == 0) {
-                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                    console.error(error);
-                                    reject(error);
-                                }
-                                try {
-                                    if (Buffer.isBuffer(data[0])) {
-                                        data = Buffer.concat(data);
-                                        data = data.toString();
-                                    } else { // else if (typeof data[0] == 'string') 
-                                        data = data.join();
-                                    }
-                                } catch (err) {
-                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                    console.error(error);
-                                    reject(error);
-                                }
-                                if (preset == 'azure') {
-                                    data = JSON.parse(data);
-                                    if (data.error) {
-                                        let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: data.error });
-                                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                        console.error(error);
-                                        reject(error);
-                                    }
-                                    data = data.value;
-                                }
-                                if (preset == 'google') {
-                                    data = data.split('\n');
-                                    data = data.join('');
-                                    data = JSON.parse(data);
-                                    data = data.groups;
-                                }
-                                let groups = []
-                                for (var i in data) {
-                                    if (typeof data[i].displayName == 'string') {
-                                        groups.push(data[i].displayName);
-                                    }
-                                }
-                                if (groups.length == 0) {
-                                    let warn = new Error('OIDC: GROUPS: No groups returned from API.');
-                                    parent.authLog('getGroups', `WARN: ${warn.message} DATA: ${data}`);
-                                    console.warn(warn);
-                                    resolve(groups);
-                                } else {
-                                    resolve(groups);
-                                }
-                            });
+                            }
+                            if (groups.length == 0) {
+                                let warn = new Error('OIDC: GROUPS: No groups returned from API.');
+                                parent.authLog('getGroups', `WARN: ${warn.message} DATA: ${data}`);
+                                console.warn(warn);
+                                resolve(groups);
+                            } else {
+                                resolve(groups);
+                            }
                         });
-                        req.on('error', (err) => {
-                            let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
-                            parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                            console.error(error);
-                            reject(error);
-                        });
-                        req.end();
                     });
-                }
+                    req.on('error', (err) => {
+                        let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
+                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                        console.error(error);
+                        reject(error);
+                    });
+                    req.end();
+                });
             }
         }
         return authStrategyFlags;
