@@ -5844,15 +5844,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         archive.on('error', function (err) { throw err; });
 
         // Customize the mesh agent file name
-        var meshfilename = 'MeshAgent-' + mesh.name + '.zip'
+        var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
+        var meshexecutablename = 'meshagent';
         if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
-            meshfilename = meshfilename.split('meshagent').join(domain.agentcustomization.filename).split('MeshAgent').join(domain.agentcustomization.filename);
+            meshfilename = meshfilename.split('MeshAgent').join(domain.agentcustomization.filename);
+            meshexecutablename = meshexecutablename.split('meshagent').join(domain.agentcustomization.filename);
         }
 
         // Customise the mesh agent display name
         var meshdisplayname = 'Mesh Agent';
         if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.displayname == 'string')) {
             meshdisplayname = meshdisplayname.split('Mesh Agent').join(domain.agentcustomization.displayname);
+        }
+
+        // Customise the mesh agent service name
+        var meshservicename = 'meshagent';
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.servicename == 'string')) {
+            meshservicename = meshservicename.split('meshagent').join(domain.agentcustomization.servicename);
+        }
+
+        // Customise the mesh agent company name
+        var meshcompanyname = 'meshagent';
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.companyname == 'string')) {
+            meshcompanyname = meshcompanyname.split('meshagent').join(domain.agentcustomization.companyname);
         }
 
         // Set the agent download including the mesh name.
@@ -5881,6 +5895,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 zipfile.readEntry();
                             });
                         });
+                    } else if (entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64_LaunchAgent.plist' || 
+                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64_LaunchDaemon.plist' ||
+                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Info.plist' ||
+                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/postflight' ||
+                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/Postflight.sh' || 
+                        entry.fileName == 'MeshAgent.mpkg/Uninstall.command') {
+                            // This is a special file entry, we need to fix it.
+                            zipfile.openReadStream(entry, function (err, readStream) {
+                                readStream.on('data', function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
+                                readStream.on('end', function () {
+                                    var options = { name: entry.fileName };
+                                    if (entry.fileName.endsWith('postflight') || entry.fileName.endsWith('Uninstall.command')) { options.mode = 493; }
+                                    archive.append(readStream.xxdata.toString().split('###SERVICENAME###').join(meshservicename).split('###COMPANYNAME###').join(meshcompanyname).split('###EXECUTABLENAME###').join(meshexecutablename), options);
+                                    zipfile.readEntry();
+                                });
+                            });
+                        
                     } else {
                         // Normal file entry
                         zipfile.openReadStream(entry, function (err, readStream) {
