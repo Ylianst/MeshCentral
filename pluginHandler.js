@@ -412,7 +412,8 @@ module.exports.pluginHandler = function (parent) {
                                             if (process.platform == 'win32') {
                                                 readStream.pipe(obj.fs.createWriteStream(filePath));
                                             } else {
-                                                const fileMode = (entry.externalFileAttributes >> 16) & 0x0fff;
+                                                var fileMode = (entry.externalFileAttributes >> 16) & 0x0fff;
+                                                if( fileMode <= 0 ) fileMode = 0o644;
                                                 readStream.pipe(obj.fs.createWriteStream(filePath, { mode: fileMode }));
                                             }
                                         });
