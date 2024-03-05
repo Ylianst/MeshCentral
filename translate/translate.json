@@ -10535,6 +10535,7 @@
     },
     {
       "en": "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'",
+      "nl": "Apple macOS uitvoerbare bestanden moeten uit quarantaine worden verwijderd om 'xattr -r -d com.apple.quarantine meshagent' te kunnen starten",
       "xloc": [
         "agentinvite.handlebars->3->12",
         "default.handlebars->47->656"
@@ -49464,6 +49465,7 @@
     },
     {
       "en": "No Consent",
+      "nl": "Geen toestemming",
       "xloc": [
         "default.handlebars->47->1217"
       ]
@@ -68490,6 +68492,7 @@
     },
     {
       "en": "Sign-in with Azure using OpenID Connect",
+      "nl": "Meld u aan met Azure OpenID Connect ",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc-azure",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc-azure",
@@ -68498,6 +68501,7 @@
     },
     {
       "en": "Sign-in with Google using OpenID Connect",
+      "nl": "Meld u aan met Google OpenID Connect ",
       "xloc": [
         "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc-google",
         "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc-google",
@@ -73241,6 +73245,7 @@
     },
     {
       "en": "This is a executable on OS's with graphical user interfaces",
+      "nl": "Dit is een uitvoerbaar bestand op besturingssystemen met grafische gebruikersinterfaces",
       "xloc": [
         "agentinvite.handlebars->3->11",
         "default.handlebars->47->655"
@@ -73259,7 +73264,7 @@
       "it": "Questo è un eseguibile su sistemi operativi con interfacce utente grafiche. Devi 'chmod +x meshagent' ed eseguire questo file.",
       "ja": "これは、グラフィカルユーザーインターフェイスを備えたOS上で実行可能なファイルです。 'chmod + x meshagent'を実行して、このファイルを実行する必要があります。",
       "ko": "이것은 그래픽 사용자 인터페이스가있는 OS에서 실행 가능합니다. 'chmod + x meshagent'가 필요하고이 파일을 실행해야합니다.",
-      "nl": "Dit is een uitvoerbaar bestand op besturingssystemen met grafische gebruikersinterfaces.U moet 'chmod + x meshagent' gebruiken en dit bestand uitvoeren.",
+      "nl": "Dit is een uitvoerbaar bestand op besturingssystemen met grafische gebruikersinterfaces. U moet 'chmod + x meshagent' gebruiken en dit bestand uitvoeren.",
       "pl": "Jest to plik wykonywalny na systemach operacyjnych z graficznym interfejsem użytkownika. Musisz wykonać komendę 'chmod +x meshagent' i uruchomić ten plik.",
       "pt": "Este é um executável em sistemas operacionais com interfaces gráficas de usuário. Você precisa 'chmod + x meshagent' e executar este arquivo.",
       "pt-br": "Este é um executável em sistemas operacionais com interfaces gráficas de usuário. Você precisa 'chmod + x meshagent' e executar este arquivo.",
@@ -76991,24 +76996,28 @@
     },
     {
       "en": "Unzip",
+      "nl": "Uitpakken",
       "xloc": [
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3"
       ]
     },
     {
       "en": "Unzip To Folder",
+      "nl": "Uitpakken naar map",
       "xloc": [
         "default.handlebars->47->1529"
       ]
     },
     {
       "en": "Unzipping Error",
+      "nl": "Fout bij uitpakken",
       "xloc": [
         "default.handlebars->47->1504"
       ]
     },
     {
       "en": "Unzipping file...",
+      "nl": "Bestand uitpakken...",
       "xloc": [
         "default.handlebars->47->1502"
       ]
@@ -82845,6 +82854,7 @@
     },
     {
       "en": "You need to 'chmod +x meshagent' and run this file",
+      "en": "U moet 'chmod +x meshagent' gebruiken en dit bestand uitvoeren.",
       "xloc": [
         "agentinvite.handlebars->3->13",
         "default.handlebars->47->657"
