@@ -618,7 +618,7 @@ function CreateMeshCentralServer(config, args) {
     obj.performServerUpdate = function (version) {
         if (obj.serverSelfWriteAllowed != true) return false;
         if ((version == null) || (version == '') || (typeof version != 'string')) { console.log('Starting self upgrade...'); } else { console.log('Starting self upgrade to: ' + version); }
-        process.exit(200); 
+        process.exit(200);
         return true;
     };
 
@@ -648,7 +648,7 @@ function CreateMeshCentralServer(config, args) {
             // Get new instance of the client
             const vault = require("node-vault")({ endpoint: obj.args.vault.endpoint, token: obj.args.vault.token });
             vault.unseal({ key: obj.args.vault.unsealkey })
-                .then(function() {
+                .then(function () {
                     if (obj.args.vaultdeleteconfigfiles) {
                         vault.delete('secret/data/' + obj.args.vault.name)
                             .then(function (r) { console.log('Done.'); process.exit(); })
@@ -764,7 +764,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unrecognized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [ i ]); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [i]); } } }
 
         // Read IP lists from files if applicable
         config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
@@ -867,10 +867,10 @@ function CreateMeshCentralServer(config, args) {
                             delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
                             delete user.msghandle; // Disable users 2fa messaging too
                             var config = getConfig(false);
-                            if(config.domains[user.domain].auth || config.domains[user.domain].authstrategies){
+                            if (config.domains[user.domain].auth || config.domains[user.domain].authstrategies) {
                                 console.log('This users domain has external authentication methods enabled so the password will not be changed if you set one')
                                 obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
-                            }else{
+                            } else {
                                 if (obj.args.hashpass && (typeof obj.args.hashpass == 'string')) {
                                     // Reset an account using a pre-hashed password. Use --hashpassword to pre-hash a password.
                                     var hashpasssplit = obj.args.hashpass.split(',');
@@ -878,14 +878,14 @@ function CreateMeshCentralServer(config, args) {
                                     user.salt = hashpasssplit[0];
                                     user.hash = hashpasssplit[1];
                                     obj.db.Set(user, function () { console.log("Done. This command will only work if MeshCentral is stopped."); process.exit(); return; });
-                                } else if(obj.args.pass && (typeof obj.args.pass == 'string')) {
+                                } else if (obj.args.pass && (typeof obj.args.pass == 'string')) {
                                     // Hash the password and reset the account.
                                     require('./pass').hash(String(obj.args.pass), user.salt, function (err, hash, tag) {
                                         if (err) { console.log("Unable to reset password: " + err); process.exit(); return; }
                                         user.hash = hash;
                                         obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
                                     }, 0);
-                                }else{
+                                } else {
                                     console.log('Not setting a users password');
                                     obj.db.Set(user, function () { console.log("Done."); process.exit(); return; });
                                 }
@@ -1107,7 +1107,7 @@ function CreateMeshCentralServer(config, args) {
                             for (var j in doc) { if (j.indexOf('.') >= 0) { console.log("Invalid field name (" + j + ") in document: " + json[i]); return; } }
                             //if ((json[i].type == 'ifinfo') && (json[i].netif2 != null)) { for (var j in json[i].netif2) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].netif2[esc] = json[i].netif2[j]; delete json[i].netif2[j]; } } }
                             //if ((json[i].type == 'mesh') && (json[i].links != null)) { for (var j in json[i].links) { var esc = obj.common.escapeFieldName(j); if (esc !== j) { json[i].links[esc] = json[i].links[j]; delete json[i].links[j]; } } }
-                        } 
+                        }
                         //for (i in json) { if ((json[i].type == "node") && (json[i].host != null)) { json[i].rname = json[i].host; delete json[i].host; } } // DEBUG: Change host to rname
                         setTimeout(function () { // If the Mongo database is being created for the first time, there is a race condition here. This will get around it.
                             obj.db.RemoveAll(function () {
@@ -1386,7 +1386,7 @@ function CreateMeshCentralServer(config, args) {
                         if (i == '') {
                             addServerWarning("Unable to load Intel AMT TLS root certificate for default domain.", 5);
                         } else {
-                            addServerWarning("Unable to load Intel AMT TLS root certificate for domain " + i + ".", 6, [ i ]);
+                            addServerWarning("Unable to load Intel AMT TLS root certificate for domain " + i + ".", 6, [i]);
                         }
                     }
                 }
@@ -2156,7 +2156,7 @@ function CreateMeshCentralServer(config, args) {
         // Update the server state
         obj.updateServerState('state', "stopped");
     };
-    
+
     // Event Dispatch
     obj.AddEventDispatch = function (ids, target) {
         obj.debug('dispatch', 'AddEventDispatch', ids);
@@ -2478,7 +2478,7 @@ function CreateMeshCentralServer(config, args) {
             if (connectType == 1) { state.agentPower = powerState; } else if (connectType == 2) { state.ciraPower = powerState; } else if (connectType == 4) { state.amtPower = powerState; }
             var powerState = 0, oldPowerState = state.powerState;
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-            if ((state.powerState == null)|| (state.powerState == undefined) || (state.powerState != powerState)) {
+            if ((state.powerState == null) || (state.powerState == undefined) || (state.powerState != powerState)) {
                 state.powerState = powerState;
                 eventConnectChange = 1;
 
@@ -2522,7 +2522,7 @@ function CreateMeshCentralServer(config, args) {
             if (connectType == 1) { state.agentPower = powerState; } else if (connectType == 2) { state.ciraPower = powerState; } else if (connectType == 4) { state.amtPower = powerState; }
             var powerState = 0, oldPowerState = state.powerState;
             if ((state.connectivity & 1) != 0) { powerState = state.agentPower; } else if ((state.connectivity & 2) != 0) { powerState = state.ciraPower; } else if ((state.connectivity & 4) != 0) { powerState = state.amtPower; }
-            if ((state.powerState == null)|| (state.powerState == undefined) || (state.powerState != powerState)) {
+            if ((state.powerState == null) || (state.powerState == undefined) || (state.powerState != powerState)) {
                 state.powerState = powerState;
                 eventConnectChange = 1;
 
@@ -2664,7 +2664,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
             meshcorePath = obj.path.join(__dirname, 'agents');
             if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
-                obj.defaultMeshCores = obj.defaultMeshCoresHash = { }; if (func != null) { func(false); } // meshcore.js not found
+                obj.defaultMeshCores = obj.defaultMeshCoresHash = {}; if (func != null) { func(false); } // meshcore.js not found
             }
         }
 
@@ -2730,7 +2730,7 @@ function CreateMeshCentralServer(config, args) {
                         // We are adding a JS file to the meshcores
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                         if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
-                        const moduleData = [ 'try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (ex) { }\r\n' ];
+                        const moduleData = ['try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (ex) { }\r\n'];
 
                         // Merge this module
                         // NOTE: "smbios" module makes some non-AI Linux segfault, only include for IA platforms.
@@ -2959,7 +2959,7 @@ function CreateMeshCentralServer(config, args) {
             } catch (ex) { }
         }
     };
-    
+
     // List of possible mesh agents
     obj.meshAgentsArchitectureNumbers = {
         0: { id: 0, localname: 'Unknown', rname: 'meshconsole.exe', desc: 'Unknown agent', update: false, amt: true, platform: 'unknown', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
@@ -3205,7 +3205,7 @@ function CreateMeshCentralServer(config, args) {
                             console.log(obj.common.format('Code signed {0}.', agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
                         } else {
                             // Failed to sign agent
-                            addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [ agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err ]);
+                            addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
                         if (--pendingOperations === 0) { agentSignedFunc.func(); }
                     }
@@ -3759,7 +3759,7 @@ function CreateMeshCentralServer(config, args) {
             try {
                 const d = new Date(), month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
                 str = month + ' ' + d.getDate() + ' ' + obj.common.zeroPad(d.getHours(), 2) + ':' + obj.common.zeroPad(d.getMinutes(), 2) + ':' + d.getSeconds() + ' meshcentral ' + server + '[' + process.pid + ']: ' + msg + ((obj.platform == 'win32') ? '\r\n' : '\n');
-                obj.fs.write(obj.authlogfile, str, function (err, written, string) { if (err) {console.error(err); } });
+                obj.fs.write(obj.authlogfile, str, function (err, written, string) { if (err) { console.error(err); } });
             } catch (ex) { console.error(ex); }
         }
     }
@@ -3858,7 +3858,7 @@ function InstallModules(modules, args, func) {
                 missingModules.push(moduleNameAndVersion);
             }
         }
-        
+
         if (missingModules.length > 0) { if (args.debug) { console.log('Missing Modules: ' + missingModules.join(', ')); } InstallModuleEx(missingModules, args, func); } else { func(); }
     }
 }
@@ -4007,11 +4007,11 @@ function mainStart() {
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
                 if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
                 if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client') == -1)) {
-                    if ((nodeVersion >= 17) 
-                        || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13)) 
-                        || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15)) 
-                        || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) { 
-                            passport.push('openid-client');
+                    if ((nodeVersion >= 17)
+                        || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13))
+                        || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15))
+                        || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) {
+                        passport.push('openid-client');
                     } else {
                         addServerWarning('This NodeJS version does not support OpenID Connect on MeshCentral.', 25);
                         delete config.domains[i].authstrategies.oidc;
@@ -4026,7 +4026,7 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.0','body-parser@1.20.2','cbor@5.2.0','compression@1.7.4','cookie-session@2.0.0','express@4.18.2','express-handlebars@5.3.5','express-ws@4.0.0','ipcheck@0.1.0','minimist@1.2.8','multiparty@4.2.3','@yetzt/nedb','node-forge@1.3.1','ua-parser-js@1.0.37','ws@8.14.2','yauzl@2.10.0'];
+        var modules = ['archiver@7.0.0', 'body-parser@1.20.2', 'cbor@5.2.0', 'compression@1.7.4', 'cookie-session@2.0.0', 'express@4.18.2', 'express-handlebars@5.3.5', 'express-ws@4.0.0', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@yetzt/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.37', 'ws@8.14.2', 'yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.15.0'); }
