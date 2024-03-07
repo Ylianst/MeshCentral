@@ -1702,7 +1702,8 @@
       "hu": ", majd indítsa el és kattintson az \"Install\" vagy \"Connect\" gombra.",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab32->3",
-        "agentinvite.handlebars->container->column_l->5->wintab64->3"
+        "agentinvite.handlebars->container->column_l->5->wintab64->3",
+        "agentinvite.handlebars->container->column_l->5->wintabarm64->3"
       ]
     },
     {
@@ -25864,7 +25865,8 @@
       "hu": "Kattintson ide az alkalmazás letöltéséhez",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab32->3->win32url",
-        "agentinvite.handlebars->container->column_l->5->wintab64->3->win64url"
+        "agentinvite.handlebars->container->column_l->5->wintab64->3->win64url",
+        "agentinvite.handlebars->container->column_l->5->wintabarm64->3->winarm64url"
       ]
     },
     {
@@ -47553,6 +47555,12 @@
       "hu": "Microsoft™ Windows 64bit",
       "xloc": [
         "agentinvite.handlebars->container->column_l->5->wintab64->1"
+      ]
+    },
+    {
+      "en": "Microsoft™ Windows ARM 64bit",
+      "xloc": [
+        "agentinvite.handlebars->container->column_l->5->wintabarm64->1"
       ]
     },
     {
@@ -82062,6 +82070,12 @@
       ]
     },
     {
+      "en": "Windows ARM 64bit",
+      "xloc": [
+        "agentinvite.handlebars->container->column_l->5->1->twintabarm64"
+      ]
+    },
+    {
       "en": "Windows ARM 64bit console",
       "nl": "Windows ARM 64bit console",
       "pl": "Konsola Windows ARM 64bit",
@@ -82854,7 +82868,7 @@
     },
     {
       "en": "You need to 'chmod +x meshagent' and run this file",
-      "en": "U moet 'chmod +x meshagent' gebruiken en dit bestand uitvoeren.",
+      "nl": "U moet 'chmod +x meshagent' gebruiken en dit bestand uitvoeren.",
       "xloc": [
         "agentinvite.handlebars->3->13",
         "default.handlebars->47->657"
