@@ -7488,8 +7488,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         cmdData.result += 'Record:     ' + parent.parent.recordpath + '\r\n';
         cmdData.result += 'WebPublic:  ' + parent.parent.webPublicPath + '\r\n';
         cmdData.result += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
-        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
-        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
+        cmdData.result += 'WebEmails:  ' + parent.parent.webEmailsPath + '\r\n';
+        if (parent.parent.webPublicOverridePath) { cmdData.result += 'XWebPublic: ' + parent.parent.webPublicOverridePath + '\r\n'; }
+        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebViews:  ' + parent.parent.webViewsOverridePath + '\r\n'; }
+        if (parent.parent.webEmailsOverridePath) { cmdData.result += 'XWebEmails:  ' + parent.parent.webEmailsOverridePath + '\r\n'; }
+        if (domain.webpublicpath) { cmdData.result += 'DomainWebPublic: ' + domain.webpublicpath + '\r\n'; }
+        if (domain.webviewspath) { cmdData.result += 'DomainWebViews: ' + domain.webviewspath + '\r\n'; }
+        if (domain.webemailspath) { cmdData.result += 'DomainWebEmails: ' + domain.webemailspath + '\r\n'; }
     }
 
     function serverUserCommandMigrationAgents(cmdData) {
