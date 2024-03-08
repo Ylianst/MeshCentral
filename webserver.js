@@ -72,6 +72,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.users = {};                             // UserID --> User
     obj.meshes = {};                            // MeshID --> Mesh (also called device group)
     obj.userGroups = {};                        // UGrpID --> User Group
+    obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
     obj.tlsCiphers = args.tlsciphers;           // List of TLS ciphers to use
     obj.userAllowedIp = args.userallowedip;     // List of allowed IP addresses for users
     obj.agentAllowedIp = args.agentallowedip;   // List of allowed IP addresses for agents
@@ -6135,6 +6136,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 '!SRP',
                 '!CAMELLIA'
             ].join(':');
+
+            if (obj.useNodeDefaultTLSCiphers) {
+                ciphers = require("tls").DEFAULT_CIPHERS;
+            }
 
             if (obj.tlsCiphers) {
                 ciphers = obj.tlsCiphers;
