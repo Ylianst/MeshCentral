@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -6287,7 +6287,7 @@
 
                     contextelement = elem;
                     var contextmenudiv = document.getElementById('termShellContextMenu'); // Windows options (Power Shell)
-                    if (currentNode.agent.id > 4) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
+                    if (currentNode.agent.id > 4 && !isWindowsNode(currentNode)) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
                     if (currentNode.agent.id == 34) { contextmenudiv = document.getElementById('termShellContextMenu2'); } // Windows MeshCentral Assistant
                     showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
                     break;
