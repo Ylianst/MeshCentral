@@ -843,6 +843,7 @@ module.exports.isVM = function isVM()
             case 'VMware, Inc.':
             case 'Xen':
             case 'SeaBIOS':
+            case 'EFI Development Kit II / OVMF':
                 ret = true;
                 break;
             default:
