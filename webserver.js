@@ -7385,11 +7385,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
-            if (domain.dns == null) {
-                parent.config.domains[''].authstrategies.oidc = strategy;
-            } else if (typeof parent.config.domains[domain.id].authstrategies.oidc == 'object') {
-                parent.config.domains[domain.id].authstrategies.oidc = strategy;
-            }
+            parent.config.domains[domain.id].authstrategies.oidc = strategy;
             parent.debug('verbose', 'OIDC: Saved Configuration: ' + JSON.stringify(strategy));
             if (preset) { parent.authLog('setupDomainAuthStrategy', 'OIDC: ' + preset.toUpperCase() + ': Setup Complete'); }
             else { parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete'); }
