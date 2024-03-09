@@ -1191,7 +1191,7 @@
           },
           "trustedCert": {
             "type": "boolean",
-            "default": "This value is normally auto-detected, when set to true, MeshCentral assumes that the TLS certificate comes from a trusted CA and will insure download tools perform certificate checking."
+            "default": "This value is normally auto-detected, when set to true, MeshCentral assumes that the TLS certificate comes from a trusted CA and will ensure download tools perform certificate checking."
           },
           "guestDeviceSharing": {
             "type": [
