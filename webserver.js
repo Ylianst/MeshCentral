@@ -5915,8 +5915,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     zipfile.readEntry();
                                 });
                             });
-                        });
-
                     } else {
                         // Normal file entry
                         zipfile.openReadStream(entry, function (err, readStream) {
