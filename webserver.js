@@ -72,6 +72,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.users = {};                             // UserID --> User
     obj.meshes = {};                            // MeshID --> Mesh (also called device group)
     obj.userGroups = {};                        // UGrpID --> User Group
+    obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
+    obj.tlsCiphers = args.tlsciphers;           // List of TLS ciphers to use
     obj.userAllowedIp = args.userallowedip;     // List of allowed IP addresses for users
     obj.agentAllowedIp = args.agentallowedip;   // List of allowed IP addresses for agents
     obj.agentBlockedIp = args.agentblockedip;   // List of blocked IP addresses for agents
@@ -6134,6 +6136,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 '!SRP',
                 '!CAMELLIA'
             ].join(':');
+
+            if (obj.useNodeDefaultTLSCiphers) {
+                ciphers = require("tls").DEFAULT_CIPHERS;
+            }
+
+            if (obj.tlsCiphers) {
+                ciphers = obj.tlsCiphers;
+                if (Array.isArray(obj.tlsCiphers)) {
+                    ciphers = obj.tlsCiphers.join(":");
+                }
+            }
 
             // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
             //const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!RSA:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 }; // This does not work with TLS 1.3
