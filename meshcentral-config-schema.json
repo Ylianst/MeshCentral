@@ -446,9 +446,12 @@
           "description": "By default, a nice looking 404 error page is displayed when needed. Set this to false to disable it."
         },
         "selfUpdate": {
-          "type": "boolean",
+          "type": [
+            "string",
+            "boolean"
+          ],
           "default": false,
-          "description": "When true, this server will attempt to self-update everyday after midnight."
+          "description": "When set to true, the server will check for a new version and attempt to self-update automatically a bit after midnight local time every day. If set to a specific version such as \"1.1.21\" the server will immediately update to the specified version on startup if it's not already at this version."
         },
         "cleanNpmCacheOnUpdate": {
           "type": "boolean",
