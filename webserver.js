@@ -6655,6 +6655,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup auth strategies using passport if needed
                 if (typeof domain.authstrategies == 'object') {
+                    parent.authLog('setupHTTPHandlers', `Setting up authentication strategies login and callback URLs for ${domain.id == '' ? 'root' : '"' + domain.id + '"'} domain.`);
                     // Twitter
                     if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.twitter) != 0) {
                         obj.app.get(url + 'auth-twitter', function (req, res, next) {
@@ -6733,8 +6734,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Setup OpenID Connect URLs
                     if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.oidc) != 0) {
-
-                        obj.app.get(url + 'auth-oidc', function (req, res, next) {
+                        let authURL = url + 'auth-oidc'
+                        parent.authLog('setupHTTPHandlers', `OIDC: Authorization URL: ${authURL}`);
+                        obj.app.get(authURL, function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
                             domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
@@ -6747,6 +6749,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         } else {
                             redirectPath = url + 'auth-oidc-callback'
                         }
+                        parent.authLog('setupHTTPHandlers', `OIDC: Callback URL: ${redirectPath}`);
                         obj.app.get(redirectPath, obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
@@ -7303,7 +7306,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Setup OpenID Connect Authentication Strategy
         if (obj.common.validateObject(domain.authstrategies.oidc)) {
-            parent.authLog('setupDomainAuthStrategy', `OIDC: Setting up strategy for domain: ${domain.id}`);
+            parent.authLog('setupDomainAuthStrategy', `OIDC: Setting up strategy for domain: ${domain.id == null ? 'default' : domain.id}`);
             // Ensure required objects exist
             let initStrategy = domain.authstrategies.oidc
             if (typeof initStrategy.issuer == 'string') { initStrategy.issuer = { 'issuer': initStrategy.issuer } }
@@ -7384,11 +7387,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
-            if (domain.dns == null) {
-                parent.config.domains[''].authstrategies.oidc = strategy;
-            } else if (typeof parent.config.domains[domain.id].authstrategies.oidc == 'object') {
-                parent.config.domains[domain.id].authstrategies.oidc = strategy;
-            }
+            parent.config.domains[domain.id].authstrategies.oidc = strategy;
             parent.debug('verbose', 'OIDC: Saved Configuration: ' + JSON.stringify(strategy));
             if (preset) { parent.authLog('setupDomainAuthStrategy', 'OIDC: ' + preset.toUpperCase() + ': Setup Complete'); }
             else { parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete'); }
@@ -7465,6 +7464,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 try {
                     if (!strategy.issuer.end_session_endpoint) {
                         strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
+                        parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
                     }
                 } catch (err) {
                     let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
