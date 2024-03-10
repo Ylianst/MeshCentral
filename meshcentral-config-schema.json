@@ -688,6 +688,19 @@
           "default": false,
           "description": "When true, indicates that a TLS offloader is in front of the MeshCentral server. More typically, set this to the IP address of the reverse proxy or TLS offloader so that IP forwarding headers will be trusted. For example: \"127.0.0.1,192.168.1.100\"."
         },
+        "useNodeDefaultTLSCiphers": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, get the default TLS ciphers from the node process, rather than using the recommended suites set up by meshcentral"
+        },
+        "tlsCiphers": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "default": null,
+          "description": "Allows user to override the TLS ciphers used by meshcentral by default. If a string, should be a ':' separated list of ciphers to accept. If an array, should be an array of strings representing the ciphers to accept."
+        },
         "trustedProxy": {
           "type": "string",
           "default": null,
