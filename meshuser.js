@@ -4304,7 +4304,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // If we have view only remote desktop rights, force view-only on the guest share.
-                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; command.p = (command.p & 1); }
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_REMOTEVIEWONLY) != 0)) { command.viewOnly = true; }
 
                     // Create cookie
                     var publicid = getRandomPassword(), startTime = null, expireTime = null, duration = null;
@@ -6273,6 +6273,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.type;
                     delete doc.domain;
                     delete doc._id;
+
+                    // If this is not a device group admin users, don't send any BitLocker recovery passwords
+                    if ((rights != MESHRIGHT_ADMIN) && (doc.hardware) && (doc.hardware.windows) && (doc.hardware.windows.volumes)) {
+                        for (var i in doc.hardware.windows.volumes) { delete doc.hardware.windows.volumes[i].recoveryPassword; }
+                    }
+
                     if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
                     obj.send(doc);
                 } else {
@@ -7482,8 +7488,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         cmdData.result += 'Record:     ' + parent.parent.recordpath + '\r\n';
         cmdData.result += 'WebPublic:  ' + parent.parent.webPublicPath + '\r\n';
         cmdData.result += 'WebViews:   ' + parent.parent.webViewsPath + '\r\n';
-        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebPublic: ' + parent.parent.webViewsOverridePath + '\r\n'; }
-        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebViews:  ' + parent.parent.webPublicOverridePath + '\r\n'; }
+        cmdData.result += 'WebEmails:  ' + parent.parent.webEmailsPath + '\r\n';
+        if (parent.parent.webPublicOverridePath) { cmdData.result += 'XWebPublic: ' + parent.parent.webPublicOverridePath + '\r\n'; }
+        if (parent.parent.webViewsOverridePath) { cmdData.result += 'XWebViews:  ' + parent.parent.webViewsOverridePath + '\r\n'; }
+        if (parent.parent.webEmailsOverridePath) { cmdData.result += 'XWebEmails:  ' + parent.parent.webEmailsOverridePath + '\r\n'; }
+        if (domain.webpublicpath) { cmdData.result += 'DomainWebPublic: ' + domain.webpublicpath + '\r\n'; }
+        if (domain.webviewspath) { cmdData.result += 'DomainWebViews: ' + domain.webviewspath + '\r\n'; }
+        if (domain.webemailspath) { cmdData.result += 'DomainWebEmails: ' + domain.webemailspath + '\r\n'; }
     }
 
     function serverUserCommandMigrationAgents(cmdData) {

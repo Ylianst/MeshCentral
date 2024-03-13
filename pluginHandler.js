@@ -409,7 +409,13 @@ module.exports.pluginHandler = function (parent) {
                                         zipfile.openReadStream(entry, function (err, readStream) {
                                             if (err) throw err;
                                             readStream.on('end', function () { zipfile.readEntry(); });
-                                            readStream.pipe(obj.fs.createWriteStream(filePath));
+                                            if (process.platform == 'win32') {
+                                                readStream.pipe(obj.fs.createWriteStream(filePath));
+                                            } else {
+                                                var fileMode = (entry.externalFileAttributes >> 16) & 0x0fff;
+                                                if( fileMode <= 0 ) fileMode = 0o644;
+                                                readStream.pipe(obj.fs.createWriteStream(filePath, { mode: fileMode }));
+                                            }
                                         });
                                     }
                                 });

@@ -201,8 +201,10 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
                 var vs = getInstance(amtlogicalelements, 'AMT')['VersionString'];
                 if (vs != null) {
                     dev.aquired.version = vs;
-                    dev.aquired.versionmajor = parseInt(dev.aquired.version.split('.')[0]);
-                    dev.aquired.versionminor = parseInt(dev.aquired.version.split('.')[1]);
+                    const versionSplit = parseInt(dev.aquired.version.split('.'));
+                    dev.aquired.versionmajor = parseInt(versionSplit[0]);
+                    dev.aquired.versionminor = parseInt(versionSplit[1]);
+                    if (versionSplit.length >= 3) { dev.aquired.versionmaintenance = parseInt(versionSplit[2]); }
                 }
             }
         }
@@ -210,10 +212,14 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
         // Fetch the Intel AMT version from HTTP stack
         if ((dev.amtversionstr == null) && (stack.wsman.comm.amtVersion != null)) {
             var s = stack.wsman.comm.amtVersion.split('.');
-            if (s.length >= 3) {
-                dev.aquired.version = s[0] + '.' + s[1] + '.' + s[2];
+            if (s.length >= 2) {
+                dev.aquired.version = s[0] + '.' + s[1];
                 dev.aquired.versionmajor = parseInt(s[0]);
                 dev.aquired.versionminor = parseInt(s[1]);
+                if (s.length >= 3) {
+                    dev.aquired.version = s[0] + '.' + s[1] + '.' + s[2];
+                    dev.aquired.versionmaintenance = parseInt(s[2]);
+                }
             }
         }
 

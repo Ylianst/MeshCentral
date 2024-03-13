@@ -684,6 +684,7 @@
                             <input id="deskActionsBtn" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
                             <input id="deskActionsSettings" type="button" value="Settings..." title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
                             <input type="button" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
+                            <div id="desktopCustomUpperRight" style="float:left;margin-right:6px"></div>
                             <div id="desktopCustomUiButtons" style="float:left"></div>
                         </div>
                         <div>
@@ -868,6 +869,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton value="Copy" onclick="p13copyFile(0)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton value="Paste" onclick="p13pasteFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton value="Zip" onclick="p13zipFiles()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnzipButton value="Unzip" onclick="p13unzipFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton value="Refresh" onclick="p13folderup(9999)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton value="Find" onclick="p13findfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton value="GoTo" onclick="p13gotofolder()" />
@@ -2133,6 +2135,7 @@
                 QV('verifyEmailId2', false);
                 QV('logoutControl', false);
                 if (errorCode == 'noauth') { QH('p0span', "Unable to perform authentication"); return; }
+                if (errorCode == 'invalidorigin') { QH('p0span', "Invalid origin in HTTP request"); return; }
                 if (prevState == 2) { if (autoReconnect) { setTimeout(serverPoll, 5000); } } else { QH('p0span', "Unable to connect web socket"); }
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
             } else if (state == 2) {
@@ -2328,7 +2331,23 @@
         function setSessionActivity() { sessionActivity = Date.now(); QH('idleTimeoutNotify', ''); }
         function checkIdleSessionTimeout() {
             var delta = (Date.now() - sessionActivity);
-            if (delta > serverinfo.timeout) { window.location.href = 'logout'; } else {
+            if (delta > serverinfo.timeout) {
+                if (desktop != null) { // Disconnect remote desktop
+                    desktop.Stop();
+                    webRtcDesktopReset();
+                    desktopNode = desktop = null;
+                    if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
+                }
+                if (terminal != null) { // Disconnect terminal
+                    terminal.Stop();
+                    terminal = null;
+                }
+                if (files != null) { // Disconnect files
+                    files.Stop();
+                    files = null;
+                }
+                window.location.href = 'logout';
+            } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
                 if (ds <= 60) {
                     QH('idleTimeoutNotify', '<br />' + format((ds == 1)?"1 second until disconnect":"{0} seconds until disconnect", ds));
@@ -4003,6 +4022,8 @@
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
             x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
             x += '<label><input id=d2c7 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0)?' checked':'') + '>' + "Last Seen" + '</label><br />';
+            x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0)?' checked':'') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
+            x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0)?' checked':'') + '>' + "Intel&reg; AMT state" + '</label><br />';
             setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
         }
 
@@ -4021,6 +4042,8 @@
             if (Q('d2c11').checked) { cols.push('windowsav'); }
             if (Q('d2c12').checked) { cols.push('windowsupdate'); }
             if (Q('d2c13').checked) { cols.push('windowsfirewall'); }
+            if (Q('d2c15').checked) { cols.push('amthost'); }
+            if (Q('d2c17').checked) { cols.push('amtstate'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
             mainUpdate(4);
@@ -4465,6 +4488,8 @@
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
+                        if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT Host"; }
+                        if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT State"; }
                         if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) {
                             colums += '<th style=color:gray;width:120px>' + "Last Seen";
                             if (requestedLastConnects == false) { requestedLastConnects = true; meshserver.send({ action: 'lastconnects' }); }
@@ -4778,6 +4803,16 @@
                 if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center>' + ip; } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
+                if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
+                if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
+                    var amtstate = '';
+                    if (node.intelamt) {
+                        if (node.intelamt.state == 0) { amtstate = ' <span title="' + "Intel&reg; AMT is not activated" + '">' + "Pre" + '</span>'; }
+                        if (node.intelamt.state == 1) { amtstate = ' <span title="' + "Intel&reg; AMT is in activation mode" + '">' + "In" + '</span>'; }
+                        if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { amtstate = ' <span title="' + "Intel&reg; AMT is activated in Client Control Mode" + '">' + "CCM" + '</span>'; } else if (node.intelamt.flags & 4) { amtstate += ' <span title="' + "Intel&reg; AMT is activated in Admin Control Mode" + '">' + "ACM" + '</span>'; } }
+                    }
+                    r += '<td style=text-align:center>' + amtstate;
+                }
 
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
@@ -5418,8 +5453,8 @@
             if (serverinfo.https == true) { portStr = (serverinfo.port == 443)?'':(':' + serverinfo.port); } else { portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port); }
 
             // Add Linux/macOS binary installer option
-            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41 ];
-            var binaryInstallAgents = { 5 : 'Linux x86-32', 6 : 'Linux x86-64', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)' };
+            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 16, 29 ];
+            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
             for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id=aginsSysTypeDiv>';
             x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
@@ -5485,7 +5520,7 @@
             x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
 
             // Linux binary installer
-            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces. You need to 'chmod +x meshagent' and run this file." + '<br /><br />';
+            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Command", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
             x += '</div>';
@@ -6252,7 +6287,7 @@
 
                     contextelement = elem;
                     var contextmenudiv = document.getElementById('termShellContextMenu'); // Windows options (Power Shell)
-                    if (currentNode.agent.id > 4) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
+                    if (currentNode.agent.id > 4 && !isWindowsNode(currentNode)) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
                     if (currentNode.agent.id == 34) { contextmenudiv = document.getElementById('termShellContextMenu2'); } // Windows MeshCentral Assistant
                     showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
                     break;
@@ -7434,21 +7469,6 @@
                     x += addDeviceAttribute("Antivirus", y.join('<br />'));
                 }
 
-                // Volumes and Bitlocker
-                if (node.volumes){
-                    var bitlocker = [];
-                    for (var i in node.volumes) {
-                        if (typeof node.volumes[i].protectionStatus !== 'undefined' && node.volumes[i].protectionStatus == 'On'){
-                            bitlocker.push('<div style=margin-bottom:2px>' + addKeyLinkConditional(i + ' - <span style=color:green>' + node.volumes[i].volumeStatus + '</span>',"p10showBitlockerKey('"+i+"')", (userinfo.siteadmin == 0xFFFFFFFF)) + '</div>');
-                        }else if (typeof node.volumes[i].protectionStatus !== 'undefined'){
-                            bitlocker.push('<div style=margin-bottom:2px>' + i + ' - <span style=color:red>' + node.volumes[i].volumeStatus + '</span>' + '</div>');
-                        }
-                    }
-                    if(bitlocker.length > 0){
-                        x += addDeviceAttribute("BitLocker", bitlocker.join(' '));
-                    }
-                }
-
                 // Active Users
                 if (node.users && node.conn && (node.users.length > 0) && (node.conn & 1)) { x += addDeviceAttribute(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
 
@@ -7536,9 +7556,9 @@
                 x += '<input type=button value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((node.mtype == 2) && (connectivity & 1) && ((meshrights & 131072) != 0)) { x += '<input type=button cmenu=deskPreConfigScriptContextMenu value="' + "Run" + '" title="' + "Run commands on this device" + '" onclick=runDeviceCmd("' + encodeURIComponentEx(node._id) + '") />'; }
                 if (node.mtype != 4) {
-                    if ((meshrights & 8) && ((connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0)))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
+                    if ((meshrights & 8) && (connectivity & 1) && ((meshrights & 16384) != 0) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />';  }
                     //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
-                    if ((meshrights & 8) && (connectivity & 1) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
+                    if ((meshrights & 8) && (connectivity & 1) && ((meshrights & 16384) != 0) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
                     if ((serverinfo != null) && (serverinfo.altmessenging != null) && (meshrights & 8) && (connectivity & 1)) {
                         for (var i in serverinfo.altmessenging) {
                             var am = serverinfo.altmessenging[i];
@@ -7901,18 +7921,6 @@
             }
         }
 
-        function p10showBitlockerKey(drive) {
-            if (xxdialogMode) return false;
-            var x = '<div>';
-                x += '<p>BitLocker Identifier For <b>' + drive + ':</b></p>';
-            x += '<p style=user-select:text;font-weight:bold>' + (currentNode.volumes[drive].identifier ? currentNode.volumes[drive].identifier : 'Unknown') + '</p>';
-
-            x += '<p>BitLocker Recovery Password For <b>' + drive + ':</b></p>';
-            x += '<p style=user-select:text;font-weight:bold>' + (currentNode.volumes[drive].recoveryPassword ? currentNode.volumes[drive].recoveryPassword : 'Unknown') + '</p>';
-            x += '</div>'
-            setDialogMode(2, "BitLocker Information", 1, null, x, '');
-        }
-
         function p20editDeviceNotify() {
             if (xxdialogMode) return false;
             var devNotify = 0, fx = ((features2 & 0x00004000) && (userinfo.emailVerified))?1:0;
@@ -8120,7 +8128,7 @@
 
         function deviceMessageFunction() {
             if (xxdialogMode) return;
-            var x = '<div style=margin-bottom:4px>Display a message box on the remote device.</div>';
+            var x = '<div style=margin-bottom:4px>' + "Display a message box on the remote device" + '</div>';
             x += '<textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
             x += '<select style=width:100% id=d2devTimeout>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
@@ -8265,7 +8273,7 @@
             x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
             x += '</div>';
-            if (currentNode.agent.caps & 1) { x += '<div id=d2userConsentSelector>' + addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=1>' + "Prompt for consent" + '</option><option value=0>' + "Notify Only" + '</option></select>') + '</div>'; }
+            if (currentNode.agent.caps & 1) { x += '<div id=d2userConsentSelector>' + addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=0>' + "Notify Only" + '<option value=1>' + "Prompt for consent" + '</option><option value=2>' + "No Consent" + '</option></select>') + '</div>'; }
             x += '<div id=d2httpPortSelector>' + addHtmlValue("Port", '<input id=d2httpPort style=float:right;width:250px value=80 onkeyup=showShareDeviceValidate()></input>') + '</div>';
             x += '<div id=d2httpsPortSelector>' + addHtmlValue("Port", '<input id=d2httpsPort style=float:right;width:250px value=443 onkeyup=showShareDeviceValidate()></input>') + '</div>';
             setDialogMode(2, "Share Device", 3, showShareDeviceEx, x);
@@ -8301,14 +8309,17 @@
             if (q & 1) {
                 consent |= 0x0002; // Terminal notify
                 if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0010; } // Terminal prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 2)) { consent = 0; } // Terminal with no user consent
             }
             if (q & 2) {
                 consent |= 0x0041; // Desktop connection toolbar + Desktop notify
                 if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0008; } // Desktop prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 2)) { consent = 0; } // Desktop with no user consent
             }
             if (q & 4) {
                 consent |= 0x0004; // Files notify
                 if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 1)) { consent |= 0x0020; } // Files prompt for user consent
+                if ((currentNode.agent.caps & 1) && (Q('d2userConsent').value == 2)) { consent = 0; } // Files prompt for user consent
             }
 
             if (Q('d2timeRange').value == 0) {
@@ -8999,7 +9010,11 @@
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
             QE('connectbutton1', online);
             QE('connectbutton1r', online || (currentNode.mtype == 3));
-            Q('connectbutton1r').value = 'RDP Connect' + ((currentNode.rdpport && currentNode.rdpport != 3389) ? ' ('+currentNode.rdpport + ')' : '');
+            if (currentNode.rdpport && currentNode.rdpport != 3389) {
+                QH('desktopCustomUpperRight', '<a style="cursor:pointer;line-height:22px" onclick="cmaltportaction(1,event)">' + format("RDP Port {0}", (currentNode.rdpport?currentNode.rdpport:3389)) + '</a>');
+            } else {
+                QH('desktopCustomUpperRight', '');
+            }
             var hwonline = ((currentNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
@@ -9034,9 +9049,9 @@
             QV('DeskRunButton', ((rights & 131072) != 0) && online);
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && ((features2 & 0x400) == 0));
             QV('DeskRecordButton', (deskState == 3) && (Q('Desk')['toBlob'] != null) && (desktop.m.StartRecording != null) && ((features2 & 0x400) == 0));
-            QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
-            QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && online);
-            QV('DeskLockButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (currentNode.agent) && (deskState == 3));
+            QV('DeskChatButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && online);
+            QV('DeskNotifyButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && online);
+            QV('DeskLockButton', ((rights & 16384) != 0) && (browserfullscreen == false) && (currentNode.agent) && (currentNode.agent.id < 5) && (inputAllowed) && (deskState == 3));
             QV('DeskToolsButton', (currentNode.agent) && online);
             QE('DeskToolsButton', inputAllowed);
             QV('DeskOpenWebButton', (browserfullscreen == false) && (inputAllowed) && (currentNode.agent) && online);
@@ -10948,10 +10963,16 @@
                     setDialogMode(0); // Close the dialog box
                 } else if ((data.msg == 'zipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + "Compressing files..." + '<div>', 'fileMsgDialog');
+                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + "Compressing files..." + '</div>', 'fileMsgDialog');
+                } else if ((data.msg == 'unzipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    setDialogMode(2, "File Operation", 10, null, '<div style=margin:10px>' + "Unzipping file..." + '</div>', 'fileMsgDialog');
+                } else if ((data.msg == 'unziperror') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    setDialogMode(2, "File Operation", 10, null, '<div style=margin:10px>' + "Unzipping Error" + '</div><br />' + EscapeHtml(data.error), 'fileMsgDialog');
                 } else if ((data.msg == 'zippingFile') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + EscapeHtml(data.file) + '<div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />', 'fileMsgDialog');
+                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + EscapeHtml(data.file) + '</div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />', 'fileMsgDialog');
                 }
                 return;
             }
@@ -11043,15 +11064,15 @@
                     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
                     const i = parseInt(Math.floor(Math.log(Math.abs(f.s)) / Math.log(1024)), 10);
                     const option = Q('p13sizedropdown').options[Q('p13sizedropdown').selectedIndex];
-                    if(Q('p13sizedropdown').value==0){
+                    if (Q('p13sizedropdown').value == 0) {
                         if (f.s === 0){
                             fsize = 'n/a';
-                        }else{
+                        } else {
                             fsize = (i === 0 ? `${f.s} ${sizes[i]}` : `${(f.s / (1024 ** i)).toFixed(2)} ${sizes[i]}`);
                         }
-                    }else if(Q('p13sizedropdown').value==1){
+                    } else if (Q('p13sizedropdown').value==1) {
                         fsize = getFileSizeStr(f.s);
-                    }else{
+                    } else {
                         fsize = `${(f.s / (2 ** option.value)).toFixed(2)} ${option.title}`;
                     }
                 }
@@ -11191,6 +11212,7 @@
                 QE('p13CutButton', false);
                 QE('p13CopyButton', false);
                 QE('p13ZipButton', false);
+                QE('p13UnZipButton', false);
                 QE('p13PasteButton', false);
                 QE('p13GoToFolderButton', false);
                 QE('p13DownloadButton', false);
@@ -11209,6 +11231,7 @@
                 QE('p13CutButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13CopyButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13UnzipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', true);
                 QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -11224,12 +11247,14 @@
             QV('p13CutButton', filesNode.mtype != 3);
             QV('p13CopyButton', filesNode.mtype != 3);
             QV('p13ZipButton', filesNode.mtype != 3);
+            QV('p13UnzipButton', filesNode.mtype != 3);
             QV('p13PasteButton', filesNode.mtype != 3);
         }
 
         function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
         function p13getFileSelDirCount() { var cc = 0, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '999')) cc++; } return cc; }
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
+        function p13getFileSelAllowedExt(ext) { var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (!p13filetree.dir[checkboxes[i].value].n.endsWith(ext))) return false; } return true; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
@@ -11251,6 +11276,24 @@
                     break;
                 }
             }
+        }
+
+        function p13unzipFile() {
+            var dest, input, checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    var slash = isWindowsNode(currentNode) ? '\\' : '/';
+                    dest = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n.split('.zip')[0] + slash;
+                    input = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n;
+                }
+            }
+            setDialogMode(2, "Unzip To Folder", 3, p13unzipFileEx, '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />', { action: 'unzip', input: input });
+            focusTextBox('p13unzipfolderinput');
+        }
+
+        function p13unzipFileEx(a, tag) {
+            tag.dest = Q('p13unzipfolderinput').value;
+            files.sendText(tag);
         }
 
         function p13zipFiles() {
@@ -11708,8 +11751,8 @@
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'CPU', backgroundColor: 'rgba(134, 16, 158, .5)', borderColor: 'rgb(134, 16, 158)', data: [], fill: true },
-                    { label: 'Memory', backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }
+                    { label: "CPU", backgroundColor: 'rgba(134, 16, 158, .5)', borderColor: 'rgb(134, 16, 158)', data: [], fill: true },
+                    { label: "Memory", backgroundColor: 'rgba(255, 99, 132, .5)', borderColor: 'rgb(255, 99, 132)', data: [], fill: true }
                 ] },
             options: {
                 events: ['click'],
@@ -12029,9 +12072,9 @@
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
                 if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
                 if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", EscapeHtml(tpm.IsActivated), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", EscapeHtml(tpm.IsEnabled), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", EscapeHtml(tpm.IsOwned), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
                 if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png'}); }
             }
 
@@ -12080,6 +12123,25 @@
                 }
             }
 
+            if (hardware.darwin) {
+                if (hardware.darwin.memory && (hardware.darwin.memory.length > 0)) {
+                    var x = '';
+                    x += '<table style=width:100%>';
+                    for (var i in hardware.darwin.memory) {
+                        var m = hardware.darwin.memory[i];
+                        if(m.Size && (m.Size == 'No Module Installed')) continue;
+                        x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.DeviceLocator ? m.DeviceLocator : 'Unknown')) + '</b></div>';
+                        if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0}, {1}", m.Size, m.Speed), s); }
+                        else if (m.Size) { x += addDetailItem("Capacity", format("{0}", (m.Size)), s); }
+                        if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != '')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
+                        x += '</div>';
+                    }
+                    x += '</table>';
+                    if (x != '') { sections.push({ name: "Memory", html: x, img: 'ram64.png'}); }
+                }
+            }
+
             // Storage
             if (hardware.identifiers && hardware.identifiers.storage_devices) {
                 var x = '';
@@ -12110,6 +12172,45 @@
                 if (x != '') { sections.push({ name: "Storage", html: x, img: 'storage64.png'}); }
             }
 
+            // Volumes and Bitlocker
+            if (hardware.windows && hardware.windows.volumes) {
+                var x = '';
+                for (var i in hardware.windows.volumes) {
+                    var m = hardware.windows.volumes[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + i + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
+                    if (m.size) {
+                        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.size} ${sizes[j]}` : `${(m.size / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        x += addDetailItem("Capacity", EscapeHtml(fsize), s);
+                    }
+                    if (m.sizeremaining) {
+                        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.sizeremaining)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.sizeremaining} ${sizes[j]}` : `${(m.sizeremaining / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
+                    }
+                    if (m.type) {
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
+                    }
+
+                    if (m.protectionStatus || m.volumeStatus) {
+                        var bitlockerState = [];
+                        if (m.protectionStatus) bitlockerState.push("Enabled");
+                        if (m.volumeStatus && m.volumeStatus == 'FullyDecrypted') bitlockerState.push("Fully Decrypted");
+                        if (m.volumeStatus && m.volumeStatus == 'EncryptionInProgress') bitlockerState.push("Encryption In Progress");
+                        if (m.volumeStatus && m.volumeStatus == 'FullyEncrypted') bitlockerState.push("Fully Encrypted");
+                        bitlockerState = bitlockerState.join(' - ');
+                        if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
+                        x += addDetailItem("BitLocker", bitlockerState, s);
+                    }
+                    x += '</div>';
+                }
+                if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage64.png'}); }
+            }
+
             // Render the sections
             var x = '';
             for (var i in sections) {
@@ -12128,6 +12229,13 @@
             } else {
                 QH('p17info2', x);
             }
+        }
+
+        function deviceDetailsShowBitlockerInfo(drive, identifier, password) {
+            if (xxdialogMode) return false;
+            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + (identifier ? decodeURIComponent(identifier) : "Unknown") + '</p>';
+            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + (password ? decodeURIComponent(password) : "Unknown") + '</p></div>';
+            setDialogMode(2, decodeURIComponent(drive) + ': ' + "BitLocker Information", 1, null, x, '');
         }
 
         //
@@ -16187,7 +16295,6 @@
             if (shortuserid.startsWith('~twitter:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/twitter64.png'; }
             else if (shortuserid.startsWith('~google:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/google64.png'; }
             else if (shortuserid.startsWith('~github:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/github64.png'; }
-            else if (shortuserid.startsWith('~reddit:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/reddit64.png'; }
             else if (shortuserid.startsWith('~azure:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/azure64.png'; }
             else if (shortuserid.startsWith('~oidc:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/oidc64.png'; }
             else if (shortuserid.startsWith('~jumpcloud:')) { QV('p30userAuthServiceLogo', true); Q('p30userAuthServiceLogo').src = 'images/login/jumpcloud64.png'; }

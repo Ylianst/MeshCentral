@@ -446,9 +446,12 @@
           "description": "By default, a nice looking 404 error page is displayed when needed. Set this to false to disable it."
         },
         "selfUpdate": {
-          "type": "boolean",
+          "type": [
+            "string",
+            "boolean"
+          ],
           "default": false,
-          "description": "When true, this server will attempt to self-update everyday after midnight."
+          "description": "When set to true, the server will check for a new version and attempt to self-update automatically a bit after midnight local time every day. If set to a specific version such as \"1.1.21\" the server will immediately update to the specified version on startup if it's not already at this version."
         },
         "cleanNpmCacheOnUpdate": {
           "type": "boolean",
@@ -688,6 +691,19 @@
           "default": false,
           "description": "When true, indicates that a TLS offloader is in front of the MeshCentral server. More typically, set this to the IP address of the reverse proxy or TLS offloader so that IP forwarding headers will be trusted. For example: \"127.0.0.1,192.168.1.100\"."
         },
+        "useNodeDefaultTLSCiphers": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, get the default TLS ciphers from the node process, rather than using the recommended suites set up by meshcentral"
+        },
+        "tlsCiphers": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "default": null,
+          "description": "Allows user to override the TLS ciphers used by meshcentral by default. If a string, should be a ':' separated list of ciphers to accept. If an array, should be an array of strings representing the ciphers to accept."
+        },
         "trustedProxy": {
           "type": "string",
           "default": null,
@@ -803,24 +819,37 @@
         },
         "autoBackup": {
           "type": "object",
+          "description": "Enable automatic backups of your meshcentral-data",
           "properties": {
             "mongoDumpPath": {
-              "type": "string"
+              "type": "string",
+              "default": "mongodump",
+              "description": "The file path of where \"mongodump\" is located. Default is \"mongodump\""
             },
             "mysqlDumpPath": {
-              "type": "string"
+              "type": "string",
+              "default": "mysqldump",
+              "description": "The file path of where \"mysqldump\" is located. Default is \"mysqldump\""
             },
             "backupIntervalHours": {
-              "type": "integer"
+              "type": "integer",
+              "default": 24,
+              "description": "How often should the autobackup run in hours from the second meshcentral starts up? Default is every 24 hours"
             },
             "keepLastDaysBackup": {
-              "type": "integer"
+              "type": "integer",
+              "default": 10,
+              "description": "How many days of backups should the autobackup keep? Default is 10 Days worth"
             },
             "zipPassword": {
-              "type": "string"
+              "type": "string",
+              "default": null,
+              "description": "When specified, the ZIP backups will be password protected with the zipPassword"
             },
             "backupPath": {
-              "type": "string"
+              "type": "string",
+              "default": "meshcentral-backups",
+              "description": "The file path where backup files are kept. The default is \"meshcentral-backups\" which sits next to \"meshcentral-data\"."
             },
             "googleDrive": {
               "type": "object",
@@ -1121,6 +1150,18 @@
               "type": "string"
             }
           },
+          "allowedOrigin": {
+            "type": [
+              "array",
+              "boolean"
+            ],
+            "default": false,
+            "uniqueItems": true,
+            "description": "A list of allowed hostnames for HTTP request origin header. If false, a default list is created, if true, all hostnames are allowed.",
+            "items": {
+              "type": "string"
+            }
+          },
           "welcomeText": {
             "type": "string",
             "description": "Text that will be shown on the login screen."
@@ -1166,7 +1207,7 @@
           },
           "trustedCert": {
             "type": "boolean",
-            "default": "This value is normally auto-detected, when set to true, MeshCentral assumes that the TLS certificate comes from a trusted CA and will insure download tools perform certificate checking."
+            "default": "This value is normally auto-detected, when set to true, MeshCentral assumes that the TLS certificate comes from a trusted CA and will ensure download tools perform certificate checking."
           },
           "guestDeviceSharing": {
             "type": [
@@ -2429,7 +2470,10 @@
                   }
                 }
               }
-            }
+            },
+            "required": [
+              "certs"
+            ]
           },
           "amtAcmActivation": {
             "type": "object",
@@ -2554,7 +2598,8 @@
               },
               "filepath": {
                 "type": "string",
-                "description": "The file path where recording files are kept."
+                "default": "meshcentral-recordings",
+                "description": "The file path where recording files are kept. The default is \"meshcentral-recordings\" which sits next to \"meshcentral-data\"."
               },
               "index": {
                 "type": "boolean",
@@ -2831,41 +2876,6 @@
                   "clientsecret"
                 ]
               },
-              "reddit": {
-                "type": "object",
-                "properties": {
-                  "callbackurl": {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  "newAccounts": {
-                    "type": "boolean",
-                    "default": false
-                  },
-                  "newAccountsUserGroups": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "clientid": {
-                    "type": "string"
-                  },
-                  "clientsecret": {
-                    "type": "string"
-                  },
-                  "logouturl": {
-                    "type": "string",
-                    "format": "uri",
-                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
-                  }
-                },
-                "required": [
-                  "clientid",
-                  "clientsecret"
-                ]
-              },
               "azure": {
                 "type": "object",
                 "properties": {
@@ -2997,93 +3007,444 @@
               },
               "oidc": {
                 "type": "object",
+                "description": "Enables the use of OpenID Connect SSO",
+                "anyOf": [
+                  {
+                    "required": [
+                      "client"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "client",
+                      "custom"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "client",
+                      "issuer"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "clientid",
+                      "clientsecret",
+                      "issuer"
+                    ]
+                  }
+                ],
+                "additionalProperties": false,
                 "properties": {
+                  "newAccounts": {
+                    "type": "boolean",
+                    "description": "Enable the creation of new accounts based upon Idp Authorization",
+                    "default": true
+                  },
+                  "newAccountsUserGroups": {
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "description": "Add all new users to these static MeshCentral user groups. Use this if the new groups section does not work with your preset.",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "newAccountsRights": {
+                    "type": [
+                      "array",
+                      "string"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "clientid": {
+                    "type": "string",
+                    "depreciated": true,
+                    "description": "REPLACED WITH 'client.client_id'"
+                  },
+                  "clientsecret": {
+                    "type": "string",
+                    "description": "REPLACED WITH 'client.client_secret'"
+                  },
                   "authorizationURL": {
                     "type": "string",
                     "format": "uri",
-                    "description": "If set, this will be used as the authorization URL. (If set tokenURL and userInfoURL need set also)"
-                  },
-                  "callbackURL": {
-                    "type": "string",
-                    "format": "uri",
-                    "description": "Required, this is the URL that your SSO provider sends auth approval to."
-                  },
-                  "clientid": {
-                    "type": "string"
-                  },
-                  "clientsecret": {
-                    "type": "string"
-                  },
-                  "issuer": {
-                    "type": "string",
-                    "format": "uri",
-                    "description": "Full URL of SSO portal"
+                    "depreciated": true,
+                    "description": "REPLACED WITH 'issuer.authorization_endpoint'"
                   },
                   "tokenURL": {
                     "type": "string",
                     "format": "uri",
-                    "description": "If set, this will be used as the token URL. (If set authorizationURL and userInfoURL need set also)"
+                    "depreciated": true,
+                    "description": "REPLACED WITH 'issuer.token_endpoint': If set, this will be used as the token URL."
                   },
                   "userInfoURL": {
                     "type": "string",
                     "format": "uri",
-                    "description": "If set, this will be used as the user info URL. (If set authorizationURL and tokenURL need set also)"
+                    "depreciated": true,
+                    "description": "REPLACED WITH 'issuer.userinfo_endpoint': If set, this will be used as the user info URL."
+                  },
+                  "scope": {
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "depreciated": true,
+                    "description": "REPLACED WITH 'custom.scope': A list of scopes to request from the issuer."
+                  },
+                  "callbackURL": {
+                    "type": "string",
+                    "format": "uri",
+                    "depreciated": true,
+                    "description": "REPLACED WITH 'client.redirect_uri': The URI your IdP sends you back to after successful authorization. This must match what is listed with your IdP."
                   },
                   "logouturl": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                    "description": "Overrides defaults ( [issuer.end_session_endpoint]?post_logout_redirect_uri=[post_logout_redirect_uri] OR [issuer.end_session_endpoint] )"
                   },
-                  "newAccounts": {
-                    "type": "boolean",
-                    "default": true
+                  "client": {
+                    "type": "object",
+                    "description": "OIDC Client Options",
+                    "properties": {
+                      "client_id": {
+                        "type": "string",
+                        "description": "REQUIRED: The client ID provided by your Identity Provider (IdP)"
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "description": "REQUIRED: The client secret provided by your Identity Provider (IdP)"
+                      },
+                      "id_token_signed_response_alg": {
+                        "type": "string",
+                        "default": "RS256",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "id_token_encrypted_response_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "id_token_encrypted_response_enc": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "userinfo_signed_response_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "userinfo_encrypted_response_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "userinfo_encrypted_response_enc": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "redirect_uri": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "URI your IdP sends you after successful authorization. This must match what is listed with your IdP. (Default is https://[currentHost][currentPath]/auth-oidc-callback)"
+                      },
+                      "response_types": {
+                        "type": [
+                          "string",
+                          "array"
+                        ],
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details",
+                        "default": [
+                          "code"
+                        ]
+                      },
+                      "post_logout_redirect_uri": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "URI for your IdP to send you after logging out of IdP via MeshCentral. (Default is https:[currentHost][currentPath]/login)"
+                      },
+                      "default_max_age": {
+                        "type": "number",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "require_auth_time": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "request_object_signing_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "request_object_encryption_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "request_object_encryption_enc": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "token_endpoint_auth_method": {
+                        "type": "string",
+                        "default": "client_secret_basic",
+                        "enum": [
+                          "none",
+                          "client_secret_basic",
+                          "client_secret_post",
+                          "client_secret_jwt",
+                          "private_key_jwt"
+                        ],
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "introspection_endpoint_auth_method": {
+                        "type": "string",
+                        "default": "client_secret_basic",
+                        "enum": [
+                          "none",
+                          "client_secret_basic",
+                          "client_secret_post",
+                          "client_secret_jwt",
+                          "private_key_jwt"
+                        ],
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "revocation_endpoint_auth_method": {
+                        "type": "string",
+                        "default": "client_secret_basic",
+                        "enum": [
+                          "none",
+                          "client_secret_basic",
+                          "client_secret_post",
+                          "client_secret_jwt",
+                          "private_key_jwt"
+                        ],
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "token_endpoint_auth_signing_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "introspection_endpoint_auth_signing_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "revocation_endpoint_auth_signing_alg": {
+                        "type": "string",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      },
+                      "tls_client_certificate_bound_access_tokens": {
+                        "type": "boolean",
+                        "description": "ADVANCED CONFIG: Check node-openid-client on GitHub for details"
+                      }
+                    },
+                    "required": [
+                      "client_id",
+                      "client_secret"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "issuer": {
+                    "type": [
+                      "string",
+                      "object"
+                    ],
+                    "format": "uri",
+                    "description": "Issuer options. Requires issuer URI (issuer.issuer) to discover missing information unless using preset",
+                    "properties": {
+                      "issuer": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "URI of the issuer."
+                      },
+                      "authorization_endpoint": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "token_endpoint": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "jwks_uri": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "userinfo_endpoint": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "revocation_endpoint": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "introspection_endpoint": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "end_session_endpoint": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "URI to direct users to when logging out of MeshCentral. (Attempts to autodetect, defaults to '[issuer.issuer]/logout')"
+                      },
+                      "registration_endpoint": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "token_endpoint_auth_methods_supported": {
+                        "type": "string"
+                      },
+                      "token_endpoint_auth_signing_alg_values_supported": {
+                        "type": "string"
+                      },
+                      "introspection_endpoint_auth_methods_supported": {
+                        "type": "string"
+                      },
+                      "introspection_endpoint_auth_signing_alg_values_supported": {
+                        "type": "string"
+                      },
+                      "revocation_endpoint_auth_methods_supported": {
+                        "type": "string"
+                      },
+                      "revocation_endpoint_auth_signing_alg_values_supported": {
+                        "type": "string"
+                      },
+                      "request_object_signing_alg_values_supported": {
+                        "type": "string"
+                      },
+                      "mtls_endpoint_aliases": {
+                        "type": "object",
+                        "properties": {
+                          "token_endpoint": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "userinfo_endpoint": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "revocation_endpoint": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "introspection_endpoint": {
+                            "type": "string",
+                            "format": "uri"
+                          }
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "custom": {
+                    "type": "object",
+                    "properties": {
+                      "scope": {
+                        "type": [
+                          "string",
+                          "array"
+                        ],
+                        "description": "A list of scopes to request from the issuer.",
+                        "default": "openid profile email",
+                        "examples": [
+                          "openid",
+                          [
+                            "openid",
+                            "profile"
+                          ],
+                          "openid profile email",
+                          "openid profile email groups"
+                        ]
+                      },
+                      "claims": {
+                        "type": "object",
+                        "properties": {
+                          "email": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "uuid": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "preset": {
+                        "type": "string",
+                        "enum": [
+                          "azure",
+                          "google"
+                        ]
+                      },
+                      "tenant_id": {
+                        "type": "string",
+                        "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "description": "REQUIRED IF USING GROUPS: Customer ID from Google Workspace Admin Console (https://admin.google.com/ac/accountsettings/profile)"
+                      }
+                    },
+                    "additionalProperties": false
                   },
                   "groups": {
                     "type": "object",
                     "properties": {
+                      "recursive": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "When true, the group memberships will be scanned recursively."
+                      },
                       "required": {
                         "type": [
                           "string",
                           "array"
                         ],
-                        "description": "When set, the user must be part of one of the OIDC user groups to login to MeshCentral."
+                        "description": "Access is only granted to users who are a member of at least one of the listed required groups."
                       },
                       "siteadmin": {
                         "type": [
                           "string",
                           "array"
                         ],
-                        "description": "When set, users part of these groups will be promoted with site administrator in MeshCentral, users that are not part of these groups will be demoted."
+                        "description": "Full site admin priviledges will be granted to users who are a member of at least one of the listed admin groups."
+                      },
+                      "revokeAdmin": {
+                        "type": "boolean",
+                        "description": "If true, admin privileges will be revoked from users who are NOT a member of at least one of the listed admin groups."
                       },
                       "sync": {
                         "type": [
                           "boolean",
                           "object"
                         ],
-                        "description": "Allows some or all ODIC user groups to be mirrored within MeshCentral as user groups.",
+                        "default": false,
+                        "description": "If true, all groups found during user login are mirrored into MeshCentral user groups.",
                         "properties": {
-                          "enabled": {
-                            "type": "boolean",
-                            "default": false
-                          },
                           "filter": {
                             "type": [
                               "string",
                               "array"
                             ],
-                            "description": "When set, limits what OIDC groups are mirrored into MeshCentral user groups."
+                            "description": "Only groups listed here are mirrored into MeshCentral user groups."
                           }
                         }
+                      },
+                      "scope": {
+                        "type": "string",
+                        "default": "groups",
+                        "description": "Custom scope to use."
+                      },
+                      "claim": {
+                        "type": "string",
+                        "default": "groups",
+                        "description": "Custom claim to use."
                       }
-                    }
+                    },
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "issuer",
-                  "clientid",
-                  "clientsecret",
-                  "callbackURL"
-                ]
+                }
               }
             }
           },
