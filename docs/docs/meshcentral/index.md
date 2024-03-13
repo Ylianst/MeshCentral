@@ -34,7 +34,7 @@ MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .
 - [Let's Encrypt support](#lets-encrypt-support)
 - [Server IP Filtering](#server-ip-filtering)
 - [Email Setup](#email-setup)
-- [Embedding Meshcentral](#embedding-meshcentral)
+- [Embedding MeshCentral](#embedding-meshcentral)
   - [Login Token](#login-token)
   - [Embedding Options](#embedding-options)
 - [Server port aliasing](#server-port-aliasing)
