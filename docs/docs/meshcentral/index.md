@@ -305,6 +305,47 @@ When the MongoDB is setup for the first time, a unique identifier is generated a
 
 Once peered, all of the servers should act like one single host, no matter which server the user(s) are connected to.
 
+## Email Setup
+
+We highly recommend the use of an email server (SMTP) because we could allow MeshCentral to verify user account’s email address by sending a confirmation request to the user to complete the account registration and for password recovery, should a user forget account password as illustrated below
+
+A verification email is sent when a new account is created or if the user requests it in the “My Account” tab.
+
+![](images/2022-05-19-00-00-05.png)
+
+The password recovery flow when “Reset Account” is triggered at the login page.
+
+![](images/2022-05-19-00-00-18.png)
+
+Both account verification and password recovery are triggered automatically once SMTP mail server configuration is included into the config.json file. Update the config.json with “smtp” section as shown below and restart the server. 
+
+```json
+{
+  "smtp": {
+    "host": "smtp.server.com",
+    "port": 25,
+    "from": "myaddress@server.com",
+    "user": "myaddress@server.com",       Optional
+    "pass": "mypassword",                 Optional
+    "tls": false                          Optional, default false
+  }
+}
+```
+
+Please map the host, port values to connect to the right host that provides this SMTP service. For “from” value, administrators may put something like donotreply@server.com, but often times it needs to be a valid address since SMTP server will not send out messages with an invalid reply address. 
+
+Some SMTP servers will require a valid username and password to login to the mail server. This is to prevent unauthorized e-mail correspondence. TLS option can be set to ‘true’ if the SMTP server requires TLS.
+
+One option is to configure MeshCentral work with Google Gmail* by setting “host” with smtp.gmail.com, and “port” with 587. In the config.json file, use user’s Gmail* address for both “from” and “user” and Gmail* password in the “pass” value. You will also need to enable “Less secure app access” in for this Google account. It’s in the account settings, security section:
+
+![](images/2022-05-19-00-01-19.png)
+
+If a Google account is setup with 2-factor authentication, the option to allow less secure applications not be available. Because the Google account password is in the MeshCentral config.json file and that strong authentication can’t be used, it’s preferable to use a dedicated Google account for MeshCentral email.
+
+Regardless of what SMTP account is used, MeshCentral will perform a test connection to make sure the server if working as expected when starting. Hence, the user will be notified if Meshcentral and SMTP server has been configured correctly as shown below.
+
+![](images/2022-05-19-00-01-43.png)
+
 ## Database
 
 A critical component of MeshCentral is the database. The database stores all of the user account information, groups and node data, historical power and event, etc. By default MeshCentral uses NeDB (https://github.com/louischatriot/nedb) that is written entirely in NodeJS and is setup automatically when MeshCentral is installed with the npm tool. The file “meshcentral.db” will be created in the “meshcentral-data” folder when MeshCentral is first launched. This database works well for small deployments scenarios.
@@ -609,46 +650,6 @@ All the lines that start with a number or `:` will be used, everything else is i
 95.85.81.0/24
 ```
 
-## Email Setup
-
-We highly recommend the use of an email server (SMTP) because we could allow MeshCentral to verify user account’s email address by sending a confirmation request to the user to complete the account registration and for password recovery, should a user forget account password as illustrated below
-
-A verification email is sent when a new account is created or if the user requests it in the “My Account” tab.
-
-![](images/2022-05-19-00-00-05.png)
-
-The password recovery flow when “Reset Account” is triggered at the login page.
-
-![](images/2022-05-19-00-00-18.png)
-
-Both account verification and password recovery are triggered automatically once SMTP mail server configuration is included into the config.json file. Update the config.json with “smtp” section as shown below and restart the server. 
-
-```json
-{
-  "smtp": {
-    "host": "smtp.server.com",
-    "port": 25,
-    "from": "myaddress@server.com",
-    "user": "myaddress@server.com",       Optional
-    "pass": "mypassword",                 Optional
-    "tls": false                          Optional, default false
-  }
-}
-```
-
-Please map the host, port values to connect to the right host that provides this SMTP service. For “from” value, administrators may put something like donotreply@server.com, but often times it needs to be a valid address since SMTP server will not send out messages with an invalid reply address. 
-
-Some SMTP servers will require a valid username and password to login to the mail server. This is to prevent unauthorized e-mail correspondence. TLS option can be set to ‘true’ if the SMTP server requires TLS.
-
-One option is to configure MeshCentral work with Google Gmail* by setting “host” with smtp.gmail.com, and “port” with 587. In the config.json file, use user’s Gmail* address for both “from” and “user” and Gmail* password in the “pass” value. You will also need to enable “Less secure app access” in for this Google account. It’s in the account settings, security section:
-
-![](images/2022-05-19-00-01-19.png)
-
-If a Google account is setup with 2-factor authentication, the option to allow less secure applications not be available. Because the Google account password is in the MeshCentral config.json file and that strong authentication can’t be used, it’s preferable to use a dedicated Google account for MeshCentral email.
-
-Regardless of what SMTP account is used, MeshCentral will perform a test connection to make sure the server if working as expected when starting. Hence, the user will be notified if Meshcentral and SMTP server has been configured correctly as shown below.
-
-![](images/2022-05-19-00-01-43.png)
 
 ## Embedding MeshCentral
 
