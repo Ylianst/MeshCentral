@@ -6,15 +6,78 @@ MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .
 
 ## Table of Contents
 
-[Video Walkthrough](#video-walkthrough)  
-[Server Installation](#server-installation)  
+- [Video Walkthru](#video-walkthru)  
+- [Introduction](#introduction)
+- [Server Installation](#server-installation)
+- [Basic Usage](#basic-usage)
+  - [Launch](#launch)
+  - [Create Account](#create-account)
+  - [New device group](#new-device-group)
+  - [Add device](#add-device)
+  - [After agent install](#after-agent-install)
+  - [Manage Computer](#manage-computer)
+  - [Desktop Control](#desktop-control)
+- [Server Certificate](#server-certificate)
+- [Files and Folder Structure](#files-and-folder-structure)
+- [Server Configuration File](#server-configuration-file)
+  - [Settings](#settings)
+  - [Domains](#domains)
+- [Server Peering](#server-peering)
+- [Database](#database)
+  - [Database Export](#database-export)
+  - [Database Import](#database-import)
+  - [Viewing the Database](#viewing-the-database)
+  - [MongoDB Setup](#mongodb-setup)
+- [Running State-less](#running-state-less)
+- [Commandline Options](#commandline-options)
+- [TLS Offloading](#tls-offloading)
+- [Let's Encrypt support](#lets-encrypt-support)
+- [Server IP Filtering](#server-ip-filtering)
+- [Email Setup](#email-setup)
+- [Embedding Meshcentral](#embedding-meshcentral)
+  - [Login Token](#login-token)
+  - [Embedding Options](#embedding-options)
+- [Server port aliasing](#server-port-aliasing)
+- [Web relay using DNS names and multiple web relays](#web-relay-using-dns-names-and-multiple-web-relays)
+- [Video Walkthrus](#video-walkthrus)
+- [Device Groups with Relay Agent](#device-groups-with-relay-agent)
+  - [Raritan and WebPowerSwitch with Relay](#raritan-and-webpowerswitch-with-relay)
+- [NGNIX Reverse-Proxy Setup](#ngnix-reverse-proxy-setup)
+  - [Video Walkthru](#video-walkthru)
+  - [CIRA Setup with NGNIX](#cira-setup-with-ngnix)
+- [Traefik Reverse-Proxy Setup](#traefik-reverse-proxy-setup)
+- [HAProxy Reverse-Proxy Setup](#haproxy-reverse-proxy-setup)
+- [Running in a Production Environment](#running-in-a-production-environment)
+- [Two step authentication](#two-step-authentication)
+- [Server Backup & Restore](#server-backup--restore)
+  - [Backup to Google Drive](#backup-to-google-drive)
+- [HashiCorp Vault support](#hashicorp-vault-support)
+- [Database Record Encryption](#database-record-encryption)
+- [MongoDB free server monitoring](#mongodb-free-server-monitoring)
+- [MeshCentral Single Sign-On (SSO)](#meshcentral-single-sign-on-sso)
+  - [LDAP](#ldap)
+  - [Twitter Authentication](#twitter-authentication)
+  - [Google, GitHub, Reddit Authentication](#google-github-reddit-authentication)
+  - [Microsoft Azure Active Directory](#microsoft-azure-active-directory)
+  - [JumpCloud Authentication using SAML](#jumpcloud-authentication-using-saml)
+  - [Generic SAML setup](#generic-saml-setup)
+  - [Generic OpenID Connect Setup](#generic-openid-connect-setup)
+- [Improvements to MeshCentral](#improvements-to-meshcentral)
+- [Additional Resources](#additional-resources)
+- [Conclusion](#conclusion)
+- [License](#license)
+- [Annex 1: Sample Configuration File](#annex-1-sample-configuration-file)
+- [Annex 2: Tips & Tricks](#annex-2-tips--tricks)
+  - [Remote Terminal](#remote-terminal)
+    - [SSH and SFTP integration to the Terminal](#ssh-and-sftp-integration-to-the-terminal)
 
-## Video Walkthrough
+
+## Video Walkthru
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/D9Q7M7PdTg0" frameborder="0" allowfullscreen></iframe>
 </div>
-::Testing::
+
 ## Abstract
 This user guide contains all essential information for the user to make full use of MeshCentral, a free open source web-based remote computer management software. The guide provides quick steps to setup administrative groups to remote control and manage computers in local network environments or via the Internet. Latter parts of the document will cover some advanced topics. The reader is expected to already have some of the basic understanding on computer networking, operating system and network security.
 
