@@ -4,7 +4,12 @@
 
 MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
 
-## Video Walkthru
+## Table of Contents
+
+[Video Walkthrough](#video-walkthrough)  
+[Server Installation](#server-installation)  
+
+## Video Walkthrough
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/D9Q7M7PdTg0" frameborder="0" allowfullscreen></iframe>
