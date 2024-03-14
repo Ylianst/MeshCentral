@@ -1519,7 +1519,7 @@ function handleServerCommand(data) {
             }
             case 'runcommands': {
                 if (mesh.cmdchild != null) { sendConsoleText("Run commands can't execute, already busy."); break; }
-                sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
+                if (!data.reply) sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
 
                 // data.runAsUser: 0=Agent,1=UserOrAgent,2=UserOnly
                 var options = {};
@@ -1540,7 +1540,15 @@ function handleServerCommand(data) {
                         mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () {
+                            if (data.reply) {
+                                mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+                            } else {
+                                sendConsoleText(replydata);
+                                sendConsoleText("Run commands completed.");
+                            }
+                            delete mesh.cmdchild;
+                        });
                     } else if (data.type == 2) {
                         // Windows Powershell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], options);
@@ -1548,7 +1556,15 @@ function handleServerCommand(data) {
                         mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () {
+                            if (data.reply) {
+                                mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+                            } else {
+                                sendConsoleText(replydata);
+                                sendConsoleText("Run commands completed.");
+                            }
+                            delete mesh.cmdchild;
+                        });
                     }
                 } else if (data.type == 3) {
                     // Linux shell
@@ -1557,7 +1573,15 @@ function handleServerCommand(data) {
                     mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
                     mesh.cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
                     mesh.cmdchild.stdin.write(data.cmds.split('\r').join('') + '\nexit\n');
-                    mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                    mesh.cmdchild.on('exit', function () {
+                        if (data.reply) {
+                            mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+                        } else {
+                            sendConsoleText(replydata);
+                            sendConsoleText("Run commands completed.");
+                        }
+                        delete mesh.cmdchild;
+                    });
                 }
                 break;
             }
