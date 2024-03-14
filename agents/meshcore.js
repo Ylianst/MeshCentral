@@ -2391,7 +2391,7 @@ function terminal_promise_connection_resolved(term)
     if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 2))
     {
         // User Notifications is required
-        var notifyMessage = currentTranslation['terminalNotify'].replace('{0}', this.ws.httprequest.username);
+        var notifyMessage = currentTranslation['terminalNotify'].replace('{0}', this.ws.httprequest.realname ? this.ws.httprequest.realname : this.ws.httprequest.username);
         var notifyTitle = "MeshCentral";
         if (this.ws.httprequest.soptions != null)
         {
