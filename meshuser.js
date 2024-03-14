@@ -84,7 +84,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const PROTOCOL_WEBVNC               = 204;
 
     // MeshCentral Satellite
-    const SATELLITE_PRESENT = 1;     // This session is a MeshCentral Salellite session
+    const SATELLITE_PRESENT = 1;     // This session is a MeshCentral Satellite session
     const SATELLITE_802_1x = 2;      // This session supports 802.1x profile checking and creation
 
     // Events
