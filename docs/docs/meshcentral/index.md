@@ -72,7 +72,7 @@ MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .
     - [SSH and SFTP integration to the Terminal](#ssh-and-sftp-integration-to-the-terminal)
 
 
-## Video Walkthru
+## Video Walkthru 
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/D9Q7M7PdTg0" frameborder="0" allowfullscreen></iframe>
