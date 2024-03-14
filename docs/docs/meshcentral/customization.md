@@ -56,7 +56,7 @@ MeshCentral lets you change the icons for different devices shown in the Web Use
 
 To update device icons, you need to edit these files: `meshcentral-web/public/images/webp/iconsXX.webp` (`icons16.webp`, `icons32.webp`, `icons50.webp`, `icons100.webp`), and `meshcentral-web/public/images/iconsXX.png` (`icons16.png`, `icons32.png`, `icons50.png`, `icons64.png`, `icons100.png`) and the corresponding `meshcentral-web/public/images/icons256-X-1.png`. Make sure to keep the resolution of these files as it is. 
 
-By following these steps, you can customize any icon in MeshCentral. Just find and change the corresponding image files in the `meshcentral-web/public/images` folder. This lets you match MeshCentral's look to your company's brand or your own style. 
+By following these steps, you can customize any icon in MeshCentral. Just find and change the corresponding image files in the `meshcentral-web/public/images` folder. Similarly, you can also move other folders from `node_modules/meshcentral` to `meshcentral-web` while keeping the original folder structure. This allows you to modify other parts of MeshCentral too, like the `.handlebars` templates for the web interface. Simply copy files from `node_modules/meshcentral/views` to `meshcentral-web/views` and make your changes in `meshcentral-web`. This lets you match MeshCentral's look to your company's brand or your own style. 
 
 ## Agent Branding
 
