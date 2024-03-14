@@ -2,7 +2,8 @@
 
 [MeshCentral2 Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
 
-MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
+MeshCmd Guide as [.pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) / [.odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral%20User's%20Guide%20v0.2.9.odt?raw=true)
+
 
 ## Table of Contents
 
