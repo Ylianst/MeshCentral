@@ -51,6 +51,14 @@ If, for example, MeshCentral is running on a Raspberry Pi. You may want to put a
 
 This is great to personalize the look of the server within the web site.
 
+### Customizing Web Icons
+MeshCentral lets you change the icons for different devices shown in the Web User Interface. To do this the proper way, you should make a new folder called `meshcentral-web` in the main directory, where you find other folders like `meshcentral-data`, `meshcentral-backup`, `meshcentral-files`, and `node-modules`. Inside `meshcentral-web`, make another folder named `public` and copy the entire `node_modules/meshcentral/public/images` folder into this new `meshcentral-web/public` folder and then edit the files in `meshcentral-web/public/images/`. This step is suggested because if MeshCentral updates, it might delete any changes in `node_modules`. But, changes in `meshcentral-web` will stay safe, and MeshCentral will use these files instead of the originals in `node_modules`.
+
+To update device icons, you need to edit these files: `meshcentral-web/public/images/webp/iconsXX.webp` (`icons16.webp`, `icons32.webp`, `icons50.webp`, `icons100.webp`), and `meshcentral-web/public/images/iconsXX.png` (`icons16.png`, `icons32.png`, `icons50.png`, `icons64.png`, `icons100.png`) and the corresponding `meshcentral-web/public/images/icons256-X-1.png`. Make sure to keep the resolution of these files as it is. 
+
+By following these steps, you can customize any icon in MeshCentral. Just find and change the corresponding image files in the `meshcentral-web/public/images` folder. Similarly, you can also move other folders from `node_modules/meshcentral` to `meshcentral-web` while keeping the original folder structure. This allows you to modify other parts of MeshCentral too, like the `.handlebars` templates for the web interface. Simply copy files from `node_modules/meshcentral/views` to `meshcentral-web/views` and make your changes in `meshcentral-web`. This lets you match MeshCentral's look to your company's brand or your own style.   
+![](images/custom-web-icons.png)
+
 ## Agent Branding
 
 You can customize the Agent to add your own logo, change the title bar, install text, the service name, or even colors!
