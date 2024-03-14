@@ -820,6 +820,7 @@ if (args['_'].length == 0) {
                         console.log("Run a shell command on a remote device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\""));
                         console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\" --powershell"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\" --reply"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]        - The device identifier.");
@@ -831,6 +832,7 @@ if (args['_'].length == 0) {
                         console.log("  --powershell           - Run in Windows PowerShell.");
                         console.log("  --runasuser            - Attempt to run the command as logged in user.");
                         console.log("  --runasuseronly        - Only run the command as the logged in user.");
+                        console.log("  --reply                - Return with the output from running the command.");
                         break;
                     }
                     case 'shell': {
@@ -1621,7 +1623,9 @@ function serverConnect() {
             case 'runcommand': {
                 var runAsUser = 0;
                 if (args.runasuser) { runAsUser = 1; } else if (args.runasuseronly) { runAsUser = 2; }
-                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl', runAsUser: runAsUser }));
+                var reply = false;
+                if (args.reply) { reply = true; }
+                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl', runAsUser: runAsUser, reply: reply }));
                 break;
             }
             case 'shell':
