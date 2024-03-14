@@ -51,6 +51,13 @@ If, for example, MeshCentral is running on a Raspberry Pi. You may want to put a
 
 This is great to personalize the look of the server within the web site.
 
+### Customizing WebUI Icons
+MeshCentral lets you change the icons for different devices shown in the Web User Interface. To do this the proper way, you should make a new folder called `meshcentral-web` in the main directory, where you find other folders like `meshcentral-data`, `meshcentral-backup`, `meshcentral-files`, and `node-modules`. Inside `meshcentral-web`, make another folder named `public` and copy everything from `node_modules/meshcentral/public/images` into this new `meshcentral-web/public` folder. This step is suggested because if MeshCentral updates, it might delete any changes in `node_modules`. But, changes in `meshcentral-web` will stay safe, and MeshCentral will use these files instead of the originals in `node_modules`.
+
+To update device icons, you need to work on these files: `images/webp/iconsXX.webp` (`icons16.webp`, `icons32.webp`, `icons50.webp`, `icons100.webp`), and `images/iconsXX.png` (`icons16.png`, `icons32.png`, `icons50.png`, `icons64.png`, `icons100.png`) and the corresponding `images/icons256-X-1.png`. Make sure to keep the resolution of these files as it is. 
+
+By following these steps, you can customize any icon in MeshCentral. Just find and change the corresponding image files in the `meshcentral-web/public/images` folder. This lets you match MeshCentral's look to your company's brand or your own style. 
+
 ## Agent Branding
 
 You can customize the Agent to add your own logo, change the title bar, install text, the service name, or even colors!
