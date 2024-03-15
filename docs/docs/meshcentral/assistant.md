@@ -26,15 +26,15 @@ For link invitation web page customization:
 ![agent invite code](images/assistant_invitation_link.png)
 
 ### Email Invitation
-This option will show up if you have an SMTP email server setup with MeshCentral.  
+This option will show up if you have a SMTP email server setup with MeshCentral.  
 
 For invitation email customization:  
 
 1. Alongside `meshcentral-data` create a folder called `meshcentral-web`
-2. Create an `emails` folder in it and copy the file `node_modules/meshcentral/emails/mesh-invite.txt` and `node_modules/meshcentral/emails/mesh-invite.html` into it.
+2. Create an `emails` folder in it and copy the files `node_modules/meshcentral/emails/mesh-invite.txt` and `node_modules/meshcentral/emails/mesh-invite.html` into it.
 3. These copies will be used instead of the default ones, so you can customize them as you want.
 
-![email-invitation](images/email-invitation-pic.png)
+![email-invitation](images/email-invitation.png)
 
 ## Email notification
 
