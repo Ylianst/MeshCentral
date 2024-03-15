@@ -2942,6 +2942,20 @@ function onTunnelData(data)
                 if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
                 require('MeshAgent')._tsid = tsid;
 
+                // If MacOS, Wake up device with caffeinate
+                if(process.platform == 'darwin'){
+                    try {
+                        var options = {};
+                        try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
+                        options.type = require('child_process').SpawnTypes.TERM;
+                        var replydata = "";
+                        var cmdchild = require('child_process').execFile('/usr/bin/caffeinate', ['caffeinate', '-u', '-t', '10'], options);
+                        cmdchild.descriptorMetadata = 'UserCommandsShell';
+                        cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                        cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
+                        cmdchild.on('exit', function () { delete cmdchild; });
+                    } catch(err) { }
+                }
                 // Remote desktop using native pipes
                 this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(tsid), tunnel: this };
                 this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
