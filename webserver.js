@@ -2589,7 +2589,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const strategy = domain.authstrategies[req.user.strategy];
             const groups = { 'enabled': typeof strategy.groups == 'object' }
             parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
-            if (groups.enabled) { // Groups only available for OIDC strategy currently
+            if (groups.enabled) {
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups)
                 groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false
                 groups.syncMemberships = []
@@ -7211,7 +7211,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
                         if (typeof userex.email == 'string') { user.email = userex.email; }
                     }
-                    return done(null, user);
+
+                    // Get groups from API if needed then return
+                    if (domain.authstrategies.azure.groups) {
+                        getGroups('azure', { accessToken: accessToken }, domain.authstrategies.azure).then((groups) => {
+                            user = Object.assign(user, { 'groups': groups });
+                            return done(null, user);
+                        }).catch((err) => {
+                            let error = new Error('AZURE: GROUPS: No groups found due to error:', { cause: err });
+                            parent.debug('error', `${JSON.stringify(error)}`);
+                            parent.authLog('setupDomainAuthStrategy', error.message);
+                            user.groups = [];
+                            return done(null, user);
+                        });
+                    } else {
+                        return done(null, user);
+                    }
                 }
             ));
             authStrategyFlags |= domainAuthStrategyConsts.azure;
@@ -7380,7 +7395,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
                 issuer = new strategy.obj.openidClient.Issuer(Object.assign(issuer?.metadata, strategy.issuer));
             }
-            strategy.issuer = issuer?.metadata
+            strategy.issuer = issuer.metadata
             strategy.obj.issuer = issuer
 
             // Make sure redirect_uri and post_logout_redirect_uri exist before continuing
@@ -7487,7 +7502,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup presets and groups, get groups from API if needed then return
                 if (strategy.groups && typeof user.preset == 'string') {
-                    getGroups(user.preset, tokenset).then((groups) => {
+                    getGroups(user.preset, tokenset, strategy).then((groups) => {
                         user = Object.assign(user, { 'groups': groups });
                         return verified(null, user);
                     }).catch((err) => {
@@ -7500,87 +7515,88 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 } else {
                     return verified(null, user);
                 }
+            }
+            async function getGroups(preset, tokenset, strategy) {
+                let url = '';
+                if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
+                if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null; }
+                return new Promise((resolve, reject) => {
+                    const options = {
+                        'headers': { authorization: 'Bearer ' + tokenset.access_token }
+                    }
+                    const req = require('https').get(url, options, (res) => {
+                        let data = []
+                        res.on('data', (chunk) => {
+                            data.push(chunk);
+                        });
+                        res.on('end', () => {
+                            if (res.statusCode < 200 || res.statusCode >= 300) {
+                                let error = new Error('OIDC: GROUPS: Bad response code from API, statusCode: ' + res.statusCode);
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
+                            if (data.length == 0) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
+                            try {
+                                if (Buffer.isBuffer(data[0])) {
+                                    data = Buffer.concat(data);
+                                    data = data.toString();
+                                } else { // else if (typeof data[0] == 'string') 
+                                    data = data.join();
+                                }
+                            } catch (err) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
 
-                async function getGroups(preset, tokenset) {
-                    let url = '';
-                    if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
-                    if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null; }
-                    return new Promise((resolve, reject) => {
-                        const options = {
-                            'headers': { authorization: 'Bearer ' + tokenset.access_token }
-                        }
-                        const req = require('https').get(url, options, (res) => {
-                            let data = []
-                            res.on('data', (chunk) => {
-                                data.push(chunk);
-                            });
-                            res.on('end', () => {
-                                if (res.statusCode < 200 || res.statusCode >= 300) {
-                                    let error = new Error('OIDC: GROUPS: Bad response code from API, statusCode: ' + res.statusCode);
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                    console.error(error);
-                                    reject(error);
+                            if (preset == 'google') {
+                                data = data.split('\n');
+                                data = data.join('');
+                            }
+                            data = JSON.parse(data);
+                            if (data.error) {
+                                let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error parsing JSON response data.', { cause: data.error });
+                                parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                console.error(error);
+                                reject(error);
+                            }
+                            if (preset == 'azure') {
+                                data = data.value;
+                            }
+                            if (preset == 'google') {
+                                data = data.groups;
+                            }
+                            let groups = []
+                            for (var i in data) {
+                                if (typeof data[i].displayName == 'string') {
+                                    groups.push(data[i].displayName);
                                 }
-                                if (data.length == 0) {
-                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                    console.error(error);
-                                    reject(error);
-                                }
-                                try {
-                                    if (Buffer.isBuffer(data[0])) {
-                                        data = Buffer.concat(data);
-                                        data = data.toString();
-                                    } else { // else if (typeof data[0] == 'string') 
-                                        data = data.join();
-                                    }
-                                } catch (err) {
-                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                    console.error(error);
-                                    reject(error);
-                                }
-                                if (preset == 'azure') {
-                                    data = JSON.parse(data);
-                                    if (data.error) {
-                                        let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: data.error });
-                                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                        console.error(error);
-                                        reject(error);
-                                    }
-                                    data = data.value;
-                                }
-                                if (preset == 'google') {
-                                    data = data.split('\n');
-                                    data = data.join('');
-                                    data = JSON.parse(data);
-                                    data = data.groups;
-                                }
-                                let groups = []
-                                for (var i in data) {
-                                    if (typeof data[i].displayName == 'string') {
-                                        groups.push(data[i].displayName);
-                                    }
-                                }
-                                if (groups.length == 0) {
-                                    let warn = new Error('OIDC: GROUPS: No groups returned from API.');
-                                    parent.authLog('getGroups', `WARN: ${warn.message} DATA: ${data}`);
-                                    console.warn(warn);
-                                    resolve(groups);
-                                } else {
-                                    resolve(groups);
-                                }
-                            });
+                            }
+                            if (groups.length == 0) {
+                                let warn = new Error('OIDC: GROUPS: No groups returned from API.');
+                                parent.authLog('getGroups', `WARN: ${warn.message} DATA: ${data}`);
+                                console.warn(warn);
+                                resolve(groups);
+                            } else {
+                                resolve(groups);
+                            }
                         });
-                        req.on('error', (err) => {
-                            let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
-                            parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                            console.error(error);
-                            reject(error);
-                        });
-                        req.end();
                     });
-                }
+                    req.on('error', (err) => {
+                        let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
+                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                        console.error(error);
+                        reject(error);
+                    });
+                    req.end();
+                });
             }
         }
         return authStrategyFlags;
