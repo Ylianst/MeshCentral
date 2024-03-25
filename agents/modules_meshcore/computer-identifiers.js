@@ -623,7 +623,7 @@ function macos_identifiers()
                                 var key = parts[0].trim();
                                 var value = parts[1].trim();
                                 value = (key == 'Part Number' || key == 'Manufacturer') ? hexToAscii(parts[1].trim()) : parts[1].trim();
-                                slotObj[key] = value; // Store attribute in the slot object
+                                slotObj[key.replace(' ','')] = value; // Store attribute in the slot object
                             }
                         });
                         memorySlots.push(slotObj);
