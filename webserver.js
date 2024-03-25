@@ -8803,7 +8803,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
         xargs.extitle = encodeURIComponent(xargs.title).split('\'').join('\\\'');
         xargs.domainurl = domain.url;
-        xargs.autocomplete = (domain.autocomplete === false) ? 'x' : 'autocomplete'; // This option allows autocomplete to be turned off on the login page.
+        xargs.autocomplete = (domain.autocomplete === false) ? 'autocomplete=off x' : 'autocomplete'; // This option allows autocomplete to be turned off on the login page.
         if (typeof domain.hide == 'number') { xargs.hide = domain.hide; }
 
         // To mitigate any possible BREACH attack, we generate a random 0 to 255 bytes length string here.
