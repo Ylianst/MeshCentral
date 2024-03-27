@@ -23,7 +23,7 @@ Make sure you understand how MeshCentral works with your browser using chrome de
 
 ### Understanding node and paths
 
-Note that when running MeshCentral, you should always run like from the path that is parent to node_modules, so you do this:
+Note that when running MeshCentral, you should always run from the path that is parent to node_modules, so you do this:
 
 ```
 cd C:\Program Files\Open Source\MeshCentral
@@ -39,7 +39,7 @@ node meshcentral
 
 The problem with the second command is that NPM may install missing modules in the incorrect location.
 
-Also, in general I recommend not using the MeshCentral MSI Installer and just install manually unless you are very much scared of the command prompt. Anyone that knows about bit about the shell should install MeshCentral like this:
+Also, in general I recommend not using the MeshCentral MSI Installer and just install manually unless you are very scared of the command prompt. Anyone that knows a bit about the shell should install MeshCentral like this:
 
 ```
 mkdir c:\meshcentral
@@ -50,11 +50,11 @@ node node_modules\meshcentral
 node node_modules\meshcentral --install
 ```
 
-This way, just have a lot more control over what is going on. Just my opinion, the MSI installer basically does the same thing and installs NodeJS for you.
+This way, you have a lot more control over what is going on. In my opinion, the MSI installer basically does the same thing and installs NodeJS for you.
 
 ### Unable to update server
 
-Generally the problem is that MeshCentral can't find the npm tool and so, can't run it to see if there is a new version. You can fix this by setting the path to npm in the config.json like this:
+Generally the problem is that MeshCentral can't find the npm tool and therefore, can't run it to see if there is a new version. You can fix this by setting the path to npm in the config.json like this:
 
 ```json
 {
@@ -86,7 +86,7 @@ node node_modules/meshcentral --stop
 
 ### Port Troubleshooting on server
 
-If you're getting a `port 4433 is not available` error, this is because someone else is using this port, very likely another instance of MeshCentral. If your MeshCentral server is bound to ports 81/444 MeshCentral could not get port 80/443 and got the next available ones.
+If you're getting a `port 4433 is not available` error, this is because another process is using this port, very likely another instance of MeshCentral. If your MeshCentral server is bound to ports 81/444 MeshCentral could not get port 80/443 and got the next available ones.
 
 In general the problem is that you are running two MeshCentral instances at the same time. Probably one as a background Windows Service and one in the command line. Which ever instance can grab port 4433 will have a running MPS and CIRA should work, but the second instance will not have port 4433 and CIRA will not work.
 

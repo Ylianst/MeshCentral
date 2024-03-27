@@ -1,6 +1,6 @@
 # Customization
 
-Whitelabeling your MeshCentral installation to personalize it to your companies brand, as well as having your own terms of use is one of the first things many people do after installation.
+Whitelabeling your MeshCentral installation to personalize it to your company's brand, as well as having your own terms of use is one of the first things many people do after installation.
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/xUZ1w9RSKpQ" frameborder="0" allowfullscreen></iframe>
@@ -8,7 +8,7 @@ Whitelabeling your MeshCentral installation to personalize it to your companies 
 
 ## Web Branding
 
-You can put you own logo on the top of the web page. To get started, get the file “logoback.png” from the folder “node_modules/meshcentral/public/images” and copy it to your “meshcentral-data” folder. In this example, we will change the name of the file “logoback.png” to “title-mycompany.png”. Then use any image editor to change the image and place your logo.
+You can put your own logo on the top of the web page. To get started, get the file “logoback.png” from the folder “node_modules/meshcentral/public/images” and copy it to your “meshcentral-data” folder. In this example, we will change the name of the file “logoback.png” to “title-mycompany.png”. Then use any image editor to change the image and place your logo.
 
 ![](images/2022-05-19-00-38-51.png)
 
@@ -33,7 +33,7 @@ Once done, edit the config.json file and set one or all of the following values:
   },
 ```
 
-This will set the title and sub-title text to empty and set the background image to the new title picture file. You can now restart the serve and take a look at the web page. Both the desktop and mobile sites will change.
+This will set the title and sub-title text to empty and set the background image to the new title picture file. You can now restart the server and take a look at the web page. Both the desktop and mobile sites will change.
 
 ![](images/2022-05-19-00-39-35.png)
 
