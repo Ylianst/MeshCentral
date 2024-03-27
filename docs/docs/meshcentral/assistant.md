@@ -26,7 +26,7 @@ For link invitation web page customization:
 ![agent invite code](images/assistant_invitation_link.png)
 
 ### Email Invitation
-This option will show up if you have a SMTP email server setup with MeshCentral.  
+This option will show up if you have an SMTP email server set up with MeshCentral.  
 
 For invitation email customization:  
 
