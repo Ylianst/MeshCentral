@@ -785,19 +785,27 @@ module.exports.CreateDB = function (parent, func) {
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
         delete connectinArgs.database;
         obj.databaseType = 6;
-        const pgtools = require('pgtools');
-        pgtools.createdb(connectinArgs, dbname, function (err, res) {
-            const { Pool, Client } = require('pg');
-            connectinArgs.database = dbname;
-            Datastore = new Client(connectinArgs);
-            Datastore.connect();
-            if (err == null) {
-                // Create the tables and indexes
-                postgreSqlCreateTables(func);
-            } else {
-                // Database already existed, perform a test query to see if the main table is present
+        const { Pool, Client } = require('pg');
+        connectinArgs.database = dbname;
+        Datastore = new Client(connectinArgs);
+        Datastore.connect();
+        sqlDbQuery('SELECT 1 FROM pg_database WHERE datname = $1', [dbname], function (dberr, dbdocs) { // check database exists first before creating
+            if (dberr == null) { // database exists now check tables exists
                 sqlDbQuery('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, docs) {
                     if (err == null) { setupFunctions(func); } else { postgreSqlCreateTables(func); } // If not present, create the tables and indexes
+                });
+            } else { // If not present, create the tables and indexes
+                const pgtools = require('pgtools');
+                pgtools.createdb(connectinArgs, dbname, function (err, res) {
+                    if (err == null) {
+                        // Create the tables and indexes
+                        postgreSqlCreateTables(func);
+                    } else {
+                        // Database already existed, perform a test query to see if the main table is present
+                        sqlDbQuery('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, docs) {
+                            if (err == null) { setupFunctions(func); } else { postgreSqlCreateTables(func); } // If not present, create the tables and indexes
+                        });
+                    }
                 });
             }
         });
