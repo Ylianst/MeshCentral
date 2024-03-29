@@ -1048,15 +1048,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var limit = 10000;
                             if (common.validateInt(command.limit, 1, 1000000) == true) { limit = command.limit; }
 
+                            var filter = null;
+                            if (command.filter != null) {
+                                if (['agentlog','relaylog','manual'].includes(command.filter)) filter = command.filter;
+                            }
+
                             if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != MESHRIGHT_ADMIN)) {
                                 // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
-                                db.GetNodeEventsSelfWithLimit(node._id, domain.id, user._id, limit, function (err, docs) {
+                                db.GetNodeEventsSelfWithLimit(node._id, domain.id, user._id, limit, filter, function (err, docs) {
                                     if (err != null) return;
                                     try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: node._id, tag: command.tag })); } catch (ex) { }
                                 });
                             } else {
                                 // Send the list of most recent events for this nodeid, up to 'limit' count
-                                db.GetNodeEventsWithLimit(node._id, domain.id, limit, function (err, docs) {
+                                db.GetNodeEventsWithLimit(node._id, domain.id, limit, filter, function (err, docs) {
                                     if (err != null) return;
                                     try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: node._id, tag: command.tag })); } catch (ex) { }
                                 });
