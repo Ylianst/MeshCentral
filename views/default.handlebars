@@ -470,6 +470,17 @@
                             <input type="button" style="display:none" value="Download Report" onclick=p3showReportDialog() />
                         </td>
                         <td class="auto-style1">
+                            Filter
+                            <select id=p3filterevents onchange=refreshEvents()>
+                                <option value=>All Logs</option>
+                                <option value=agentlog>Agent Logs</option>
+                                <option value=relaylog>Relay Logs</option>
+                                <option value=manual>Manual Logs</option>
+                                <option value=runcommands>Run Command Logs</option>
+                                <option value=batchupload>Batch Upload Logs</option>
+                                <option value=changenode>Change Node Logs</option>
+                                <option value=removenode>Remove Node Logs</option>
+                            </select>
                             Show
                             <select id=p3limitdropdown onchange=refreshEvents()>
                                 <option value=60>Last 60</option>
@@ -15078,7 +15089,11 @@
         }
 
         function refreshEvents() {
-            meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
+            if (p3filterevents.value != "") {
+                meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value), filter: p3filterevents.value });
+            } else {
+                meshserver.send({ action: 'events', limit: parseInt(p3limitdropdown.value) });
+            }
         }
 
         function p3showReportDialog() {
