@@ -1050,7 +1050,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             var filter = null;
                             if (command.filter != null) {
-                                if (['agentlog','relaylog','manual'].includes(command.filter)) filter = command.filter;
+                                if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands'].includes(command.filter)) filter = command.filter;
                             }
 
                             if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != MESHRIGHT_ADMIN)) {
