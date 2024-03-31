@@ -1126,6 +1126,17 @@
                         <td class="h1"></td>
                         <!--<td>&nbsp;<input type=button onclick=refreshUsersEvents() value="Refresh" /></td>-->
                         <td class="auto-style1">
+                            Filter
+                            <select id=p31filterevents onchange=refreshUsersEvents()>
+                                <option value=>All Logs</option>
+                                <option value=agentlog>Agent Logs</option>
+                                <option value=relaylog>Relay Logs</option>
+                                <option value=manual>Manual Logs</option>
+                                <option value=runcommands>Run Command Logs</option>
+                                <option value=batchupload>Batch Upload Logs</option>
+                                <option value=changenode>Change Node Logs</option>
+                                <option value=removenode>Remove Node Logs</option>
+                            </select>
                             Show
                             <select id=p31limitdropdown onchange=refreshUsersEvents()>
                                 <option value=60>Last 60</option>
@@ -16969,7 +16980,11 @@
         }
 
         function refreshUsersEvents() {
-            meshserver.send({ action: 'events', limit: parseInt(p31limitdropdown.value), userid: currentUser._id });
+            if (p31filterevents.value != "") {
+                meshserver.send({ action: 'events', limit: parseInt(p31limitdropdown.value), userid: currentUser._id, filter: p31filterevents.value });
+            } else {
+                meshserver.send({ action: 'events', limit: parseInt(p31limitdropdown.value), userid: currentUser._id });
+            }
         }
 
 
