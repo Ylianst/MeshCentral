@@ -1498,32 +1498,32 @@ module.exports.CreateDB = function (parent, func) {
                 var query = "SELECT doc FROM events ";
                 var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    query = query + "WHERE (domain = $1) ";
+                    query = query + "WHERE (domain = $1";
                     if (filter != null) {
-                        query = query + "AND (action = $2) ";
+                        query = query + " AND action = $2";
                         dataarray.push(filter);
                     }
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     query = query + 'JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (' + dbMergeSqlArray(ids) + '))';
                     if (filter != null) {
                         query = query + " AND action = $2";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id "
+                    query = query + ") GROUP BY id ORDER BY time DESC ";
                 }
-                query = query + "ORDER BY time DESC";
                 sqlDbQuery(query, dataarray, func);
             };
             obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
                 var query = "SELECT doc FROM events ";
                 var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    query = query + "WHERE (domain = $1) ";
+                    query = query + "WHERE (domain = $1";
                     if (filter != null) {
-                        query = query + "AND (action = $2) ORDER BY time DESC LIMIT $3";
+                        query = query + " AND action = $2) ORDER BY time DESC LIMIT $3";
                         dataarray.push(filter);
                     } else {
-                        query = query + "ORDER BY time DESC LIMIT $2";
+                        query = query + ") ORDER BY time DESC LIMIT $2";
                     }
                 } else {
                     query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (" + dbMergeSqlArray(ids) + "))";
@@ -1546,16 +1546,15 @@ module.exports.CreateDB = function (parent, func) {
                         query = query + " AND action = $3";
                         dataarray.push(filter);
                     }
-                    query = query + ") ";
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     query = query + 'JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN (' + dbMergeSqlArray(ids) + '))';
                     if (filter != null) {
                         query = query + " AND action = $3";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id ";
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
-                query = query + "ORDER BY time DESC";
                 sqlDbQuery(query, dataarray, func);
             };
             obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
@@ -1590,25 +1589,27 @@ module.exports.CreateDB = function (parent, func) {
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
-                var query = "SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) ";
-                var datarray = [nodeid, domain, limit];
+                var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
+                var dataarray = [nodeid, domain];
                 if (filter != null) {
-                    query = query + "AND (action = $3) ORDER BY time DESC LIMIT $4";
-                    datarray.splice(2, 0, filter);
+                    query = query + "AND action = $3) ORDER BY time DESC LIMIT $4";
+                    dataarray.push(filter);
                 } else {
-                    query = query + "ORDER BY time DESC LIMIT $3"
+                    query = query + ") ORDER BY time DESC LIMIT $3";
                 }
-                sqlDbQuery(query, datarray, func);
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) AND ((userid = $3) OR (userid IS NULL)) ";
-                var dataarray = [nodeid, domain, userid, limit];
+                var dataarray = [nodeid, domain, userid];
                 if (filter != null) {
                     query = query + "AND (action = $4) ORDER BY time DESC LIMIT $5";
-                    datarray.splice(3, 0, filter);
+                    dataarray.push(filter);
                 } else {
-                    query = query + "ORDER BY time DESC LIMIT $4"
+                    query = query + "ORDER BY time DESC LIMIT $4";
                 }
+                dataarray.push(limit);
                 sqlDbQuery(query, dataarray, func);
             };
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
@@ -2041,11 +2042,12 @@ module.exports.CreateDB = function (parent, func) {
                 var query = "SELECT doc FROM events ";
                 var dataarray = [domain]; 
                 if (ids.indexOf('*') >= 0) {
-                    query = query + "WHERE (domain = $1) ";
+                    query = query + "WHERE (domain = $1";
                     if (filter != null) {
-                        query = query + "AND (action = $2) ";
+                        query = query + " AND action = $2";
                         dataarray.push(filter);
                     }
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND (target = ANY ($2))";
                     dataarray.push(ids);
@@ -2053,21 +2055,20 @@ module.exports.CreateDB = function (parent, func) {
                         query = query + " AND action = $3";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id "
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
-                query = query + "ORDER BY time DESC";
                 sqlDbQuery(query, dataarray, func);
             };
             obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
                 var query = "SELECT doc FROM events ";
                 var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    query = query + "WHERE (domain = $1) ";
+                    query = query + "WHERE (domain = $1";
                     if (filter != null) {
-                        query = query + "AND (action = $2) ORDER BY time DESC LIMIT $3";
+                        query = query + " AND action = $2) ORDER BY time DESC LIMIT $3";
                         dataarray.push(filter);
                     } else {
-                        query = query + "ORDER BY time DESC LIMIT $2"
+                        query = query + ") ORDER BY time DESC LIMIT $2";
                     }
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
@@ -2092,7 +2093,7 @@ module.exports.CreateDB = function (parent, func) {
                         query = query + " AND action = $3";
                         dataarray.push(filter);
                     }
-                    query = query + ") ";
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                     query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target = ANY ($3))";
@@ -2101,9 +2102,8 @@ module.exports.CreateDB = function (parent, func) {
                         query = query + " AND action = $4";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id "
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
-                query = query + "ORDER BY time DESC";
                 sqlDbQuery(query, dataarray, func);
             };
             obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
@@ -2140,25 +2140,27 @@ module.exports.CreateDB = function (parent, func) {
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
-                var query = "SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) ";
-                var datarray = [nodeid, domain, limit];
+                var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
+                var dataarray = [nodeid, domain];
                 if (filter != null) {
-                    query = query + "AND (action = $3) ORDER BY time DESC LIMIT $4";
-                    datarray.splice(2, 0, filter);
+                    query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
+                    dataarray.push(filter);
                 } else {
-                    query = query + "ORDER BY time DESC LIMIT $3"
+                    query = query + ") ORDER BY time DESC LIMIT $3";
                 }
-                sqlDbQuery(query, datarray, func);
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
-                var query = "SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) AND ((userid = $3) OR (userid IS NULL)) ";
-                var dataarray = [nodeid, domain, userid, limit];
+                var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2 AND ((userid = $3) OR (userid IS NULL))";
+                var dataarray = [nodeid, domain, userid];
                 if (filter != null) {
-                    query = query + "AND (action = $4) ORDER BY time DESC LIMIT $5";
-                    datarray.splice(3, 0, filter);
+                    query = query + "  AND action = $4) ORDER BY time DESC LIMIT $5";
+                    dataarray.push(filter);
                 } else {
-                    query = query + "ORDER BY time DESC LIMIT $4"
+                    query = query + ") ORDER BY time DESC LIMIT $4";
                 }
+                dataarray.push(limit);
                 sqlDbQuery(query, dataarray, func);
             };
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
@@ -2292,44 +2294,44 @@ module.exports.CreateDB = function (parent, func) {
                 var query = "SELECT doc FROM events ";
                 var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    query = query + "WHERE (domain = ?) ";
+                    query = query + "WHERE (domain = ?";
                     if (filter != null) {
-                        query = query + "AND (action = ?) ";
+                        query = query + " AND action = ?";
                         dataarray.push(filter);
                     }
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                     query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND target IN (?)";
                     dataarray.push(ids);
                     if (filter != null) {
-                        query = query + " AND action = ? ";
+                        query = query + " AND action = ?";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id "
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
-                query = query + "ORDER BY time DESC";
                 sqlDbQuery(query, dataarray, func);
             };
             obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
                 var query = "SELECT doc FROM events ";
                 var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    query = query + "WHERE (domain = ?) ";
+                    query = query + "WHERE (domain = ?";
                     if (filter != null) {
-                        query = query + "AND (action = ?) ";
+                        query = query + " AND action = ? ";
                         dataarray.push(filter);
                     }
+                    query = query + ") ORDER BY time DESC LIMIT ?";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                     query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND target IN (?)";
                     dataarray.push(ids);
                     if (filter != null) {
-                        query = query + " AND action = ? ";
+                        query = query + " AND action = ?";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id "
+                    query = query + ") GROUP BY id ORDER BY time DESC LIMIT ?";
                 }
-                query = query + "ORDER BY time DESC LIMIT ?";
                 dataarray.push(limit);
                 sqlDbQuery(query, dataarray, func);
             };
@@ -2342,7 +2344,7 @@ module.exports.CreateDB = function (parent, func) {
                         query = query + " AND action = ?";
                         dataarray.push(filter);
                     }
-                    query = query + ") ";
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                     query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)";
@@ -2351,9 +2353,8 @@ module.exports.CreateDB = function (parent, func) {
                         query = query + " AND action = ?";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id "
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
-                query = query + "ORDER BY time DESC";
                 sqlDbQuery(query, dataarray, func);
             };
             obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
@@ -2362,21 +2363,20 @@ module.exports.CreateDB = function (parent, func) {
                 if (ids.indexOf('*') >= 0) {
                     query = query + "WHERE (domain = ? AND userid = ?";
                     if (filter != null) {
-                        query = query + " AND action = ? ";
+                        query = query + " AND action = ?";
                         dataarray.push(filter);
                     }
-                    query = query + ") ";
+                    query = query + ") ORDER BY time DESC LIMIT ?";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                     query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)";
                     dataarray.push(ids);
                     if (filter != null) {
-                        query = query + " AND action = ? ";
+                        query = query + " AND action = ?";
                         dataarray.push(filter);
                     }
-                    query = query + ") GROUP BY id "
+                    query = query + ") GROUP BY id ORDER BY time DESC LIMIT ?";
                 }
-                query = query + "ORDER BY time DESC LIMIT ?";
                 dataarray.push(limit);
                 sqlDbQuery(query, dataarray, func);
             };
@@ -2390,25 +2390,27 @@ module.exports.CreateDB = function (parent, func) {
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
-                var query = "SELECT doc FROM events WHERE (nodeid = ?) AND (domain = ?) ";
-                var dataarray = [nodeid, domain, limit];
+                var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ?";
+                var dataarray = [nodeid, domain];
                 if (filter != null) {
-                    query = query + "AND (action = ?) ORDER BY time DESC LIMIT ?";
-                    dataarray.splice(2, 0, filter);
+                    query = query + " AND action = ?) ORDER BY time DESC LIMIT ?";
+                    dataarray.push(filter);
                 } else {
-                    query = query + "ORDER BY time DESC LIMIT ?"
+                    query = query + ") ORDER BY time DESC LIMIT ?";
                 }
+                dataarray.push(limit);
                 sqlDbQuery(query, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
-                var query = "SELECT doc FROM events WHERE (nodeid = ?) AND (domain = ?) AND ((userid = ?) OR (userid IS NULL)) ";
-                var dataarray = [nodeid, domain, userid, limit];
+                var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ? AND ((userid = ?) OR (userid IS NULL))";
+                var dataarray = [nodeid, domain, userid];
                 if (filter != null) {
-                    query = query + "AND (action = ?) ORDER BY time DESC LIMIT ?";
-                    dataarray.splice(3, 0, filter);
+                    query = query + " AND action = ?) ORDER BY time DESC LIMIT ?";
+                    dataarray.push(filter);
                 } else {
-                    query = query + "ORDER BY time DESC LIMIT ?"
+                    query = query + ") ORDER BY time DESC LIMIT ?";
                 }
+                dataarray.push(limit);
                 sqlDbQuery(query, dataarray, func);
             };
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
