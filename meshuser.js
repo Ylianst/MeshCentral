@@ -1022,15 +1022,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // TODO: Add the meshes command.userid has access to (???)
                         var filter = [command.userid];
 
+                        var actionfilter = null;
+                        if (command.filter != null) {
+                            if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands'].includes(command.filter)) actionfilter = command.filter;
+                        }
+
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            db.GetUserEvents(filter, domain.id, command.userid, function (err, docs) {
+                            db.GetUserEvents(filter, domain.id, command.userid, actionfilter, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, userid: command.userid, tag: command.tag })); } catch (ex) { }
                             });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            db.GetUserEventsWithLimit(filter, domain.id, command.userid, command.limit, function (err, docs) {
+                            db.GetUserEventsWithLimit(filter, domain.id, command.userid, command.limit, actionfilter, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, userid: command.userid, tag: command.tag })); } catch (ex) { }
                             });
@@ -1048,15 +1053,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var limit = 10000;
                             if (common.validateInt(command.limit, 1, 1000000) == true) { limit = command.limit; }
 
+                            var filter = null;
+                            if (command.filter != null) {
+                                if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands'].includes(command.filter)) filter = command.filter;
+                            }
+
                             if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != MESHRIGHT_ADMIN)) {
                                 // Send the list of most recent events for this nodeid that only apply to us, up to 'limit' count
-                                db.GetNodeEventsSelfWithLimit(node._id, domain.id, user._id, limit, function (err, docs) {
+                                db.GetNodeEventsSelfWithLimit(node._id, domain.id, user._id, limit, filter, function (err, docs) {
                                     if (err != null) return;
                                     try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: node._id, tag: command.tag })); } catch (ex) { }
                                 });
                             } else {
                                 // Send the list of most recent events for this nodeid, up to 'limit' count
-                                db.GetNodeEventsWithLimit(node._id, domain.id, limit, function (err, docs) {
+                                db.GetNodeEventsWithLimit(node._id, domain.id, limit, filter, function (err, docs) {
                                     if (err != null) return;
                                     try { ws.send(JSON.stringify({ action: 'events', events: docs, nodeid: node._id, tag: command.tag })); } catch (ex) { }
                                 });
@@ -1076,15 +1086,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         for (var link in obj.user.links) { if (((obj.user.links[link].rights & MESHRIGHT_LIMITEVENTS) != 0) && ((obj.user.links[link].rights != MESHRIGHT_ADMIN))) { exGroupFilter2.push(link); } }
                         for (var i in filter2) { if (exGroupFilter2.indexOf(filter2[i]) == -1) { filter.push(filter2[i]); } }
 
+                        var actionfilter = null;
+                        if (command.filter != null) {
+                            if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands'].includes(command.filter)) actionfilter = command.filter;
+                        }
+
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
                             // Send the list of all events for this session
-                            db.GetEvents(filter, domain.id, function (err, docs) {
+                            db.GetEvents(filter, domain.id, actionfilter, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
                             });
                         } else {
                             // Send the list of most recent events for this session, up to 'limit' count
-                            db.GetEventsWithLimit(filter, domain.id, command.limit, function (err, docs) {
+                            db.GetEventsWithLimit(filter, domain.id, command.limit, actionfilter, function (err, docs) {
                                 if (err != null) return;
                                 try { ws.send(JSON.stringify({ action: 'events', events: docs, user: command.user, tag: command.tag })); } catch (ex) { }
                             });
@@ -1101,7 +1116,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (err != null) { try { ws.send(JSON.stringify({ action: 'recordings', error: 1, tag: command.tag })); } catch (ex) { } return; }
                     if ((command.limit == null) || (typeof command.limit != 'number')) {
                         // Send the list of all recordings
-                        db.GetEvents(['recording'], domain.id, function (err, docs) {
+                        db.GetEvents(['recording'], domain.id, null, function (err, docs) {
                             if (err != null) { try { ws.send(JSON.stringify({ action: 'recordings', error: 2, tag: command.tag })); } catch (ex) { } return; }
                             for (var i in docs) {
                                 delete docs[i].action; delete docs[i].etype; delete docs[i].msg; // TODO: We could make a more specific query in the DB and never have these.
@@ -1111,7 +1126,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
                     } else {
                         // Send the list of most recent recordings, up to 'limit' count
-                        db.GetEventsWithLimit(['recording'], domain.id, command.limit, function (err, docs) {
+                        db.GetEventsWithLimit(['recording'], domain.id, command.limit, null, function (err, docs) {
                             if (err != null) { try { ws.send(JSON.stringify({ action: 'recordings', error: 2, tag: command.tag })); } catch (ex) { } return; }
                             for (var i in docs) {
                                 delete docs[i].action; delete docs[i].etype; delete docs[i].msg; // TODO: We could make a more specific query in the DB and never have these.
@@ -4779,7 +4794,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         });
                     } else {
                         // Old way
-                        db.GetUserEvents([user._id], domain.id, user._id, function (err, docs) {
+                        db.GetUserEvents([user._id], domain.id, user._id, null, function (err, docs) {
                             if (err != null) return;
                             var e = [];
                             for (var i in docs) {
@@ -4805,7 +4820,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 });
                             } else {
                                 // Old way
-                                db.GetUserEvents([command.userid], domain.id, user._id, function (err, docs) {
+                                db.GetUserEvents([command.userid], domain.id, user._id, null, function (err, docs) {
                                     if (err != null) return;
                                     var e = [];
                                     for (var i in docs) { if ((docs[i].msgArgs) && (docs[i].userid == command.userid) && ((docs[i].action == 'authfail') || (docs[i].action == 'login'))) { e.push({ t: docs[i].time, m: docs[i].msgid, a: docs[i].msgArgs }); } }
