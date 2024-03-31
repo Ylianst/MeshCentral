@@ -2028,6 +2028,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.StoreEvent = function (event, func) {
                 obj.dbCounters.eventsSet++;
                 sqlDbQuery('INSERT INTO events VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING id', [event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, event], function (err, docs) {
+                    if(func){ func(); }
                     if (docs.id) {
                         for (var i in event.ids) {
                             if (event.ids[i] != '*') {
