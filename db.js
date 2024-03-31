@@ -1268,7 +1268,6 @@ module.exports.CreateDB = function (parent, func) {
         } else if (obj.databaseType == 6) { // Postgres SQL
             Datastore.query(query, args, function (error, results) {
                 if (error != null) {
-                    console.log(query, args, error);
                     if (func) try { func(error); } catch (ex) { console.log('SQLERR4', ex); }
                 } else {
                     var docs = [];
