@@ -7879,6 +7879,8 @@
                     useridlist.sort();
                     for (var i in useridlist) {
                         var trash = '', rights = '', userid = useridlist[i], srights = currentNode.links[userid].rights, username = EscapeHtml(userid.split('/')[2]), rights = makeUserDeviceRightsString(srights), ugroup = false;
+                        if (currentNode.links[userid].name != null) { username = EscapeHtml(currentNode.links[userid].name); }
+                        if (userid == userinfo._id) { username = EscapeHtml(userinfo.name); }
                         if ((users != null) && (users[userid] != null)) { username = EscapeHtml(users[userid].name); }
                         if ((usergroups != null) && (usergroups[userid] != null)) { username = EscapeHtml(usergroups[userid].name); ugroup = true; }
                         if ((meshrights & 2) != 0) {
@@ -18963,6 +18965,9 @@
             var useridsplit = userid.split('/'), userid2 = useridsplit[0] + '/' + useridsplit[1] + '/' + useridsplit[2], guestname = '';
             if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + decode_utf8(atob(useridsplit[3].substring(6))); }
             if (users && users[userid2] != null) { if (users[userid2].realname != null) return (users[userid2].realname + guestname); else return (users[userid2].name + guestname); }
+            if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (currentNode.links[userid].name + guestname); }
+            if (userid == userinfo._id) { return (userinfo.name + guestname); }
+            if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (nodes[a].links[b].name + guestname); } } } }
             return (useridsplit[2] + guestname);
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
