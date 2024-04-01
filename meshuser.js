@@ -815,6 +815,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((xipkvmport != null) && (xipkvmport.sessions != null)) { docs[i].sessions = xipkvmport.sessions; }
                             }
 
+                            // Patch node links with names, like meshes links with names
+                            for (var a in docs[i].links) {
+                                if (!docs[i].links[a].name) {
+                                    if (parent.users[a].realname) { docs[i].links[a].name = parent.users[a].realname; }
+                                    else if (parent.users[a].name) { docs[i].links[a].name = parent.users[a].name; }
+                                }
+                            }
+
                             r[meshid].push(docs[i]);
                         }
                         const response = { action: 'nodes', responseid: command.responseid, nodes: r, tag: command.tag };
