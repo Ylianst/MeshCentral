@@ -817,7 +817,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Patch node links with names, like meshes links with names
                             for (var a in docs[i].links) {
-                                if (!docs[i].links[a].name) docs[i].links[a].name = parent.users[a].name;
+                                if (!docs[i].links[a].name) {
+                                    if (parent.users[a].realname) { docs[i].links[a].name = parent.users[a].realname; }
+                                    else if (parent.users[a].name) { docs[i].links[a].name = parent.users[a].name; }
+                                }
                             }
 
                             r[meshid].push(docs[i]);
