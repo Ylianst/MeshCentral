@@ -3784,7 +3784,7 @@ function openFileOnDesktop(file) {
                 var uid = require('user-sessions').consoleUid();
                 var user = require('user-sessions').getUsername(uid);
                 var domain = require('user-sessions').getDomain(uid);
-                var task = { name: 'MeshChatTask', user: user, domain: domain, execPath: (require('fs').statSync(file).isDirectory() ? 'C:\\Windows\\explorer.exe' : file) };
+                var task = { name: 'MeshChatTask', user: user, domain: domain, execPath: (require('fs').statSync(file).isDirectory() ? process.env['windir'] + '\\explorer.exe' : file) };
                 if (require('fs').statSync(file).isDirectory()) task.arguments = [file];
                 try {
                     require('win-tasks').addTask(task);
@@ -3793,7 +3793,7 @@ function openFileOnDesktop(file) {
                     return (true);
                 }
                 catch (ex) {
-                    var taskoptions = { env: { _target: (require('fs').statSync(file).isDirectory() ? 'C:\\Windows\\explorer.exe' : file), _user: '"' + domain + '\\' + user + '"' }, _args: "" };
+                    var taskoptions = { env: { _target: (require('fs').statSync(file).isDirectory() ? process.env['windir'] + '\\explorer.exe' : file), _user: '"' + domain + '\\' + user + '"' }, _args: "" };
                     if (require('fs').statSync(file).isDirectory()) taskoptions.env._args = file;
                     for (var c1e in process.env) {
                         taskoptions.env[c1e] = process.env[c1e];
