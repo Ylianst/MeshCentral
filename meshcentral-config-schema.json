@@ -3487,7 +3487,7 @@
         "nochecks": {
           "type": "boolean",
           "default": false,
-          "description": "If you choose \"false\", MeshCentral won't verify if \"email\" is valid, has a valid MX record, AND if \"names\" contain a wildcard, can be resolved by DNS A/AAAA record."
+          "description": "If you choose \"true\", MeshCentral won't verify if \"email\" is valid, has a valid MX record, AND if \"names\" contain a wildcard, can be resolved by DNS A/AAAA record."
         }
       },
       "required": [
