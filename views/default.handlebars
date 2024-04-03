@@ -884,6 +884,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton value="Refresh" onclick="p13folderup(9999)" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton value="Find" onclick="p13findfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton value="GoTo" onclick="p13gotofolder()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13OpenButton value="Open" onclick="p13openfilefolder()" />
                             </div>
                         </td>
                     </tr>
@@ -11165,6 +11166,21 @@
             p13setActions();
         }
 
+        function p13openfilefolder() { 
+            setDialogMode(2, "Open File/Folder", 3, p13openfilefolderEx, "Are you sure you want to open this file/folder on the remote devices desktop ?");
+        }
+        function p13openfilefolderEx() {
+            var openfilefolder = "", checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                console.log(checkboxes[i]);
+                if (checkboxes[i].checked) {
+                    openfilefolder = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(isWindowsNode(currentNode) ? '\\' : '/') + (isWindowsNode(currentNode) ? '\\' : '/') + p13filetree.dir[checkboxes[i].value].n;
+                }
+            }
+            if (openfilefolder == "") return;
+            files.sendText({ action: 'open', reqid: 1, path: openfilefolder, dir: (p13getFileSelDirCount() == 1) ? true : false });
+        }
+
         function p13gotofolder() {
             setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput style=width:100% placeholder="'+(isWindowsNode(currentNode) ? 'C:\\' : '/var/www')+'" />');
             focusTextBox('p13folderinput');
@@ -11261,6 +11277,7 @@
                 QE('p13PasteButton', false);
                 QE('p13GoToFolderButton', false);
                 QE('p13DownloadButton', false);
+                QE('p13OpenButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
                 var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
@@ -11279,6 +11296,7 @@
                 QE('p13UnzipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', true);
+                QE('p13OpenButton', (cc == 1));
                 QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
             }
             var filesState = ((files != null) && (files.state != 0));
