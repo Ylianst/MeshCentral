@@ -389,7 +389,7 @@ You will need to follow the instructions provided to finish the authorization pr
     "from": "my@googleaccount.com",
     "auth": {
       "clientId": "<YOUR-CLIENT-ID>",
-      "clientSecret": "<YOUR-SECRET>",
+      "clientSecret": "<YOUR-CLIENT-SECRET>",
       "refreshToken": "<YOUR-REFRESH-TOKEN>"
     },
     "user": "noreply@authorizedgooglealias.com",
@@ -403,6 +403,11 @@ You will need to follow the instructions provided to finish the authorization pr
 Regardless of what SMTP account is used, MeshCentral will perform a test connection to make sure the server if working as expected when starting. Hence, the user will be notified if Meshcentral and SMTP server has been configured correctly as shown below.
 
 ![](images/2022-05-19-00-01-43.png)
+
+After successfully configuring the Gmail SMTP server, switch the OAuth 'Publishing Status' from `Testing` to `In Production`. This step prevents the need for frequent refresh token generation. Verification of your project isn't required to make this change.
+
+![](images/In-production.png)
+
 
 ## Database
 
