@@ -380,7 +380,7 @@ https://developers.google.com/oauthplayground
 
 Enter your Client ID and secret from the last step.  On the left side of the page, you should now see a text box that allows you to add your own scopes.  Enter https://mail.google.com and click Authorize API.
 
-You will need to follow the instructions provided to finish the authorization process.  Once that is complete, you should receive a refresh token and an access token.  These are the final items we need to complete the SMTP section of our config.json.  It should now look something like this:
+You will need to follow the instructions provided to finish the authorization process.  Once that is complete, you should receive a refresh token.  The refresh token, Client ID and Client Secret are the final items we need to complete the SMTP section of our config.json.  It should now look something like this:
 
 ```
 "smtp": {
@@ -390,8 +390,7 @@ You will need to follow the instructions provided to finish the authorization pr
     "auth": {
       "clientId": "<YOUR-CLIENT-ID>",
       "clientSecret": "<YOUR-SECRET>",
-      "refreshToken": "<YOUR-REFRESH-TOKEN>",
-      "accessToken": "<YOUR-ACCESS-TOKEN>"
+      "refreshToken": "<YOUR-REFRESH-TOKEN>"
     },
     "user": "noreply@authorizedgooglealias.com",
     "emailDelaySeconds": 10,
