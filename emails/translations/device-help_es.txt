@@ -1,7 +1,7 @@
-[[[SERVERNAME]]] - Solicitud de ayuda del dispositivo
-Device "[[[DEVICENAME]]]" requested assistance.
+[[[SERVERNAME]]] - Solicitud de ayuda con el Dispositivo
+Dispositivo "[[[DEVICENAME]]]" solicito asistencia.
 
-User: "[[[HELPUSERNAME]]]"
-Request: "[[[HELPREQUEST]]]"
+Usuario: "[[[HELPUSERNAME]]]"
+Solicitud: "[[[HELPREQUEST]]]"
 
 [[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]

@@ -67,17 +67,17 @@ To be able to control keyboard and mouse
 
 ![](images/2023-11-29-12-58-36.png)
 
-## I'm using cloudflare and I'm getting a black screen but the mouse moves?
+## I'm using CloudFlare and I'm getting a black screen but the mouse moves?
 
-If you are using cloudflare for your DNS hosting and your remote screen is black, DONT PANIC!
+If you are using CloudFlare for your DNS hosting and your remote screen is black, DONT PANIC!
 
-Unfortunately, MeshCentral currently doesnt work with CloudFlares Proxy DNS Mode, so the remote agent devices have to connect directly to your MeshCentral Server instead of being proxied!
+Unfortunately, MeshCentral doesn't always work with CloudFlare's Proxy DNS Mode.  
 
-The fix is to simply disable the 'Proxy Status' to OFF inside your DNS A Record.
+The fix is to simply set the 'Proxy Status' to OFF inside your DNS A Record, within the CloudFlare control panel.
 
-Simple follow the steps [here](https://developers.cloudflare.com/fundamentals/setup/manage-domains/pause-cloudflare/#disable-proxy-on-dns-records)
+Simply follow the steps [here](https://developers.cloudflare.com/fundamentals/setup/manage-domains/pause-cloudflare/#disable-proxy-on-dns-records)
 
 Once done, open your firewall for the `port` and `agentPort` ports of where your meshcentral is hosted, then restart your MeshCentral Server
 
-The is currently a PINNED GitHub issue about this [here](https://github.com/Ylianst/MeshCentral/issues/5302)
+There is currently a PINNED GitHub issue about this [here](https://github.com/Ylianst/MeshCentral/issues/5302)
 

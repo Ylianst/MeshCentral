@@ -926,6 +926,7 @@
                                 <div style=float:right;text-align:right>
                                     <span id=DeskChatButton><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
+                                    <span id=DeskOpenWebButton><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
@@ -3938,6 +3939,22 @@
                 }
                 meshserver.send({ action: 'meshmessenger', nodeid: decodeURIComponent(currentNode._id) });
             }, "Start chat session?");
+        }
+
+        function deviceUrlFunction() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll onkeyup=deviceUrlFunctionValidate() onchange=deviceUrlFunctionValidate()></input>');
+            Q('d2devurl').focus();
+            deviceUrlFunctionValidate();
+        }
+
+        function deviceUrlFunctionValidate() {
+            var x = Q('d2devurl').value.toLowerCase();
+            QE('idx_dlgOkButton', ((x.startsWith('http://') && (x.length > 7)) || (x.startsWith('https://') && (x.length > 8))));
+        }
+
+        function deviceUrlFunctionEx() {
+            meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: Q('d2devurl').value });
         }
 
         // Look to see if we need to update the device timeline

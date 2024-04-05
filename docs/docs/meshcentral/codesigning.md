@@ -73,7 +73,7 @@ When doing sign/unsign, you can also change resource properties of the generated
 
 ## Automatic Agent Code Signing
 
-If you want to self-sign the mesh agent so you can whitelist the software in your AV, and lock it to your server and organization.
+If you want to self-sign the mesh agent so you can whitelist the software in your AV, as well as lock it to your server and organization:
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/qMAestNgCwc" frameborder="0" allowfullscreen></iframe>

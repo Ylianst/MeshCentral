@@ -5,7 +5,7 @@
 
 ## Use Cases
 
-Certain feature requests may not be suitable for all MeshCentral users and thus are available as a plugin. Furthermore users can develop their own plugins - as described further below - to extend functionality or benefit from integrating the powerful MeshCentral into their existing application environment much better.
+Certain feature requests may not be suitable for all MeshCentral users and thus are available as a plugin. Furthermore users can develop their own plugins - as described further below - to extend functionality or benefit from integrating MeshCentral into their existing application environment.
 
 ## List of publically available plugins
 
@@ -17,10 +17,10 @@ Certain feature requests may not be suitable for all MeshCentral users and thus 
    >"plugins": {
    >    "enabled": true
    >},
-2. Restart MeshCentral in case you just enabled plugins in the configuration.
+2. Restart MeshCentral if you needed to change the configuration.
 2. Log into MeshCentral as full administrator.
-3. Go my `My Server` -> `Plugins`, hit the Download plugin button.
-4. A dialog opens requesting an URL, e.g. put in: <https://github.com/ryanblenis/MeshCentral-ScriptTask>
+3. Go my `My Server` -> `Plugins`, then hit the Download plugin button.
+4. A dialog opens requesting a URL, e.g. put in: <https://github.com/ryanblenis/MeshCentral-ScriptTask>
 5. The plugin pops up in the plugin list below the download button, you can now configure and enable/disable it.
 
 # Plugins - Development & Hooks
@@ -30,7 +30,7 @@ Certain feature requests may not be suitable for all MeshCentral users and thus 
 
 ## Overview
 
-Not all feature requests may be suitable for all MeshCentral users and thus can't be integrated into MeshCentral directly. Hwoever, Instead of maintaining a complete fork of MeshCentral it is so much easier to benefit from and extend MeshCentral's functionality by using hooks and writing plugins for it.
+Not all feature requests may be suitable for all MeshCentral users and thus can't be integrated into MeshCentral directly. Hwoever, Instead of maintaining a complete fork of MeshCentral it is much easier to extend MeshCentral's functionality using hooks and writing plugins for it.
 
 ## Anatomy of a plugin:
 
@@ -78,7 +78,7 @@ A valid JSON object within a file named `config.json` in the root folder of your
 | configUrl         | Yes      | string      | the URL to the config.json of the project                    |
 | downloadUrl       | Yes      | string      | the URL to a ZIP of the project (used for installation/upgrades) |
 | repository        | Yes      | JSON object | contains the following attributes                            |
-| repository.type   | Yes      | string      | valid values are `git` and in the future, `npm` will also be supported in the future |
+| repository.type   | Yes      | string      | valid values are `git` and in the future, `npm` will also be supported. |
 | repository.url    | Yes      | string      | the URL to the project's repository                          |
 | versionHistoryUrl | No       | string      | the URL to the project's versions/tags                       |
 | meshCentralCompat | Yes      | string      | the minimum version string of required compatibility with the MeshCentral server, can be formatted as "0.1.2-c" or ">=0.1.2-c". Currently only supports minimum version, not full semantic checking. |

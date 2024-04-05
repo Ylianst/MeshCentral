@@ -3483,6 +3483,11 @@
           "type": "boolean",
           "default": false,
           "description": "By default a test certificate will be obtained from Let's Encrypt. Always start by getting a test certificate and make sure that works before setting this to true and obtaining a production certificate. Making too many bad requests for a production certificate will get you banned for a long period of time."
+        },
+        "nochecks": {
+          "type": "boolean",
+          "default": false,
+          "description": "If you choose \"true\", MeshCentral won't verify if \"email\" is valid, has a valid MX record, AND if \"names\" doesn't contain a wildcard, can be resolved by DNS A/AAAA record."
         }
       },
       "required": [
