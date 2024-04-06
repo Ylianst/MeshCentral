@@ -336,11 +336,17 @@ Please map the host, port values to connect to the right host that provides this
 
 Some SMTP servers will require a valid username and password to login to the mail server. This is to prevent unauthorized e-mail correspondence. TLS option can be set to ‘true’ if the SMTP server requires TLS.
 
-One option is to configure MeshCentral work with Google Gmail* by setting “host” with smtp.gmail.com, and “port” with 587. In the config.json file, use user’s Gmail* address for both “from” and “user” and Gmail* password in the “pass” value. You will also need to enable “Less secure app access” in for this Google account. It’s in the account settings, security section:
+#### SMTP: User/Pass
+##### Gmail
+
+One option is to configure MeshCentral work with Google Gmail by setting “host” with smtp.gmail.com, and “port” with 587. In the config.json file, use user’s Gmail address for both “from” and “user” and Gmail password in the “pass” value. You will also need to enable “Less secure app access” in for this Google account. It’s in the account settings, security section:
 
 ![](images/2022-05-19-00-01-19.png)
 
 If a Google account is setup with 2-factor authentication, the option to allow less secure applications not be available. Because the Google account password is in the MeshCentral config.json file and that strong authentication can’t be used, it’s preferable to use a dedicated Google account for MeshCentral email.
+
+#### SMTP: OAuth Authentication
+##### Gmail
 
 Google has announced that less secure app access will be phased out.  For Google Workspace or G-Suite accounts, the following process can be used to allow OAuth2 based authentication with Google's SMTP server.  It is likely a very similar process for regular Gmail accounts.
 
@@ -348,7 +354,7 @@ Start by visiting the Google API console:
 
 https://console.developers.google.com/
 
-First, you will create a new project.  Name it something unique in case you need to create more in the future.  In this example, I've named the project "MeshCentral"
+First, you will create a new project. Name it something unique in case you need to create more in the future. In this example, I've named the project "MeshCentral"
 
 ![](images/gc-newproject.png)
 
@@ -358,9 +364,9 @@ Click on the "OAuth Consent Screen" link, Under "APIs and Services" from the lef
 
 If you have a Google Workspace account, you will have the option to choose "Internal" application and skip the next steps.  If not, you will be required to provide Google with information about why you want access, as well as verifying domain ownership.  
 
-![](images/gc-oauthconsent2.png)
+![](images/OAuth-Internal-External.png)
 
-You will want to add a scope for your app, so that your token is valid for gmail:
+Add the Gmail address under which you have created this project to the fields labelled ‘User support email’ and ‘Developer contact information’ so that you will be allowed for authentication. After that, you will want to add a scope for your app, so that your token is valid for gmail:
 
 ![](images/gc-oauthscopes.png)
 
@@ -370,7 +376,7 @@ Once this is complete, the next step will be to add credentials.
 
 Choose OAuth Client
 
-You will obtain a Client ID and a Client secret once you've completed the process.   Be sure to store the secret immediately, as you won't be able to retreive it after you've dismissed the window.
+You will obtain a Client ID and a Client secret once you've completed the process. Be sure to store the secret immediately, as you won't be able to retreive it after you've dismissed the window.
 
 Next, you will need to visit the Google OAuth Playground:
 
@@ -380,7 +386,7 @@ https://developers.google.com/oauthplayground
 
 Enter your Client ID and secret from the last step.  On the left side of the page, you should now see a text box that allows you to add your own scopes.  Enter https://mail.google.com and click Authorize API.
 
-You will need to follow the instructions provided to finish the authorization process.  Once that is complete, you should receive a refresh token.  The refresh token, Client ID and Client Secret are the final items we need to complete the SMTP section of our config.json.  It should now look something like this:
+You will need to follow the instructions provided to finish the authorization process. Once that is complete, you should receive a refresh token. The refresh token, Client ID and Client Secret are the final items we need to complete the SMTP section of our config.json. It should now look something like this:
 
 ```
 "smtp": {
