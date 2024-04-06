@@ -8566,7 +8566,7 @@
                 }
                 x += '<tr class=' + (((count % 2) == 0)?'altBack':'') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
                 ++count;
-                date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
+                date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
             }
             // Add the language and timezone of the browser to the server so the server can localize the time correctly.
             var tz = '';
