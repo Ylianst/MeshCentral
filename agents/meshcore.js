@@ -1883,86 +1883,49 @@ function getSystemInformation(func) {
                 if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
-            if (!results.hardware.identifiers['bios_serial']) {
-                try { 
-                    var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
-                    results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
-                } catch (ex) { }
-            }
-            if (!results.hardware.identifiers['bios_mode']) {
-                try {
-                    results.hardware.identifiers['bios_mode'] = 'Legacy';
-                    for (var i in results.hardware.windows.partitions) {
-                        if (results.hardware.windows.partitions[i].Description=='GPT: System') {
-                            results.hardware.identifiers['bios_mode'] = 'UEFI';
-                        }
-                    }
-                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
-            }
-            if (!results.hardware.tpm) {
-                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
-                try {
-                    var values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftTpm', "SELECT * FROM Win32_Tpm", ['IsActivated_InitialValue','IsEnabled_InitialValue','IsOwned_InitialValue','ManufacturerId','ManufacturerVersion','SpecVersion']);
-                    if(values[0]) {
-                        results.hardware.tpm = {
-                            SpecVersion: values[0].SpecVersion.split(",")[0],
-                            ManufacturerId: IntToStr(values[0].ManufacturerId).replace(/[^\x00-\x7F]/g, ""),
-                            ManufacturerVersion: values[0].ManufacturerVersion,
-                            IsActivated: values[0].IsActivated_InitialValue,
-                            IsEnabled: values[0].IsEnabled_InitialValue,
-                            IsOwned: values[0].IsOwned_InitialValue,
-                        }
-                    }
-                } catch (ex) { }
+            if (x.LastBootUpTime) { // detect windows uptime
+                var thedate = {
+                    year: parseInt(x.LastBootUpTime.substring(0, 4)),
+                    month: parseInt(x.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
+                    day: parseInt(x.LastBootUpTime.substring(6, 8)),
+                    hours: parseInt(x.LastBootUpTime.substring(8, 10)),
+                    minutes: parseInt(x.LastBootUpTime.substring(10, 12)),
+                    seconds: parseInt(x.LastBootUpTime.substring(12, 14)),
+                };
+                var thelastbootuptime = new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds);
+                meshCoreObj.lastbootuptime = thelastbootuptime.getTime(); // store the last boot up time in coreinfo for columns
+                meshCoreObjChanged();
+                var nowtime = new Date();
+                var differenceInMilliseconds = Math.abs(thelastbootuptime - nowtime);
+                if (differenceInMilliseconds < 300000) { // computer uptime less than 5 minutes
+                    MeshServerLogEx(159, [thelastbootuptime.toString()], "Device Powered On", null);
+                }
             }
         }
         if(results.hardware && results.hardware.linux) {
-            if (!results.hardware.identifiers['bios_serial']) {
-                try {
-                    if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
-                        results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
-                    }
-                } catch (ex) { }
-            }
-            if (!results.hardware.identifiers['bios_mode']) {
-                try {
-                    results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
-                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
-            }
-            if (!results.hardware.tpm) {
-                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
-                try {
-                    if (require('fs').statSync('/sys/class/tpm/tpm0').isDirectory()){
-                        results.hardware.tpm = {
-                            SpecVersion: require('fs').readFileSync('/sys/class/tpm/tpm0/tpm_version_major').toString().trim()
-                        }
-                    }
-                } catch (ex) { }
-            }
-            if(!results.hardware.linux.LastBootUpTime) {
-                try {
-                    var child = require('child_process').execFile('/usr/bin/uptime', ['', '-s']); // must include blank value at begining for some reason?
-                    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-                    child.stderr.on('data', function () { });
-                    child.waitExit();
-                    results.hardware.linux.LastBootUpTime = child.stdout.str.trim();
-                } catch (ex) { }
-            }
-        }
-        if(process.platform=='darwin'){
-            try {
-                var child = require('child_process').execFile('/usr/sbin/sysctl', ['', 'kern.boottime']); // must include blank value at begining for some reason?
-                child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-                child.stderr.on('data', function () { });
-                child.waitExit();
-                const timestampMatch = /\{ sec = (\d+), usec = \d+ \}/.exec(child.stdout.str.trim());
-                if(!results.hardware.darwin){
-                    results.hardware.darwin = { LastBootUpTime: parseInt(timestampMatch[1]) };
-                }else{
-                    results.hardware.darwin.LastBootUpTime = parseInt(timestampMatch[1]);
+            if(results.hardware.linux.LastBootUpTime) {
+                var thelastbootuptime = new Date(results.hardware.linux.LastBootUpTime);
+                meshCoreObj.lastbootuptime = thelastbootuptime.getTime(); // store the last boot up time in coreinfo for columns
+                meshCoreObjChanged();
+                var nowtime = new Date();
+                var differenceInMilliseconds = Math.abs(thelastbootuptime - nowtime);
+                if (differenceInMilliseconds < 300000) { // computer uptime less than 5 minutes
+                    MeshServerLogEx(159, [thelastbootuptime.toString()], "Device Powered On", null);
                 }
-            } catch (ex) { }
+            }
         }
+        if(results.hardware && results.hardware.darwin){
+            if(results.hardware.darwin.LastBootUpTime) {
+                var thelastbootuptime = new Date(results.hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
+                meshCoreObj.lastbootuptime = thelastbootuptime.getTime(); // store the last boot up time in coreinfo for columns
+                meshCoreObjChanged();
+                var nowtime = new Date();
+                var differenceInMilliseconds = Math.abs(thelastbootuptime - nowtime);
+                if (differenceInMilliseconds < 300000) { // computer uptime less than 5 minutes
+                    MeshServerLogEx(159, [thelastbootuptime.toString()], "Device Powered On", null);
+                }
+            }
+        }    
         results.hardware.agentvers = process.versions;
         results.hardware.network = { dns: require('os').dns() }; 
         replaceSpacesWithUnderscoresRec(results);
