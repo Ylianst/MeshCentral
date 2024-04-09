@@ -1878,7 +1878,7 @@ function serverConnect() {
             if (srights.indexOf('recordings') != -1) { siteadmin |= 0x00000200; }
             if (srights.indexOf('locksettings') != -1) { siteadmin |= 0x00000400; }
             if (srights.indexOf('allevents') != -1) { siteadmin |= 0x00000800; }
-            if (srights.indexOf('nonewdevices') != -1) { newAccRights |= 0x00001000; }
+            if (srights.indexOf('nonewdevices') != -1) { siteadmin |= 0x00001000; }
         }
 
         if (args.siteadmin) { siteadmin = 0xFFFFFFFF; }
