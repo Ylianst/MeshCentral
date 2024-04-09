@@ -3226,6 +3226,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changedevice', responseid: command.responseid, result: 'Access Denied' })); } catch (ex) { } }
                             return;
                         }
+                        node = common.unEscapeLinksFieldName(node); // unEscape node data for rdp/ssh credentials
                         var mesh = parent.meshes[node.meshid], amtchange = 0;
 
                         // Ready the node change event
