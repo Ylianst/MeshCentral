@@ -2073,6 +2073,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleInviteRequest(req, res) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleInviteRequest: failed checks.'); res.sendStatus(404); return; }
+        if (domain.agentinvitecodes != true) { nice404(req, res); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((req.body == null) || (req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 0 }, req, domain)); return; } // No invitation code
 
@@ -6590,10 +6591,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         });
                     });
                 }
-                if (domain.agentinvitecodes == true) {
-                    obj.app.get(url + 'invite', handleInviteRequest);
-                    obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
-                }
+                obj.app.get(url + 'invite', handleInviteRequest);
+                obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
+                
                 if (parent.pluginHandler != null) {
                     obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                     obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
@@ -7115,6 +7115,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // We are done starting the web server.
             if (doneFunc) doneFunc();
         }
+    }
+
+    function nice404(req, res) {
+        parent.debug('web', '404 Error ' + req.url);
+        var domain = getDomain(req);
+        if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
+        const cspNonce = obj.crypto.randomBytes(15).toString('base64');
+        res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
+        res.status(404).render(getRenderPage((domain.sitestyle == 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
     }
 
     // Auth strategy flags
