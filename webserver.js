@@ -7074,14 +7074,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Indicates to ExpressJS that the override public folder should be used to serve static files.
-                if (parent.config.domains[i].webpublicpath != null) {
-                    // Use domain public path
-                    obj.app.use(url, obj.express.static(parent.config.domains[i].webpublicpath));
-                } else if (obj.parent.webPublicOverridePath != null) {
-                    // Use override path
-                    obj.app.use(url, obj.express.static(obj.parent.webPublicOverridePath));
-                }
-
+                obj.app.use(url, function(req, res, next){
+                    var domain = getDomain(req);
+                    if (domain.webpublicpath != null) { // Use domain public path
+                        obj.express.static(domain.webpublicpath)(req, res, next);
+                    } else if (obj.parent.webPublicOverridePath != null) { // Use override path
+                        obj.express.static(obj.parent.webPublicOverridePath)(req, res, next);
+                    } else { // carry on and use default public path
+                        next();
+                    }
+                });
                 // Indicates to ExpressJS that the default public folder should be used to serve static files.
                 obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
 
@@ -7122,6 +7124,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var domain = getDomain(req);
         if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
+        if (obj.args.nice404 == false) { res.sendStatus(404); return; }
         const cspNonce = obj.crypto.randomBytes(15).toString('base64');
         res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
         res.status(404).render(getRenderPage((domain.sitestyle == 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
