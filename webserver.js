@@ -6470,7 +6470,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             for (var i in parent.config.domains) {
                 if (parent.config.domains[i].dns != null) {
                     if (typeof parent.config.domains[''].authstrategies != 'object') { parent.config.domains[''].authstrategies = { 'authStrategyFlags': 0 }; }
-                    parent.config.domains[''].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains['']);
+                    parent.config.domains[''].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains[i]);
                 } else {
                     if (typeof parent.config.domains[i].authstrategies != 'object') { parent.config.domains[i].authstrategies = { 'authStrategyFlags': 0 }; }
                     parent.config.domains[i].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains[i]);
