@@ -1117,7 +1117,7 @@ function performConfigOperations(args) {
     if (fs.existsSync(configFile) == false) { console.log("Unable to find config.json."); return; }
     var config = null;
     try { config = fs.readFileSync(configFile).toString('utf8'); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
-    try { config = require(configFile); } catch (e) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
+    try { config = require(configFile); } catch (e) { console.log('ERROR: Unable to parse ' + configFile + '.'); return null; }
     if (args.adddomain != null) {
         didSomething++;
         if (config.domains == null) { config.domains = {}; }
