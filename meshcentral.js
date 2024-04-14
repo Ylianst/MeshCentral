@@ -235,7 +235,7 @@ function CreateMeshCentralServer(config, args) {
                 files = obj.fs.readdirSync(obj.webViewsOverridePath);
                 for (var i in files) {
                     var file = obj.path.join(obj.webViewsOverridePath, files[i]);
-                    if (file.endsWith('.handlebars') || file.endsWith('-min.handlebars')) {
+                    if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
                         translateEngine.startEx(['', '', 'translate', '*', translationFile, file, '--subdir:translations']);
                     }
                 }
