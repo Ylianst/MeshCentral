@@ -240,6 +240,29 @@ function CreateMeshCentralServer(config, args) {
                     }
                 }
             }
+
+            // Check domains and see if "meshcentral-web-DOMAIN" exists, if so, translate all pages in that folder
+            for (i in obj.config.domains) {
+                if (i == "") continue;
+                var path = obj.path.join(obj.datapath, '..', 'meshcentral-web-' + i, 'views');
+                if (require('fs').existsSync(path)) {
+                    didSomething = true;
+                    var files = obj.fs.readdirSync(path);
+                    for (var a in files) {
+                        var file = obj.path.join(path, files[a]);
+                        if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
+                            translateEngine.startEx(['', '', 'minify', file]);
+                        }
+                    }
+                    files = obj.fs.readdirSync(path);
+                    for (var a in files) {
+                        var file = obj.path.join(path, files[a]);
+                        if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
+                            translateEngine.startEx(['', '', 'translate', '*', translationFile, file, '--subdir:translations']);
+                        }
+                    }
+                }
+            }
             /*
             if (obj.webPublicOverridePath != null) {
                 didSomething = true;
