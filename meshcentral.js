@@ -220,6 +220,12 @@ function CreateMeshCentralServer(config, args) {
                 translateEngine.startEx(['', '', 'translateall', translationFile]);
                 translateEngine.startEx(['', '', 'extractall', translationFile]);
                 didSomething = true;
+            } else {
+                // Translate all of the default files
+                translateEngine.startEx(['', '', 'minifyall']);
+                translateEngine.startEx(['', '', 'translateall']);
+                translateEngine.startEx(['', '', 'extractall']);
+                didSomething = true;
             }
 
             // Check if "meshcentral-web" exists, if so, translate all pages in that folder.
@@ -277,6 +283,7 @@ function CreateMeshCentralServer(config, args) {
             */
 
             if (didSomething == false) { console.log("Nothing to do."); }
+            console.log('Finished Translating.')
             process.exit();
             return;
         }
