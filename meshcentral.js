@@ -220,6 +220,12 @@ function CreateMeshCentralServer(config, args) {
                 translateEngine.startEx(['', '', 'translateall', translationFile]);
                 translateEngine.startEx(['', '', 'extractall', translationFile]);
                 didSomething = true;
+            } else {
+                // Translate all of the default files
+                translateEngine.startEx(['', '', 'minifyall']);
+                translateEngine.startEx(['', '', 'translateall']);
+                translateEngine.startEx(['', '', 'extractall']);
+                didSomething = true;
             }
 
             // Check if "meshcentral-web" exists, if so, translate all pages in that folder.
@@ -235,8 +241,31 @@ function CreateMeshCentralServer(config, args) {
                 files = obj.fs.readdirSync(obj.webViewsOverridePath);
                 for (var i in files) {
                     var file = obj.path.join(obj.webViewsOverridePath, files[i]);
-                    if (file.endsWith('.handlebars') || file.endsWith('-min.handlebars')) {
+                    if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
                         translateEngine.startEx(['', '', 'translate', '*', translationFile, file, '--subdir:translations']);
+                    }
+                }
+            }
+
+            // Check domains and see if "meshcentral-web-DOMAIN" exists, if so, translate all pages in that folder
+            for (i in obj.config.domains) {
+                if (i == "") continue;
+                var path = obj.path.join(obj.datapath, '..', 'meshcentral-web-' + i, 'views');
+                if (require('fs').existsSync(path)) {
+                    didSomething = true;
+                    var files = obj.fs.readdirSync(path);
+                    for (var a in files) {
+                        var file = obj.path.join(path, files[a]);
+                        if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
+                            translateEngine.startEx(['', '', 'minify', file]);
+                        }
+                    }
+                    files = obj.fs.readdirSync(path);
+                    for (var a in files) {
+                        var file = obj.path.join(path, files[a]);
+                        if (file.endsWith('.handlebars') && !file.endsWith('-min.handlebars')) {
+                            translateEngine.startEx(['', '', 'translate', '*', translationFile, file, '--subdir:translations']);
+                        }
                     }
                 }
             }
@@ -254,6 +283,7 @@ function CreateMeshCentralServer(config, args) {
             */
 
             if (didSomething == false) { console.log("Nothing to do."); }
+            console.log('Finished Translating.')
             process.exit();
             return;
         }
