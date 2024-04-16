@@ -20,12 +20,11 @@ To make MeshCentral multilingual, your contributions are crucial. Follow these s
    - Click `SAVE TO SERVER (F3)` to save your translations to `meshcentral-data/translate.json` locally in your MeshCentral server.
    - Optionally, click `SAVE TO FILE (F4)` to download the `translate.json` file for offline review or sharing.
 
-9. **Deploy Translations:** Click `TRANSLATE SERVER` and allow some time for the process to complete (approximately 5-15 minutes depending on server specifications). This command line output will indicate when the translation is complete.
-[pic]
+9. **Deploy Translations:** Click `TRANSLATE SERVER` and allow some time for the process to complete (approximately 5-15 minutes depending on server specifications). This command line output will indicate when the translation is complete.  
+![](images/translation-msg-output.png)
 
 10. **Finalize Changes:** It’s crucial to restart MeshCentral to ensure that the translated files are picked up correctly.
 11. **Share your translations:** Once a language translation is complete, take the latest `translation.json` and share it by emailing it to the maintainer (Ylianst, `ylianst@gmail.com`) or by submitting it to the MeshCentral GitHub repository via a pull request.
-
 
 ---
 
