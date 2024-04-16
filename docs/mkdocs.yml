@@ -38,6 +38,9 @@ nav:
   - Intel AMT:
     - intelamt/index.md
 
+  - How to Contribute:
+    - how-to-contribute/index.md
+
   - Other:
     - other/adfs_sso_guide.md
     - other/meshcentral_satellite.md
