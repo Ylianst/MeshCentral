@@ -1,4 +1,4 @@
-# ADFS SSO Guidesss
+# ADFS SSO Guide
 
 ## Assumptions
 
