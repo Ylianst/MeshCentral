@@ -5792,10 +5792,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             return;
         }
-
-        for(var x in parent.users) {
-            if(parent.users[x].email==command.email){
-                displayNotificationMessage("Email address already in use", "New Account", "ServerNotify");
+        for (var x in parent.users) {
+            if (parent.users[x].email == command.email){
+                if (command.responseid != null) {
+                    obj.send({ action: 'adduser', responseid: command.responseid, result: "Email address already in use", msgid: errid });
+                } else {
+                    // Send error back, user not found.
+                    displayNotificationMessage("Email address already in use", "New Account", 'ServerNotify', 1, errid, args);
+                }
                 return;
             }
         }
