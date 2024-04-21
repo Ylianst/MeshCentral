@@ -13,8 +13,8 @@ If you're looking to contribute beyond translations, such as updating documentat
 3. **Review Your Changes:** Before submitting your work, carefully review the changes you’ve made. Check the "Files Changed" section on GitHub to ensure that all modifications are intended and correctly implemented.
 
 4. **Submit a Pull Request**
-   - Once your changes are ready and reviewed, submit a pull request (PR) from your branch to the `master` branch of the main MeshCentral repository.
-   - When creating the pull request, provide a clear and detailed description of what changes have been made and why. This helps maintainers understand the purpose of your contributions.
+    - Once your changes are ready and reviewed, submit a pull request (PR) from your branch to the `master` branch of the main MeshCentral repository.
+    - When creating the pull request, provide a clear and detailed description of what changes have been made and why. This helps maintainers understand the purpose of your contributions.
 
 5. **Wait for Review:** After submitting your pull request, wait for a project maintainer to review your contribution. Review time can vary depending on the complexity of the changes and the availability of the maintainers.
 
@@ -39,8 +39,8 @@ To make MeshCentral multilingual, your contributions are crucial. Follow these s
 7. **Repeat Translation:** Continue translating by repeating steps 5 and 6 for other texts as desired.
 
 8. **Save and Apply Translations**
-   - Click `SAVE TO SERVER (F3)` to save your translations to `meshcentral-data/translate.json` locally in your MeshCentral server.
-   - Optionally, click `SAVE TO FILE (F4)` to download the `translate.json` file for offline review or sharing.
+    - Click `SAVE TO SERVER (F3)` to save your translations to `meshcentral-data/translate.json` locally in your MeshCentral server.
+    - Optionally, click `SAVE TO FILE (F4)` to download the `translate.json` file for offline review or sharing.
 
 9. **Deploy Translations:** Click `TRANSLATE SERVER` and allow some time for the process to complete (approximately 5-15 minutes depending on server specifications). This command line output will indicate when the translation is complete.  
 ![](images/translation-msg-output.png)
