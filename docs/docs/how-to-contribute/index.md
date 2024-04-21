@@ -7,8 +7,8 @@ If you're looking to contribute beyond translations, such as updating documentat
 1. **Fork the Repository:** Start by forking the [MeshCentral](https://github.com/Ylianst/MeshCentral) repository on GitHub. This creates a copy of the repository under your own GitHub account, allowing you to make changes without affecting the original project.
 
 2. **Make Your Changes**
-   - In your forked repository, create a new branch to keep your changes organized. This helps in managing different contributions separately.
-   - Make the necessary changes in your repository. This could involve updating documentation files or modifying code to add new features or fix bugs.
+    - In your forked repository, create a new branch to keep your changes organized. This helps in managing different contributions separately.
+    - Make the necessary changes in your repository. This could involve updating documentation files or modifying code to add new features or fix bugs.
 
 3. **Review Your Changes:** Before submitting your work, carefully review the changes you’ve made. Check the "Files Changed" section on GitHub to ensure that all modifications are intended and correctly implemented.
 
