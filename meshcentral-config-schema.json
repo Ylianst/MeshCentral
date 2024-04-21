@@ -2677,7 +2677,7 @@
               "name": {
                 "type": "string",
                 "format": "hostname",
-                "description": "Optional hostname of the client, this defaults to the hostname of the machine. This is useful for SMTP relays."
+                "description": "Optional hostname of the client, this defaults to the hostname of the machine. This is useful for SMTP relays. This can also be set to \"console\" for console output debugging."
               },
               "host": {
                 "type": "string",
@@ -2688,18 +2688,32 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 65535,
-                "description": "SMTP server port number."
+                "default": 587,
+                "description": "SMTP server port number. This defaults to 587 if \"tls\" is false or 465 if \"tls\" is true)"
               },
               "from": {
                 "type": "string",
                 "format": "email",
                 "description": "Email address used in the messages from field."
               },
+              "user": {
+                "type": "string",
+                "format": "string",
+                "description": "SMTP username."
+              },
+              "pass": {
+                "type": "string",
+                "format": "string",
+                "description": "SMTP password."
+              },
               "tls": {
-                "type": "boolean"
+                "type": "boolean",
+                "default": false,
+                "description": "Set SMTP to use TLS on connections, the default is false"
               },
               "auth": {
                 "type": "object",
+                "description": "This is used for OAuth2 authentication",
                 "properties": {
                   "clientId": {
                     "type": "string"
@@ -2709,6 +2723,11 @@
                   },
                   "refreshToken": {
                     "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "default": "login",
+                    "description": "Setting this indicates the authetication type, 'login' as default or 'oauth2'"
                   }
                 },
                 "required": [
@@ -2735,7 +2754,10 @@
               }
             },
             "required": [
-              "from"
+              "host",
+              "port",
+              "from",
+              "tls"
             ]
           },
           "sendmail": {
@@ -3558,22 +3580,67 @@
       "description": "Connects MeshCentral to a SMTP email server, allows MeshCentral to send email messages for 2FA or user notification.",
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string",
+          "format": "hostname",
+          "description": "Optional hostname of the client, this defaults to the hostname of the machine. This is useful for SMTP relays. This can also be set to \"console\" for console output debugging."
+        },
         "host": {
           "type": "string",
-          "format": "hostname"
+          "format": "hostname",
+          "description": "Hostname of the SMTP server."
         },
         "port": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 65535
+          "maximum": 65535,
+          "default": 587,
+          "description": "SMTP server port number. This defaults to 587 if \"tls\" is false or 465 if \"tls\" is true)"
         },
         "from": {
           "type": "string",
           "format": "email",
           "description": "Email address used in the messages from field."
         },
+        "user": {
+          "type": "string",
+          "format": "string",
+          "description": "SMTP username."
+        },
+        "pass": {
+          "type": "string",
+          "format": "string",
+          "description": "SMTP password."
+        },
         "tls": {
-          "type": "boolean"
+          "type": "boolean",
+          "default": false,
+          "description": "Set SMTP to use TLS on connections, the default is false"
+        },
+        "auth": {
+          "type": "object",
+          "description": "This is used for OAuth2 authentication",
+          "properties": {
+            "clientId": {
+              "type": "string"
+            },
+            "clientSecret": {
+              "type": "string"
+            },
+            "refreshToken": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "default": "login",
+              "description": "Setting this indicates the authetication type, 'login' as default or 'oauth2'"
+            }
+          },
+          "required": [
+            "clientId",
+            "clientSecret",
+            "refreshToken"
+          ]
         },
         "tlscertcheck": {
           "type": "boolean"
@@ -3585,6 +3652,11 @@
           "type": "boolean",
           "default": true,
           "description": "When set to false, the email format and DNS MX record are not checked."
+        },
+        "emailDelaySeconds": {
+          "type": "integer",
+          "default": 300,
+          "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."
         }
       },
       "required": [
@@ -3593,6 +3665,36 @@
         "from",
         "tls"
       ]
+    },
+    "sendmail": {
+      "title": "Send email using the sendmail command",
+      "description": "Makes MeshCentral send emails using the Unix sendmail command. Allows MeshCentral to send email messages for 2FA or user notification.",
+      "type": "object",
+      "properties": {
+        "newline": {
+          "type": "string",
+          "default": "unix",
+          "description": "Possible values are unix or windows"
+        },
+        "path": {
+          "type": "string",
+          "default": "sendmail",
+          "description": "Path to the sendmail command"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": null,
+          "description": "Array or arguments to pass to sendmail"
+        },
+        "emailDelaySeconds": {
+          "type": "integer",
+          "default": 300,
+          "description": "Time to wait before sending a device connection/disconnection notification email. If many events occur, they will be merged into a single email."
+        }
+      }
     },
     "sms": {
       "title": "SMS provider",

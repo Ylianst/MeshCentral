@@ -733,22 +733,34 @@ module.exports.CreateDB = function (parent, func) {
         });
     } else if (parent.args.mariadb || parent.args.mysql) {
         var connectinArgs = (parent.args.mariadb) ? parent.args.mariadb : parent.args.mysql;
-        var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
+        if (typeof connectinArgs == 'string') {
+            const parts = connectinArgs.split(/[:@/]+/);
+            var connectionObject = {
+                "user": parts[1],
+                "password": parts[2],
+                "host": parts[3],
+                "port": parts[4],
+                "database": parts[5]
+            };
+            var dbname = (connectionObject.database != null) ? connectionObject.database : 'meshcentral';
+        } else {
+            var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
 
-        // Including the db name in the connection obj will cause a connection faliure if it does not exist
-        var connectionObject = Clone(connectinArgs);
-        delete connectionObject.database;
+            // Including the db name in the connection obj will cause a connection faliure if it does not exist
+            var connectionObject = Clone(connectinArgs);
+            delete connectionObject.database;
 
-        try {
-            if (connectinArgs.ssl) {
-                if (connectinArgs.ssl.dontcheckserveridentity == true) { connectionObject.ssl.checkServerIdentity = function (name, cert) { return undefined; } };
-                if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
-                if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
-                if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
+            try {
+                if (connectinArgs.ssl) {
+                    if (connectinArgs.ssl.dontcheckserveridentity == true) { connectionObject.ssl.checkServerIdentity = function (name, cert) { return undefined; } };
+                    if (connectinArgs.ssl.cacertpath) { connectionObject.ssl.ca = [require('fs').readFileSync(connectinArgs.ssl.cacertpath, 'utf8')]; }
+                    if (connectinArgs.ssl.clientcertpath) { connectionObject.ssl.cert = [require('fs').readFileSync(connectinArgs.ssl.clientcertpath, 'utf8')]; }
+                    if (connectinArgs.ssl.clientkeypath) { connectionObject.ssl.key = [require('fs').readFileSync(connectinArgs.ssl.clientkeypath, 'utf8')]; }
+                }
+            } catch (ex) {
+                console.log('Error loading SQL Connector certificate: ' + ex);
+                process.exit();
             }
-        } catch (ex) {
-            console.log('Error loading SQL Connector certificate: ' + ex);
-            process.exit();
         }
 
         if (parent.args.mariadb) {

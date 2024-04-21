@@ -895,7 +895,7 @@ The last line will run MeshCentral manually and allow it to install any missing 
 
 ```
 sudo chown -R meshcentral:meshcentral /opt/meshcentral
-sudo chmod 755 –R /opt/meshcentral/meshcentral-*
+sudo chmod -R 755 /opt/meshcentral/meshcentral-*
 ```
 
 To make this work, you will need to make MeshCentral work with MongoDB because the /meshcentral-data folder will be read-only. In addition, MeshCentral will not be able to update itself since the account does not have write access to the /node_modules files, so the update will have to be manual. First used systemctl to stop the MeshCentral server process, than use this:
@@ -912,7 +912,7 @@ This will perform the update to the latest server on NPM and re-set the permissi
 MeshCentral allows users to upload and download files stores in the server’s `meshcentral-files` folder. In an increased security setup, we still want the server to be able to read and write files to this folder and we can allow this with:
 
 ```
-sudo chmod 755 –R /opt/meshcentral/meshcentral-files
+sudo chmod -R 755 /opt/meshcentral/meshcentral-files
 ```
 
 If you plan on using the increased security installation along with MeshCentral built-in Let’s Encrypt support you will need to type the following commands to make the `letsencrypt` folder in `meshcentral-data` writable.
@@ -920,7 +920,7 @@ If you plan on using the increased security installation along with MeshCentral 
 ```
 sudo mkdir /opt/meshcentral/meshcentral-data
 sudo mkdir /opt/meshcentral/meshcentral-data/letsencrypt
-sudo chmod 755 –R /opt/meshcentral/meshcentral-data/letsencrypt
+sudo chmod -R 755 /opt/meshcentral/meshcentral-data/letsencrypt
 ```
 
 This will allow the server to get and periodically update its Let’s Encrypt certificate. If this is not done, the server will generate an `ACCES: permission denied` exception.
