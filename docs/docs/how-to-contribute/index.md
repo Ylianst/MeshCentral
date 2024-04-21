@@ -1,6 +1,28 @@
 # Contribute to MeshCentral 
 
-## Github PR
+## Contributing to MeshCentral via GitHub Pull Request
+
+If you're looking to contribute beyond translations, such as updating documentation or enhancing the software by adding features or fixing bugs, the process involves several key steps:
+
+1. **Fork the Repository:** Start by forking the [MeshCentral](https://github.com/Ylianst/MeshCentral) repository on GitHub. This creates a copy of the repository under your own GitHub account, allowing you to make changes without affecting the original project.
+
+2. **Make Your Changes**
+   - In your forked repository, create a new branch to keep your changes organized. This helps in managing different contributions separately.
+   - Make the necessary changes in your repository. This could involve updating documentation files or modifying code to add new features or fix bugs.
+
+3. **Review Your Changes:** Before submitting your work, carefully review the changes you’ve made. Check the "Files Changed" section on GitHub to ensure that all modifications are intended and correctly implemented.
+
+4. **Submit a Pull Request**
+   - Once your changes are ready and reviewed, submit a pull request (PR) from your branch to the `master` branch of the main MeshCentral repository.
+   - When creating the pull request, provide a clear and detailed description of what changes have been made and why. This helps maintainers understand the purpose of your contributions.
+
+5. **Wait for Review:** After submitting your pull request, wait for a project maintainer to review your contribution. Review time can vary depending on the complexity of the changes and the availability of the maintainers.
+
+6. **Respond to Feedback:** The maintainer may request further modifications or provide feedback on your pull request. Be prepared to make additional changes based on their suggestions to ensure that your contribution meets the project’s standards and requirements.
+
+7. **Final Steps:** Once your pull request is approved and merged by a maintainer, your contributions will be incorporated into the MeshCentral project. Congratulations, and thank you for helping improve MeshCentral! 
+
+---
 
 ## Contribute to MeshCentral's Multilingual Support
 
