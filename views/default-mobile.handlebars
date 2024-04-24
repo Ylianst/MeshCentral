@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
@@ -674,6 +674,23 @@
         .night .tagSpan {
             color: black;
         }
+
+        #d3serveraction, #d2serveraction {
+            width: 100%;
+            background-color: #d3d9d6;
+            text-align: left;
+            padding: 3px;
+        }
+
+        #d3serverfiles, #d2serverfiles {
+            width: 100%;
+            height: 150px;
+            background-color: white;
+            padding: 2px;
+            border: 1px solid gray;
+            overflow-y: scroll;
+        }
+
     </style>
 </head>
 <body id="body" onload="if (typeof(startup) !== 'undefined') startup();" style="overflow-y:hidden;margin:0;padding:0;border:0;font-size:13px;font-family:\'Trebuchet MS\', Arial, Helvetica, sans-serif">
@@ -927,6 +944,7 @@
                                     <span id=DeskChatButton><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskOpenWebButton><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
+                                    <span id=DeskRunButton><img src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16 style=padding-top:2px;cursor:pointer /></span>
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
@@ -2571,6 +2589,111 @@
         }
 
         //
+        // FILE SELECTOR, DIALOG 3
+        //
+
+        function d3init() {
+            d3fileoptions = { dialog: 1, filter: 'd3filter', files: 'd3serverfiles', folderup: 'p3FolderUp', currentFolder: 'p3CurrentFolder', func: d3setActions };
+            Q('d3localFile').value = '';
+            Q('d3localFile').accept  = Q('d3filter').value;
+            d3modechange();
+        }
+
+        function d3modechange() {
+            var mode = Q('d3uploadMode').value;
+            QV('d3localmode', mode == 1);
+            QV('d3servermode', mode == 2);
+            if (mode == 1) { d3setActions(); } else { d3updatefiles(); }
+        }
+
+        var d3filetreelinkpath;
+        var d3filetreelocation = [];
+        var d3fileoptions = null;
+        function d3updatefiles() {
+            if (d3fileoptions == null) return;
+            if ((d3fileoptions.filter == 'd3filter') && (Q('d3uploadMode').value == 1)) return;
+            var html1 = '', html2 = '', filetreex = filetree, folderdepth = 1, publicPath = null, lastFolderName = '';
+
+            // Navigate to path location, build the paths at the same time
+            var d3filetreelocation2 = [], oldlinkpath = d3filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
+            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { checkedBoxes.push(checkboxes[i].value) }; } // Save all existing checked boxes
+
+            d3filetreelinkpath = '';
+            for (var i in d3filetreelocation) {
+                if ((filetreex.f != null) && (filetreex.f[d3filetreelocation[i]] != null)) {
+                    d3filetreelocation2.push(d3filetreelocation[i]);
+                    if ((folderdepth == 1)) {
+                        var sp = d3filetreelocation[i].split('/');
+                        publicPath = window.location + sp[0] + 'files/' + sp[2];
+                        if (d3filetreelocation[i] === userinfo._id) { d3filetreelinkpath += 'self'; } else { d3filetreelinkpath += (sp[0] + '/' + sp[2]); }
+                    } else {
+                        if (d3filetreelinkpath != '') { d3filetreelinkpath += '/' + d3filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + d3filetreelocation[i]; } }
+                    }
+                    filetreex = filetreex.f[d3filetreelocation[i]];
+                    lastFolderName = filetreex.n;
+                    folderdepth++;
+                } else {
+                    break;
+                }
+            }
+            d3filetreelocation = d3filetreelocation2; // In case we could not go down the full path, we set the new path location here.
+
+            // Sort the files
+            var filetreexx = p5sort_files(filetreex.f);
+
+            // File filter
+            var fileFilter = '';
+            if (d3fileoptions.filter) { fileFilter = Q(d3fileoptions.filter).value };
+
+            // Display all files and folders at this location
+            for (var i in filetreexx) {
+                // Figure out the name and shortname
+                var f = filetreexx[i], name = f.n, shortname;
+
+                // Filter out files
+                if ((f.t == 3) && (fileFilter != '') && (f.nx.toLowerCase().endsWith(fileFilter) == false)) { continue; }
+                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+
+                // Figure out the size
+                var fsize = '';
+                if (f.s != null) { fsize = getFileSizeStr(f.s); }
+
+                var h = '';
+                if (f.t != 3) {
+                    var title = '';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                } else {
+                    var link = shortname;
+                    //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
+                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                }
+
+                if (f.t < 3) { html1 += h; } else { html2 += h; }
+            }
+
+            if (d3fileoptions.currentFolder) { QH(d3fileoptions.currentFolder, lastFolderName); }
+            QH(d3fileoptions.files, html1 + html2);
+            QE(d3fileoptions.folderup, d3filetreelocation.length > 0);
+            if (d3fileoptions.func) { d3fileoptions.func(); }
+        }
+
+        function d3folderset(x) { d3filetreelocation.push(decodeURIComponent(x)); d3updatefiles(); return false; }
+        function d3folderup(x) { if (x == null) { d3filetreelocation.pop(); } else { while (d3filetreelocation.length > x) { d3filetreelocation.pop(); } } d3updatefiles(); }
+        function d3getFileSel() { var cc = []; var checkboxes = document.getElementsByName('fcx'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { cc.push(checkboxes[i].value) } } return cc; }
+        function d3setActions() {
+            if (d3fileoptions.dialog == 1) {
+                var mode = Q('d3uploadMode').value;
+                if (mode == 1) {
+                    QE('idx_dlgOkButton', Q('d3localFile').value.length > 0);
+                } else {
+                    QE('idx_dlgOkButton', d3getFileSel().length == 1);
+                }
+            } else if (d3fileoptions.dialog == 2) {
+                QE('idx_dlgOkButton', d3getFileSel().length == 1);
+            }
+        }
+
+        //
         // MY FILES
         //
 
@@ -3955,6 +4078,99 @@
 
         function deviceUrlFunctionEx() {
             meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: Q('d2devurl').value });
+        }
+
+        function runDeviceCmd(nodeid) { if (xxdialogMode) return; d2runCommandDialog({ nodeids: [ nodeid ? decodeURIComponent(nodeid) : currentNode._id ] }); }
+
+        function d2runCommandDialog(options) {
+            var wintype = false, linuxtype = false, agenttype = false;
+            for (var i in options.nodeids) {
+                var n = getNodeFromId(options.nodeids[i]);
+                if (n.agent) { if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
+                if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+            }
+            if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
+                // Fetch run options
+                var runopt = { type:1, runAs:0, source:1, cmd:'' };
+                try { runopt = JSON.parse(getstore('runopt', runopt)); } catch (ex) {}
+
+                if (options.selectedFile) {
+                    var filename = options.selectedFile.name.toLowerCase();
+                    console.log('filename', filename);
+                    if (filename.endsWith('.bat')) { runopt.type = 1; }
+                    if (filename.endsWith('.ps1')) { runopt.type = 2; }
+                    if (filename.endsWith('.sh')) { runopt.type = 3; }
+                    if (filename.endsWith('.agentconsole')) { runopt.type = 4; }
+                }
+
+                var x = '';
+                if (options.title) { x += options.title + '<br />'; }
+                x += '<select id=d2cmdtype onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px;margin-top:4px>';
+                if (wintype == true) { x += '<option value=1' + ((runopt.type == 1)?' selected':'') + '>' + "Windows Command Prompt" + '</option><option value=2' + ((runopt.type == 2)?' selected':'') + '>' + "Windows PowerShell" + '</option>'; }
+                if (linuxtype == true) { x += '<option value=3' + ((runopt.type == 3)?' selected':'') + '>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
+                if (agenttype == true) { x += '<option value=4' + ((runopt.type == 4)?' selected':'') + '>' + "Agent Console" + '</option>'; } // MESHRIGHT_REMOTECONTROL & MESHRIGHT_AGENTCONSOLE are needed
+                x += '</select>';
+                x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0' + ((runopt.runAs == 0)?' selected':'') + '>' + "Run as agent" + '</option><option value=1' + ((runopt.runAs == 1)?' selected':'') + '>' + "Run as user, agent if no user" + '</option><option value=2' + ((runopt.runAs == 2)?' selected':'') + '>' + "Must run as user" + '</option></select>';
+                if (options.selectedFile == null) {
+                    x += '<select id=d2cmdsource onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px><option value=0' + ((runopt.source == 0)?' selected':'') + '>' + "Commands from text box" + '</option><option value=1' + ((runopt.source == 1)?' selected':'') + '>' + "Commands from file" + '</option>';
+                    if (userinfo.siteadmin & 8) { x += '<option value=2' + ((runopt.source == 2)?' selected':'') + '>' + "Commands from file on server" + '</option>'; }
+                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
+                    x += '<div id=d2runfile style=display:none><input id=d2runfileex type=file onchange=d2runCommandValidate() id=d2localFile name=files onchange=d2runCommandValidate() /></div>';
+                    if (userinfo.siteadmin & 8) { x += '<div id=d2runsfile style=display:none><div id=d2serveraction valign=bottom><input type=button id=p2FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p2CurrentFolder></span></div><div id=d2serverfiles></div></div>'; }
+                }
+                setDialogMode(2, "Run Commands", 3, d2groupActionFunctionRunCommands, x, options);
+                if (options.selectedFile == null) {
+                    Q('d2runcmd').focus();
+                    if (userinfo.siteadmin & 8) { d3fileoptions = { dialog: 2, files: 'd2serverfiles', folderup: 'p2FolderUp', currentFolder: 'p2CurrentFolder', func: null }; d3updatefiles(); } // Update the server files
+                }
+                d2runCommandValidate();
+            }
+        }
+
+        function d2runCommandValidate() {
+            QV('d2cmduser', Q('d2cmdtype').value < 4);
+            if (xxdialogTag.selectedFile == null) {
+                QV('d2runcmd', Q('d2cmdsource').value == 0);
+                QV('d2runfile', Q('d2cmdsource').value == 1);
+                QV('d2runsfile', Q('d2cmdsource').value == 2);
+                var ok = false;
+                if (Q('d2cmdsource').value == 0) { if (Q('d2runcmd').value.length > 0) { ok = true; } } // From text box
+                if (Q('d2cmdsource').value == 1) { if (Q('d2runfileex').files.length == 1) { ok = true; } } // From file
+                if (Q('d2cmdsource').value == 2) { ok = false; } // From server file
+                QE('idx_dlgOkButton', ok);
+            } else {
+                QE('idx_dlgOkButton', true);
+            }
+        }
+
+        function d2groupActionFunctionRunCommands(b, options) {
+            var type = 3;
+            try { type = parseInt(Q('d2cmdtype').value); } catch (ex) { }
+            if (options.selectedFile == null) { putstore('runopt', JSON.stringify({ type: type, runAs: parseInt(Q('d2cmduser').value), source: parseInt(Q('d2cmdsource').value), cmd: encodeURIComponent(Q('d2runcmd').value) })); } // Save run options
+            var cmd = { action: 'runcommands', nodeids: options.nodeids, type: type, runAsUser: parseInt(Q('d2cmduser').value) };
+            if (options.selectedFile) {
+                // Drag & drop file
+                var reader = new FileReader();
+                reader.onload = function (e) { cmd.cmds = e.target.result; meshserver.send(cmd); if (options.func) { options.func(); } }
+                reader.readAsText(options.selectedFile);
+            } else if (Q('d2cmdsource').value == 0) {
+                // From text box
+                cmd.cmds = Q('d2runcmd').value;
+                meshserver.send(cmd);
+                if (options.func) { options.func(); }
+            } else if (Q('d2cmdsource').value == 1) {
+                // From file
+                var reader = new FileReader();
+                reader.onload = function (e) { cmd.cmds = e.target.result; meshserver.send(cmd); if (options.func) { options.func(); } }
+                reader.readAsText(Q('d2runfileex').files[0]);
+            } else if (Q('d2cmdsource').value == 2) {
+                // From server file
+                var files = d3getFileSel();
+                if (files.length != 1) return;
+                cmd.cmdpath = d3filetreelocation.join('/') + '/' + files[0];
+                meshserver.send(cmd);
+                if (options.func) { options.func(); }
+            }
         }
 
         // Look to see if we need to update the device timeline
