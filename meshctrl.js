@@ -484,7 +484,7 @@ if (args['_'].length == 0) {
                         console.log("  --realname [name]           - Set the real name for this account.");
                         console.log("  --phone [number]            - Set the account phone number.");
                         console.log("  --rights [none|full|a,b,c]  - Comma separated list of server permissions. Possible values:");
-                        console.log("     manageusers,backup,restore,update,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents");
+                        console.log("     manageusers,serverbackup,serverrestore,serverupdate,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents,nonewdevices");
                         break;
                     }
                     case 'edituser': {
@@ -501,7 +501,7 @@ if (args['_'].length == 0) {
                         console.log("  --realname [name]           - Set the real name for this account.");
                         console.log("  --phone [number]            - Set the account phone number.");
                         console.log("  --rights [none|full|a,b,c]  - Comma separated list of server permissions. Possible values:");
-                        console.log("     manageusers,backup,restore,update,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents");
+                        console.log("     manageusers,serverbackup,serverrestore,serverupdate,fileaccess,locked,nonewgroups,notools,usergroups,recordings,locksettings,allevents,nonewdevices");
                         break;
                     }
                     case 'removeuser': {
@@ -820,6 +820,7 @@ if (args['_'].length == 0) {
                         console.log("Run a shell command on a remote device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\""));
                         console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\" --powershell"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl RunCommand --id 'deviceid' --run \"command\" --reply"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]        - The device identifier.");
@@ -831,6 +832,7 @@ if (args['_'].length == 0) {
                         console.log("  --powershell           - Run in Windows PowerShell.");
                         console.log("  --runasuser            - Attempt to run the command as logged in user.");
                         console.log("  --runasuseronly        - Only run the command as the logged in user.");
+                        console.log("  --reply                - Return with the output from running the command.");
                         break;
                     }
                     case 'shell': {
@@ -1621,7 +1623,9 @@ function serverConnect() {
             case 'runcommand': {
                 var runAsUser = 0;
                 if (args.runasuser) { runAsUser = 1; } else if (args.runasuseronly) { runAsUser = 2; }
-                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl', runAsUser: runAsUser }));
+                var reply = false;
+                if (args.reply) { reply = true; }
+                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl', runAsUser: runAsUser, reply: reply }));
                 break;
             }
             case 'shell':
@@ -1862,11 +1866,11 @@ function serverConnect() {
             var srights = args.rights.toLowerCase().split(',');
             if (srights.indexOf('full') != -1) { siteadmin = 0xFFFFFFFF; }
             if (srights.indexOf('none') != -1) { siteadmin = 0x00000000; }
-            if (srights.indexOf('backup') != -1) { siteadmin |= 0x00000001; }
+            if (srights.indexOf('backup') != -1 || srights.indexOf('serverbackup') != -1) { siteadmin |= 0x00000001; }
             if (srights.indexOf('manageusers') != -1) { siteadmin |= 0x00000002; }
-            if (srights.indexOf('restore') != -1) { siteadmin |= 0x00000004; }
+            if (srights.indexOf('restore') != -1 || srights.indexOf('serverrestore') != -1) { siteadmin |= 0x00000004; }
             if (srights.indexOf('fileaccess') != -1) { siteadmin |= 0x00000008; }
-            if (srights.indexOf('update') != -1) { siteadmin |= 0x00000010; }
+            if (srights.indexOf('update') != -1 || srights.indexOf('serverupdate') != -1) { siteadmin |= 0x00000010; }
             if (srights.indexOf('locked') != -1) { siteadmin |= 0x00000020; }
             if (srights.indexOf('nonewgroups') != -1) { siteadmin |= 0x00000040; }
             if (srights.indexOf('notools') != -1) { siteadmin |= 0x00000080; }
@@ -1874,6 +1878,7 @@ function serverConnect() {
             if (srights.indexOf('recordings') != -1) { siteadmin |= 0x00000200; }
             if (srights.indexOf('locksettings') != -1) { siteadmin |= 0x00000400; }
             if (srights.indexOf('allevents') != -1) { siteadmin |= 0x00000800; }
+            if (srights.indexOf('nonewdevices') != -1) { siteadmin |= 0x00001000; }
         }
 
         if (args.siteadmin) { siteadmin = 0xFFFFFFFF; }

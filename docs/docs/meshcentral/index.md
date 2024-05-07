@@ -305,6 +305,116 @@ When the MongoDB is setup for the first time, a unique identifier is generated a
 
 Once peered, all of the servers should act like one single host, no matter which server the user(s) are connected to.
 
+## Email Setup
+
+We highly recommend the use of an email server (SMTP) because we could allow MeshCentral to verify user account’s email address by sending a confirmation request to the user to complete the account registration and for password recovery, should a user forget account password as illustrated below
+
+A verification email is sent when a new account is created or if the user requests it in the “My Account” tab.
+
+![](images/2022-05-19-00-00-05.png)
+
+The password recovery flow when “Reset Account” is triggered at the login page.
+
+![](images/2022-05-19-00-00-18.png)
+
+Both account verification and password recovery are triggered automatically once SMTP mail server configuration is included into the config.json file. Update the config.json with “smtp” section as shown below and restart the server. 
+
+```json
+{
+  "smtp": {
+    "host": "smtp.server.com",
+    "port": 25,
+    "from": "myaddress@server.com",
+    "user": "myaddress@server.com",       Optional
+    "pass": "mypassword",                 Optional
+    "tls": false                          Optional, default false
+  }
+}
+```
+
+Please map the host, port values to connect to the right host that provides this SMTP service. For “from” value, administrators may put something like donotreply@server.com, but often times it needs to be a valid address since SMTP server will not send out messages with an invalid reply address. 
+
+Some SMTP servers will require a valid username and password to login to the mail server. This is to prevent unauthorized e-mail correspondence. TLS option can be set to ‘true’ if the SMTP server requires TLS.
+
+#### SMTP: User/Pass
+##### Gmail
+
+One option is to configure MeshCentral work with Google Gmail by setting “host” with smtp.gmail.com, and “port” with 587. In the config.json file, use user’s Gmail address for both “from” and “user” and Gmail password in the “pass” value. You will also need to enable “Less secure app access” in for this Google account. It’s in the account settings, security section:
+
+![](images/2022-05-19-00-01-19.png)
+
+If a Google account is setup with 2-factor authentication, the option to allow less secure applications not be available. Because the Google account password is in the MeshCentral config.json file and that strong authentication can’t be used, it’s preferable to use a dedicated Google account for MeshCentral email.
+
+#### SMTP: OAuth Authentication
+##### Gmail
+
+Google has announced that less secure app access will be phased out.  For Google Workspace or G-Suite accounts, the following process can be used to allow OAuth2 based authentication with Google's SMTP server.  It is likely a very similar process for regular Gmail accounts.
+
+Start by visiting the Google API console:
+
+https://console.developers.google.com/
+
+First, you will create a new project. Name it something unique in case you need to create more in the future. In this example, I've named the project "MeshCentral"
+
+![](images/gc-newproject.png)
+
+Click on the "OAuth Consent Screen" link, Under "APIs and Services" from the left hand menu:
+
+![](images/gc-oauthconsent.png)
+
+If you have a Google Workspace account, you will have the option to choose "Internal" application and skip the next steps.  If not, you will be required to provide Google with information about why you want access, as well as verifying domain ownership.  
+
+![](images/OAuth-Internal-External.png)
+
+Add the Gmail address under which you have created this project to the fields labelled ‘User support email’ and ‘Developer contact information’ so that you will be allowed for authentication. After that, you will want to add a scope for your app, so that your token is valid for gmail:
+
+![](images/gc-oauthscopes.png)
+
+Once this is complete, the next step will be to add credentials.  
+
+![](images/gc-oauthcredentials.png)
+
+Choose OAuth Client
+
+You will obtain a Client ID and a Client secret once you've completed the process. Be sure to store the secret immediately, as you won't be able to retreive it after you've dismissed the window.
+
+Next, you will need to visit the Google OAuth Playground:
+
+https://developers.google.com/oauthplayground
+
+![](images/gc-playground.webp)
+
+Enter your Client ID and secret from the last step.  On the left side of the page, you should now see a text box that allows you to add your own scopes.  Enter https://mail.google.com and click Authorize API.
+
+You will need to follow the instructions provided to finish the authorization process. Once that is complete, you should receive a refresh token. The refresh token, Client ID and Client Secret are the final items we need to complete the SMTP section of our config.json. It should now look something like this:
+
+```
+"smtp": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "from": "my@googleaccount.com",
+    "auth": {
+      "clientId": "<YOUR-CLIENT-ID>",
+      "clientSecret": "<YOUR-CLIENT-SECRET>",
+      "refreshToken": "<YOUR-REFRESH-TOKEN>"
+    },
+    "user": "noreply@authorizedgooglealias.com",
+    "emailDelaySeconds": 10,
+    "tls": false,
+    "verifyEmail": true
+  }
+```
+
+
+Regardless of what SMTP account is used, MeshCentral will perform a test connection to make sure the server if working as expected when starting. Hence, the user will be notified if Meshcentral and SMTP server has been configured correctly as shown below.
+
+![](images/2022-05-19-00-01-43.png)
+
+After successfully configuring the Gmail SMTP server, switch the OAuth 'Publishing Status' from `Testing` to `In Production`. This step prevents the need for frequent refresh token generation. Verification of your project isn't required to make this change.
+
+![](images/In-production.png)
+
+
 ## Database
 
 A critical component of MeshCentral is the database. The database stores all of the user account information, groups and node data, historical power and event, etc. By default MeshCentral uses NeDB (https://github.com/louischatriot/nedb) that is written entirely in NodeJS and is setup automatically when MeshCentral is installed with the npm tool. The file “meshcentral.db” will be created in the “meshcentral-data” folder when MeshCentral is first launched. This database works well for small deployments scenarios.
@@ -609,46 +719,6 @@ All the lines that start with a number or `:` will be used, everything else is i
 95.85.81.0/24
 ```
 
-## Email Setup
-
-We highly recommend the use of an email server (SMTP) because we could allow MeshCentral to verify user account’s email address by sending a confirmation request to the user to complete the account registration and for password recovery, should a user forget account password as illustrated below
-
-A verification email is sent when a new account is created or if the user requests it in the “My Account” tab.
-
-![](images/2022-05-19-00-00-05.png)
-
-The password recovery flow when “Reset Account” is triggered at the login page.
-
-![](images/2022-05-19-00-00-18.png)
-
-Both account verification and password recovery are triggered automatically once SMTP mail server configuration is included into the config.json file. Update the config.json with “smtp” section as shown below and restart the server. 
-
-```json
-{
-  "smtp": {
-    "host": "smtp.server.com",
-    "port": 25,
-    "from": "myaddress@server.com",
-    "user": "myaddress@server.com",       Optional
-    "pass": "mypassword",                 Optional
-    "tls": false                          Optional, default false
-  }
-}
-```
-
-Please map the host, port values to connect to the right host that provides this SMTP service. For “from” value, administrators may put something like donotreply@server.com, but often times it needs to be a valid address since SMTP server will not send out messages with an invalid reply address. 
-
-Some SMTP servers will require a valid username and password to login to the mail server. This is to prevent unauthorized e-mail correspondence. TLS option can be set to ‘true’ if the SMTP server requires TLS.
-
-One option is to configure MeshCentral work with Google Gmail* by setting “host” with smtp.gmail.com, and “port” with 587. In the config.json file, use user’s Gmail* address for both “from” and “user” and Gmail* password in the “pass” value. You will also need to enable “Less secure app access” in for this Google account. It’s in the account settings, security section:
-
-![](images/2022-05-19-00-01-19.png)
-
-If a Google account is setup with 2-factor authentication, the option to allow less secure applications not be available. Because the Google account password is in the MeshCentral config.json file and that strong authentication can’t be used, it’s preferable to use a dedicated Google account for MeshCentral email.
-
-Regardless of what SMTP account is used, MeshCentral will perform a test connection to make sure the server if working as expected when starting. Hence, the user will be notified if Meshcentral and SMTP server has been configured correctly as shown below.
-
-![](images/2022-05-19-00-01-43.png)
 
 ## Embedding MeshCentral
 

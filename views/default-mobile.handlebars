@@ -926,6 +926,7 @@
                                 <div style=float:right;text-align:right>
                                     <span id=DeskChatButton><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
+                                    <span id=DeskOpenWebButton><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
@@ -3940,6 +3941,22 @@
             }, "Start chat session?");
         }
 
+        function deviceUrlFunction() {
+            if (xxdialogMode) return;
+            setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll onkeyup=deviceUrlFunctionValidate() onchange=deviceUrlFunctionValidate()></input>');
+            Q('d2devurl').focus();
+            deviceUrlFunctionValidate();
+        }
+
+        function deviceUrlFunctionValidate() {
+            var x = Q('d2devurl').value.toLowerCase();
+            QE('idx_dlgOkButton', ((x.startsWith('http://') && (x.length > 7)) || (x.startsWith('https://') && (x.length > 8))));
+        }
+
+        function deviceUrlFunctionEx() {
+            meshserver.send({ action: 'msg', type: 'openUrl', nodeid: currentNode._id, url: Q('d2devurl').value });
+        }
+
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
             if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null) || (currentNode.mtype == 3)) return;
@@ -3988,7 +4005,7 @@
                 }
                 x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
                 ++count;
-                date = new Date(date.getTime() - (1000 * 60 * 60 * 24)); // Substract one day
+                date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
             }
             QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>');
         }

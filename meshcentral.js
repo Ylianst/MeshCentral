@@ -3781,7 +3781,7 @@ function CreateMeshCentralServer(config, args) {
 function checkResolveAll(names, func) {
     const dns = require('dns'), state = { func: func, count: names.length, err: null };
     for (var i in names) {
-        dns.resolve(names[i], function (err, records) {
+        dns.lookup(names[i], { all: true }, function (err, records) {
             if (err != null) { if (this.state.err == null) { this.state.err = [this.name]; } else { this.state.err.push(this.name); } }
             if (--this.state.count == 0) { this.state.func(this.state.err); }
         }.bind({ name: names[i], state: state }))

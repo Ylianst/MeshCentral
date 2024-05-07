@@ -1519,7 +1519,7 @@ function handleServerCommand(data) {
             }
             case 'runcommands': {
                 if (mesh.cmdchild != null) { sendConsoleText("Run commands can't execute, already busy."); break; }
-                sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
+                if (!data.reply) sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
 
                 // data.runAsUser: 0=Agent,1=UserOrAgent,2=UserOnly
                 var options = {};
@@ -1540,7 +1540,15 @@ function handleServerCommand(data) {
                         mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () {
+                            if (data.reply) {
+                                mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+                            } else {
+                                sendConsoleText(replydata);
+                                sendConsoleText("Run commands completed.");
+                            }
+                            delete mesh.cmdchild;
+                        });
                     } else if (data.type == 2) {
                         // Windows Powershell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], options);
@@ -1548,7 +1556,15 @@ function handleServerCommand(data) {
                         mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
-                        mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                        mesh.cmdchild.on('exit', function () {
+                            if (data.reply) {
+                                mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+                            } else {
+                                sendConsoleText(replydata);
+                                sendConsoleText("Run commands completed.");
+                            }
+                            delete mesh.cmdchild;
+                        });
                     }
                 } else if (data.type == 3) {
                     // Linux shell
@@ -1557,7 +1573,15 @@ function handleServerCommand(data) {
                     mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
                     mesh.cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
                     mesh.cmdchild.stdin.write(data.cmds.split('\r').join('') + '\nexit\n');
-                    mesh.cmdchild.on('exit', function () { sendConsoleText(replydata); sendConsoleText("Run commands completed."); delete mesh.cmdchild; });
+                    mesh.cmdchild.on('exit', function () {
+                        if (data.reply) {
+                            mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+                        } else {
+                            sendConsoleText(replydata);
+                            sendConsoleText("Run commands completed.");
+                        }
+                        delete mesh.cmdchild;
+                    });
                 }
                 break;
             }
@@ -1859,86 +1883,49 @@ function getSystemInformation(func) {
                 if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
-            if (!results.hardware.identifiers['bios_serial']) {
-                try { 
-                    var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['SerialNumber']);
-                    results.hardware.identifiers['bios_serial'] = values[0]['SerialNumber'];
-                } catch (ex) { }
-            }
-            if (!results.hardware.identifiers['bios_mode']) {
-                try {
-                    results.hardware.identifiers['bios_mode'] = 'Legacy';
-                    for (var i in results.hardware.windows.partitions) {
-                        if (results.hardware.windows.partitions[i].Description=='GPT: System') {
-                            results.hardware.identifiers['bios_mode'] = 'UEFI';
-                        }
-                    }
-                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
-            }
-            if (!results.hardware.tpm) {
-                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
-                try {
-                    var values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftTpm', "SELECT * FROM Win32_Tpm", ['IsActivated_InitialValue','IsEnabled_InitialValue','IsOwned_InitialValue','ManufacturerId','ManufacturerVersion','SpecVersion']);
-                    if(values[0]) {
-                        results.hardware.tpm = {
-                            SpecVersion: values[0].SpecVersion.split(",")[0],
-                            ManufacturerId: IntToStr(values[0].ManufacturerId).replace(/[^\x00-\x7F]/g, ""),
-                            ManufacturerVersion: values[0].ManufacturerVersion,
-                            IsActivated: values[0].IsActivated_InitialValue,
-                            IsEnabled: values[0].IsEnabled_InitialValue,
-                            IsOwned: values[0].IsOwned_InitialValue,
-                        }
-                    }
-                } catch (ex) { }
+            if (x.LastBootUpTime) { // detect windows uptime
+                var thedate = {
+                    year: parseInt(x.LastBootUpTime.substring(0, 4)),
+                    month: parseInt(x.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
+                    day: parseInt(x.LastBootUpTime.substring(6, 8)),
+                    hours: parseInt(x.LastBootUpTime.substring(8, 10)),
+                    minutes: parseInt(x.LastBootUpTime.substring(10, 12)),
+                    seconds: parseInt(x.LastBootUpTime.substring(12, 14)),
+                };
+                var thelastbootuptime = new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds);
+                meshCoreObj.lastbootuptime = thelastbootuptime.getTime(); // store the last boot up time in coreinfo for columns
+                meshCoreObjChanged();
+                var nowtime = new Date();
+                var differenceInMilliseconds = Math.abs(thelastbootuptime - nowtime);
+                if (differenceInMilliseconds < 300000) { // computer uptime less than 5 minutes
+                    MeshServerLogEx(159, [thelastbootuptime.toString()], "Device Powered On", null);
+                }
             }
         }
         if(results.hardware && results.hardware.linux) {
-            if (!results.hardware.identifiers['bios_serial']) {
-                try {
-                    if (require('fs').statSync('/sys/class/dmi/id/product_serial').isFile()){
-                        results.hardware.identifiers['bios_serial'] = require('fs').readFileSync('/sys/class/dmi/id/product_serial').toString().trim();
-                    }
-                } catch (ex) { }
-            }
-            if (!results.hardware.identifiers['bios_mode']) {
-                try {
-                    results.hardware.identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
-                } catch (ex) { results.hardware.identifiers['bios_mode'] = 'Legacy'; }
-            }
-            if (!results.hardware.tpm) {
-                IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
-                try {
-                    if (require('fs').statSync('/sys/class/tpm/tpm0').isDirectory()){
-                        results.hardware.tpm = {
-                            SpecVersion: require('fs').readFileSync('/sys/class/tpm/tpm0/tpm_version_major').toString().trim()
-                        }
-                    }
-                } catch (ex) { }
-            }
-            if(!results.hardware.linux.LastBootUpTime) {
-                try {
-                    var child = require('child_process').execFile('/usr/bin/uptime', ['', '-s']); // must include blank value at begining for some reason?
-                    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-                    child.stderr.on('data', function () { });
-                    child.waitExit();
-                    results.hardware.linux.LastBootUpTime = child.stdout.str.trim();
-                } catch (ex) { }
-            }
-        }
-        if(process.platform=='darwin'){
-            try {
-                var child = require('child_process').execFile('/usr/sbin/sysctl', ['', 'kern.boottime']); // must include blank value at begining for some reason?
-                child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-                child.stderr.on('data', function () { });
-                child.waitExit();
-                const timestampMatch = /\{ sec = (\d+), usec = \d+ \}/.exec(child.stdout.str.trim());
-                if(!results.hardware.darwin){
-                    results.hardware.darwin = { LastBootUpTime: parseInt(timestampMatch[1]) };
-                }else{
-                    results.hardware.darwin.LastBootUpTime = parseInt(timestampMatch[1]);
+            if(results.hardware.linux.LastBootUpTime) {
+                var thelastbootuptime = new Date(results.hardware.linux.LastBootUpTime);
+                meshCoreObj.lastbootuptime = thelastbootuptime.getTime(); // store the last boot up time in coreinfo for columns
+                meshCoreObjChanged();
+                var nowtime = new Date();
+                var differenceInMilliseconds = Math.abs(thelastbootuptime - nowtime);
+                if (differenceInMilliseconds < 300000) { // computer uptime less than 5 minutes
+                    MeshServerLogEx(159, [thelastbootuptime.toString()], "Device Powered On", null);
                 }
-            } catch (ex) { }
+            }
         }
+        if(results.hardware && results.hardware.darwin){
+            if(results.hardware.darwin.LastBootUpTime) {
+                var thelastbootuptime = new Date(results.hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
+                meshCoreObj.lastbootuptime = thelastbootuptime.getTime(); // store the last boot up time in coreinfo for columns
+                meshCoreObjChanged();
+                var nowtime = new Date();
+                var differenceInMilliseconds = Math.abs(thelastbootuptime - nowtime);
+                if (differenceInMilliseconds < 300000) { // computer uptime less than 5 minutes
+                    MeshServerLogEx(159, [thelastbootuptime.toString()], "Device Powered On", null);
+                }
+            }
+        }    
         results.hardware.agentvers = process.versions;
         results.hardware.network = { dns: require('os').dns() }; 
         replaceSpacesWithUnderscoresRec(results);
@@ -2918,6 +2905,20 @@ function onTunnelData(data)
                 if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
                 require('MeshAgent')._tsid = tsid;
 
+                // If MacOS, Wake up device with caffeinate
+                if(process.platform == 'darwin'){
+                    try {
+                        var options = {};
+                        try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
+                        options.type = require('child_process').SpawnTypes.TERM;
+                        var replydata = "";
+                        var cmdchild = require('child_process').execFile('/usr/bin/caffeinate', ['caffeinate', '-u', '-t', '10'], options);
+                        cmdchild.descriptorMetadata = 'UserCommandsShell';
+                        cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
+                        cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
+                        cmdchild.on('exit', function () { delete cmdchild; });
+                    } catch(err) { }
+                }
                 // Remote desktop using native pipes
                 this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(tsid), tunnel: this };
                 this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
@@ -3269,6 +3270,13 @@ function onTunnelData(data)
                         }
                     }
                     break;
+                }
+                case 'open': {
+                    // Open the local file/folder on the users desktop
+                    if (cmd.path) {
+                        MeshServerLogEx(20, [cmd.path], "Opening: " + cmd.path, cmd);
+                        openFileOnDesktop(cmd.path);
+                    }
                 }
                 case 'markcoredump': {
                     // If we are asking for the coredump file, set the right path.
@@ -3730,6 +3738,64 @@ function consoleHttpResponse(response) {
     response.close = function () { sendConsoleText('httprequest.response.close', this.sessionid); consoleHttpRequest = null; }
 }
 
+// Open a local file on current user's desktop
+function openFileOnDesktop(file) {
+    var child = null;
+    try {
+        switch (process.platform) {
+            case 'win32':
+                var uid = require('user-sessions').consoleUid();
+                var user = require('user-sessions').getUsername(uid);
+                var domain = require('user-sessions').getDomain(uid);
+                var task = { name: 'MeshChatTask', user: user, domain: domain, execPath: (require('fs').statSync(file).isDirectory() ? process.env['windir'] + '\\explorer.exe' : file) };
+                if (require('fs').statSync(file).isDirectory()) task.arguments = [file];
+                try {
+                    require('win-tasks').addTask(task);
+                    require('win-tasks').getTask({ name: 'MeshChatTask' }).run();
+                    require('win-tasks').deleteTask('MeshChatTask');
+                    return (true);
+                }
+                catch (ex) {
+                    var taskoptions = { env: { _target: (require('fs').statSync(file).isDirectory() ? process.env['windir'] + '\\explorer.exe' : file), _user: '"' + domain + '\\' + user + '"' }, _args: "" };
+                    if (require('fs').statSync(file).isDirectory()) taskoptions.env._args = file;
+                    for (var c1e in process.env) {
+                        taskoptions.env[c1e] = process.env[c1e];
+                    }
+                    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], taskoptions);
+                    child.stderr.on('data', function (c) { });
+                    child.stdout.on('data', function (c) { });
+                    child.stdin.write('SCHTASKS /CREATE /F /TN MeshChatTask /SC ONCE /ST 00:00 ');
+                    if (user) { child.stdin.write('/RU $env:_user '); }
+                    child.stdin.write('/TR "$env:_target $env:_args"\r\n');
+                    child.stdin.write('$ts = New-Object -ComObject Schedule.service\r\n');
+                    child.stdin.write('$ts.connect()\r\n');
+                    child.stdin.write('$tsfolder = $ts.getfolder("\\")\r\n');
+                    child.stdin.write('$task = $tsfolder.GetTask("MeshChatTask")\r\n');
+                    child.stdin.write('$taskdef = $task.Definition\r\n');
+                    child.stdin.write('$taskdef.Settings.StopIfGoingOnBatteries = $false\r\n');
+                    child.stdin.write('$taskdef.Settings.DisallowStartIfOnBatteries = $false\r\n');
+                    child.stdin.write('$taskdef.Actions.Item(1).Path = $env:_target\r\n');
+                    child.stdin.write('$taskdef.Actions.Item(1).Arguments = $env:_args\r\n');
+                    child.stdin.write('$tsfolder.RegisterTaskDefinition($task.Name, $taskdef, 4, $null, $null, $null)\r\n');
+                    child.stdin.write('SCHTASKS /RUN /TN MeshChatTask\r\n');
+                    child.stdin.write('SCHTASKS /DELETE /F /TN MeshChatTask\r\nexit\r\n');
+                    child.waitExit();
+                }
+                break;
+            case 'linux':
+                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', file], { uid: require('user-sessions').consoleUid() });
+                break;
+            case 'darwin':
+                child = require('child_process').execFile('/usr/bin/open', ['open', file]);
+                break;
+            default:
+                // Unknown platform, ignore this command.
+                break;
+        }
+    } catch (ex) { }
+    return child;
+}
+
 // Open a web browser to a specified URL on current user's desktop
 function openUserDesktopUrl(url) {
     if ((url.toLowerCase().startsWith('http://') == false) && (url.toLowerCase().startsWith('https://') == false)) { return null; }
@@ -3795,7 +3861,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4638,6 +4704,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'openurl': {
                 if (args['_'].length != 1) { response = 'Proper usage: openurl (url)'; } // Display usage
                 else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
+                break;
+            }
+            case 'openfile': {
+                if (args['_'].length != 1) { response = 'Proper usage: openfile (filepath)'; } // Display usage
+                else { if (openFileOnDesktop(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
                 break;
             }
             case 'users': {

@@ -785,19 +785,27 @@ module.exports.CreateDB = function (parent, func) {
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
         delete connectinArgs.database;
         obj.databaseType = 6;
-        const pgtools = require('pgtools');
-        pgtools.createdb(connectinArgs, dbname, function (err, res) {
-            const { Pool, Client } = require('pg');
-            connectinArgs.database = dbname;
-            Datastore = new Client(connectinArgs);
-            Datastore.connect();
-            if (err == null) {
-                // Create the tables and indexes
-                postgreSqlCreateTables(func);
-            } else {
-                // Database already existed, perform a test query to see if the main table is present
+        const { Pool, Client } = require('pg');
+        connectinArgs.database = dbname;
+        Datastore = new Client(connectinArgs);
+        Datastore.connect();
+        sqlDbQuery('SELECT 1 FROM pg_database WHERE datname = $1', [dbname], function (dberr, dbdocs) { // check database exists first before creating
+            if (dberr == null) { // database exists now check tables exists
                 sqlDbQuery('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, docs) {
                     if (err == null) { setupFunctions(func); } else { postgreSqlCreateTables(func); } // If not present, create the tables and indexes
+                });
+            } else { // If not present, create the tables and indexes
+                const pgtools = require('pgtools');
+                pgtools.createdb(connectinArgs, dbname, function (err, res) {
+                    if (err == null) {
+                        // Create the tables and indexes
+                        postgreSqlCreateTables(func);
+                    } else {
+                        // Database already existed, perform a test query to see if the main table is present
+                        sqlDbQuery('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, docs) {
+                            if (err == null) { setupFunctions(func); } else { postgreSqlCreateTables(func); } // If not present, create the tables and indexes
+                        });
+                    }
                 });
             }
         });
@@ -1260,7 +1268,6 @@ module.exports.CreateDB = function (parent, func) {
         } else if (obj.databaseType == 6) { // Postgres SQL
             Datastore.query(query, args, function (error, results) {
                 if (error != null) {
-                    console.log(query, args, error);
                     if (func) try { func(error); } catch (ex) { console.log('SQLERR4', ex); }
                 } else {
                     var docs = [];
@@ -1494,33 +1501,91 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 });
             };
-            obj.GetEvents = function (ids, domain, func) {
+            obj.GetEvents = function (ids, domain, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1) ORDER BY time DESC', [domain], func);
+                    query = query + "WHERE (domain = $1";
+                    if (filter != null) {
+                        query = query + " AND action = $2";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC";
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC', [domain], func);
+                    query = query + 'JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (' + dbMergeSqlArray(ids) + '))';
+                    if (filter != null) {
+                        query = query + " AND action = $2";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC ";
                 }
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) {
+            obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1) ORDER BY time DESC LIMIT $2', [domain, limit], func);
+                    query = query + "WHERE (domain = $1";
+                    if (filter != null) {
+                        query = query + " AND action = $2) ORDER BY time DESC LIMIT $3";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") ORDER BY time DESC LIMIT $2";
+                    }
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC LIMIT $2', [domain, limit], func);
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND (target IN (" + dbMergeSqlArray(ids) + "))";
+                    if (filter != null) {
+                        query = query + " AND action = $2) GROUP BY id ORDER BY time DESC LIMIT $3";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") GROUP BY id ORDER BY time DESC LIMIT $2";
+                    }
                 }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);                
             };
-            obj.GetUserEvents = function (ids, domain, userid, func) {
+            obj.GetUserEvents = function (ids, domain, userid, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain, userid];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1 AND userid = $2) ORDER BY time DESC', [domain, userid], func);
+                    query = query + "WHERE (domain = $1 AND userid = $2";
+                    if (filter != null) {
+                        query = query + " AND action = $3";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC";
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC', [domain, userid], func);
+                    query = query + 'JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN (' + dbMergeSqlArray(ids) + '))';
+                    if (filter != null) {
+                        query = query + " AND action = $3";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) {
+            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain, userid];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1 AND userid = $2) ORDER BY time DESC LIMIT $3', [domain, userid, limit], func);
+                    query = query + "WHERE (domain = $1 AND userid = $2";
+                    if (filter != null) {
+                        query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") ORDER BY time DESC LIMIT $3";
+                    }
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN (' + dbMergeSqlArray(ids) + '))) GROUP BY id ORDER BY time DESC LIMIT $3', [domain, userid, limit], func);
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target IN (" + dbMergeSqlArray(ids) + "))";
+                    if (filter != null) {
+                        query = query + " AND action = $3) GROUP BY id ORDER BY time DESC LIMIT $4";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") GROUP BY id ORDER BY time DESC LIMIT $3";
+                    }
                 }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
                 if (ids.indexOf('*') >= 0) {
@@ -1530,8 +1595,30 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) ORDER BY time DESC LIMIT $3', [nodeid, domain, limit], func); };
-            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) AND ((userid = $3) OR (userid IS NULL)) ORDER BY time DESC LIMIT $4', [nodeid, domain, userid, limit], func); };
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+                var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
+                var dataarray = [nodeid, domain];
+                if (filter != null) {
+                    query = query + "AND action = $3) ORDER BY time DESC LIMIT $4";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT $3";
+                }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
+            };
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
+                var query = "SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) AND ((userid = $3) OR (userid IS NULL)) ";
+                var dataarray = [nodeid, domain, userid];
+                if (filter != null) {
+                    query = query + "AND (action = $4) ORDER BY time DESC LIMIT $5";
+                    dataarray.push(filter);
+                } else {
+                    query = query + "ORDER BY time DESC LIMIT $4";
+                }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
+            };
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { if ((domain == null) || (nodeid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND nodeid = $2', [domain, nodeid], function (err, docs) { }); };
             obj.RemoveAllUserEvents = function (domain, userid) { if ((domain == null) || (userid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND userid = $2', [domain, userid], function (err, docs) { }); };
@@ -1669,42 +1756,78 @@ module.exports.CreateDB = function (parent, func) {
                 obj.dbCounters.eventsSet++;
                 obj.file.ref('events').push(event).then(function (userRef) { if (func) { func(); } });
             };
-            obj.GetEvents = function (ids, domain, func) {
+            obj.GetEvents = function (ids, domain, filter, func) {
                 // This request is slow since we have not found a .filter() that will take two arrays and match a single item.
-                obj.file.query('events').filter('domain', '==', domain).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
-                    const docs = [];
-                    for (var i in snapshots) {
-                        const doc = snapshots[i].val();
-                        if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
-                        var found = false;
-                        for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
-                        if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
-                    }
-                    func(null, docs);
-                });
+                if (filter != null) {
+                    obj.file.query('events').filter('domain', '==', domain).filter('action', '==', filter).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
+                        const docs = [];
+                        for (var i in snapshots) {
+                            const doc = snapshots[i].val();
+                            if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
+                            var found = false;
+                            for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
+                            if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
+                        }
+                        func(null, docs);
+                    });
+                } else {
+                    obj.file.query('events').filter('domain', '==', domain).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
+                        const docs = [];
+                        for (var i in snapshots) {
+                            const doc = snapshots[i].val();
+                            if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
+                            var found = false;
+                            for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
+                            if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
+                        }
+                        func(null, docs);
+                    });
+                }
             };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) {
+            obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
                 // This request is slow since we have not found a .filter() that will take two arrays and match a single item.
                 // TODO: Request a new AceBase feature for a 'array:contains-one-of' filter:
                 // obj.file.indexes.create('events', 'ids', { type: 'array' });
                 // db.query('events').filter('ids', 'array:contains-one-of', ids)
-                obj.file.query('events').filter('domain', '==', domain).take(limit).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
-                    const docs = [];
-                    for (var i in snapshots) {
-                        const doc = snapshots[i].val();
-                        if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
-                        var found = false;
-                        for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
-                        if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
-                    }
-                    func(null, docs);
-                });
+                if (filter != null) {
+                    obj.file.query('events').filter('domain', '==', domain).filter('action', '==', filter).take(limit).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
+                        const docs = [];
+                        for (var i in snapshots) {
+                            const doc = snapshots[i].val();
+                            if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
+                            var found = false;
+                            for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
+                            if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
+                        }
+                        func(null, docs);
+                    });
+                } else {
+                    obj.file.query('events').filter('domain', '==', domain).take(limit).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type'] }, function (snapshots) {
+                        const docs = [];
+                        for (var i in snapshots) {
+                            const doc = snapshots[i].val();
+                            if ((doc.ids == null) || (!Array.isArray(doc.ids))) continue;
+                            var found = false;
+                            for (var j in doc.ids) { if (ids.indexOf(doc.ids[j]) >= 0) { found = true; } } // Check if one of the items in both arrays matches
+                            if (found) { delete doc.ids; if (typeof doc.account == 'object') { doc.account = common.aceUnEscapeFieldNames(doc.account); } docs.push(doc); }
+                        }
+                        func(null, docs);
+                    });
+                }
             };
-            obj.GetUserEvents = function (ids, domain, userid, func) {
-                obj.file.query('events').filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            obj.GetUserEvents = function (ids, domain, userid, filter, func) {
+                if (filter != null) {
+                    obj.file.query('events').filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).filter('action', '==', filter).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                } else {
+                    obj.file.query('events').filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                }
             };
-            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) {
-                obj.file.query('events').take(limit).filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
+                if (filter != null) {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).filter('action', '==', filter).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                } else {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('userid', 'in', userid).filter('ids', 'in', ids).sort('time', false).get({ exclude: ['_id', 'domain', 'node', 'type', 'ids'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                }
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
                 obj.file.query('events').filter('domain', '==', domain).filter('ids', 'in', ids).filter('msgid', 'in', msgids).filter('time', 'between', [start, end]).sort('time', false).get({ exclude: ['type', '_id', 'domain', 'node'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
@@ -1712,10 +1835,19 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetUserLoginEvents = function (domain, userid, func) {
                 obj.file.query('events').filter('domain', '==', domain).filter('action', 'in', ['authfail', 'login']).filter('userid', '==', userid).filter('msgArgs', 'exists').sort('time', false).get({ include: ['action', 'time', 'msgid', 'msgArgs', 'tokenName'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
             };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) {
-                obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+                if (filter != null) {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).filter('action', '==', filter).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                } else {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                }
             };
-            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) {
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
+                if (filter != null) {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).filter('userid', '==', userid).filter('action', '==', filter).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                } else {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).filter('userid', '==', userid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                }
                 obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).filter('userid', '==', userid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
             };
             obj.RemoveAllEvents = function (domain) {
@@ -1903,6 +2035,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.StoreEvent = function (event, func) {
                 obj.dbCounters.eventsSet++;
                 sqlDbQuery('INSERT INTO events VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING id', [event.time, ((typeof event.domain == 'string') ? event.domain : null), event.action, event.nodeid ? event.nodeid : null, event.userid ? event.userid : null, event], function (err, docs) {
+                    if(func){ func(); }
                     if (docs.id) {
                         for (var i in event.ids) {
                             if (event.ids[i] != '*') {
@@ -1913,33 +2046,98 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 });
             };
-            obj.GetEvents = function (ids, domain, func) {
+            obj.GetEvents = function (ids, domain, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain]; 
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1) ORDER BY time DESC', [domain], func);
+                    query = query + "WHERE (domain = $1";
+                    if (filter != null) {
+                        query = query + " AND action = $2";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC";
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target = ANY ($2))) GROUP BY id ORDER BY time DESC', [domain, ids], func);
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND (target = ANY ($2))";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = $3";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) {
+            obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1) ORDER BY time DESC LIMIT $2', [domain, limit], func);
+                    query = query + "WHERE (domain = $1";
+                    if (filter != null) {
+                        query = query + " AND action = $2) ORDER BY time DESC LIMIT $3";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") ORDER BY time DESC LIMIT $2";
+                    }
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND (target = ANY ($2))) GROUP BY id ORDER BY time DESC LIMIT $3', [domain, ids, limit], func);
+                    if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND (target = ANY ($2))";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") ORDER BY time DESC LIMIT $3";
+                    }
                 }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetUserEvents = function (ids, domain, userid, func) {
+            obj.GetUserEvents = function (ids, domain, userid, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain, userid];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1 AND userid = $2) ORDER BY time DESC', [domain, userid], func);
+                    query = query + "WHERE (domain = $1 AND userid = $2";
+                    if (filter != null) {
+                        query = query + " AND action = $3";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC";
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target = ANY ($3))) GROUP BY id ORDER BY time DESC', [domain, userid, ids], func);
+                    if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target = ANY ($3))";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = $4";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) {
+            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain, userid];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = $1 AND userid = $2) ORDER BY time DESC LIMIT $3', [domain, userid, limit], func);
+                    query = query + "WHERE (domain = $1 AND userid = $2";
+                    if (filter != null) {
+                        query = query + " AND action = $3) ORDER BY time DESC LIMIT $4 ";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") ORDER BY time DESC LIMIT $3";
+                    }
                 } else {
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target = ANY ($3))) GROUP BY id ORDER BY time DESC LIMIT $4', [domain, userid, ids, limit], func);
+                    if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = $1 AND userid = $2 AND (target = ANY ($3))";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = $4) GROUP BY id ORDER BY time DESC LIMIT $5";
+                        dataarray.push(filter);
+                    } else {
+                        query = query + ") GROUP BY id ORDER BY time DESC LIMIT $4";
+                    }
                 }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
                 if (ids.indexOf('*') >= 0) {
@@ -1949,8 +2147,30 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) ORDER BY time DESC LIMIT $3', [nodeid, domain, limit], func); };
-            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) AND ((userid = $3) OR (userid IS NULL)) ORDER BY time DESC LIMIT $4', [nodeid, domain, userid, limit], func); };
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+                var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
+                var dataarray = [nodeid, domain];
+                if (filter != null) {
+                    query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT $3";
+                }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
+            };
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
+                var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2 AND ((userid = $3) OR (userid IS NULL))";
+                var dataarray = [nodeid, domain, userid];
+                if (filter != null) {
+                    query = query + "  AND action = $4) ORDER BY time DESC LIMIT $5";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT $4";
+                }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
+            };
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { if ((domain == null) || (nodeid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND nodeid = $2', [domain, nodeid], function (err, docs) { }); };
             obj.RemoveAllUserEvents = function (domain, userid) { if ((domain == null) || (userid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = $1 AND userid = $2', [domain, userid], function (err, docs) { }); };
@@ -2078,37 +2298,95 @@ module.exports.CreateDB = function (parent, func) {
                 for (var i in event.ids) { if (event.ids[i] != '*') { batchQuery.push(['INSERT INTO eventids VALUE (LAST_INSERT_ID(), ?)', [event.ids[i]]]); } }
                 sqlDbBatchExec(batchQuery, function (err, docs) { if (func != null) { func(err, docs); } });
             };
-            obj.GetEvents = function (ids, domain, func) {
+            obj.GetEvents = function (ids, domain, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = ?) ORDER BY time DESC', [domain], func);
+                    query = query + "WHERE (domain = ?";
+                    if (filter != null) {
+                        query = query + " AND action = ?";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = ? AND target IN (?)) GROUP BY id ORDER BY time DESC', [domain, ids], func);
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND target IN (?)";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = ?";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) {
+            obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = ?) ORDER BY time DESC LIMIT ?', [domain, limit], func);
+                    query = query + "WHERE (domain = ?";
+                    if (filter != null) {
+                        query = query + " AND action = ? ";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC LIMIT ?";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = ? AND target IN (?)) GROUP BY id ORDER BY time DESC LIMIT ?', [domain, ids, limit], func);
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND target IN (?)";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = ?";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC LIMIT ?";
                 }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetUserEvents = function (ids, domain, userid, func) {
+            obj.GetUserEvents = function (ids, domain, userid, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain, userid];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = ? AND userid = ?) ORDER BY time DESC', [domain, userid], func);
+                    query = query + "WHERE (domain = ? AND userid = ?";
+                    if (filter != null) {
+                        query = query + " AND action = ?";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC', [domain, userid, ids], func);
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = ?";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC";
                 }
+                sqlDbQuery(query, dataarray, func);
             };
-            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) {
+            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
+                var query = "SELECT doc FROM events ";
+                var dataarray = [domain, userid];
                 if (ids.indexOf('*') >= 0) {
-                    sqlDbQuery('SELECT doc FROM events WHERE (domain = ? AND userid = ?) ORDER BY time DESC LIMIT ?', [domain, userid, limit], func);
+                    query = query + "WHERE (domain = ? AND userid = ?";
+                    if (filter != null) {
+                        query = query + " AND action = ?";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") ORDER BY time DESC LIMIT ?";
                 } else {
                     if (ids.length == 0) { ids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
-                    sqlDbQuery('SELECT doc FROM events JOIN eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)) GROUP BY id ORDER BY time DESC LIMIT ?', [domain, userid, ids, limit], func);
+                    query = query + "JOIN eventids ON id = fkid WHERE (domain = ? AND userid = ? AND target IN (?)";
+                    dataarray.push(ids);
+                    if (filter != null) {
+                        query = query + " AND action = ?";
+                        dataarray.push(filter);
+                    }
+                    query = query + ") GROUP BY id ORDER BY time DESC LIMIT ?";
                 }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
                 if (ids.indexOf('*') >= 0) {
@@ -2119,8 +2397,30 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = ?) AND (domain = ?) ORDER BY time DESC LIMIT ?', [nodeid, domain, limit], func); };
-            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { sqlDbQuery('SELECT doc FROM events WHERE (nodeid = ?) AND (domain = ?) AND ((userid = ?) OR (userid IS NULL)) ORDER BY time DESC LIMIT ?', [nodeid, domain, userid, limit], func); };
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+                var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ?";
+                var dataarray = [nodeid, domain];
+                if (filter != null) {
+                    query = query + " AND action = ?) ORDER BY time DESC LIMIT ?";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT ?";
+                }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
+            };
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
+                var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ? AND ((userid = ?) OR (userid IS NULL))";
+                var dataarray = [nodeid, domain, userid];
+                if (filter != null) {
+                    query = query + " AND action = ?) ORDER BY time DESC LIMIT ?";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT ?";
+                }
+                dataarray.push(limit);
+                sqlDbQuery(query, dataarray, func);
+            };
             obj.RemoveAllEvents = function (domain) { sqlDbQuery('DELETE FROM events', null, function (err, docs) { }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { if ((domain == null) || (nodeid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = ? AND nodeid = ?', [domain, nodeid], function (err, docs) { }); };
             obj.RemoveAllUserEvents = function (domain, userid) { if ((domain == null) || (userid == null)) return; sqlDbQuery('DELETE FROM events WHERE domain = ? AND userid = ?', [domain, userid], function (err, docs) { }); };
@@ -2355,14 +2655,38 @@ module.exports.CreateDB = function (parent, func) {
                 obj.StoreEvent = function (event, func) { obj.dbCounters.eventsSet++; obj.eventsfile.insertOne(event, func); };
             }
 
-            obj.GetEvents = function (ids, domain, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
-            obj.GetUserEvents = function (ids, domain, userid, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func); };
-            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] }).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
+            obj.GetEvents = function (ids, domain, filter, func) {
+                var finddata = { domain: domain,  ids: { $in: ids } };
+                if (filter != null) finddata.action = filter;
+                obj.eventsfile.find(finddata).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func);
+            };
+            obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
+                var finddata = { domain: domain, ids: { $in: ids } };
+                if (filter != null) finddata.action = filter;
+                obj.eventsfile.find(finddata).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func);
+            };
+            obj.GetUserEvents = function (ids, domain, userid, filter, func) {
+                var finddata = { domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] };
+                if (filter != null) finddata.action = filter; 
+                obj.eventsfile.find(finddata).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).toArray(func);
+            };
+            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
+                var finddata = { domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] };
+                if (filter != null) finddata.action = filter; 
+                obj.eventsfile.find(finddata).project({ type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).toArray(func);
+            };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }).project({ type: 0, _id: 0, domain: 0, node: 0 }).sort({ time: 1 }).toArray(func); };
             obj.GetUserLoginEvents = function (domain, userid, func) { obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }).project({ action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }).toArray(func); };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { obj.eventsfile.find({ domain: domain, nodeid: nodeid }).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
-            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { obj.eventsfile.find({ domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } }).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func); };
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+                var finddata = { domain: domain, nodeid: nodeid };
+                if (filter != null) finddata.action = filter;
+                obj.eventsfile.find(finddata).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func);
+            };
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
+                var finddata = { domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } };
+                if (filter != null) finddata.action = filter;
+                obj.eventsfile.find(finddata).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func);
+            };
             obj.RemoveAllEvents = function (domain) { obj.eventsfile.deleteMany({ domain: domain }, { multi: true }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { if ((domain == null) || (nodeid == null)) return; obj.eventsfile.deleteMany({ domain: domain, nodeid: nodeid }, { multi: true }); };
             obj.RemoveAllUserEvents = function (domain, userid) { if ((domain == null) || (userid == null)) return; obj.eventsfile.deleteMany({ domain: domain, userid: userid }, { multi: true }); };
@@ -2527,20 +2851,40 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { obj.eventsfile.find({}, func); };
             obj.StoreEvent = function (event, func) { obj.eventsfile.insert(event, func); };
-            obj.GetEvents = function (ids, domain, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func); } };
-            obj.GetEventsWithLimit = function (ids, domain, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, ids: { $in: ids } }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func); } };
-            obj.GetUserEvents = function (ids, domain, userid, func) {
+            obj.GetEvents = function (ids, domain, filter, func) {
+                var finddata = { domain: domain, ids: { $in: ids } };
+                if (filter != null) finddata.action = filter; 
                 if (obj.databaseType == 1) {
-                    obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func);
+                    obj.eventsfile.find(finddata, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func);
                 } else {
-                    obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func);
+                    obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func);
                 }
             };
-            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, func) {
+            obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
+                var finddata = { domain: domain, ids: { $in: ids } };
+                if (filter != null) finddata.action = filter; 
                 if (obj.databaseType == 1) {
-                    obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
+                    obj.eventsfile.find(finddata, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
-                    obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] }, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
+                    obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
+                }
+            };
+            obj.GetUserEvents = function (ids, domain, userid, filter, func) {
+                var finddata = { domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] };
+                if (filter != null) finddata.action = filter; 
+                if (obj.databaseType == 1) {
+                    obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func);
+                } else {
+                    obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func);
+                }
+            };
+            obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
+                var finddata = { domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] };
+                if (filter != null) finddata.action = filter; 
+                if (obj.databaseType == 1) {
+                    obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
+                } else {
+                    obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
                 }
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
@@ -2557,8 +2901,24 @@ module.exports.CreateDB = function (parent, func) {
                     obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }, { action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }, func);
                 }
             };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func); } };
-            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, func) { if (obj.databaseType == 1) { obj.eventsfile.find({ domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func); } else { obj.eventsfile.find({ domain: domain, nodeid: nodeid }, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func); } };
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+                var finddata = { domain: domain, nodeid: nodeid };
+                if (filter != null) finddata.action = filter;
+                if (obj.databaseType == 1) {
+                    obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func);
+                } else {
+                    obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func);
+                }
+            };
+            obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
+                var finddata = { domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } };
+                if (filter != null) finddata.action = filter;
+                if (obj.databaseType == 1) {
+                    obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func);
+                } else {
+                    obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func);
+                }
+            };
             obj.RemoveAllEvents = function (domain) { obj.eventsfile.remove({ domain: domain }, { multi: true }); };
             obj.RemoveAllNodeEvents = function (domain, nodeid) { if ((domain == null) || (nodeid == null)) return; obj.eventsfile.remove({ domain: domain, nodeid: nodeid }, { multi: true }); };
             obj.RemoveAllUserEvents = function (domain, userid) { if ((domain == null) || (userid == null)) return; obj.eventsfile.remove({ domain: domain, userid: userid }, { multi: true }); };

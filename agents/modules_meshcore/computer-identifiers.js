@@ -70,31 +70,25 @@ function linux_identifiers()
     var values = {};
 
     if (!require('fs').existsSync('/sys/class/dmi/id')) {         
-        if(require('fs').existsSync('/sys/firmware/devicetree/base/model')){
-            if(require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim().startsWith('Raspberry')){
+        if (require('fs').existsSync('/sys/firmware/devicetree/base/model')) {
+            if (require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim().startsWith('Raspberry')) {
                 identifiers['board_vendor'] = 'Raspberry Pi';
                 identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
                 identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
-            }else{
+            } else {
                 throw('Unknown board');
             }
-        }else {
+        } else {
             throw ('this platform does not have DMI statistics');
         }
     } else {
         var entries = require('fs').readdirSync('/sys/class/dmi/id');
-        for(var i in entries)
-        {
-            if (require('fs').statSync('/sys/class/dmi/id/' + entries[i]).isFile())
-            {
-                try
-                {
+        for (var i in entries) {
+            if (require('fs').statSync('/sys/class/dmi/id/' + entries[i]).isFile()) {
+                try {
                     ret[entries[i]] = require('fs').readFileSync('/sys/class/dmi/id/' + entries[i]).toString().trim();
-                }
-                catch(z)
-                {
-                }
-                if (ret[entries[i]] == 'None') { delete ret[entries[i]];}
+                } catch(z) { }
+                if (ret[entries[i]] == 'None') { delete ret[entries[i]]; }
             }
         }
         entries = null;
@@ -343,6 +337,25 @@ function linux_identifiers()
         child = null;
     }
 
+    // Linux Last Boot Up Time
+    try {
+        child = require('child_process').execFile('/usr/bin/uptime', ['', '-s']); // must include blank value at begining for some reason?
+        child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+        child.stderr.on('data', function () { });
+        child.waitExit();
+        values.linux.LastBootUpTime = child.stdout.str.trim();
+        child = null;
+    } catch (ex) { }
+
+    // Linux TPM
+    try {
+        if (require('fs').statSync('/sys/class/tpm/tpm0').isDirectory()){
+            values.tpm = {
+                SpecVersion: require('fs').readFileSync('/sys/class/tpm/tpm0/tpm_version_major').toString().trim()
+            }
+        }
+    } catch (ex) { }
+
     return (values);
 }
 
@@ -559,6 +572,23 @@ function windows_identifiers()
     }
 
     try { ret.identifiers.cpu_name = ret.windows.cpu[0].Name; } catch (x) { }
+
+    // Windows TPM
+    IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
+    try {
+        values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftTpm', "SELECT * FROM Win32_Tpm", ['IsActivated_InitialValue','IsEnabled_InitialValue','IsOwned_InitialValue','ManufacturerId','ManufacturerVersion','SpecVersion']);
+        if(values[0]) {
+            ret.tpm = {
+                SpecVersion: values[0].SpecVersion.split(",")[0],
+                ManufacturerId: IntToStr(values[0].ManufacturerId).replace(/[^\x00-\x7F]/g, ""),
+                ManufacturerVersion: values[0].ManufacturerVersion,
+                IsActivated: values[0].IsActivated_InitialValue,
+                IsEnabled: values[0].IsEnabled_InitialValue,
+                IsOwned: values[0].IsOwned_InitialValue,
+            }
+        }
+    } catch (ex) { }
+
     return (ret);
 }
 function macos_identifiers()
@@ -623,7 +653,7 @@ function macos_identifiers()
                                 var key = parts[0].trim();
                                 var value = parts[1].trim();
                                 value = (key == 'Part Number' || key == 'Manufacturer') ? hexToAscii(parts[1].trim()) : parts[1].trim();
-                                slotObj[key] = value; // Store attribute in the slot object
+                                slotObj[key.replace(' ','')] = value; // Store attribute in the slot object
                             }
                         });
                         memorySlots.push(slotObj);
@@ -673,6 +703,21 @@ function macos_identifiers()
         }
         ret.identifiers.storage_devices = devices;
     }
+
+    // MacOS Last Boot Up Time
+    try {
+        child = require('child_process').execFile('/usr/sbin/sysctl', ['', 'kern.boottime']); // must include blank value at begining for some reason?
+        child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+        child.stderr.on('data', function () { });
+        child.waitExit();
+        const timestampMatch = /\{ sec = (\d+), usec = \d+ \}/.exec(child.stdout.str.trim());
+        if (!ret.darwin) {
+            ret.darwin = { LastBootUpTime: parseInt(timestampMatch[1]) };
+        } else {
+            ret.darwin.LastBootUpTime = parseInt(timestampMatch[1]);
+        }
+        child = null;
+    } catch (ex) { }
 
     trimIdentifiers(ret.identifiers);
 
