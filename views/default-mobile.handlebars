@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
@@ -1157,6 +1157,31 @@
                     <option value=9>Alt-Tab</option>
                     <option value=12>Shift-F10</option>
                 </select>
+            </div>
+            <div id=dialog4 style="margin:auto;margin:3px">
+                <div id=d3upload>
+                    <div>File Selection</div>
+                    <select id=d3uploadMode onchange=d3modechange()>
+                        <option value=1>Local file upload</option>
+                        <option value=2>Server file selection</option>
+                    </select>
+                </div>
+                <div id=d3localmode style="display:none">
+                    <div>Upload File</div>
+                    <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
+                        <input type=text id=d3auth name=auth style="display:none" />
+                        <input type=text id=d3filter name=filter style="display:none" />
+                        <input type=text id=d3attrib name=attrib style="display:none" />
+                        <input type=file id=d3localFile name=files onchange=d3setActions() />
+                        <input type=submit id=d3submit style="display:none" />
+                    </form>
+                </div>
+                <div id=d3servermode>
+                    <div id=d3serveraction valign=bottom>
+                        <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p3CurrentFolder></span>
+                    </div>
+                    <div id=d3serverfiles></div>
+                </div>
             </div>
             <div id=dialog7 style="margin:auto;margin:3px">
                 <div id="d7meshkvm">
@@ -6652,7 +6677,7 @@
             Q('d3localmodeform').action = 'uploadmeshcorefile.ashx';
             Q('d3auth').value = authCookie;
             Q('d3attrib').value = currentNode._id;
-            setDialogMode(3, "Upload Mesh Agent Core", 3, p15uploadCoreEx2);
+            setDialogMode(4, "Upload Mesh Agent Core", 3, p15uploadCoreEx2);
             d3init();
         }
 
