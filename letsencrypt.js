@@ -28,6 +28,8 @@ module.exports.CreateLetsEncrypt = function (parent) {
     obj.challenges = {};
     obj.runAsProduction = false;
     obj.redirWebServerHooked = false;
+    obj.zerossl = false;
+    obj.csr = null;
     obj.configErr = null;
     obj.configOk = false;
     obj.pendingRequest = false;
@@ -57,6 +59,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
     // Get the current certificate
     obj.getCertificate = function(certs, func) {
         obj.runAsProduction = (obj.parent.config.letsencrypt.production === true);
+        obj.zerossl = ((typeof obj.parent.config.letsencrypt.zerossl == 'object') ? obj.parent.config.letsencrypt.zerossl : false);
         obj.log("Getting certs from local store (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
         if (certs.CommonName.indexOf('.') == -1) { obj.configErr = "Add \"cert\" value to settings in config.json before using Let's Encrypt."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
         if (obj.parent.config.letsencrypt == null) { obj.configErr = "No Let's Encrypt configuration"; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
@@ -164,26 +167,36 @@ module.exports.CreateLetsEncrypt = function (parent) {
         obj.log("Generating private key...");
         acme.forge.createPrivateKey().then(function (accountKey) {
 
-            // TODO: ZeroSSL
-            // https://acme.zerossl.com/v2/DV90
-
             // Create the ACME client
             obj.log("Setting up ACME client...");
-            obj.client = new acme.Client({
-                directoryUrl: obj.runAsProduction ? acme.directory.letsencrypt.production : acme.directory.letsencrypt.staging,
-                accountKey: accountKey
-            });
+            if (obj.zerossl) {
+                if (obj.zerossl.kid == "") { obj.log("EAB KID hasn't been set, invalid configuration."); return; }
+                if (obj.zerossl.hmackey == "") { obj.log("EAB HMAC KEY hasn't been set, invalid configuration."); return; }
+                obj.client = new acme.Client({
+                    directoryUrl: acme.directory.zerossl.production,
+                    accountKey: accountKey,
+                    externalAccountBinding: {
+                        kid: obj.zerossl.kid,
+                        hmacKey: obj.zerossl.hmackey
+                    }
+                });
+            } else {
+                obj.client = new acme.Client({
+                    directoryUrl: obj.runAsProduction ? acme.directory.letsencrypt.production : acme.directory.letsencrypt.staging,
+                    accountKey: accountKey
+                });
+            }
 
             // Create Certificate Request (CSR)
             obj.log("Creating certificate request...");
             var certRequest = { commonName: obj.leDomains[0] };
             if (obj.leDomains.length > 1) { certRequest.altNames = obj.leDomains; }
             acme.forge.createCsr(certRequest).then(function (r) {
-                var csr = r[1];
+                obj.csr = r[1];
                 obj.tempPrivateKey = r[0];
-                obj.log("Requesting certificate from Let's Encrypt...");
+                if(obj.zerossl) { obj.log("Requesting certificate from ZeroSSL..."); } else { obj.log("Requesting certificate from Let's Encrypt..."); }
                 obj.client.auto({
-                    csr,
+                    csr: obj.csr,
                     email: obj.parent.config.letsencrypt.email,
                     termsOfServiceAgreed: true,
                     skipChallengeVerification: (obj.parent.config.letsencrypt.skipchallengeverification === true),
