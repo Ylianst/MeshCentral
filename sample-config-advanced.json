@@ -565,7 +565,11 @@
     "email": "myemail@myserver.com",
     "names": "myserver.com,customer1.myserver.com",
     "skipChallengeVerification": false,
-    "production": false
+    "production": false,
+    "zerossl": {
+      "kid": "a1b2c3d4e5",
+      "hmacKey": "a1b2c3d4e5"
+    }
   },
   "_peers": {
     "serverId": "server1",
