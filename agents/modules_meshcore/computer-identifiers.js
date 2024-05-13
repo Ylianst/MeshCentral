@@ -712,6 +712,14 @@ function macos_identifiers()
         ret.identifiers.storage_devices = devices;
     }
 
+    // Fetch storage volumes using df
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', dataHandler);
+    child.stdin.write('df -aHY | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $3, $4, $5, $10, $2}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+    child.waitExit();
+    try { ret.darwin.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
+    child = null;
+
     // MacOS Last Boot Up Time
     try {
         child = require('child_process').execFile('/usr/sbin/sysctl', ['', 'kern.boottime']); // must include blank value at begining for some reason?

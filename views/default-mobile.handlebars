@@ -6378,7 +6378,6 @@
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.DeviceLocator ? m.DeviceLocator : 'Unknown')) + '</b></div>';
                         if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0}, {1}", m.Size, m.Speed), s); }
                         else if (m.Size) { x += addDetailItem("Capacity", format("{0}", (m.Size)), s); }
-                        console.log(m.Manufacturer);
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != '')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
@@ -6475,6 +6474,29 @@
                         var j = parseInt(Math.floor(Math.log(Math.abs(m.available)) / Math.log(1024)), 10);
                         var fsize = (j === 0 ? `${m.available} ${sizes[j]}` : `${(m.available / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
                         x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
+                    }
+                    if (m.type) {
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
+                    }
+                    x += '</div>';
+                }
+                if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage'}); }
+            }
+
+            // MacOS Volumes
+            if (hardware.darwin && hardware.darwin.volumes) {
+                var x = '';
+                for (var i in hardware.darwin.volumes) {
+                    var m = hardware.darwin.volumes[i];
+                    if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    if (m.size) {
+                        x += addDetailItem("Capacity", EscapeHtml(m.size), s);
+                    }
+                    if (m.available) {
+                        x += addDetailItem("Capacity Remaining", EscapeHtml(m.available), s);
                     }
                     if (m.type) {
                         var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
