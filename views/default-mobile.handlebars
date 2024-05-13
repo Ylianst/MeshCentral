@@ -6456,6 +6456,35 @@
                 if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage'}); }
             }
 
+            // Linux Volumes
+            if (hardware.linux && hardware.linux.volumes) {
+                var x = '';
+                for (var i in hardware.linux.volumes) {
+                    var m = hardware.linux.volumes[i];
+                    if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    if (m.size) {
+                        var sizes = ['KB', 'MB', 'GB', 'TB'];
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.size} ${sizes[j]}` : `${(m.size / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        x += addDetailItem("Capacity", EscapeHtml(fsize), s);
+                    }
+                    if (m.available) {
+                        var sizes = ['KB', 'MB', 'GB', 'TB'];
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.available)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.available} ${sizes[j]}` : `${(m.available / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
+                    }
+                    if (m.type) {
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
+                    }
+                    x += '</div>';
+                }
+                if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage'}); }
+            }
+
             // Render the sections
             var x = '';
             for (var i in sections) {
