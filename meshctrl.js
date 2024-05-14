@@ -2241,7 +2241,7 @@ function serverConnect() {
                         if (args.filter != null) {
                             for (var meshid in data.nodes) {
                                 for (var d in data.nodes[meshid]) { data.nodes[meshid][d].meshid = meshid; }
-                                data.nodes[meshid] = parseSearchOrInput(data.nodes[meshid], args.filter.toLowerCase());
+                                data.nodes[meshid] = parseSearchOrInput(data.nodes[meshid], args.filter.toString().toLowerCase());
                             }
                         }
 
