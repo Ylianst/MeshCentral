@@ -717,7 +717,29 @@ function macos_identifiers()
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
     child.stdin.write('df -aHY | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $3, $4, $5, $10, $2}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
     child.waitExit();
-    try { ret.darwin.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
+    try {
+        ret.darwin.volumes = JSON.parse(child.stdout.str.trim());
+        for (var index = 0; index < ret.darwin.volumes.length; index++) {
+            if (ret.darwin.volumes[index].type == 'auto_home'){
+                ret.darwin.volumes.splice(index,1);
+            }
+        }
+        if (ret.darwin.volumes.length == 0) { // not sonima OS so dont show type for now
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', dataHandler);
+            child.stdin.write('df -aH | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\"},", $2, $3, $4, $9}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+            child.waitExit();
+            try {
+                ret.darwin.volumes = JSON.parse(child.stdout.str.trim());
+                for (var index = 0; index < ret.darwin.volumes.length; index++) {
+                    sendConsoleText(ret.darwin.volumes[index].size);
+                    if (ret.darwin.volumes[index].size == 'auto_home'){
+                        ret.darwin.volumes.splice(index,1);
+                    }
+                }
+            } catch (xx) { }
+        }
+    } catch (xx) { }
     child = null;
 
     // MacOS Last Boot Up Time
