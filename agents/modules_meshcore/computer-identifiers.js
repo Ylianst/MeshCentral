@@ -732,7 +732,6 @@ function macos_identifiers()
             try {
                 ret.darwin.volumes = JSON.parse(child.stdout.str.trim());
                 for (var index = 0; index < ret.darwin.volumes.length; index++) {
-                    sendConsoleText(ret.darwin.volumes[index].size);
                     if (ret.darwin.volumes[index].size == 'auto_home'){
                         ret.darwin.volumes.splice(index,1);
                     }
