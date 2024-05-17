@@ -7469,19 +7469,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             function oidcCallback(tokenset, profile, verified) {
                 // Initialize user object
                 let user = { 'strategy': 'oidc' }
-                let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null
-                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null
-                user.name = obj.common.validateString(profile.name) ? profile.name : null
-                user.email = obj.common.validateString(profile.email) ? profile.email : null
+                let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null;
+                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null;
+                user.name = obj.common.validateString(profile.name) ? profile.name : null;
+                user.email = obj.common.validateString(profile.email) ? profile.email : null;
                 if (claims != null) {
-                    user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid
-                    user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name
-                    user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email
+                    user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid;
+                    user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name;
+                    user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email;
                 }
-                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email),
-                    user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null
-                user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null
-                if (obj.common.validateString(strategy.groups.claim)) {
+                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
+                user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
+                if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
                     user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
                 }
 
