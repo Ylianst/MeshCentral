@@ -22,6 +22,7 @@ nav:
       - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
       - 'Messaging': 'messaging/index.md'
       - 'Customization': 'meshcentral/customization.md'
+      - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
       
   - Design and Architecture:
     - design/index.md
