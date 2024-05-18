@@ -1805,7 +1805,7 @@
             // Set the user's desktop shortcut keys
             deskKeyboardShortcuts = [];
             var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
-            for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+            for (var i in deskKeyboardShortcutsStr) { if (deskKeyboardShortcutsStr[i] != "") { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); } }
             updateDeskShortcutKeys();
 
             // Set the user's desktop strings
@@ -3202,7 +3202,7 @@
                                         // Set the user's desktop shortcut keys
                                         deskKeyboardShortcuts = [];
                                         var deskKeyboardShortcutsStr = webstate.deskKeyShortcuts.split(',');
-                                        for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+                                        for (var i in deskKeyboardShortcutsStr) { if (deskKeyboardShortcutsStr[i] != "") { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); } }
                                         updateDeskShortcutKeys();
                                     }
                                     if (webstate.deskStrings != null) {
