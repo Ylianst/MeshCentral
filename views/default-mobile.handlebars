@@ -889,6 +889,7 @@
                             <div style=width:100%;margin:6px></div>
                         </div>
                         <div style="margin-right:16px;margin-left:8px"><div id=p10dialog2 style="margin:auto;margin:3px"></div></div>
+                        <div style="width:100%;padding:2px;text-align:center"><input type=button value="Restore Default Keyboard Shortcuts" onclick=restoreDeskCustomizeKey() /></div>
                         <div style="padding:10px;margin-bottom:20px"><input type="button" value="OK" style="float:right;width:80px" onclick="deskCustomizeKeysEx()"></div>
                     </div>
                     <div id=p10general style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%">
@@ -4726,6 +4727,15 @@
             xxdialogMode = 0;
             putstore('deskKeyShortcuts', deskKeyboardShortcuts.join(','));
             updateDeskShortcutKeys();
+        }
+
+        function restoreDeskCustomizeKey() {
+            deskKeyboardShortcuts = [];
+            putstore('deskKeyShortcuts', null);
+            var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
+            for (var i in deskKeyboardShortcutsStr) { if (deskKeyboardShortcutsStr[i] != "") { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); } }
+            updateDeskShortcutKeys();
+            deskUpdateShortcutList();
         }
 
         function deskUpdateShortcutList() {
