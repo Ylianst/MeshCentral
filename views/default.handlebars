@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -5255,12 +5255,12 @@
         }
 
         // Intel AMT device import for a device group
-        function showAmtImport(meshid) {
-            if (xxdialogMode) return false;
-            var x = '<form method=post enctype=multipart/form-data action=amtimport.ashx target=fileUploadFrame><input type=text name=link style=display:none id=amtImportDevGroup value="' + meshid + '" /><input type=file name=files id=amtImportInput style=width:100% onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>';
-            setDialogMode(2, "Import Intel AMT devices", 3, p5uploadFileEx, x);
-            p5updateUploadDialogOk('amtImportInput');
-        }
+        // function showAmtImport(meshid) {
+        //     if (xxdialogMode) return false;
+        //     var x = '<form method=post enctype=multipart/form-data action=amtimport.ashx target=fileUploadFrame><input type=text name=link style=display:none id=amtImportDevGroup value="' + meshid + '" /><input type=file name=files id=amtImportInput style=width:100% onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>';
+        //     setDialogMode(2, "Import Intel AMT devices", 3, p5uploadFileEx, x);
+        //     p5updateUploadDialogOk('amtImportInput');
+        // }
 
         function showAmtImport(meshid) {
             if (xxdialogMode) return;
@@ -9851,6 +9851,7 @@
             for (var i = 0; i < 10; i++) { x += '<option value=' + (i + 48) + '>' + i + '</option>'; }
             for (var i = 0; i < 26; i++) { x += '<option value=' + (i + 65) + '>' + String.fromCharCode(i + 65) + '</option>'; }
             x += '</select> <input type=button value=' + "Add" + ' onclick=addDeskCustomizeKey() /></div>';
+            x += '<div style=width:100%;padding:2px;text-align:center><input type=button value="' + "Restore Default Keyboard Shortcuts" + '" onclick=restoreDeskCustomizeKey() /></div>';
             setDialogMode(2, "Keyboard Shortcuts Customization", 1, deskCustomizeKeysEx, x);
             deskUpdateShortcutList();
         }
@@ -9890,6 +9891,15 @@
             var na = [];
             for (var i in deskKeyboardShortcuts) { if (deskKeyboardShortcuts[i] != k) { na.push(deskKeyboardShortcuts[i]); } }
             deskKeyboardShortcuts = na;
+            deskUpdateShortcutList();
+        }
+
+        function restoreDeskCustomizeKey() {
+            deskKeyboardShortcuts = [];
+            putstore('deskKeyShortcuts', null);
+            var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
+            for (var i in deskKeyboardShortcutsStr) { if (deskKeyboardShortcutsStr[i] != "") { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); } }
+            updateDeskShortcutKeys();
             deskUpdateShortcutList();
         }
 
