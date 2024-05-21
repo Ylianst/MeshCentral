@@ -1742,6 +1742,11 @@
             "default": false,
             "description": "Enables the geo-location feature and device location map in the user interface, this feature is not being worked on."
           },
+          "ipLocation": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, the remote agents will submit there approximate location to MeshCentral, Use in combination with \"geoLocation\"."
+          },
           "novnc": {
             "type": "boolean",
             "default": true,
