@@ -12295,9 +12295,13 @@
                         x += addDetailItem("Capacity", EscapeHtml(fsize), s);
                     }
                     if (m.available) {
-                        var sizes = ['KB', 'MB', 'GB', 'TB'];
-                        var j = parseInt(Math.floor(Math.log(Math.abs(m.available)) / Math.log(1024)), 10);
-                        var fsize = (j === 0 ? `${m.available} ${sizes[j]}` : `${(m.available / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        if (Math.abs(m.available) == 0) {
+                            var fsize = `0 KB`;
+                        } else {
+                            var sizes = ['KB', 'MB', 'GB', 'TB'];
+                            var j = parseInt(Math.floor(Math.log(Math.abs(m.available)) / Math.log(1024)), 10);
+                            var fsize = (j === 0 ? `${m.available} ${sizes[j]}` : `${(m.available / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        }
                         x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
                     }
                     if (m.type) {
