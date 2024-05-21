@@ -3420,14 +3420,12 @@
                       },
                       "required": {
                         "type": [
-                          "string",
                           "array"
                         ],
                         "description": "Access is only granted to users who are a member of at least one of the listed required groups."
                       },
                       "siteadmin": {
                         "type": [
-                          "string",
                           "array"
                         ],
                         "description": "Full site admin priviledges will be granted to users who are a member of at least one of the listed admin groups."
@@ -3446,7 +3444,6 @@
                         "properties": {
                           "filter": {
                             "type": [
-                              "string",
                               "array"
                             ],
                             "description": "Only groups listed here are mirrored into MeshCentral user groups."
