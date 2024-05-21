@@ -2341,7 +2341,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Event any changes on this server only
             if ((newConnectivity != oldPowerState) || (newPowerState != oldPowerState)) {
-                obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: newConnectivity, pwr: newPowerState, nolog: 1, nopeers: 1 });
+                obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: newConnectivity, pwr: newPowerState, nolog: 1, nopeers: 1, id: Math.random() });
             }
         }
     };
@@ -2522,7 +2522,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Event the node connection change
             if (eventConnectChange == 1) {
-                obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1 });
+                obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, ct: connectTime, nolog: 1, nopeers: 1, id: Math.random() });
 
                 // Save indication of node connection change
                 const lc = { _id: 'lc' + nodeid, type: 'lastconnect', domain: nodeid.split('/')[1], meshid: meshid, time: Date.now(), cause: 1, connectType: connectType };
@@ -2626,7 +2626,7 @@ function CreateMeshCentralServer(config, args) {
 
             // Event the node connection change
             if (eventConnectChange == 1) {
-                obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1 });
+                obj.DispatchEvent(obj.webserver.CreateNodeDispatchTargets(meshid, nodeid), obj, { action: 'nodeconnect', meshid: meshid, nodeid: nodeid, domain: nodeid.split('/')[1], conn: state.connectivity, pwr: state.powerState, nolog: 1, nopeers: 1, id: Math.random() });
 
                 // Notify any users of device disconnection
                 obj.NotifyUserOfDeviceStateChange(meshid, nodeid, Date.now(), connectType, -1, serverid, false, extraInfo);
