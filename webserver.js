@@ -7472,6 +7472,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                     delete strategy.scope
                 }
+                if (strategy.groups && strategy.groups.sync && strategy.groups.sync.enabled && strategy.groups.sync.enabled === true) {
+                    if (strategy.groups.sync.filter) {
+                        delete strategy.groups.sync.enabled;
+                    } else {
+                        strategy.groups.sync = true;
+                    }
+                    parent.authLog('migrateOldConfigs', `OIDC: OLD CONFIG: Moving old config to new location. strategy.groups.sync.enabled => strategy.groups.sync`);
+                }
                 return strategy
             }
 
