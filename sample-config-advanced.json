@@ -316,6 +316,7 @@
       "_agentNoProxy": true,
       "_lockAgentDownload": true, 
       "_geoLocation": true,
+      "_ipLocation": true,
       "_novnc": false,
       "_mstsc": true,
       "_ssh": true,
