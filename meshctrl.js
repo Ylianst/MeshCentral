@@ -2755,7 +2755,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             }
         }
     }
-    if (node == null) {
+    if ((sysinfo == null && lastconnect == null && network == null) || (node == null)) {
         console.log("Invalid device id");
         process.exit(); return;
     }
