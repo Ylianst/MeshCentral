@@ -71,8 +71,8 @@
             </div>
             <div id=deskarea4 class="areaFoot" style="min-height:24px">
                 <div class="toright2">
-                    <span id="DeskLatency" title="Desktop Session Latency"></span>
-                    <span id="DeskTimer" style="display:none" title="Session time"></span>&nbsp;
+                    <span id="DeskLatency" style="line-height:22px;width:50px"  title="Desktop Session Latency"></span>
+                    <span id="DeskTimer" style="line-height:22px" title="Session time"></span>&nbsp;
                     <select id=termdisplays style="display:none" onchange=deskSetDisplay(event) onkeypress="return false" onkeydown="return false"></select>&nbsp;
                     <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img src='images/icon-camera.png' onclick=deskSaveImage() height=16 width=16 style=padding-top:2px /></span>
                 </div>
@@ -480,6 +480,9 @@
             QE('DeskWD', deskState == 3);
             QV('deskkeys', viewOnly != 1);
             QE('deskkeys', deskState == 3);
+            QV('DeskTimer', deskState == 3);
+            QV('DeskLatency', deskState == 3);
+            QS('DeskLatency').display = (deskState == 3 ? 'inline-block' : 'none');
 
             // Display this only if we have Chat & Notify permissions
             QV('DeskSaveImageButton', (deskState == 3) && (Q('Desk')['toBlob'] != null));
@@ -624,7 +627,7 @@
                     desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(null);
-                    desktop.latency.callback = function (ms) { console.log('latency', ms); updateSessionTime(); };
+                    desktop.latency.callback = function (ms) { /* console.log('latency', ms); */ updateSessionTime(); };
                     desktop.contype = 1;
                 }
             } else {
@@ -736,14 +739,26 @@
             // Desktop
             var latencyStr = '', seconds = 0;
             if (desktop && desktop.startTime) {
-                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
-                QH('DeskTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('DeskLatency', latencyStr);
             } else {
                 QH('DeskTimer', '');
+                QH('DeskLatency', '');
             }
 
-            if (desktop == null) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
+            // Terminal
+            seconds = 0;
+            if (terminal && terminal.startTime) {
+                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
+                seconds = Math.floor((new Date() - terminal.startTime) / 1000);
+                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+            } else {
+                QH('TermTimer', '');
+            }
+
+            if ((desktop == null) && (terminal == null)) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
         }
 
         function showDesktopSettings() {
@@ -1371,20 +1386,6 @@
                     break;
             }
             updateTerminalButtons();
-        }
-
-        function updateSessionTime() {
-            // Terminal
-            var latencyStr = '', seconds = 0;
-            if (terminal && terminal.startTime) {
-                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
-                seconds = Math.floor((new Date() - terminal.startTime) / 1000);
-                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
-            } else {
-                QH('TermTimer', '');
-            }
-
-            if (terminal == null) { clearInterval(updateSessionTimer); updateSessionTimer = null; }
         }
 
         // DEBUG
