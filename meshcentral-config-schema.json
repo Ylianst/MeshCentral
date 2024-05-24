@@ -1203,7 +1203,7 @@
           "allowSavingDeviceCredentials": {
             "type": "boolean",
             "default": true,
-            "description": "Allow users to save SSH, RDP, VNC device credentials on the server that can be used by any other user."
+            "description": "Allow users to save SSH, RDP, VNC device credentials in the server."
           },
           "trustedCert": {
             "type": "boolean",
