@@ -903,6 +903,7 @@
 
         // Remote desktop special key combos for Windows
         function deskSendKeys() {
+            Q('DeskWD').blur();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var ks = Q('deskkeys').value;
             if (ks == 0) { // WIN+Down arrow
