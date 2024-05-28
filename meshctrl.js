@@ -909,7 +909,7 @@ if (args['_'].length == 0) {
                     case 'agentdownload': {
                         console.log("Download an agent of a specific type for a given device group, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl AgentDownload --id 'groupid' --type 3"));
-						console.log(winRemoveSingleQuotes("  MeshCtrl AgentDownload --id 'groupid' --type 3 --installflags 1"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AgentDownload --id 'groupid' --type 3 --installflags 1"));
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --type [ArchitectureNumber]   - Agent architecture number.");
                         if (process.platform == 'win32') {
@@ -917,11 +917,11 @@ if (args['_'].length == 0) {
                         } else {
                             console.log("  --id '[groupid]'              - The device group identifier.");
                         }
-						console.log("\r\nOptional arguments:\r\n");
-						console.log("  --installflags [InstallFlagsNumber]   - With the following choices:");
-						console.log("  installflags 0 --> Default, Interactive & Background, offers connect button & install/uninstall");
-						console.log("  installflags 1 --> Interactive only, offers only connect button, not install/uninstall");
-						console.log("  installflags 2 --> Background only, offers only install/uninstall, not connect");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --installflags [InstallFlagsNumber]   - With the following choices:");
+                        console.log("  installflags 0 --> Default, Interactive & Background, offers connect button & install/uninstall");
+                        console.log("  installflags 1 --> Interactive only, offers only connect button, not install/uninstall");
+                        console.log("  installflags 2 --> Background only, offers only install/uninstall, not connect");
                         break;
                     }
                     case 'upload': {
