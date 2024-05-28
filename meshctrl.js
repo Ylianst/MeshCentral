@@ -1673,12 +1673,10 @@ function serverConnect() {
                 var u = settings.xxurl.replace('wss://', 'https://').replace('/control.ashx', '/meshagents');
                 if (u.indexOf('?') > 0) { u += '&'; } else { u += '?'; }
                 u += 'id=' + args.type + '&meshid=' + args.id;
-                // check, whether the optional installflags have not been set; include them only when set
                 if (args.installflags) {
                     if ((typeof parseInt(args.installflags) != 'number') || isNaN(parseInt(args.installflags)) || (parseInt(args.installflags) < 0) || (parseInt(args.installflags) > 2)) { console.log("Invalid Installflags."); process.exit(1); return; }
                     u += '&installflags=' + args.installflags;
                 }
-                console.log(u);
                 const options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
                 const fs = require('fs');
                 const https = require('https');
