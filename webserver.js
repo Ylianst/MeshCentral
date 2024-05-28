@@ -6766,6 +6766,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.oidc) != 0) {
                         let authURL = url + 'auth-oidc'
                         parent.authLog('setupHTTPHandlers', `OIDC: Authorization URL: ${authURL}`);
+                        obj.app.use(require('connect-flash')());
                         obj.app.get(authURL, function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
