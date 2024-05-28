@@ -238,10 +238,9 @@ if (args['_'].length == 0) {
         }
         case 'agentdownload': {
             if (args.type == null) { console.log(winRemoveSingleQuotes("Missing device type, use --type [agenttype]")); }
-            var at = parseInt(args.type);
-            if ((at == null) || isNaN(at) || (at < 1) || (at > 11000)) { console.log(winRemoveSingleQuotes("Invalid agent type, must be a number.")); }
-            if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[meshid]'")); }
-            if ((typeof args.id != 'string') || (args.id.length != 64)) { console.log(winRemoveSingleQuotes("Invalid meshid.")); }
+            else if ((parseInt(args.type) == null) || isNaN(parseInt(args.type)) || (parseInt(args.type) < 1) || (parseInt(args.type) > 11000)) { console.log(winRemoveSingleQuotes("Invalid agent type, must be a number.")); }
+            else if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[meshid]'")); }
+            else if ((typeof args.id != 'string') || (args.id.length != 64)) { console.log(winRemoveSingleQuotes("Invalid meshid.")); }
             else { ok = true; }
             break;
         }
@@ -905,6 +904,7 @@ if (args['_'].length == 0) {
                     case 'agentdownload': {
                         console.log("Download an agent of a specific type for a given device group, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl AgentDownload --id 'groupid' --type 3"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl AgentDownload --id 'groupid' --type 3 --installflags 1"));
                         console.log("\r\nRequired arguments:\r\n");
                         console.log("  --type [ArchitectureNumber]   - Agent architecture number.");
                         if (process.platform == 'win32') {
@@ -912,6 +912,11 @@ if (args['_'].length == 0) {
                         } else {
                             console.log("  --id '[groupid]'              - The device group identifier.");
                         }
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --installflags [InstallFlagsNumber] - With the following choices:");
+                        console.log("    installflags 0                    - Default, Interactive & Background, offers connect button & install/uninstall");
+                        console.log("    installflags 1                    - Interactive only, offers only connect button, not install/uninstall");
+                        console.log("    installflags 2                    - Background only, offers only install/uninstall, not connect");
                         break;
                     }
                     case 'upload': {
@@ -1668,6 +1673,12 @@ function serverConnect() {
                 var u = settings.xxurl.replace('wss://', 'https://').replace('/control.ashx', '/meshagents');
                 if (u.indexOf('?') > 0) { u += '&'; } else { u += '?'; }
                 u += 'id=' + args.type + '&meshid=' + args.id;
+                // check, whether the optional installflags have not been set; include them only when set
+                if (args.installflags) {
+                    if ((typeof parseInt(args.installflags) != 'number') || isNaN(parseInt(args.installflags)) || (parseInt(args.installflags) < 0) || (parseInt(args.installflags) > 2)) { console.log("Invalid Installflags."); process.exit(1); return; }
+                    u += '&installflags=' + args.installflags;
+                }
+                console.log(u);
                 const options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
                 const fs = require('fs');
                 const https = require('https');
