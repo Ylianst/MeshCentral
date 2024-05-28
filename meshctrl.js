@@ -238,15 +238,15 @@ if (args['_'].length == 0) {
         }
         case 'agentdownload': {
             if (args.installflags != null) {
-				var aif = parseInt(args.installflags);
-				if ((isNaN(aif)) || (aif < 1) || (aif > 11000)) { console.log(winRemoveSingleQuotes("Invalid installflags, must be a number.")); }
+                var aif = parseInt(args.installflags);
+                if ((isNaN(aif)) || (aif < 1) || (aif > 11000)) { console.log(winRemoveSingleQuotes("Invalid installflags, must be a number.")); }
             }
             if (args.type == null) { console.log(winRemoveSingleQuotes("Missing device type, use --type [agenttype]")); }
             var at = parseInt(args.type);
             if ((at == null) || isNaN(at) || (at < 1) || (at > 11000)) { console.log(winRemoveSingleQuotes("Invalid agent type, must be a number.")); }
             if (args.id == null) { console.log(winRemoveSingleQuotes("Missing device id, use --id '[meshid]'")); }
             if ((typeof args.id != 'string') || (args.id.length != 64)) { console.log(winRemoveSingleQuotes("Invalid meshid.")); }
-			else { ok = true; }
+            else { ok = true; }
             break;
         }
         case 'upload': {
