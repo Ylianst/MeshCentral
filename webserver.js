@@ -2073,6 +2073,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleInviteRequest(req, res) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleInviteRequest: failed checks.'); res.sendStatus(404); return; }
+        if (domain.agentinvitecodes != true) { nice404(req, res); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((req.body == null) || (req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 0 }, req, domain)); return; } // No invitation code
 
@@ -2104,35 +2105,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var features = 0;
         if (domain.allowsavingdevicecredentials === false) { features |= 1; }
 
-        if (req.query.ws != null) {
-            // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
-            var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
-            if ((rcookie != null) && (rcookie.domainid == domain.id) && (rcookie.nodeid != null) && (rcookie.tcpport != null)) {
-
-                // Fetch the node from the database
-                obj.db.Get(rcookie.nodeid, function (err, nodes) {
-                    if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
-                    const node = nodes[0];
-
-                    // Check if we have SSH/RDP credentials for this device
-                    var serverCredentials = 0;
-                    if (domain.allowsavingdevicecredentials !== false) {
-                        if (page == 'ssh') {
-                            if ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string') && (typeof node.ssh.p == 'string')) { serverCredentials = 1; } // Username and password
-                            else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string') && (typeof node.ssh.kp == 'string')) { serverCredentials = 2; } // Username, key and password
-                            else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string')) { serverCredentials = 3; } // Username and key. No password.
-                        } else {
-                            if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) { serverCredentials = 1; } // Username and password
-                        }
-                    }
-
-                    // Render the page
-                    render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
-                });
-                return;
-            }
-        }
-
         // Get the logged in user if present
         var user = null;
 
@@ -2150,6 +2122,39 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // No user login, exit now
         if (user == null) { res.sendStatus(401); return; }
+
+        if (req.query.ws != null) {
+            // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
+            var rcookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
+            if ((rcookie != null) && (rcookie.domainid == domain.id) && (rcookie.nodeid != null) && (rcookie.tcpport != null)) {
+
+                // Fetch the node from the database
+                obj.db.Get(rcookie.nodeid, function (err, nodes) {
+                    if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
+                    const node = nodes[0];
+
+                    // Check if we have SSH/RDP credentials for this device
+                    var serverCredentials = 0;
+                    if (domain.allowsavingdevicecredentials !== false) {
+                        if (page == 'ssh') {
+                            if ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string') && (typeof node.ssh.p == 'string')) { serverCredentials = 1; } // Username and password
+                            else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string') && (typeof node.ssh.kp == 'string')) { serverCredentials = 2; } // Username, key and password
+                            else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string')) { serverCredentials = 3; } // Username and key. No password.
+                            else if ((typeof node.ssh == 'object') && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].u == 'string') && (typeof node.ssh[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
+                            else if ((typeof node.ssh == 'object') && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string') && (typeof node.ssh[user._id].kp == 'string')) { serverCredentials = 2; } // Username, key and password in per user format
+                            else if ((typeof node.ssh == 'object') && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string')) { serverCredentials = 3; } // Username and key. No password. in per user format
+                        } else {
+                            if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) { serverCredentials = 1; } // Username and password in legacy format
+                            if ((typeof node.rdp == 'object') && (typeof node.rdp[user._id] == 'object') && (typeof node.rdp[user._id].d == 'string') && (typeof node.rdp[user._id].u == 'string') && (typeof node.rdp[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
+                        }
+                    }
+
+                    // Render the page
+                    render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
+                });
+                return;
+            }
+        }
 
         // Check the nodeid
         if (req.query.node != null) {
@@ -2186,6 +2191,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((typeof node.ssh == 'object') && (typeof node.ssh.u == 'string') && (typeof node.ssh.p == 'string')) { serverCredentials = 1; } // Username and password
                     else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string') && (typeof node.ssh.kp == 'string')) { serverCredentials = 2; } // Username, key and password
                     else if ((typeof node.ssh == 'object') && (typeof node.ssh.k == 'string')) { serverCredentials = 3; } // Username and key. No password.
+                    else if ((typeof node.ssh == 'object') && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].u == 'string') && (typeof node.ssh[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
+                    else if ((typeof node.ssh == 'object') && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string') && (typeof node.ssh[user._id].kp == 'string')) { serverCredentials = 2; } // Username, key and password in per user format
+                    else if ((typeof node.ssh == 'object') && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string')) { serverCredentials = 3; } // Username and key. No password. in per user format
                 }
             } else {
                 // RDP port
@@ -2195,6 +2203,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Check if we have RDP credentials for this device
                 if (domain.allowsavingdevicecredentials !== false) {
                     if ((typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) { serverCredentials = 1; } // Username and password
+                    if ((typeof node.rdp == 'object') && (typeof node.rdp[user._id] == 'object') && (typeof node.rdp[user._id].d == 'string') && (typeof node.rdp[user._id].u == 'string') && (typeof node.rdp[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
                 }
             }
             if (req.query.port != null) { var qport = 0; try { qport = parseInt(req.query.port); } catch (ex) { } if ((typeof qport == 'number') && (qport > 0) && (qport < 65536)) { port = qport; } }
@@ -2590,24 +2599,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const groups = { 'enabled': typeof strategy.groups == 'object' }
             parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
             if (groups.enabled) { // Groups only available for OIDC strategy currently
-                groups.userMemberships = obj.common.convertStrArray(req.user.groups)
-                groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false
-                groups.syncMemberships = []
-                groups.siteAdminEnabled = strategy.groups.siteadmin ? true : false
-                groups.grantAdmin = false
-                groups.revokeAdmin = strategy.groups.revokeAdmin ? strategy.groups.revokeAdmin : true
-                groups.requiredGroups = obj.common.convertStrArray(strategy.groups.required)
-                groups.siteAdmin = obj.common.convertStrArray(strategy.groups.siteadmin)
-                groups.syncFilter = obj.common.convertStrArray(strategy.groups.sync?.filter)
+                groups.userMemberships = obj.common.convertStrArray(req.user.groups);
+                groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false;
+                groups.syncMemberships = [];
+                groups.siteAdminEnabled = strategy.groups.siteadmin ? true : false;
+                groups.grantAdmin = false;
+                groups.revokeAdmin = strategy.groups.revokeAdmin ? strategy.groups.revokeAdmin : true;
+                groups.requiredGroups = obj.common.convertStrArray(strategy.groups.required);
+                groups.siteAdmin = obj.common.convertStrArray(strategy.groups.siteadmin);
+                groups.syncFilter = obj.common.convertStrArray(strategy.groups.sync?.filter);
 
                 // Fancy Logs
-                let groupMessage = ''
+                let groupMessage = '';
                 if (groups.userMemberships.length == 1) { groupMessage = ` Found membership: "${groups.userMemberships[0]}"` }
                 else { groupMessage = ` Found ${groups.userMemberships.length} memberships: ["${groups.userMemberships.join('", "')}"]` }
                 parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}"` + groupMessage);
 
                 // Check user membership in required groups
-                if (groups.requiredGroups != null) {
+                if (groups.requiredGroups.length > 0) {
                     let match = false
                     for (var i in groups.requiredGroups) {
                         if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
@@ -2616,7 +2625,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
                     if (match === false) {
-                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Login denied. No memberhip to required group.`);
+                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Login denied. No membership to required group.`);
                         req.session.loginmode = 1;
                         req.session.messageid = 111; // Access Denied.
                         res.redirect(domain.url + getQueryPortion(req));
@@ -2639,15 +2648,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Check if we need to sync user-memberships (IdP) with user-groups (meshcentral)
                 if (groups.syncEnabled === true) {
-                    for (var i in groups.syncFilter) {
-                        if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
+                    if (groups.syncFilter.length > 0){ // config.json has specified sync.filter so loop and use it
+                        for (var i in groups.syncFilter) {
+                            if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
+                        }
+                    } else { // config.json doesnt have sync.filter specified so we are going to sync all the users groups from oidc instead
+                        for (var i in groups.userMemberships) {
+                            groups.syncMemberships.push(groups.userMemberships[i]);
+                        }
                     }
                     if (groups.syncMemberships.length > 0) {
-                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Filtered user memberships from config to sync: ${groups.syncMemberships.join(', ')}`);
+                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" User memberships to sync: ${groups.syncMemberships.join(', ')}`);
                     } else {
                         groups.syncMemberships = null;
-                        groups.syncEnabled = false
-                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" No sync memberships found after filter: ${strategy.groups.sync.filter.join(', ')}`);
+                        groups.syncEnabled = false;
+                        if (groups.syncFilter.length > 0){
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" No sync memberships found using filters: ${groups.syncFilter.join(', ')}`);
+                        } else {
+                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" No sync memberships found`);
+                        }
                     }
                 }
             }
@@ -6470,7 +6489,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             for (var i in parent.config.domains) {
                 if (parent.config.domains[i].dns != null) {
                     if (typeof parent.config.domains[''].authstrategies != 'object') { parent.config.domains[''].authstrategies = { 'authStrategyFlags': 0 }; }
-                    parent.config.domains[''].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains['']);
+                    parent.config.domains[''].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains[i]);
                 } else {
                     if (typeof parent.config.domains[i].authstrategies != 'object') { parent.config.domains[i].authstrategies = { 'authStrategyFlags': 0 }; }
                     parent.config.domains[i].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains[i]);
@@ -6590,10 +6609,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         });
                     });
                 }
-                if (domain.agentinvitecodes == true) {
-                    obj.app.get(url + 'invite', handleInviteRequest);
-                    obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
-                }
+                obj.app.get(url + 'invite', handleInviteRequest);
+                obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
+                
                 if (parent.pluginHandler != null) {
                     obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                     obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
@@ -6748,6 +6766,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.oidc) != 0) {
                         let authURL = url + 'auth-oidc'
                         parent.authLog('setupHTTPHandlers', `OIDC: Authorization URL: ${authURL}`);
+                        obj.app.use(require('connect-flash')());
                         obj.app.get(authURL, function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
@@ -7074,14 +7093,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Indicates to ExpressJS that the override public folder should be used to serve static files.
-                if (parent.config.domains[i].webpublicpath != null) {
-                    // Use domain public path
-                    obj.app.use(url, obj.express.static(parent.config.domains[i].webpublicpath));
-                } else if (obj.parent.webPublicOverridePath != null) {
-                    // Use override path
-                    obj.app.use(url, obj.express.static(obj.parent.webPublicOverridePath));
-                }
-
+                obj.app.use(url, function(req, res, next){
+                    var domain = getDomain(req);
+                    if (domain.webpublicpath != null) { // Use domain public path
+                        obj.express.static(domain.webpublicpath)(req, res, next);
+                    } else if (obj.parent.webPublicOverridePath != null) { // Use override path
+                        obj.express.static(obj.parent.webPublicOverridePath)(req, res, next);
+                    } else { // carry on and use default public path
+                        next();
+                    }
+                });
                 // Indicates to ExpressJS that the default public folder should be used to serve static files.
                 obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
 
@@ -7115,6 +7136,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // We are done starting the web server.
             if (doneFunc) doneFunc();
         }
+    }
+
+    function nice404(req, res) {
+        parent.debug('web', '404 Error ' + req.url);
+        var domain = getDomain(req);
+        if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
+        if (obj.args.nice404 == false) { res.sendStatus(404); return; }
+        const cspNonce = obj.crypto.randomBytes(15).toString('base64');
+        res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
+        res.status(404).render(getRenderPage((domain.sitestyle == 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
     }
 
     // Auth strategy flags
@@ -7449,6 +7481,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                     delete strategy.scope
                 }
+                if (strategy.groups && strategy.groups.sync && strategy.groups.sync.enabled && strategy.groups.sync.enabled === true) {
+                    if (strategy.groups.sync.filter) {
+                        delete strategy.groups.sync.enabled;
+                    } else {
+                        strategy.groups.sync = true;
+                    }
+                    parent.authLog('migrateOldConfigs', `OIDC: OLD CONFIG: Moving old config to new location. strategy.groups.sync.enabled => strategy.groups.sync`);
+                }
                 return strategy
             }
 
@@ -7456,19 +7496,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             function oidcCallback(tokenset, profile, verified) {
                 // Initialize user object
                 let user = { 'strategy': 'oidc' }
-                let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null
-                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null
-                user.name = obj.common.validateString(profile.name) ? profile.name : null
-                user.email = obj.common.validateString(profile.email) ? profile.email : null
+                let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null;
+                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null;
+                user.name = obj.common.validateString(profile.name) ? profile.name : null;
+                user.email = obj.common.validateString(profile.email) ? profile.email : null;
                 if (claims != null) {
-                    user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid
-                    user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name
-                    user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email
+                    user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid;
+                    user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name;
+                    user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email;
                 }
-                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email),
-                    user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null
-                user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null
-                if (obj.common.validateString(strategy.groups.claim)) {
+                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
+                user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
+                if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
                     user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
                 }
 

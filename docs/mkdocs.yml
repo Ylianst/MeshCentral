@@ -22,6 +22,7 @@ nav:
       - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
       - 'Messaging': 'messaging/index.md'
       - 'Customization': 'meshcentral/customization.md'
+      - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
       
   - Design and Architecture:
     - design/index.md
@@ -37,6 +38,9 @@ nav:
 
   - Intel AMT:
     - intelamt/index.md
+
+  - How to Contribute:
+    - how-to-contribute/index.md
 
   - Other:
     - other/adfs_sso_guide.md

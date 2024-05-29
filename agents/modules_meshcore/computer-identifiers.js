@@ -138,11 +138,19 @@ function linux_identifiers()
     child.stdin.write("lshw -class disk | tr '\\n' '`' | awk '" + '{ len=split($0,lines,"*"); printf "["; for(i=2;i<=len;++i) { model=""; caption=""; size=""; clen=split(lines[i],item,"`"); for(j=2;j<clen;++j) { split(item[j],tokens,":"); split(tokens[1],key," "); if(key[1]=="description") { caption=substr(tokens[2],2); } if(key[1]=="product") { model=substr(tokens[2],2); } if(key[1]=="size") { size=substr(tokens[2],2);  } } if(model=="") { model=caption; } if(caption!="" || model!="") { printf "%s{\\"Caption\\":\\"%s\\",\\"Model\\":\\"%s\\",\\"Size\\":\\"%s\\"}",(i==2?"":","),caption,model,size; }  } printf "]"; }\'\nexit\n');
     child.waitExit();
     try { identifiers['storage_devices'] = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
+    child = null;
+
+    // Fetch storage volumes using df
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', dataHandler);
+    child.stdin.write('df --output=size,used,avail,target,fstype | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+    child.waitExit();
+    try { ret.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
+    child = null;
 
     values.identifiers = identifiers;
     values.linux = ret;
     trimIdentifiers(values.identifiers);
-    child = null;
 
     var dmidecode = require('lib-finder').findBinary('dmidecode');
     if (dmidecode != null)
@@ -703,6 +711,35 @@ function macos_identifiers()
         }
         ret.identifiers.storage_devices = devices;
     }
+
+    // Fetch storage volumes using df
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', dataHandler);
+    child.stdin.write('df -aHY | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $3, $4, $5, $10, $2}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+    child.waitExit();
+    try {
+        ret.darwin.volumes = JSON.parse(child.stdout.str.trim());
+        for (var index = 0; index < ret.darwin.volumes.length; index++) {
+            if (ret.darwin.volumes[index].type == 'auto_home'){
+                ret.darwin.volumes.splice(index,1);
+            }
+        }
+        if (ret.darwin.volumes.length == 0) { // not sonima OS so dont show type for now
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', dataHandler);
+            child.stdin.write('df -aH | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\"},", $2, $3, $4, $9}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+            child.waitExit();
+            try {
+                ret.darwin.volumes = JSON.parse(child.stdout.str.trim());
+                for (var index = 0; index < ret.darwin.volumes.length; index++) {
+                    if (ret.darwin.volumes[index].size == 'auto_home'){
+                        ret.darwin.volumes.splice(index,1);
+                    }
+                }
+            } catch (xx) { }
+        }
+    } catch (xx) { }
+    child = null;
 
     // MacOS Last Boot Up Time
     try {

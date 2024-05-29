@@ -4142,7 +4142,67 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'msh':
-                response = JSON.stringify(_MSH(), null, 2);
+                if (args['_'].length == 0) {
+                    response = JSON.stringify(_MSH(), null, 2);
+                } else if (args['_'].length > 3) {
+                    response = 'Proper usage: msh [get|set|delete]\r\nmsh get MeshServer\r\nmsh set abc "xyz"\r\nmsh delete abc';
+                } else {
+                    var mshFileName = process.execPath.replace('.exe','') + '.msh';
+                    switch (args['_'][0].toLocaleLowerCase()) {
+                        case 'get':
+                            if (typeof args['_'][1] != 'string' || args['_'].length > 2) {
+                                response = 'Proper usage: msh get MeshServer';
+                            } else if(_MSH()[args['_'][1]]) {
+                                response = _MSH()[args['_'][1]];
+                            } else {
+                                response = "Unknown Value: " + args['_'][1];
+                            }
+                            break;
+                        case 'set': 
+                            if (typeof args['_'][1] != 'string' || typeof args['_'][2] != 'string') {
+                                response = 'Proper usage: msh set abc "xyz"';
+                            } else {
+                                var jsonToSave = _MSH();
+                                jsonToSave[args['_'][1]] = args['_'][2];
+                                var updatedContent = '';
+                                for (var key in jsonToSave) {
+                                    if (jsonToSave.hasOwnProperty(key)) {
+                                        updatedContent += key + '=' + jsonToSave[key] + '\n';
+                                    }
+                                }
+                                try {
+                                    require('fs').writeFileSync(mshFileName, updatedContent);
+                                    response = "msh set " + args['_'][1] + " successful"
+                                } catch (ex) {
+                                    response = "msh set " + args['_'][1] + " unsuccessful";
+                                }
+                            }
+                            break;
+                        case 'delete':
+                            if (typeof args['_'][1] != 'string') {
+                                response = 'Proper usage: msh delete abc';
+                            } else {
+                                var jsonToSave = _MSH();
+                                delete jsonToSave[args['_'][1]];
+                                var updatedContent = '';
+                                for (var key in jsonToSave) {
+                                    if (jsonToSave.hasOwnProperty(key)) {
+                                        updatedContent += key + '=' + jsonToSave[key] + '\n';
+                                    }
+                                }
+                                try {
+                                    require('fs').writeFileSync(mshFileName, updatedContent);
+                                    response = "msh delete " + args['_'][1] + " successful"
+                                } catch (ex) {
+                                    response = "msh delete " + args['_'][1] + " unsuccessful";
+                                }
+                            }
+                            break;
+                        default:
+                            response = 'Proper usage: msh [get|set|delete]\r\nmsh get MeshServer\r\nmsh set abc "xyz"\r\nmsh delete abc';
+                            break;
+                    }
+                }
                 break;
             case 'dnsinfo':
                 if (require('os').dns == null) {
@@ -4839,6 +4899,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 response += '\r\nServer Connection: ' + mesh.isControlChannelConnected + ', State: ' + meshServerConnectionState + '.';
                 var oldNodeId = db.Get('OldNodeId');
                 if (oldNodeId != null) { response += '\r\nOldNodeID: ' + oldNodeId + '.'; }
+                response += '\r\nNode ID: ' + Buffer.from(require('_agentNodeId')(), 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                 if (process.platform == 'linux' || process.platform == 'freebsd') { response += '\r\nX11 support: ' + require('monitor-info').kvm_x11_support + '.'; }
                 response += '\r\nApplication Location: ' + process.cwd();
                 //response += '\r\Debug Console: ' + debugConsole + '.';

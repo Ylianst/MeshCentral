@@ -1805,7 +1805,7 @@
             // Set the user's desktop shortcut keys
             deskKeyboardShortcuts = [];
             var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
-            for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+            for (var i in deskKeyboardShortcutsStr) { if (deskKeyboardShortcutsStr[i] != "") { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); } }
             updateDeskShortcutKeys();
 
             // Set the user's desktop strings
@@ -3202,7 +3202,7 @@
                                         // Set the user's desktop shortcut keys
                                         deskKeyboardShortcuts = [];
                                         var deskKeyboardShortcutsStr = webstate.deskKeyShortcuts.split(',');
-                                        for (var i in deskKeyboardShortcutsStr) { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); }
+                                        for (var i in deskKeyboardShortcutsStr) { if (deskKeyboardShortcutsStr[i] != "") { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); } }
                                         updateDeskShortcutKeys();
                                     }
                                     if (webstate.deskStrings != null) {
@@ -3579,17 +3579,19 @@
                                 // Show the notification
                                 if (n & 2) {
                                     var agentPrivilages = "Agent connected";
-                                    if ((node.agent != null) && (node.agent.root === false)) { "Agent connected with limited privilages"; }
-                                    if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { addNotification({ text: agentPrivilages, title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { addNotification({ text: "Intel AMT detected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { addNotification({ text: "Intel AMT CIRA connected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 16) == 0) && ((message.event.conn & 16) != 0)) { addNotification({ text: "MQTT connected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    if ((node.agent != null) && (node.agent.root === false)) { agentPrivilages = "Agent connected with limited privilages"; }
+                                    var abc = { title: node.name, icon: node.icon, nodeid: node._id, id: message.event.id };
+                                    if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { abc.text = agentPrivilages; addNotification(abc); }
+                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { abc.text = "Intel AMT detected"; addNotification(abc); }
+                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { abc.text = "Intel AMT CIRA connected"; addNotification(abc); }
+                                    if (((node.conn & 16) == 0) && ((message.event.conn & 16) != 0)) { abc.text = "MQTT connected"; addNotification(abc); }
                                 }
                                 if (n & 4) {
-                                    if (((node.conn & 1) != 0) && ((message.event.conn & 1) == 0)) { addNotification({ text: "Agent disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { addNotification({ text: "Intel AMT not detected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { addNotification({ text: "Intel AMT CIRA disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
-                                    if (((node.conn & 16) != 0) && ((message.event.conn & 16) == 0)) { addNotification({ text: "MQTT disconnected", title: node.name, icon: node.icon, nodeid: node._id }); }
+                                    var abc = { title: node.name, icon: node.icon, nodeid: node._id, id: message.event.id  };
+                                    if (((node.conn & 1) != 0) && ((message.event.conn & 1) == 0)) { abc.text = "Agent disconnected"; addNotification(abc); }
+                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { abc.text = "Intel AMT not detected"; addNotification(abc); }
+                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { abc.text = "Intel AMT CIRA disconnected"; addNotification(abc); }
+                                    if (((node.conn & 16) != 0) && ((message.event.conn & 16) == 0)) { abc.text = "MQTT disconnected"; addNotification(abc); }
                                 }
 
                                 // Change the node connection state
@@ -5255,12 +5257,12 @@
         }
 
         // Intel AMT device import for a device group
-        function showAmtImport(meshid) {
-            if (xxdialogMode) return false;
-            var x = '<form method=post enctype=multipart/form-data action=amtimport.ashx target=fileUploadFrame><input type=text name=link style=display:none id=amtImportDevGroup value="' + meshid + '" /><input type=file name=files id=amtImportInput style=width:100% onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>';
-            setDialogMode(2, "Import Intel AMT devices", 3, p5uploadFileEx, x);
-            p5updateUploadDialogOk('amtImportInput');
-        }
+        // function showAmtImport(meshid) {
+        //     if (xxdialogMode) return false;
+        //     var x = '<form method=post enctype=multipart/form-data action=amtimport.ashx target=fileUploadFrame><input type=text name=link style=display:none id=amtImportDevGroup value="' + meshid + '" /><input type=file name=files id=amtImportInput style=width:100% onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>';
+        //     setDialogMode(2, "Import Intel AMT devices", 3, p5uploadFileEx, x);
+        //     p5updateUploadDialogOk('amtImportInput');
+        // }
 
         function showAmtImport(meshid) {
             if (xxdialogMode) return;
@@ -9851,6 +9853,7 @@
             for (var i = 0; i < 10; i++) { x += '<option value=' + (i + 48) + '>' + i + '</option>'; }
             for (var i = 0; i < 26; i++) { x += '<option value=' + (i + 65) + '>' + String.fromCharCode(i + 65) + '</option>'; }
             x += '</select> <input type=button value=' + "Add" + ' onclick=addDeskCustomizeKey() /></div>';
+            x += '<div style=width:100%;padding:2px;text-align:center><input type=button value="' + "Restore Default Keyboard Shortcuts" + '" onclick=restoreDeskCustomizeKey() /></div>';
             setDialogMode(2, "Keyboard Shortcuts Customization", 1, deskCustomizeKeysEx, x);
             deskUpdateShortcutList();
         }
@@ -9890,6 +9893,15 @@
             var na = [];
             for (var i in deskKeyboardShortcuts) { if (deskKeyboardShortcuts[i] != k) { na.push(deskKeyboardShortcuts[i]); } }
             deskKeyboardShortcuts = na;
+            deskUpdateShortcutList();
+        }
+
+        function restoreDeskCustomizeKey() {
+            deskKeyboardShortcuts = [];
+            putstore('deskKeyShortcuts', null);
+            var deskKeyboardShortcutsStr = getstore('deskKeyShortcuts', '0x0A002E,0x100000,0x100028,0x100026,0x10004C,0x10004D,0x11004D,0x100052,0x020073,0x080057,0x020009,0x100025,0x100027').split(',');
+            for (var i in deskKeyboardShortcutsStr) { if (deskKeyboardShortcutsStr[i] != "") { deskKeyboardShortcuts.push(parseInt(deskKeyboardShortcutsStr[i])); } }
+            updateDeskShortcutKeys();
             deskUpdateShortcutList();
         }
 
@@ -12262,6 +12274,62 @@
                         bitlockerState = bitlockerState.join(' - ');
                         if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
                         x += addDetailItem("BitLocker", bitlockerState, s);
+                    }
+                    x += '</div>';
+                }
+                if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage64.png'}); }
+            }
+
+            // Linux Volumes
+            if (hardware.linux && hardware.linux.volumes) {
+                var x = '';
+                for (var i in hardware.linux.volumes) {
+                    var m = hardware.linux.volumes[i];
+                    if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    if (m.size) {
+                        var sizes = ['KB', 'MB', 'GB', 'TB'];
+                        var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
+                        var fsize = (j === 0 ? `${m.size} ${sizes[j]}` : `${(m.size / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        x += addDetailItem("Capacity", EscapeHtml(fsize), s);
+                    }
+                    if (m.available) {
+                        if (Math.abs(m.available) == 0) {
+                            var fsize = `0 KB`;
+                        } else {
+                            var sizes = ['KB', 'MB', 'GB', 'TB'];
+                            var j = parseInt(Math.floor(Math.log(Math.abs(m.available)) / Math.log(1024)), 10);
+                            var fsize = (j === 0 ? `${m.available} ${sizes[j]}` : `${(m.available / (1024 ** j)).toFixed(2)} ${sizes[j]}`);
+                        }
+                        x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
+                    }
+                    if (m.type) {
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
+                    }
+                    x += '</div>';
+                }
+                if (x != '') { sections.push({ name: "Storage Volumes", html: '<table style=width:100%>' + x + '</table>', img: 'storage64.png'}); }
+            }
+
+            // MacOS Volumes
+            if (hardware.darwin && hardware.darwin.volumes) {
+                var x = '';
+                for (var i in hardware.darwin.volumes) {
+                    var m = hardware.darwin.volumes[i];
+                    if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    if (m.size) {
+                        x += addDetailItem("Capacity", EscapeHtml(m.size), s);
+                    }
+                    if (m.available) {
+                        x += addDetailItem("Capacity Remaining", EscapeHtml(m.available), s);
+                    }
+                    if (m.type) {
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
                     }
                     x += '</div>';
                 }

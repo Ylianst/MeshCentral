@@ -818,8 +818,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Patch node links with names, like meshes links with names
                             for (var a in docs[i].links) {
                                 if (!docs[i].links[a].name) {
-                                    if (parent.users[a].realname) { docs[i].links[a].name = parent.users[a].realname; }
-                                    else if (parent.users[a].name) { docs[i].links[a].name = parent.users[a].name; }
+                                    if (parent.users[a] && parent.users[a].realname) { docs[i].links[a].name = parent.users[a].realname; }
+                                    else if (parent.users[a] && parent.users[a].name) { docs[i].links[a].name = parent.users[a].name; }
                                 }
                             }
 
@@ -5791,13 +5791,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 displayNotificationMessage(err, "New Account", 'ServerNotify', 1, errid, args);
             }
             return;
-        }
-
-        for(var x in parent.users) {
-            if(parent.users[x].email==command.email){
-                displayNotificationMessage("Email address already in use", "New Account", "ServerNotify");
-                return;
-            }
         }
 
         // Check if we exceed the maximum number of user accounts

@@ -110,7 +110,7 @@ There are plenty of options at your disposal if you need them. In fact, you can 
                     "client": {
                         "client_id": "110d5612-0822-4449-a057-8a0dbe26eca5",
                         "client_secret": "4TqST46K53o3Z2Q88p39YwR6YwJb7Cka",
-                        "redirect_uri": "https://mesh.your.domain/oauth2/oidc/redirect",
+                        "redirect_uri": "https://mesh.your.domain/auth-oidc-callback",
                         "post_logout_redirect_uri": "https://mesh.your.domain/login",
                         "token_endpoint_auth_method": "client_secret_post",
                         "response_types": "authorization_code"
@@ -236,7 +236,7 @@ There are just about as many option as possible here since openid-client also pr
 "client": {
     "client_id": "00b3875c-8d82-4238-a8ef-25303fa7f9f2",
     "client_secret": "7PP453H577xbFDCqG8nYEJg8M3u8GT8F",
-    "redirect_uri": "https://mesh.your.domain/oauth2/oidc/redirect",
+    "redirect_uri": "https://mesh.your.domain/auth-oidc-callback",
     "post_logout_redirect_uri": "https://mesh.your.domain/login",
     "token_endpoint_auth_method": "client_secret_post",
     "response_types": "authorization_code"

@@ -317,7 +317,12 @@ The password recovery flow when “Reset Account” is triggered at the login pa
 
 ![](images/2022-05-19-00-00-18.png)
 
-Both account verification and password recovery are triggered automatically once SMTP mail server configuration is included into the config.json file. Update the config.json with “smtp” section as shown below and restart the server. 
+Both account verification and password recovery are triggered automatically once SMTP mail server configuration is included into the config.json file.
+
+#### SMTP: User/Pass
+##### Normal Server
+
+Update the config.json with “smtp” section as shown below and restart the server. 
 
 ```json
 {
@@ -325,9 +330,9 @@ Both account verification and password recovery are triggered automatically once
     "host": "smtp.server.com",
     "port": 25,
     "from": "myaddress@server.com",
-    "user": "myaddress@server.com",       Optional
-    "pass": "mypassword",                 Optional
-    "tls": false                          Optional, default false
+    "user": "myaddress@server.com",      # Optional
+    "pass": "mypassword",                # Optional
+    "tls": false                         # Optional, default false
   }
 }
 ```
@@ -336,7 +341,6 @@ Please map the host, port values to connect to the right host that provides this
 
 Some SMTP servers will require a valid username and password to login to the mail server. This is to prevent unauthorized e-mail correspondence. TLS option can be set to ‘true’ if the SMTP server requires TLS.
 
-#### SMTP: User/Pass
 ##### Gmail
 
 One option is to configure MeshCentral work with Google Gmail by setting “host” with smtp.gmail.com, and “port” with 587. In the config.json file, use user’s Gmail address for both “from” and “user” and Gmail password in the “pass” value. You will also need to enable “Less secure app access” in for this Google account. It’s in the account settings, security section:
@@ -548,14 +552,14 @@ To make this happen, we will be using the following command line options from Me
 | --dblistconfigfiles                      | List the names and size of all configuration files in the database.                                                                                                                                       |
 | --dbshowconfigfile (filename)            | Show the content of a specified filename from the database. --configkey is required.                                                                                                                      |
 | --dbdeleteconfigfiles                    | Delete all configuration files from the database.                                                                                                                                                         |
-| --dbpushconfigfiles (*) or (folder path) | Push a set of configuration files into the database, removing any existing files in the process. When * is specified, the “meshcentral-data” folder up pushed into the database. --configkey is required. |
+| --dbpushconfigfiles '*' or (folder path) | Push a set of configuration files into the database, removing any existing files in the process. When * is specified, the “meshcentral-data” folder up pushed into the database. --configkey is required. |
 | --dbpullconfigfiles (folder path)        | Get all of the configuration files from the database and place them in the specified folder. Files in the target folder may be overwritten. --configkey is required.                                      |
 | --loadconfigfromdb (key)                 | Runs MeshCentral server using the configuration files found in the database. The configkey may be specified with this command or --configkey can be used.                                                 |
 
 Once we have MeshCentral running as expected using the “meshcentral-data” folder, we can simply push that configuration into the database and run using the database alone like this:
 
 ```
-node ./node_modules/meshcentral --dbpushconfigfiles * --configkey mypassword
+node ./node_modules/meshcentral --dbpushconfigfiles '*' --configkey mypassword
 
 node ./node_modules/meshcentral --loadconfigfromdb mypassword --mongodb "mongodb://127.0.0.1:27017/meshcentral"
 ```
