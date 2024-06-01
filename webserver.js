@@ -2809,10 +2809,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: "${req.user.sid}"`);
             }
         } else {
-            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: "${req.user.sid}" REQUEST CONTAINS NO USER OR SID`);
+            parent.authLog('handleStrategyLogin', `LOGIN FAILED: NO USER: REQUEST CONTAINS NO USER OR SID`);
         }
-
-        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: User Authenticated: ${JSON.stringify(user)}`);
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
