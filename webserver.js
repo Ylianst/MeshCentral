@@ -2808,8 +2808,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
                 parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: "${req.user.sid}"`);
             }
+        } else if (req.session && req.session.userid && obj.users[req.session.userid]) {
+            parent.authLog('handleStrategyLogin', `User Already Authorised "${(req.session.passport && req.session.passport.user) ? req.session.passport.user : req.session.userid }"`);
         } else {
-            parent.authLog('handleStrategyLogin', `LOGIN FAILED: NO USER: REQUEST CONTAINS NO USER OR SID`);
+            parent.authLog('handleStrategyLogin', `LOGIN FAILED: REQUEST CONTAINS NO USER OR SID`);
         }
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
@@ -6782,7 +6784,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(redirectPath, obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            if (req.session && req.session.userid) { next(); return; } // already logged in so dont authenticate just carry on
+                            if (req.session && req.session['oidc-' + domain.id]) { // we have a request to login so do authenticate
+                                domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
+                            } else { // no idea so carry on
+                                next(); return;
+                            }
                         }, handleStrategyLogin);
                     }
 
@@ -7423,7 +7430,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Create client and overwrite in options
             let client = new issuer.Client(strategy.client)
-            strategy.options = Object.assign(strategy.options, { 'client': client });
+            strategy.options = Object.assign(strategy.options, { 'client': client, sessionKey: 'oidc-' + domain.id });
             strategy.client = client.metadata
             strategy.obj.client = client
 
