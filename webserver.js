@@ -6772,13 +6772,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (domain.passport == null) { next(); return; }
                             domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: '/', failureFlash: true })(req, res, next);
                         });
-                        let redirectPath
+                        let redirectPath;
                         if (typeof domain.authstrategies.oidc.client.redirect_uri == 'string') {
-                            redirectPath = (new URL(domain.authstrategies.oidc.client.redirect_uri)).pathname
+                            redirectPath = (new URL(domain.authstrategies.oidc.client.redirect_uri)).pathname;
                         } else if (Array.isArray(domain.authstrategies.oidc.client.redirect_uris)) {
-                            redirectPath = (new URL(domain.authstrategies.oidc.client.redirect_uris[0])).pathname
+                            redirectPath = (new URL(domain.authstrategies.oidc.client.redirect_uris[0])).pathname;
                         } else {
-                            redirectPath = url + 'auth-oidc-callback'
+                            redirectPath = url + 'auth-oidc-callback';
                         }
                         parent.authLog('setupHTTPHandlers', `OIDC: Callback URL: ${redirectPath}`);
                         obj.app.get(redirectPath, obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
@@ -7417,15 +7417,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
                 issuer = new strategy.obj.openidClient.Issuer(Object.assign(issuer?.metadata, strategy.issuer));
             }
-            strategy.issuer = issuer?.metadata
-            strategy.obj.issuer = issuer
+            strategy.issuer = issuer?.metadata;
+            strategy.obj.issuer = issuer;
+
+            var httpport = ((args.aliasport != null) ? args.aliasport : args.port);
+            var origin = 'https://' + (domain.dns ? domain.dns : parent.certificates.CommonName);
+            if (httpport != 443) { origin += ':' + httpport; }
 
             // Make sure redirect_uri and post_logout_redirect_uri exist before continuing
             if (!strategy.client.redirect_uri) {
-                strategy.client.redirect_uri = 'https://' + parent.config.settings.cert + url + 'auth-oidc-callback';
+                strategy.client.redirect_uri = origin + url + 'auth-oidc-callback';
             }
             if (!strategy.client.post_logout_redirect_uri) {
-                strategy.client.post_logout_redirect_uri = 'https://' + parent.config.settings.cert + url + 'login';
+                strategy.client.post_logout_redirect_uri = origin + url + 'login';
             }
 
             // Create client and overwrite in options
