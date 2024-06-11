@@ -356,6 +356,19 @@
             }
         }
 
+        // Display flash error Messages
+        var flashErrors = JSON.parse('{{{flashErrors}}}');
+        if (flashErrors && (flashErrors.length > 0)) {
+            var msg = '';
+            for (i = 0; i < flashErrors.length; i++) {
+                if (flashErrors[i]) {
+                    msg += '<span class="msg error"><b style=color:#8C001A>' + flashErrors[i] + '<b></span><br /><br />';
+                }
+            }
+            QH('message1', msg);
+            QV('message1', true);
+        }
+
         // If URL arguments are provided, add them to form posts
         if (window.location.href.indexOf('?') > 0) {
             var urlargs = window.location.href.substring(window.location.href.indexOf('?'));
