@@ -3363,6 +3363,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var flashErrors = [];
         if (req.session.flash && req.session.flash.error) {
             flashErrors = obj.common.uniqueArray(req.session.flash.error);
+            req.session.flash = null;
         }
 
         // Render the login page
