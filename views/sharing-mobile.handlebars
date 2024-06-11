@@ -2364,7 +2364,7 @@
         function p13uploadNextPart(dataPriming) {
             if (uploadFile.xreader != null) return; // Data reading already in process
             if (uploadFile.xptr >= uploadFile.xfile.size) return;
-            var end = uploadFile.xptr + 16384;
+            var end = uploadFile.xptr + 65565;
             if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
             uploadFile.xreader = new FileReader();
             uploadFile.xreader.onerror = function (err) { console.log(err); }
