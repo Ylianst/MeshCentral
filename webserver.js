@@ -3359,6 +3359,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             newAccountCaptchaImage = 'newAccountCaptcha.ashx?x=' + newAccountCaptcha;
         }
 
+        // Check for flash errors from passport.js and make the array unique
+        var flashErrors = [];
+        if (req.session.flash && req.session.flash.error) {
+            flashErrors = obj.common.uniqueArray(req.session.flash.error);
+        }
+
         // Render the login page
         render(req, res,
             getRenderPage((domain.sitestyle == 2) ? 'login2' : 'login', req, domain),
@@ -3380,6 +3386,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 footer: (domain.loginfooter == null) ? '' : domain.loginfooter,
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
                 messageid: msgid,
+                flashErrors: JSON.stringify(flashErrors),
                 passhint: passhint,
                 welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null,
                 welcomePictureFullScreen: ((typeof domain.welcomepicturefullscreen == 'boolean') ? domain.welcomepicturefullscreen : false),
@@ -6766,7 +6773,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.oidc) != 0) {
                         let authURL = url + 'auth-oidc'
                         parent.authLog('setupHTTPHandlers', `OIDC: Authorization URL: ${authURL}`);
-                        obj.app.use(require('connect-flash')());
                         obj.app.get(authURL, function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
@@ -7180,6 +7186,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         passport.serializeUser(function (user, done) { done(null, user.sid); });
         passport.deserializeUser(function (sid, done) { done(null, { sid: sid }); });
         obj.app.use(passport.initialize());
+        obj.app.use(require('connect-flash')());
 
         // Twitter
         if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
