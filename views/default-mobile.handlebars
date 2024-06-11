@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
@@ -6037,7 +6037,7 @@
                 if (start >= data.byteLength) {
                     files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
                 } else {
-                    var end = uploadFile.xptr + 16384;
+                    var end = uploadFile.xptr + 65565;
                     if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
                     var dataslice = new Uint8Array(data.slice(start, end))
                     if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
@@ -6053,7 +6053,7 @@
             } else if (uploadFile.xfile) {
                 if (uploadFile.xreader != null) return; // Data reading already in process
                 if (uploadFile.xptr >= uploadFile.xfile.size) return;
-                var end = uploadFile.xptr + 16384;
+                var end = uploadFile.xptr + 65565;
                 if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
                 uploadFile.xreader = new FileReader();
                 uploadFile.xreader.onerror = function (err) { console.log(err); }
