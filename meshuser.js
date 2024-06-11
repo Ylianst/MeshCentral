@@ -778,10 +778,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Remove SSH credentials if present
                             if (docs[i].ssh != null) {
-                                if ((docs[i].ssh[obj.user._id] != null) && (docs[i].ssh[obj.user._id].u)) {
-                                    if (docs[i].ssh.k && docs[i].ssh[obj.user._id].kp) { docs[i].ssh = 2; } // Username, key and password
-                                    else if (docs[i].ssh[obj.user._id].k) { docs[i].ssh = 3; } // Username and key. No password.
-                                    else if (docs[i].ssh[obj.user._id].p) { docs[i].ssh = 1; } // Username and password
+                                if ((docs[i].ssh[user._id] != null) && (docs[i].ssh[user._id].u)) {
+                                    if (docs[i].ssh.k && docs[i].ssh[user._id].kp) { docs[i].ssh = 2; } // Username, key and password
+                                    else if (docs[i].ssh[user._id].k) { docs[i].ssh = 3; } // Username and key. No password.
+                                    else if (docs[i].ssh[user._id].p) { docs[i].ssh = 1; } // Username and password
                                     else { delete docs[i].ssh; }
                                 } else {
                                     delete docs[i].ssh;
@@ -789,7 +789,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
 
                             // Remove RDP credentials if present, only set to 1 if our userid has RDP credentials
-                            if ((docs[i].rdp != null) && (docs[i].rdp[obj.user._id] != null)) { docs[i].rdp = 1; } else { delete docs[i].rdp; }
+                            if ((docs[i].rdp != null) && (docs[i].rdp[user._id] != null)) { docs[i].rdp = 1; } else { delete docs[i].rdp; }
 
                             // Remove Intel AMT credential if present
                             if (docs[i].intelamt != null) {
