@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -2689,6 +2689,16 @@
                                 else if (userSessions.length === 1) { connectDesktop(null, 1, userSessions[0].SessionId, message.tag); } // One active session, connect to it
                                 else {
                                     var x = '';
+                                    var sortBy = "{{{userSessionsSort}}}";
+                                    if (sortBy != '') {
+                                        userSessions.sort(function(a, b) {
+                                            if (!a[sortBy]) return -1; // a comes before b
+                                            if (!b[sortBy]) return 1;  // b comes before a
+                                            if (a[sortBy] < b[sortBy]) return -1;
+                                            if (a[sortBy] > b[sortBy]) return 1;
+                                            return 0;
+                                        });
+                                    }
                                     for (var i in userSessions) {
                                         x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ',' + message.tag + ')>' + userSessions[i].State + (userSessions[i].StationName ? (', ' + userSessions[i].StationName) : '');
                                         if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + userSessions[i].Domain + '/' + userSessions[i].Username; } else { x += ' - ' + userSessions[i].Username; } }

@@ -3152,7 +3152,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webRelayPort: ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
                     webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : ''),
                     hidePowerTimeline: (domain.hidepowertimeline ? 'true' : 'false'),
-                    showNotesPanel: (domain.shownotespanel ? 'true' : 'false')
+                    showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
+                    userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId')
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
