@@ -193,6 +193,7 @@
       "minify": true,
       "_hidePowerTimeline": true,
       "_showNotesPanel": true,
+      "_userSessionsSort": "Username",
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
       "_userNameIsEmail": true,
