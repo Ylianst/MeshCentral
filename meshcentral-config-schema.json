@@ -1701,6 +1701,11 @@
             "default": false,
             "description": "When enabled, this will show the notes panel in the device view"
           },
+          "userSessionsSort": {
+            "type": "string",
+            "default": "SessionId",
+            "description": "Arrange the Connect sessions offered when multiple Terminal Sessions are present by 'SessionId', 'StationName' or 'Username' with 'SessionId' as the default sorting criteria."
+          },
           "agentInviteCodes": {
             "type": "boolean",
             "default": false,
