@@ -4033,7 +4033,7 @@ function mainStart() {
             if (mstsc == false) { config.domains[i].mstsc = false; }
             if (config.domains[i].ssh == true) { ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
-                if (passport == null) { passport = ['passport']; } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904
+                if (passport == null) { passport = ['passport','connect-flash']; } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904 and include connect-flash here to display errors
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
                 if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20'); }
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
@@ -4044,7 +4044,6 @@ function mainStart() {
                         || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15))
                         || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) {
                         passport.push('openid-client');
-                        passport.push('connect-flash'); 
                     } else {
                         addServerWarning('This NodeJS version does not support OpenID Connect on MeshCentral.', 25);
                         delete config.domains[i].authstrategies.oidc;
