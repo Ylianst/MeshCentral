@@ -146,14 +146,13 @@ function CreateMeshCentralServer(config, args) {
         for (let [envvar, envval] of Object.entries(process.env)) {
             if (envvar.toLocaleLowerCase().startsWith(ENVVAR_PREFIX)) {
                 let argname = envvar.slice(ENVVAR_PREFIX.length).toLocaleLowerCase()
-                if (!!argname && !obj.args.hasOwnProperty(argname) && !(validArguments.indexOf(argname) == -1)) {
+                if (!!argname && !(validArguments.indexOf(argname) == -1)) {
                     envArgs = envArgs.concat([`--${argname}`, envval])
                 }
             }
         }
         envArgs = require('minimist')(envArgs)
-        delete envArgs["_"]
-        Object.assign(obj.args, envArgs)
+        obj.args = Object.assign(envArgs, obj.args)
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         if (obj.args.mysql == true) { console.log('Must specify: --mysql [connectionstring] \r\nExample mysql://user:password@127.0.0.1:3306/database'); return; }
         if (obj.args.mariadb == true) { console.log('Must specify: --mariadb [connectionstring] \r\nExample mariadb://user:password@127.0.0.1:3306/database'); return; }
