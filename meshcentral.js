@@ -141,6 +141,19 @@ function CreateMeshCentralServer(config, args) {
         // Check for invalid arguments
         const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'usenodedefaulttlsciphers', 'tlsciphers', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores', 'dev', 'mysql', 'mariadb'];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
+        const ENVVAR_PREFIX = "meshcentral_"
+        let envArgs = []
+        for (let [envvar, envval] of Object.entries(process.env)) {
+            if (envvar.toLocaleLowerCase().startsWith(ENVVAR_PREFIX)) {
+                let argname = envvar.slice(ENVVAR_PREFIX.length).toLocaleLowerCase()
+                if (!!argname && !obj.args.hasOwnProperty(argname) && !(validArguments.indexOf(argname) == -1)) {
+                    envArgs = envArgs.concat([`--${argname}`, envval])
+                }
+            }
+        }
+        envArgs = require('minimist')(envArgs)
+        delete envArgs["_"]
+        Object.assign(obj.args, envArgs)
         if (obj.args.mongodb == true) { console.log('Must specify: --mongodb [connectionstring] \r\nSee https://docs.mongodb.com/manual/reference/connection-string/ for MongoDB connection string.'); return; }
         if (obj.args.mysql == true) { console.log('Must specify: --mysql [connectionstring] \r\nExample mysql://user:password@127.0.0.1:3306/database'); return; }
         if (obj.args.mariadb == true) { console.log('Must specify: --mariadb [connectionstring] \r\nExample mariadb://user:password@127.0.0.1:3306/database'); return; }
