@@ -8972,9 +8972,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.renderPages != null) {
             // Get the list of acceptable languages in order
             var acceptLanguages = obj.getLanguageCodes(req);
-
+            var domain = getDomain(req);
             // Take a look at the options we have for this file
-            var fileOptions = obj.renderPages[obj.path.basename(filename)];
+            var fileOptions = obj.renderPages[domain.id][obj.path.basename(filename)];
             if (fileOptions != null) {
                 for (var i in acceptLanguages) {
                     if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) {
@@ -9021,33 +9021,55 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (translateFolder != null) {
             obj.renderPages = {};
             obj.renderLanguages = ['en'];
-            var files = obj.fs.readdirSync(translateFolder);
-            for (var i in files) {
-                var name = files[i];
-                if (name.endsWith('.handlebars')) {
-                    name = name.substring(0, name.length - 11);
-                    var xname = name.split('_');
-                    if (xname.length == 2) {
-                        if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
-                        obj.renderPages[xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                        if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                    }
-                }
-            }
-
-            // See if there are any custom rending pages that will override the default ones
-            if ((obj.parent.webViewsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations')))) {
-                translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations');
+            for (var i in parent.config.domains) {
+                if (obj.fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
+                if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) { translateFolder = obj.path.join(__dirname, 'views', 'translations'); }
                 var files = obj.fs.readdirSync(translateFolder);
+                var domain = parent.config.domains[i].id;
+                obj.renderPages[domain] = {};
                 for (var i in files) {
                     var name = files[i];
                     if (name.endsWith('.handlebars')) {
                         name = name.substring(0, name.length - 11);
                         var xname = name.split('_');
                         if (xname.length == 2) {
-                            if (obj.renderPages[xname[0]] == null) { obj.renderPages[xname[0]] = {}; }
-                            obj.renderPages[xname[0]][xname[1]] = obj.path.join(translateFolder, name);
+                            if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
+                            obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
                             if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                        }
+                    }
+                }
+                // See if there are any custom rending pages that will override the default ones
+                if ((obj.parent.webViewsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations')))) {
+                    translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations');
+                    var files = obj.fs.readdirSync(translateFolder);
+                    for (var i in files) {
+                        var name = files[i];
+                        if (name.endsWith('.handlebars')) {
+                            name = name.substring(0, name.length - 11);
+                            var xname = name.split('_');
+                            if (xname.length == 2) {
+                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
+                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
+                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                            }
+                        }
+                    }
+                }
+                // See if there is a custom meshcentral-web-domain folder as that will override the default ones
+                if (obj.fs.existsSync(obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations'))) {
+                    translateFolder = obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations');
+                    var files = obj.fs.readdirSync(translateFolder);
+                    for (var i in files) {
+                        var name = files[i];
+                        if (name.endsWith('.handlebars')) {
+                            name = name.substring(0, name.length - 11);
+                            var xname = name.split('_');
+                            if (xname.length == 2) {
+                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
+                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
+                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                            }
                         }
                     }
                 }
