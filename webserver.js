@@ -5932,6 +5932,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Info.plist' ||
                         entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/postflight' ||
                         entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/Postflight.sh' ||
+                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Uninstall.command' ||
                         entry.fileName == 'MeshAgent.mpkg/Uninstall.command') {
                             // This is a special file entry, we need to fix it.
                             zipfile.openReadStream(entry, function (err, readStream) {
