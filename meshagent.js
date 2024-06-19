@@ -15,7 +15,7 @@
 "use strict";
 
 // Construct a MeshAgent object, called upon connection
-module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
+module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain, key) {
     const forge = parent.parent.certificateOperations.forge;
     const common = parent.parent.common;
     parent.agentStats.createMeshAgentCount++;
@@ -29,6 +29,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.remoteaddr = req.clientIp;
     obj.remoteaddrport = obj.remoteaddr + ':' + ws._socket.remotePort;
     obj.nonce = parent.crypto.randomBytes(48).toString('binary');
+    obj.key = key
     //ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
     if (args.agentidletimeout != 0) { ws._socket.setTimeout(args.agentidletimeout, function () { obj.close(1); }); } // Inactivity timeout of 2:30 minutes, by default agent will WebSocket ping every 2 minutes and server will pong back.
     //obj.nodeid = null;
@@ -519,6 +520,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Check the agent signature if we can
                 if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else {
+                    if (obj.key) {
+                        let _nodekey = 'node/' + domain.id + '/' + obj.unauth.nodeid;
+                        if (!obj.key.nodeid) {
+                            obj.key.nodeid = _nodekey;
+                            obj.key.domain = domain.id
+                            db.Set(obj.key)
+                        } else if (obj.key.nodeid !== _nodekey) {
+                            parent.agentStats.agentBadSignature3Count++;
+                            parent.setAgentIssue(obj, "BadSignature3");
+                            parent.parent.debug('agent', 'Agent connected as a node that does not match its key, holding connection (' + obj.remoteaddrport + ').');
+                            console.log('Agent connected as a node that does not match its key, holding connection (' + obj.remoteaddrport + ').'); return;
+                        }
+                    }
                     if (processAgentSignature(msg.substring(4 + certlen)) == false) {
                         parent.agentStats.agentBadSignature2Count++;
                         parent.setAgentIssue(obj, "BadSignature2");

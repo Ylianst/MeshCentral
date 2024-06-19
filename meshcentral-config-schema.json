@@ -383,6 +383,11 @@
           "default": false,
           "description": "When enabled, MeshCentral will block all downloads of MeshAgent including install scripts, if the user is not logged in"
         },
+        "keyAgents": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, Meshcentral will key each agent downloaded to a specific node id, which is determined on first agent connection. If an agent attempts to connect without this key, or with a node id that does not match this key, it will be ignored. Deleting a device will remove its key, preventing that agent from connecting again in the future."
+        },
         "ignoreAgentHashCheck": {
           "type": [
             "boolean",
@@ -1741,6 +1746,11 @@
             "type": "boolean",
             "default": false,
             "description": "When enabled, MeshCentral will block all downloads of MeshAgent including install scripts, if the user is not logged in"
+          },
+          "keyAgents": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, Meshcentral will key each agent downloaded to a specific node id, which is determined on first agent connection. If an agent attempts to connect without this key, or with a node id that does not match this key, it will be ignored. Deleting a device will remove its key, preventing that agent from connecting again in the future."
           },
           "geoLocation": {
             "type": "boolean",

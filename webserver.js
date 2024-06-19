@@ -369,6 +369,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         agentBadWebCertHashCount: 0,
         agentBadSignature1Count: 0,
         agentBadSignature2Count: 0,
+        agentBadSignature3Count: 0,
         agentMaxSessionHoldCount: 0,
         invalidDomainMeshCount: 0,
         invalidMeshTypeCount: 0,
@@ -5413,7 +5414,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var meshsettings = '';
                 if (req.query.ac != '4') { // If MeshCentral Assistant Monitor Mode, DONT INCLUDE SERVER DETAILS!
                     meshsettings += '\r\nMeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
-                    if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
+                    if (obj.args.lanonly != true) {
+                        let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
+
+                        if (domain.keyagents || obj.parent.config.settings.keyagents) {
+                            let _key = getRandomLowerCase(128);
+                            let _agentKey = { "type": "agentkey", "nodeid": null, "key": _key, "_id": `agentkey//${_key}` };
+                            db.Set(_agentKey);
+                            connectString += `?key=${_agentKey["key"]}`;
+                        }
+                        meshsettings += 'MeshServer=' + connectString + '\r\n';
+                    } else {
                         meshsettings += 'MeshServer=local\r\n';
                         if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
                     }
@@ -5848,7 +5859,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
+        if (obj.args.lanonly != true) {
+            let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
+            if (domain.keyagents || obj.parent.config.settings.keyagents) {
+                let _key = getRandomLowerCase(128);
+                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _key, "_id": `agentkey//${_key}` };
+                db.Set(_agentKey);
+                connectString += `?key=${_agentKey["key"]}`;
+            }
+            meshsettings += 'MeshServer=' + connectString + '\r\n';
+        } else {
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
@@ -5995,7 +6015,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
         if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
+        if (obj.args.lanonly != true) {
+            let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
+            if (domain.keyagents || obj.parent.config.settings.keyagents) {
+                let _key = getRandomLowerCase(128);
+                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _key, "_id": `agentkey//${_key}` };
+                db.Set(_agentKey)
+                connectString += `?key=${_agentKey["key"]}`
+            }
+            meshsettings += 'MeshServer=' + connectString + '\r\n'; 
+        } else {
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
@@ -6880,8 +6909,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var domain = checkAgentIpAddress(ws, req);
                     if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
                     if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
+                    let p = Promise.resolve({cont: true})
+                    if (domain.keyagents || obj.parent.config.settings.keyagents) {
+                        if (req.query.key == null) {
+                            return;
+                        }
+                        p = new Promise((resolve, reject)=>{
+                            db.Get(`agentkey//${req.query.key}`, (err, data)=>{
+                                if (err || data.length === 0) {
+                                    parent.debug('web', 'Got agent connection with unknown agent key ' + req.clientIp + ', holding.')
+                                    resolve({cont: false})
+                                }
+                                resolve({cont: true, key: data[0]})
+                            })
+                        })
+                    }
                     //console.log('Agent connect: ' + req.clientIp);
-                    try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
+                    p.then((_result)=>{
+                        if (!_result.cont) { return; }
+                        try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain, _result.key); } catch (e) { console.log(e); }
+                    })
+                    
                 });
 
                 // Setup MQTT broker over websocket
@@ -6911,7 +6959,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var domain = checkAgentIpAddress(ws, req);
                         if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
                         if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
-                        try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
+                        let p = Promise.resolve({cont: true})
+                        if (domain.keyagents || obj.parent.config.settings.keyagents) {
+                            if (req.query.key == null) {
+                                return;
+                            }
+                            p = new Promise((resolve, reject)=>{
+                                db.Get(`agentkey//${req.query.key}`, (err, data)=>{
+                                    if (err || data.length === 0) {
+                                        parent.debug('web', 'Got agent connection with unknown agent key ' + req.clientIp + ', holding.')
+                                        resolve({cont: false})
+                                    }
+                                    resolve({cont: true, key: data[0]})
+                                })
+                            })
+                        }
+                        p.then((_result)=>{
+                            if (!_result.cont) { return; }
+                            try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain, _result.key); } catch (e) { console.log(e); }
+                        })
                     });
 
                     // Setup mesh relay on alternative agent-only port

@@ -520,7 +520,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (agentstats.invalidJsonCount > 0) { errorCountersCount++; errorCounters.InvalidJSON = agentstats.invalidJsonCount; }
                 if (agentstats.unknownAgentActionCount > 0) { errorCountersCount++; errorCounters.UnknownAction = agentstats.unknownAgentActionCount; }
                 if (agentstats.agentBadWebCertHashCount > 0) { errorCountersCount++; errorCounters.BadWebCertificate = agentstats.agentBadWebCertHashCount; }
-                if ((agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count) > 0) { errorCountersCount++; errorCounters.BadSignature = (agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count); }
+                if ((agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count + agentstats.agentBadSignature3Count) > 0) { errorCountersCount++; errorCounters.BadSignature = (agentstats.agentBadSignature1Count + agentstats.agentBadSignature2Count + agentstats.agentBadSignature3Count); }
                 if (agentstats.agentMaxSessionHoldCount > 0) { errorCountersCount++; errorCounters.MaxSessionsReached = agentstats.agentMaxSessionHoldCount; }
                 if ((agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count) > 0) { errorCountersCount++; errorCounters.UnknownDeviceGroup = (agentstats.invalidDomainMeshCount + agentstats.invalidDomainMesh2Count); }
                 if ((agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count) > 0) { errorCountersCount++; errorCounters.InvalidDeviceGroupType = (agentstats.invalidMeshTypeCount + agentstats.invalidMeshType2Count); }
@@ -2794,6 +2794,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); } // Remove diagnostic agent to real agent link
                                 db.Remove('ra' + node._id); // Remove real agent to diagnostic agent link
                             });
+                            if (domain.keyagents || parent.parent.config.settings.keyagents) {
+                                db.GetAllTypeNodeFiltered([nodeid], domain.id, 'agentkey', null, function (err, docs) {
+                                    for (let _doc of docs) {
+                                        db.Remove(_doc._id);
+                                    }
+                                })
+                            }
 
                             // Remove any user node links
                             if (node.links != null) {
