@@ -5418,10 +5418,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
 
                         if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                            let _key = getRandomLowerCase(128);
-                            let _agentKey = { "type": "agentkey", "nodeid": null, "key": _key, "_id": `agentkey//${_key}` };
+                            let _key = obj.crypto.randomBytes(64);
+                            let _hash = obj.crypto.createHash('sha384').update(_key).digest("hex");
+                            let _agentKey = { "type": "agentkey", "nodeid": null, "key": _hash, "_id": `agentkey//${_hash}` };
                             db.Set(_agentKey);
-                            connectString += `?key=${_agentKey["key"]}`;
+                            connectString += `?key=${_key.toString("hex")}`;
                         }
                         meshsettings += 'MeshServer=' + connectString + '\r\n';
                     } else {
@@ -5862,10 +5863,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.lanonly != true) {
             let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
             if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                let _key = getRandomLowerCase(128);
-                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _key, "_id": `agentkey//${_key}` };
+                let _key = obj.crypto.randomBytes(64);
+                let _hash = obj.crypto.createHash('sha384').update(_key).digest("hex")
+                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _hash, "_id": `agentkey//${_hash}` };
                 db.Set(_agentKey);
-                connectString += `?key=${_agentKey["key"]}`;
+                connectString += `?key=${_key.toString("hex")}`;
             }
             meshsettings += 'MeshServer=' + connectString + '\r\n';
         } else {
@@ -6018,10 +6020,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.lanonly != true) {
             let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
             if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                let _key = getRandomLowerCase(128);
-                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _key, "_id": `agentkey//${_key}` };
-                db.Set(_agentKey)
-                connectString += `?key=${_agentKey["key"]}`
+                let _key = obj.crypto.randomBytes(64);
+                let _hash = obj.crypto.createHash('sha384').update(_key).digest("hex")
+                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _hash, "_id": `agentkey//${_hash}` };
+                db.Set(_agentKey);
+                connectString += `?key=${_key.toString("hex")}`;
             }
             meshsettings += 'MeshServer=' + connectString + '\r\n'; 
         } else {
@@ -6914,8 +6917,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (req.query.key == null) {
                             return;
                         }
+                        let _hash = obj.crypto.createHash('sha384').update(Buffer.from(req.query.key, "hex")).digest("hex")
                         p = new Promise((resolve, reject)=>{
-                            db.Get(`agentkey//${req.query.key}`, (err, data)=>{
+                            db.Get(`agentkey//${_hash}`, (err, data)=>{
                                 if (err || data.length === 0) {
                                     parent.debug('web', 'Got agent connection with unknown agent key ' + req.clientIp + ', holding.')
                                     resolve({cont: false})
