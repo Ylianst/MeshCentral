@@ -608,7 +608,7 @@
             "array"
           ],
           "default": null,
-          "description": "When set, only users from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+          "description": "When set, only users from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:userAllowedIP.txt\""
         },
         "userBlockedIP": {
           "type": [
@@ -616,7 +616,7 @@
             "array"
           ],
           "default": null,
-          "description": "When set, users from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+          "description": "When set, users from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:userBlockedIP.txt\""
         },
         "agentAllowedIP": {
           "type": [
@@ -624,7 +624,7 @@
             "array"
           ],
           "default": null,
-          "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+          "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIP.txt\""
         },
         "agentBlockedIP": {
           "type": [
@@ -632,7 +632,7 @@
             "array"
           ],
           "default": null,
-          "description": "When set, agents from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+          "description": "When set, agents from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentBlockedIP.txt\""
         },
         "authLog": {
           "type": "string",
@@ -1967,7 +1967,7 @@
               "array"
             ],
             "default": null,
-            "description": "When set, only users from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+            "description": "When set, only users from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:userAllowedIP.txt\""
           },
           "userBlockedIP": {
             "type": [
@@ -1975,7 +1975,7 @@
               "array"
             ],
             "default": null,
-            "description": "When set, users from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+            "description": "When set, users from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\"  \"file:userBlockedIP.txt\""
           },
           "agentAllowedIP": {
             "type": [
@@ -1983,7 +1983,7 @@
               "array"
             ],
             "default": null,
-            "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+            "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIP.txt\""
           },
           "agentBlockedIP": {
             "type": [
@@ -1991,7 +1991,7 @@
               "array"
             ],
             "default": null,
-            "description": "When set, agents from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\""
+            "description": "When set, agents from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentBlockedIP.txt\""
           },
           "userSessionIdleTimeout": {
             "type": "integer",
