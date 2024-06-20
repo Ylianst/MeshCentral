@@ -3131,10 +3131,12 @@
                     if (!message.event.nolog) {
                         if (currentNode && (message.event.nodeid == currentNode._id) && (currentDeviceEvents != null)) {
                             // If this event has a nodeid and we are looking at this node, update the log in real time.
-                            currentDeviceEvents.unshift(message.event);
-                            var eventLimit = parseInt(p16limitdropdown.value);
-                            while (currentDeviceEvents.length > eventLimit) { currentDeviceEvents.pop(); } // Remove element(s) at the end
-                            mainUpdate(1024);
+                            if ((message.event.action == p16filterevents.value) || (p16filterevents.value == "")) {
+                                currentDeviceEvents.unshift(message.event);
+                                var eventLimit = parseInt(p16limitdropdown.value);
+                                while (currentDeviceEvents.length > eventLimit) { currentDeviceEvents.pop(); } // Remove element(s) at the end
+                                mainUpdate(1024);
+                            }
                         }
 
                         if (currentUser && (message.event.userid == currentUser._id)) {
@@ -3146,10 +3148,12 @@
                         }
 
                         // Add this event to the main events log.
-                        events.unshift(message.event);
-                        var eventLimit = parseInt(p3limitdropdown.value);
-                        while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
-                        mainUpdate(32);
+                        if ((message.event.action == p3filterevents.value) || (p3filterevents.value == "")) {
+                            events.unshift(message.event);
+                            var eventLimit = parseInt(p3limitdropdown.value);
+                            while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
+                            mainUpdate(32);
+                        }
                     }
                     if (message.event.noact) break; // Take no action on this event
 
