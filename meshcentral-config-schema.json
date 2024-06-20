@@ -388,6 +388,11 @@
             "default": false,
             "description": "When enabled, Meshcentral will key each agent downloaded to a specific node id, which is determined on first agent connection. If an agent attempts to connect without this key, or with a node id that does not match this key, it will be ignored. Deleting a device will remove its key, preventing that agent from connecting again in the future."
         },
+        "keyAgentsGrace": {
+          "type": "string",
+          "default": null,
+          "description": "Date to allow unkeyed connections. When set in conjunction with keyAgents, meshcentral will accept any agent connection until the date specified and attempt to automatically update the agent to a keyed agent. Standard javascript date format, described at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format ."
+        },
         "ignoreAgentHashCheck": {
           "type": [
             "boolean",
@@ -1751,6 +1756,11 @@
             "type": "boolean",
             "default": false,
             "description": "When enabled, Meshcentral will key each agent downloaded to a specific node id, which is determined on first agent connection. If an agent attempts to connect without this key, or with a node id that does not match this key, it will be ignored. Deleting a device will remove its key, preventing that agent from connecting again in the future."
+          },
+          "keyAgentsGrace": {
+            "type": "string",
+            "default": null,
+            "description": "Date to allow unkeyed connections. When set in conjunction with keyAgents, meshcentral will accept any agent connection until the date specified and attempt to automatically update the agent to a keyed agent. Standard javascript date format, described at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format ."
           },
           "geoLocation": {
             "type": "boolean",

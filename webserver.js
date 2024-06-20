@@ -6914,11 +6914,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
                     let p = Promise.resolve({cont: true})
                     if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                        if (req.query.key == null) {
+                        let keyagentsgrace = domain.keyagentsgrace || parent.parent.config.settings.keyagentsgrace || 0;
+                        if (keyagentsgrace !== 0) {
+                            keyagentsgrace = +(Date.parse(keyagentsgrace));
+                        }
+                        if (req.query.key == null && (+(new Date()) > keyagentsgrace)) {
                             return;
                         }
-                        let _hash = obj.crypto.createHash('sha384').update(Buffer.from(req.query.key, "hex")).digest("hex")
                         p = new Promise((resolve, reject)=>{
+                            if (req.query.key == null && (+(new Date()) < keyagentsgrace)) {
+                                resolve({cont: true});
+                                return
+                            }
+                            let _hash = obj.crypto.createHash('sha384').update(Buffer.from(req.query.key, "hex")).digest("hex")
                             db.Get(`agentkey//${_hash}`, (err, data)=>{
                                 if (err || data.length === 0) {
                                     parent.debug('web', 'Got agent connection with unknown agent key ' + req.clientIp + ', holding.')

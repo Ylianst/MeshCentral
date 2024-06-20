@@ -1121,6 +1121,34 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain, ke
         if (domain.agentselfguestsharing) { serverInfo.agentSelfGuestSharing = true; }
         obj.send(JSON.stringify(serverInfo));
 
+        if ((domain.keyagents || parent.parent.config.settings.keyagents) && obj.key == undefined) {
+            let keyagentsgrace = domain.keyagentsgrace || parent.parent.config.settings.keyagentsgrace || 0;
+            if (keyagentsgrace !== 0) {
+                keyagentsgrace = +(Date.parse(keyagentsgrace))
+            }
+            // If keyagentsgrace is not right here, we would have errored out long before this, but might as well handle it here as well.
+            if (+(new Date()) < keyagentsgrace) {
+                if (args.lanonly != true) {
+                    let serverName = parent.getWebServerName(domain, req);
+                    let httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                    let xdomain = (domain.dns == null) ? domain.id : '';
+                    if (xdomain != '') xdomain += '/';
+                    let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
+                    let _key = parent.crypto.randomBytes(64);
+                    let _hash = parent.crypto.createHash('sha384').update(_key).digest("hex");
+                    let _agentKey = { "type": "agentkey", "nodeid": obj.dbNodeKey, "key": _hash, "_id": `agentkey//${_hash}` };
+                    db.Set(_agentKey);
+                    connectString += `?key=${_key.toString("hex")}`;
+                    obj.key = _agentKey
+                    obj.send(JSON.stringify({ action: 'msg', type: 'console', value: `msh set MeshServer ${connectString}`, 
+                        // msg expects a session ID, but we don't have one and msh command doesn't use it, so spoof it
+                        sessionid: parent.crypto.randomBytes(16).toString("hex"),
+                        // Force all rights
+                        rights: 4294967295 }));
+                }
+            }
+        }
+
         // Plug in handler
         if (parent.parent.pluginHandler != null) {
             parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent);
