@@ -522,7 +522,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain, ke
                 if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else {
                     if (obj.key) {
                         let _nodekey = 'node/' + domain.id + '/' + obj.unauth.nodeid;
-                        if (!obj.key.nodeid) {
+                        if (!obj.key.nodeid && (!obj.key.expire || (+Date.now() < obj.key.expire))) {
                             obj.key.nodeid = _nodekey;
                             obj.key.domain = domain.id
                             db.Set(obj.key)
@@ -1134,9 +1134,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain, ke
                     let xdomain = (domain.dns == null) ? domain.id : '';
                     if (xdomain != '') xdomain += '/';
                     let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
-                    let _key = parent.crypto.randomBytes(64);
-                    let _hash = parent.crypto.createHash('sha384').update(_key).digest("hex");
-                    let _agentKey = { "type": "agentkey", "nodeid": obj.dbNodeKey, "key": _hash, "_id": `agentkey//${_hash}` };
+                    let [_agentKey, _key] = parent.generateAgentKey(domain)
+                    _agentKey.nodeid = obj.dbNodeKey
                     db.Set(_agentKey);
                     connectString += `?key=${_key.toString("hex")}`;
                     obj.key = _agentKey

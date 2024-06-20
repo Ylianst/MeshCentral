@@ -5418,9 +5418,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
 
                         if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                            let _key = obj.crypto.randomBytes(64);
-                            let _hash = obj.crypto.createHash('sha384').update(_key).digest("hex");
-                            let _agentKey = { "type": "agentkey", "nodeid": null, "key": _hash, "_id": `agentkey//${_hash}` };
+                            let [_agentKey, _key] = obj.generateAgentKey(domain)
                             db.Set(_agentKey);
                             connectString += `?key=${_key.toString("hex")}`;
                         }
@@ -5863,9 +5861,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.lanonly != true) {
             let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
             if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                let _key = obj.crypto.randomBytes(64);
-                let _hash = obj.crypto.createHash('sha384').update(_key).digest("hex")
-                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _hash, "_id": `agentkey//${_hash}` };
+                let [_agentKey, _key] = obj.generateAgentKey(domain)
                 db.Set(_agentKey);
                 connectString += `?key=${_key.toString("hex")}`;
             }
@@ -6020,9 +6016,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.lanonly != true) {
             let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
             if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                let _key = obj.crypto.randomBytes(64);
-                let _hash = obj.crypto.createHash('sha384').update(_key).digest("hex")
-                let _agentKey = { "type": "agentkey", "nodeid": null, "key": _hash, "_id": `agentkey//${_hash}` };
+                let [_agentKey, _key] = obj.generateAgentKey(domain)
                 db.Set(_agentKey);
                 connectString += `?key=${_key.toString("hex")}`;
             }
@@ -6914,7 +6908,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
                     let p = Promise.resolve({cont: true})
                     if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                        let keyagentsgrace = domain.keyagentsgrace || parent.parent.config.settings.keyagentsgrace || 0;
+                        let keyagentsgrace = domain.keyagentsgrace || obj.parent.config.settings.keyagentsgrace || 0;
                         if (keyagentsgrace !== 0) {
                             keyagentsgrace = +(Date.parse(keyagentsgrace));
                         }
@@ -6973,11 +6967,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
                         let p = Promise.resolve({cont: true})
                         if (domain.keyagents || obj.parent.config.settings.keyagents) {
-                            if (req.query.key == null) {
+                            let keyagentsgrace = domain.keyagentsgrace || obj.parent.config.settings.keyagentsgrace || 0;
+                            if (keyagentsgrace !== 0) {
+                                keyagentsgrace = +(Date.parse(keyagentsgrace));
+                            }
+                            if (req.query.key == null && (+(new Date()) > keyagentsgrace)) {
                                 return;
                             }
                             p = new Promise((resolve, reject)=>{
-                                db.Get(`agentkey//${req.query.key}`, (err, data)=>{
+                                if (req.query.key == null && (+(new Date()) < keyagentsgrace)) {
+                                    resolve({cont: true});
+                                    return
+                                }
+                                let _hash = obj.crypto.createHash('sha384').update(Buffer.from(req.query.key, "hex")).digest("hex")
+                                db.Get(`agentkey//${_hash}`, (err, data)=>{
                                     if (err || data.length === 0) {
                                         parent.debug('web', 'Got agent connection with unknown agent key ' + req.clientIp + ', holding.')
                                         resolve({cont: false})
@@ -9459,6 +9462,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
         obj.bad2faTableLastClean = 0;
+    }
+    obj.generateAgentKey = function (domain) {
+        let key = obj.crypto.randomBytes(64);
+        let hash = obj.crypto.createHash('sha384').update(key).digest("hex")
+        let expirery = (domain.keyagenttimeout || obj.parent.config.settings.keyagenttimeout)
+        expirery = expirery === undefined ? 60 : expirery
+        if (expirery != null) {
+            expirery = +(new Date(Date.now() + (expirery * 60 * 1000) ))
+        }
+        let agentKey = { "type": "agentkey", "nodeid": null, "key": hash, "_id": `agentkey//${hash}`, "expire": expirery };
+        return [agentKey, key]
     }
 
     // Hold a websocket until additional arguments are provided within the socket.

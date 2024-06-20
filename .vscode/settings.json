@@ -341,6 +341,7 @@
         "jumpcloud",
         "keyagents",
         "keyagentsgrace",
+        "keyagenttimeout",
         "keyfile",
         "keygrip",
         "keyid",

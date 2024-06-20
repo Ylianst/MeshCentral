@@ -393,6 +393,11 @@
           "default": null,
           "description": "Date to allow unkeyed connections. When set in conjunction with keyAgents, meshcentral will accept any agent connection until the date specified and attempt to automatically update the agent to a keyed agent. Standard javascript date format, described at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format ."
         },
+        "keyAgentTimeout": {
+          "type": "integer",
+          "default": 60,
+          "description": "Timeout in minutes for which an agentKey will be valid. If no device connects by this time, that agentkey will be deactivated. If set to null, keys will never timeout."
+        },
         "ignoreAgentHashCheck": {
           "type": [
             "boolean",
@@ -1761,6 +1766,11 @@
             "type": "string",
             "default": null,
             "description": "Date to allow unkeyed connections. When set in conjunction with keyAgents, meshcentral will accept any agent connection until the date specified and attempt to automatically update the agent to a keyed agent. Standard javascript date format, described at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format ."
+          },
+          "keyAgentTimeout": {
+            "type": "integer",
+            "default": 60,
+            "description": "Timeout in minutes for which an agentKey will be valid. If no device connects by this time, that agentkey will be deactivated. If set to null, keys will never timeout."
           },
           "geoLocation": {
             "type": "boolean",
