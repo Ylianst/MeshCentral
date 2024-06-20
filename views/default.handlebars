@@ -3141,10 +3141,12 @@
 
                         if (currentUser && (message.event.userid == currentUser._id)) {
                             // If this event has a userid and we are looking at this user, update the log in real time.
-                            currentUserEvents.unshift(message.event);
-                            var eventLimit = parseInt(p31limitdropdown.value);
-                            while (currentUserEvents.length > eventLimit) { currentUserEvents.pop(); } // Remove element(s) at the end
-                            mainUpdate(2048);
+                            if ((message.event.action == p31filterevents.value) || (p31filterevents.value == "")) {
+                                currentUserEvents.unshift(message.event);
+                                var eventLimit = parseInt(p31limitdropdown.value);
+                                while (currentUserEvents.length > eventLimit) { currentUserEvents.pop(); } // Remove element(s) at the end
+                                mainUpdate(2048);
+                            }
                         }
 
                         // Add this event to the main events log.
