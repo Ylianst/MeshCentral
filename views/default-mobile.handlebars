@@ -6246,6 +6246,7 @@
                 if (hardware.mobile.bootloader) { x += addDetailItem("Bootloader", EscapeHtml(hardware.mobile.bootloader), s); }
                 if (hardware.mobile.id) { x += addDetailItem("Identifier", EscapeHtml(hardware.mobile.id), s); }
                 if (hardware.mobile.host) { x += addDetailItem("Hostname", EscapeHtml(hardware.mobile.host), s); }
+                if (hardware.mobile.androidapi && hardware.mobile.androidrelease) { x += addDetailItem("Android Version", EscapeHtml(hardware.mobile.androidrelease + ', API Level ' + hardware.mobile.androidapi), s); }
                 if (x != '') { sections.push({ name: "Mobile Device", html: x, img: 'mobile' }); }
             }
 
