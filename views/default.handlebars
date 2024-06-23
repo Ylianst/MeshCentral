@@ -9624,6 +9624,7 @@
                     if (desktop.State != 0) {
                         desktop.m.SendCompressionLevel(desktopsettings.agentencoding, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate);
                         desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":' + desktopsettings.autolock + '}');
+                        desktop.m.SendRefresh();
                     }
                 }
                 if (desktop.contype == 2) { // Intel AMT KVM 
