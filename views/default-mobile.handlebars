@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
@@ -1227,6 +1227,17 @@
                             </td>
                         </tr>
                         <tr>
+                            <td>
+                                Encoding
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7encoding" style="float:right;width:200px" dir="rtl">
+                                    <option value=1>JPEG</option>
+                                    <option selected=selected value=4>WEBP</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
                             <td></td>
                             <td>
                                 <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
@@ -1344,7 +1355,13 @@
 
         // Check if WebP is supported
         var webpSupport = false;
-        check_webp_feature('lossy', function (f, x) { webpSupport = x; });
+        check_webp_feature('lossy', function (f, x) {
+            webpSupport = x;
+            if (!x) {
+                d7encoding.options[1].disabled = true;
+                d7encoding.value = 1;
+            }
+        });
 
         function startup() {
             if ((features & 32) == 0) {
@@ -4424,7 +4441,7 @@
 
         var desktop;
         var desktopNode;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, autolock: false };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, autolock: false, agentencoding: 4 };
         function setupDesktop() {
             // Setup the remote desktop
             if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
@@ -4548,7 +4565,7 @@
                             p11clearConsoleMsg();
                         }
                     }
-                    desktop.m.ImageType = webpSupport ? 4 : 1; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
+                    desktop.m.ImageType = desktopsettings.agentencoding; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
                     desktop.m.FrameRateTimer = desktopsettings.framerate;
@@ -4632,11 +4649,12 @@
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
             desktopsettings.autolock = d7deskAutoLock.checked;
+            desktopsettings.agentencoding = d7encoding.value;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             if (desktop) {
                 if (desktop.contype == 1) {
-                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(webpSupport ? 4 : 1, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
+                    if (desktop.State != 0) { desktop.m.SendCompressionLevel(desktopsettings.agentencoding, desktopsettings.quality, desktopsettings.scaling, desktopsettings.framerate); }
                     desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"autolock","value":' + desktopsettings.autolock + '}');
                 }
                 if (desktop.contype == 2) {
@@ -4651,6 +4669,7 @@
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
             d7bitmapquality.value = 40; // Default value
+            if (desktopsettings.agentencoding) { d7encoding.value = desktopsettings.agentencoding; } else { desktopsettings.agentencoding = 4; }
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }

@@ -28311,7 +28311,9 @@
       "zh-cht": "編碼",
       "hu": "Kódolás",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->1"
+        "default-mobile.handlebars->dialog->3->dialog7->d7amtkvm->3->1->0->1",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->1",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->9->1"
       ]
     },
     {
@@ -40113,6 +40115,13 @@
       "hu": "Elem"
     },
     {
+      "en": "JPEG",
+      "xloc": [
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7encoding->1",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->9->d7encoding->1"
+      ]
+    },
+    {
       "bs": "JSON",
       "cs": "JSON",
       "da": "JSON",
@@ -43882,7 +43891,7 @@
       "zh-cht": "斷開連接鎖定",
       "hu": "Zárolás a kapcsolat bontásakor",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7deskAutoLockLabel",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->8->3->d7deskAutoLockLabel",
         "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->d7desktopOtherSettings->d7otherset2->d7deskAutoLockLabel"
       ]
     },
@@ -80663,6 +80672,13 @@
         "default.handlebars->47->111",
         "default.handlebars->47->112",
         "default.handlebars->47->113"
+      ]
+    },
+    {
+      "en": "WEBP",
+      "xloc": [
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7encoding->3",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->9->d7encoding->3"
       ]
     },
     {
