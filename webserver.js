@@ -3775,7 +3775,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle download of a server file by an agent
     function handleAgentDownloadFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = checkAgentIpAddress(req, res);
         if (domain == null) { return; }
         if (req.query.c == null) { res.sendStatus(404); return; }
 
