@@ -15,7 +15,7 @@
 "use strict";
 
 // Construct a MeshAgent object, called upon connection
-module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
+module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain, key) {
     const forge = parent.parent.certificateOperations.forge;
     const common = parent.parent.common;
     parent.agentStats.createMeshAgentCount++;
@@ -29,6 +29,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.remoteaddr = req.clientIp;
     obj.remoteaddrport = obj.remoteaddr + ':' + ws._socket.remotePort;
     obj.nonce = parent.crypto.randomBytes(48).toString('binary');
+    obj.key = key
     //ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
     if (args.agentidletimeout != 0) { ws._socket.setTimeout(args.agentidletimeout, function () { obj.close(1); }); } // Inactivity timeout of 2:30 minutes, by default agent will WebSocket ping every 2 minutes and server will pong back.
     //obj.nodeid = null;
@@ -519,6 +520,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Check the agent signature if we can
                 if (obj.agentnonce == null) { obj.unauthsign = msg.substring(4 + certlen); } else {
+                    if (obj.key) {
+                        let _nodekey = 'node/' + domain.id + '/' + obj.unauth.nodeid;
+                        if (!obj.key.nodeid && (!obj.key.expire || (+Date.now() < obj.key.expire))) {
+                            obj.key.nodeid = _nodekey;
+                            obj.key.domain = domain.id
+                            db.Set(obj.key)
+                        } else if (obj.key.nodeid !== _nodekey) {
+                            parent.agentStats.agentBadSignature3Count++;
+                            parent.setAgentIssue(obj, "BadSignature3");
+                            parent.parent.debug('agent', 'Agent connected as a node that does not match its key, holding connection (' + obj.remoteaddrport + ').');
+                            console.log('Agent connected as a node that does not match its key, holding connection (' + obj.remoteaddrport + ').'); return;
+                        }
+                    }
                     if (processAgentSignature(msg.substring(4 + certlen)) == false) {
                         parent.agentStats.agentBadSignature2Count++;
                         parent.setAgentIssue(obj, "BadSignature2");
@@ -1106,6 +1120,33 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Enable agent self guest sharing if allowed
         if (domain.agentselfguestsharing) { serverInfo.agentSelfGuestSharing = true; }
         obj.send(JSON.stringify(serverInfo));
+
+        if ((domain.keyagents || parent.parent.config.settings.keyagents) && obj.key == undefined) {
+            let keyagentsgrace = domain.keyagentsgrace || parent.parent.config.settings.keyagentsgrace || 0;
+            if (keyagentsgrace !== 0) {
+                keyagentsgrace = +(Date.parse(keyagentsgrace))
+            }
+            // If keyagentsgrace is not right here, we would have errored out long before this, but might as well handle it here as well.
+            if (+(new Date()) < keyagentsgrace) {
+                if (args.lanonly != true) {
+                    let serverName = parent.getWebServerName(domain, req);
+                    let httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+                    let xdomain = (domain.dns == null) ? domain.id : '';
+                    if (xdomain != '') xdomain += '/';
+                    let connectString = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx';
+                    let [_agentKey, _key] = parent.generateAgentKey(domain)
+                    _agentKey.nodeid = obj.dbNodeKey
+                    db.Set(_agentKey);
+                    connectString += `?key=${_key.toString("hex")}`;
+                    obj.key = _agentKey
+                    obj.send(JSON.stringify({ action: 'msg', type: 'console', value: `msh set MeshServer ${connectString}`, 
+                        // msg expects a session ID, but we don't have one and msh command doesn't use it, so spoof it
+                        sessionid: parent.crypto.randomBytes(16).toString("hex"),
+                        // Force all rights
+                        rights: 4294967295 }));
+                }
+            }
+        }
 
         // Plug in handler
         if (parent.parent.pluginHandler != null) {
