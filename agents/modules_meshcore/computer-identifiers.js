@@ -926,6 +926,7 @@ module.exports.isVM = function isVM()
             case 'Xen':
             case 'SeaBIOS':
             case 'EFI Development Kit II / OVMF':
+            case 'Proxmox distribution of EDK II':
                 ret = true;
                 break;
             default:
