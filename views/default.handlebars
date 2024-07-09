@@ -11354,7 +11354,7 @@
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UnzipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
-                QE('p13GoToFolderButton', true);
+                QE('p13GoToFolderButton', advancedFeatures);
                 QE('p13OpenButton', (cc == 1));
                 QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
             }
