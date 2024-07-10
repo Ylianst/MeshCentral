@@ -5797,6 +5797,9 @@
         function groupActionFunction() {
             var addedOptions = [], nodeids = getCheckedDevices(), added = 0;
 
+            // Remind the user to add two factor authentication
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
+
             // Check if any of the selected devices have a MQTT connection active
             if (features & 0x00400000) {
                 for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions.push({ v:103, name: "Send MQTT Message" });; break; } }
