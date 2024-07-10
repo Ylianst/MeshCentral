@@ -2261,7 +2261,11 @@
             if (idtype == 'mesh') { gotoMesh(id); }
             if (idtype == 'account') { go(3); }
             if (idtype == 'devices') { go(2); }
-            if (idtype == 'files') { go(5); }
+            if (idtype == 'files') {
+                // Remind the user to add two factor authentication
+                if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }  
+                go(5);
+            }
         }
 
         function updateFooterMenu(options) {
@@ -2635,6 +2639,8 @@
         }
 
         function gotoMesh(meshid) {
+            // Remind the user to add two factor authentication
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }  
             currentMesh = meshes[meshid];
             if (currentMesh == null) { goBack(); }
             p20updateMesh();
