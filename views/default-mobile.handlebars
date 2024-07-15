@@ -941,11 +941,12 @@
                         </div>
                         <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:32px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
-                                <div style=float:right;text-align:right>
+                                <div style=float:right;text-align:right;padding-right:2px>
+                                    <span id=DeskLockButton><img src='images/icon-lock.png' onclick=deviceLockFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>
                                     <span id=DeskChatButton><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskOpenWebButton><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
-                                    <span id=DeskRunButton><img src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16 style=padding-top:2px;cursor:pointer /></span>
+                                    <span id=DeskRunButton><img src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
@@ -4107,6 +4108,10 @@
         }
 
         function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) }); }
+
+        function deviceLockFunction() {
+            if ((xxdialogMode != null || xxdialogMode == 0) && (desktop != null) && (desktop.contype == 1)) { setDialogMode(2, "Lock Desktop", 3, function() { if ((desktop != null) && (desktop.contype == 1)) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"lock"}'); } }, "Lock user desktop?"); }
+        }
 
         function deviceChat(e) {
             if (xxdialogMode) return;
