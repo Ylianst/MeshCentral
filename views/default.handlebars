@@ -11234,7 +11234,6 @@
         function p13openfilefolderEx() {
             var openfilefolder = "", checkboxes = document.getElementsByName('fd');
             for (var i = 0; i < checkboxes.length; i++) {
-                console.log(checkboxes[i]);
                 if (checkboxes[i].checked) {
                     openfilefolder = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(isWindowsNode(currentNode) ? '\\' : '/') + (isWindowsNode(currentNode) ? '\\' : '/') + p13filetree.dir[checkboxes[i].value].n;
                 }
@@ -11358,7 +11357,7 @@
                 QE('p13UnzipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', advancedFeatures);
-                QE('p13OpenButton', (cc == 1));
+                QE('p13OpenButton', advancedFeatures && (cc == 1));
                 QE('p13DownloadButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
             }
             var filesState = ((files != null) && (files.state != 0));
