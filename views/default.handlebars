@@ -11359,7 +11359,7 @@
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
                 QE('p13GoToFolderButton', advancedFeatures);
                 QE('p13OpenButton', (cc == 1));
-                QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13DownloadButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
             }
             var filesState = ((files != null) && (files.state != 0));
             if (((filesState == true) && (files.contype != 2)) || (filesNode.agent == null) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
