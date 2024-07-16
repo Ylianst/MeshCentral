@@ -15,7 +15,7 @@
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
-    <link href="styles/bootstrap.min.css" rel="stylesheet" title="CSS">
+    <link id="theme-stylesheet" href="styles/bootstrap.min.css" rel="stylesheet" title="CSS">
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -43,6 +43,7 @@
     <script type="text/javascript" src="mstsc/client.js"></script>
     <script type="text/javascript" src="mstsc/canvas.js"></script>
     <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="scripts/themes/theme-switcher.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/u2f-api{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/charts{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/moment{{min}}.js"></script>
@@ -1888,8 +1889,23 @@
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
             <div class="footer2">
-                <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify Email</a>
-                &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
+                <div class="row">
+                    <div class="col-md-6 d-flex gap-2">
+                        <span>Themes: </span>
+                        <select id="theme-switcher" class="form-select form-select-xs">
+                            <option value="default">Default</option>
+                            <option value="cerulean">Cerulean</option>
+                            <option value="cosmo">Cosmo</option>
+                            <option value="cyborg">Cyborg</option>
+                            <!-- Add more themes as needed -->
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify
+                            Email</a>
+                        &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
+                    </div>
+                </div>
             </div>
         </div>
         <div id=dialog class="noselect" style="display:none">
