@@ -14411,7 +14411,7 @@
                 var x = "Invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
                 x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
                 x += addHtmlValue("Invite Codes", currentMesh.invite.codes.join(', '));
-                x += addHtmlValue("Installation Type", ["Background and interactive", "Background only", "Interactive only"][currentMesh.invite.flags & 3]);
+                x += addHtmlValue("Installation Type", ["Background and interactive", "Interactive only", "Background only"][currentMesh.invite.flags & 3]);
                 setDialogMode(2, "Invite Codes", 1, null, x);
             }
         }
