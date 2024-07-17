@@ -759,7 +759,7 @@
                             <span id=DeskRefreshButton title="Refresh the desktop"><img class="desktopButtons" id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 /></span>
                             <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons" id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 /></span>
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
-                            <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
+                            <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskGuestShareButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
                         </div>
                         <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
@@ -9034,8 +9034,8 @@
                     desktop.onMetadataChange = function(metadata) { updateMetadata(desktop, 'deskmetadata'); }
                     if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
-                    QV('DeskInputLockedButton', desktop.m.RemoteInputLock === 1);
-                    QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock === 0);
+                    QV('DeskInputLockedButton', desktop.m.RemoteInputLock == true);
+                    QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock == false);
                     desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
                     desktop.m.onKeyboardStateChanged = function(obj, state) {
                         QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
