@@ -1957,9 +1957,9 @@ function CreateMeshCentralServer(config, args) {
                     obj.updateServerState('state', "running");
 
                     // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == null) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
+                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
                     else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
-                    else {
+                    else if (typeof obj.config.settings.autobackup == 'object'){
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; }
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; }
                     }
