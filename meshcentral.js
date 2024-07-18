@@ -1959,6 +1959,10 @@ function CreateMeshCentralServer(config, args) {
                     // Setup auto-backup defaults
                     if (obj.config.settings.autobackup == null) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
                     else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
+                    else {
+                        if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; }
+                        if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; }
+                    }
 
                     // Check that autobackup path is not within the "meshcentral-data" folder.
                     if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
