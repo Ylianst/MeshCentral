@@ -1,1 +1,962 @@
-function isWindowsBrowser(){return navigator&&!!/win/i.exec(navigator.platform)}Uint8Array.prototype.slice||Object.defineProperty(Uint8Array.prototype,"slice",{value:function(e,t){return new Uint8Array(Array.prototype.slice.call(this,e,t))}});var CreateAgentRemoteDesktop=function(e,t){var g={},p=("string"==typeof(g.CanvasId=e)&&(g.CanvasId=Q(e)),g.Canvas=g.CanvasId.getContext("2d"),g.scrolldiv=t,g.State=0,g.PendingOperations=[],g.tilesReceived=0,g.TilesDrawn=0,g.KillDraw=0,g.ipad=!1,g.tabletKeyboardVisible=!1,g.LastX=0,g.LastY=0,g.touchenabled=0,g.submenuoffset=0,g.touchtimer=null,g.TouchArray={},g.connectmode=0,g.connectioncount=0,g.rotation=0,g.protocol=2,g.debugmode=0,g.firstUpKeys=[],g.stopInput=!1,g.localKeyMap=!0,g.remoteKeyMap=!1,g.pressedKeys=[],g._altGrArmed=!1,g._altGrTimeout=0,g.isWindowsBrowser=isWindowsBrowser(),g.sessionid=0,g.oldie=!1,g.ImageType=1,g.CompressionLevel=50,g.ScalingLevel=1024,g.FrameRateTimer=100,g.SwapMouse=!1,g.UseExtendedKeyFlag=!0,g.FirstDraw=!1,g.onRemoteInputLockChanged=null,g.RemoteInputLock=null,g.onKeyboardStateChanged=null,g.KeyboardState=0,g.ScreenWidth=960,g.ScreenHeight=701,g.width=960,g.height=960,g.displays=null,g.selectedDisplay=null,g.onScreenSizeChange=null,g.onMessage=null,g.onConnectCountChanged=null,g.onDebugMessage=null,g.onTouchEnabledChanged=null,g.onDisplayinfo=null,!(g.accumulator=null)),S="default",v=(g.mouseCursorActive=function(e){p!=e&&(p=e,g.CanvasId.style.cursor=1==e?S:"default")},["default","progress","crosshair","pointer","help","text","no-drop","move","nesw-resize","ns-resize","nwse-resize","w-resize","alias","wait","none","not-allowed","col-resize","row-resize","copy","zoom-in","zoom-out"]),a=(g.Start=function(){g.State=0,g.accumulator=null},g.Stop=function(){g.setRotation(0),g.UnGrabKeyInput(),g.UnGrabMouseInput(),g.touchenabled=0,null!=g.onScreenSizeChange&&g.onScreenSizeChange(g,g.ScreenWidth,g.ScreenHeight,g.CanvasId),g.Canvas.clearRect(0,0,g.CanvasId.width,g.CanvasId.height)},g.xxStateChange=function(e){g.State!=e&&(g.State=e,g.CanvasId.style.cursor="default",0===e)&&g.Stop()},g.send=function(e){2<g.debugmode&&console.log("KSend("+e.length+"): "+rstr2hex(e)),null!=g.parent&&g.parent.send(e)},g.ProcessPictureMsg=function(e,t,n){for(var o=new Image,a=(o.xcount=g.tilesReceived++,g.tilesReceived),r=e.slice(4),s=0,i=[];5e4<r.byteLength-s;)i.push(String.fromCharCode.apply(null,r.slice(s,s+5e4))),s+=5e4;i.push(0<s?String.fromCharCode.apply(null,r.slice(s)):String.fromCharCode.apply(null,r)),o.src="data:image/jpeg;base64,"+btoa(i.join("")),o.onload=function(){if(null!=g.Canvas&&g.KillDraw<a&&0!=g.State)for(g.PendingOperations.push([a,2,o,t,n]);g.DoPendingOperations(););else g.PendingOperations.push([a,0])},o.error=function(){console.log("DecodeTileError")}},g.DoPendingOperations=function(){if(0!=g.PendingOperations.length){for(var e=0;e<g.PendingOperations.length;e++){var t=g.PendingOperations[e];if(t[0]==g.TilesDrawn+1)return null!=g.onPreDrawImage&&g.onPreDrawImage(),1==t[1]?g.ProcessCopyRectMsg(t[2]):2==t[1]&&(g.Canvas.drawImage(t[2],g.rotX(t[3],t[4]),g.rotY(t[3],t[4])),delete t[2]),g.PendingOperations.splice(e,1),delete t,g.TilesDrawn++,g.TilesDrawn==g.tilesReceived&&g.KillDraw<g.TilesDrawn&&(g.KillDraw=g.TilesDrawn=g.tilesReceived=0),!0}g.oldie&&0<g.PendingOperations.length&&g.TilesDrawn++}return!1},g.ProcessCopyRectMsg=function(e){var t=((255&e.charCodeAt(0))<<8)+(255&e.charCodeAt(1)),n=((255&e.charCodeAt(2))<<8)+(255&e.charCodeAt(3)),o=((255&e.charCodeAt(4))<<8)+(255&e.charCodeAt(5)),a=((255&e.charCodeAt(6))<<8)+(255&e.charCodeAt(7)),r=((255&e.charCodeAt(8))<<8)+(255&e.charCodeAt(9)),e=((255&e.charCodeAt(10))<<8)+(255&e.charCodeAt(11));g.Canvas.drawImage(Canvas.canvas,t,n,r,e,o,a,r,e)},g.SendUnPause=function(){1<g.debugmode&&console.log("SendUnPause"),g.send(String.fromCharCode(0,8,0,5,0))},g.SendPause=function(){1<g.debugmode&&console.log("SendPause"),g.send(String.fromCharCode(0,8,0,5,1))},g.SendCompressionLevel=function(e,t,n,o){g.ImageType=e,t&&(g.CompressionLevel=t),n&&(g.ScalingLevel=n),o&&(g.FrameRateTimer=o),g.send(String.fromCharCode(0,5,0,10,e,g.CompressionLevel)+g.shortToStr(g.ScalingLevel)+g.shortToStr(g.FrameRateTimer))},g.SendRefresh=function(){g.send(String.fromCharCode(0,6,0,4))},g.ProcessScreenMsg=function(e,t){if(0<g.debugmode&&console.log("ScreenSize: "+e+" x "+t),g.ScreenWidth!=e||g.ScreenHeight!=t){for(g.Canvas.setTransform(1,0,0,1,0,0),g.rotation=0,g.FirstDraw=!0,g.ScreenWidth=g.width=e,g.ScreenHeight=g.height=t,g.KillDraw=g.tilesReceived;0<g.PendingOperations.length;)g.PendingOperations.shift();g.SendCompressionLevel(g.ImageType),g.SendUnPause(),g.SendRemoteInputLock(2),null!=g.onScreenSizeChange&&g.onScreenSizeChange(g,g.ScreenWidth,g.ScreenHeight,g.CanvasId)}},g.ProcessBinaryCommand=function(e,t,n){var o,a;switch(3!=e&&4!=e&&7!=e||(o=(n[4]<<8)+n[5],a=(n[6]<<8)+n[7]),2<g.debugmode&&console.log("CMD",e,t,o,a),null!=g.recordedData&&(65e3<t?g.recordedData.push(C(2,1,g.shortToStr(27)+g.shortToStr(8)+g.intToStr(t)+g.shortToStr(e)+g.shortToStr(0)+g.shortToStr(0)+g.shortToStr(0)+String.fromCharCode.apply(null,n))):g.recordedData.push(C(2,1,String.fromCharCode.apply(null,n)))),e){case 3:g.FirstDraw&&g.onResize(),g.ProcessPictureMsg(n.slice(4),o,a);break;case 7:g.ProcessScreenMsg(o,a),g.SendKeyMsgKC(g.KeyAction.UP,16),g.SendKeyMsgKC(g.KeyAction.UP,17),g.SendKeyMsgKC(g.KeyAction.UP,18),g.SendKeyMsgKC(g.KeyAction.UP,91),g.SendKeyMsgKC(g.KeyAction.UP,92),g.SendKeyMsgKC(g.KeyAction.UP,16),g.send(String.fromCharCode(0,14,0,4));break;case 11:var r=0,s={},i=(n[4]<<8)+n[5];if(0<i)for(var r=(n[6+2*i]<<8)+n[7+2*i],c=0;c<i;c++){var u=(n[6+2*c]<<8)+n[7+2*c];s[u]=65535==u?"All Displays":"Display "+u}g.displays=s,g.selectedDisplay=r,null!=g.onDisplayinfo&&g.onDisplayinfo(g,s,r);break;case 12:break;case 14:g.touchenabled=1,g.TouchArray={},null!=g.onTouchEnabledChanged&&g.onTouchEnabledChanged(g.touchenabled);break;case 15:g.TouchArray={};break;case 17:var d=String.fromCharCode.apply(null,n.slice(4));console.log("Got KVM Message: "+d),null!=g.onMessage&&g.onMessage(d,g);break;case 18:5==t&&g.KeyboardState!=n[4]&&(g.KeyboardState=n[4],g.onKeyboardStateChanged&&g.onKeyboardStateChanged(g,g.KeyboardState),console.log("MNG_KVM_KEYSTATE:"+(1&g.KeyboardState?" NumLock":"")+(2&g.KeyboardState?" ScrollLock":"")+(4&g.KeyboardState?" CapsLock":"")));break;case 65:"."!=(d=String.fromCharCode.apply(null,n.slice(4)))[0]?(console.log(d),g.parent&&g.parent.setConsoleMessage&&g.parent.setConsoleMessage(d)):console.log("KVM: "+d.substring(1));break;case 82:if(!(t<4||(t-4)%10!=0))for(var l=(t-4)/10,h=4,c=0;c<l;c++)(n[h+0]<<8)+n[h+1],{x:(n[h+2]<<8)+n[h+3],y:(n[h+4]<<8)+n[h+5],w:(n[h+6]<<8)+n[h+7],h:(n[h+8]<<8)+n[h+9]},h+=10;break;case 87:5!=t||null!=g.RemoteInputLock&&g.RemoteInputLock===(0!=n[4])||(g.RemoteInputLock=0!=n[4],g.onRemoteInputLockChanged&&g.onRemoteInputLockChanged(g,g.RemoteInputLock));break;case 88:5!=t||g.stopInput||(r=n[4],S=v[r=v.length<r?0:r],p&&(g.CanvasId.style.cursor=S));break;default:console.log("Unknown command",e,t)}},g.MouseButton={NONE:0,LEFT:2,RIGHT:8,MIDDLE:32},g.KeyAction={NONE:0,DOWN:1,UP:2,SCROLL:3,EXUP:4,EXDOWN:5,DBLCLICK:6},g.InputType={KEY:1,MOUSE:2,CTRLALTDEL:10,TOUCH:15,KEYUNICODE:85},g.Alternate=0,{Pause:19,CapsLock:20,Space:32,Quote:222,Minus:189,NumpadMultiply:106,NumpadAdd:107,PrintScreen:44,Comma:188,NumpadSubtract:109,NumpadDecimal:110,Period:190,Slash:191,NumpadDivide:111,Semicolon:186,Equal:187,OSLeft:91,BracketLeft:219,OSRight:91,Backslash:220,BracketRight:221,ContextMenu:93,Backquote:192,NumLock:144,ScrollLock:145,Backspace:8,Tab:9,Enter:13,NumpadEnter:13,Escape:27,Delete:46,Home:36,PageUp:33,PageDown:34,ArrowLeft:37,ArrowUp:38,ArrowRight:39,ArrowDown:40,End:35,Insert:45,F1:112,F2:113,F3:114,F4:115,F5:116,F6:117,F7:118,F8:119,F9:120,F10:121,F11:122,F12:123,ShiftLeft:16,ShiftRight:16,ControlLeft:17,ControlRight:17,AltLeft:18,AltRight:18,MetaLeft:91,MetaRight:92,VolumeMute:181});var r=["ShiftRight","AltRight","ControlRight","Home","End","Insert","Delete","PageUp","PageDown","NumpadDivide","NumpadEnter","NumLock","Pause"];g.SendKeyMsg=function(e,t){var n,o;null==e||(t=t||window.event,n=!1,(g.UseExtendedKeyFlag||1==urlargs.extkeys)&&"string"==typeof t.code&&(t.code.startsWith("Arrow")||0<=r.indexOf(t.code))&&(n=!0),g.isWindowsBrowser&&g.checkAltGr(g,t,e))||(0==n&&t.code&&0==t.code.startsWith("NumPad")&&0==g.localKeyMap?null!=(o=(o=t).code.startsWith("Key")&&4==o.code.length?o.code.charCodeAt(3):o.code.startsWith("Digit")&&6==o.code.length?o.code.charCodeAt(5):o.code.startsWith("Numpad")&&7==o.code.length?o.code.charCodeAt(6)+48:a[o.code])&&g.SendKeyMsgKC(e,o,n):(59==(o=t.keyCode)?o=186:173==o?o=189:61==o&&(o=187),g.SendKeyMsgKC(e,o,n)))};function C(e,t,n){var o=Date.now();return"number"==typeof n?(g.recordedSize+=n,g.shortToStr(e)+g.shortToStr(t)+g.intToStr(n)+g.intToStr(o>>32)+g.intToStr(32&o)):(g.recordedSize+=n.length,g.shortToStr(e)+g.shortToStr(t)+g.intToStr(n.length)+g.intToStr(o>>32)+g.intToStr(32&o)+n)}return g.checkAltGr=function(e,t,n){return e._altGrArmed&&(e._altGrArmed=!1,clearTimeout(e._altGrTimeout),"AltRight"===t.code)&&t.timeStamp-e._altGrCtrlTime<50?(e.SendKeyMsgKC(n,225,!1),!0):!("ControlLeft"!==t.code||17 in e.pressedKeys||(e._altGrArmed=!0,e._altGrCtrlTime=t.timeStamp,1!=n)||(e._altGrTimeout=setTimeout(e._handleAltGrTimeout.bind(e),100),0))},g._handleAltGrTimeout=function(){g._altGrArmed=!1,clearTimeout(g._altGrTimeout),g.SendKeyMsgKC(1,17,!1)},g.SendRemoteInputLock=function(e){g.send(String.fromCharCode(0,87,0,5,e))},g.SendMessage=function(e){3==g.State&&g.send(String.fromCharCode(0,17)+g.shortToStr(4+e.length)+e)},g.SendKeyMsgKC=function(e,t,n){if(3==g.State)if("object"==typeof e)for(var o in e)g.SendKeyMsgKC(e[o][0],e[o][1],e[o][2]);else{1==e?-1==g.pressedKeys.indexOf(t)&&g.pressedKeys.unshift(t):2==e&&-1!=(o=g.pressedKeys.indexOf(t))&&g.pressedKeys.splice(o,1),0<g.debugmode&&console.log("Sending Key "+t+", action "+e);var a=e-1;n&&(a=1==a?3:4),g.send(String.fromCharCode(0,g.InputType.KEY,0,6,a,t))}},g.SendStringUnicode=function(e){if(3==g.State)for(var t=0;t<e.length;t++)g.send(String.fromCharCode(0,g.InputType.KEYUNICODE,0,7,0)+ShortToStr(e.charCodeAt(t))),g.send(String.fromCharCode(0,g.InputType.KEYUNICODE,0,7,1)+ShortToStr(e.charCodeAt(t)))},g.SendKeyUnicode=function(e,t){3==g.State&&(0<g.debugmode&&console.log("Sending UnicodeKey "+t+", action "+e),g.send(String.fromCharCode(0,g.InputType.KEYUNICODE,0,7,e-1)+ShortToStr(t)))},g.sendcad=function(){g.SendCtrlAltDelMsg()},g.SendCtrlAltDelMsg=function(){3==g.State&&g.send(String.fromCharCode(0,g.InputType.CTRLALTDEL,0,4))},g.SendEscKey=function(){3==g.State&&g.send(String.fromCharCode(0,g.InputType.KEY,0,6,0,27,0,g.InputType.KEY,0,6,1,27))},g.SendStartMsg=function(){g.SendKeyMsgKC(g.KeyAction.EXDOWN,91),g.SendKeyMsgKC(g.KeyAction.EXUP,91)},g.SendCharmsMsg=function(){g.SendKeyMsgKC(g.KeyAction.EXDOWN,91),g.SendKeyMsgKC(g.KeyAction.DOWN,67),g.SendKeyMsgKC(g.KeyAction.UP,67),g.SendKeyMsgKC(g.KeyAction.EXUP,91)},g.SendTouchMsg1=function(e,t,n,o){3==g.State&&g.send(String.fromCharCode(0,g.InputType.TOUCH)+g.shortToStr(14)+String.fromCharCode(1,e)+g.intToStr(t)+g.shortToStr(n)+g.shortToStr(o))},g.SendTouchMsg2=function(e,t){var n,o,a="";for(o in g.TouchArray)o==e?n=t:1==g.TouchArray[o].f?(n=65542,g.TouchArray[o].f=3,0):2==g.TouchArray[o].f?(n=262144,0):n=131078,a+=String.fromCharCode(o)+g.intToStr(n)+g.shortToStr(g.TouchArray[o].x)+g.shortToStr(g.TouchArray[o].y),2==g.TouchArray[o].f&&delete g.TouchArray[o];3==g.State&&g.send(String.fromCharCode(0,g.InputType.TOUCH)+g.shortToStr(5+a.length)+String.fromCharCode(2)+a),0==Object.keys(g.TouchArray).length&&null!=g.touchtimer&&(clearInterval(g.touchtimer),g.touchtimer=null)},g.SendMouseMsg=function(e,t){var n,o,a,r,s,i;3==g.State&&null!=e&&null!=g.Canvas&&(t=t||window.event,a=g.Canvas.canvas.height/g.CanvasId.clientHeight,n=g.Canvas.canvas.width/g.CanvasId.clientWidth,o=g.GetPositionOfControl(g.Canvas.canvas),n=(t.pageX-o[0])*n,o=(t.pageY-o[1])*a,t.addx&&(n+=t.addx),t.addy&&(o+=t.addy),0<=n)&&n<=g.Canvas.canvas.width&&0<=o&&o<=g.Canvas.canvas.height&&(r=a=0,e==g.KeyAction.UP||e==g.KeyAction.DOWN?t.which?a=1==t.which?g.MouseButton.LEFT:2==t.which?g.MouseButton.MIDDLE:g.MouseButton.RIGHT:t.button&&(a=0==t.button?g.MouseButton.LEFT:1==t.button?g.MouseButton.MIDDLE:g.MouseButton.RIGHT):e==g.KeyAction.SCROLL&&(t.detail?r=120*t.detail*-1:t.wheelDelta&&(r=3*t.wheelDelta)),!0===g.SwapMouse&&(a==g.MouseButton.LEFT?a=g.MouseButton.RIGHT:a==g.MouseButton.RIGHT&&(a=g.MouseButton.LEFT)),g.ReverseMouseWheel&&(r*=-1),t="",t=e==g.KeyAction.DBLCLICK?String.fromCharCode(0,g.InputType.MOUSE,0,10,0,136,n/256&255,255&n,o/256&255,255&o):e==g.KeyAction.SCROLL?(i=r<(i=s=0)?(s=255-(Math.abs(r)>>8),255-(255&Math.abs(r))):(s=r>>8,255&r),String.fromCharCode(0,g.InputType.MOUSE,0,12,0,0,n/256&255,255&n,o/256&255,255&o,s,i)):String.fromCharCode(0,g.InputType.MOUSE,0,10,0,e==g.KeyAction.DOWN?a:2*a&255,n/256&255,255&n,o/256&255,255&o),g.Action==g.KeyAction.NONE?0==g.Alternate||g.ipad?(g.send(t),g.Alternate=1):g.Alternate=0:g.send(t))},g.GetDisplayNumbers=function(){g.send(String.fromCharCode(0,11,0,4))},g.SetDisplay=function(e){g.send(String.fromCharCode(0,12,0,6,e>>8,255&e))},g.intToStr=function(e){return String.fromCharCode(e>>24&255,e>>16&255,e>>8&255,255&e)},g.shortToStr=function(e){return String.fromCharCode(e>>8&255,255&e)},g.onResize=function(){0==g.ScreenWidth||0==g.ScreenHeight||g.Canvas.canvas.width==g.ScreenWidth&&g.Canvas.canvas.height==g.ScreenHeight||(g.FirstDraw&&(g.Canvas.canvas.width=g.ScreenWidth,g.Canvas.canvas.height=g.ScreenHeight,g.Canvas.fillRect(0,0,g.ScreenWidth,g.ScreenHeight),null!=g.onScreenSizeChange)&&g.onScreenSizeChange(g,g.ScreenWidth,g.ScreenHeight,g.CanvasId),g.FirstDraw=!1,1<g.debugmode&&console.log("onResize: "+g.ScreenWidth+" x "+g.ScreenHeight))},g.xxMouseInputGrab=!1,g.xxKeyInputGrab=!1,g.xxMouseMove=function(e){return 3==g.State&&g.SendMouseMsg(g.KeyAction.NONE,e),e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g.xxMouseUp=function(e){return 3==g.State&&g.SendMouseMsg(g.KeyAction.UP,e),e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g.xxMouseDown=function(e){return 3==g.State&&g.SendMouseMsg(g.KeyAction.DOWN,e),e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g.xxMouseDblClick=function(e){return 3==g.State&&g.SendMouseMsg(g.KeyAction.DBLCLICK,e),e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g.xxDOMMouseScroll=function(e){return 3!=g.State||(g.SendMouseMsg(g.KeyAction.SCROLL,e),!1)},g.xxMouseWheel=function(e){return 3!=g.State||(g.SendMouseMsg(g.KeyAction.SCROLL,e),!1)},g.xxKeyUp=function(e){return"Dead"!=e.key&&3==g.State&&("string"==typeof e.key&&1==e.key.length&&1!=e.ctrlKey&&1!=e.altKey&&0==g.remoteKeyMap?g.SendKeyUnicode(g.KeyAction.UP,e.key.charCodeAt(0)):g.SendKeyMsg(g.KeyAction.UP,e)),e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g.xxKeyDown=function(e){if("Dead"!=e.key&&3==g.State&&("string"!=typeof e.key||1!=e.key.length||1==e.ctrlKey||1==e.altKey||0!=g.remoteKeyMap))return g.SendKeyMsg(g.KeyAction.DOWN,e),e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g.xxKeyPress=function(e){return"Dead"!=e.key&&3==g.State&&"string"==typeof e.key&&1==e.key.length&&1!=e.ctrlKey&&1!=e.altKey&&0==g.remoteKeyMap&&g.SendKeyUnicode(g.KeyAction.DOWN,e.key.charCodeAt(0)),e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g.handleKeys=function(e){return 1!=g.stopInput&&3==desktop.State&&g.xxKeyPress(e)},g.handleKeyUp=function(e){var t;return 1!=g.stopInput&&3==desktop.State&&(g.firstUpKeys.length<5&&(g.firstUpKeys.push(e.keyCode),5!=g.firstUpKeys.length||"16,17,91,91,16"!=(t=g.firstUpKeys.join(","))&&"16,17,18,91,92"!=t||(g.stopInput=!0)),g.xxKeyUp(e))},g.handleKeyDown=function(e){return 1!=g.stopInput&&3==desktop.State&&g.xxKeyDown(e)},g.handleReleaseKeys=function(){var e,t=JSON.parse(JSON.stringify(g.pressedKeys));for(e in t)g.SendKeyMsgKC(g.KeyAction.UP,t[e])},g.mousedblclick=function(e){return 1!=g.stopInput&&g.xxMouseDblClick(e)},g.mousedown=function(e){return 1!=g.stopInput&&g.xxMouseDown(e)},g.mouseup=function(e){return 1!=g.stopInput&&g.xxMouseUp(e)},g.mousemove=function(e){return 1!=g.stopInput&&g.xxMouseMove(e)},g.mousewheel=function(e){return 1!=g.stopInput&&g.xxMouseWheel(e)},g.xxMsTouchEvent=function(e){var t,n,o,a;if(4!=e.originalEvent.pointerType)return e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),"MSPointerDown"==e.type||"MSPointerMove"==e.type||"MSPointerUp"==e.type?(t=0,n=e.originalEvent.pointerId%256,o=e.offsetX*(Canvas.canvas.width/g.CanvasId.clientWidth),a=e.offsetY*(Canvas.canvas.height/g.CanvasId.clientHeight),"MSPointerDown"==e.type?t=65542:"MSPointerMove"==e.type?t=131078:"MSPointerUp"==e.type&&(t=262144),g.TouchArray[n]||(g.TouchArray[n]={x:o,y:a}),g.SendTouchMsg2(n,t),"MSPointerUp"==e.type&&delete g.TouchArray[n]):alert(e.type),!0},g.xxTouchStart=function(e){if(3==g.State)if(e.preventDefault&&e.preventDefault(),0==g.touchenabled||1==g.touchenabled){var t;1<e.originalEvent.touches.length||(t=e.originalEvent.touches[0],e.which=1,g.LastX=e.pageX=t.pageX,g.LastY=e.pageY=t.pageY,g.SendMouseMsg(KeyAction.DOWN,e))}else{var n,o,a=g.GetPositionOfControl(Canvas.canvas);for(n in e.originalEvent.changedTouches)e.originalEvent.changedTouches[n].identifier&&(o=e.originalEvent.changedTouches[n].identifier%256,g.TouchArray[o]||(g.TouchArray[o]={x:(e.originalEvent.touches[n].pageX-a[0])*(Canvas.canvas.width/g.CanvasId.clientWidth),y:(e.originalEvent.touches[n].pageY-a[1])*(Canvas.canvas.height/g.CanvasId.clientHeight),f:1}));0<Object.keys(g.TouchArray).length&&null==touchtimer&&(g.touchtimer=setInterval(function(){g.SendTouchMsg2(256,0)},50))}},g.xxTouchMove=function(e){if(3==g.State)if(e.preventDefault&&e.preventDefault(),0==g.touchenabled||1==g.touchenabled){var t;1<e.originalEvent.touches.length||(t=e.originalEvent.touches[0],e.which=1,g.LastX=e.pageX=t.pageX,g.LastY=e.pageY=t.pageY,g.SendMouseMsg(g.KeyAction.NONE,e))}else{var n,o,a=g.GetPositionOfControl(Canvas.canvas);for(n in e.originalEvent.changedTouches)e.originalEvent.changedTouches[n].identifier&&(o=e.originalEvent.changedTouches[n].identifier%256,g.TouchArray[o])&&(g.TouchArray[o].x=(e.originalEvent.touches[n].pageX-a[0])*(g.Canvas.canvas.width/g.CanvasId.clientWidth),g.TouchArray[o].y=(e.originalEvent.touches[n].pageY-a[1])*(g.Canvas.canvas.height/g.CanvasId.clientHeight))}},g.xxTouchEnd=function(e){if(3==g.State)if(e.preventDefault&&e.preventDefault(),0==g.touchenabled||1==g.touchenabled)1<e.originalEvent.touches.length||(e.which=1,e.pageX=LastX,e.pageY=LastY,g.SendMouseMsg(KeyAction.UP,e));else for(var t in e.originalEvent.changedTouches)e.originalEvent.changedTouches[t].identifier&&(t=e.originalEvent.changedTouches[t].identifier%256,g.TouchArray[t])&&(g.TouchArray[t].f=2)},g.GrabMouseInput=function(){var e;1!=g.xxMouseInputGrab&&((e=g.CanvasId).onmousemove=g.xxMouseMove,e.onmouseup=g.xxMouseUp,e.onmousedown=g.xxMouseDown,e.touchstart=g.xxTouchStart,e.touchmove=g.xxTouchMove,e.touchend=g.xxTouchEnd,e.MSPointerDown=g.xxMsTouchEvent,e.MSPointerMove=g.xxMsTouchEvent,e.MSPointerUp=g.xxMsTouchEvent,navigator.userAgent.match(/mozilla/i)?e.DOMMouseScroll=g.xxDOMMouseScroll:e.onmousewheel=g.xxMouseWheel,g.xxMouseInputGrab=!0)},g.UnGrabMouseInput=function(){var e;0!=g.xxMouseInputGrab&&((e=g.CanvasId).onmousemove=null,e.onmouseup=null,e.onmousedown=null,e.touchstart=null,e.touchmove=null,e.touchend=null,e.MSPointerDown=null,e.MSPointerMove=null,e.MSPointerUp=null,navigator.userAgent.match(/mozilla/i)?e.DOMMouseScroll=null:e.onmousewheel=null,g.xxMouseInputGrab=!1)},g.GrabKeyInput=function(){1!=g.xxKeyInputGrab&&(document.onkeyup=g.xxKeyUp,document.onkeydown=g.xxKeyDown,document.onkeypress=g.xxKeyPress,c,g.xxKeyInputGrab=!0)},g.UnGrabKeyInput=function(){0!=g.xxKeyInputGrab&&(document.onkeyup=null,document.onkeydown=null,document.onkeypress=null,g.xxKeyInputGrab=!1)},g.GetPositionOfControl=function(e){var t=Array(2);for(t[0]=t[1]=0;e;)t[0]+=e.offsetLeft,t[1]+=e.offsetTop,e=e.offsetParent;return t},g.crotX=function(e,t){return 0==g.rotation?e:1==g.rotation?t:2==g.rotation?g.Canvas.canvas.width-e:3==g.rotation?g.Canvas.canvas.height-t:void 0},g.crotY=function(e,t){return 0==g.rotation?t:1==g.rotation?g.Canvas.canvas.width-e:2==g.rotation?g.Canvas.canvas.height-t:3==g.rotation?e:void 0},g.rotX=function(e,t){return 0==g.rotation||1==g.rotation?e:2==g.rotation?e-g.Canvas.canvas.width:3==g.rotation?e-g.Canvas.canvas.height:void 0},g.rotY=function(e,t){return 0==g.rotation||3==g.rotation?t:1==g.rotation?t-g.Canvas.canvas.width:2==g.rotation?t-g.Canvas.canvas.height:void 0},g.tcanvas=null,g.setRotation=function(e){for(;e<0;)e+=4;var t,n,o,a=e%4;return a!=g.rotation&&(t=g.Canvas.canvas.width,n=g.Canvas.canvas.height,1!=g.rotation&&3!=g.rotation||(t=g.Canvas.canvas.height,n=g.Canvas.canvas.width),null==g.tcanvas&&(g.tcanvas=document.createElement("canvas")),(o=g.tcanvas.getContext("2d")).setTransform(1,0,0,1,0,0),o.canvas.width=t,o.canvas.height=n,o.rotate(-90*g.rotation*Math.PI/180),0==g.rotation&&o.drawImage(g.Canvas.canvas,0,0),1==g.rotation&&o.drawImage(g.Canvas.canvas,-g.Canvas.canvas.width,0),2==g.rotation&&o.drawImage(g.Canvas.canvas,-g.Canvas.canvas.width,-g.Canvas.canvas.height),3==g.rotation&&o.drawImage(g.Canvas.canvas,0,-g.Canvas.canvas.height),0!=g.rotation&&2!=g.rotation||(g.Canvas.canvas.height=t,g.Canvas.canvas.width=n),1!=g.rotation&&3!=g.rotation||(g.Canvas.canvas.height=n,g.Canvas.canvas.width=t),g.Canvas.setTransform(1,0,0,1,0,0),g.Canvas.rotate(90*a*Math.PI/180),g.rotation=a,g.Canvas.drawImage(g.tcanvas,g.rotX(0,0),g.rotY(0,0)),g.ScreenWidth=g.Canvas.canvas.width,g.ScreenHeight=g.Canvas.canvas.height,null!=g.onScreenSizeChange)&&(console.log("s4",g.ScreenWidth,g.ScreenHeight),g.onScreenSizeChange(g,g.ScreenWidth,g.ScreenHeight,g.CanvasId)),!0},g.StartRecording=function(){null==g.recordedData&&g.CanvasId.toBlob(function(e){var s=new FileReader;s.readAsArrayBuffer(e),s.onload=function(e){for(var t="",n=new Uint8Array(s.result),o=n.byteLength,a=0;a<o;a++)t+=String.fromCharCode(n[a]);g.recordedData=[],g.recordedStart=Date.now(),g.recordedSize=0,g.recordedData.push(C(1,0,JSON.stringify({magic:"MeshCentralRelaySession",ver:1,time:(new Date).toLocaleString(),protocol:2}))),g.recordedData.push(C(2,1,g.shortToStr(7)+g.shortToStr(8)+g.shortToStr(g.ScreenWidth)+g.shortToStr(g.ScreenHeight)));var r=8+t.length;65e3<r?g.recordedData.push(C(2,1,g.shortToStr(27)+g.shortToStr(8)+g.intToStr(r)+g.shortToStr(3)+g.shortToStr(0)+g.shortToStr(0)+g.shortToStr(0)+t)):g.recordedData.push(C(2,1,g.shortToStr(3)+g.shortToStr(r)+g.shortToStr(0)+g.shortToStr(0)+t))}})},g.StopRecording=function(){var e;if(null!=g.recordedData)return(e=g.recordedData).push(C(3,0,"MeshCentralMCREC")),delete g.recordedData,delete g.recordedStart,delete g.recordedSize,e},g.MuchTheSame=function(e,t){return Math.abs(e-t)<4},g.Debug=function(e){console.log(e)},g.getIEVersion=function(){var e,t=-1;return t="Microsoft Internet Explorer"==navigator.appName&&(e=navigator.userAgent,null!=new RegExp("MSIE ([0-9]{1,}[.0-9]{0,})").exec(e))?parseFloat(RegExp.$1):t},g.haltEvent=function(e){return e.preventDefault&&e.preventDefault(),e.stopPropagation&&e.stopPropagation(),!1},g}
+/** 
+* @description Remote Desktop
+* @author Ylian Saint-Hilaire
+* @version v0.0.2g
+*/
+
+// Polyfill Uint8Array.slice() for IE
+if (!Uint8Array.prototype.slice) { Object.defineProperty(Uint8Array.prototype, 'slice', { value: function (begin, end) { return new Uint8Array(Array.prototype.slice.call(this, begin, end)); } }); }
+
+function isWindowsBrowser() {
+    return navigator && !!(/win/i).exec(navigator.platform);
+}
+
+// Construct a MeshServer object
+var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
+    var obj = {}
+    obj.CanvasId = canvasid;
+    if (typeof canvasid === 'string') obj.CanvasId = Q(canvasid);
+    obj.Canvas = obj.CanvasId.getContext('2d');
+    obj.scrolldiv = scrolldiv;
+    obj.State = 0;
+    obj.PendingOperations = [];
+    obj.tilesReceived = 0;
+    obj.TilesDrawn = 0;
+    obj.KillDraw = 0;
+    obj.ipad = false;
+    obj.tabletKeyboardVisible = false;
+    obj.LastX = 0;
+    obj.LastY = 0;
+    obj.touchenabled = 0;
+    obj.submenuoffset = 0;
+    obj.touchtimer = null;
+    obj.TouchArray = {};
+    obj.connectmode = 0; // 0 = HTTP, 1 = WebSocket, 2 = WebRTC
+    obj.connectioncount = 0;
+    obj.rotation = 0;
+    obj.protocol = 2; // KVM
+    obj.debugmode = 0;
+    obj.firstUpKeys = [];
+    obj.stopInput = false;
+    obj.localKeyMap = true;
+    obj.remoteKeyMap = false; // If false, the remote keyboard mapping is not used.
+    obj.pressedKeys = [];
+    obj._altGrArmed = false;       // Windows AltGr detection
+    obj._altGrTimeout = 0;
+    obj.isWindowsBrowser = isWindowsBrowser();
+
+    obj.sessionid = 0;
+    obj.username;
+    obj.oldie = false;
+    obj.ImageType = 1; // 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
+    obj.CompressionLevel = 50;
+    obj.ScalingLevel = 1024;
+    obj.FrameRateTimer = 100;
+    obj.SwapMouse = false;
+    obj.UseExtendedKeyFlag = true;
+    obj.FirstDraw = false;
+
+    // Remote user mouse and keyboard lock
+    obj.onRemoteInputLockChanged = null;
+    obj.RemoteInputLock = null;
+
+    // Remote keyboard state
+    obj.onKeyboardStateChanged = null;
+    obj.KeyboardState = 0; // 1 = NumLock, 2 = ScrollLock, 4 = CapsLock
+
+    obj.ScreenWidth = 960;
+    obj.ScreenHeight = 701;
+    obj.width = 960;
+    obj.height = 960;
+
+    obj.displays = null;
+    obj.selectedDisplay = null;
+
+    obj.onScreenSizeChange = null;
+    obj.onMessage = null;
+    obj.onConnectCountChanged = null;
+    obj.onDebugMessage = null;
+    obj.onTouchEnabledChanged = null;
+    obj.onDisplayinfo = null;
+    obj.accumulator = null;
+
+    var xMouseCursorActive = true;
+    var xMouseCursorCurrent = 'default';
+    obj.mouseCursorActive = function (x) { if (xMouseCursorActive == x) return; xMouseCursorActive = x; obj.CanvasId.style.cursor = ((x == true) ? xMouseCursorCurrent : 'default'); }
+    var mouseCursors = ['default', 'progress', 'crosshair', 'pointer', 'help', 'text', 'no-drop', 'move', 'nesw-resize', 'ns-resize', 'nwse-resize', 'w-resize', 'alias', 'wait', 'none', 'not-allowed', 'col-resize', 'row-resize', 'copy', 'zoom-in', 'zoom-out'];
+
+    obj.Start = function () {
+        obj.State = 0;
+        obj.accumulator = null;
+    }
+
+    obj.Stop = function () {
+        obj.setRotation(0);
+        obj.UnGrabKeyInput();
+        obj.UnGrabMouseInput();
+        obj.touchenabled = 0;
+        if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
+        obj.Canvas.clearRect(0, 0, obj.CanvasId.width, obj.CanvasId.height);
+    }
+
+    obj.xxStateChange = function (newstate) {
+        if (obj.State == newstate) return;
+        obj.State = newstate;
+        obj.CanvasId.style.cursor = 'default';
+        //console.log('xxStateChange', newstate);
+        switch (newstate) {
+            case 0: {
+                // Disconnect
+                obj.Stop();
+                break;
+            }
+            case 3: {
+                // Websocket connected
+
+                break;
+            }
+        }
+    }
+
+    obj.send = function (x) {
+        if (obj.debugmode > 2) { console.log('KSend(' + x.length + '): ' + rstr2hex(x)); }
+        if (obj.parent != null) { obj.parent.send(x); }
+    }
+
+    // KVM Control.
+    // Routines for processing incoming packets from the AJAX server, and handling individual messages.
+    obj.ProcessPictureMsg = function (data, X, Y) {
+        //if (obj.targetnode != null) obj.Debug("ProcessPictureMsg " + X + "," + Y + " - " + obj.targetnode.substring(0, 8));
+        var tile = new Image();
+        tile.xcount = obj.tilesReceived++;
+        var r = obj.tilesReceived, tdata = data.slice(4), ptr = 0, strs = [];
+        // String.fromCharCode.apply() can't handle very large argument count, so we have to split like this.
+        while ((tdata.byteLength - ptr) > 50000) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr, ptr + 50000))); ptr += 50000; }
+        if (ptr > 0) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr))); } else { strs.push(String.fromCharCode.apply(null, tdata)); }
+        tile.src = 'data:image/jpeg;base64,' + btoa(strs.join(''));
+        tile.onload = function () {
+            //console.log('DecodeTile #' + this.xcount);
+            if ((obj.Canvas != null) && (obj.KillDraw < r) && (obj.State != 0)) {
+                obj.PendingOperations.push([r, 2, tile, X, Y]);
+                while (obj.DoPendingOperations()) { }
+            } else {
+                obj.PendingOperations.push([r, 0]);
+            }
+        }
+        tile.error = function () { console.log('DecodeTileError'); }
+    }
+
+    obj.DoPendingOperations = function () {
+        if (obj.PendingOperations.length == 0) return false;
+        for (var i = 0; i < obj.PendingOperations.length; i++) { // && KillDraw < tilesDrawn
+            var Msg = obj.PendingOperations[i];
+            if (Msg[0] == (obj.TilesDrawn + 1)) {
+                if (obj.onPreDrawImage != null) obj.onPreDrawImage(); // Notify that we are about to draw on the canvas.
+                if (Msg[1] == 1) { obj.ProcessCopyRectMsg(Msg[2]); }
+                else if (Msg[1] == 2) { obj.Canvas.drawImage(Msg[2], obj.rotX(Msg[3], Msg[4]), obj.rotY(Msg[3], Msg[4])); delete Msg[2]; }
+                obj.PendingOperations.splice(i, 1);
+                delete Msg;
+                obj.TilesDrawn++;
+                if ((obj.TilesDrawn == obj.tilesReceived) && (obj.KillDraw < obj.TilesDrawn)) { obj.KillDraw = obj.TilesDrawn = obj.tilesReceived = 0; }
+                return true;
+            }
+        }
+        if (obj.oldie && obj.PendingOperations.length > 0) { obj.TilesDrawn++; }
+        return false;
+    }
+
+    obj.ProcessCopyRectMsg = function (str) {
+        var SX = ((str.charCodeAt(0) & 0xFF) << 8) + (str.charCodeAt(1) & 0xFF);
+        var SY = ((str.charCodeAt(2) & 0xFF) << 8) + (str.charCodeAt(3) & 0xFF);
+        var DX = ((str.charCodeAt(4) & 0xFF) << 8) + (str.charCodeAt(5) & 0xFF);
+        var DY = ((str.charCodeAt(6) & 0xFF) << 8) + (str.charCodeAt(7) & 0xFF);
+        var WIDTH = ((str.charCodeAt(8) & 0xFF) << 8) + (str.charCodeAt(9) & 0xFF);
+        var HEIGHT = ((str.charCodeAt(10) & 0xFF) << 8) + (str.charCodeAt(11) & 0xFF);
+        obj.Canvas.drawImage(Canvas.canvas, SX, SY, WIDTH, HEIGHT, DX, DY, WIDTH, HEIGHT);
+    }
+
+    obj.SendUnPause = function () {
+        if (obj.debugmode > 1) { console.log('SendUnPause'); }
+        //obj.xxStateChange(3);
+        obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x00));
+    }
+
+    obj.SendPause = function () {
+        if (obj.debugmode > 1) { console.log('SendPause'); }
+        //obj.xxStateChange(2);
+        obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x01));
+    }
+
+    obj.SendCompressionLevel = function (type, level, scaling, frametimer) { // Type: 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
+        obj.ImageType = type;
+        if (level) { obj.CompressionLevel = level; }
+        if (scaling) { obj.ScalingLevel = scaling; }
+        if (frametimer) { obj.FrameRateTimer = frametimer; }
+        obj.send(String.fromCharCode(0x00, 0x05, 0x00, 0x0A, type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer));
+    }
+
+    obj.SendRefresh = function () {
+        obj.send(String.fromCharCode(0x00, 0x06, 0x00, 0x04));
+    }
+
+    obj.ProcessScreenMsg = function (width, height) {
+        if (obj.debugmode > 0) { console.log('ScreenSize: ' + width + ' x ' + height); }
+        if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
+        obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
+        obj.rotation = 0;
+        obj.FirstDraw = true;
+        obj.ScreenWidth = obj.width = width;
+        obj.ScreenHeight = obj.height = height;
+        obj.KillDraw = obj.tilesReceived;
+        while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
+        obj.SendCompressionLevel(obj.ImageType);
+        obj.SendUnPause();
+        obj.SendRemoteInputLock(2); // Query input lock state
+        // No need to event the display size change now, it will be evented on first draw.
+        if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
+    }
+
+    obj.ProcessBinaryCommand = function (cmd, cmdsize, view) {
+        var X, Y;
+        if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
+        if (obj.debugmode > 2) { console.log('CMD', cmd, cmdsize, X, Y); }
+
+        // Record the command if needed
+        if (obj.recordedData != null) {
+            if (cmdsize > 65000) {
+                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + obj.shortToStr(cmd) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + String.fromCharCode.apply(null, view)));
+            } else {
+                obj.recordedData.push(recordingEntry(2, 1, String.fromCharCode.apply(null, view)));
+            }
+        }
+
+        switch (cmd) {
+            case 3: // Tile
+                if (obj.FirstDraw) obj.onResize();
+                //console.log('TILE', X, Y, cmdsize);
+                obj.ProcessPictureMsg(view.slice(4), X, Y);
+                break;
+            case 7: // Screen size
+                obj.ProcessScreenMsg(X, Y);
+                obj.SendKeyMsgKC(obj.KeyAction.UP, 16); // Shift
+                obj.SendKeyMsgKC(obj.KeyAction.UP, 17); // Ctrl
+                obj.SendKeyMsgKC(obj.KeyAction.UP, 18); // Alt
+                obj.SendKeyMsgKC(obj.KeyAction.UP, 91); // Left-Windows
+                obj.SendKeyMsgKC(obj.KeyAction.UP, 92); // Right-Windows
+                obj.SendKeyMsgKC(obj.KeyAction.UP, 16); // Shift
+                obj.send(String.fromCharCode(0x00, 0x0E, 0x00, 0x04));
+                break;
+            case 11: // GetDisplays (TODO)
+                var selectedDisplay = 0, displays = {}, dcount = (view[4] << 8) + view[5];
+                if (dcount > 0) {
+                    // Many displays present
+                    selectedDisplay = (view[6 + (dcount * 2)] << 8) + view[7 + (dcount * 2)];
+                    for (var i = 0; i < dcount; i++) {
+                        var disp = (view[6 + (i * 2)] << 8) + view[7 + (i * 2)];
+                        if (disp == 65535) { displays[disp] = 'All Displays'; } else { displays[disp] = 'Display ' + disp; }
+                    }
+                }
+                //console.log('Get Displays', displays, selectedDisplay, rstr2hex(str));
+                obj.displays = displays; obj.selectedDisplay = selectedDisplay;
+                if (obj.onDisplayinfo != null) { obj.onDisplayinfo(obj, displays, selectedDisplay); }
+                break;
+            case 12: // SetDisplay
+                //console.log('SetDisplayConfirmed');
+                break;
+            case 14: // KVM_INIT_TOUCH
+                obj.touchenabled = 1;
+                obj.TouchArray = {};
+                if (obj.onTouchEnabledChanged != null) obj.onTouchEnabledChanged(obj.touchenabled);
+                break;
+            case 15: // KVM_TOUCH
+                obj.TouchArray = {};
+                break;
+            case 17: // MNG_KVM_MESSAGE
+                var str = String.fromCharCode.apply(null, view.slice(4));
+                console.log('Got KVM Message: ' + str);
+                if (obj.onMessage != null) obj.onMessage(str, obj);
+                break;
+            case 18: // MNG_KVM_KEYSTATE
+                if ((cmdsize != 5) || (obj.KeyboardState == view[4])) break;
+                obj.KeyboardState = view[4]; // 1 = NumLock, 2 = ScrollLock, 4 = CapsLock
+                if (obj.onKeyboardStateChanged) { obj.onKeyboardStateChanged(obj, obj.KeyboardState); }
+                console.log('MNG_KVM_KEYSTATE:' + ((obj.KeyboardState & 1) ? ' NumLock' : '') + ((obj.KeyboardState & 2) ? ' ScrollLock' : '') + ((obj.KeyboardState & 4) ? ' CapsLock' : ''));
+                break;
+            case 65: // Alert
+                var str = String.fromCharCode.apply(null, view.slice(4));
+                if (str[0] != '.') {
+                    console.log(str); //alert('KVM: ' + str);
+                    if (obj.parent && obj.parent.setConsoleMessage) { obj.parent.setConsoleMessage(str); }
+                } else {
+                    console.log('KVM: ' + str.substring(1));
+                }
+                break;
+            case 82: // DISPLAY LOCATION & SIZE
+                if ((cmdsize < 4) || (((cmdsize - 4) % 10) != 0)) break;
+                var screenCount = ((cmdsize - 4) / 10), screenInfo = {}, ptr = 4;
+                for (var i = 0; i < screenCount; i++) { screenInfo[(view[ptr + 0] << 8) + view[ptr + 1]] = { x: ((view[ptr + 2] << 8) + view[ptr + 3]), y: ((view[ptr + 4] << 8) + view[ptr + 5]), w: ((view[ptr + 6] << 8) + view[ptr + 7]), h: ((view[ptr + 8] << 8) + view[ptr + 9]) }; ptr += 10; }
+                //console.log('ScreenInfo', JSON.stringify(screenInfo, null, 2));
+                break;
+            case 87: // MNG_KVM_INPUT_LOCK
+                if (cmdsize != 5) break;
+                if ((obj.RemoteInputLock == null) || (obj.RemoteInputLock !== (view[4] != 0))) {
+                    obj.RemoteInputLock = (view[4] != 0);
+                    if (obj.onRemoteInputLockChanged) { obj.onRemoteInputLockChanged(obj, obj.RemoteInputLock); }
+                }
+                break;
+            case 88: // MNG_KVM_MOUSE_CURSOR
+                if ((cmdsize != 5) || (obj.stopInput)) break;
+                var cursorNum = view[4];
+                if (cursorNum > mouseCursors.length) { cursorNum = 0; }
+                xMouseCursorCurrent = mouseCursors[cursorNum];
+                if (xMouseCursorActive) { obj.CanvasId.style.cursor = xMouseCursorCurrent; }
+                break;
+            default:
+                console.log('Unknown command', cmd, cmdsize);
+                break;
+        }
+
+    }
+    
+    // Keyboard and Mouse I/O.
+    obj.MouseButton = { "NONE": 0x00, "LEFT": 0x02, "RIGHT": 0x08, "MIDDLE": 0x20 };
+    obj.KeyAction = { "NONE": 0, "DOWN": 1, "UP": 2, "SCROLL": 3, "EXUP": 4, "EXDOWN": 5, "DBLCLICK": 6 };
+    obj.InputType = { "KEY": 1, "MOUSE": 2, "CTRLALTDEL": 10, "TOUCH": 15, "KEYUNICODE": 85 };
+    obj.Alternate = 0;
+
+    var convertKeyCodeTable = {
+        "Pause": 19,
+        "CapsLock": 20,
+        "Space": 32,
+        "Quote": 222,
+        "Minus": 189,
+        "NumpadMultiply": 106,
+        "NumpadAdd": 107,
+        "PrintScreen": 44,
+        "Comma": 188,
+        "NumpadSubtract": 109,
+        "NumpadDecimal": 110,
+        "Period": 190,
+        "Slash": 191,
+        "NumpadDivide": 111,
+        "Semicolon": 186,
+        "Equal": 187,
+        "OSLeft": 91,
+        "BracketLeft": 219,
+        "OSRight": 91,
+        "Backslash": 220,
+        "BracketRight": 221,
+        "ContextMenu": 93,
+        "Backquote": 192,
+        "NumLock": 144,
+        "ScrollLock": 145,
+        "Backspace": 8,
+        "Tab": 9,
+        "Enter": 13,
+        "NumpadEnter": 13,
+        "Escape": 27,
+        "Delete": 46,
+        "Home": 36,
+        "PageUp": 33,
+        "PageDown": 34,
+        "ArrowLeft": 37,
+        "ArrowUp": 38,
+        "ArrowRight": 39,
+        "ArrowDown": 40,
+        "End": 35,
+        "Insert": 45,
+        "F1": 112,
+        "F2": 113,
+        "F3": 114,
+        "F4": 115,
+        "F5": 116,
+        "F6": 117,
+        "F7": 118,
+        "F8": 119,
+        "F9": 120,
+        "F10": 121,
+        "F11": 122,
+        "F12": 123,
+        "ShiftLeft": 16,
+        "ShiftRight": 16,
+        "ControlLeft": 17,
+        "ControlRight": 17,
+        "AltLeft": 18,
+        "AltRight": 18,
+        "MetaLeft": 91,
+        "MetaRight": 92,
+        "VolumeMute": 181
+        //"LaunchMail": 
+        //"LaunchApp1":
+        //"LaunchApp2":
+        //"BrowserStop":
+        //"MediaStop":
+        //"MediaTrackPrevious":
+        //"MediaTrackNext":
+        //"MediaPlayPause":
+        //"MediaSelect":
+    }
+
+    function convertKeyCode(e) {
+        if (e.code.startsWith('Key') && e.code.length == 4) { return e.code.charCodeAt(3); }
+        if (e.code.startsWith('Digit') && e.code.length == 6) { return e.code.charCodeAt(5); }
+        if (e.code.startsWith('Numpad') && e.code.length == 7) { return e.code.charCodeAt(6) + 48; }
+        return convertKeyCodeTable[e.code];
+    }
+
+    var extendedKeyTable = ['ShiftRight', 'AltRight', 'ControlRight', 'Home', 'End', 'Insert', 'Delete', 'PageUp', 'PageDown', 'NumpadDivide', 'NumpadEnter', 'NumLock', 'Pause'];
+    obj.SendKeyMsg = function (action, event) {
+        if (action == null) return;
+        if (!event) { event = window.event; }
+
+        var extendedKey = false; // Test feature, add ?extkeys=1 to url to use.
+
+        if ((obj.UseExtendedKeyFlag || (urlargs.extkeys == 1)) && (typeof event.code == 'string') && (event.code.startsWith('Arrow') || (extendedKeyTable.indexOf(event.code) >= 0))) {
+            extendedKey = true; 
+        }
+
+        if (obj.isWindowsBrowser) {
+            if( obj.checkAltGr(obj, event, action) ) {
+              return;
+            }; 
+        }
+
+        if ((extendedKey == false) && event.code && (event.code.startsWith('NumPad') == false) && (obj.localKeyMap == false)) {
+            // Convert "event.code" into a scancode. This works the same regardless of the keyboard language.
+            // Older browsers will not support this.
+            var kc = convertKeyCode(event);
+            if (kc != null) { obj.SendKeyMsgKC(action, kc, extendedKey); }
+        } else {
+            // Use this keycode, this works best with "US-EN" keyboards.
+            // Older browser support this.
+            var kc = event.keyCode;
+            if (kc == 0x3B) { kc = 0xBA; } // Fix the ';' key
+            else if (kc == 173) { kc = 189; } // Fix the '-' key for Firefox
+            else if (kc == 61) { kc = 187; } // Fix the '=' key for Firefox
+            obj.SendKeyMsgKC(action, kc, extendedKey);
+        }
+    }
+
+    const ControlLeftKc = 17;
+    const AltGrKc = 225;
+    //return true: Key is alredy handled. 
+    obj.checkAltGr = function (obj, event, action) {
+        // Windows doesn't have a proper AltGr, but handles it using
+        // fake Ctrl+Alt. However the remote end might not be Windows,
+        // so we need to merge those into a single AltGr event. We
+        // detect this case by seeing the two key events directly after
+        // each other with a very short time between them (<50ms).
+        if (obj._altGrArmed) {
+            obj._altGrArmed = false;
+            clearTimeout(obj._altGrTimeout);
+
+            if ((event.code === "AltRight") &&  ((event.timeStamp - obj._altGrCtrlTime) < 50)) {
+                //AltGr detected.
+                obj.SendKeyMsgKC( action, AltGrKc, false);
+                return true;
+            } 
+        }
+
+        // Possible start of AltGr sequence? 
+        if ((event.code === "ControlLeft") && !(ControlLeftKc in obj.pressedKeys)) {
+          obj._altGrArmed = true;
+            obj._altGrCtrlTime = event.timeStamp;
+          if( action == 1 ) {
+            obj._altGrTimeout = setTimeout(obj._handleAltGrTimeout.bind(obj), 100);
+            return true;
+          }
+        }
+        return false;
+    }
+
+    obj._handleAltGrTimeout = function () { //Windows and no Ctrl+Alt -> send only Ctrl.
+        obj._altGrArmed = false;
+        clearTimeout(obj._altGrTimeout);
+        obj.SendKeyMsgKC( 1, ControlLeftKc, false); // (KeyDown, "ControlLeft", false)
+    }
+
+    // Send remote input lock. 0 = Unlock, 1 = Lock, 2 = Query
+    obj.SendRemoteInputLock = function (code) { obj.send(String.fromCharCode(0x00, 87, 0x00, 0x05, code)); }
+
+    obj.SendMessage = function (msg) {
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, 0x11) + obj.shortToStr(4 + msg.length) + msg); // 0x11 = 17 MNG_KVM_MESSAGE
+    }
+
+    obj.SendKeyMsgKC = function (action, kc, extendedKey) {
+        if (obj.State != 3) return;
+        if (typeof action == 'object') { for (var i in action) { obj.SendKeyMsgKC(action[i][0], action[i][1], action[i][2]); } }
+        else {
+            if (action == 1) { // Key Down
+                if (obj.pressedKeys.indexOf(kc) == -1) { obj.pressedKeys.unshift(kc); } // Add key press to start of array
+            } else if (action == 2) { // Key Up
+                var i = obj.pressedKeys.indexOf(kc);
+                if (i != -1) { obj.pressedKeys.splice(i, 1); } // Remove the key press from the pressed array
+            }
+            if (obj.debugmode > 0) { console.log('Sending Key ' + kc + ', action ' + action); }
+
+            var up = (action - 1);
+            if (extendedKey) { if (up == 1) { up = 3; } else { up = 4; } }
+            obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, up, kc));
+        }
+    }
+
+    obj.SendStringUnicode = function (str) {
+        if (obj.State != 3) return;
+        for (var i = 0; i < str.length; i++) {
+            obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x07, 0) + ShortToStr(str.charCodeAt(i)));
+            obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x07, 1) + ShortToStr(str.charCodeAt(i)));
+        }
+    }
+
+    obj.SendKeyUnicode = function (action, val) {
+        if (obj.State != 3) return;
+        if (obj.debugmode > 0) { console.log('Sending UnicodeKey ' + val + ', action ' + action); }
+        obj.send(String.fromCharCode(0x00, obj.InputType.KEYUNICODE, 0x00, 0x07, (action - 1)) + ShortToStr(val));
+    }
+
+    obj.sendcad = function() { obj.SendCtrlAltDelMsg(); }
+
+    obj.SendCtrlAltDelMsg = function () {
+        if (obj.State == 3) { obj.send(String.fromCharCode(0x00, obj.InputType.CTRLALTDEL, 0x00, 0x04)); }
+    }
+
+    obj.SendEscKey = function () {
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, obj.InputType.KEY, 0x00, 0x06, 0x00, 0x1B, 0x00, obj.InputType.KEY, 0x00, 0x06, 0x01, 0x1B));
+    }
+
+    obj.SendStartMsg = function () {
+        obj.SendKeyMsgKC(obj.KeyAction.EXDOWN, 0x5B); // L-Windows
+        obj.SendKeyMsgKC(obj.KeyAction.EXUP, 0x5B); // L-Windows
+    }
+
+    obj.SendCharmsMsg = function () {
+        obj.SendKeyMsgKC(obj.KeyAction.EXDOWN, 0x5B); // L-Windows
+        obj.SendKeyMsgKC(obj.KeyAction.DOWN, 67); // C
+        obj.SendKeyMsgKC(obj.KeyAction.UP, 67); // C
+        obj.SendKeyMsgKC(obj.KeyAction.EXUP, 0x5B); // L-Windows
+    }
+
+    obj.SendTouchMsg1 = function (id, flags, x, y) {
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, obj.InputType.TOUCH) + obj.shortToStr(14) + String.fromCharCode(0x01, id) + obj.intToStr(flags) + obj.shortToStr(x) + obj.shortToStr(y));
+    }
+
+    obj.SendTouchMsg2 = function (id, flags) {
+        var msg = '';
+        var flags2;
+        var str = "TOUCHSEND: ";
+        for (var k in obj.TouchArray) {
+            if (k == id) { flags2 = flags; } else {
+                if (obj.TouchArray[k].f == 1) { flags2 = 0x00010000 | 0x00000002 | 0x00000004; obj.TouchArray[k].f = 3; str += "START" + k; } // POINTER_FLAG_DOWN
+                else if (obj.TouchArray[k].f == 2) { flags2 = 0x00040000; str += "STOP" + k; } // POINTER_FLAG_UP
+                else flags2 = 0x00000002 | 0x00000004 | 0x00020000; // POINTER_FLAG_UPDATE
+            }
+            msg += String.fromCharCode(k) + obj.intToStr(flags2) + obj.shortToStr(obj.TouchArray[k].x) + obj.shortToStr(obj.TouchArray[k].y);
+            if (obj.TouchArray[k].f == 2) delete obj.TouchArray[k];
+        }
+        if (obj.State == 3) obj.send(String.fromCharCode(0x00, obj.InputType.TOUCH) + obj.shortToStr(5 + msg.length) + String.fromCharCode(0x02) + msg);
+        if (Object.keys(obj.TouchArray).length == 0 && obj.touchtimer != null) { clearInterval(obj.touchtimer); obj.touchtimer = null; }
+    }
+
+    obj.SendMouseMsg = function (Action, event) {
+        if (obj.State != 3) return;
+        if (Action != null && obj.Canvas != null) {
+            if (!event) { var event = window.event; }
+
+            var ScaleFactorHeight = (obj.Canvas.canvas.height / obj.CanvasId.clientHeight);
+            var ScaleFactorWidth = (obj.Canvas.canvas.width / obj.CanvasId.clientWidth);
+            var Offsets = obj.GetPositionOfControl(obj.Canvas.canvas);
+            var X = ((event.pageX - Offsets[0]) * ScaleFactorWidth);
+            var Y = ((event.pageY - Offsets[1]) * ScaleFactorHeight);
+            if (event.addx) { X += event.addx; }
+            if (event.addy) { Y += event.addy; }
+
+            if (X >= 0 && X <= obj.Canvas.canvas.width && Y >= 0 && Y <= obj.Canvas.canvas.height) {
+                var Button = 0;
+                var Delta = 0;
+                if (Action == obj.KeyAction.UP || Action == obj.KeyAction.DOWN) {
+                    if (event.which) { ((event.which == 1) ? (Button = obj.MouseButton.LEFT) : ((event.which == 2) ? (Button = obj.MouseButton.MIDDLE) : (Button = obj.MouseButton.RIGHT))); }
+                    else if (event.button) { ((event.button == 0) ? (Button = obj.MouseButton.LEFT) : ((event.button == 1) ? (Button = obj.MouseButton.MIDDLE) : (Button = obj.MouseButton.RIGHT))); }
+                }
+                else if (Action == obj.KeyAction.SCROLL) {
+                    if (event.detail) { Delta = (-1 * (event.detail * 120)); } else if (event.wheelDelta) { Delta = (event.wheelDelta * 3); }
+                }
+
+                // Swap mouse buttons if needed
+                if (obj.SwapMouse === true) {
+                    if (Button == obj.MouseButton.LEFT) { Button = obj.MouseButton.RIGHT; }
+                    else if (Button == obj.MouseButton.RIGHT) { Button = obj.MouseButton.LEFT; }
+                }
+
+                // Reverse mouse wheel if needed
+                if (obj.ReverseMouseWheel) { Delta = -1 * Delta; }
+
+                var MouseMsg = "";
+                if (Action == obj.KeyAction.DBLCLICK) {
+                    MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0A, 0x00, 0x88, ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF));
+                } else if (Action == obj.KeyAction.SCROLL) {
+                    var deltaHigh = 0, deltaLow = 0;
+                    if (Delta < 0) { deltaHigh = (255 - (Math.abs(Delta) >> 8)); deltaLow = (255 - (Math.abs(Delta) & 0xFF)); } else { deltaHigh = (Delta >> 8); deltaLow = (Delta & 0xFF); }
+                    MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0C, 0x00, 0x00, ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF), deltaHigh, deltaLow);
+                } else {
+                    MouseMsg = String.fromCharCode(0x00, obj.InputType.MOUSE, 0x00, 0x0A, 0x00, ((Action == obj.KeyAction.DOWN) ? Button : ((Button * 2) & 0xFF)), ((X / 256) & 0xFF), (X & 0xFF), ((Y / 256) & 0xFF), (Y & 0xFF));
+                }
+
+                if (obj.Action == obj.KeyAction.NONE) {
+                    if (obj.Alternate == 0 || obj.ipad) { obj.send(MouseMsg); obj.Alternate = 1; } else { obj.Alternate = 0; }
+                } else {
+                    obj.send(MouseMsg);
+                }
+            }
+        }
+    }
+
+    obj.GetDisplayNumbers = function () { obj.send(String.fromCharCode(0x00, 0x0B, 0x00, 0x04)); } // Get Terminal display
+    obj.SetDisplay = function (number) { /*console.log('Set display', number);*/ obj.send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
+    obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
+    obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
+
+    obj.onResize = function () {
+        if (obj.ScreenWidth == 0 || obj.ScreenHeight == 0) return;
+        if ((obj.Canvas.canvas.width == obj.ScreenWidth) && (obj.Canvas.canvas.height == obj.ScreenHeight)) return;
+        if (obj.FirstDraw) {
+            obj.Canvas.canvas.width = obj.ScreenWidth;
+            obj.Canvas.canvas.height = obj.ScreenHeight;
+            obj.Canvas.fillRect(0, 0, obj.ScreenWidth, obj.ScreenHeight);
+            if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
+        }
+        obj.FirstDraw = false;
+        if (obj.debugmode > 1) { console.log("onResize: " + obj.ScreenWidth + " x " + obj.ScreenHeight); }
+    }
+
+    obj.xxMouseInputGrab = false;
+    obj.xxKeyInputGrab = false;
+    obj.xxMouseMove = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.NONE, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxMouseUp = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.UP, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxMouseDown = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.DOWN, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxMouseDblClick = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.DBLCLICK, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxDOMMouseScroll = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
+    obj.xxMouseWheel = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
+    obj.xxKeyUp = function (e) {
+        if ((e.key != 'Dead') && (obj.State == 3)) {
+            if ((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && (obj.remoteKeyMap == false)) {
+                obj.SendKeyUnicode(obj.KeyAction.UP, e.key.charCodeAt(0));
+            } else {
+                obj.SendKeyMsg(obj.KeyAction.UP, e);
+            }
+        }
+        if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
+    }
+    obj.xxKeyDown = function (e) {
+        if ((e.key != 'Dead') && (obj.State == 3)) {
+            if (!((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && (obj.remoteKeyMap == false))) {
+                obj.SendKeyMsg(obj.KeyAction.DOWN, e);
+                if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
+            }
+        }
+    }
+    obj.xxKeyPress = function (e) {
+        if ((e.key != 'Dead') && (obj.State == 3)) {
+            if ((typeof e.key == 'string') && (e.key.length == 1) && (e.ctrlKey != true) && (e.altKey != true) && (obj.remoteKeyMap == false)) {
+                obj.SendKeyUnicode(obj.KeyAction.DOWN, e.key.charCodeAt(0));
+            } // else { obj.SendKeyMsg(obj.KeyAction.DOWN, e); }
+        }
+        if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false;
+    }
+
+    // Key handlers
+    obj.handleKeys = function (e) {
+        //console.log('keypress', e.code, e.key, e.keyCode, (e.key.length == 1) ? e.key.charCodeAt(0) : 0);
+        if (obj.stopInput == true || desktop.State != 3) return false;
+        return obj.xxKeyPress(e);
+    }
+    obj.handleKeyUp = function (e) {
+        //console.log('keyup', e.code, e.key, e.keyCode, (e.key.length == 1)?e.key.charCodeAt(0):0);
+        if (obj.stopInput == true || desktop.State != 3) return false;
+        if (obj.firstUpKeys.length < 5) {
+            obj.firstUpKeys.push(e.keyCode);
+            if ((obj.firstUpKeys.length == 5)) { var j = obj.firstUpKeys.join(','); if ((j == '16,17,91,91,16') || (j == '16,17,18,91,92')) { obj.stopInput = true; } }
+        }
+        return obj.xxKeyUp(e);
+    }
+    obj.handleKeyDown = function (e) {
+        //console.log('keydown', e.code, e.key, e.keyCode, (e.key.length == 1) ? e.key.charCodeAt(0) : 0);
+        if (obj.stopInput == true || desktop.State != 3) return false;
+        return obj.xxKeyDown(e);
+    }
+
+    // Release the CTRL, ALT, SHIFT keys if they are pressed.
+    obj.handleReleaseKeys = function () {
+        var p = JSON.parse(JSON.stringify(obj.pressedKeys)); // Clone the pressed array
+        for (var i in p) { obj.SendKeyMsgKC(obj.KeyAction.UP, p[i]); } // Release all keys
+    }
+
+    // Mouse handlers
+    obj.mousedblclick = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseDblClick(e); }
+    obj.mousedown = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseDown(e); }
+    obj.mouseup = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseUp(e); }
+    obj.mousemove = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseMove(e); }
+    obj.mousewheel = function (e) { if (obj.stopInput == true) return false; return obj.xxMouseWheel(e); }
+
+    obj.xxMsTouchEvent = function (evt) {
+        if (evt.originalEvent.pointerType == 4) return; // If this is a mouse pointer, ignore this event. Touch & pen are ok.
+        if (evt.preventDefault) evt.preventDefault();
+        if (evt.stopPropagation) evt.stopPropagation();
+        if (evt.type == 'MSPointerDown' || evt.type == 'MSPointerMove' || evt.type == 'MSPointerUp') {
+            var flags = 0;
+            var id = evt.originalEvent.pointerId % 256;
+            var X = evt.offsetX * (Canvas.canvas.width / obj.CanvasId.clientWidth);
+            var Y = evt.offsetY * (Canvas.canvas.height / obj.CanvasId.clientHeight);
+
+            if (evt.type == 'MSPointerDown') flags = 0x00010000 | 0x00000002 | 0x00000004; // POINTER_FLAG_DOWN
+            else if (evt.type == 'MSPointerMove') {
+                //if (obj.TouchArray[id] && MuchTheSame(obj.TouchArray[id].x, X) && MuchTheSame(obj.TouchArray[id].y, Y)) return;
+                flags = 0x00020000 | 0x00000002 | 0x00000004; // POINTER_FLAG_UPDATE
+            }
+            else if (evt.type == 'MSPointerUp') flags = 0x00040000; // POINTER_FLAG_UP
+
+            if (!obj.TouchArray[id]) obj.TouchArray[id] = { x: X, y : Y };
+            obj.SendTouchMsg2(id, flags)
+            if (evt.type == 'MSPointerUp') delete obj.TouchArray[id];
+        } else {
+            alert(evt.type);
+        }
+        return true;
+    }
+
+    obj.xxTouchStart = function (e) {
+        if (obj.State != 3) return;
+        if (e.preventDefault) e.preventDefault();
+        if (obj.touchenabled == 0 || obj.touchenabled == 1) {
+            if (e.originalEvent.touches.length > 1) return;
+            var t = e.originalEvent.touches[0];
+            e.which = 1;
+            obj.LastX = e.pageX = t.pageX;
+            obj.LastY = e.pageY = t.pageY;
+            obj.SendMouseMsg(KeyAction.DOWN, e);
+        } else {
+            var Offsets = obj.GetPositionOfControl(Canvas.canvas);
+            for (var i in e.originalEvent.changedTouches) {
+                if (!e.originalEvent.changedTouches[i].identifier) continue;
+                var id = e.originalEvent.changedTouches[i].identifier % 256;
+                if (!obj.TouchArray[id]) { obj.TouchArray[id] = { x: (e.originalEvent.touches[i].pageX - Offsets[0]) * (Canvas.canvas.width / obj.CanvasId.clientWidth), y: (e.originalEvent.touches[i].pageY - Offsets[1]) * (Canvas.canvas.height / obj.CanvasId.clientHeight), f: 1 }; }
+            }
+            if (Object.keys(obj.TouchArray).length > 0 && touchtimer == null) { obj.touchtimer = setInterval(function () { obj.SendTouchMsg2(256, 0); }, 50); }
+        }
+    }
+
+    obj.xxTouchMove = function (e) {
+        if (obj.State != 3) return;
+        if (e.preventDefault) e.preventDefault();
+        if (obj.touchenabled == 0 || obj.touchenabled == 1) {
+            if (e.originalEvent.touches.length > 1) return;
+            var t = e.originalEvent.touches[0];
+            e.which = 1;
+            obj.LastX = e.pageX = t.pageX;
+            obj.LastY = e.pageY = t.pageY;
+            obj.SendMouseMsg(obj.KeyAction.NONE, e);
+        } else {
+            var Offsets = obj.GetPositionOfControl(Canvas.canvas);
+            for (var i in e.originalEvent.changedTouches) {
+                if (!e.originalEvent.changedTouches[i].identifier) continue;
+                var id = e.originalEvent.changedTouches[i].identifier % 256;
+                if (obj.TouchArray[id]) {
+                    obj.TouchArray[id].x = (e.originalEvent.touches[i].pageX - Offsets[0]) * (obj.Canvas.canvas.width / obj.CanvasId.clientWidth);
+                    obj.TouchArray[id].y = (e.originalEvent.touches[i].pageY - Offsets[1]) * (obj.Canvas.canvas.height / obj.CanvasId.clientHeight);
+                }
+            }
+        }
+    }
+
+    obj.xxTouchEnd = function (e) {
+        if (obj.State != 3) return;
+        if (e.preventDefault) e.preventDefault();
+        if (obj.touchenabled == 0 || obj.touchenabled == 1) {
+            if (e.originalEvent.touches.length > 1) return;
+            e.which = 1;
+            e.pageX = LastX;
+            e.pageY = LastY;
+            obj.SendMouseMsg(KeyAction.UP, e);
+        } else {
+            for (var i in e.originalEvent.changedTouches) {
+                if (!e.originalEvent.changedTouches[i].identifier) continue;
+                var id = e.originalEvent.changedTouches[i].identifier % 256;
+                if (obj.TouchArray[id]) obj.TouchArray[id].f = 2;
+            }
+        }
+    }
+
+    obj.GrabMouseInput = function () {
+        if (obj.xxMouseInputGrab == true) return;
+        var c = obj.CanvasId;
+        c.onmousemove = obj.xxMouseMove;
+        c.onmouseup = obj.xxMouseUp;
+        c.onmousedown = obj.xxMouseDown;
+        c.touchstart = obj.xxTouchStart;
+        c.touchmove = obj.xxTouchMove;
+        c.touchend = obj.xxTouchEnd;
+        c.MSPointerDown = obj.xxMsTouchEvent;
+        c.MSPointerMove = obj.xxMsTouchEvent;
+        c.MSPointerUp = obj.xxMsTouchEvent;
+        if (navigator.userAgent.match(/mozilla/i)) c.DOMMouseScroll = obj.xxDOMMouseScroll; else c.onmousewheel = obj.xxMouseWheel;
+        obj.xxMouseInputGrab = true;
+    }
+
+    obj.UnGrabMouseInput = function () {
+        if (obj.xxMouseInputGrab == false) return;
+        var c = obj.CanvasId;
+        c.onmousemove = null;
+        c.onmouseup = null;
+        c.onmousedown = null;
+        c.touchstart = null;
+        c.touchmove = null;
+        c.touchend = null;
+        c.MSPointerDown = null;
+        c.MSPointerMove = null;
+        c.MSPointerUp = null;
+        if (navigator.userAgent.match(/mozilla/i)) c.DOMMouseScroll = null; else c.onmousewheel = null;
+        obj.xxMouseInputGrab = false;
+    }
+
+    obj.GrabKeyInput = function () {
+        if (obj.xxKeyInputGrab == true) return;
+        document.onkeyup = obj.xxKeyUp;
+        document.onkeydown = obj.xxKeyDown;
+        document.onkeypress = obj.xxKeyPress;c
+        obj.xxKeyInputGrab = true;
+    }
+
+    obj.UnGrabKeyInput = function () {
+        if (obj.xxKeyInputGrab == false) return;
+        document.onkeyup = null;
+        document.onkeydown = null;
+        document.onkeypress = null;
+        obj.xxKeyInputGrab = false;
+    }
+
+    obj.GetPositionOfControl = function (Control) {
+        var Position = Array(2);
+        Position[0] = Position[1] = 0;
+        while (Control) { Position[0] += Control.offsetLeft; Position[1] += Control.offsetTop; Control = Control.offsetParent; }
+        return Position;
+    }
+
+    obj.crotX = function (x, y) {
+        if (obj.rotation == 0) return x;
+        if (obj.rotation == 1) return y;
+        if (obj.rotation == 2) return obj.Canvas.canvas.width - x;
+        if (obj.rotation == 3) return obj.Canvas.canvas.height - y;
+    }
+
+    obj.crotY = function (x, y) {
+        if (obj.rotation == 0) return y;
+        if (obj.rotation == 1) return obj.Canvas.canvas.width - x;
+        if (obj.rotation == 2) return obj.Canvas.canvas.height - y;
+        if (obj.rotation == 3) return x;
+    }
+
+    obj.rotX = function (x, y) {
+        if (obj.rotation == 0 || obj.rotation == 1) return x;
+        if (obj.rotation == 2) return x - obj.Canvas.canvas.width;
+        if (obj.rotation == 3) return x - obj.Canvas.canvas.height;
+    }
+
+    obj.rotY = function (x, y) {
+        if (obj.rotation == 0 || obj.rotation == 3) return y;
+        if (obj.rotation == 1) return y - obj.Canvas.canvas.width;
+        if (obj.rotation == 2) return y - obj.Canvas.canvas.height;
+    }
+
+    obj.tcanvas = null;
+    obj.setRotation = function (x) {
+        while (x < 0) { x += 4; }
+        var newrotation = x % 4;
+        if (newrotation == obj.rotation) return true;
+        var rw = obj.Canvas.canvas.width;
+        var rh = obj.Canvas.canvas.height;
+        if (obj.rotation == 1 || obj.rotation == 3) { rw = obj.Canvas.canvas.height; rh = obj.Canvas.canvas.width; }
+
+        // Copy the canvas, put it back in the correct direction
+        if (obj.tcanvas == null) obj.tcanvas = document.createElement('canvas');
+        var tcanvasctx = obj.tcanvas.getContext('2d');
+        tcanvasctx.setTransform(1, 0, 0, 1, 0, 0);
+        tcanvasctx.canvas.width = rw;
+        tcanvasctx.canvas.height = rh;
+        tcanvasctx.rotate((obj.rotation * -90) * Math.PI / 180);
+        if (obj.rotation == 0) tcanvasctx.drawImage(obj.Canvas.canvas, 0, 0);
+        if (obj.rotation == 1) tcanvasctx.drawImage(obj.Canvas.canvas, -obj.Canvas.canvas.width, 0);
+        if (obj.rotation == 2) tcanvasctx.drawImage(obj.Canvas.canvas, -obj.Canvas.canvas.width, -obj.Canvas.canvas.height);
+        if (obj.rotation == 3) tcanvasctx.drawImage(obj.Canvas.canvas, 0, -obj.Canvas.canvas.height);
+
+        // Change the size and orientation and copy the canvas back into the rotation
+        if (obj.rotation == 0 || obj.rotation == 2) { obj.Canvas.canvas.height = rw; obj.Canvas.canvas.width = rh; }
+        if (obj.rotation == 1 || obj.rotation == 3) { obj.Canvas.canvas.height = rh; obj.Canvas.canvas.width = rw; }
+        obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
+        obj.Canvas.rotate((newrotation * 90) * Math.PI / 180);
+        obj.rotation = newrotation;
+        obj.Canvas.drawImage(obj.tcanvas, obj.rotX(0, 0), obj.rotY(0, 0));
+
+        obj.ScreenWidth = obj.Canvas.canvas.width;
+        obj.ScreenHeight = obj.Canvas.canvas.height;
+        if (obj.onScreenSizeChange != null) { console.log('s4', obj.ScreenWidth, obj.ScreenHeight); obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
+        return true;
+    }
+
+    obj.StartRecording = function () {
+        if (obj.recordedData != null) return;
+        // Take a screen shot and save it to file
+        obj.CanvasId['toBlob'](function (blob) {
+            var fileReader = new FileReader();
+            fileReader.readAsArrayBuffer(blob);
+            fileReader.onload = function (event) {
+                // This is an ArrayBuffer, convert it to a string array
+                var binary = '', bytes = new Uint8Array(fileReader.result), length = bytes.byteLength;
+                for (var i = 0; i < length; i++) { binary += String.fromCharCode(bytes[i]); }
+                obj.recordedData = [];
+                obj.recordedStart = Date.now();
+                obj.recordedSize = 0;
+                obj.recordedData.push(recordingEntry(1, 0, JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, time: new Date().toLocaleString(), protocol: 2 }))); // Metadata (nodeid: obj.nodeid)
+                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(7) + obj.shortToStr(8) + obj.shortToStr(obj.ScreenWidth) + obj.shortToStr(obj.ScreenHeight))); // Screen width and height
+                // Save a screenshot
+                var cmdlen = (8 + binary.length);
+                if (cmdlen > 65000) {
+                    // Jumbo Packet
+                    obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdlen) + obj.shortToStr(3) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + binary));
+                } else {
+                    // Normal packet
+                    obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(3) + obj.shortToStr(cmdlen) + obj.shortToStr(0) + obj.shortToStr(0) + binary));
+                }
+            };
+        });
+    }
+
+    obj.StopRecording = function () {
+        if (obj.recordedData == null) return;
+        var r = obj.recordedData;
+        r.push(recordingEntry(3, 0, 'MeshCentralMCREC'));
+        delete obj.recordedData;
+        delete obj.recordedStart;
+        delete obj.recordedSize;
+        return r;
+    }
+
+    function recordingEntry(type, flags, data) {
+        // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+        // Type (1 = Header, 2 = Network Data), Flags (1 = Binary, 2 = User), Size (4 bytes), Time (8 bytes)
+        var now = Date.now();
+        if (typeof data == 'number') {
+            obj.recordedSize += data;
+            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data) + obj.intToStr(now >> 32) + obj.intToStr(now & 32);
+        } else {
+            obj.recordedSize += data.length;
+            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data.length) + obj.intToStr(now >> 32) + obj.intToStr(now & 32) + data;
+        }
+    }
+
+    // Private method
+    obj.MuchTheSame = function (a, b) { return (Math.abs(a - b) < 4); }
+    obj.Debug = function (msg) { console.log(msg); }
+    obj.getIEVersion = function () { var r = -1; if (navigator.appName == 'Microsoft Internet Explorer') { var ua = navigator.userAgent; var re = new RegExp("MSIE ([0-9]{1,}[.0-9]{0,})"); if (re.exec(ua) != null) r = parseFloat(RegExp.$1); } return r; }
+    obj.haltEvent = function (e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+
+    return obj;
+}
