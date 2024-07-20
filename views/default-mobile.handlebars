@@ -763,17 +763,19 @@
                                         <div style="margin-top:5px"><a href=# onclick="account_showLocalizationSettings()">Localization Settings</a></div>
                                         <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a> <span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div>
                                         <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a> <span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div>
-                                        <div style="margin-top:5px"><a href=# onclick="return account_viewPreviousLogins()">View previous logins</a></div>
                                     </div>
                                 </div>
                                 <div id="p2AccountActions" style="display:none">
                                     <p><strong>Account Actions</strong></p>
                                     <div style="margin-left:9px;margin-bottom:8px">
+                                        <div style="margin-top:5px"><span id="viewPreviousLogins"><a onclick="return account_viewPreviousLogins()" style="cursor:pointer">View previous logins</a></span></div>
                                         <div style="margin-top:5px"><span id="managePhoneNumber2" style="display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a></span></div>
                                         <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
-                                        <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
-                                        <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
-                                        <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
+                                        <span id="p2AccountPassActions">
+                                            <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
+                                            <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
+                                            <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
+                                        </span>
                                         <div style="margin-top:5px" id="setDarkModeLink"><a onclick="toggleNightMode()" style="cursor:pointer">Set dark mode</a></div>
                                         <div style="margin-top:5px"><a onclick="showNotes(false)" style="cursor:pointer">Personal notes</a></div>
                                     </div>
@@ -1484,7 +1486,8 @@
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             //QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
-            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false));
+            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null));
+            QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
 
             // On the mobile app, don't allow group creation (for now).
             QV('p3createMeshLink1', false);
