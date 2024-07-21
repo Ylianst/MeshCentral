@@ -4967,7 +4967,7 @@
 
         function closeDeviceHelpRequest(appid, nodeid) {
             setDialogMode(0);
-            meshserver.send({ action: 'msg', type: 'localapp', nodeid: decodeURIComponent(nodeid), appid: decodeURIComponent(appid), value: { cmd: "cancelhelp" } });
+            meshserver.send({ action: 'msg', type: 'localapp', nodeid: decodeURIComponent(nodeid), appid: decodeURIComponent(appid), value: { cmd: 'cancelhelp' } });
         }
 
         // Show currently active sessions on this device
