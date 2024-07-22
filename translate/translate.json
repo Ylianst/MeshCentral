@@ -25714,14 +25714,6 @@
       ]
     },
     {
-      "ca": "Mostra un quadre de missatge al dispositiu remot",
-      "en": "Display a message box on the remote device",
-      "nl": "Geef een berichtvenster weer op het externe apparaat.",
-      "xloc": [
-        "default.handlebars->47->1165"
-      ]
-    },
-    {
       "bs": "Prikažite okvir sa porukom na udaljenom uređaju.",
       "ca": "Mostra un quadre de missatge al dispositiu remot.",
       "cs": "Zobrazte okno se zprávou na vzdáleném zařízení.",
@@ -25744,7 +25736,10 @@
       "sv": "Visa en meddelanderuta på fjärrenheten.",
       "tr": "Uzak cihazda bir mesaj kutusu görüntüleyin.",
       "zh-chs": "在远程设备上显示一个消息框。",
-      "zh-cht": "在遠程裝置上顯示一個訊息框。"
+      "zh-cht": "在遠程裝置上顯示一個訊息框。",
+      "xloc": [
+        "default.handlebars->47->1165"
+      ]
     },
     {
       "bs": "Prikažite obavještenje na udaljenom računaru",
