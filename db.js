@@ -136,7 +136,7 @@ module.exports.CreateDB = function (parent, func) {
         for (var i in parent.config.domains) {
             if (typeof parent.config.domains[i].autoremoveinactivedevices == 'number') {
                 var v = parent.config.domains[i].autoremoveinactivedevices;
-                if ((v > 1) && (v <= 2000)) {
+                if ((v => 1) && (v <= 2000)) {
                     if (v < minRemoveInactiveDevice) { minRemoveInactiveDevice = v; }
                     removeInactiveDevicesPerDomain[i] = v;
                     minRemoveInactiveDevicesPerDomain[i] = v;
@@ -148,7 +148,7 @@ module.exports.CreateDB = function (parent, func) {
         for (var i in parent.webserver.meshes) {
             if (typeof parent.webserver.meshes[i].expireDevs == 'number') {
                 var v = parent.webserver.meshes[i].expireDevs;
-                if ((v > 1) && (v <= 2000)) {
+                if ((v => 1) && (v <= 2000)) {
                     if (v < minRemoveInactiveDevice) { minRemoveInactiveDevice = v; }
                     if ((minRemoveInactiveDevicesPerDomain[parent.webserver.meshes[i].domain] == null) || (minRemoveInactiveDevicesPerDomain[parent.webserver.meshes[i].domain] > v)) {
                         minRemoveInactiveDevicesPerDomain[parent.webserver.meshes[i].domain] = v;
