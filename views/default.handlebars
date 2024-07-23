@@ -1,5 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
@@ -8,8 +10,13 @@
     <meta name="robots" content="noindex,nofollow">
     <link rel="manifest" href="{{{domainurl}}}manifest.json">
     <link type="image/x-icon" href="{{{domainurl}}}favicon.ico" rel="shortcut icon" />
-    <link href="styles/fontawesome/all.min.css" rel="stylesheet" title="CSS">
+    <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
     <link id="theme-stylesheet" href="styles/bootstrap.min.css" rel="stylesheet" title="CSS">
+    <link href="styles/fontawesome/all.min.css" rel="stylesheet" title="CSS">
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -47,111 +54,6 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <title>{{{title}}}</title>
-    <style>
-        body {
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .top-bar {
-            width: 100%;
-            background-color: #113962;
-            padding: 10px 20px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-        }
-        .nav-header h1 {
-            color: #c8c8c8;
-        }
-
-        .sidebar {
-            /* width: 250px; */
-            width: 150px;
-            background-color: #113962;
-            height: calc(100vh - 50px);
-            position: fixed;
-            top: 75px;
-            /* border-right: 1px solid #e0e0e0; */
-            padding-top: 20px;
-        }
-
-        .main-content {
-            margin-left: 70px;
-            padding: 20px;
-            padding-top: 90px;
-            background-color: #fff;
-            width: calc(100% - 250px);
-            /* padding-top: 60px; */
-            /* height: 100vh; */
-
-
-
-            display: flex;
-            /* flex-direction: column; */
-            min-height: 95vh;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 150px;
-            width: 150px;
-        }
-
-        .chart-text {
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 10px;
-        }
-
-        .server-icon {
-            font-size: 48px;
-            color: #113962;
-        }
-
-        .icon {
-            font-size: 24px;
-            margin-right: 10px;
-        }
-
-        .card-body .d-flex {
-            align-items: center;
-        }
-
-        .nav-link.active {
-            /* background-color: #e0e0e0; */
-            background-color: #ffffff;
-            color: #113962 !important;
-        }
-
-        td,
-        th {
-            height: 25px !important;
-            max-height: 35px !important;
-            min-height: 35px !important;
-        }
-
-
-        .table .email {
-            width: 30%;
-        }
-
-        .table .permissions {
-            width: 15%;
-        }
-
-        .table .actions {
-            width: 10%;
-        }
-
-        .nav-link .fas {
-            font-size: 64px;
-            text-align: center;
-        }
-    </style>
 </head>
 
 <body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px"
@@ -259,688 +161,1948 @@
     </div>
     -->
     <!-- main page -->
-    <div id="container">
-        <div class="top-bar d-flex justify-content-between">
-            <div class="nav-header">
-                <h1>MeshCentral</h1>
+    <div id=container>
+        <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
+        <div id=masthead class=noselect>
+            <div style="float:left">{{{titlehtml}}}</div>
+            <div class="title" onclick="go(1,event)">{{{title1}}}</div>
+            <div class="title2">{{{title2}}}</div>
+            <div style="float:right">
+                <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;"
+                    title="Click to view current notifications">0</div>
             </div>
-            <div class="user-info d-flex">
-                <span>foellmann@wus-technik.com</span>
-                <a href="#" class="ms-3 text-white">Logout</a>
-            </div>
+            <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
+                    style="color:yellow"></span></p>
         </div>
-        
-        <div class="sidebar d-flex flex-column">
+        <div class="sidebar d-flex flex-column" id="page_leftbar">
+            <div style="height:16px"></div>
             <nav class="nav flex-column">
-                <a class="nav-link active text-center text-white" href="#" data-target="general"><i
+                <a class="nav-link active text-center text-white" href="#" data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i
                         class="fas fa-desktop me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="account"><i class="fas fa-user me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="events"><i
+                <a class="nav-link text-center text-white" href="#" data-target="account" onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i class="fas fa-user me-2"></i></a>
+                <a class="nav-link text-center text-white" href="#" data-target="events" onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i
                         class="fas fa-calendar-alt me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="files"><i class="fas fa-file me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="users"><i class="fas fa-users me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="server"><i class="fas fa-server me-2"></i></a>
+                <a class="nav-link text-center text-white" href="#" data-target="files" onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i class="fas fa-file me-2"></i></a>
+                <a class="nav-link text-center text-white" href="#" data-target="users" onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i class="fas fa-users me-2"></i></a>
+                <a class="nav-link text-center text-white" href="#" data-target="server" onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i class="fas fa-server me-2"></i></a>
             </nav>
-            <div class="mt-auto mb-3 me-3 ms-3">
-                <label for="theme-switcher" class="form-label text-white">Select a theme</label>
-                <select id="theme-switcher" class="form-select mb-3" aria-label="Select option">
-                    <option selected>Choose an option...</option>
-                    <option value="default">Default</option>
-                    <option value="cerulean">Cerulean</option>
-                    <option value="cosmo">Cosmo</option>
-                    <option value="cyborg">Cyborg</option>
-                    <option value="morph">Morph</option>
-                </select>
+        </div>
+        <div id=topbar class=noselect>
+            <div>
+                <div style="position:relative">
+                    <span id=logoutControlSpan2></span>
+                    <div tabindex=0 id=uiMenuButton title="User interface selection"
+                        onclick="showUserInterfaceSelectMenu()"
+                        onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
+                        &diams;
+                        <div id=uiMenu style="display:none">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <div tabindex=0 id=uiViewButton1 class=uiSelector
+                                            onclick=userInterfaceSelectMenu(1) title="Left bar interface"
+                                            onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(1)">
+                                            <div class="uiSelector1"></div>
+                                        </div>
+                                        <div tabindex=0 id=uiViewButton2 class=uiSelector
+                                            onclick=userInterfaceSelectMenu(2) title="Top bar interface"
+                                            onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(2)">
+                                            <div class="uiSelector2"></div>
+                                        </div>
+                                        <div tabindex=0 id=uiViewButton3 class=uiSelector
+                                            onclick=userInterfaceSelectMenu(3) title="Fixed width interface"
+                                            onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(3)">
+                                            <div class="uiSelector3"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div tabindex=0 id=uiViewButton6 class=uiSelector onclick="showNotes(false)"
+                                            title="Personal Notes"
+                                            onkeypress="if (event.key == 'Enter') showNotes(false)">
+                                            <div class="uiSelector6"></div>
+                                        </div>
+                                        <div tabindex=0 id=uiViewButton4 class=uiSelector onclick=toggleNightMode()
+                                            title="Toggle night mode"
+                                            onkeypress="if (event.key == 'Enter') toggleNightMode()">
+                                            <div class="uiSelector4"></div>
+                                        </div>
+                                        <div tabindex=0 id=uiViewButton5 class=uiSelector onclick=toggleFooterBarMode()
+                                            title="Toggle footer bar"
+                                            onkeypress="if (event.key == 'Enter') toggleFooterBarMode()">
+                                            <div class="uiSelector5"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
+                        <tr>
+                            <td tabindex=0 id=MainMenuMyDevices class="topbar_td style3x" onmouseup=go(1,event)
+                                onkeypress="if (event.key == 'Enter') go(1)">My Devices</td>
+                            <td tabindex=0 id=MainMenuMyAccount class="topbar_td style3x" onmouseup=go(2,event)
+                                onkeypress="if (event.key == 'Enter') go(2)">My Account</td>
+                            <td tabindex=0 id=MainMenuMyEvents class="topbar_td style3x" onmouseup=go(3,event)
+                                onkeypress="if (event.key == 'Enter') go(3)">My Events</td>
+                            <td tabindex=0 id=MainMenuMyFiles class="topbar_td style3x" onmouseup=go(5,event)
+                                onkeypress="if (event.key == 'Enter') go(5)">My Files</td>
+                            <td tabindex=0 id=MainMenuMyUsers class="topbar_td style3x" onmouseup=go(4,event)
+                                onkeypress="if (event.key == 'Enter') go(4)">My Users</td>
+                            <td tabindex=0 id=MainMenuMyServer class="topbar_td style3x" onmouseup=go(6,event)
+                                onkeypress="if (event.key == 'Enter') go(6)">My Server</td>
+                            <td class="topbar_td_end style3">&nbsp;</td>
+                        </tr>
+                    </table>
+                    <div id=MainSubMenuSpan style="display:none">
+                        <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event)
+                                    onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event)
+                                    onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event)
+                                    onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event)
+                                    onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event)
+                                    onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event)
+                                    onkeypress="if (event.key == 'Enter') go(17)">Details</td>
+                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event)
+                                    onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
+                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
+                                    onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
+                                    onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=MeshSubMenuSpan style="display:none">
+                        <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=MeshGeneral class="topbar_td style3x" onmouseup=go(20,event)
+                                    onkeypress="if (event.key == 'Enter') go(20)">General</td>
+                                <td tabindex=0 id=MeshSummary class="topbar_td style3x" onmouseup=go(21,event)
+                                    onkeypress="if (event.key == 'Enter') go(21)">Summary</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=EventsSubMenuSpan style="display:none">
+                        <table id=EventsSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event)
+                                    onkeypress="if (event.key == 'Enter') go(3)">Events</td>
+                                <td tabindex=0 id=EventsReport class="topbar_td style3x" onmouseup=go(60,event)
+                                    onkeypress="if (event.key == 'Enter') go(60)">Reports</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=UserSubMenuSpan style="display:none">
+                        <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=UserGeneral class="topbar_td style3x" onmouseup=go(30,event)
+                                    onkeypress="if (event.key == 'Enter') go(30)">General</td>
+                                <td tabindex=0 id=UserEvents class="topbar_td style3x" onmouseup=go(31,event)
+                                    onkeypress="if (event.key == 'Enter') go(31)">Events</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=UsersSubMenuSpan style="display:none">
+                        <table id=UsersSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=UsersGeneral class="topbar_td style3x" onmouseup=go(4,event)
+                                    onkeypress="if (event.key == 'Enter') go(4)">Users</td>
+                                <td tabindex=0 id=UsersGroups class="topbar_td style3x" onmouseup=go(50,event)
+                                    onkeypress="if (event.key == 'Enter') go(50)">Groups</td>
+                                <td tabindex=0 id=UsersRecordings class="topbar_td style3x" onmouseup=go(52,event)
+                                    onkeypress="if (event.key == 'Enter') go(52)">Recordings</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=ServerSubMenuSpan style="display:none">
+                        <table id=ServerSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=ServerGeneral class="topbar_td style3x" onmouseup=go(6,event)
+                                    onkeypress="if (event.key == 'Enter') go(6)">General</td>
+                                <td tabindex=0 id=ServerStats class="topbar_td style3x" onmouseup=go(40,event)
+                                    onkeypress="if (event.key == 'Enter') go(40)">Stats</td>
+                                <td tabindex=0 id=ServerConsole class="topbar_td style3x" onmouseup=go(115,event)
+                                    onkeypress="if (event.key == 'Enter') go(115)">Console</td>
+                                <td tabindex=0 id=ServerTrace class="topbar_td style3x" onmouseup=go(41,event)
+                                    onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
+                                <td tabindex=0 id=ServerPlugins class="topbar_td style3x" onmouseup=go(42,event)
+                                    onkeypress="if (event.key == 'Enter') go(42)">Plugins</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=UserDummyMenuSpan>
+                        <table id=UserDummyMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td class=style3 style="">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <div class="main-content">
-            <div id="general-content" class="content container">
-                <h3>My Devices</h3>
-                <div class="d-flex align-items-center mb-3">
-                    <select class="form-select me-2" aria-label="Select All" style="width: auto;">
-                        <option selected>Select All</option>
-                        <!-- Add more options as needed -->
-                    </select>
-                    <button class="btn btn-secondary me-2">Group Action</button>
-                    <input type="text" class="form-control me-2" style="width: auto;" placeholder="Filter">
-                    <select class="form-select me-2" style="width: auto;">
-                        <option selected>All</option>
-                        <!-- Add more options as needed -->
-                    </select>
-                    <input type="text" class="form-control" style="width: auto;" placeholder="OS Name">
-                </div>
-        
-                <div class="accordion" id="deviceGroups">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingHome">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseHome" aria-expanded="true" aria-controls="collapseHome">
-                                Home Group <a href="#" class="ms-2">Add Agent</a>
-                            </button>
-                        </h2>
-                        <div id="collapseHome" class="accordion-collapse collapse show" aria-labelledby="headingHome"
-                            data-bs-parent="#deviceGroups">
-                            <div class="accordion-body">
-                                No devices in this device group, <a href="#">add one.</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOffice">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseOffice" aria-expanded="true" aria-controls="collapseOffice">
-                                Office Group <a href="#" class="ms-2">Add Agent</a>
-                            </button>
-                        </h2>
-                        <div id="collapseOffice" class="accordion-collapse collapse show" aria-labelledby="headingOffice"
-                            data-bs-parent="#deviceGroups">
-                            <div class="accordion-body">
-                                No devices in this device group, <a href="#">add one.</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingSchool">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseSchool" aria-expanded="true" aria-controls="collapseSchool">
-                                School Group <a href="#" class="ms-2">Add Agent</a>
-                            </button>
-                        </h2>
-                        <div id="collapseSchool" class="accordion-collapse collapse show" aria-labelledby="headingSchool"
-                            data-bs-parent="#deviceGroups">
-                            <div class="accordion-body">
-                                No devices in this device group, <a href="#">add one.</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a href="#">Add Device Group</a> <a href="#">MeshCmd Router</a>
+        <div id="column_l">
+            <div id=p0 style="display:none">
+                <div id=p0message><span id=p0span>Server disconnected</span>, <href onclick=reload()
+                        style=cursor:pointer><u>click to reconnect</u></href>.</div>
             </div>
-            <div id="account-content" class="content container" style="display:none;">
-                <h3>My Account</h3>
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Account actions</h5>
-                        <ul class="list-unstyled">
-                            <li><a href="#">Enable web notifications</a></li>
-                            <li><a href="#">Localization Settings</a></li>
-                            <li><a href="#">Notification Settings</a></li>
-                            <li><a href="#">Change email address</a></li>
-                            <li><a href="#">Change password</a></li>
-                            <li><a href="#">Delete account</a></li>
-                            <li><a href="#">Create login token</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img src="https://via.placeholder.com/150" class="img-fluid rounded" alt="User Image">
-                        <a href="#" class="d-block mt-2">Change image</a>
-                    </div>
-                </div>
-        
-                <div class="mt-5">
-                    <h5>Device Groups - <a href="#">New</a></h5>
-                    <div class="d-flex justify-content-start flex-wrap">
-                        <div class="card m-2" style="width: 14rem;">
-                            <img src="https://via.placeholder.com/150" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Home Group</h5>
-                                <p class="card-text">Full Administrator</p>
-                            </div>
+            <div id=p1 style="display:none">
+                <div id="p1title">
+                    <div style="display:none" id="devListToolbarViewIcons">
+                        <div id=devViewPageState
+                            style="float:left;line-height:32px;height:32px;font-size:16px;display:none"></div>
+                        <div tabindex=0 id=devViewPageButton1 class=viewSelector onclick=onDeviceViewPageChange(1)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(1); }"
+                            title="Go to first page" style="display:none">
+                            <div class="viewSelector9"></div>
                         </div>
-                        <div class="card m-2" style="width: 14rem;">
-                            <img src="https://via.placeholder.com/150" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">School Group</h5>
-                                <p class="card-text">Full Administrator</p>
-                            </div>
+                        <div tabindex=0 id=devViewPageButton2 class=viewSelector onclick=onDeviceViewPageChange(2)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(2); }"
+                            title="Go to previous page" style="display:none">
+                            <div class="viewSelector10"></div>
                         </div>
-                        <div class="card m-2" style="width: 14rem;">
-                            <img src="https://via.placeholder.com/150" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">Office Group</h5>
-                                <p class="card-text">Full Administrator</p>
-                            </div>
+                        <div tabindex=0 id=devViewPageButton3 class=viewSelector onclick=onDeviceViewPageChange(3)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(3); }"
+                            title="Go to next page" style="display:none">
+                            <div class="viewSelector11"></div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div id="events-content" class="content container" style="display:none;">
-                <h3>My Events</h3>
-        
-                <div class="d-flex align-items-center mb-3">
-                    <input type="text" class="form-control me-2" style="width: auto;" placeholder="Filter">
-                    <select class="form-select me-2" style="width: auto;">
-                        <option selected>All Logs</option>
-                        <!-- Add more options as needed -->
-                    </select>
-                    <button class="btn btn-primary">Show</button>
-                    <select class="form-select ms-2" style="width: auto;">
-                        <option selected>Last 60</option>
-                        <!-- Add more options as needed -->
-                    </select>
-                </div>
-        
-                <div class="accordion" id="eventsAccordion">
-                    <!-- Event Group 21/07/2024 -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading20240721">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapse20240721" aria-expanded="true" aria-controls="collapse20240721">
-                                21/07/2024
-                            </button>
-                        </h2>
-                        <div id="collapse20240721" class="accordion-collapse collapse show" aria-labelledby="heading20240721"
-                            data-bs-parent="#eventsAccordion">
-                            <div class="accordion-body">
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-sign-in-alt me-2"></i>18:30:59 - <a href="#">admin</a> → Account
-                                        login from
-                                        ::1, Chrome/126.0.0.0, Mac OS/10.15.7</li>
-                                </ul>
-                            </div>
+                        <div tabindex=0 id=devViewPageButton4 class=viewSelector onclick=onDeviceViewPageChange(4)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(4); }"
+                            title="Go to last page" style="display:none;margin-right:12px">
+                            <div class="viewSelector8"></div>
+                        </div>
+                        <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns">
+                            <div class="viewSelector2"></div>
+                        </div>
+                        <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List">
+                            <div class="viewSelector1"></div>
+                        </div>
+                        <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops">
+                            <div class="viewSelector3"></div>
+                        </div>
+                        <div tabindex=0 id=devViewButton5 class=viewSelector onclick=onDeviceViewChange(5)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(5); }" title="Desktops">
+                            <div class="viewSelector7"></div>
+                        </div>
+                        <div tabindex=0 id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4)
+                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map"
+                            style="display:none">
+                            <div class="viewSelector4"></div>
                         </div>
                     </div>
-                    <!-- Event Group 18/07/2024 -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading20240718">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapse20240718" aria-expanded="true" aria-controls="collapse20240718">
-                                18/07/2024
-                            </button>
-                        </h2>
-                        <div id="collapse20240718" class="accordion-collapse collapse show" aria-labelledby="heading20240718"
-                            data-bs-parent="#eventsAccordion">
-                            <div class="accordion-body">
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-sign-in-alt me-2"></i>12:05:35 - <a href="#">admin</a> → Account
-                                        login from
-                                        ::1, Chrome/126.0.0.0, Mac OS/10.15.7</li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div>
+                        <h1>My Devices</h1>
                     </div>
                 </div>
-            </div>
-            <div id="files-content" class="content container" style="display:none;">
-                <h3>My Files</h3>
-                <div class="row">
-                    <div class="col-md-12 d-flex align-items-center">
-                        <button id="p5FolderUp" class="btn btn-outline-secondary me-2">Up</button>
-                        <button id="p5SelectAllButton" class="btn btn-outline-secondary me-2">Select All</button>
-                        <button id="p5RenameFileButton" class="btn btn-outline-secondary me-2">Rename</button>
-                        <button id="p5DeleteFileButton" class="btn btn-outline-secondary me-2">Delete</button>
-                        <button id="p5ViewFileButton" class="btn btn-outline-secondary me-2">Edit</button>
-                        <button id="p5NewFolderButton" class="btn btn-outline-secondary me-2">New Folder</button>
-                        <button id="p5UploadButton" class="btn btn-outline-secondary me-2">Upload</button>
-                        <button id="p5DownloadButton" class="btn btn-outline-secondary me-2">Download</button>
-                        <button id="p5CutButton" class="btn btn-outline-secondary me-2">Cut</button>
-                        <button id="p5CopyButton" class="btn btn-outline-secondary me-2">Copy</button>
-                        <button id="p5PasteButton" class="btn btn-outline-secondary me-2">Paste</button>
-                    </div>
-                </div>
-                <div class="row text-success">
-                    <div class="col-md-6 d-flex align-items-center">
-                        <a href="#" class="d-block">Root</a>
-                    </div>
-                    <div class="col-md-6 d-flex align-items-center">
-                        <div class="ms-auto">
-                            <select id="p5sortdropdown" class="form-select w-auto">
-                                <option value="1" selected="selected">Sort by name</option>
-                                <option value="2">Sort by size</option>
-                                <option value="3">Sort by date</option>
-                                <option value="4">Descend by name</option>
-                                <option value="5">Descend by size</option>
-                                <option value="6">Descend by date</option>
+                <table id="devListToolbarSpan" class="noselect">
+                    <tr>
+                        <td class=h1></td>
+                        <td id=devListToolbar class=style14 style="display:none">
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All"
+                                id="CollapseAllButton" src="images/icon-collapse.png" loading=lazy width=9 height=11
+                                onclick="cmexpandaction(2)" />
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All"
+                                id="ExpandAllButton" src="images/icon-expand.png" loading=lazy width=9 height=11
+                                onclick="cmexpandaction(1)" />
+                            <input type=button id=SelectAllButton onclick="selectallButtonFunction();"
+                                value="Select All" />&nbsp;
+                            <input type=button id=GroupActionButton disabled="disabled" value="Group Action"
+                                onclick=groupActionFunction() />&nbsp;
+                            <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);"
+                                style="display:none;margin-right:4px" value="Scroll To Top" />
+                            <input id=SearchInput type=search autocomplete=off placeholder=Filter
+                                onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event)
+                                onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0)
+                                title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any" />&nbsp;
+                            <span id=SearchInputClearButton style="display:none;position:relative"><img
+                                    src="images/x16.png" type="button" onclick="clearDeviceSearch()"
+                                    style="position:absolute;cursor:pointer;left:-18px;top:-8px"
+                                    srcset="images/x32.png 2x" /></span>
+                            <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
+                                <option value=0>All</option>
+                                <option value=1>Online</option>
+                                <option value=5>Offline</option>
+                                <option value=2>Sessions</option>
+                                <option value=3>Starred</option>
+                                <option value=4>Intel&reg; AMT</option>
+                                <option value=6>Help</option>
+                                <option value=7>Tagged</option>
+                                <option value=8>Untagged</option>
                             </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <table class="table table-borderless table-hover">
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="p5selectallcheckbox"></th>
-                                <th class="email text-secondary">Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="width: 2%;"><input type="checkbox" class="p5filecheckbox"></td>
-                                <td style="width: 98%;"><i class="fas fa-folder text-success"></i> <a href="#">Folder 1</a></td>
-                            </tr>
-                            <tr>
-                                <td style="width: 2%;"><input type="checkbox" class="p5filecheckbox"></td>
-                                <td style="width: 98%;"><i class="fas fa-folder text-success"></i> <a href="#">Folder 2</a></td>
-                            </tr>
-                            <tr>
-                                <td style="width: 2%;"><input type="checkbox" class="p5filecheckbox"></td>
-                                <td style="width: 98%;"><i class="fas fa-file text-secondary"></i> <a href="#">File 1</a></td>
-                            </tr>
-                        </tbody>
+                            <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span
+                                    title="Show devices operating system name">OS Name</span></label>
+                            <label style="display:none"><input type=checkbox id=OnlineCheckBox
+                                    onclick=onOnlineCheckBox(event) /><span
+                                    title="Only show devices that are online">Online</span></label>
+                            <span id="devsCustomUIBar"></span>
+                        </td>
+                        <td id=kvmListToolbar class=style14 style="display:none">
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All"
+                                id="CollapseAllButton2" src="images/icon-collapse.png" loading=lazy width=9 height=11
+                                onclick="cmexpandaction(2)" />
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All"
+                                id="ExpandAllButton2" src="images/icon-expand.png" loading=lazy width=9 height=11
+                                onclick="cmexpandaction(1)" />
+                            <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                            <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
+                            <label><input type="checkbox" id="autoConnectDesktopCheckbox"
+                                    onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
+                            <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
+                            <input id=KvmSearchInput type=search placeholder=Filter
+                                onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event)
+                                onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1)
+                                onblur=onSearchFocus(0) />&nbsp;
+                            <span id=KvmSearchInputClearButton style="display:none;position:relative"><img
+                                    src="images/x16.png" type="button" onclick="clearDeviceSearch()"
+                                    style="position:absolute;cursor:pointer;left:-18px;top:-8px"
+                                    srcset="images/x32.png 2x" /></span>
+                        </td>
+                        <td id=devMapToolbar class=style14 style="display:none">
+                            &nbsp;&nbsp;<input type=search id=mapSearchLocation placeholder="Search Location"
+                                onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
+                            <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
+                            <input type=button id=refreshmap title="Reset map view" value=Reset
+                                onclick=refreshMap(false,true) />
+                        </td>
+                        <td class="auto-style1" style=height:100%>
+                            <img style="display:none;cursor:pointer;margin-top:3px" id=devListToolbarSettings
+                                src="images/icon-gear.png" loading=lazy width=16 height=16
+                                onclick="onDeviceViewSettings()" />
+                            <div style="display:none" id=devListToolbarView>
+                                View
+                                <select id=viewselect onchange=onDeviceViewChange()>
+                                    <option value=1>Columns</option>
+                                    <option value=2>List</option>
+                                    <option value=3>Desktops Fixed Width</option>
+                                    <option id=viewselectmapoption value=4 style="display:none">Map</option>
+                                    <option value=5>Desktops</option>
+                                </select>
+                            </div>
+                            <div style="display:none" id=devListToolbarSort>
+                                Sort
+                                <select id=sortselect onchange=mainUpdate(6)>
+                                    <option>Group</option>
+                                    <option>Power</option>
+                                    <option>Device</option>
+                                    <option>Tags</option>
+                                    <option>Group-Tags</option>
+                                    <option>Last Seen</option>
+                                </select>
+                                &nbsp;
+                            </div>
+                            <div style="display:none" id=devListToolbarSize>
+                                Size
+                                <select id=sizeselect onchange=onDeviceViewChange()>
+                                    <option value=0>Small</option>
+                                    <option value=1>Medium</option>
+                                    <option value=2>Large</option>
+                                </select>
+                                &nbsp;
+                            </div>
+                        </td>
+                        <td class=h2></td>
+                    </tr>
+                </table>
+                <div id=NoMeshesPanel style="display:none">
+                    <table>
+                        <tr>
+                            <td valign="top" style="width:50px">
+                                <img src="images/info.png" loading="lazy" width="47" height="48" />
+                            </td>
+                            <td>
+                                <div id="getStarted1">To get started, <a href=#
+                                        onclick="return account_createMesh()"><strong>click here to create a device
+                                            group</strong></a>.</div>
+                                <div id="getStarted2">No device groups.</div>
+                            </td>
+                        </tr>
                     </table>
                 </div>
-            </div>
-            <div id="users-content" class="content container" style="display:none;">
-                <h3>My Users</h3>
-                <ul class="nav nav-tabs mb-3" id="myTabUsers" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general"
-                            type="button" role="tab" aria-controls="general" aria-selected="true">Users</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button"
-                            role="tab" aria-controls="stats" aria-selected="false">Groups</button>
-                    </li>
-                </ul>
-                <div>
-                    <div class="row">
-                        <div class="col-md-6 d-flex align-items-center">
-                            <button id="UsersSelectAllButton" class="btn btn-outline-secondary me-2">Select All</button>
-                            <button id="UsersGroupActionButton" class="btn btn-outline-secondary me-2" disabled>Group
-                                Action</button>
-                            <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal"
-                                data-bs-target="#newAccountModal">New Account...</button>
-                            <input type="text" class="form-control w-auto" placeholder="Filter">
+                <div id="xdevices" class="noselect" style="display:none" onscroll="onDevicesScroll(false)"></div>
+                <div id="xdevicesmap" style="display:none">
+                    <div id=xmapSearchResultsDlg style="display:none">
+                        <div id=xmapSearchResultsBck>
+                            <div id=xmapSearchClose onclick=mapCloseSearchWindow()><b>X</b></div>
+                            <div style=padding:5px>Location Results</div>
+                            <div style=width:100%;margin:6px></div>
                         </div>
-                        <div class="col-md-6 d-flex align-items-center">
-                            <div class="ms-auto">
-                                <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal"
-                                    data-bs-target="#broadcastModal">Broadcast</button>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#downloadModal"><i
-                                        class="fas fa-download text-success me-2"></i></a>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#uplaodModal"><i
-                                        class="fas fa-upload text-success me-2"></i></a>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#userDisplayModal"><i
-                                        class="fas fa-gear text-secondary"></i></a>
-                            </div>
-                        </div>
+                        <div id=xmapSearchResults style=margin:6px></div>
                     </div>
                 </div>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="select-all-checkbox"></th>
-                            <th class="email text-secondary">Name</th>
-                            <th class="text-secondary">Device Groups</th>
-                            <th class="text-secondary">Last Access</th>
-                            <th class="permissions text-secondary">Permissions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="5">Online Users</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="user-checkbox"></td>
-                            <td><i class="fas fa-user text-success"></i> admin,
-                                brunokambere@gmail.com</td>
-                            <td>2</td>
-                            <td>1 session</td>
-                            <td>Administrator</td>
-                        </tr>
-                        <tr>
-                            <td colspan="5">Offline Users</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="user-checkbox"></td>
-                            <td><i class="fas fa-user offline-icon"></i> sammy,
-                                sammy@gmail.com</td>
-                            <td>0</td>
-                            <td></td>
-                            <td>User</td>
-                        </tr>
-                    </tbody>
+                <div id="xmap-info-window"></div>
+            </div>
+            <div id=p2 style="display:none">
+                <div id="p2title">
+                    <h1>My Account</h1>
+                </div>
+                <div id="p2info" style="overflow-y:auto">
+                    <div id="p2AccountImageFrame">
+                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128"
+                            onclick="account_manageImage(0)" src="images/user-256.png" />
+                        <div><a onclick="account_manageImage(0)">Change image</a></div>
+                    </div>
+                    <div id="p2AccountSecurity" style="display:none">
+                        <p><strong>Account security</strong></p>
+                        <div style="margin-left:25px">
+                            <div id="managePhoneNumber1">
+                                <div class="p2AccountActions"><span
+                                        id="authPhoneNumberCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_managePhone()">Manage phone number</a><br /></span>
+                            </div>
+                            <div id="manageEmail2FA">
+                                <div class="p2AccountActions"><span
+                                        id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_manageAuthEmail()">Manage email
+                                        authentication</a><br /></span>
+                            </div>
+                            <div id="manageAuthApp">
+                                <div class="p2AccountActions"><span
+                                        id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_manageAuthApp()">Manage authenticator
+                                        app</a><br /></span>
+                            </div>
+                            <div id="manageHardwareOtp">
+                                <div class="p2AccountActions"><span
+                                        id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_manageHardwareOtp(0)">Manage security
+                                        keys</a><br /></span>
+                            </div>
+                            <div id="managePushAuthDev">
+                                <div class="p2AccountActions"><span
+                                        id="authPushAuthDevCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_managePushAuthDev()">Manage push
+                                        authentication</a><br /></span>
+                            </div>
+                            <div id="manageMessaging1">
+                                <div class="p2AccountActions"><span
+                                        id="authMessagingCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_manageMessaging()">Manage messaging</a><br /></span>
+                            </div>
+                            <div id="manageOtp">
+                                <div class="p2AccountActions"><span
+                                        id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_manageOtp(0)">Manage backup codes</a><br /></span>
+                            </div>
+                            <div class="p2AccountActions"></div><span><a href=#
+                                    onclick="return account_viewPreviousLogins()">View previous logins</a><br /></span>
+                        </div>
+                    </div>
+                    <div id="p2AccountActions">
+                        <p><strong>Account actions</strong></p>
+                        <p class="mL">
+                            <span id="managePhoneNumber2" style="display:none"><a href=#
+                                    onclick="return account_managePhone()">Manage phone number</a><br /></span>
+                            <span id="manageMessaging2" style="display:none"><a href=#
+                                    onclick="return account_manageMessaging()">Manage messaging</a><br /></span>
+                            <span id="verifyEmailId" style="display:none"><a href=#
+                                    onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
+                            <span id="accountEnableNotificationsSpan" style="display:none"><a href=#
+                                    onclick="return account_enableNotifications()">Enable web
+                                    notifications</a><br /></span>
+                            <a href=# onclick="return account_showLocalizationSettings()">Localization
+                                Settings</a><br />
+                            <a href=# onclick="return account_showAccountNotifySettings()">Notification
+                                Settings</a><br />
+                            <span id="p2AccountPassActions">
+                                <span id="accountChangeEmailAddressSpan" style="display:none"><a href=#
+                                        onclick="return account_showChangeEmail()">Change email address</a><br /></span>
+                                <a href=# onclick="return account_showChangePassword()">Change password</a><span
+                                    id="p2nextPasswordUpdateTime"></span><br />
+                                <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
+                            </span>
+                            <span id="accountCreateLoginTokenSpan" style="display:none"><a href=#
+                                    onclick="return account_createLoginToken()">Create login token</a><br /></span>
+                        </p>
+                        <br style=clear:both />
+                    </div>
+                    <div id=p2logintokens></div>
+                    <strong>Device Groups</strong>
+                    <span id="p2createMeshLink1"> - <a href=# onclick="return account_createMesh()" class="newMeshBtn">
+                            New</a></span>
+                    <br /><br />
+                    <div id=p2meshes></div>
+                    <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=#
+                                onclick="return account_createMesh()"><strong>Get started here!</strong></a></span>
+                    </div>
+                    <br style=clear:both />
+                </div>
+            </div>
+            <div id=p3 style="display:none">
+                <div id="p3title">
+                    <h1>My Events</h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="auto-style1">
+                            <input type="button" style="display:none" value="Download Report"
+                                onclick=p3showReportDialog() />
+                        </td>
+                        <td class="auto-style1">
+                            Filter
+                            <select id=p3filterevents onchange=refreshEvents()>
+                                <option value="">All Logs</option>
+                                <option value=agentlog>Agent Logs</option>
+                                <option value=relaylog>Relay Logs</option>
+                                <option value=manual>Manual Logs</option>
+                                <option value=runcommands>Run Command Logs</option>
+                                <option value=batchupload>Batch Upload Logs</option>
+                                <option value=changenode>Change Node Logs</option>
+                                <option value=removenode>Remove Node Logs</option>
+                            </select>
+                            Show
+                            <select id=p3limitdropdown onchange=refreshEvents()>
+                                <option value=60>Last 60</option>
+                                <option value=120>Last 120</option>
+                                <option value=250>Last 250</option>
+                                <option value=500>Last 500</option>
+                                <option value=1000>Last 1000</option>
+                                <option value="">No limit</option>
+                            </select>&nbsp;
+                            <a href=# onclick=p3showDownloadEventsDialog(2)><img src=images/link4.png height=10 width=10
+                                    title="Download Events" style=cursor:pointer></a>&nbsp;
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
                 </table>
-                <!-- Modal -->
-                <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="newAccountModal" tabindex="-1"
-                    aria-labelledby="newAccountModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="newAccountModalLabel">Create Account</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div id=p3events></div>
+            </div>
+            <div id=p4 style="display:none">
+                <div id="p4title">
+                    <h1>My Users</h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="style14">
+                            <div style="float:right">
+                                <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px
+                                    value="Broadcast" />
+                                <a href=# onclick=p4downloadUserInfo()><img style="cursor:pointer"
+                                        title="Download user information" src="images/link4.png" /></a>
+                                <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate
+                                        style="cursor:pointer;display:none" title="Batch create many user accounts"
+                                        src="images/link6.png" /></a>
+                                <img style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings
+                                    src="images/icon-gear.png" loading=lazy width=16 height=16
+                                    onclick="onUsersViewSettings()" />
                             </div>
-                            <div class="modal-body">
-                                <div class="form-floating mb-3">
-                                    <input type="email" class="form-control" id="p4email" placeholder="John">
-                                    <label for="p4name">Username</label>
-                                </div>
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="p4name" placeholder="name@example.com">
-                                    <label for="p4email">Email address</label>
-                                </div>
-                                <div class="form-floating mb-3">
-                                    <input type="password" class="form-control" id="p4pass1" placeholder="Password"
-                                        autocomplete="off">
-                                    <label for="p4pass1">Password</label>
-                                </div>
-                                <div class="form-floating mb-3">
-                                    <input type="password" class="form-control" id="p4pass2" placeholder="Password"
-                                        autocomplete="off">
-                                    <label for="p4pass2">Password</label>
-                                </div>
-                                <fieldset>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="p4randomPassword">
-                                        <label class="form-check-label" for="p4randomPassword">
-                                            Randomize the password.
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="p4removeEvents">
-                                        <label class="form-check-label" for="p4removeEvents">
-                                            Remove all previous events for this userid.
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="p4resetNextLogin">
-                                        <label class="form-check-label" for="p4resetNextLogin">
-                                            Force password reset on next login.
-                                        </label>
-                                    </div>
-                                </fieldset>
+                            <div>
+                                <input type=button id=UsersSelectAllButton onclick="p3usersSelectallButtonFunction()"
+                                    value="Select All" />
+                                <input type=button id=UsersGroupActionButton disabled="disabled" value="Group Action"
+                                    onclick=p3usersGroupActionFunction() />
+                                <input id=UserNewAccountButton type=button onclick=showCreateNewAccountDialog()
+                                    value="New Account..." />
+                                <input id=UserSearchInput type=search style=width:120px;margin-left:6px
+                                    placeholder=Filter onchange=onUserSearchInputChanged()
+                                    onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1)
+                                    onblur=onUserSearchFocus(0) />
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary">OK</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id="p3users"></div>
+            </div>
+            <div id=p5 style="display:none">
+                <div id="p5title">
+                    <h1>My Files</h1>
+                </div>
+                <table id="p5toolbar" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td id="p5filehead" valign=bottom>
+                            <div id="p5rightOfButtons"></div>
+                            <div>
+                                <input type=button id=p5FolderUp disabled="disabled" onclick="return p5folderup();"
+                                    value="Up" />&nbsp;
+                                <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();"
+                                    value="Select All" />&nbsp;
+                                <input type=button id=p5RenameFileButton disabled="disabled" value="Rename"
+                                    onclick="p5renamefile();" />&nbsp;
+                                <input type=button id=p5DeleteFileButton disabled="disabled" value="Delete"
+                                    onclick="p5deletefile();" />&nbsp;
+                                <input type=button id=p5ViewFileButton disabled="disabled" value="Edit"
+                                    onclick="p5viewfile()" />&nbsp;
+                                <input type=button id=p5NewFolderButton disabled="disabled" value="New Folder"
+                                    onclick="p5createfolder();" />&nbsp;
+                                <input type=button id=p5UploadButton disabled="disabled" value="Upload"
+                                    onclick="p5uploadFile()" />&nbsp;
+                                <input type=button id=p5DownloadButton disabled="disabled" value="Download"
+                                    onclick="p5downloadButton()" />&nbsp;
+                                <input type=button id=p5CutButton disabled="disabled" value="Cut"
+                                    onclick="p5copyFile(1)" />&nbsp;
+                                <input type=button id=p5CopyButton disabled="disabled" value="Copy"
+                                    onclick="p5copyFile(0)" />&nbsp;
+                                <input type=button id=p5PasteButton disabled="disabled" value="Paste"
+                                    onclick="p5pasteFile()" />&nbsp;
                             </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="p5filesubhead">
+                            <div style=float:right>
+                                <select id=p5sortdropdown onchange=updateFiles()>
+                                    <option value="1" selected="selected">Sort by name</option>
+                                    <option value="2">Sort by size</option>
+                                    <option value="3">Sort by date</option>
+                                    <option value="4">Descend by name</option>
+                                    <option value="5">Descend by size</option>
+                                    <option value="6">Descend by date</option>
+                                </select>
+                            </div>
+                            <div>&nbsp;&nbsp;<span id="p5currentpath"></span></div>
+                        </td>
+                    </tr>
+                </table>
+                <div id="p5filetable">
+                    <!--
+                    <form id=p5fileCatchAll method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame>
+                        <input type=file id=p5fileCatchAllInput name=files style="position:absolute;left:0;width:100%;top:0;bottom:0;opacity:0;display:none" onchange="p5fileCatchAllInputChanged(event)" />
+                        <input id=p5fileDragLink2 name="link" style="display:none" />
+                        <input type=submit id=p5fileCatchAllSubmit style="display:none" />
+                    </form>
+                    -->
+                    <div id="p5PublicShare" style="">
+                        <div>These files are shared publicly, click "link" to get public url.</div>
+                    </div>
+                    <div id="bigok" style="display:none"><b>&checkmark;</b></div>
+                    <div id="bigfail" style="display:none"><b>&#10007;</b></div>
+                    <span id="p5files"></span>
+                </div>
+                <table id="p5toolbarBottom" style=width:100% cellpadding=0 cellspacing=0>
+                    <tr>
+                        <td class=style6>&nbsp;<span id="p5bottomstatus"></span></td>
+                    </tr>
+                </table>
+            </div>
+            <div id=p6 style="display:none">
+                <div id="p6info" style="overflow-y:auto">
+                    <div id="p6title">
+                        <img id=MainMeshImage src="serverpic.ashx">
+                        <h1>My Server</h1>
+                    </div>
+                    <div id="p2ServerActions">
+                        <p><strong>Server actions</strong></p>
+                        <div style="margin-left:25px">
+                            <div id="p2ServerActionsBackup">
+                                <div class="p2AccountActions"><span
+                                        style="display:none"><strong>&#x2713;</strong></span></div><a id="p6backuplink"
+                                    href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download
+                                    server backup</a>
+                            </div>
+                            <div id="p2ServerActionsRestore">
+                                <div class="p2AccountActions"><span
+                                        style="display:none"><strong>&#x2713;</strong></span></div><a href=#
+                                    onclick="return server_showRestoreDlg()">Restore server with backup</a>
+                            </div>
+                            <div id="p2ServerActionsGoogleBackup" style="display:none">
+                                <div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck"
+                                        style="display:none"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return server_setupGoogleDriveBackup()">Google Drive
+                                        backup</a><br /></span>
+                            </div>
+                            <div id="p2ServerActionsVersion">
+                                <div class="p2AccountActions"><span
+                                        style="display:none"><strong>&#x2713;</strong></span></div><a href=#
+                                    onclick="return server_showVersionDlg()">Check server version</a>
+                            </div>
+                            <div id="p2ServerActionsErrors">
+                                <div class="p2AccountActions"><span
+                                        style="display:none"><strong>&#x2713;</strong></span></div><a href=#
+                                    onclick="return server_showErrorsDlg()">Show server error log</a>
+                            </div>
+                            <div id="p2ServerActionsConfig">
+                                <div class="p2AccountActions"><span
+                                        style="display:none"><strong>&#x2713;</strong></span></div><a href=#
+                                    onclick="return server_showConfigDlg()">Show server configuration</a>
+                            </div>
+                        </div>
+                        <br />
+                    </div>
+                    <strong>Server Statistics</strong><br /><br />
+                    <div id="serverStats">
+                        <div id="serverCpuChartView" style="display:none">
+                            <div class="chartViewCanvas" style="height:40px; text-align:center"><canvas
+                                    id="serverCpuChart" style="display:inline-block"></canvas></div>
+                            <div class="chartViewText" id="serverCpuChartText"></div>
+                        </div>
+                        <div id="serverMemoryChartView" style="display:none">
+                            <div class="chartViewCanvas" style="height:40px; text-align:center"><canvas
+                                    id="serverMemoryChart" style="display:inline-block"></canvas></div>
+                            <div class="chartViewText" id="serverMemoryChartText"></div>
+                        </div><br /><br />
+                        <div id="serverStatsTable"></div>
+                    </div>
+                    <div id="serverWarningsDiv" style="display:none">
+                        <br /><strong>Server Warnings</strong><br /><br />
+                        <div id="serverCertWarnings"></div>
+                        <div id="serverWarnings"></div>
+                    </div>
+                </div>
+            </div>
+            <div id=p10 style="display:none">
+                <div id=p10title>
+                    <div id="p10BackButton">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1>General - <span id=p10deviceName></span></h1>
+                </div>
+                <div id=p10info style="overflow-y:auto">
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style=width:auto valign=top>
+                                <div id=p10html></div>
+                            </td>
+                            <td style=width:100px;display:none id=notesPanel valign=top>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><textarea id=notesPanelArea readonly
+                                                    style=width:300px;height:200px;resize:none;overflow-y:scroll></textarea>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td style=width:20px></td>
+                            <td style=width:200px;vertical-align:top;position:relative valign=top>
+                                <div class="deviceNotifyLargeDot">
+                                    <div id="p10deviceMsg" onclick=showDeviceMessages(null,null,event)
+                                        class=deviceNotifyDotSub></div>
+                                    <img id="p10deviceStar" class=deviceNotifyDotSub src=images/icon-star-notify-16.png
+                                        width=16 height=16>
+                                    <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event)
+                                        class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>
+                                    <img id="p10deviceHelp" onclick=showDeviceHelpRequests(null,null,event)
+                                        class=deviceNotifyDotSub src=images/icon-help-notify-16.png width=16 height=16>
+                                </div>
+                                <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
+                                <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
+                                <div id=MainComputerState></div>
+                            </td>
+                        </tr>
+                    </table><br />
+                    <div id=p10html2></div>
+                    <div id=p10html3></div>
+                    <div id=p10html4></div>
+                    <div id=p10html5></div>
+                </div>
+            </div>
+            <div id=p11 class="noselect" style="display:none">
+                <div id="p11title">
+                    <div id=p11deviceNameHeader>
+                        <div id="p11BackButton">
+                            <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                                onkeypress="if (event.key == 'Enter') goBack()">
+                                <div class="backButtonEx"></div>
+                            </div>
+                        </div>
+                        <div id="devListToolbarViewIcons">
+                            <div class="viewSelector" onclick=deskToggleFull(event)
+                                title="Full Screen. Hold shift to browser full screen.">
+                                <div class="viewSelector5"></div>
+                            </div>
+                        </div>
+                        <h1>Desktop - <span id=p11deviceName></span></h1>
+                    </div>
+                </div>
+                <div id="p11warning" onclick="showFeaturesDlg()">
+                    <div class="icon2"></div>
+                    <div class="warningbox">Redirection port or KVM feature is disabled<span id="p11warninga">, click
+                            here to enable it.</span></div>
+                </div>
+                <div id="p11warning2" onclick="showPowerActionDlg()">
+                    <div class="icon2"></div>
+                    <div class="warningbox">Remote computer is not powered on, click here to issue a power command.
+                    </div>
+                </div>
+                <div style="position:absolute;right:16px;margin-top:-14px;font-size:x-small;color:black">
+                    <div id="p11capslock"
+                        style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">
+                        CAPS
+                    </div>
+                    <div id="p11scrolllock"
+                        style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">
+                        SCROLL
+                    </div>
+                    <div id="p11numlock"
+                        style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">
+                        NUM
+                    </div>
+                </div>
+                <div id=deskarea0 cellpadding=0 cellspacing=0>
+                    <div id=deskarea1 class="areaHead">
+                        <div class="toright2">
+                            <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:right">&nbsp;&#x2716;
+                            </div>
+                            <span id="p11power"></span>&nbsp;
+                            <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;
+                            </div>
+                            <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)">&olarr;</div>
+                            <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)">&orarr;</div>
+                            <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session"
+                                style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px">
+                            </div>
+                            <input id="deskFocusBtn" type="button"
+                                title="Toggle focus mode, when active only the region around the mouse is updated"
+                                onkeypress="return false" onkeydown="return false" value="Focus All"
+                                onclick="deskToggleFocus()" style="margin-right:3px;display:none" />
+                            <input id="deskActionsBtn" type=button title="Perform power actions on the device"
+                                onkeypress="return false" onkeydown="return false" value=Actions
+                                onclick=deviceActionFunction() class="mR" />
+                            <input id="deskActionsSettings" type="button" value="Settings..."
+                                title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false"
+                                onclick="showDesktopSettings()" class="mR" />
+                            <input type="button" title="Change the power state of the remote machine"
+                                onkeypress="return false" onkeydown="return false" value="Power Actions..."
+                                onclick="showPowerActionDlg()" style="display:none" />
+                            <div id="desktopCustomUpperRight" style="float:left;margin-right:6px"></div>
+                            <div id="desktopCustomUiButtons" style="float:left"></div>
+                        </div>
+                        <div>
+                            <input type="button" id="autoconnectbutton1" value="AutoConnect"
+                                onclick=autoConnectDesktop(event) onkeypress="return false" onkeydown="return false"
+                                style="display:none;margin-right:4px" />
+                            <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton"
+                                    title="Connect using MeshAgent remote desktop" value="Connect"
+                                    onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false"
+                                    disabled="disabled" /></span>
+                            <span id=connectbutton1rspan><input type=button id=connectbutton1r
+                                    cmenu="altPortContextMenu" value="RDP Connect" title="Connect using RDP"
+                                    onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false"
+                                    disabled="disabled" /></span>
+                            <span id=connectbutton1hspan><input type=button id=connectbutton1h value="HW Connect"
+                                    title="Connect using hardware KVM" onclick=connectDesktop(event,2)
+                                    onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
+                            <span id=disconnectbutton1span><input type=button id=disconnectbutton1
+                                    cmenu="deskDisconnectButton" value="Disconnect" onclick=connectDesktop(event,0)
+                                    onkeypress="return false" onkeydown="return false" /></span>
+                            <span id="deskstatus" style="line-height:22px">Disconnected</span><span
+                                id="deskmetadata"></span>
+                        </div>
+                    </div>
+                    <div id=deskarea3x>
+                        <div id="p11bigok" style="display:none"><b>&checkmark;</b></div>
+                        <div id="p11bigfail" style="display:none"><b>&#10007;</b></div>
+                        <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event)
+                            onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
+                        <div id=DeskParent>
+                            <canvas id=Desk width=640 height=480 oncontextmenu="return false"
+                                onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)
+                                onmousewheel=dmousewheel(event)></canvas>
+                        </div>
+                        <div id=DeskTools>
+                            <div id=deskToolsAreaTop>
+                                <a id=DeskToolsRefreshButton style="right:2px" onclick="refreshDeskTools()">Refresh</a>
+                                <div id=deskToolsTopTabProcess class="deskToolsTopTab" onclick="changeDeskToolTab(0)"
+                                    style="left:0px;bottom:0px">Processes</div>
+                                <div id=deskToolsTopTabService class="deskToolsTopTab" onclick="changeDeskToolTab(1)"
+                                    style="display:none;left:90px;color:gray">Services</div>
+                            </div>
+                            <div id=deskToolsArea>
+                                <div id="DeskToolsProcessTab">
+                                    <div id=deskToolsHeader>
+                                        <a class="colmn1" title="Sort by process id" onclick=sortProcess(0)>PID</a>
+                                        <a class="colmn2" title="Sort by name" onclick=sortProcess(1)>Name</a>
+                                    </div>
+                                    <div id="DeskToolsProcesses" style=""></div>
+                                </div>
+                                <div id="DeskToolsServiceTab" style="display:none">
+                                    <div id=deskToolsServiceHeader>
+                                        <a class="colmn1" style="width:70px" title="Sort by state"
+                                            onclick=sortService(0)>State</a>
+                                        <a class="colmn2" title="Sort by name" onclick=sortService(1)>Name</a>
+                                    </div>
+                                    <div id="DeskToolsServices" style=""></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id=p11DeskConsoleMsg
+                            style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px;text-align:left"
+                            onclick=p11clearConsoleMsg()></div>
+                        <div id=p11DeskSessionSelector
+                            style="display:none;position:absolute;left:30px;top:17px;right:30px;bottom:17px;overflow-y:auto">
+                        </div>
+                    </div>
+                    <div id=deskarea4 class="areaFoot">
+                        <div class="toright2">
+                            <span id="DeskLatency" style="line-height:22px;width:50px"
+                                title="Desktop Session Latency"></span>
+                            <span id="DeskTimer" style="line-height:22px" title="Session time"></span>
+                            <input id=DeskToolsButton type=button value=Tools title="Toggle tools view"
+                                onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <span>&nbsp;</span>
+                            <span id=DeskRunButton cmenu="deskPreConfigScriptContextMenu" class="deskarea"
+                                title="Run a script on this computer"><img class="desktopButtons"
+                                    src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16
+                                    style=padding-top:2px /></span>
+                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><img
+                                    class="desktopButtons" src='images/icon-chat.png' onclick=deviceChat(event)
+                                    height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskNotifyButton title="Display a notification on the remote computer"><img
+                                    class="desktopButtons" src='images/icon-notify.png' onclick=deviceToastFunction()
+                                    height=16 width=16 style=padding-top:2px /></span>
+                            <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png'
+                                    class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
+                            <span id=DeskOpenWebButton title="Open a web address on the remote computer"><img
+                                    class="desktopButtons" src='images/icon-url2.png' onclick=deviceUrlFunction()
+                                    height=16 width=16 /></span>
+                            <span id=DeskBackgroundButton title="Toggle remote desktop background"><img
+                                    class="desktopButtons" id=DeskBackgroundButtonImage src='images/icon-background.png'
+                                    onclick=deviceToggleBackground(event) height=16 width=16 /></span>
+                            <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img
+                                    class="desktopButtons" src='images/icon-camera.png' onclick=deskSaveImage()
+                                    height=16 width=16 /></span>
+                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu
+                                title="Record remote desktop session to file" style="display:none"><img
+                                    class="desktopButtons" id=DeskRecordButtonImage src='images/icon-film.png'
+                                    onclick=deskRecordSession() height=16 width=16 /></span>
+                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard"
+                                style="display:none"><img class="desktopButtons" id=DeskClipboardInButtonImage
+                                    src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16
+                                    width=16 /></span>
+                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img
+                                    class="desktopButtons" id=DeskClipboardOutButtonImage
+                                    src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16
+                                    width=16 /></span>
+                            <span id=DeskRefreshButton title="Refresh the desktop"><img class="desktopButtons"
+                                    id=DeskRefreshButtonImage src='images/icon-refresh.png'
+                                    onclick=deskRefreshFunction() height=16 width=16 /></span>
+                            <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons"
+                                    id=DeskInputLockedButtonImage src='images/icon-keylock-red.png'
+                                    onclick=deskInputLockFunction(0) height=16 width=16 /></span>
+                            <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img
+                                    class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png'
+                                    onclick=deskInputLockFunction(1) height=16 width=16 /></span>
+                            <span id=DeskGuestShareButton title="Share the device with a guest"><img
+                                    class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-share2.png'
+                                    onclick=showShareDevice() height=16 width=16 /></span>
+                        </div>
+                        <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
+                        <div>
+                            <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
+                            <input id="DeskWD" type=button value="Send" onkeypress="return false"
+                                onkeydown="return false" onclick="deskSendKeys()" />
+                            <input id="DeskESC" style="display:none" type="button" value="ESC" onkeypress="return false"
+                                onkeydown="return false" onclick="sendDeskEsc()" />
+                            <input id="DeskClip" type="button" value="Clipboard" onkeypress="return false"
+                                onkeydown="return false" onclick="showDeskClip()" />
+                            <input id="DeskType" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type"
+                                onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input
+                                        id="DeskControl" type="checkbox" onkeypress="return false"
+                                        onkeydown="return false"
+                                        onclick="toggleKvmControl()" />Input</span></label>&nbsp;
                         </div>
                     </div>
                 </div>
-        
-                <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="broadcastModal" tabindex="-1"
-                    aria-labelledby="broadcastModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="broadcastModalLabel">Broadcast Message</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form>
-                                    <div class="mb-1">
-                                        <label for="message-text" class="col-form-label">Broadcast a message to all connected
-                                            users.</label>
-                                        <textarea class="form-control" id="message-text" rows="10"></textarea>
-                                        <select class="form-select mt-1" id="exampleDisabledSelect1">
-                                            <option value="0">Show message until dismissed by user</option>
-                                            <option value="10">Show for 10 seconds</option>
-                                            <option value="60">Show for 1 minute</option>
-                                            <option value="300">Show for 5 minutes</option>
+            </div>
+            <div id=p12 style="display:none">
+                <div id="p12title">
+                    <div id="p12BackButton">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <div id="devListToolbarViewIcons2" style="float:right">
+                        <div class="viewSelector" onclick=deskToggleFull(event)
+                            title="Full Screen. Hold shift to browser full screen.">
+                            <div class="viewSelector5"></div>
+                        </div>
+                    </div>
+                    <h1>Terminal - <span id=p12deviceName></span></h1>
+                </div>
+                <div id="p12warning" onclick=showFeaturesDlg()>
+                    <div class="icon2"></div>
+                    <div class="warningbox">Redirection port or KVM feature is disabled<span id="p12warninga">, click
+                            here to enable it.</span></div>
+                </div>
+                <div id="p12warning2" onclick=showPowerActionDlg()>
+                    <div class="icon2"></div>
+                    <div class="warningbox">Remote computer is not powered on, click here to issue a power command.
+                    </div>
+                </div>
+                <div id=termTable style="position:relative">
+                    <table style="width:100%" cellpadding=0 cellspacing=0>
+                        <tr>
+                            <td class="areaHead" style="line-height:22px">
+                                <div class="toright2">
+                                    <div id="idx_termFullBtn2" onclick=deskToggleFull(event) style="float:right">
+                                        &nbsp;&#x2716;</div>
+                                    <div id="termRecordIcon" class='deskareaicon'
+                                        title="Server is recording this session"
+                                        style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px">
+                                    </div>
+                                    <input id="termActionsBtn" type=button title="Perform power actions on the device"
+                                        onkeypress="return false" onkeydown="return false" value=Actions
+                                        onclick=deviceActionFunction() />
+                                    <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
+                                    <div id="terminalCustomUiButtons" style="float:left"></div>
+                                </div>
+                                <div>
+                                    <input type="button" id="autoconnectbutton2" value="AutoConnect"
+                                        onclick=autoConnectTerminal(event) onkeypress="return false"
+                                        onkeydown="return false" style="display:none" /><span id="connectbutton2span"
+                                        style="margin-right:4px"><input type="button" id="connectbutton2"
+                                            cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1)
+                                            onkeypress="return false" onkeydown="return false"
+                                            disabled="disabled" /></span><span id="connectbutton2sspan"
+                                        style="margin-right:4px"><input type="button" id="connectbutton2s"
+                                            cmenu=sshPortContextMenu value="SSH Connect"
+                                            onclick=connectTerminal(event,3) onkeypress="return false"
+                                            onkeydown="return false" disabled="disabled" /></span><span
+                                        id="connectbutton2hspan" style="margin-right:4px"><input type="button"
+                                            id="connectbutton2h" value="HW Connect"
+                                            title="Connect using Intel&reg; AMT hardware KVM"
+                                            onclick=connectTerminal(event,2) onkeypress="return false"
+                                            onkeydown="return false" disabled="disabled" /></span><span
+                                        id="disconnectbutton2span" style="margin-right:4px"><input type="button"
+                                            id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0)
+                                            onkeypress="return false" onkeydown="return false" /></span>
+                                    <span id="termstatus" style="line-height:22px">Disconnected</span><span
+                                        id="termtitle"></span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td id="termarea3x">
+                                <div id="termarea3xdiv" style="width:100%;height:100%;text-align:left"></div>
+                                <pre id="Term"></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="areaFoot">
+                                <div class="toright2">
+                                    <span id="TermTimer" title="Session time"></span>&nbsp;
+                                    <span id="terminalSettingsButtons" style="display:none">
+                                        <input id="id_tcrbutton" type="button" onkeypress="return false"
+                                            onkeydown="return false" class="bottombutton" value="CR+LF"
+                                            title="Toggle what the return key will send" onclick="termToggleCr()" />
+                                        <input id="id_tfxkeysbutton" type="button" onkeypress="return false"
+                                            onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)"
+                                            title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()" />
+                                        <input id="id_ttypebutton" type="button" onkeypress="return false"
+                                            onkeydown="return false" class="bottombutton" value="Extended Ascii"
+                                            title="Toggle terminal emulation type" onclick="termToggleType()" />
+                                    </span>
+                                    <span id="terminalSizeDropDown" style="display:none">
+                                        <select id="termSizeList" onkeypress="return false">
+                                            <option value="1">80x25</option>
+                                            <option value="2">100x30</option>
                                         </select>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary">OK</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-        
-                <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="downloadModal" tabindex="-1"
-                    aria-labelledby="downloadModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="downloadModalLabel">User List Export</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <label for="message-text" class="col-form-label">Download the list of users with one of the file
-                                    formats below.</label>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        CSV Format
-                                    </div>
-                                    <div class="col-md-4">
-                                        <a href="#">userlist.csv</a>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            JSON Format
-                                        </div>
-                                        <div class="col-md-4">
-                                            <a href="#">userlist.json</a>
-                                        </div>
-                                    </div>
+                                    </span>
+                                    <span id="specialKeyDropDown">
+                                        <select id="specialkeylist" onkeypress="return false"></select>
+                                        <input id="specialkeylistinput" type="button" onkeypress="return false"
+                                            class="bottombutton" value="Send" title="Send the selected special key"
+                                            onclick="sendSpecialKey()" />
+                                    </span>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary">OK</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-        
-                <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="uplaodModal" tabindex="-1"
-                    aria-labelledby="uplaodModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="uplaodModalLabel">User Account Import</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <label class="col-form-label">Create many accounts at once by importing a JSON or CSV
-                                    file</label>
-                                <label class="col-form-label">JSON file format is as follows:</label>
-                                <pre>
-        [
-            {"user":"x1","pass":"x","email":"x1@x"},
-            {"user":"x2","pass":"x","resetNextLogin":true}
-        ]
-                                    </pre>
-                                <label class="col-form-label">CSV file format is as follows:</label>
-                                <pre>
-        user,pass,email,resetNextLogin
-        x1,x,x1@x,
-        x2,x,,true
-                                </pre>
-                                <div class="row">
-                                    <div class="col-md-4 input-group">
-                                        <input type="file" class="form-control">
-                                    </div>
+                                <div>
+                                    &nbsp;
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="bottombutton" id="ctrlcbutton" value="Ctl-C"
+                                        onclick="termSendKey(3,'ctrlcbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="bottombutton" id="ctrlxbutton" value="Ctl-X"
+                                        onclick="termSendKey(24,'ctrlxbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="bottombutton" id="escbutton" value="ESC"
+                                        onclick="termSendKey(27,'escbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="bottombutton" id="bsbutton" value="Backspace"
+                                        onclick="termSendKey(8,'bsbutton')" style="display:none" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="bottombutton" id="pastebutton" value="Paste"
+                                        title="Paste text into the terminal" onclick="showTermPasteDialog()"
+                                        style="display:none" />
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary">OK</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-        
-                <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="userDisplayModal" tabindex="-1"
-                    aria-labelledby="userDisplayModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="userDisplayModalLabel">Users View</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input class="form-check-input" type="checkbox" checked="" id="d2c1">
-                                <label class="form-check-label" for="d2c1">
-                                    Only display first 100 users
-                                </label>
-        
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary">OK</button>
-                            </div>
-                        </div>
-                    </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p12TermConsoleMsg
+                        style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:45px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px"
+                        onclick=p12clearConsoleMsg()></div>
                 </div>
             </div>
-            <div id="server-content" class="content container" style="display:none;">
-                <h3>My Server</h3>
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general"
-                            type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button"
-                            role="tab" aria-controls="stats" aria-selected="false">Stats</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="console-tab" data-bs-toggle="tab" data-bs-target="#console" type="button"
-                            role="tab" aria-controls="console" aria-selected="false">Console</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="trace-tab" data-bs-toggle="tab" data-bs-target="#trace" type="button"
-                            role="tab" aria-controls="trace" aria-selected="false">Trace</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="plugins-tab" data-bs-toggle="tab" data-bs-target="#plugins" type="button"
-                            role="tab" aria-controls="plugins" aria-selected="false">Plugins</button>
-                    </li>
-                </ul>
-                <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                        <div class="server-actions mt-3">
-                            <a href="#">Show server error log</a>
-                        </div>
-                        <div class="server-stats mt-3">
-                            <h4>Server Statistics</h4>
-                            <div class="cpu-memory d-flex justify-content-between">
-                                <div class="cpu d-flex align-items-center">
-                                    <div class="chart-container">
-                                        <canvas id="cpuChart"></canvas>
-                                    </div>
-                                    <div class="chart-text">
-                                        <div>CPU Load</div>
-                                        <div>0.36, 0.34, 0.35</div>
-                                    </div>
-                                </div>
-                                <div class="memory d-flex align-items-center">
-                                    <div class="chart-container">
-                                        <canvas id="memoryChart"></canvas>
-                                    </div>
-                                    <div class="chart-text">
-                                        <div>Available Memory</div>
-                                        <div>54.2 Gb free, 62.8 Gb total</div>
-                                    </div>
-                                </div>
-                                <div class="server-icon">
-                                    <i class="fas fa-database"></i>
-                                </div>
-                            </div>
-                            <div class="row mt-3">
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-user"></i></div>
-                                                <div>User Accounts</div>
-                                            </div>
-                                            <div class="badge bg-secondary">22</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-plug"></i></div>
-                                                <div>Connected Users</div>
-                                            </div>
-                                            <div class="badge bg-secondary">1</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-sync"></i></div>
-                                                <div>Relay Count</div>
-                                            </div>
-                                            <div class="badge bg-secondary">0</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-folder"></i></div>
-                                                <div>Device Groups</div>
-                                            </div>
-                                            <div class="badge bg-secondary">12</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-sign-in-alt"></i></div>
-                                                <div>User Sessions</div>
-                                            </div>
-                                            <div class="badge bg-secondary">2</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-plug"></i></div>
-                                                <div>Connected Intel® AMT</div>
-                                            </div>
-                                            <div class="badge bg-secondary">0</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-tasks"></i></div>
-                                                <div>Agent Sessions</div>
-                                            </div>
-                                            <div class="badge bg-secondary">28</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 stat-item mb-3">
-                                    <div class="card">
-                                        <div class="card-body d-flex justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div class="icon"><i class="fas fa-wifi"></i></div>
-                                                <div>Relay Sessions</div>
-                                            </div>
-                                            <div class="badge bg-secondary">0</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <div id=p13 style="display:none">
+                <div id="p13title">
+                    <div id="p13BackButton" style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="stats" role="tabpanel" aria-labelledby="stats-tab">Stats Content</div>
-                    <div class="tab-pane fade" id="console" role="tabpanel" aria-labelledby="console-tab">Console Content
+                    <h1>Files - <span id=p13deviceName></span></h1>
+                </div>
+                <table id="p13toolbar" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="areaHead" style="line-height:22px">
+                            <div class="toright2">
+                                <input id="filesActionsBtn" type=button title="Perform power actions on the device"
+                                    value=Actions onclick=deviceActionFunction() />
+                                <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session"
+                                    style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px">
+                                </div>
+                                <div id="filesCustomUpperRight" style="float:left;margin-right:6px"></div>
+                                <div id="filesCustomUiButtons" style="float:left"></div>
+                            </div>
+                            <div>
+                                <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event)
+                                    type="button" style="display:none" />
+                                <input id=p13Connect value="Connect" cmenu="filesConnectButton"
+                                    onclick=connectFiles(event,1) type="button" />
+                                <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) type="button" />
+                                <input id=p13Connects value="SFTP Connect" cmenu=sshPortContextMenu
+                                    onclick=connectFiles(event,2) type="button" />
+                                <span id=p13Status>Disconnected</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="areaHead2" valign=bottom>
+                            <div id="p13rightOfButtons" class="toright2"></div>
+                            <div>
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FolderUp
+                                    value="Up" onclick="p13folderup()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13SelectAllButton
+                                    value="Select All" onclick="p13selectallfile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RenameFileButton
+                                    value="Rename" onclick="p13renamefile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DeleteFileButton
+                                    value="Delete" onclick="p13deletefile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton
+                                    value="Edit" onclick="p13viewfile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton
+                                    value="New Folder" onclick="p13createfolder()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton
+                                    value="Upload" onclick="p13uploadFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton
+                                    value="Download" onclick="p13downloadButton()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton
+                                    value="Cut" onclick="p13copyFile(1)" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton
+                                    value="Copy" onclick="p13copyFile(0)" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton
+                                    value="Paste" onclick="p13pasteFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton
+                                    value="Zip" onclick="p13zipFiles()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnzipButton
+                                    value="Unzip" onclick="p13unzipFile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton
+                                    value="Refresh" onclick="p13folderup(9999)" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton
+                                    value="Find" onclick="p13findfile()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton
+                                    value="GoTo" onclick="p13gotofolder()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13OpenButton
+                                    value="Open" onclick="p13openfilefolder()" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="areaHead3">
+                            <div class="toright2">
+                                <select id=p13sizedropdown onchange=p13updateFiles()>
+                                    <option value=0 selected="selected">Human Readable</option>
+                                    <option value=1 title=Bytes>Bytes</option>
+                                    <option value=10 title=KB>Kilobytes</option>
+                                    <option value=20 title=MB>Megabytes</option>
+                                    <option value=30 title=GB>Gigabyte</option>
+                                </select>
+                                <select id=p13sortdropdown onchange=p13updateFiles()>
+                                    <option value=1 selected="selected">Sort by name</option>
+                                    <option value=2>Sort by size</option>
+                                    <option value=3>Sort by date</option>
+                                    <option value=4>Descend by name</option>
+                                    <option value=5>Descend by size</option>
+                                    <option value=6>Descend by date</option>
+                                </select>
+                            </div>
+                            <div>&nbsp;&nbsp;<span id="p13currentpath"></span></div>
+                        </td>
+                    </tr>
+                </table>
+                <div id=p13FilesConsoleMsg
+                    style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px"
+                    onclick=p13clearConsoleMsg()></div>
+                <div id="p13filetable" style="">
+                    <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
+                    <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
+                    <span id="p13files"></span>
+                </div>
+                <table id="p13toolbarBottom" cellpadding=0 cellspacing=0>
+                    <tr>
+                        <td class=style6>&nbsp;<span id="p13bottomstatus"></span></td>
+                    </tr>
+                </table>
+            </div>
+            <div id=p14 style="display:none">
+                <div id="p14title">
+                    <div id="p14BackButton" style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
                     </div>
-                    <div class="tab-pane fade" id="trace" role="tabpanel" aria-labelledby="trace-tab">Trace Content</div>
-                    <div class="tab-pane fade" id="plugins" role="tabpanel" aria-labelledby="plugins-tab">Plugins Content
+                    <div id="devListToolbarViewIcons">
+                        <div class="viewSelector" onclick=deskToggleFull(event)
+                            title="Full Screen. Hold shift to browser full screen.">
+                            <div class="viewSelector5"></div>
+                        </div>
                     </div>
+                    <h1><span id=p14deviceNamePrefix>Intel&reg; AMT</span> - <span id=p14deviceName></span></h1>
+                </div>
+                <iframe id=p14iframe src="{{{domainurl}}}commander.ashx"></iframe>
+            </div>
+            <div id=p15 style="display:none">
+                <div id="p15title">
+                    <div id="p15BackButton" style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1><span id=p15deviceName></span></h1>
+                </div>
+                <table id="consoleTable" cellpadding=0 cellspacing=0>
+                    <tr>
+                        <td class="areaHead">
+                            <div class="toright2">
+                                <div id=p15coreName title="Information about current core running on this agent"></div>
+                                <input type=button id=p15uploadCore value="Agent Action" onclick=p15uploadCore(event)
+                                    title="Change the agent Java Script code module" />
+                                <img onclick=p15downloadConsoleText() style="cursor:pointer;margin-top:6px"
+                                    title="Download console text" src="images/link4.png" />
+                            </div>
+                            <div id="p15statetext"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="areaProgress">
+                                <div id="consoleprogressbar" style=""></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id=p15agentConsole>
+                            <pre id=p15agentConsoleText></pre>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="areaFoot">
+                            <table style="width:100%">
+                                <tr>
+                                    <td style="width:99%">
+                                        <input id=p15consoleText style=width:100% onkeyup=p15consoleSend(event)
+                                            onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
+                                    </td>
+                                    <td>&nbsp;</td>
+                                    <td id="p15outputselecttd">
+                                        <select id=p15outputselect onchange="setupConsole()">
+                                            <option id="p15outputselect1" value=1>Agent</option>
+                                            <option id="p15outputselect3" value=3>Push</option>
+                                            <option id="p15outputselect2" value=2>MQTT</option>
+                                        </select>
+                                    </td>
+                                    <td style="width:1%"><input id="id_p15consoleClear" type="button"
+                                            class="bottombutton" value="Clear" onclick="p15consoleClear()" /></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id=p16 style="display:none">
+                <div id="p16title">
+                    <div id="p16BackButton" style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1>Events - <span id=p16deviceName></span></h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <!--<td>&nbsp;<input type=button onclick=refreshDeviceEvents() value="Refresh" /></td>-->
+                        <td class="auto-style1">
+                            Filter
+                            <select id=p16filterevents onchange=refreshDeviceEvents()>
+                                <option value="">All Logs</option>
+                                <option value=agentlog>Agent Logs</option>
+                                <option value=relaylog>Relay Logs</option>
+                                <option value=manual>Manual Logs</option>
+                                <option value=runcommands>Run Command Logs</option>
+                                <option value=batchupload>Batch Upload Logs</option>
+                                <option value=changenode>Change Node Logs</option>
+                                <option value=removenode>Remove Node Logs</option>
+                            </select>
+                            Show
+                            <select id=p16limitdropdown onchange=refreshDeviceEvents()>
+                                <option value=60>Last 60</option>
+                                <option value=120>Last 120</option>
+                                <option value=250>Last 250</option>
+                                <option value=500>Last 500</option>
+                                <option value=1000>Last 1000</option>
+                            </select>
+                            <a href=# onclick=p3showDownloadEventsDialog(1)><img src=images/link4.png height=10 width=10
+                                    title="Download Events" style=cursor:pointer></a>&nbsp;
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id=p16events></div>
+            </div>
+            <div id=p17 style="display:none;margin-left:-18px">
+                <div id="p17title" style="margin-left:18px">
+                    <div id="p17BackButton" style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <div id="devListToolbarViewIcons3">
+                        <div class="viewSelector" onclick=deskToggleCpuGraph(event)
+                            title="Show device CPU and memory usage.">
+                            <div class="viewSelector6"></div>
+                        </div>
+                    </div>
+                    <h1>Details - <span id=p17deviceName></span></h1>
+                </div>
+                <div id=p17info style="overflow-y:auto">
+                    <div id=p17graph style="width:100%">
+                        <table style=width:100%>
+                            <tr>
+                                <td style=width:64px;vertical-align:top>
+                                    <img src=images/details/graph64.png border=0 width=64 />
+                                </td>
+                                <td>
+                                    <div class=DevSt style=margin-bottom:3px;margin-left:16px><b>Live Graph</b></div>
+                                    <div
+                                        style="margin-bottom:10px;margin-left:16px;height:240px;width:calc(100% - 16px);position:relative">
+                                        <canvas id=deviceDetailsStats
+                                            style="position:absolute;top:0;left:0;right:0;bottom:0"></canvas>
+                                    </div>
+                                    <div id="extraGraphValues" style="display:none;margin-left:30px;margin-bottom:15px">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id=p17info2></div>
                 </div>
             </div>
-        
-            <footer class="d-flex justify-content-between align-items-center p-3 border-top mt-auto">
-                <div>
-                    <!-- Placeholder for left content, e.g., logo or navigation -->
+            <div id=p19 style="display:none">
+                <div id="p19title">
+                    <div id="p19BackButton" style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1>Plugins - <span id=p19deviceName></span></h1>
                 </div>
-                <div class="copyright text-end">
-                    <a href="#">Terms &amp; Privacy</a>
+                <div id="p19headers"></div>
+                <div id=p19pages></div>
+            </div>
+            <div id=p20 style="display:none">
+                <div id=p20main style="overflow-y:auto">
+                    <div id="p20title">
+                        <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
+                            <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
+                            <img alt="" width=200 height=200 src=images/mesh-256.png />
+                        </picture>
+                        <div style="float:left">
+                            <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                                onkeypress="if (event.key == 'Enter') goBack()">
+                                <div class="backButtonEx"></div>
+                            </div>
+                        </div>
+                        <h1>General - <span id=p20meshName></span></h1>
+                    </div>
+                    <p id=p20info></p>
+                    <p id=p20info2></p>
                 </div>
-            </footer>
+            </div>
+            <div id=p21 style="display:none">
+                <div id="p21title">
+                    <div style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1>Summary - <span id=p21meshName></span></h1>
+                </div>
+                <div id=p21main style="overflow-y:auto">
+                    <div style="width:100%">
+                        <div style="display:table;width:93%">
+                            <div id="meshPowerChartDiv"
+                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Power States</div>
+                                <canvas id="meshPowerChart" style="width:250px;height:250px"></canvas>
+                            </div>
+                            <div id="meshOsChartDiv"
+                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Agent Types</div>
+                                <canvas id="meshOsChart" style="width:250px;height:250px"></canvas>
+                            </div>
+                            <div id="meshConnChartDiv"
+                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Connectivity</div>
+                                <canvas id="meshConnChart" style="width:250px;height:250px"></canvas>
+                            </div>
+                            <div id="meshSecurityChartDiv"
+                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                                <div style="margin:10px;font-size:16px">Security</div>
+                                <canvas id="meshSecurityChart" style="width:250px;height:250px"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <p id=p21info style="overflow-y:auto"></p>
+                </div>
+            </div>
+            <div id=p30 style="display:none">
+                <div id="p30title">
+                    <div style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1>General - <span id=p30userName></span></h1>
+                </div>
+                <div id="p30info" style="overflow-y:auto">
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style=width:auto valign=top>
+                                <div id=p30html></div>
+                            </td>
+                            <td style=width:20px></td>
+                            <td style=width:200px;position:relative valign=top>
+                                <img id="p30userAuthServiceLogo" loading="lazy" style="display:none"
+                                    class=userAuthStrategyLogo width=64 height=64>
+                                <picture id=MainUserImage
+                                    style="display:none;border-width:0px;height:200px;width:200px;float:right"
+                                    onclick="account_manageImage(1)">
+                                    <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
+                                    <img alt="" width=200 height=200 src=images/user-256.png />
+                                </picture>
+                                <img id=MainUserImageEx alt="" width=200 height=200 src=images/user-256.png
+                                    onclick="account_manageImage(1)" />
+                                <div style="width:100%;text-align:center"><strong><span
+                                            id=MainUserState></span></strong></div>
+                            </td>
+                        </tr>
+                    </table><br />
+                    <div id=p30html2></div>
+                    <div id=p30html3></div>
+                </div>
+            </div>
+            <div id=p31 style="display:none">
+                <div id="p31title">
+                    <div style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1>Events - <span id=p31userName></span></h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <!--<td>&nbsp;<input type=button onclick=refreshUsersEvents() value="Refresh" /></td>-->
+                        <td class="auto-style1">
+                            Filter
+                            <select id=p31filterevents onchange=refreshUsersEvents()>
+                                <option value="">All Logs</option>
+                                <option value=agentlog>Agent Logs</option>
+                                <option value=relaylog>Relay Logs</option>
+                                <option value=manual>Manual Logs</option>
+                                <option value=runcommands>Run Command Logs</option>
+                                <option value=batchupload>Batch Upload Logs</option>
+                                <option value=changenode>Change Node Logs</option>
+                                <option value=removenode>Remove Node Logs</option>
+                            </select>
+                            Show
+                            <select id=p31limitdropdown onchange=refreshUsersEvents()>
+                                <option value=60>Last 60</option>
+                                <option value=120>Last 120</option>
+                                <option value=250>Last 250</option>
+                                <option value=500>Last 500</option>
+                                <option value=1000>Last 1000</option>
+                                <option value="">No limit</option>
+                            </select>
+                            <a href=# onclick=p3showDownloadEventsDialog(3)><img src=images/link4.png height=10 width=10
+                                    title="Download Events" style=cursor:pointer></a>&nbsp;
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id=p31events style=""></div>
+            </div>
+            <div id=p40 style="display:none">
+                <div id="p40title">
+                    <h1>My Server Stats</h1>
+                </div>
+                <div class="areaHead">
+                    <div class="toright2">
+                        <select id=p40server style="display:none" onchange=updateServerTimelineStats()>
+                        </select>&nbsp;
+                        <select id=p40type onchange=updateServerTimelineStats()>
+                            <option value=0>Connections</option>
+                            <option value=1>Memory</option>
+                            <option value=5>CPU</option>
+                            <option value=3>Inbound Traffic</option>
+                            <option value=4>Outbound Traffic</option>
+                        </select>&nbsp;
+                        <select id=p40time onchange=updateServerTimelineHours()>
+                            <option value=3>Last 3 hours</option>
+                            <option value=8>Last 8 hours</option>
+                            <option value=24>Last day</option>
+                            <option value=168>Last week</option>
+                            <option value=720>Last 30 days</option>
+                        </select>&nbsp;
+                        <img src=images/link4.png height=10 width=10 title="Download data points (.csv)"
+                            style=cursor:pointer onclick=p40downloadEvents()>&nbsp;
+                    </div>
+                    <div>
+                        <input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
+                        &nbsp;<label><input id=p40log type="checkbox"
+                                onclick="updateServerTimelineHours()" />Log-X</label>
+                    </div>
+                </div>
+                <canvas id=serverMainStats style=""></canvas>
+            </div>
+            <div id=p41 style="display:none">
+                <div id="p41title">
+                    <h1>My Server Tracing</h1>
+                </div>
+                <div class="areaHead">
+                    <div class="toright2">
+                        Show
+                        <select id=p41limitdropdown onchange=displayServerTrace()>
+                            <option value=100>Last 100</option>
+                            <option value=250>Last 250</option>
+                            <option value=500>Last 500</option>
+                            <option value=1000>Last 1000</option>
+                        </select>
+                        <input value="Clear" type="button" onclick="clearServerTracing()" />
+                        <img src=images/link4.png height=10 width=10 title="Download trace (.csv)" style=cursor:pointer
+                            onclick=p41downloadServerTrace()>&nbsp;
+                    </div>
+                    <div>
+                        <input value="Tracing" type="button" onclick="setServerTracing()" />
+                        <span id="p41traceStatus">None</span>
+                    </div>
+                </div>
+                <div id=p41events style=""></div>
+            </div>
+            <div id=p42 style="display:none">
+                <h1>My Server Plugins</h1>
+                <div class="areaHead">
+                    <div class="toright2">
+                    </div>
+                    <div>
+                        <input value="Download Plugin" type="button" onclick="return pluginHandler.addPluginDlg();" />
+                    </div>
+                </div>
+                <div id="pluginRestartNotice" class="areaHead" style="background-color:gold;display:none">
+                    <div class="toright2">
+                        <input value="Refresh Agent Cores" type="button" onclick="distributeCore();return false" />
+                    </div>
+                    <div style="padding:2px">
+                        <div style="padding:2px"><b>Notice:</b> Plugins have been altered, this may require agent core
+                            update.</div>
+                    </div>
+                </div>
+                <table id="p42tbl">
+                    <tr class="DevSt">
+                        <th style="width:26px"></th>
+                        <th style="width:10px"></th>
+                        <th class="chName">Name</th>
+                        <th class="chDescription">Description</th>
+                        <th class="chSite" style="text-align:center">Link</th>
+                        <th class="chVersion" style="text-align:center">Version</th>
+                        <th class="chUpgradeAvail" style="text-align:center">Latest</th>
+                        <th class="chStatus" style="text-align:center">Status</th>
+                        <th class="chAction" style="text-align:center">Action</th>
+                        <th style="width:10px"></th>
+                    </tr>
+                </table>
+                <div id="pluginNoneNotice" style="width:100%;text-align:center;padding-top:10px;display:none"><i>No
+                        plugins on server.</i></div>
+            </div>
+            <div id=p43 style="display:none">
+                <div id="p43BackButton">
+                    <div class="backButton" tabindex=0 onmouseup=go(42) title="Back"
+                        onkeypress="if (event.key == 'Enter') go(42)">
+                        <div class="backButtonEx"></div>
+                    </div>
+                </div>
+                <h1>My Server Plugins - <span id="p43title"></span></h1>
+                <iframe id="p43iframe" frameBorder=0
+                    style="width:100%;height:calc(100vh - 245px);max-height:calc(100vh - 245px)"></iframe>
+            </div>
+            <div id=p50 style="display:none">
+                <div id="p50title">
+                    <h1>My User Groups</h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="style14">
+                            <div style="float:right">
+                            </div>
+                            <div id="p50userGroupOps">
+                                <input type=button id=UsersGroupsSelectAllButton
+                                    onclick="p50usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersGroupsGroupActionButton disabled="disabled"
+                                    value="Group Action" onclick=p50usersGroupActionFunction() />
+                                <input id=NewUserGroupButton type=button onclick=showCreateUserGroupDialog(1)
+                                    value="New Group..." />
+                                <input id=DuplicateUserGroupButton type=button style=display:none
+                                    onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
+                            </div>
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id="p50groups"></div>
+            </div>
+            <div id=p51 style="display:none">
+                <div id="p51title">
+                    <div style="float:left">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
+                            onkeypress="if (event.key == 'Enter') goBack()">
+                            <div class="backButtonEx"></div>
+                        </div>
+                    </div>
+                    <h1>User Group - <span id=p51groupName></span></h1>
+                </div>
+                <div id="p51info" style="overflow-y:auto">
+                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style=width:auto valign=top>
+                                <div id=p51group></div>
+                            </td>
+                            <td style=width:20px></td>
+                            <td style=width:200px valign=top>
+                                <picture id=MainUserImage style=border-width:0px;height:200px;width:200px;float:right>
+                                    <source type="image/webp" width=200 height=200
+                                        srcset="images/webp/group-256.webp" />
+                                    <img alt="" width=200 height=200 src=images/group-256.png />
+                                </picture>
+                                <div style="width:100%;text-align:center"><strong><span
+                                            id=MainUserState></span></strong></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id=p51group2></div>
+                    <br />
+                </div>
+            </div>
+            <div id=p52 style="display:none">
+                <div id="p52title">
+                    <h1>My User Recordings</h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="style14">
+                            <div style="float:right">
+                                <input type=button onclick=openRecodringPlayer() value="Open Player..." />
+                            </div>
+                            <div>
+                                <input type=button onclick=refreshRecodings() value="Refresh" />
+                            </div>
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id=p52recordings style="overflow-y:auto"></div>
+            </div>
+            <div id=p60 style="display:none">
+                <div id="p60title">
+                    <h1>My Reports</h1>
+                </div>
+                <table class="pTable">
+                    <tr>
+                        <td class="h1"></td>
+                        <td class="style14">
+                            <div style="float:right;line-height:22px">
+                                <a id="p60downloadReportDiv" style="display:none" href=#
+                                    onclick=p60downloadReport()><img src=images/link4.png height=10 width=10
+                                        title="Download Report" style=cursor:pointer></a>&nbsp;
+                            </div>
+                            <div>
+                                <input type=button onclick=generateReportDialog() value="Generate Report..." />
+                            </div>
+                        </td>
+                        <td class="h2"></td>
+                    </tr>
+                </table>
+                <div id=p60report style="overflow-y:auto"></div>
+            </div>
+            <br id="column_l_bottomgap" />
         </div>
+        <div id="footer">
+            <div class="footer1">{{{footer}}}</div>
+            <div class="footer2">
+                <div class="row">
+                    <div class="col-md-6 d-flex gap-2">
+                        <span>Themes: </span>
+                        <select id="theme-switcher" class="form-select form-select-xs">
+                            <option value="default">Default</option>
+                            <option value="cerulean">Cerulean</option>
+                            <option value="cosmo">Cosmo</option>
+                            <option value="cyborg">Cyborg</option>
+                            <!-- Add more themes as needed -->
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify
+                            Email</a>
+                        &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id=dialog class="noselect" style="display:none">
+            <div id=dialogHeader>
+                <div tabindex=0 id=id_dialogclose onclick=setDialogMode()
+                    onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
+                <div id=id_dialogtitle></div>
+            </div>
+            <div id=dialogBody>
+                <div id=dialog1>
+                    <div id=id_dialogMessage style=""></div>
+                </div>
+                <div id=dialog2 style="">
+                    <div id=id_dialogOptions></div>
+                </div>
+                <div id=dialog3 style="">
+                    <div id=d3upload>
+                        <div>File Selection</div>
+                        <select id=d3uploadMode onchange=d3modechange()>
+                            <option value=1>Local file upload</option>
+                            <option value=2>Server file selection</option>
+                        </select>
+                    </div>
+                    <div id=d3localmode style="display:none">
+                        <div>Upload File</div>
+                        <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx
+                            target=fileUploadFrame>
+                            <input type=text id=d3auth name=auth style="display:none" />
+                            <input type=text id=d3filter name=filter style="display:none" />
+                            <input type=text id=d3attrib name=attrib style="display:none" />
+                            <input type=file id=d3localFile name=files onchange=d3setActions() />
+                            <input type=submit id=d3submit style="display:none" />
+                        </form>
+                    </div>
+                    <div id=d3servermode>
+                        <div id=d3serveraction valign=bottom>
+                            <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup()
+                                value="Up" />&nbsp;<span id=p3CurrentFolder></span>
+                        </div>
+                        <div id=d3serverfiles></div>
+                    </div>
+                </div>
+                <div id=dialog4 style="">
+                    <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
+                    <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
+                    <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                    <textarea id=d4editorarea autocomplete="off"
+                        style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
+                </div>
+                <div id=dialog7 style="">
+                    <div class="dtab">
+                        <button id="td7meshkvm" class="tablinks"
+                            onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
+                        <button id="td7rdpkvm" class="tablinks"
+                            onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
+                        <button id="td7amtkvm" class="tablinks"
+                            onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg; AMT</button>
+                    </div>
+                    <div id="d7meshkvm" class="tabcontent">
+                        <!--<h4>Agent Remote Desktop</h4>-->
+                        <div style="margin-top:8px">
+                            <div>Quality</div>
+                            <select id="d7bitmapquality" dir="rtl"></select>
+                        </div>
+                        <div>
+                            <div>Scaling</div>
+                            <select id="d7bitmapscaling" style="" dir="rtl">
+                                <option selected=selected value=1024>100%</option>
+                                <option value=896>87.5%</option>
+                                <option value=768>75%</option>
+                                <option value=640>62.5%</option>
+                                <option value=512>50%</option>
+                                <option value=384>37.5%</option>
+                                <option value=256>25%</option>
+                                <option value=128>12.5%</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div>Frame rate</div>
+                            <select id="d7framelimiter" dir="rtl">
+                                <option selected=selected value=50>Fast</option>
+                                <option value=100>Medium</option>
+                                <option value=400>Slow</option>
+                                <option value=1000>Very slow</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div>Encoding</div>
+                            <select id="d7encoding" dir="rtl">
+                                <option value=1>JPEG</option>
+                                <option selected=selected value=4>WEBP</option>
+                            </select>
+                        </div>
+                        <div id="d7desktopOtherSettings">
+                            <div>Other Settings</div>
+                            <div id="d7otherset2" style="display:block">
+                                <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse
+                                    Buttons</label>
+                                <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse Mouse
+                                    Wheel</label>
+                                <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote
+                                    Keyboard Map</label>
+                                <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox"
+                                        id="d7deskAutoClipboard" />Automatic Clipboard</label>
+                                <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox"
+                                        id="d7deskAutoLock" />Lock on Disconnect</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="d7amtkvm" class="tabcontent">
+                        <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
+                        <div style="margin-top:8px">
+                            <div>Image Encoding</div>
+                            <select id="d7desktopmode">
+                                <option value="1">RLE8, Fastest</option>
+                                <option value="2">RLE16, Recommended</option>
+                                <option value="3">RAW8, Slow</option>
+                                <option value="4">RAW16, Very Slow</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div>Other Settings</div>
+                            <div id="d7otherset" style="display:block">
+                                <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus
+                                    Tool</label>
+                                <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse
+                                    Cursor</label>
+                                <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard
+                                    Map</label>
+                                <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse Mouse
+                                    Wheel</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="d7rdpkvm" class="tabcontent">
+                        <!--<h4>Remote Desktop Protocol</h4>-->
+                        <div style="margin-top:8px">
+                            <div>Display Size</div>
+                            <select id="d7rdpsize">
+                                <option value="canvas">Canvas Size</option>
+                                <option value="browser">Browser Size</option>
+                                <option value="screen">Screen Size</option>
+                                <option value="640x480">640×480</option>
+                                <option value="1024x768">1024×768</option>
+                                <option value="1280x800">1280×800</option>
+                                <option value="1440x900">1440×900</option>
+                                <option value="1600x900">1600×900</option>
+                                <option value="1680x1050">1680×1050</option>
+                                <option value="1920x1080">1920×1080</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div>Options</div>
+                            <div id="d7rdpflags" style="display:block">
+                                <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable
+                                    Wallpaper</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window
+                                    Drag</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu
+                                    Animations</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable
+                                    Theming</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor
+                                    Shadow</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor
+                                    Settings</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font
+                                    Smooting</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop
+                                    Composision</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic
+                                    Clipboard</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse
+                                    Buttons</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse Mouse
+                                    Wheel</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="idx_dlgButtonBar">
+                <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
+                <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)" />
+                <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none"
+                        onclick="dialogclose(2)" /></div>
+                <div id="idx_dlgMoreButtons">
+                    <a href=# id=idx_dlgMoreButtons1 style=cursor:pointer;color:gray;text-decoration:none
+                        title="Toggle advanced options" onclick=MoreToggle(true)>&#x25BC;</a>
+                    <a href=# id=idx_dlgMoreButtons2 style=cursor:pointer;color:gray;text-decoration:none
+                        title="Toggle advanced options" onclick=MoreToggle(false)>&#x25B2;</a>
+                </div>
+            </div>
+        </div>
+        <iframe name="fileUploadFrame" style="display:none"></iframe>
+        <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data
+            target=fileUploadFrame><input id=p5fileDragName name="name" /><input id=p5fileDragAuthCookie
+                name="auth" /><input id=p5fileDragSize name="size" /><input id=p5fileDragType name="type" /><input
+                id=p5fileDragData name="data" /><input id=p5fileDragLink name="link" /><input type=submit
+                id=p5loginSubmit2 style="display:none" /></form>
+        <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data
+            target=fileUploadFrame><input id=p13fileDragName name="name" /><input id=p13fileDragSize
+                name="size" /><input id=p13fileDragType name="type" /><input id=p13fileDragData name="data" /><input
+                id=p13fileDragLink name="link" /><input type=submit id=p13loginSubmit2 style="display:none" /></form>
+        <audio id="chimes">
+            <source src="sounds/chimes.mp3" type="audio/mp3" />
+        </audio>
+        <iframe style=display:none name="fileDownloadFrame"></iframe>
     </div>
-    <!-- main page -->
     <script type="text/javascript">
         'use strict';
         var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
