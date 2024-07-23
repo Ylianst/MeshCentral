@@ -1003,6 +1003,24 @@
           "required": [
             "enabled"
           ]
+        },
+        "watchdog": {
+          "type": "object",
+          "required": [
+            "interval",
+            "timeout"
+          ],
+          "description": "This is used to monitor if NodeJS is servicing IO correctly or getting held up a lot. You MUST specify \"interval\" and \"timeout\".",
+          "properties": {
+            "interval": {
+              "type": "number",
+              "description": " This will check every X ms"
+            },
+            "timeout": {
+              "type": "number",
+              "description": " If the timer is more than X ms late, it will warn to console AND mesherrors.txt"
+            }
+          }
         }
       }
     },
