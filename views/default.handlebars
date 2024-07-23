@@ -313,8 +313,8 @@
                     <tr>
                         <td class=h1></td>
                         <td id=devListToolbar class=style14 style="display:none">
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton" src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton" src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton" src="images/icon-collapse.png" width=9 height=11 onclick="cmexpandaction(2)" />
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton" src="images/icon-expand.png" width=9 height=11 onclick="cmexpandaction(1)" />
                             <input type=button id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" style="display:none;margin-right:4px" value="Scroll To Top" />
@@ -336,8 +336,8 @@
                             <span id="devsCustomUIBar"></span>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton2" src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton2" src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton2" src="images/icon-collapse.png" width=9 height=11 onclick="cmexpandaction(2)" />
+                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton2" src="images/icon-expand.png" width=9 height=11 onclick="cmexpandaction(1)" />
                             <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
                             <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
                             <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
@@ -352,7 +352,7 @@
                             <input type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
                         </td>
                         <td class="auto-style1" style=height:100%>
-                            <img style="display:none;cursor:pointer;margin-top:3px" id=devListToolbarSettings src="images/icon-gear.png" loading=lazy width=16 height=16 onclick="onDeviceViewSettings()" />
+                            <img style="display:none;cursor:pointer;margin-top:3px" id=devListToolbarSettings src="images/icon-gear.png" width=16 height=16 onclick="onDeviceViewSettings()" />
                             <div style="display:none" id=devListToolbarView>
                                 View
                                 <select id=viewselect onchange=onDeviceViewChange()>
@@ -507,7 +507,7 @@
                                 <input type=button onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
                                 <a href=# onclick=p4downloadUserInfo()><img style="cursor:pointer" title="Download user information" src="images/link4.png" /></a>
                                 <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" /></a>
-                                <img style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings src="images/icon-gear.png" loading=lazy width=16 height=16 onclick="onUsersViewSettings()" />
+                                <img style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings src="images/icon-gear.png" width=16 height=16 onclick="onUsersViewSettings()" />
                             </div>
                             <div>
                                 <input type=button id=UsersSelectAllButton onclick="p3usersSelectallButtonFunction()" value="Select All" />
