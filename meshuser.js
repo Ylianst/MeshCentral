@@ -6134,7 +6134,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.db.SetUser(user);
 
         // Event the change
-        var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, msgid: 2, msgArgs: [(oldlang ? oldlang : 'default'), (user.lang ? user.lang : 'default')] };
+        var message = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, msgid: 3, msgArgs: ['', (oldlang ? oldlang : 'default'), (user.lang ? user.lang : 'default')] };
         if (db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         message.msg = 'Changed language from ' + (oldlang ? oldlang : 'default') + ' to ' + (user.lang ? user.lang : 'default');
 
