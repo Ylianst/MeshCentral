@@ -58,6 +58,25 @@
 
 <body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px"
     onload="if (typeof(startup) !== 'undefined') startup();">
+    <!-- Create MeshModal  -->
+    <div class="modal fade" id="createMeshModal" tabindex="-1" aria-labelledby="createMeshModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createMeshModalLabel">New Device Group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="createMeshContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="createMeshSave">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Create MeshModal  -->
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
@@ -177,14 +196,24 @@
         <div class="sidebar d-flex flex-column" id="page_leftbar">
             <div style="height:16px"></div>
             <nav class="nav flex-column">
-                <a class="nav-link active text-center text-white" href="#" data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i
+                <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#"
+                    data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i
                         class="fas fa-desktop me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="account" onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i class="fas fa-user me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="events" onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i
+                <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account"
+                    onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i
+                        class="fas fa-user me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events"
+                    onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i
                         class="fas fa-calendar-alt me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="files" onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i class="fas fa-file me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="users" onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i class="fas fa-users me-2"></i></a>
-                <a class="nav-link text-center text-white" href="#" data-target="server" onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i class="fas fa-server me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files"
+                    onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i
+                        class="fas fa-file me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users"
+                    onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i
+                        class="fas fa-users me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyServer" href="#" data-target="server"
+                    onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i
+                        class="fas fa-server me-2"></i></a>
             </nav>
         </div>
         <div id=topbar class=noselect>
@@ -407,48 +436,43 @@
                         <h1>My Devices</h1>
                     </div>
                 </div>
+                <div class="d-flex align-items-center mb-3" id="devListToolbar"
+                    style="background-color: #333;padding:10px;">
+                    <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All" id="CollapseAllButton"
+                        src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
+                    <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton"
+                        src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
+                    <button class="btn btn-secondary me-2" id="SelectAllButton">Select All</button>
+                    <button class="btn btn-secondary me-2">Group Action</button>
+                    <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);"
+                        style="display:none;margin-right:4px" value="Scroll To Top" />
+                    <input type="text" id=SearchInput class="form-control me-2" style="width: auto;"
+                        placeholder="Filter">
+                    <select class="form-select me-2" style="width: auto;" id=DevFilterSelect
+                        onchange=onOnlineCheckBox(event) title="Device Filter">
+                        <option value=0 selected>All</option>
+                        <option value=1>Online</option>
+                        <option value=5>Offline</option>
+                        <option value=2>Sessions</option>
+                        <option value=3>Starred</option>
+                        <option value=4>Intel&reg; AMT</option>
+                        <option value=6>Help</option>
+                        <option value=7>Tagged</option>
+                        <option value=8>Untagged</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                    <label class="d-flex"><input class="form-control" style="width: auto;" type=checkbox
+                            id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span
+                            title="Show devices operating system name">OS
+                            Name</span></label>
+                    <label style="display:none"><input type=checkbox id=OnlineCheckBox
+                            onclick=onOnlineCheckBox(event) /><span
+                            title="Only show devices that are online">Online</span></label>
+                    <span id="devsCustomUIBar"></span>
+                </div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tr>
                         <td class=h1></td>
-                        <td id=devListToolbar class=style14 style="display:none">
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All"
-                                id="CollapseAllButton" src="images/icon-collapse.png" loading=lazy width=9 height=11
-                                onclick="cmexpandaction(2)" />
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All"
-                                id="ExpandAllButton" src="images/icon-expand.png" loading=lazy width=9 height=11
-                                onclick="cmexpandaction(1)" />
-                            <input type=button id=SelectAllButton onclick="selectallButtonFunction();"
-                                value="Select All" />&nbsp;
-                            <input type=button id=GroupActionButton disabled="disabled" value="Group Action"
-                                onclick=groupActionFunction() />&nbsp;
-                            <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);"
-                                style="display:none;margin-right:4px" value="Scroll To Top" />
-                            <input id=SearchInput type=search autocomplete=off placeholder=Filter
-                                onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event)
-                                onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0)
-                                title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any" />&nbsp;
-                            <span id=SearchInputClearButton style="display:none;position:relative"><img
-                                    src="images/x16.png" type="button" onclick="clearDeviceSearch()"
-                                    style="position:absolute;cursor:pointer;left:-18px;top:-8px"
-                                    srcset="images/x32.png 2x" /></span>
-                            <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
-                                <option value=0>All</option>
-                                <option value=1>Online</option>
-                                <option value=5>Offline</option>
-                                <option value=2>Sessions</option>
-                                <option value=3>Starred</option>
-                                <option value=4>Intel&reg; AMT</option>
-                                <option value=6>Help</option>
-                                <option value=7>Tagged</option>
-                                <option value=8>Untagged</option>
-                            </select>
-                            <label><input type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><span
-                                    title="Show devices operating system name">OS Name</span></label>
-                            <label style="display:none"><input type=checkbox id=OnlineCheckBox
-                                    onclick=onOnlineCheckBox(event) /><span
-                                    title="Only show devices that are online">Online</span></label>
-                            <span id="devsCustomUIBar"></span>
-                        </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
                             <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All"
                                 id="CollapseAllButton2" src="images/icon-collapse.png" loading=lazy width=9 height=11
@@ -13671,47 +13695,109 @@
             if (xxdialogMode) return false;
 
             // Check if we are disallowed from creating a device group
-            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "New Device Group", 1, null, "This account does not have the rights to create a new device group."); return false; }
+            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) {
+                showBootstrapModal("New Device Group", "This account does not have the rights to create a new device group.");
+                return false;
+            }
 
             // Remind the user to verify the email address
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return false; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) {
+                showBootstrapModal("Account Security", "Unable to access this feature until an email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address.");
+                return false;
+            }
 
-            // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
+            // Remind the user to add two-factor authentication
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) {
+                showBootstrapModal("Account Security", "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section.");
+                return false;
+            }
 
             // Look for all relay devices
             var relayDevices = [];
-            if ((features & 2) == 0) { for (var i in nodes) { var node = nodes[i]; if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) { relayDevices.push(node); } } }
-
-            // We are allowed, let's prompt to information
-            var x = "Create a new device group using the options below." + '<br /><br />', localGroupType = '';
-            x += addHtmlValue("Name", '<input id=dp2meshname style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
-            if ((features & 1) == 0) { localGroupType += '<option value=3>' + "Local devices, no agent" + '</option>'; }
-            if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=103>' + "No agent devices relayed thru agent" + '</option>'; }
-            if (features2 & 0x10000) {
-                if ((features & 1) == 0) { localGroupType += '<option value=4>' + "IP-KVM / Power device" + '</option>'; }
-                if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=104>' + "IP-KVM / Power device relayed thru agent" + '</option>'; }
+            if ((features & 2) == 0) {
+                for (var i in nodes) {
+                    var node = nodes[i];
+                    if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) {
+                        relayDevices.push(node);
+                    }
+                }
             }
-            x += addHtmlValue("Type", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option>' + localGroupType + '</select></div>');
+
+            // We are allowed, let's prompt for information
+            var x = "Create a new device group using the options below." + '<br /><br />', localGroupType = '';
+            x += addHtmlValue("Name", '<input id="dp2meshname" class="form-control" maxlength="128" />');
+            if ((features & 1) == 0) { localGroupType += '<option value="3">Local devices, no agent</option>'; }
+            if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value="103">No agent devices relayed thru agent</option>'; }
+            if (features2 & 0x10000) {
+                if ((features & 1) == 0) { localGroupType += '<option value="4">IP-KVM / Power device</option>'; }
+                if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value="104">IP-KVM / Power device relayed thru agent</option>'; }
+            }
+            x += addHtmlValue("Type", '<select id="dp2meshtype" class="form-control"><option value="2">Manage using a software agent</option><option value="1">Intel&reg; AMT only, no agent</option>' + localGroupType + '</select>');
             if (relayDevices.length > 0) {
-                x += '<div id=d2devrelaydiv style=display:none>';
+                x += '<div id="d2devrelaydiv" style="display:none">';
                 relayDevices.sort(nameSort);
                 var relayDevices2 = [];
                 for (var i in relayDevices) { relayDevices2.push('<option value="' + relayDevices[i]._id + '">' + EscapeHtml(relayDevices[i].name) + '</option>'); }
-                x += addHtmlValue("Relay Device", '<div style=width:230px;margin:0;padding:0><select id=d2devrelay style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) >' + relayDevices2.join('') + '</select></div>');
+                x += addHtmlValue("Relay Device", '<select id="d2devrelay" class="form-control">' + relayDevices2.join('') + '</select>');
                 x += '</div>';
             }
-            x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
-            x += '<div id=d2ipkvm style=display:none><hr />';
-            x += addHtmlValue("Model", '<div style=width:230px;margin:0;padding:0><select id=dp2ipkvmmodel style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=1>' + "Raritan Dominion KX III" + '</option><option value=2>' + "Web Power Switch 7" + '</option></select></div>');
-            x += addHtmlValue("Hostname", '<input id=dp2ipkvmhost style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
-            x += addHtmlValue("Username", '<input id=dp2ipkvmuser style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
-            x += addHtmlValue("Password", '<input id=dp2ipkvmpass type=password style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
+            x += addHtmlValue("Description", '<textarea id="dp2meshdesc" class="form-control" maxlength="1024" style="resize:none"></textarea>');
+            x += '<div id="d2ipkvm" style="display:none"><hr />';
+            x += addHtmlValue("Model", '<select id="dp2ipkvmmodel" class="form-control"><option value="1">Raritan Dominion KX III</option><option value="2">Web Power Switch 7</option></select>');
+            x += addHtmlValue("Hostname", '<input id="dp2ipkvmhost" class="form-control" maxlength="128" />');
+            x += addHtmlValue("Username", '<input id="dp2ipkvmuser" class="form-control" maxlength="128" />');
+            x += addHtmlValue("Password", '<input id="dp2ipkvmpass" type="password" class="form-control" maxlength="128" />');
             x += '</div>';
-            setDialogMode(2, "New Device Group", 3, account_createMeshEx, x);
+
+            document.getElementById('createMeshContent').innerHTML = x;
+            var createMeshModal = new bootstrap.Modal(document.getElementById('createMeshModal'));
+            createMeshModal.show();
+
+            document.getElementById('createMeshSave').onclick = function () {
+                account_createMeshEx();
+                createMeshModal.hide();
+            };
+
             account_validateMeshCreate();
-            Q('dp2meshname').focus();
+            document.getElementById('dp2meshname').focus();
+
+            // Add event listeners to prevent event propagation
+            var modalInputs = document.querySelectorAll('#createMeshModal input, #createMeshModal textarea, #createMeshModal select');
+            modalInputs.forEach(function (input) {
+                input.addEventListener('focus', function (event) {
+                    event.stopPropagation();
+                });
+                input.addEventListener('input', function (event) {
+                    event.stopPropagation();
+                });
+                input.addEventListener('keydown', function (event) {
+                    event.stopPropagation();
+                });
+                input.addEventListener('keyup', function (event) {
+                    event.stopPropagation();
+                });
+                input.addEventListener('change', function (event) {
+                    event.stopPropagation();
+                });
+            });
+
             return false;
+        }
+
+        function showBootstrapModal(title, message) {
+            document.getElementById('createMeshModalLabel').innerText = title;
+            document.getElementById('createMeshContent').innerHTML = '<p>' + message + '</p>';
+            document.getElementById('createMeshSave').style.display = 'none';
+            var createMeshModal = new bootstrap.Modal(document.getElementById('createMeshModal'));
+            createMeshModal.show();
+        }
+
+        // Utility function to add HTML value
+        function addHtmlValue(label, element) {
+            return `<div class="mb-3">
+                    <label class="form-label">${label}</label>
+                    ${element}
+                </div>`;
         }
 
         function account_validateMeshCreate(e, x) {
