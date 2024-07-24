@@ -2128,7 +2128,7 @@
                   "login"
                 ],
                 "default": "any",
-                "description": "Indicate what terminal options are available when the user clicks the right mouse button on the terminal connect button."
+                "description": "Indicates the default linux terminal thats used when the user clicks the terminal connect button and disables the right mouse button on the terminal connect button when this is set."
               },
               "launchCommand": {
                 "type": "object",
