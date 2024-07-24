@@ -3575,6 +3575,99 @@ module.exports.CreateDB = function (parent, func) {
                 });
             });
         }
+
+        // S3 Backup
+        if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.s3 == 'object')) {
+            var s3folderName = 'MeshCentral-Backups';
+            if (typeof parent.config.settings.autobackup.s3.foldername == 'string') { s3folderName = parent.config.settings.autobackup.s3.foldername; }
+            // Construct the config object
+            var accessKey = parent.config.settings.autobackup.s3.accesskey,
+                secretKey = parent.config.settings.autobackup.s3.secretkey,
+                endpoint = parent.config.settings.autobackup.s3.endpoint ? parent.config.settings.autobackup.s3.endpoint : 's3.amazonaws.com',
+                port = parent.config.settings.autobackup.s3.port ? parent.config.settings.autobackup.s3.port : 443,
+                useSsl = parent.config.settings.autobackup.s3.ssl ? parent.config.settings.autobackup.s3.ssl : true,
+                bucketName = parent.config.settings.autobackup.s3.bucketname,
+                pathPrefix = s3folderName,
+                threshold = parent.config.settings.autobackup.s3.maxfiles ? parent.config.settings.autobackup.s3.maxfiles : 0,
+                fileToUpload = filename;
+            // Create a MinIO client
+            const Minio = require('minio');
+            var minioClient = new Minio.Client({
+                endPoint: endpoint,
+                port: port,
+                useSSL: useSsl,
+                accessKey: accessKey,
+                secretKey: secretKey
+            });
+            // List objects in the specified bucket and path prefix
+            var listObjectsPromise = new Promise(function(resolve, reject) {
+                var items = [];
+                var stream = minioClient.listObjects(bucketName, pathPrefix, true);
+                stream.on('data', function(item) {
+                    if (!item.name.endsWith('/')) { // Exclude directories
+                        items.push(item);
+                    }
+                });
+                stream.on('end', function() {
+                    resolve(items);
+                });
+                stream.on('error', function(err) {
+                    reject(err);
+                });
+            });
+            listObjectsPromise.then(function(objects) {
+                // Count the number of files
+                var fileCount = objects.length;
+                 // Return if no files to carry on uploading
+                if (fileCount === 0) { return Promise.resolve(); }
+                // Sort the files by LastModified date (oldest first)
+                objects.sort(function(a, b) { return new Date(a.lastModified) - new Date(b.lastModified); });
+                // Check if the threshold is zero and return if 
+                if (threshold === 0) { return Promise.resolve(); }
+                // Check if the number of files exceeds the threshold (maxfiles) is 0
+                if (fileCount >= threshold) {
+                    // Calculate how many files need to be deleted to make space for the new file
+                    var filesToDelete = fileCount - threshold + 1; // +1 to make space for the new file
+                    if (func) { func('Deleting ' + filesToDelete + ' older ' + (filesToDelete == 1 ? 'file' : 'files') + ' from S3 ...'); }
+                    // Create an array of promises for deleting files
+                    var deletePromises = objects.slice(0, filesToDelete).map(function(fileToDelete) {
+                        return new Promise(function(resolve, reject) {
+                            minioClient.removeObject(bucketName, fileToDelete.name, function(err) {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    if (func) { func('Deleted file: ' + fileToDelete.name + ' from S3'); }
+                                    resolve();
+                                }
+                            });
+                        });
+                    });
+                    // Wait for all deletions to complete
+                    return Promise.all(deletePromises);
+                } else {
+                    return Promise.resolve(); // No deletion needed
+                }
+            }).then(function() {
+                // Determine the upload path by combining the pathPrefix with the filename
+                var fileName = require('path').basename(fileToUpload);
+                var uploadPath = require('path').join(pathPrefix, fileName);
+                // Upload a new file
+                var uploadPromise = new Promise(function(resolve, reject) {
+                    if (func) { func('Uploading file ' + uploadPath + ' to S3'); }
+                    minioClient.fPutObject(bucketName, uploadPath, fileToUpload, function(err, etag) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        if (func) { func('Uploaded file: ' + uploadPath + ' to S3'); }
+                        resolve(etag);
+                    }
+                    });
+                });
+                return uploadPromise;
+            }).catch(function(error) {
+                if (func) { func('Error managing files in S3: ' + error); }
+            });
+        }
     }
 
     // Transfer NeDB data into the current database
