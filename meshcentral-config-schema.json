@@ -229,6 +229,11 @@
             "none"
           ]
         },
+        "dbCipherAlgorithm": {
+          "type": "string",
+          "default": "aes-256-cbc",
+          "description": "Cipher algorithm used ot encrypt meshcental data in database. Options are: aes-256-cbc, aes-256-gcm"
+        },
         "dbKeyDerivationFunction": {
           "type": "string",
           "default": null,
