@@ -77,6 +77,26 @@
         </div>
     </div>
     <!-- Create MeshModal  -->
+    <!-- Create MeshAgent modal -->
+    <!-- The Modal -->
+    <div class="modal fade" id="addAgentModal" tabindex="-1" aria-labelledby="addAgentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAgentModalLabel">Add Mesh Agent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBodyContent">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveMeshAgentChanges">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Create MeshAgent modal -->
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
@@ -459,7 +479,6 @@
                         <option value=6>Help</option>
                         <option value=7>Tagged</option>
                         <option value=8>Untagged</option>
-                        <!-- Add more options as needed -->
                     </select>
                     <label class="d-flex"><input class="form-control" style="width: auto;" type=checkbox
                             id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span
@@ -1909,7 +1928,6 @@
                             <option value="cerulean">Cerulean</option>
                             <option value="cosmo">Cosmo</option>
                             <option value="cyborg">Cyborg</option>
-                            <!-- Add more themes as needed -->
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -4751,6 +4769,11 @@
         }
 
         function ondockeypress(e) {
+            // Check if any boostrap modal is active, and skip the function
+            if (document.querySelector('.modal.show')) {
+                return;
+            }
+
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -6145,119 +6168,59 @@
         }
 
         function addAgentToMesh(meshid) {
-            if (xxdialogMode) return false;
-            var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
+            const mesh = meshes[meshid];
+            let x = '';
+            let moreoptions = '';
 
-            var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
-            if ((features & 2) == 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; } // Don't display mobile setup in LAN mode.
-            opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
-            opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option><option value=8>' + "Apple macOS (UnInstall)" + '</option></select>';
+            const opts = `<select class="form-select" id="aginsSelect" onchange="addAgentToMeshClick()" style="width: 100%">
+                        <option value="0">Windows</option>
+                        <option value="1">Linux / BSD</option>
+                        <option value="5">Linux / BSD / macOS Binary Installer</option>
+                        <option value="2">Apple macOS</option>
+                        ${((features & 2) == 0) ? '<option value="6">Mobile device</option>' : ''}
+                        <option value="7">MeshCentral Assistant</option>
+                        <option value="3">Windows (UnInstall)</option>
+                        <option value="4">Linux / BSD (UnInstall)</option>
+                        <option value="8">Apple macOS (UnInstall)</option>
+                    </select>`;
             x += addHtmlValue("Operating System", opts);
 
-            var servername = serverinfo.name;
-            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
-            var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1), portStr = '';
-            if (serverinfo.https == true) { portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port); } else { portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port); }
+            // Add binaryInstallAgents options
+            const binaryInstallAgentsOrder = [6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 16, 29];
+            const binaryInstallAgents = {
+                6: 'Linux x86-64', 5: 'Linux x86-32', 10005: 'Apple OSX Universal',
+                25: 'Linux ARM-HF, Raspberry Pi', 26: 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)',
+                30: 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64',
+                37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)',
+                16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64'
+            };
+            binaryInstallAgentsOrder.forEach(i => {
+                moreoptions += `<option value="${i}">${binaryInstallAgents[i]}</option>`;
+            });
+            x += `<div id="aginsSysTypeDiv">${addHtmlValue("System Type", `<select class="form-select" id="aginsSysType" onchange="addAgentToMeshClick()" style="width: 100%">${moreoptions}</select>`)}</div>`;
 
-            // Add Linux/macOS binary installer option
-            var binaryInstallAgentsOrder = [6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 16, 29];
-            var binaryInstallAgents = { 6: 'Linux x86-64', 5: 'Linux x86-32', 10005: 'Apple OSX Universal', 25: 'Linux ARM-HF, Rasberry Pi', 26: 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30: 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
-            for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
-            x += '<div id=aginsSysTypeDiv>';
-            x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
-            x += '</div>';
+            // Add agent and assistant installation type options
+            x += `<div id="aginsTypeDiv">${addHtmlValue("Installation Type", `<select class="form-select" id="aginsType" onchange="addAgentToMeshClick()" style="width: 100%">
+                    <option value="0">Background & interactive</option>
+                    <option value="2">Background only</option>
+                    <option value="1">Interactive only</option>
+                </select>`)}</div>`;
 
-            // Add agent and assistant installation type option
-            x += '<div id=aginsTypeDiv>';
-            x += addHtmlValue("Installation Type", '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
-            x += '</div><div id=asinsTypeDiv>';
-            x += addHtmlValue("Installation Type", '<select id=asinsType onchange=addAgentToMeshClick() style=width:236px><option value=2>' + "Application, Connect on user request" + '</option><option value=3>' + "Application, Always connected" + '</option><option value=0>' + "System Tray, Connect on user request" + '</option><option value=1>' + "System Tray, Always connected" + '</option><option value=4>' + "System Tray, Monitor only" + '</option></select>');
-            x += '</div><hr>';
+            x += `<div id="asinsTypeDiv">${addHtmlValue("Installation Type", `<select class="form-select" id="asinsType" onchange="addAgentToMeshClick()" style="width: 100%">
+                    <option value="2">Application, Connect on user request</option>
+                    <option value="3">Application, Always connected</option>
+                    <option value="0">System Tray, Connect on user request</option>
+                    <option value="1">System Tray, Always connected</option>
+                    <option value="4">System Tray, Monitor only</option>
+                </select>`)}</div><hr>`;
 
-            // \/:*?"<>|
-            var meshfilename = mesh.name
-            meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+            document.getElementById('modalBodyContent').innerHTML = x;
 
-            // Windows agent install
-            x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
-            x += '</div>';
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('addAgentModal'));
+            modal.show();
 
-            // Linux agent install
-            x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
-            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
-
-            // macOS agent install
-            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
-            x += '</div>';
-
-            // QR code agent install
-            x += '<div id=agins_qrcode style=display:none;min-height:180px><a id=agins_qrimage_a rel=\"noreferrer noopener\" target=_blank><div id=agins_qrimage style=float:right;margin-left:10px;width:180px;height:180px;cursor:pointer></div></a><div>' + format("To add a mobile device to group \"{0}\", download the MeshAgent application and scan this QR code.", EscapeHtml(mesh.name)) + '</div>';
-            x += "<table style=width:180px>";
-            x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\"><img style=cursor:pointer src=\"images/google-play-140.png\" width=140 srcset=\"images/google-play-280.png 2x\" /></a></td></tr>";
-            x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\"><img style=cursor:pointer src=\"images/amazon-appstore-140.png\"  width=140 srcset=\"images/amazon-appstore-280.png 2x\" /></a></td></tr>";
-            x += "</table>";
-            x += addHtmlValue("Android APK", '<a onclick=downloadFile("meshagents?id=14' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "APK version of the MeshAgent" + '">' + "APK" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=14&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>');
-            x += '</div>'
-
-            // MeshCentral Assistant
-            x += '<div id=agins_assistant style=display:none><table><tr><td style=vertical-align:top><div>' + format("MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will connect to device group \"{0}\".", EscapeHtml(mesh.name)) + '</div><div></div><br />';
-            x += '<a id=asinslnk name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>';
-            x += '</td><td><img id=agass_img1 src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"><img id=agass_img2 src=images/assistant2-100.png width=74 height=100 srcset="images/assistant2-200.png 2x"></td></tr></table></div>';
-
-            // MeshCentral Assistant2
-            x += '<div id=agins_assistant2 style=display:none><table><tr><td style=vertical-align:top><div>' + "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will monitor the background agent." + '</div><div></div><br />';
-            x += '<a id=asinslnk2 name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>';
-            x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
-
-            // Windows agent uninstall
-            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += '</div>';
-
-            // Linux agent uninstall
-            x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
-            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
-            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
-
-            // macOS agent uninstall
-            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right click on the \".mpkg\" file and click \"Show Package Contents\", then right click on \"Uninstall.command\" and click \"Open\"" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
-            x += '</div>';
-
-            // Linux binary installer
-            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Command", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
-            x += '</div>';
-
-            setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
-
-            // Create the QR code
-            new QRCode(Q('agins_qrimage'), { text: serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
-            Q('agins_qrimage_a').setAttribute('href', serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2])
-
-            if ((features & 0x2000) == 0) {
-                Q('agins_linux_area').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '"' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                Q('agins_linux_area_un').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '"' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                //Q('agins_linux_area_un').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '"' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
-            }
-            else {
-                // Server asked that agent be installed to preferably not use a HTTP proxy.
-                Q('agins_linux_area').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                //Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-proxy' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
-            }
-            Q('aginsSelect').focus();
             addAgentToMeshClick();
-            return false;
         }
 
         function copyAgentIdValue(id) { copyTextToClip(Q(id).value); }
@@ -6276,36 +6239,79 @@
         }
 
         function addAgentToMeshClick() {
-            var v = Q('aginsSelect').value;
-            QV('agins_windows', v == 0);
-            QV('agins_linux', v == 1);
-            QV('agins_osx', v == 2);
-            QV('agins_windows_un', v == 3);
-            QV('agins_linux_un', v == 4);
-            QV('agins_linux_inst', v == 5);
-            QV('aginsSysTypeDiv', v == 5);
-            QV('agins_qrcode', v == 6);
-            QV('agins_assistant', (v == 7) && (Q('asinsType').value != 4));
-            QV('agins_assistant2', (v == 7) && (Q('asinsType').value == 4));
-            QV('agins_osx_un', v == 8);
-            Q('aginsbinlnk').onclick = function () { downloadFile((Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : '') + '&meshinstall=' + Q('aginsSysType').value); };
-            Q('aginsbincmd').value = (Q('aginsbincmd').value.split('&installflags=')[0]) + '&installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : '') + '&meshinstall=' + Q('aginsSysType').value + '\"';
-            QV('aginsTypeDiv', (v == 0) || (v == 5));
-            QV('asinsTypeDiv', (v == 7));
+            var v = document.getElementById('aginsSelect').value;
 
-            // Fix the links if needed
-            Q('aginsw32lnk').onclick = function () { downloadFile((Q('aginsw32lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : ''), null, true); }
-            Q('aginsw64lnk').onclick = function () { downloadFile((Q('aginsw64lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : ''), null, true); }
-            Q('aginswa64lnk').onclick = function () { downloadFile((Q('aginswa64lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : ''), null, true); }
-            Q('aginsw32unlnk').onclick = function () { downloadFile((Q('aginsw32lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : ''), null, true); }
-            Q('aginsw64unlnk').onclick = function () { downloadFile((Q('aginsw64lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : ''), null, true); }
-            Q('aginswa64unlnk').onclick = function () { downloadFile((Q('aginswa64lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : ''), null, true); }
-            if (debugmode > 0) { Q('aginswmshlnk').onclick = function () { downloadFile((Q('aginswmshlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key ? ('&key=' + urlargs.key) : ''), null, true); } }
-            Q('asinslnk').onclick = function () { downloadFile(Q('asinslnk').name + '&ac=' + Q('asinsType').value, null, true); }
-            Q('asinslnk2').onclick = function () { downloadFile(Q('asinslnk').name + '&ac=' + Q('asinsType').value, null, true); }
-            if (v == 7) {
-                QV('agass_img1', Q('asinsType').value < 2);
-                QV('agass_img2', Q('asinsType').value >= 2);
+            var displayValues = {
+                'agins_windows': (v == 0),
+                'agins_linux': (v == 1),
+                'agins_osx': (v == 2),
+                'agins_windows_un': (v == 3),
+                'agins_linux_un': (v == 4),
+                'agins_linux_inst': (v == 5),
+                'aginsSysTypeDiv': (v == 5),
+                'agins_qrcode': (v == 6),
+                'agins_assistant': (v == 7) && (document.getElementById('asinsType').value != 4),
+                'agins_assistant2': (v == 7) && (document.getElementById('asinsType').value == 4),
+                'agins_osx_un': (v == 8),
+                'aginsTypeDiv': (v == 0) || (v == 5),
+                'asinsTypeDiv': (v == 7),
+                'agass_img1': v == 7 && document.getElementById('asinsType').value < 2,
+                'agass_img2': v == 7 && document.getElementById('asinsType').value >= 2
+            };
+
+            for (var id in displayValues) {
+                document.getElementById(id).style.display = displayValues[id] ? 'block' : 'none';
+            }
+
+            var installflags = document.getElementById('aginsType').value;
+            var keyParam = urlargs.key ? ('&key=' + urlargs.key) : '';
+            var meshinstallParam = '&meshinstall=' + document.getElementById('aginsSysType').value;
+
+            document.getElementById('aginsbinlnk').onclick = function () {
+                downloadFile((document.getElementById('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + installflags + keyParam + meshinstallParam);
+            };
+
+            document.getElementById('aginsbincmd').value =
+                (document.getElementById('aginsbincmd').value.split('&installflags=')[0]) +
+                '&installflags=' + installflags +
+                keyParam +
+                meshinstallParam + '\"';
+
+            var linkIds = [
+                'aginsw32lnk', 'aginsw64lnk', 'aginswa64lnk',
+                'aginsw32unlnk', 'aginsw64unlnk', 'aginswa64unlnk'
+            ];
+
+            linkIds.forEach(function (linkId) {
+                var element = document.getElementById(linkId);
+                if (element) {
+                    element.onclick = function () {
+                        downloadFile((element.name.split('installflags=')[0]) + 'installflags=' + installflags + keyParam, null, true);
+                    };
+                }
+            });
+
+            if (debugmode > 0) {
+                var debugElement = document.getElementById('aginswmshlnk');
+                if (debugElement) {
+                    debugElement.onclick = function () {
+                        downloadFile((debugElement.name.split('installflags=')[0]) + 'installflags=' + installflags + keyParam, null, true);
+                    };
+                }
+            }
+
+            var asinsElement = document.getElementById('asinslnk');
+            if (asinsElement) {
+                asinsElement.onclick = function () {
+                    downloadFile(asinsElement.name + '&ac=' + document.getElementById('asinsType').value, null, true);
+                };
+            }
+
+            var asinsElement2 = document.getElementById('asinslnk2');
+            if (asinsElement2) {
+                asinsElement2.onclick = function () {
+                    downloadFile(asinsElement.name + '&ac=' + document.getElementById('asinsType').value, null, true);
+                };
             }
         }
 
@@ -13790,14 +13796,6 @@
             document.getElementById('createMeshSave').style.display = 'none';
             var createMeshModal = new bootstrap.Modal(document.getElementById('createMeshModal'));
             createMeshModal.show();
-        }
-
-        // Utility function to add HTML value
-        function addHtmlValue(label, element) {
-            return `<div class="mb-3">
-                    <label class="form-label">${label}</label>
-                    ${element}
-                </div>`;
         }
 
         function account_validateMeshCreate(e, x) {
