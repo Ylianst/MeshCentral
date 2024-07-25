@@ -229,6 +229,16 @@
             "none"
           ]
         },
+        "dbKeyDerivationFunction": {
+          "type": "string",
+          "default": null,
+          "description": "Function used for deriving the key used to store config and meshcental data in database. Options are: pbkdf2. Default (anything else) is a simple sha384 hash."
+        },
+        "dbKeyDerivationIterations": {
+          "type": "string",
+          "default": 100000,
+          "description": "Number of iterations to use to for the dbKeyDerivationFunction. Valid for: pbkdf2. If this is changed, the files need to be pushed to the database again, otherwise it will continue to use the old number of iterations."
+        },
         "dbEncryptKey": {
           "type": "string",
           "default": null,

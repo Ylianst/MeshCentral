@@ -417,31 +417,70 @@ module.exports.CreateDB = function (parent, func) {
     };
 
     // Get encryption key
-    obj.getEncryptDataKey = function (password) {
+    obj.getEncryptDataKey = function (password, salt, iterations) {
         if (typeof password != 'string') return null;
-        return parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
+        let key;
+        switch (parent.config.settings.dbkeyderivationfunction) {
+            case "pbkdf2":
+                try {
+                    key = parent.crypto.pbkdf2Sync(password, salt, iterations, 32, 'sha384');
+                } catch (e) {
+                    // If this previous call fails, it's probably because older pbkdf2 did not specify the hashing function, just use the default.
+                    key = parent.crypto.pbkdf2Sync(password, salt, iterations, 32);
+                }
+                return key
+            default:
+                return parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
+        }
+       
     }
 
     // Encrypt data 
     obj.encryptData = function (password, plaintext) {
-        var key = obj.getEncryptDataKey(password);
-        if (key == null) return null;
+        let iterations = parent.config.settings.dbkeyderivationiterations || 100000
+        let cipherAlgorithm = parent.config.settings.dbcipheralgorithm || 'aes-256-cbc'
         const iv = parent.crypto.randomBytes(16);
-        const aes = parent.crypto.createCipheriv('aes-256-cbc', key, iv);
+        var key = obj.getEncryptDataKey(password, iv, iterations);
+        if (key == null) return null;
+        const aes = parent.crypto.createCipheriv(cipherAlgorithm, key, iv);
         var ciphertext = aes.update(plaintext);
-        ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
+        let buffer_contents = [iv, ciphertext, aes.final()];
+        if (cipherAlgorithm.indexOf("gcm") !== -1) {
+            buffer_contents = [aes.getAuthTag()].concat(buffer_contents)
+        }
+        if (["pbkdf2"].indexOf(parent.config.settings.dbkeyderivationfunction) !== -1) {
+            let iterbuf = Buffer.allocUnsafe(4);
+            iterbuf.writeUInt32BE(iterations);
+            buffer_contents = [iterbuf].concat(buffer_contents);
+        }
+        ciphertext = Buffer.concat(buffer_contents);
         return ciphertext.toString('base64');
     }
 
     // Decrypt data 
     obj.decryptData = function (password, ciphertext) {
         try {
-            var key = obj.getEncryptDataKey(password);
-            if (key == null) return null;
+            let offset = 0;
+            let iterations;
             const ciphertextBytes = Buffer.from(ciphertext, 'base64');
-            const iv = ciphertextBytes.slice(0, 16);
-            const data = ciphertextBytes.slice(16);
-            const aes = parent.crypto.createDecipheriv('aes-256-cbc', key, iv);
+            let cipherAlgorithm = parent.config.settings.dbcipheralgorithm || 'aes-256-cbc'
+            if (["pbkdf2"].indexOf(parent.config.settings.dbkeyderivationfunction) !== -1) {
+                iterations = ciphertextBytes.readUInt32BE(0);
+                offset += 4;
+            }
+            let authTag;
+            if (cipherAlgorithm.indexOf("gcm")) {
+                authTag = ciphertextBytes.slice(offset, offset+16);
+                offset += 16;
+            }
+            const iv = ciphertextBytes.slice(offset, offset+16);
+            const data = ciphertextBytes.slice(offset+16);
+            var key = obj.getEncryptDataKey(password, iv, iterations);
+            if (key == null) return null;
+            const aes = parent.crypto.createDecipheriv(cipherAlgorithm, key, iv);
+            if (authTag) {
+                aes.setAuthTag(authTag);
+            }
             var plaintextBytes = Buffer.from(aes.update(data));
             plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
             return plaintextBytes;
