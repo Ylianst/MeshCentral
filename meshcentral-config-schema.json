@@ -229,16 +229,6 @@
             "none"
           ]
         },
-        "dbCipherAlgorithm": {
-          "type": "string",
-          "default": "aes-256-cbc",
-          "description": "Cipher algorithm used ot encrypt meshcental data in database. Options are: aes-256-cbc, aes-256-gcm"
-        },
-        "dbKeyDerivationFunction": {
-          "type": "string",
-          "default": null,
-          "description": "Function used for deriving the key used to store config and meshcental data in database. Options are: pbkdf2. Default (anything else) is a simple sha384 hash."
-        },
         "dbKeyDerivationIterations": {
           "type": "string",
           "default": 100000,
