@@ -430,13 +430,14 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     obj.oldGetEncryptDataKey = function (password) {
+        if (typeof password != 'string') return null;
         return parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
     }
 
     // Encrypt data 
     obj.encryptData = function (password, plaintext) {
         let encryptionVersion = 0x1;
-        let iterations = parent.config.settings.dbkeyderivationiterations || 100000
+        let iterations = 100000
         const iv = parent.crypto.randomBytes(16);
         var key = obj.getEncryptDataKey(password, iv, iterations);
         if (key == null) return null;

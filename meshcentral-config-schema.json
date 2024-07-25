@@ -229,11 +229,6 @@
             "none"
           ]
         },
-        "dbKeyDerivationIterations": {
-          "type": "string",
-          "default": 100000,
-          "description": "Number of iterations to use to for the dbKeyDerivationFunction. Valid for: pbkdf2. If this is changed, the files need to be pushed to the database again, otherwise it will continue to use the old number of iterations."
-        },
         "dbEncryptKey": {
           "type": "string",
           "default": null,
