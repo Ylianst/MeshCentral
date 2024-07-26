@@ -914,11 +914,11 @@
                 },
                 "accessKey": {
                   "type": "string",
-                  "description": "S3 accessKey"
+                  "description": "S3 accessKey, Required"
                 },
                 "secretKey": {
                   "type": "string",
-                  "description": "S3 secretKey"
+                  "description": "S3 secretKey, Required"
                 },
                 "port": {
                   "type": "integer",
@@ -932,17 +932,17 @@
                 },
                 "bucketName": {
                   "type": "string",
-                  "description": "S3 Bucket Name"
+                  "description": "S3 Bucket Name, Required"
                 },
                 "folderName": {
                   "type": "string",
                   "default": "MeshCentral-Backups",
-                  "description": "The name of the folder to create in the WebDAV account."
+                  "description": "The name of the folder to create in the S3 Bucket. Defaults to \"MeshCentral-Backups\"."
                 },
                 "maxFiles": {
                   "type": "integer",
                   "default": 0,
-                  "description": "The maximum number of files to keep in the S3 folder, older files will be removed if needed. Default is 0 which is keep everything"
+                  "description": "The maximum number of files to keep in the S3 folder, older files will be removed if needed. Default is 0 which is keep everything."
                 }
               }
             }
