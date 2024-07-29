@@ -897,6 +897,54 @@
                   "description": "The maximum number of files to keep in the WebDAV folder, older files will be removed if needed."
                 }
               }
+            },
+            "s3": {
+              "type": "object",
+              "description": "Enabled automated upload of the server backups to an S3 server.",
+              "required": [
+                "accessKey",
+                "secretKey",
+                "bucketName"
+              ],
+              "properties": {
+                "endpoint": {
+                  "type": "string",
+                  "default": "s3.amazonaws.com",
+                  "description": "S3 Endpoint address e.g. myS3.myserver.com"
+                },
+                "accessKey": {
+                  "type": "string",
+                  "description": "S3 accessKey, Required"
+                },
+                "secretKey": {
+                  "type": "string",
+                  "description": "S3 secretKey, Required"
+                },
+                "port": {
+                  "type": "integer",
+                  "default": 443,
+                  "description": "S3 Endpoint port number, Default is 443"
+                },
+                "ssl": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "If \"true\", the S3 Endpoint will use \"https\", else it will use \"http\", Default is true"
+                },
+                "bucketName": {
+                  "type": "string",
+                  "description": "S3 Bucket Name, Required"
+                },
+                "folderName": {
+                  "type": "string",
+                  "default": "MeshCentral-Backups",
+                  "description": "The name of the folder to create in the S3 Bucket. Defaults to \"MeshCentral-Backups\"."
+                },
+                "maxFiles": {
+                  "type": "integer",
+                  "default": 0,
+                  "description": "The maximum number of files to keep in the S3 folder, older files will be removed if needed. Default is 0 which is keep everything."
+                }
+              }
             }
           }
         },
