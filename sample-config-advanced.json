@@ -132,6 +132,16 @@
         "password": "pass",
         "folderName": "MeshCentral-Backups",
         "maxFiles": 10
+      },
+      "_s3": {
+        "accessKey": "MYLONGACCESSKEY",
+        "secretKey": "MYLONGSECRETKEY",
+        "endpoint": "myS3.myserver.com",
+        "port": 9000,
+        "ssl": false,
+        "bucketName": "test",
+        "folderName": "MeshCentral-Backups",
+        "maxfiles": 10
       }
     },
     "_redirects": {
