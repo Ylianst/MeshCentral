@@ -2118,9 +2118,9 @@
                 </div>
             </div>
             <div id="idx_dlgButtonBar">
-                <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
-                <input id="idx_dlgOkButton" type="button" value="OK" style="" onclick="dialogclose(1)" />
-                <div><input id="idx_dlgDeleteButton" type="button" value="Delete" style="display:none"
+                <input id="idx_dlgCancelButton" class="btn btn-secondary" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
+                <input id="idx_dlgOkButton" class="btn btn-outline-success" type="button" value="OK" style="" onclick="dialogclose(1)" />
+                <div><input id="idx_dlgDeleteButton" class="btn btn-outline-danger" type="button" value="Delete" style="display:none"
                         onclick="dialogclose(2)" /></div>
                 <div id="idx_dlgMoreButtons">
                     <a href=# id=idx_dlgMoreButtons1 style=cursor:pointer;color:gray;text-decoration:none
@@ -13578,7 +13578,7 @@
         function account_showLocalizationSettings() {
             if (xxdialogMode) return false;
             var n = getstore('loctag', 0), y = '';
-            var x = '<select id=d2locselect style=width:240px><option value="*">' + "User browser value" + '</option>';
+            var x = '<select id=d2locselect class="form-select" style=width:240px><option value="*">' + "User browser value" + '</option>';
             for (var i in loclist) { x += '<option value="' + i + '"' + ((n == i) ? ' selected' : '') + '>' + i + ' - ' + loclist[i] + '</option>'; }
             x += '</select>';
             if (serverinfo.languages && serverinfo.languages.length > 0) {
@@ -13627,8 +13627,12 @@
             var y = '', x = "Create a temporary username and password that can be used as alternative login to your account. This is useful for allowing tools or other services to access your account." + '<br /><br />';
             var options = { 0: "Unlimited", 1: "1 minute", 5: "5 minutes", 10: "10 minutes", 15: "15 minutes", 30: "30 minutes", 45: "45 minutes", 60: "60 minutes", 120: "2 hours", 240: "4 hours", 480: "8 hours", 720: "12 hours", 960: "16 hours", 1440: "24 hours", 2880: "2 days", 5760: "4 days", 10080: "7 days" }
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Token Name", '<input class=boxsize id=d2tokenName style=width:250px maxlength=100 type=text onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate() />');
-            x += addHtmlValue("Expire Time", '<select class=boxsize id=d2tokenExpire style=width:250px>' + y + '</select>');
+            x += '<div class="form-floating mb-3">';
+            x += '<input type=text class="boxsize form-control" id=d2tokenName maxlength="100" placeholder="Token Name" onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate()>';
+            x += '<label for=d2tokenName>Token Name</label>';
+            x += '</div>';
+
+            x += '<label for=d2tokenExpire class="form-label">Expire Time</label><select class="boxsize form-select" id=d2tokenExpire>' + y + '</select>';
             setDialogMode(2, "Create Login Token", 3, account_createLoginTokenEx, x);
             QE('idx_dlgOkButton', false);
             Q('d2tokenName').focus();
@@ -13645,11 +13649,11 @@
         function account_showAccountNotifySettings() {
             if (xxdialogMode) return false;
             var x = '';
-            x += '<div><label><input id=p2notifyPlayNotifySound type=checkbox />' + "Notification sound" + '</label></div>';
-            x += '<div><label><input id=p2notifyGroupName type=checkbox />' + "Display device group name" + '</label></div>';
-            x += '<div><label><input id=p2notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
-            x += '<div><label><input id=p2notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
-            x += '<div><label><input id=p2notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyPlayNotifySound class="form-check-input" type=checkbox />' + "Notification sound" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyGroupName class="form-check-input" type=checkbox />' + "Display device group name" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyIntelAmtKvmActions class="form-check-input" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
             setDialogMode(2, "Notification Settings", 3, account_showAccountNotifySettingsEx, x);
             var n = getstore('notifications', 0);
             Q('p2notifyPlayNotifySound').checked = (n & 1);
@@ -13684,7 +13688,7 @@
         function account_showChangeEmail() {
             if (xxdialogMode) return false;
             var x = "Change your account email address here." + '<br /><br />';
-            x += addHtmlValue('Email', '<input id=dp2email style=width:230px maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) />');
+            x += '<div class="form-floating"><input id=dp2email class="form-control" maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) placeholder=Email /> <label for=dp2email>Email</label></div>';
             setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
             if (userinfo.email != null) { Q('dp2email').value = userinfo.email; }
             account_validateEmail();
@@ -13704,13 +13708,25 @@
         function account_showDeleteAccount() {
             if (xxdialogMode) return false;
             var x = "To delete this account, type in the account password in both boxes below and hit ok." + '<br /><br />';
-            x += '<form method=post><input type=hidden name=action value=deleteaccount /><input type=hidden name=authcookie value=' + authCookie + ' /><table style=margin-left:80px><tr>';
-            x += '<td align=right>' + "Password:" + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
-            x += '</tr><tr><td align=right>' + "Password:" + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount() /></td>';
-            x += '</tr></table><br /><div style=padding:10px;margin-bottom:4px>';
-            x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
-            x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
-            x += '</div><br /></form>';
+            x += '<form method=post>';
+            x += '<input type=hidden name=action value=deleteaccount />';
+            x += '<input type=hidden name=authcookie value="' + authCookie + '" />';
+            x += '<div class="container">';
+            x += '<div class="form-floating mb-2">';
+            x += '<input type=password class="form-control" id=apassword1 name=apassword1 autocomplete=off placeholder="Password" onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount()>';
+            x += '<label for="apassword1">Password</label>';
+            x += '</div>';
+            x += '<div class="form-floating mb-3">';
+            x += '<input type=password class="form-control" id=apassword2 name=apassword2 autocomplete=off placeholder="Confirm Password" onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount()>';
+            x += '<label for=apassword2>Confirm Password</label>';
+            x += '</div>';
+            x += '<div class="d-flex justify-content-end">';
+            x += '<button type=button id=account_dlgCancelButton class="btn btn-secondary me-2" onclick=dialogclose(0)>Cancel</button>';
+            x += '<button type=submit id=account_dlgOkButton class="btn btn-outline-primary" onclick=dialogclose(1)>OK</button>';
+            x += '</div>';
+            x += '</div>';
+            x += '</form>';
+
             setDialogMode(2, "Delete Account", 0, null, x);
             account_validateDeleteAccount();
             Q('apassword1').focus();
@@ -13723,12 +13739,28 @@
             if (features & 0x00010000) { " Password hint can be used but is not recommended."; }
             x += '<br /><br />';
             //x += "<form action='" + domainUrl + "changepassword' method=post>";
-            x += '<table style=margin-left:60px>';
-            x += '<tr><td align=right>' + nobreak("Old password:") + '</td><td><input id=apassword0 type=password name=apassword0 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b></b></td></tr>';
-            x += '<tr><td align=right>' + nobreak("New password:") + '</td><td><input id=apassword1 type=password name=apassword1 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /> <b><span id=dxPassWarn></span></b></td></tr>';
-            x += '<tr><td align=right>' + nobreak("New password:") + '</td><td><input id=apassword2 type=password name=apassword2 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>';
-            if (features & 0x00010000) { x += '<tr><td align=right>' + "Password hint:" + '</td><td><input id=apasswordhint name=apasswordhint maxlength=250 type=text autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword() /></td></tr>'; }
-            x += '</table>'
+            x += '<div class="container">';
+            x += '<div class="form-floating mb-2">';
+            x += '<input type=password class="form-control" id=apassword0 name=apassword0 autocomplete=off placeholder="Old password" onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword()>';
+            x += '<label for=apassword0>Old password</label>';
+            x += '</div>';
+            x += '<div class="form-floating mb-2">';
+            x += '<input type=password class="form-control" id=apassword1 name=apassword1 autocomplete=off placeholder="New password" onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword()>';
+            x += '<label for=apassword1>New password</label>';
+            x += '<b><span id=dxPassWarn></span></b>';
+            x += '</div>';
+            x += '<div class="form-floating mb-2">';
+            x += '<input type=password class="form-control" id=apassword2 name=apassword2 autocomplete=off placeholder="Confirm new password" onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword()>';
+            x += '<label for=apassword2>Confirm new password</label>';
+            x += '</div>';
+            if (features & 0x00010000) {
+                x += '<div class="form-floating mb-2">';
+                x += '<input type=text class="form-control" id=apasswordhint name=apasswordhint maxlength=250 autocomplete=off onchange=account_validateNewPassword() onkeyup=account_validateNewPassword() onkeydown=account_validateNewPassword()>';
+                x += '<label for=apasswordhint>Password hint</label>';
+                x += '</div>';
+            }
+            x += '</div>';
+
             if (passRequirements) {
                 var r = [], rc = 0;
                 for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
@@ -14428,7 +14460,7 @@
             if (xxdialogMode) return;
             var x = '', acmoption = '';
             if ((features & 0x100000) != 0) { acmoption = '<option value=3>' + "Simple Admin Control Mode (ACM)" + '</option>'; }
-            x += addHtmlValue("Type", '<select id=dp20amtpolicy style=width:230px onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '<option value=4>' + "Fully Automatic" + '</option></select>');
+            x += addHtmlValue("Type", '<select id=dp20amtpolicy class="form-select" onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '<option value=4>' + "Fully Automatic" + '</option></select>');
             x += '<div id=dp20amtpolicydiv></div>';
             setDialogMode(2, "Intel&reg; AMT Policy", 3, p20editMeshAmtEx, x);
             if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }
@@ -14451,22 +14483,22 @@
             var ptype = Q('dp20amtpolicy').value, x = '';
             if ((ptype == 2) || (ptype == 3)) {
                 var keeppass = ((currentMesh.amt != null) && (currentMesh.amt.password == 1)) ? '<option value=1 selected>' + "Keep existing password" + '</option>' : '';
-                x += addHtmlValue("Password", '<select id=dp20amtpass style=width:230px onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy()><option value=0>' + "Randomize password" + '</option>' + keeppass + '<option value=2>' + "Select new password" + '</option></select>');
+                x += addHtmlValue("Password00", '<select id=dp20amtpass class="form-select" onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy()><option value=0>' + "Randomize password" + '</option>' + keeppass + '<option value=2>' + "Select new password" + '</option></select>');
                 x += '<div id=dp20amtpassdiv style=display:none>';
-                x += addHtmlValue("New password*", '<input id=dp20amtpolicypass type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
-                x += addHtmlValue("New password*", '<input id=dp20amtpolicypass2 type=password style=width:230px maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
+                x += addHtmlValue("New password*", '<input id=dp20amtpolicypass type=password class="form-control" maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
+                x += addHtmlValue("New password*", '<input id=dp20amtpolicypass2 type=password class="form-control" maxlength=32 onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy() autocomplete=off />')
                 x += '</div>';
-                if (ptype == 3) { x += addHtmlValue("CCM mode", '<select id=dp20amtccmmode style=width:230px onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy()><option value=0>' + "Don't change, keep CCM if setup" + '</option><option value=1>' + "Deactivate CCM if setup" + '</option><option value=2>' + "Activate to CCM, if ACM fails" + '</option></select>'); }
+                if (ptype == 3) { x += addHtmlValue("CCM mode", '<select id=dp20amtccmmode class="form-select" onchange=dp20amtValidatePolicy() onkeyup=dp20amtValidatePolicy()><option value=0>' + "Don't change, keep CCM if setup" + '</option><option value=1>' + "Deactivate CCM if setup" + '</option><option value=2>' + "Activate to CCM, if ACM fails" + '</option></select>'); }
                 x += '<div id=dp20amtbadpassdiv style=display:none>';
-                x += addHtmlValue("Unknown password", '<select id=dp20amtbadpass style=width:230px><option value=0>' + "Do nothing" + '</option><option value=1>' + "If in CCM, reactivate Intel&reg; AMT" + '</option></select>');
+                x += addHtmlValue("Unknown password", '<select id=dp20amtbadpass class="form-select"><option value=0>' + "Do nothing" + '</option><option value=1>' + "If in CCM, reactivate Intel&reg; AMT" + '</option></select>');
                 x += '</div>';
                 if ((features & 0x400) == 0) { x += addHtmlValue('<span title="' + "Client Initiated Remote Access" + '">' + "CIRA setup" + '</span>', '<select id=dp20amtcira style=width:230px><option value=0>' + "Do nothing" + '</option><option value=1>' + "Don't connect to server" + '</option><option value=2>' + "Connect to server" + '</option></select>'); }
                 x += '<span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span>';
                 if ((currentMesh.mtype == 2) && (ptype == 2)) { x += '<span style="font-size:10px"> ' + "This policy will not impact devices with Intel&reg; AMT in ACM mode." + '</span>'; }
             }
-            if (ptype == 0) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it." + '</table>'; }
-            if (ptype == 1) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/rcheckbox60.png width=60 height=60><td>' + "When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually." + '</table>'; }
-            if (ptype == 4) { x = '<table style=padding-top:4px><tr><td><img style=padding-right:8px src=images/checkbox60.png width=60 height=60><td>' + "This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management." + '</table>'; }
+            if (ptype == 0) { x = '<div class="row"><div class="col-2"><i class="fas fa-times-circle text-danger" style="padding-right:8px; font-size:60px;"></i></div><div class="col-10">When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it.</div></div>'; }
+            if (ptype == 1) { x = '<div class="row"><div class="col-2"><i class="fas fa-times-circle text-danger" style="font-size:60px; padding-right:8px; color:green;"></i></div><div class="col-10">When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually.</div></div>'; }
+            if (ptype == 4) { x = '<div class="row"><div class="col-2"><i class="fas fa-check-circle text-success" style="font-size:60px; padding-right:8px; color:blue;"></i></div><div class="col-10">This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.</div></div>'; }
             QH('dp20amtpolicydiv', x);
             setTimeout(dp20amtValidatePolicy, 500);
         }
@@ -14545,8 +14577,16 @@
 
         function p20editmesh(focus) {
             if (xxdialogMode) return;
-            var x = addHtmlValue("Name", '<input id=dp20meshname style=width:230px maxlength=128 onchange=p20editmeshValidate() onkeyup=p20editmeshValidate(event) />');
-            x += addHtmlValue("Description", '<div style=width:230px;margin:0;padding:0><textarea id=dp20meshdesc maxlength=1024 style=width:100%;resize:none></textarea></div>');
+            var x = '<div class="form-floating mb-2">';
+            x += '<input type=text class="form-control" id=dp20meshname maxlength=128 placeholder=Name onchange=p20editmeshValidate() onkeyup=p20editmeshValidate(event) />';
+            x += '<label for=dp20meshname>Name</label>';
+            x += '</div>';
+
+            x += '<div class="form-floating mb-2">';
+            x += '<textarea id=dp20meshdesc class="form-control" maxlength=1024 placeholder=Description></textarea>';
+            x += '<label for=dp20meshdesc>Description</label>';
+            x += '</div>';
+
             setDialogMode(2, "Edit Device Group", 3, p20editmeshEx, x);
             Q('dp20meshname').value = currentMesh.name;
             if (currentMesh.desc) Q('dp20meshdesc').value = currentMesh.desc;
@@ -14571,16 +14611,51 @@
             if (editType == 2) { consent = (currentUser.consent) ? currentUser.consent : 0; title = "Edit User Consent"; }
             if (editType == 3) { consent = (currentNode.consent) ? currentNode.consent : 0; title = "Edit Device User Consent"; }
             if (editType == 4) { consent = (currentUserGroup.consent) ? currentUserGroup.consent : 0; title = "Edit User Group User Consent"; }
-            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
-            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Terminal" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
-            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Files" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += `
+            <div class="accordion" id="accordionId">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingDesktop">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDesktop" aria-expanded="true" aria-controls="collapseDesktop">
+                    Desktop
+                </button>
+                </h2>
+                <div id="collapseDesktop" class="accordion-collapse collapse show" aria-labelledby="headingDesktop" data-bs-parent="#accordionId">
+                <div class="accordion-body">
+                    <div><label><input type="checkbox" id="d20flag1" class="form-check-input" ${((consent & 0x0001) ? 'checked' : '')}> Notify user</label></div>
+                    <div><label><input type="checkbox" id="d20flag2" class="form-check-input" ${((consent & 0x0008) ? 'checked' : '')}> Prompt for user consent</label></div>
+                    <div><label><input type="checkbox" id="d20flag7" class="form-check-input" ${((consent & 0x0040) ? 'checked' : '')}> Show connection toolbar</label></div>
+                </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTerminal">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTerminal" aria-expanded="false" aria-controls="collapseTerminal">
+                    Terminal
+                </button>
+                </h2>
+                <div id="collapseTerminal" class="accordion-collapse collapse" aria-labelledby="headingTerminal" data-bs-parent="#accordionId">
+                <div class="accordion-body">
+                    <div><label><input type="checkbox" id="d20flag3" class="form-check-input" ${((consent & 0x0002) ? 'checked' : '')}> Notify user</label></div>
+                    <div><label><input type="checkbox" id="d20flag4" class="form-check-input" ${((consent & 0x0010) ? 'checked' : '')}> Prompt for user consent</label></div>
+                </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFiles">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFiles" aria-expanded="false" aria-controls="collapseFiles">
+                    Files
+                </button>
+                </h2>
+                <div id="collapseFiles" class="accordion-collapse collapse" aria-labelledby="headingFiles" data-bs-parent="#accordionId">
+                <div class="accordion-body">
+                    <div><label><input type="checkbox" id="d20flag5" class="form-check-input" ${((consent & 0x0004) ? 'checked' : '')}> Notify user</label></div>
+                    <div><label><input type="checkbox" id="d20flag6" class="form-check-input" ${((consent & 0x0020) ? 'checked' : '')}> Prompt for user consent</label></div>
+                </div>
+                </div>
+            </div>
+            </div>
+            `;
+
             setDialogMode(2, title, 3, p20editmeshconsentEx, x, editType);
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
@@ -14623,11 +14698,11 @@
                 x += '<div><label><input type=checkbox id=d20flag4 onchange=p20editmeshfeaturesValidate() ' + ((flags & 4) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
-                x += '<div><label><input type=checkbox id=d20flag2 onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4) ? "Sync server device name to port name" : "Sync server device name to hostname") + '</label><br></div>';
-                x += '<div><label><input type=checkbox id=d20flag1 onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
+                x += '<div class="form-check"><label><input type=checkbox id=d20flag2 class="form-check-input" onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4) ? "Sync server device name to port name" : "Sync server device name to hostname") + '</label><br></div>';
+                x += '<div class="form-check"><label><input type=checkbox id=d20flag1 class="form-check-input" onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
             }
-            x += '<div><label><input type=checkbox id=d20expireDevice onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
-            x += '<div style=margin-left:20px id=d20expireDeviceDev>' + "Inactivate days until removal" + ' <label><input type=number inputmode=numeric onchange=p20editmeshfeaturesValidate() onkeyup=p20editmeshfeaturesValidate() onpaste=p20editmeshfeaturesValidate() onkeydown=p20editmeshfeaturesValidate() maxlength=4 min=1 max=2000 style=width:80px value=\"' + ((expire == 0) ? 30 : expire) + '\" id=d20expireDeviceDays></label><br></div>';
+            x += '<div class="form-check"><label><input type=checkbox id=d20expireDevice class="form-check-input" onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
+            x += '<div style=margin-left:20px id=d20expireDeviceDev>' + "Inactivate days until removal" + ' <label><input type=number inputmode=numeric class="form-control" onchange=p20editmeshfeaturesValidate() onkeyup=p20editmeshfeaturesValidate() onpaste=p20editmeshfeaturesValidate() onkeydown=p20editmeshfeaturesValidate() maxlength=4 min=1 max=2000 style=width:80px value=\"' + ((expire == 0) ? 30 : expire) + '\" id=d20expireDeviceDays></label><br></div>';
 
             if (serverinfo.autoremoveinactivedevices) {
                 if (serverinfo.autoremoveinactivedevices == 1) {
@@ -15190,22 +15265,22 @@
             if (userinfo.notify && userinfo.notify[currentMesh._id]) { meshNotify |= userinfo.notify[currentMesh._id]; }
             //var x = "Notification settings must also be turned on in account settings." + '<br /><br />';
             var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Web Page Notifications" + '</div>';
-            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
-            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p20notifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p20notifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
             if (currentMesh.mtype < 3) {
-                x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20notifyIntelAmtKvmActions class="form-check-input" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
             }
             if (emailNotify) {
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
-                x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
-                x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
-                x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceHelp class="form-check-input" type=checkbox />' + "Help requests" + '</label></div>';
             }
             if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
-                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
-                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
-                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20emsgDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20emsgDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20emsgDeviceHelp class="form-check-input" type=checkbox />' + "Help requests" + '</label></div>';
             }
             setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
@@ -19803,7 +19878,7 @@
         function getUrlVars() { var j, hash, vars = [], hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); for (var i = 0; i < hashes.length; i++) { j = hashes[i].indexOf('='); if (j > 0) { vars[hashes[i].substring(0, j)] = hashes[i].substring(j + 1, hashes[i].length); } } return vars; }
         //function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
-        function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }
+        function addHtmlValue(t, v) { return '<div class="row mb-1"><div class=col-md-3>' + t + '</div><div class=col-md-9><b>' + v + '</b></div></div>'; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
         function addHtmlValue3(t, v) { return '<div><b>' + t + '</b></div><div style=margin-left:16px>' + v + '</div>'; }
         function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
