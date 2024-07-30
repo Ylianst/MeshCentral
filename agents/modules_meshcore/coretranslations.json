@@ -262,5 +262,17 @@
     "desktopNotify": "{0} távoli asztali munkamenetet indított.",
     "fileNotify": "{0} távoli fájlmunkamenetet indított.",
     "privacyBar": "Asztal megosztás aktív: {0} felhasználóval"
+  },
+  "ca": {
+    "allow": "Permetre",
+    "deny": "Negar",
+    "autoAllowForFive": "Accepta automàticament totes les connexions durant els propers 5 minuts",
+    "terminalConsent": "{0} sol·licitant accés al terminal remot. Accés garantit?",
+    "desktopConsent": "{0} sol·licitant accés a l'escriptori remot. Accés garantit?",
+    "fileConsent": "{0} sol·licitant accés remot al fitxer. Accés garantit?",
+    "terminalNotify": "{0} va iniciar una sessió de terminal remota.",
+    "desktopNotify": "{0} va iniciar una sessió d'escriptori remot.",
+    "fileNotify": "{0} va iniciar una sessió de fitxer remota.",
+    "privacyBar": "Compartint escriptori amb: {0}"
   }
 }

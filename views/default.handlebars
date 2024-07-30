@@ -5582,7 +5582,7 @@
 
         function closeDeviceHelpRequest(appid, nodeid) {
             setDialogMode(0);
-            meshserver.send({ action: 'msg', type: 'localapp', nodeid: decodeURIComponent(nodeid), appid: decodeURIComponent(appid), value: { cmd: "cancelhelp" } });
+            meshserver.send({ action: 'msg', type: 'localapp', nodeid: decodeURIComponent(nodeid), appid: decodeURIComponent(appid), value: { cmd: 'cancelhelp' } });
         }
 
         // Show currently active sessions on this device
@@ -5750,14 +5750,21 @@
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][state]); } catch (ex) { } }
         function onDeviceSearchChanged(e) {
             var url = new URL(window.location.href);
-            if ((e != null) && (e.target.value != '')) {
-                if (e.target.id == 'SearchInput') {
+            if ((e != null) && ((e.target.id == 'SearchInput') || (e.target.id == 'KvmSearchInput'))){ // search box changed or cleared
+                if (e.target.id == 'SearchInput') { 
                     Q('KvmSearchInput').value = Q('SearchInput').value;
                 } else {
                     Q('SearchInput').value = Q('KvmSearchInput').value;
                 }
-                url.searchParams.set('filter', e.target.value);
-                if (urlargs.filter) { urlargs.filter = e.target.value; }
+                if (e.target.value != '') {
+                    url.searchParams.set('filter', e.target.value);
+                    if (urlargs.filter) { urlargs.filter = e.target.value; }
+                } else {
+                    url.searchParams.delete('filter');
+                    if (urlargs.filter) { delete urlargs.filter; }
+                }
+            } else if ((e != null) && (e.target.id == 'DevFilterSelect')){ // devfilter box changed
+                // DO NOTHING
             } else {
                 url.searchParams.delete('filter');
                 if (urlargs.filter) { delete urlargs.filter; }
@@ -6420,6 +6427,9 @@
         function groupActionFunction() {
             var addedOptions = [], nodeids = getCheckedDevices(), added = 0;
 
+            // Remind the user to add two factor authentication
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
+
             // Check if any of the selected devices have a MQTT connection active
             if (features & 0x00400000) {
                 for (var i in nodeids) { if ((getNodeFromId(nodeids[i]).conn & 16) != 0) { addedOptions.push({ v: 103, name: "Send MQTT Message" });; break; } }
@@ -6834,7 +6844,7 @@
         function lastConnectSort(a, b) { var aa = a.lastconnect, bb = b.lastconnect; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (a.conn > 0) { aa = 99999999999998; } if (b.conn > 0) { bb = 99999999999998; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
 
         function onSearchFocus(x) { searchFocus = x; }
-        function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; Q('DevFilterSelect').value = 0; onOnlineCheckBox(); mainUpdate(1); }
+        function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; onOnlineCheckBox(); mainUpdate(1); }
         function onMapSearchFocus(x) { mapSearchFocus = x; }
         function onUserSearchFocus(x) { userSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
@@ -6957,9 +6967,9 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '') ? null : '#FDFFBE';
-            QV('SearchInputClearButton', (x != '') && (navigator.userAgent.indexOf('Firefox') >= 0));
-            QV('KvmSearchInputClearButton', (x != '') && (navigator.userAgent.indexOf('Firefox') >= 0));
+            QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '')?null:'#FDFFBE';
+            QV('SearchInputClearButton', (x != ''));
+            QV('KvmSearchInputClearButton', (x != ''));
 
             var r = parseSearchOrInput(x);
             for (var d in nodes) { nodes[d].v = (r.indexOf(d) >= 0) }
@@ -8848,7 +8858,7 @@
 
         function deviceMessageFunction() {
             if (xxdialogMode) return;
-            var x = '<div style=margin-bottom:4px>' + "Display a message box on the remote device" + '</div>';
+            var x = '<div style=margin-bottom:4px>' + "Display a message box on the remote device." + '</div>';
             x += '<textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
             x += '<select style=width:100% id=d2devTimeout>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
@@ -9659,10 +9669,10 @@
                     desktop.onMetadataChange = function (metadata) { updateMetadata(desktop, 'deskmetadata'); }
                     if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
-                    QV('DeskInputLockedButton', desktop.m.RemoteInputLock === 1);
-                    QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock === 0);
-                    desktop.m.onRemoteInputLockChanged = function (obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
-                    desktop.m.onKeyboardStateChanged = function (obj, state) {
+                    QV('DeskInputLockedButton', desktop.m.RemoteInputLock == true);
+                    QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock == false);
+                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
+                    desktop.m.onKeyboardStateChanged = function(obj, state) {
                         QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
                         QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
                         QS('p11capslock').display = ((state & 4) ? 'inline-block' : 'none');
@@ -11860,7 +11870,6 @@
         function p13openfilefolderEx() {
             var openfilefolder = "", checkboxes = document.getElementsByName('fd');
             for (var i = 0; i < checkboxes.length; i++) {
-                console.log(checkboxes[i]);
                 if (checkboxes[i].checked) {
                     openfilefolder = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(isWindowsNode(currentNode) ? '\\' : '/') + (isWindowsNode(currentNode) ? '\\' : '/') + p13filetree.dir[checkboxes[i].value].n;
                 }
@@ -11983,9 +11992,9 @@
                 QE('p13ZipButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UnzipButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)) && p13getFileSelAllowedExt('.zip'));
                 QE('p13PasteButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)) && ((p13clipboard != null) && (p13clipboard.length > 0)));
-                QE('p13GoToFolderButton', true);
-                QE('p13OpenButton', (cc == 1));
-                QE('p13DownloadButton', advancedFeatures && (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
+                QE('p13GoToFolderButton', advancedFeatures);
+                QE('p13OpenButton', advancedFeatures && (cc == 1));
+                QE('p13DownloadButton', (cc > 0) && (cc == sfc) && ((p13filetreelocation.length > 0) || (winAgent == false)));
             }
             var filesState = ((files != null) && (files.state != 0));
             if (((filesState == true) && (files.contype != 2)) || (filesNode.agent == null) || (filesNode.agent.id == 3) || (filesNode.agent.id == 4)) {
@@ -15114,7 +15123,7 @@
                 var x = "Invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
                 x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
                 x += addHtmlValue("Invite Codes", currentMesh.invite.codes.join(', '));
-                x += addHtmlValue("Installation Type", ["Background and interactive", "Background only", "Interactive only"][currentMesh.invite.flags & 3]);
+                x += addHtmlValue("Installation Type", ["Background and interactive", "Interactive only", "Background only"][currentMesh.invite.flags & 3]);
                 setDialogMode(2, "Invite Codes", 1, null, x);
             }
         }

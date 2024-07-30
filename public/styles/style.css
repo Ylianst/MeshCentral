@@ -608,7 +608,7 @@ body {
 }
 
 
-#d7bitmapquality, #d7bitmapquality, #d7bitmapscaling, #d7framelimiter, #d7desktopmode, #d7rdpsize {
+#d7bitmapquality, #d7bitmapquality, #d7bitmapscaling, #d7framelimiter, #d7desktopmode, #d7rdpsize, #d7encoding {
     float: right;
     width: 200px;
     height: 20px;

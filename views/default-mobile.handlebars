@@ -763,17 +763,19 @@
                                         <div style="margin-top:5px"><a href=# onclick="account_showLocalizationSettings()">Localization Settings</a></div>
                                         <div id="manageAuthApp" style="margin-top:5px;display:none"><a onclick="account_manageAuthApp()" style="cursor:pointer">Manage authenticator app</a> <span id="authAppSetupCheck"><strong>&#x2713;</strong></span></div>
                                         <div id="manageOtp" style="margin-top:5px;display:none"><a onclick="account_manageOtp(0)" style="cursor:pointer">Manage backup codes</a> <span id="authCodesSetupCheck"><strong>&#x2713;</strong></span></div>
-                                        <div style="margin-top:5px"><a href=# onclick="return account_viewPreviousLogins()">View previous logins</a></div>
                                     </div>
                                 </div>
                                 <div id="p2AccountActions" style="display:none">
                                     <p><strong>Account Actions</strong></p>
                                     <div style="margin-left:9px;margin-bottom:8px">
+                                        <div style="margin-top:5px"><span id="viewPreviousLogins"><a onclick="return account_viewPreviousLogins()" style="cursor:pointer">View previous logins</a></span></div>
                                         <div style="margin-top:5px"><span id="managePhoneNumber2" style="display:none"><a onclick="account_managePhone()" style="cursor:pointer">Manage phone number</a></span></div>
                                         <div style="margin-top:5px"><span id="verifyEmailId" style="display:none"><a onclick="account_showVerifyEmail()" style="cursor:pointer">Verify email</a></span></div>
-                                        <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
-                                        <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
-                                        <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
+                                        <span id="p2AccountPassActions">
+                                            <div style="margin-top:5px"><span id="changeEmailId" style="display:none"><a onclick="account_showChangeEmail()" style="cursor:pointer">Change email address</a></span></div>
+                                            <div style="margin-top:5px"><a onclick="account_showChangePassword()" style="cursor:pointer">Change password</a><span id="p2nextPasswordUpdateTime"></span></div>
+                                            <div style="margin-top:5px"><a onclick="account_showDeleteAccount()" style="cursor:pointer">Delete account</a></div>
+                                        </span>
                                         <div style="margin-top:5px" id="setDarkModeLink"><a onclick="toggleNightMode()" style="cursor:pointer">Set dark mode</a></div>
                                         <div style="margin-top:5px"><a onclick="showNotes(false)" style="cursor:pointer">Personal notes</a></div>
                                     </div>
@@ -941,11 +943,12 @@
                         </div>
                         <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:32px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
-                                <div style=float:right;text-align:right>
+                                <div style=float:right;text-align:right;padding-right:2px>
+                                    <span id=DeskLockButton><img src='images/icon-lock.png' onclick=deviceLockFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>
                                     <span id=DeskChatButton><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskOpenWebButton><img src='images/icon-url2.png' onclick=deviceUrlFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
-                                    <span id=DeskRunButton><img src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16 style=padding-top:2px;cursor:pointer /></span>
+                                    <span id=DeskRunButton><img src='images/icon-play.png' onclick=runDeviceCmd() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>
                                     <!--<input id=DeskToolsButton type=button value=Tools onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()">&nbsp;-->
                                 </div>
                                 <div>
@@ -1483,7 +1486,8 @@
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             //QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
-            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false));
+            QV('p2AccountActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null));
+            QV('p2AccountPassActions', ((features & 4) == 0) && (serverinfo.domainauth == false) && (userinfo != null) && (userinfo._id.split('/')[2].startsWith('~') == false)); // Hide Account Actions if in single user mode or domain authentication
 
             // On the mobile app, don't allow group creation (for now).
             QV('p3createMeshLink1', false);
@@ -2261,7 +2265,11 @@
             if (idtype == 'mesh') { gotoMesh(id); }
             if (idtype == 'account') { go(3); }
             if (idtype == 'devices') { go(2); }
-            if (idtype == 'files') { go(5); }
+            if (idtype == 'files') {
+                // Remind the user to add two factor authentication
+                if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }  
+                go(5);
+            }
         }
 
         function updateFooterMenu(options) {
@@ -2635,6 +2643,8 @@
         }
 
         function gotoMesh(meshid) {
+            // Remind the user to add two factor authentication
+            if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }  
             currentMesh = meshes[meshid];
             if (currentMesh == null) { goBack(); }
             p20updateMesh();
@@ -4102,6 +4112,10 @@
 
         function showNotesEx(buttons, tag) { meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) }); }
 
+        function deviceLockFunction() {
+            if ((xxdialogMode != null || xxdialogMode == 0) && (desktop != null) && (desktop.contype == 1)) { setDialogMode(2, "Lock Desktop", 3, function() { if ((desktop != null) && (desktop.contype == 1)) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"lock"}'); } }, "Lock user desktop?"); }
+        }
+
         function deviceChat(e) {
             if (xxdialogMode) return;
             setDialogMode(2, "Device Action", 3, function () {
@@ -5395,6 +5409,7 @@
                         if (termoptions.protocol == 1) { termoptions.protocol = 6; } // Switch to Powershell
                     }
                 }
+                */
 
                 // If the server requires a shell type
                 if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
@@ -5402,7 +5417,6 @@
                     if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
                     if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
                 }
-                */
 
                 // Setup a mesh agent xterm terminal
                 QV('termarea3xdiv', true);

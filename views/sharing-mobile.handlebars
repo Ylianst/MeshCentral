@@ -1783,14 +1783,13 @@
                         if (termoptions.protocol == 1) { termoptions.protocol = 6; } // Switch to Powershell
                     }
                 }
-
+                */         
                 // If the server requires a shell type
                 if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
                     if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
                     if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
                     if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
                 }
-                */
 
                 // Setup a mesh agent xterm terminal
                 QV('termarea3xdiv', true);

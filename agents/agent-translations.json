@@ -682,5 +682,36 @@
     ],
     "statusDescription": "Jelenlegi agent állapota",
     "description": "Kattintson a Telepítés vagy Eltávolítás gombokra a Távfelügyeleti alkalmazás telepítéséhez vagy eltávolításához. Telepítés után ez az alkalmazás a háttérben fut, lehetővé téve, hogy a számítógépet egy távoli rendszergazda kezelje."
+  },
+  "ca": {
+    "agent": "Agent",
+    "agentVersion": "Nova versió",
+    "group": "Grup de dispositius",
+    "url": "URL del servidor",
+    "meshName": "Nom del grup",
+    "meshId": "Identificador de grup",
+    "serverId": "Identificador del servidor",
+    "setup": "Configuració",
+    "update": "Actualització",
+    "install": "Instal·lar",
+    "uninstall": "Desinstal·la",
+    "connect": "Connecta't",
+    "disconnect": "Desconnecta",
+    "cancel": "Cancel · lar",
+    "close": "Tanca",
+    "pressok": "Premeu D'acord per desconnectar",
+    "elevation": "Es necessiten permisos elevats per instal·lar/desinstal·lar aquest programari.",
+    "sudo": "Si us plau, torna-ho a provar amb sudo.",
+    "ctrlc": "Premeu Ctrl-C per sortir.",
+    "commands": "Podeu executar la versió de text des de la línia d'ordres amb les següents ordres",
+    "graphicalerror": "La versió gràfica d'aquest instal·lador no pot executar-se en aquest sistema",
+    "zenity": "Proveu d'instal·lar/actualitzar Zenity i torneu a executar-lo",
+    "status": [
+      "NO ESTÀ INSTAL · LAT",
+      "CÓRRER",
+      "NO CORRE"
+    ],
+    "statusDescription": "Estat actual de l'agent",
+    "description": "Feu clic als botons següents per instal·lar o desinstal·lar aquest programari de gestió remota. Quan s'instal·la, aquest programari s'executa en segon pla i permet que aquest ordinador sigui gestionat i controlat per un administrador remot."
   }
 }

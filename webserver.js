@@ -2815,7 +2815,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
-        res.end('<html><head><meta http-equiv="refresh" content=0;url="' + domain.url + '"></head><body></body></html>');
+        let url = domain.url;
+        if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return key + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
+        res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
     }
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
@@ -3775,7 +3777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle download of a server file by an agent
     function handleAgentDownloadFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = checkAgentIpAddress(req, res);
         if (domain == null) { return; }
         if (req.query.c == null) { res.sendStatus(404); return; }
 
@@ -8757,7 +8759,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Filter the user web site and only output state that we need to keep
-    const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar'];
+    const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar','loctag'];
     const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling', 'agentencoding']
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }

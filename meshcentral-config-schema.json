@@ -818,8 +818,11 @@
           ]
         },
         "autoBackup": {
-          "type": "object",
-          "description": "Enable automatic backups of your meshcentral-data",
+          "type": [
+            "boolean",
+            "object"
+          ],
+          "description": "If set to \"true\", automatic backups of your MeshCentral data will be enabled. Alternatively, you can provide an object with additional values such as \"webdav\", \"backupPath\", \"backupIntervalHours\", and more.",
           "properties": {
             "mongoDumpPath": {
               "type": "string",
@@ -1000,6 +1003,24 @@
           "required": [
             "enabled"
           ]
+        },
+        "watchdog": {
+          "type": "object",
+          "required": [
+            "interval",
+            "timeout"
+          ],
+          "description": "This is used to monitor if NodeJS is servicing IO correctly or getting held up a lot. You MUST specify \"interval\" and \"timeout\".",
+          "properties": {
+            "interval": {
+              "type": "number",
+              "description": " This will check every X ms"
+            },
+            "timeout": {
+              "type": "number",
+              "description": " If the timer is more than X ms late, it will warn to console AND mesherrors.txt"
+            }
+          }
         }
       }
     },
@@ -2107,7 +2128,7 @@
                   "login"
                 ],
                 "default": "any",
-                "description": "Indicate what terminal options are available when the user clicks the right mouse button on the terminal connect button."
+                "description": "Indicates the default linux terminal thats used when the user clicks the terminal connect button and disables the right mouse button on the terminal connect button when this is set."
               },
               "launchCommand": {
                 "type": "object",
