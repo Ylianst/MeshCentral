@@ -8451,6 +8451,8 @@
                     if ((xxcurrentView == 11) || (xxcurrentView == 12)) { // Only show these options on terminal or desktop tabs
                         y += '<option value=312>' + "Intel&reg; AMT Reset to BIOS" + '</option>';
                         y += '<option value=311>' + "Intel&reg; AMT Power on to BIOS" + '</option>';
+                        y += '<option value=315>' + "Intel&reg; AMT Power on to PXE" + '</option>';
+                        y += '<option value=316>' + "Intel&reg; AMT Reset to PXE" + '</option>';
                     }
                 }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 64) != 0)) {
@@ -8519,6 +8521,10 @@
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); }, "Perform Intel&reg; AMT power on to BIOS?");
             } else if (op == 312) { // Intel AMT reset to BIOS
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); }, "Perform Intel&reg; AMT reset to BIOS?");
+            } else if (op == 315) { // Intel AMT power to PXE
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); }, "Perform Intel&reg; AMT power on to PXE?");
+            } else if (op == 316) { // Intel AMT reset to PXE
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function() { meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); }, "Perform Intel&reg; AMT reset to PXE?");
             } else if ((op == 400) || (op == 401)) {
                 // Flash / vibrate
                 meshserver.send({ action: 'poweraction', nodeids: [ currentNode._id ], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
