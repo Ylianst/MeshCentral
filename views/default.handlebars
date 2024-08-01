@@ -1901,195 +1901,32 @@
                 </div>
             </div>
         </div>
-        <div id=dialog class="noselect" style="display:none">
-            <div id=dialogHeader>
-                <div tabindex=0 id=id_dialogclose onclick=setDialogMode()
-                    onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
-                <div id=id_dialogtitle></div>
-            </div>
-            <div id=dialogBody>
-                <div id=dialog1>
-                    <div id=id_dialogMessage style=""></div>
-                </div>
-                <div id=dialog2 style="">
-                    <div id=id_dialogOptions></div>
-                </div>
-                <div id=dialog3 style="">
-                    <div id=d3upload>
-                        <div>File Selection</div>
-                        <select id=d3uploadMode onchange=d3modechange()>
-                            <option value=1>Local file upload</option>
-                            <option value=2>Server file selection</option>
-                        </select>
+        <div class="modal fade" id="xxAddAgentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" id="dialogHeader">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                            id="id_dialogclose" onclick="setDialogMode()"
+                            onkeypress="if (event.key == 'Enter') setDialogMode()"></button>
+                        <h5 class="modal-title" id="xxAddAgentTitle"></h5>
                     </div>
-                    <div id=d3localmode style="display:none">
-                        <div>Upload File</div>
-                        <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx
-                            target=fileUploadFrame>
-                            <input type=text id=d3auth name=auth style="display:none" />
-                            <input type=text id=d3filter name=filter style="display:none" />
-                            <input type=text id=d3attrib name=attrib style="display:none" />
-                            <input type=file id=d3localFile name=files onchange=d3setActions() />
-                            <input type=submit id=d3submit style="display:none" />
-                        </form>
+                    <div class="modal-body" id="xxAddAgentBody">
+                        <!-- The body content will be dynamically populated -->
                     </div>
-                    <div id=d3servermode>
-                        <div id=d3serveraction valign=bottom>
-                            <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup()
-                                value="Up" />&nbsp;<span id=p3CurrentFolder></span>
-                        </div>
-                        <div id=d3serverfiles></div>
-                    </div>
-                </div>
-                <div id=dialog4 style="">
-                    <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
-                    <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
-                    <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
-                    <textarea id=d4editorarea autocomplete="off"
-                        style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
-                </div>
-                <div id=dialog7 style="">
-                    <div class="dtab">
-                        <button id="td7meshkvm" class="tablinks"
-                            onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
-                        <button id="td7rdpkvm" class="tablinks"
-                            onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
-                        <button id="td7amtkvm" class="tablinks"
-                            onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg; AMT</button>
-                    </div>
-                    <div id="d7meshkvm" class="tabcontent">
-                        <!--<h4>Agent Remote Desktop</h4>-->
-                        <div style="margin-top:8px">
-                            <div>Quality</div>
-                            <select id="d7bitmapquality" dir="rtl"></select>
-                        </div>
-                        <div>
-                            <div>Scaling</div>
-                            <select id="d7bitmapscaling" style="" dir="rtl">
-                                <option selected=selected value=1024>100%</option>
-                                <option value=896>87.5%</option>
-                                <option value=768>75%</option>
-                                <option value=640>62.5%</option>
-                                <option value=512>50%</option>
-                                <option value=384>37.5%</option>
-                                <option value=256>25%</option>
-                                <option value=128>12.5%</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Frame rate</div>
-                            <select id="d7framelimiter" dir="rtl">
-                                <option selected=selected value=50>Fast</option>
-                                <option value=100>Medium</option>
-                                <option value=400>Slow</option>
-                                <option value=1000>Very slow</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Encoding</div>
-                            <select id="d7encoding" dir="rtl">
-                                <option value=1>JPEG</option>
-                                <option selected=selected value=4>WEBP</option>
-                            </select>
-                        </div>
-                        <div id="d7desktopOtherSettings">
-                            <div>Other Settings</div>
-                            <div id="d7otherset2" style="display:block">
-                                <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse
-                                    Buttons</label>
-                                <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse Mouse
-                                    Wheel</label>
-                                <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote
-                                    Keyboard Map</label>
-                                <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox"
-                                        id="d7deskAutoClipboard" />Automatic Clipboard</label>
-                                <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox"
-                                        id="d7deskAutoLock" />Lock on Disconnect</label>
-                            </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="idx_dlgCancelButton"
+                            onclick="dialogclose(0)">Cancel</button>
+                        <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton"
+                            onclick="dialogclose(1)">OK</button>
+                        <button type="button" class="btn btn-outline-danger" id="idx_dlgDeleteButton"
+                            onclick="dialogclose(2)" style="display:none">Delete</button>
+                        <div id="idx_dlgMoreButtons">
+                            <a href="#" id="idx_dlgMoreButtons1" class="btn btn-secondary"
+                                title="Toggle advanced options" onclick="MoreToggle(true)">&#x25BC;</a>
+                            <a href="#" id="idx_dlgMoreButtons2" class="btn btn-secondary"
+                                title="Toggle advanced options" onclick="MoreToggle(false)">&#x25B2;</a>
                         </div>
                     </div>
-                    <div id="d7amtkvm" class="tabcontent">
-                        <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
-                        <div style="margin-top:8px">
-                            <div>Image Encoding</div>
-                            <select id="d7desktopmode">
-                                <option value="1">RLE8, Fastest</option>
-                                <option value="2">RLE16, Recommended</option>
-                                <option value="3">RAW8, Slow</option>
-                                <option value="4">RAW16, Very Slow</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Other Settings</div>
-                            <div id="d7otherset" style="display:block">
-                                <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus
-                                    Tool</label>
-                                <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse
-                                    Cursor</label>
-                                <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard
-                                    Map</label>
-                                <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse Mouse
-                                    Wheel</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="d7rdpkvm" class="tabcontent">
-                        <!--<h4>Remote Desktop Protocol</h4>-->
-                        <div style="margin-top:8px">
-                            <div>Display Size</div>
-                            <select id="d7rdpsize">
-                                <option value="canvas">Canvas Size</option>
-                                <option value="browser">Browser Size</option>
-                                <option value="screen">Screen Size</option>
-                                <option value="640x480">640×480</option>
-                                <option value="1024x768">1024×768</option>
-                                <option value="1280x800">1280×800</option>
-                                <option value="1440x900">1440×900</option>
-                                <option value="1600x900">1600×900</option>
-                                <option value="1680x1050">1680×1050</option>
-                                <option value="1920x1080">1920×1080</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Options</div>
-                            <div id="d7rdpflags" style="display:block">
-                                <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable
-                                    Wallpaper</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window
-                                    Drag</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu
-                                    Animations</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable
-                                    Theming</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor
-                                    Shadow</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor
-                                    Settings</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font
-                                    Smooting</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop
-                                    Composision</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic
-                                    Clipboard</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse
-                                    Buttons</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse Mouse
-                                    Wheel</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="idx_dlgButtonBar">
-                <input id="idx_dlgCancelButton" class="btn btn-secondary" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
-                <input id="idx_dlgOkButton" class="btn btn-outline-success" type="button" value="OK" style="" onclick="dialogclose(1)" />
-                <div><input id="idx_dlgDeleteButton" class="btn btn-outline-danger" type="button" value="Delete" style="display:none"
-                        onclick="dialogclose(2)" /></div>
-                <div id="idx_dlgMoreButtons">
-                    <a href=# id=idx_dlgMoreButtons1 style=cursor:pointer;color:gray;text-decoration:none
-                        title="Toggle advanced options" onclick=MoreToggle(true)>&#x25BC;</a>
-                    <a href=# id=idx_dlgMoreButtons2 style=cursor:pointer;color:gray;text-decoration:none
-                        title="Toggle advanced options" onclick=MoreToggle(false)>&#x25B2;</a>
                 </div>
             </div>
         </div>
@@ -5750,8 +5587,8 @@
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][state]); } catch (ex) { } }
         function onDeviceSearchChanged(e) {
             var url = new URL(window.location.href);
-            if ((e != null) && ((e.target.id == 'SearchInput') || (e.target.id == 'KvmSearchInput'))){ // search box changed or cleared
-                if (e.target.id == 'SearchInput') { 
+            if ((e != null) && ((e.target.id == 'SearchInput') || (e.target.id == 'KvmSearchInput'))) { // search box changed or cleared
+                if (e.target.id == 'SearchInput') {
                     Q('KvmSearchInput').value = Q('SearchInput').value;
                 } else {
                     Q('SearchInput').value = Q('KvmSearchInput').value;
@@ -5763,7 +5600,7 @@
                     url.searchParams.delete('filter');
                     if (urlargs.filter) { delete urlargs.filter; }
                 }
-            } else if ((e != null) && (e.target.id == 'DevFilterSelect')){ // devfilter box changed
+            } else if ((e != null) && (e.target.id == 'DevFilterSelect')) { // devfilter box changed
                 // DO NOTHING
             } else {
                 url.searchParams.delete('filter');
@@ -6133,7 +5970,11 @@
         }
 
         function addAgentToMesh(meshid) {
+            var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            xxAddAgentModal.show();
+            return true;
             if (xxdialogMode) return false;
+
             var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
 
             var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px class=form-control><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
@@ -6226,7 +6067,8 @@
             x += addHtmlValue("<label for=aginsbincmd class=form-label>Command</label>", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' class=form-control /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
             x += '</div>';
 
-            setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
+            // Will get back to this
+            //setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
 
             // Create the QR code
             new QRCode(Q('agins_qrimage'), { text: serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
@@ -6243,18 +6085,21 @@
                 Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
                 //Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-proxy' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
             }
-            Q('aginsSelect').focus();
+
+            document.getElementById("xxAddAgentTitle").innerHTML = format("Add a device to device group \"<span class=\"fw-bold\">{0}</span>\"", EscapeHtml(mesh.name));
+            document.getElementById("xxAddAgentBody").innerHTML = x;
+
             addAgentToMeshClick();
             return false;
         }
 
         function copyAgentIdValue(id) {
-             copyTextToClip(Q(id).value);
+            copyTextToClip(Q(id).value);
             // Show notification
             //showNotification('center', null, 'Copied to clipboard', 'success', null, 3000, '300px', '30px');
         }
 
-       function showNotification(position, title, text, icon, confirmButtonText, timer, width, height) {
+        function showNotification(position, title, text, icon, confirmButtonText, timer, width, height) {
             Swal.fire({
                 position: position,
                 title: title,
@@ -6967,7 +6812,7 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '')?null:'#FDFFBE';
+            QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '') ? null : '#FDFFBE';
             QV('SearchInputClearButton', (x != ''));
             QV('KvmSearchInputClearButton', (x != ''));
 
@@ -9671,8 +9516,8 @@
                     if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
                     QV('DeskInputLockedButton', desktop.m.RemoteInputLock == true);
                     QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock == false);
-                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
-                    desktop.m.onKeyboardStateChanged = function(obj, state) {
+                    desktop.m.onRemoteInputLockChanged = function (obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
+                    desktop.m.onKeyboardStateChanged = function (obj, state) {
                         QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
                         QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
                         QS('p11capslock').display = ((state & 4) ? 'inline-block' : 'none');
@@ -13731,6 +13576,10 @@
         }
 
         function account_createMesh() {
+            var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            xxAddAgentModal.show();
+            return true;
+
             if (xxdialogMode) return false;
 
             // Check if we are disallowed from creating a device group
