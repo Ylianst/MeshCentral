@@ -3129,8 +3129,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
 
                                 if ((command.actiontype >= 300) && (command.actiontype < 400)) {
-                                    if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype < 310) && (command.actiontype > 312)) return; // Invalid action type.
-                                    // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
+                                    if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype < 310) && (command.actiontype > 316)) return; // Invalid action type.
+                                    // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL, 15 = Power on to PXE, 16 = Reset to PXE
                                     parent.parent.DispatchEvent('*', obj, { action: 'amtpoweraction', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, actiontype: command.actiontype - 300 });
                                 } else {
                                     if ((command.actiontype < 2) && (command.actiontype > 4)) return; // Invalid action type.
