@@ -422,26 +422,21 @@ module.exports.CreateDB = function (parent, func) {
         let key;
         try {
             key = parent.crypto.pbkdf2Sync(password, salt, iterations, 32, 'sha384');
-        } catch (e) {
+        } catch (ex) {
             // If this previous call fails, it's probably because older pbkdf2 did not specify the hashing function, just use the default.
             key = parent.crypto.pbkdf2Sync(password, salt, iterations, 32);
         }
         return key
     }
 
-    obj.oldGetEncryptDataKey = function (password) {
-        if (typeof password != 'string') return null;
-        return parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
-    }
-
     // Encrypt data 
     obj.encryptData = function (password, plaintext) {
-        let encryptionVersion = 0x1;
+        let encryptionVersion = 0x01;
         let iterations = 100000
         const iv = parent.crypto.randomBytes(16);
         var key = obj.getEncryptDataKey(password, iv, iterations);
         if (key == null) return null;
-        const aes = parent.crypto.createCipheriv("aes-256-gcm", key, iv);
+        const aes = parent.crypto.createCipheriv('aes-256-gcm', key, iv);
         var ciphertext = aes.update(plaintext);
         let versionbuf = Buffer.allocUnsafe(2);
         versionbuf.writeUInt16BE(encryptionVersion);
@@ -454,35 +449,55 @@ module.exports.CreateDB = function (parent, func) {
 
     // Decrypt data 
     obj.decryptData = function (password, ciphertext) {
-        let ciphertextBytes = Buffer.from(ciphertext, 'base64');
-        try {
-            const iv = ciphertextBytes.slice(0, 16);
-            const data = ciphertextBytes.slice(16);
-            let key = obj.oldGetEncryptDataKey(password);
-            const aes = parent.crypto.createDecipheriv("aes-256-cbc", key, iv);
-            let plaintextBytes = Buffer.from(aes.update(data));
-            plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
-            return plaintextBytes;
-        } catch (e) {}
         // Adding an encryption version lets us avoid try catching in the future
+        let ciphertextBytes = Buffer.from(ciphertext, 'base64');
         let encryptionVersion = ciphertextBytes.readUInt16BE(0);
         try {
             switch (encryptionVersion) {
-                case 0x1:
+                case 0x01:
                     let iterations = ciphertextBytes.readUInt32BE(2);
                     let authTag = ciphertextBytes.slice(6, 22);
                     const iv = ciphertextBytes.slice(22, 38);
                     const data = ciphertextBytes.slice(38);
                     let key = obj.getEncryptDataKey(password, iv, iterations);
                     if (key == null) return null;
-                    const aes = parent.crypto.createDecipheriv("aes-256-gcm", key, iv);
+                    const aes = parent.crypto.createDecipheriv('aes-256-gcm', key, iv);
                     aes.setAuthTag(authTag);
                     let plaintextBytes = Buffer.from(aes.update(data));
                     plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
                     return plaintextBytes;
                 default:
-                    return null;
+                    return obj.oldDecryptData(password, ciphertextBytes);
             }
+        } catch (ex) { return obj.oldDecryptData(password, ciphertextBytes); }
+    }
+
+    // Encrypt data 
+    // The older encryption system uses CBC without integraty checking.
+    // This method is kept only for testing
+    obj.oldEncryptData = function (password, plaintext) {
+        let key = parent.crypto.createHash('sha384').update(password).digest('raw').slice(0, 32);
+        if (key == null) return null;
+        const iv = parent.crypto.randomBytes(16);
+        const aes = parent.crypto.createCipheriv('aes-256-cbc', key, iv);
+        var ciphertext = aes.update(plaintext);
+        ciphertext = Buffer.concat([iv, ciphertext, aes.final()]);
+        return ciphertext.toString('base64');
+    }
+
+    // Decrypt data
+    // The older encryption system uses CBC without integraty checking.
+    // This method is kept only to convert the old encryption to the new one.
+    obj.oldDecryptData = function (password, ciphertextBytes) {
+        if (typeof password != 'string') return null;
+        try {
+            const iv = ciphertextBytes.slice(0, 16);
+            const data = ciphertextBytes.slice(16);
+            let key = parent.crypto.createHash('sha384').update(password).digest('raw').slice(0, 32);
+            const aes = parent.crypto.createDecipheriv('aes-256-cbc', key, iv);
+            let plaintextBytes = Buffer.from(aes.update(data));
+            plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
+            return plaintextBytes;
         } catch (ex) { return null; }
     }
 
