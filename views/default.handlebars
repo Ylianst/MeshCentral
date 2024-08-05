@@ -12148,6 +12148,7 @@
             if (node.intelamt != null) {
                 var x = '';
                 x += addDetailItem("Version", (node.intelamt.ver)?('v' + EscapeHtml(node.intelamt.ver)):('<i>' + "Unknown" + '</i>'), s);
+                x += addDetailItem("Identifier", (node.intelamt.uuid) ? (EscapeHtml(node.intelamt.uuid)) : ('<i>' + "Unknown" + '</i>'), s);
                 var provisioningStates = { 0: nobreak("Not Activated"), 1: nobreak("Pre-activation"), 2: nobreak("Activated") };
                 var provisioningMode = '';
                 if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
