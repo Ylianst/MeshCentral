@@ -13703,6 +13703,13 @@
             var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
             xxAddAgentModal.show();
 
+            // Submit the mesh create form
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                console.log("Hello World");
+                account_createMeshEx();
+                xxAddAgentModal.hide();
+            };
+
             // Validate the mesh create form
             account_validateMeshCreate();
             document.getElementById('dp2meshname').focus();
