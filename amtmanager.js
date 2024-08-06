@@ -1069,7 +1069,7 @@ module.exports.CreateAmtManager = function (parent) {
         if (status != 200) { dev.consoleMsg("Failed to get security information (" + status + ")."); delete dev.ocrfile; return; }
 
         // Check if this Intel AMT device supports OCR
-        if (responses['AMT_PublicKeyCertificate'].responses['ForceUEFIHTTPSBoot'] !== true) {
+        if (responses['AMT_BootCapabilities'].response['ForceUEFIHTTPSBoot'] !== true) {
             dev.consoleMsg("This Intel AMT device does not support UEFI HTTPS boot  (" + status + ")."); delete dev.ocrfile; return;
         }
 
@@ -1099,11 +1099,14 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Generate the one-time URL.
         var cookie = obj.parent.encodeCookie({ a: 'f', f: dev.ocrfile }, obj.parent.loginCookieEncryptionKey)
-        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/c/' + cookie + '.iso';
+        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/c/' + cookie + '.efi';
         delete dev.ocrfile;
 
         // Generate the boot data for OCR with URL
         var r = response.Body;
+        r['BIOSPause'] = false;
+        r['BIOSSetup'] = false;
+        r['EnforceSecureBoot'] = false;
         r['UefiBootParametersArray'] = Buffer.from(makeUefiBootParam(1, url) + makeUefiBootParam(20, 1, 1) + makeUefiBootParam(30, 0, 2), 'binary').toString('base64');
         r['UefiBootNumberOfParams'] = 3;
         r['BootMediaIndex'] = 0; // Do not use boot media index for One Click Recovery (OCR)
@@ -1124,8 +1127,7 @@ module.exports.CreateAmtManager = function (parent) {
         dev.amtstack.SetBootConfigRole(1, function (stack, name, response, status) {
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             if (status != 200) { dev.consoleMsg("Failed to set boot config role (" + status + ")."); return; }
-            var bootSource = 'Force OCR UEFI HTTPS Boot';
-            dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder((bootSource == null) ? bootSource : '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: ' + bootSource + '</Selector></SelectorSet></ReferenceParameters>', function (stack, name, response, status) {
+            dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder('<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: Force OCR UEFI HTTPS Boot</Selector></SelectorSet></ReferenceParameters>', function (stack, name, response, status) {
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to set boot config (" + status + ")."); return; }
                 dev.amtstack.RequestPowerStateChange(10, function (stack, name, response, status) { // 10 = Reset, 2 = Power Up
