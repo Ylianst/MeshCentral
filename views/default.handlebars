@@ -5971,6 +5971,103 @@
             }
         }
 
+        function addAgentToMesh(meshid) {
+            if (xxdialogMode) return false;
+            var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
+
+            var opts = '<select id="aginsSelect" onchange="addAgentToMeshClick()" style="width:236px" class="form-control"><option value="0">Windows</option><option value="1">Linux / BSD</option><option value="5">Linux / BSD / macOS Binary Installer</option><option value="2">Apple macOS</option>';
+            if ((features & 2) == 0) { opts += '<option value="6">Mobile device</option>'; } // Don't display mobile setup in LAN mode.
+            opts += '<option value="7">MeshCentral Assistant</option>';
+            opts += '<option value="3">Windows (UnInstall)</option><option value="4">Linux / BSD (UnInstall)</option><option value="8">Apple macOS (UnInstall)</option></select>';
+            x += addHtmlValue('<label for="aginsSelect" class="form-label">Operating System</label>', opts);
+
+            var servername = serverinfo.name;
+            if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
+            var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1), portStr = '';
+            if (serverinfo.https == true) { portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port); } else { portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port); }
+
+            // Add Linux/macOS binary installer option
+            var binaryInstallAgentsOrder = [6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 16, 29];
+            var binaryInstallAgents = { 6: 'Linux x86-64', 5: 'Linux x86-32', 10005: 'Apple OSX Universal', 25: 'Linux ARM-HF, Rasberry Pi', 26: 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30: 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
+            for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value="' + binaryInstallAgentsOrder[i] + '">' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
+            x += '<div id="aginsSysTypeDiv">';
+            x += addHtmlValue('<label for="aginsSysType" class="form-label">System Type</label>', '<select id="aginsSysType" onchange="addAgentToMeshClick()" style="width:236px" class="form-control">' + moreoptions + '</select>');
+            x += '</div>';
+
+            // Add agent and assistant installation type option
+            x += '<div id="aginsTypeDiv">';
+            x += addHtmlValue('<label for="aginsType" class="form-label">Installation Type</label>', '<select id="aginsType" onchange="addAgentToMeshClick()" style="width:236px" class="form-control"><option value="0">Background & interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
+            x += '</div><div id="asinsTypeDiv">';
+            x += addHtmlValue('<label for="asinsType" class="form-label">Installation Type</label>', '<select id="asinsType" onchange="addAgentToMeshClick()" style="width:236px" class="form-control"><option value="2">Application, Connect on user request</option><option value="3">Application, Always connected</option><option value="0">System Tray, Connect on user request</option><option value="1">System Tray, Always connected</option><option value="4">System Tray, Monitor only</option></select>');
+            x += '</div><hr>';
+
+            // Remove invalid characters from the mesh name
+            var meshfilename = mesh.name.replace(/[\\/:*?"<>| ']/g, '');
+
+            // Windows agent install
+            x += '<div id="agins_windows">' + format('To add a new computer to device group "{0}", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw32lnk" name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 32bit version of the MeshAgent" class="link-default">Windows x86-32 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 32bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw64lnk" name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 64bit version of the MeshAgent" class="link-default">Windows x86-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginswa64lnk" name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="ARM 64bit version of the MeshAgent" class="link-default">Windows ARM-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows ARM 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=\',1)">');
+            if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id="aginswmshlnk" name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" class="link-default">' + format('{0} settings (.msh)', EscapeHtml(mesh.name)) + '</a>'); }
+            x += '</div>';
+
+            // Linux agent install
+            x += '<div id="agins_linux" style="display:none">' + format('To add a computer to <span class="fw-bold">"{0}"</span> run the following command. Root credentials will be needed.', EscapeHtml(mesh.name)) + '<br />';
+            x += '<textarea id="agins_linux_area" rows="2" cols="20" readonly="readonly" style="border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px" class="form-control"></textarea>';
+            x += '<div style="font-size:x-small;float:right">* For BSD, run "pkg install wget sudo bash" first.</div><a style="text-decoration:none" title="Copy to clipboard" onclick="copyAgentIdValue(\'agins_linux_area\')"><img src="images/link4.png" height="10" width="10" style="cursor:pointer"> Copy</a></div>';
+
+            // macOS agent install
+            x += '<div id="agins_osx" style="display:none">' + format('To add a new computer to device group <span class="fw-bold">"{0}"</span>, download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a onclick="downloadFile(\'meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '&installflags=0\')" class="link-default">Apple macOS (.pkg)</a> <img src="images/link4.png" height="10" width="10" title="Copy Apple macOS agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '&installflags=0\',1)">');
+            x += '</div>';
+
+            // macOS uninstall agent
+            x += '<div id="agins_osx_remove" style="display:none">' + format('To remove a computer from device group <span class="fw-bold">"{0}"</span>, download the mesh agent uninstaller and run it on the computer to remove.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a onclick="downloadFile(\'meshosxagent?id=20005&meshid=' + meshid.split('/')[2] + '&installflags=0\')" class="link-default">Apple macOS UnInstaller (.pkg)</a> <img src="images/link4.png" height="10" width="10" title="Copy Apple macOS agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshosxagent?id=20005&meshid=' + meshid.split('/')[2] + '&installflags=0\',1)">');
+            x += '</div>';
+
+            // Linux Binary Installer agent install
+            x += '<div id="agins_binaryinstall" style="display:none">' + format('To add a new computer to device group <span class="fw-bold">"{0}"</span>, download the mesh agent installer and run it with root credentials.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a id="aginsBinaryInstallLnk" onclick="downloadFile(\'meshagents?meshid=' + meshid.split('/')[2] + '&installflags=0&linuxbinary=1&osarch=6&archmode=0\')" class="link-default"></a> <img src="images/link4.png" height="10" width="10" title="Copy Linux / BSD agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?meshid=' + meshid.split('/')[2] + '&installflags=0&linuxbinary=1&osarch=6&archmode=0\',1)">');
+            x += '</div>';
+
+            // MeshCentral Assistant install
+            x += '<div id="agins_assist" style="display:none">' + format('To add a new assistant to device group <span class="fw-bold">"{0}"</span>, download the assistant installer and install it on the assistant\'s computer.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('MeshCentral Assistant', '<a onclick="downloadFile(\'meshinstallassistant?id=' + meshid.split('/')[2] + '&installflags=0\')" class="link-default">MeshCentral Assistant Installer</a> <img src="images/link4.png" height="10" width="10" title="Copy Assistant agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshinstallassistant?id=' + meshid.split('/')[2] + '&installflags=0\',1)">');
+            x += '</div>';
+
+            // Mobile device setup
+            x += '<div id="agins_mobile" style="display:none">' + format('To setup a mobile device on device group <span class="fw-bold">"{0}"</span>, scan the following QRCode with your device. This code will open a page that will start the installation of MeshCentral mobile app and enroll the device in this device group.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<center><canvas id="agentqrcode"></canvas></center>';
+            x += '<div style="font-size:x-small">This QRCode has enrollment and server information embedded within it. It will only work on this server and in this device group.</div>';
+            x += '</div>';
+
+            // Uninstall
+            x += '<div id="agins_uninstall" style="display:none">' + format('To uninstall and remove a computer from device group <span class="fw-bold">"{0}"</span>, download the mesh agent uninstaller and install it the computer to remove.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw32lnkremove" name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 32bit version of the MeshAgent" class="link-default">Windows x86-32 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 32bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=2\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw64lnkremove" name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 64bit version of the MeshAgent" class="link-default">Windows x86-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=2\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginswa64lnkremove" name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="ARM 64bit version of the MeshAgent" class="link-default">Windows ARM-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows ARM 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=2\',1)">');
+            if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id="aginswmshlnkremove" name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" class="link-default">' + format('{0} settings (.msh)', EscapeHtml(mesh.name)) + '</a>'); }
+            x += '</div>';
+
+            setModalContent('xxAddAgent', "Add Agent to Device Group", x);
+
+            // Show the modal
+            var modal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            modal.show();
+
+            // Add QRCode
+            var qrcodetext = domainUrlNoSlash + ':' + portStr + '/mobile.htm?key=' + meshid.split('/')[2] + ((urlargs.key) ? ('&key=' + urlargs.key) : '');
+            //$('#agentqrcode').qrcode({ text: qrcodetext, width: 128, height: 128 });
+
+            // Focus the input text box
+            if (document.getElementById('aginsw64lnk')) { document.getElementById('aginsw64lnk').focus(); }
+
+            addAgentToMeshClick();
+            return false;
+        }
+
         function setModalContent(modalId, title, bodyContent) {
             // Check if the modal elements exist
             var modalTitleElement = document.getElementById(modalId + 'Title');
