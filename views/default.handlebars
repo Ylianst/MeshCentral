@@ -6141,12 +6141,7 @@
             x += '</div>';
 
             // Inject content into the modal
-            console.log("Hello");
             setModalContent('xxAddAgent', 'New Device Group', x);
-
-            // Initialize and show the modal
-            //var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            //xxAddAgentModal.show();
             return true;
         }
 
@@ -13705,7 +13700,6 @@
 
             // Submit the mesh create form
             document.getElementById('idx_dlgOkButton').onclick = function () {
-                console.log("Hello World");
                 account_createMeshEx();
                 xxAddAgentModal.hide();
             };
