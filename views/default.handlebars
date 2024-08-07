@@ -443,7 +443,7 @@
                         <option value=7>Tagged</option>
                         <option value=8>Untagged</option>
                     </select>
-                    <label class="d-flex"><input class="form-control" style="width: auto;" type=checkbox
+                    <label class="d-flex"><input class="form-check" style="width: auto;" type=checkbox
                             id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span
                             title="Show devices operating system name">OS
                             Name</span></label>
@@ -16421,60 +16421,96 @@
             var x = '';
 
             if (serverinfo.crossDomain) {
-                var y = '<select style=width:240px id=p4domain>';
-                for (var i in serverinfo.crossDomain) { y += '<option value=' + i + '>' + ((serverinfo.crossDomain[i] == '') ? "Default" : EscapeHtml(serverinfo.crossDomain[i])) + '</option>'; }
+                var y = '<select style="width:240px" id="p4domain">';
+                for (var i in serverinfo.crossDomain) {
+                    y += '<option value="' + i + '">' + ((serverinfo.crossDomain[i] == '') ? "Default" : EscapeHtml(serverinfo.crossDomain[i])) + '</option>';
+                }
                 y += '</select>';
                 x += addHtmlValue("Domain", y);
             }
 
-            if ((features & 0x200000) == 0) { x += addHtmlValue('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
-            x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email type=email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
-            x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Remove all previous events for this userid." + '</label></div>';
-            x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Force password reset on next login." + '</label></div>';
+            if ((features & 0x200000) == 0) {
+                x += addHtmlValue('<span id="p4hname">Username</span>', '<input id="p4name" maxlength="64" autocomplete="username" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
+            }
+            x += addHtmlValue('<span id="p4hemail">Email</span>', '<input id="p4email" type="email" maxlength="256" autocomplete="email" inputmode="email" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
+            x += addHtmlValue('<span id="p4hp1">Password</span>', '<input id="p4pass1" type="password" maxlength="256" autocomplete="new-password" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
+            x += addHtmlValue('<span id="p4hp2">Password</span>', '<input id="p4pass2" type="password" maxlength="256" autocomplete="new-password" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
+            x += '<div><label><input id="p4randomPassword" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Randomize the password.</label></div>';
+            x += '<div><label><input id="p4removeEvents" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Remove all previous events for this userid.</label></div>';
+            x += '<div><label><input id="p4resetNextLogin" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Force password reset on next login.</label></div>';
             if (serverinfo.emailcheck) {
-                x += '<div><label><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Email is verified." + '</label></div>';
-                x += '<div><label><input id=p4invitationEmail type=checkbox title=' + "Email verified and forced password reset required." + ' />' + "Send invitation email." + '</label></div>';
+                x += '<div><label><input id="p4verifiedEmail" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Email is verified.</label></div>';
+                x += '<div><label><input id="p4invitationEmail" type="checkbox" title="Email verified and forced password reset required." onchange="showCreateNewAccountDialogValidate()" /> Send invitation email.</label></div>';
             }
 
             if (passRequirements) {
                 var r = [], rc = 0;
-                for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
-                if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>' + format("Requirements: {0}.", r.join(', ')) + '</div>'; }
+                for (var i in passRequirements) {
+                    if ((i != 'reset') && (i != 'hint')) {
+                        r.push(i + ':' + passRequirements[i]);
+                        rc++;
+                    }
+                }
+                if (rc > 0) {
+                    x += '<div style="font-size:x-small;padding:6px">' + format("Requirements: {0}.", r.join(', ')) + '</div>';
+                }
             }
 
-            setDialogMode(2, "Create Account", 3, showCreateNewAccountDialogEx, x);
+            // Iinject the content into the modal
+            setModalContent('xxAddAgent', 'Create Account', x);
+
+            // Initialize the modal
+            var createAccountModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            createAccountModal.show();
+
+            // Set the OK button action event
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                showCreateNewAccountDialogEx();
+                createAccountModal.hide();
+            };
+
+            // Validate form fields
             showCreateNewAccountDialogValidate();
-            if ((features & 0x200000) == 0) { Q('p4name').focus(); } else { Q('p4email').focus(); }
+            if ((features & 0x200000) == 0) {
+                document.getElementById('p4name').focus();
+            } else {
+                document.getElementById('p4email').focus();
+            }
         }
 
         function showCreateNewAccountDialogValidate() {
-            var emailok = validateEmail(Q('p4email').value);
+            var emailok = validateEmail(document.getElementById('p4email').value);
             var nameok = true;
-            var passok = (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements));
+            var passok = (document.getElementById('p4pass1').value.length > 0 && document.getElementById('p4pass1').value == document.getElementById('p4pass2').value && checkPasswordRequirements(document.getElementById('p4pass1').value, passRequirements));
 
             if ((features & 0x200000) == 0) {
-                nameok = (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1)));
-                QS('p4hname').color = nameok ? 'black' : '#7b241c';
+                nameok = (!document.getElementById('p4name') || ((document.getElementById('p4name').value.length > 0) && (document.getElementById('p4name').value.indexOf(' ') == -1)));
+                document.getElementById('p4hname').style.color = nameok ? 'black' : '#7b241c';
             }
-            QS('p4hemail').color = emailok ? 'black' : '#7b241c';
+            document.getElementById('p4hemail').style.color = emailok ? 'black' : '#7b241c';
 
             if (serverinfo.emailcheck) {
-                QE('p4verifiedEmail', emailok);
-                QE('p4invitationEmail', emailok && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
-                if (emailok == false) { Q('p4verifiedEmail').checked = false; }
-                if ((Q('p4resetNextLogin').checked == false) || (Q('p4verifiedEmail').checked == false)) { Q('p4invitationEmail').checked = false; }
+                document.getElementById('p4verifiedEmail').disabled = !emailok;
+                document.getElementById('p4invitationEmail').disabled = !(emailok && document.getElementById('p4resetNextLogin').checked && document.getElementById('p4verifiedEmail').checked);
+                if (!emailok) {
+                    document.getElementById('p4verifiedEmail').checked = false;
+                }
+                if (!document.getElementById('p4resetNextLogin').checked || !document.getElementById('p4verifiedEmail').checked) {
+                    document.getElementById('p4invitationEmail').checked = false;
+                }
             }
-            QE('p4pass1', !Q('p4randomPassword').checked);
-            QE('p4pass2', !Q('p4randomPassword').checked);
-            QS('p4hp1').color = (passok || Q('p4randomPassword').checked) ? 'black' : '#7b241c';
-            QS('p4hp2').color = (passok || Q('p4randomPassword').checked) ? 'black' : '#7b241c';
 
-            var ok = nameok & emailok;
-            if (Q('p4randomPassword').checked == false) { ok &= passok; }
-            QE('idx_dlgOkButton', ok);
+            var randomPasswordChecked = document.getElementById('p4randomPassword').checked;
+            document.getElementById('p4pass1').disabled = randomPasswordChecked;
+            document.getElementById('p4pass2').disabled = randomPasswordChecked;
+            document.getElementById('p4hp1').style.color = (passok || randomPasswordChecked) ? 'black' : '#7b241c';
+            document.getElementById('p4hp2').style.color = (passok || randomPasswordChecked) ? 'black' : '#7b241c';
+
+            var ok = nameok && emailok;
+            if (!randomPasswordChecked) {
+                ok &= passok;
+            }
+            document.getElementById('idx_dlgOkButton').disabled = !ok;
         }
 
         function showCreateNewAccountDialogEx() {
