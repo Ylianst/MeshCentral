@@ -443,7 +443,7 @@
                         <option value=7>Tagged</option>
                         <option value=8>Untagged</option>
                     </select>
-                    <label class="d-flex"><input class="form-check" style="width: auto;" type=checkbox
+                    <label class="d-flex"><input class="form-control" style="width: auto;" type=checkbox
                             id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span
                             title="Show devices operating system name">OS
                             Name</span></label>
@@ -5908,30 +5908,41 @@
             if (xxdialogMode) return false;
             var x = '', mesh = meshes[meshid];
             if (features & 64) {
-                x += addHtmlValue("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() style=width:236px><option value=0>' + "Link invitation" + '</option><option value=1>' + "Email invitation" + '</option></select>') + '<hr />';
-                x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
-                x += addHtmlValue("Name (optional)", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
-                x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder="' + "example@email.com" + '" onkeyup=validateAgentInvite()></input>');
-                x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option><option value=5>' + "MeshCentral Assistant" + '</option></select>');
-                x += '<div id=d2agentexpirediv>';
-                x += addHtmlValue("Link Expiration", '<select id=agentInviteExpire style=width:236px><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
+                x += addHtmlValue("Invitation Type", '<select id="d2InviteType" class="form-select" onchange="d2ChangedInviteType()" style="width:236px;"><option value="0">Link invitation</option><option value="1">Email invitation</option></select>') + '<hr />';
+                x += '<div id="emailInviteDiv" style="display:none">' + format("Invite someone to install the mesh agent. An email will be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
+                x += addHtmlValue("Name (optional)", '<input id="agentInviteName" class="form-control" value="" style="width:230px;" maxlength="64" />');
+                x += addHtmlValue("Email", '<input id="agentInviteEmail" class="form-control" style="width:230px;" placeholder="example@email.com" onkeyup="validateAgentInvite()"></input>');
+                x += addHtmlValue("Operating System", '<select id="agentInviteNameOs" class="form-select" onchange="d2ChangedInviteType()" style="width:236px;"><option value="4">Send installation link</option><option value="0" selected>Any supported</option><option value="1">Windows only</option><option value="3">Apple macOS only</option><option value="2">Linux only</option><option value="5">MeshCentral Assistant</option></select>');
+                x += '<div id="d2agentexpirediv">';
+                x += addHtmlValue("Link Expiration", '<select id="agentInviteExpire" class="form-select" style="width:236px;"><option value="1">1 hour</option><option value="8">8 hours</option><option value="24">1 day</option><option value="168">1 week</option><option value="5040">1 month</option><option value="0">Unlimited</option></select>');
                 x += '</div>';
-                x += '<div id=d2agentInstallTypeDiv2>';
-                x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+                x += '<div id="d2agentInstallTypeDiv2">';
+                x += addHtmlValue("Installation Type", '<select id="agentInviteType" class="form-select" style="width:236px;"><option value="0">Background and interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
                 x += '</div>';
-                x += addHtmlValue("Message" + '<br />' + "(optional)", '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
+                x += addHtmlValue("Message (optional)", '<textarea id="agentInviteMessage" class="form-control" style="width:230px;height:100px;resize:none;" maxlength="1024"></textarea>');
                 x += '</div>';
             }
-            x += '<div id=urlInviteDiv>' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Link Expiration", '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
-            x += addHtmlValue("Agents", '<select id=d2agentType style=width:236px onchange=d2ChangedInviteType()><option value=0>' + "All Available Agents" + '</option><option value=1>' + "Windows MeshAgent" + '</option><option value=2>' + "Linux MeshAgent" + '</option><option value=4>' + "MacOS MeshAgent" + '</option><option value=8>' + "MeshCentral Assistant" + '</option><option value=16>' + "Android MeshAgent" + '</option></select>');
-            x += '<div id=d2agentInstallTypeDiv>';
-            x += addHtmlValue("Installation Type", '<select id=d2agentInviteType style=width:236px onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+            x += '<div id="urlInviteDiv">' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue("Link Expiration", '<select id="d2inviteExpire" class="form-select" style="width:236px;" onchange="d2RequestInvitationLink()"><option value="1">1 hour</option><option value="8">8 hours</option><option value="24">1 day</option><option value="168">1 week</option><option value="5040">1 month</option><option value="0">Unlimited</option></select>');
+            x += addHtmlValue("Agents", '<select id="d2agentType" class="form-select" style="width:236px;" onchange="d2ChangedInviteType()"><option value="0">All Available Agents</option><option value="1">Windows MeshAgent</option><option value="2">Linux MeshAgent</option><option value="4">MacOS MeshAgent</option><option value="8">MeshCentral Assistant</option><option value="16">Android MeshAgent</option></select>');
+            x += '<div id="d2agentInstallTypeDiv">';
+            x += addHtmlValue("Installation Type", '<select id="d2agentInviteType" class="form-select" style="width:236px;" onchange="d2RequestInvitationLink()"><option value="0">Background and interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
             x += '</div>';
-            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
-            setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
-            if (features & 64) { Q('d2InviteType').focus(); d2ChangedInviteType(); } else { Q('d2inviteExpire').focus(); validateAgentInvite(); }
+            x += '<div id="agentInvitationLinkDiv" class="text-center" style="font-size:large;margin:16px;display:none;"><a href="#" id="agentInvitationLink" rel="noreferrer noopener" target="_blank" style="cursor:pointer;"></a> <img src="images/link4.png" height="10" width="10" title="Copy link to clipboard" style="cursor:pointer;" onclick="d2CopyInviteToClip()"></div></div>';
+
+            setModalContent('xxAddAgent', "Invite", x);
             d2RequestInvitationLink();
+            var inviteAgentToMeshModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            inviteAgentToMeshModal.show();
+
+
+            if (features & 64) {
+                document.getElementById('d2InviteType').focus();
+                d2ChangedInviteType();
+            } else {
+                document.getElementById('d2inviteExpire').focus();
+                validateAgentInvite();
+            }
             return false;
         }
 
@@ -14360,25 +14371,11 @@
         }
 
         function p20showDeleteMeshDialog() {
+            if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
-            x += '<label><input id="p20check" type="checkbox" onchange="p20validateDeleteMeshDialog()" />' + "Confirm" + '</label>';
-
-            // Inject the modal content
-            setModalContent('xxAddAgent', 'Delete Group', x);
-
-            // Show the modal
-            var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            xxAddAgentModal.show();
-
-            // Validate the dialog when the modal is shown
+            x += '<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
+            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
-
-            // Set the OK button action
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20showDeleteMeshDialogEx();
-                xxAddAgentModal.hide();
-            };
-
             return false;
         }
 
@@ -14579,48 +14576,34 @@
         function p20showAddMeshUserDialog(userid, selected) {
             if (xxdialogMode) return false;
             var x = '';
-
-            // Construct the modal content based on the userid and selected parameters
             if ((userid == null) || (userid == 5)) {
                 if (selected == null) {
-                    if (userid == null) {
-                        x += "Allow users to manage this device group and devices in this group.";
-                    } else {
-                        x += "Allow users to manage this device.";
-                    }
-                    if (features & 0x00080000) {
-                        x += " Users need to login to this server once before they can be added to a device group.";
-                    }
+                    if (userid == null) { x += "Allow users to manage this device group and devices in this group."; } else { x += "Allow users to manage this device."; }
+                    if (features & 0x00080000) { x += " Users need to login to this server once before they can be added to a device group." }
                     x += '<br /><br />';
                 }
-                x += '<div style="position:relative">';
-                x += addHtmlValue("<label class=form-label for=dp20username>User Identifiers</label>", '<input id="dp20username" style="width:230px" maxlength="256" onchange="p20validateAddMeshUserDialog()" onkeyup="p20validateAddMeshUserDialog()" placeholder="user1, user2, user3" class="form-control" />');
-                x += '<div id="dp20usersuggest" class="suggestionBox" style="top:30px;left:130px;display:none"></div>';
+                x += '<div style=\'position:relative\'>';
+                x += addHtmlValue("User Identifiers", '<input id=dp20username style=width:230px maxlength=256 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
+                x += '<div id=dp20usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
                 x += '</div><br>';
             } else if (userid == 1) {
                 var y = '';
                 if (selected == null) {
                     var omeshs = getOrderedList(meshes, 'name');
-                    for (var i in omeshs) {
-                        if ((currentUser.links == null) || (currentUser.links[omeshs[i]._id] == null)) {
-                            y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + '>' + EscapeHtml(omeshs[i].name) + '</option>';
-                        }
-                    }
+                    for (var i in omeshs) { if ((currentUser.links == null) || (currentUser.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
                 } else {
                     y += '<option value=' + selected + '>' + EscapeHtml(meshes[decodeURIComponent(selected)].name) + '</option>';
                 }
-                x += addHtmlValue("<label class=form-label for=dp2groupid>Device Group</label>", '<div style="width:230px;margin:0;padding:0"><select onchange="p20validateAddMeshUserDialog()" id="dp2groupid" style="width:100%"' + (selected ? ' disabled' : '') + ' class="form-control">' + y + '</select></div>');
+                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%' + (selected ? ' disabled' : '') + '>' + y + '</select></div>');
             } else if (userid == 2) {
                 if (usergroups == null) return;
                 var y = '';
                 var ousergroups = getOrderedList(usergroups, 'name');
                 for (var i in ousergroups) {
                     if (currentMesh._id.split('/')[1] != ousergroups[i]._id.split('/')[1]) continue;
-                    if ((currentMesh.links == null) || (currentMesh.links[ousergroups[i]._id] == null)) {
-                        y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>';
-                    }
+                    if ((currentMesh.links == null) || (currentMesh.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; }
                 }
-                x += addHtmlValue("<label class=form-label for=dp2groupid>User Group</label>", '<div style="width:230px;margin:0;padding:0"><select onchange="p20validateAddMeshUserDialog()" id="dp2groupid" style="width:100%" class="form-control">' + y + '</select></div>');
+                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if (userid == 6) {
                 if (usergroups == null) return;
                 var y = '';
@@ -14628,64 +14611,38 @@
                     var ousergroups = getOrderedList(usergroups, 'name');
                     for (var i in ousergroups) {
                         if ((ousergroups[i].membershipType != null) || (currentNode._id.split('/')[1] != ousergroups[i]._id.split('/')[1])) continue;
-                        if ((currentNode.links == null) || (currentNode.links[ousergroups[i]._id] == null)) {
-                            y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>';
-                        }
+                        if ((currentNode.links == null) || (currentNode.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; }
                     }
                 } else {
                     y += '<option value=' + selected + '>' + EscapeHtml(usergroups[decodeURIComponent(selected)].name) + '</option>';
                 }
-                x += addHtmlValue("<label class=form-label for=dp2groupid>User Group</label>", '<div style="width:230px;margin:0;padding:0"><select onchange="p20validateAddMeshUserDialog()" id="dp2groupid" style="width:100%"' + (selected ? ' disabled' : '') + ' class="form-control">' + y + '</select></div>');
+                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%' + (selected ? ' disabled' : '') + '>' + y + '</select></div>');
             } else if (userid == 3) {
                 var y = '';
-                if (selected) {
-                    selected = decodeURIComponent(selected);
-                }
+                if (selected) { selected = decodeURIComponent(selected); }
                 var omeshs = getOrderedList(meshes, 'name');
-                for (var i in omeshs) {
-                    if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[omeshs[i]._id] == null)) {
-                        y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selected == omeshs[i]._id) ? ' selected' : ' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>';
-                    }
-                }
-                x += addHtmlValue("<label class=form-label for=dp2groupid>Device Group</label>", '<div style="width:230px;margin:0;padding:0"><select onchange="p20validateAddMeshUserDialog(' + userid + ')" id="dp2groupid" style="width:100%" class="form-control">' + y + '</select></div>');
+                for (var i in omeshs) { if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selected == omeshs[i]._id) ? ' selected' : ' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
+                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2groupid style=width:100%>' + y + '</select></div>');
             } else if ((userid == 4) || (userid == 7)) {
                 var y = '', selectedMeshId = null, selectedNode = null;
-                if (selected != null) {
-                    selectedNode = getNodeFromId(decodeURIComponent(selected));
-                    if (selectedNode != null) {
-                        selectedMeshId = selectedNode.meshid;
-                    }
-                }
+                if (selected != null) { selectedNode = getNodeFromId(decodeURIComponent(selected)); if (selectedNode != null) { selectedMeshId = selectedNode.meshid; } }
                 var omeshs = getOrderedList(meshes, 'name');
                 for (var i in omeshs) {
-                    if ((omeshs[i].links[userinfo._id] != null) && (omeshs[i].links[userinfo._id].rights & 7)) {
-                        if (selectedMeshId == null) {
-                            selectedMeshId = omeshs[i]._id;
-                        }
-                        y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selectedMeshId == omeshs[i]._id) ? ' selected' : ' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>';
+                    if ((omeshs[i].links[userinfo._id] != null) && (omeshs[i].links[userinfo._id].rights & 7)) { // Only show device groups that we have user administrator for.
+                        if (selectedMeshId == null) { selectedMeshId = omeshs[i]._id; } y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selectedMeshId == omeshs[i]._id) ? ' selected' : ' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>';
                     }
                 }
-                x += addHtmlValue("<label class=form-label for=dp2meshid>Device Group</label>", '<div style="width:230px;margin:0;padding:0"><select onchange="p20changeMeshAddMeshUserDialog(' + userid + ')" id="dp2meshid" style="width:100%">' + y + '</select></div>');
+                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog(' + userid + ') id=dp2meshid style=width:100%>' + y + '</select></div>');
                 y = '';
                 var onodes = getOrderedList(nodes, 'name');
-                for (var i in onodes) {
-                    if (onodes[i].meshid == selectedMeshId) {
-                        y += '<option value=' + encodeURIComponentEx(onodes[i]._id) + ((selectedNode == onodes[i]) ? ' selected' : ' ') + '>' + EscapeHtml(onodes[i].name) + '</option>';
-                    }
-                }
-                x += addHtmlValue("<label class=form-label for=dp2nodeid>Device</label>", '<div style="width:230px;margin:0;padding:0"><select onchange="p20validateAddMeshUserDialog(' + userid + ')" id="dp2nodeid" style="width:100%" class="form-control">' + y + '</select></div>');
+                for (var i in onodes) { if (onodes[i].meshid == selectedMeshId) { y += '<option value=' + encodeURIComponentEx(onodes[i]._id) + ((selectedNode == onodes[i]) ? ' selected' : ' ') + '>' + EscapeHtml(onodes[i].name) + '</option>'; } }
+                x += addHtmlValue("Device", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2nodeid style=width:100%>' + y + '</select></div>');
             } else {
                 userid = decodeURIComponent(userid);
                 var uname = userid.split('/')[2];
-                if (users && users[userid]) {
-                    uname = users[userid].name;
-                }
-                if (usergroups && usergroups[userid]) {
-                    uname = usergroups[userid].name;
-                }
-                if (userinfo._id == userid) {
-                    uname = userinfo.name;
-                }
+                if (users && users[userid]) { uname = users[userid].name; }
+                if (usergroups && usergroups[userid]) { uname = usergroups[userid].name; }
+                if (userinfo._id == userid) { uname = userinfo.name; }
                 if (userid.startsWith('ugrp/')) {
                     x += format("Group permissions for {0}.", uname) + '<br /><br />';
                 } else {
@@ -14697,45 +14654,112 @@
 
             x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray;resize:vertical;">';
             if (meshRightsActive) {
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20fulladmin">' + "Full Administrator" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20editmesh">' + "Edit Device Group" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20manageusers">' + "Manage Device Group Users" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20managecomputers">' + "Manage Device Group Computers" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20remotedesktop">' + "Remote Desktop" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20remotecontrol">' + "Remote Control" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20agentupdate">' + "Agent Update" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20fileaccess">' + "File Access" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20console">' + "Console" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20wakeup">' + "Wake Device" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20amt">' + "Intel® AMT" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20notes">' + "Edit Notes" + '</label><br>';
-                x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20desktopviewonly">' + "Desktop View-Only Mode" + '</label><br>';
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
+                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
             }
-            x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20noterm"' + (urights & 32 ? ' checked' : '') + '>' + "No Terminal" + '</label><br>';
-            x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20noremote"' + (urights & 64 ? ' checked' : '') + '>' + "No Remote" + '</label><br>';
-            x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20nofile"' + (urights & 128 ? ' checked' : '') + '>' + "No File" + '</label><br>';
-            x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20nodashboard"' + (urights & 256 ? ' checked' : '') + '>' + "No Dashboard" + '</label><br>';
-            x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20node"' + (urights & 512 ? ' checked' : '') + '>' + "Node Only" + '</label><br>';
-            x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20invite"' + (urights & 1024 ? ' checked' : '') + '>' + "Invite" + '</label><br>';
-            x += '<label><input type="checkbox" onchange="p20validateAddMeshUserDialog()" id="p20nodash"' + (urights & 2048 ? ' checked' : '') + '>' + "No Dash" + '</label><br>';
-            x += '</div><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
+            if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>' + "Wake Devices" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "Edit Device Notes" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
+            x += '</div>';
 
-            x += addHtmlValue("User Rights", '<div id="dp20userrights"></div>');
+            if (userid == null) {
+                setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
+                QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
+                Q('dp20username').focus();
+            } else if (userid === 1) {
+                setDialogMode(2, (selected == null) ? "Add Device Group Permissions" : "Edit Device Group Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                if (selected != null) { urights = meshes[decodeURIComponent(selected)].links[currentUser._id].rights; }
+                if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
+            } else if (userid === 2) {
+                setDialogMode(2, "Add User Group", 3, p20showAddMeshUserDialogEx, x, userid);
+                QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
+            } else if (userid === 3) {
+                setDialogMode(2, (selected == null) ? "Add Device Group" : "Edit Device Group", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                QE('dp2groupid', selected == null);
+                if (selected != null) { urights = currentUserGroup.links[decodeURIComponent(selected)].rights; }
+                if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
+            } else if (userid === 4) {
+                setDialogMode(2, (selected == null) ? "Add Device Permissions" : "Edit Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                QE('dp2meshid', selected == null);
+                QE('dp2nodeid', selected == null);
+            } else if (userid === 7) {
+                setDialogMode(2, (selected == null) ? "Add Device Permissions" : "Edit Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                QE('dp2meshid', selected == null);
+                QE('dp2nodeid', selected == null);
+                if (selected != null) { urights = currentUserGroup.links[decodeURIComponent(selected)].rights; QE('dp20username', false); }
+            } else if (userid === 5) {
+                setDialogMode(2, selected ? "Edit User Device Permissions" : "Add User Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                if (selected != null) {
+                    selected = decodeURIComponent(selected);
+                    if ((users != null) && (users[selected] != null)) { Q('dp20username').value = users[selected].name; } else { Q('dp20username').value = selected.split('/')[2]; }
+                    urights = currentNode.links[selected].rights;
+                    QE('dp20username', false);
+                }
+                Q('dp20username').focus();
+            } else if (userid === 6) {
+                setDialogMode(2, selected ? "Edit User Group Device Permissions" : "Add User Group Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                if (selected != null) { urights = currentNode.links[decodeURIComponent(selected)].rights; }
+            } else {
+                if (userid.startsWith('ugrp/')) {
+                    setDialogMode(2, "Edit Device Group Permissions", 7, p20showAddMeshUserDialogEx, x, userid);
+                } else {
+                    setDialogMode(2, "Edit User Device Group Permissions", 7, p20showAddMeshUserDialogEx, x, userid);
+                }
+                var cmeshrights = GetMeshRights(currentMesh), urights = GetMeshRights(currentMesh, userid);
+                if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
+                QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
+            }
 
-            var okButton = 'OK';
-            var cancelButton = 'Cancel';
+            if (urights != -1) {
+                if (meshRightsActive) {
+                    if (urights & 1) { Q('p20editmesh').checked = true; }
+                    if (urights & 2) { Q('p20manageusers').checked = true; }
+                    if (urights & 4) { Q('p20managecomputers').checked = true; }
+                }
+                if (urights & 8) {
+                    Q('p20remotecontrol').checked = true;
+                    if (urights & 65536) { Q('p20nodesktop').checked = true; }
+                    if (urights & 256) { Q('p20remoteview').checked = true; }
+                    if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
+                    if (urights & 512) { Q('p20noterminal').checked = true; }
+                    if (urights & 1024) { Q('p20nofiles').checked = true; }
+                    if (urights & 2048) { Q('p20noamt').checked = true; }
+                    if (urights & 4096) { Q('p20remotelimitedinput').checked = true; }
+                }
+                if (urights & 16) { Q('p20meshagentconsole').checked = true; }
+                if (urights & 32) { Q('p20meshserverfiles').checked = true; }
+                if (urights & 64) { Q('p20wakedevices').checked = true; }
+                if (urights & 128) { Q('p20editnotes').checked = true; }
+                if (urights & 8192) { Q('p20limitevents').checked = true; }
+                if (urights & 16384) { Q('p20chatnotify').checked = true; }
+                if (urights & 32768) { Q('p20uninstall').checked = true; }
+                if (urights & 131072) { Q('p20commands').checked = true; }
+                if (urights & 262144) { Q('p20resetoff').checked = true; }
+                if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
+                if (urights & 1048576) { Q('p20details').checked = true; }
+                if (urights & 2097152) { Q('p20relay').checked = true; }
+            }
 
-            // Use setModalContent to inject the content into the modal
-            setModalContent('xxAddAgent', 'Add Mesh User', x);
-
-            // Set the OK button action event
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20showDeleteMeshDialogEx();
-            };
-
-            // Show the modal
-            var addMeshUserModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            addMeshUserModal.show();
+            p20validateAddMeshUserDialog(userid);
+            return false;
         }
 
         function p20changeMeshAddMeshUserDialog(userid) {
@@ -16421,96 +16445,60 @@
             var x = '';
 
             if (serverinfo.crossDomain) {
-                var y = '<select style="width:240px" id="p4domain">';
-                for (var i in serverinfo.crossDomain) {
-                    y += '<option value="' + i + '">' + ((serverinfo.crossDomain[i] == '') ? "Default" : EscapeHtml(serverinfo.crossDomain[i])) + '</option>';
-                }
+                var y = '<select style=width:240px id=p4domain>';
+                for (var i in serverinfo.crossDomain) { y += '<option value=' + i + '>' + ((serverinfo.crossDomain[i] == '') ? "Default" : EscapeHtml(serverinfo.crossDomain[i])) + '</option>'; }
                 y += '</select>';
                 x += addHtmlValue("Domain", y);
             }
 
-            if ((features & 0x200000) == 0) {
-                x += addHtmlValue('<span id="p4hname">Username</span>', '<input id="p4name" maxlength="64" autocomplete="username" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
-            }
-            x += addHtmlValue('<span id="p4hemail">Email</span>', '<input id="p4email" type="email" maxlength="256" autocomplete="email" inputmode="email" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
-            x += addHtmlValue('<span id="p4hp1">Password</span>', '<input id="p4pass1" type="password" maxlength="256" autocomplete="new-password" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
-            x += addHtmlValue('<span id="p4hp2">Password</span>', '<input id="p4pass2" type="password" maxlength="256" autocomplete="new-password" class="form-control" onchange="showCreateNewAccountDialogValidate()" onkeyup="showCreateNewAccountDialogValidate()" />');
-            x += '<div><label><input id="p4randomPassword" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Randomize the password.</label></div>';
-            x += '<div><label><input id="p4removeEvents" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Remove all previous events for this userid.</label></div>';
-            x += '<div><label><input id="p4resetNextLogin" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Force password reset on next login.</label></div>';
+            if ((features & 0x200000) == 0) { x += addHtmlValue('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
+            x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email type=email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
+            x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Remove all previous events for this userid." + '</label></div>';
+            x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Force password reset on next login." + '</label></div>';
             if (serverinfo.emailcheck) {
-                x += '<div><label><input id="p4verifiedEmail" type="checkbox" onchange="showCreateNewAccountDialogValidate()" /> Email is verified.</label></div>';
-                x += '<div><label><input id="p4invitationEmail" type="checkbox" title="Email verified and forced password reset required." onchange="showCreateNewAccountDialogValidate()" /> Send invitation email.</label></div>';
+                x += '<div><label><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Email is verified." + '</label></div>';
+                x += '<div><label><input id=p4invitationEmail type=checkbox title=' + "Email verified and forced password reset required." + ' />' + "Send invitation email." + '</label></div>';
             }
 
             if (passRequirements) {
                 var r = [], rc = 0;
-                for (var i in passRequirements) {
-                    if ((i != 'reset') && (i != 'hint')) {
-                        r.push(i + ':' + passRequirements[i]);
-                        rc++;
-                    }
-                }
-                if (rc > 0) {
-                    x += '<div style="font-size:x-small;padding:6px">' + format("Requirements: {0}.", r.join(', ')) + '</div>';
-                }
+                for (var i in passRequirements) { if ((i != 'reset') && (i != 'hint')) { r.push(i + ':' + passRequirements[i]); rc++; } }
+                if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>' + format("Requirements: {0}.", r.join(', ')) + '</div>'; }
             }
 
-            // Iinject the content into the modal
-            setModalContent('xxAddAgent', 'Create Account', x);
-
-            // Initialize the modal
-            var createAccountModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            createAccountModal.show();
-
-            // Set the OK button action event
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                showCreateNewAccountDialogEx();
-                createAccountModal.hide();
-            };
-
-            // Validate form fields
+            setDialogMode(2, "Create Account", 3, showCreateNewAccountDialogEx, x);
             showCreateNewAccountDialogValidate();
-            if ((features & 0x200000) == 0) {
-                document.getElementById('p4name').focus();
-            } else {
-                document.getElementById('p4email').focus();
-            }
+            if ((features & 0x200000) == 0) { Q('p4name').focus(); } else { Q('p4email').focus(); }
         }
 
         function showCreateNewAccountDialogValidate() {
-            var emailok = validateEmail(document.getElementById('p4email').value);
+            var emailok = validateEmail(Q('p4email').value);
             var nameok = true;
-            var passok = (document.getElementById('p4pass1').value.length > 0 && document.getElementById('p4pass1').value == document.getElementById('p4pass2').value && checkPasswordRequirements(document.getElementById('p4pass1').value, passRequirements));
+            var passok = (Q('p4pass1').value.length > 0 && Q('p4pass1').value == Q('p4pass2').value && checkPasswordRequirements(Q('p4pass1').value, passRequirements));
 
             if ((features & 0x200000) == 0) {
-                nameok = (!document.getElementById('p4name') || ((document.getElementById('p4name').value.length > 0) && (document.getElementById('p4name').value.indexOf(' ') == -1)));
-                document.getElementById('p4hname').style.color = nameok ? 'black' : '#7b241c';
+                nameok = (!Q('p4name') || ((Q('p4name').value.length > 0) && (Q('p4name').value.indexOf(' ') == -1)));
+                QS('p4hname').color = nameok ? 'black' : '#7b241c';
             }
-            document.getElementById('p4hemail').style.color = emailok ? 'black' : '#7b241c';
+            QS('p4hemail').color = emailok ? 'black' : '#7b241c';
 
             if (serverinfo.emailcheck) {
-                document.getElementById('p4verifiedEmail').disabled = !emailok;
-                document.getElementById('p4invitationEmail').disabled = !(emailok && document.getElementById('p4resetNextLogin').checked && document.getElementById('p4verifiedEmail').checked);
-                if (!emailok) {
-                    document.getElementById('p4verifiedEmail').checked = false;
-                }
-                if (!document.getElementById('p4resetNextLogin').checked || !document.getElementById('p4verifiedEmail').checked) {
-                    document.getElementById('p4invitationEmail').checked = false;
-                }
+                QE('p4verifiedEmail', emailok);
+                QE('p4invitationEmail', emailok && Q('p4resetNextLogin').checked && Q('p4verifiedEmail').checked);
+                if (emailok == false) { Q('p4verifiedEmail').checked = false; }
+                if ((Q('p4resetNextLogin').checked == false) || (Q('p4verifiedEmail').checked == false)) { Q('p4invitationEmail').checked = false; }
             }
+            QE('p4pass1', !Q('p4randomPassword').checked);
+            QE('p4pass2', !Q('p4randomPassword').checked);
+            QS('p4hp1').color = (passok || Q('p4randomPassword').checked) ? 'black' : '#7b241c';
+            QS('p4hp2').color = (passok || Q('p4randomPassword').checked) ? 'black' : '#7b241c';
 
-            var randomPasswordChecked = document.getElementById('p4randomPassword').checked;
-            document.getElementById('p4pass1').disabled = randomPasswordChecked;
-            document.getElementById('p4pass2').disabled = randomPasswordChecked;
-            document.getElementById('p4hp1').style.color = (passok || randomPasswordChecked) ? 'black' : '#7b241c';
-            document.getElementById('p4hp2').style.color = (passok || randomPasswordChecked) ? 'black' : '#7b241c';
-
-            var ok = nameok && emailok;
-            if (!randomPasswordChecked) {
-                ok &= passok;
-            }
-            document.getElementById('idx_dlgOkButton').disabled = !ok;
+            var ok = nameok & emailok;
+            if (Q('p4randomPassword').checked == false) { ok &= passok; }
+            QE('idx_dlgOkButton', ok);
         }
 
         function showCreateNewAccountDialogEx() {
