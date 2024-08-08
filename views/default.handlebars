@@ -443,7 +443,7 @@
                         <option value=7>Tagged</option>
                         <option value=8>Untagged</option>
                     </select>
-                    <label class="d-flex"><input class="form-control" style="width: auto;" type=checkbox
+                    <label class="d-flex"><input class="form-check" style="width: auto;" type=checkbox
                             id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span
                             title="Show devices operating system name">OS
                             Name</span></label>
@@ -1901,195 +1901,31 @@
                 </div>
             </div>
         </div>
-        <div id=dialog class="noselect" style="display:none">
-            <div id=dialogHeader>
-                <div tabindex=0 id=id_dialogclose onclick=setDialogMode()
-                    onkeypress="if (event.key == 'Enter') setDialogMode()">&#x2716;</div>
-                <div id=id_dialogtitle></div>
-            </div>
-            <div id=dialogBody>
-                <div id=dialog1>
-                    <div id=id_dialogMessage style=""></div>
-                </div>
-                <div id=dialog2 style="">
-                    <div id=id_dialogOptions></div>
-                </div>
-                <div id=dialog3 style="">
-                    <div id=d3upload>
-                        <div>File Selection</div>
-                        <select id=d3uploadMode onchange=d3modechange()>
-                            <option value=1>Local file upload</option>
-                            <option value=2>Server file selection</option>
-                        </select>
+        <div class="modal fade" id="xxAddAgentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" id="dialogHeader">
+                        <h5 class="modal-title" id="xxAddAgentTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="id_dialogclose"
+                            onclick="setDialogMode()" onkeypress="if (event.key == 'Enter') setDialogMode()"></button>
                     </div>
-                    <div id=d3localmode style="display:none">
-                        <div>Upload File</div>
-                        <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx
-                            target=fileUploadFrame>
-                            <input type=text id=d3auth name=auth style="display:none" />
-                            <input type=text id=d3filter name=filter style="display:none" />
-                            <input type=text id=d3attrib name=attrib style="display:none" />
-                            <input type=file id=d3localFile name=files onchange=d3setActions() />
-                            <input type=submit id=d3submit style="display:none" />
-                        </form>
+                    <div class="modal-body" id="xxAddAgentBody">
+                        <!-- The body content will be dynamically populated -->
                     </div>
-                    <div id=d3servermode>
-                        <div id=d3serveraction valign=bottom>
-                            <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup()
-                                value="Up" />&nbsp;<span id=p3CurrentFolder></span>
-                        </div>
-                        <div id=d3serverfiles></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="idx_dlgCancelButton"
+                            onclick="dialogclose(0)">Cancel</button>
+                        <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton"
+                            onclick="dialogclose(1)">OK</button>
+                        <button type="button" class="btn btn-outline-danger" id="idx_dlgDeleteButton" onclick="dialogclose(2)"
+                            style="display:none">Delete</button>
+                        {{!-- <div id="idx_dlgMoreButtons">
+                            <a href="#" id="idx_dlgMoreButtons1" class="btn btn-secondary" title="Toggle advanced options"
+                                onclick="MoreToggle(true)">&#x25BC;</a>
+                            <a href="#" id="idx_dlgMoreButtons2" class="btn btn-secondary" title="Toggle advanced options"
+                                onclick="MoreToggle(false)">&#x25B2;</a>
+                        </div> --}}
                     </div>
-                </div>
-                <div id=dialog4 style="">
-                    <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
-                    <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
-                    <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
-                    <textarea id=d4editorarea autocomplete="off"
-                        style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
-                </div>
-                <div id=dialog7 style="">
-                    <div class="dtab">
-                        <button id="td7meshkvm" class="tablinks"
-                            onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
-                        <button id="td7rdpkvm" class="tablinks"
-                            onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
-                        <button id="td7amtkvm" class="tablinks"
-                            onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg; AMT</button>
-                    </div>
-                    <div id="d7meshkvm" class="tabcontent">
-                        <!--<h4>Agent Remote Desktop</h4>-->
-                        <div style="margin-top:8px">
-                            <div>Quality</div>
-                            <select id="d7bitmapquality" dir="rtl"></select>
-                        </div>
-                        <div>
-                            <div>Scaling</div>
-                            <select id="d7bitmapscaling" style="" dir="rtl">
-                                <option selected=selected value=1024>100%</option>
-                                <option value=896>87.5%</option>
-                                <option value=768>75%</option>
-                                <option value=640>62.5%</option>
-                                <option value=512>50%</option>
-                                <option value=384>37.5%</option>
-                                <option value=256>25%</option>
-                                <option value=128>12.5%</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Frame rate</div>
-                            <select id="d7framelimiter" dir="rtl">
-                                <option selected=selected value=50>Fast</option>
-                                <option value=100>Medium</option>
-                                <option value=400>Slow</option>
-                                <option value=1000>Very slow</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Encoding</div>
-                            <select id="d7encoding" dir="rtl">
-                                <option value=1>JPEG</option>
-                                <option selected=selected value=4>WEBP</option>
-                            </select>
-                        </div>
-                        <div id="d7desktopOtherSettings">
-                            <div>Other Settings</div>
-                            <div id="d7otherset2" style="display:block">
-                                <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse
-                                    Buttons</label>
-                                <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse Mouse
-                                    Wheel</label>
-                                <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote
-                                    Keyboard Map</label>
-                                <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox"
-                                        id="d7deskAutoClipboard" />Automatic Clipboard</label>
-                                <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox"
-                                        id="d7deskAutoLock" />Lock on Disconnect</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="d7amtkvm" class="tabcontent">
-                        <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
-                        <div style="margin-top:8px">
-                            <div>Image Encoding</div>
-                            <select id="d7desktopmode">
-                                <option value="1">RLE8, Fastest</option>
-                                <option value="2">RLE16, Recommended</option>
-                                <option value="3">RAW8, Slow</option>
-                                <option value="4">RAW16, Very Slow</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Other Settings</div>
-                            <div id="d7otherset" style="display:block">
-                                <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus
-                                    Tool</label>
-                                <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse
-                                    Cursor</label>
-                                <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard
-                                    Map</label>
-                                <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse Mouse
-                                    Wheel</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="d7rdpkvm" class="tabcontent">
-                        <!--<h4>Remote Desktop Protocol</h4>-->
-                        <div style="margin-top:8px">
-                            <div>Display Size</div>
-                            <select id="d7rdpsize">
-                                <option value="canvas">Canvas Size</option>
-                                <option value="browser">Browser Size</option>
-                                <option value="screen">Screen Size</option>
-                                <option value="640x480">640×480</option>
-                                <option value="1024x768">1024×768</option>
-                                <option value="1280x800">1280×800</option>
-                                <option value="1440x900">1440×900</option>
-                                <option value="1600x900">1600×900</option>
-                                <option value="1680x1050">1680×1050</option>
-                                <option value="1920x1080">1920×1080</option>
-                            </select>
-                        </div>
-                        <div>
-                            <div>Options</div>
-                            <div id="d7rdpflags" style="display:block">
-                                <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable
-                                    Wallpaper</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window
-                                    Drag</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu
-                                    Animations</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable
-                                    Theming</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor
-                                    Shadow</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor
-                                    Settings</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font
-                                    Smooting</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop
-                                    Composision</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic
-                                    Clipboard</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse
-                                    Buttons</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse Mouse
-                                    Wheel</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="idx_dlgButtonBar">
-                <input id="idx_dlgCancelButton" class="btn btn-secondary" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
-                <input id="idx_dlgOkButton" class="btn btn-outline-success" type="button" value="OK" style="" onclick="dialogclose(1)" />
-                <div><input id="idx_dlgDeleteButton" class="btn btn-outline-danger" type="button" value="Delete" style="display:none"
-                        onclick="dialogclose(2)" /></div>
-                <div id="idx_dlgMoreButtons">
-                    <a href=# id=idx_dlgMoreButtons1 style=cursor:pointer;color:gray;text-decoration:none
-                        title="Toggle advanced options" onclick=MoreToggle(true)>&#x25BC;</a>
-                    <a href=# id=idx_dlgMoreButtons2 style=cursor:pointer;color:gray;text-decoration:none
-                        title="Toggle advanced options" onclick=MoreToggle(false)>&#x25B2;</a>
                 </div>
             </div>
         </div>
@@ -4732,6 +4568,9 @@
         }
 
         function ondockeypress(e) {
+            if (document.querySelector('.modal.show')) {
+                return;
+            }
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -5750,8 +5589,8 @@
         function onMultiDesktopStateChange(desk, state) { try { QH('skvmid_' + desk.shortid, ["Disconnected", "Connecting...", "Setup...", '', ''][state]); } catch (ex) { } }
         function onDeviceSearchChanged(e) {
             var url = new URL(window.location.href);
-            if ((e != null) && ((e.target.id == 'SearchInput') || (e.target.id == 'KvmSearchInput'))){ // search box changed or cleared
-                if (e.target.id == 'SearchInput') { 
+            if ((e != null) && ((e.target.id == 'SearchInput') || (e.target.id == 'KvmSearchInput'))) { // search box changed or cleared
+                if (e.target.id == 'SearchInput') {
                     Q('KvmSearchInput').value = Q('SearchInput').value;
                 } else {
                     Q('SearchInput').value = Q('KvmSearchInput').value;
@@ -5763,7 +5602,7 @@
                     url.searchParams.delete('filter');
                     if (urlargs.filter) { delete urlargs.filter; }
                 }
-            } else if ((e != null) && (e.target.id == 'DevFilterSelect')){ // devfilter box changed
+            } else if ((e != null) && (e.target.id == 'DevFilterSelect')) { // devfilter box changed
                 // DO NOTHING
             } else {
                 url.searchParams.delete('filter');
@@ -6069,30 +5908,41 @@
             if (xxdialogMode) return false;
             var x = '', mesh = meshes[meshid];
             if (features & 64) {
-                x += addHtmlValue("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() style=width:236px><option value=0>' + "Link invitation" + '</option><option value=1>' + "Email invitation" + '</option></select>') + '<hr />';
-                x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
-                x += addHtmlValue("Name (optional)", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
-                x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder="' + "example@email.com" + '" onkeyup=validateAgentInvite()></input>');
-                x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() style=width:236px><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option><option value=5>' + "MeshCentral Assistant" + '</option></select>');
-                x += '<div id=d2agentexpirediv>';
-                x += addHtmlValue("Link Expiration", '<select id=agentInviteExpire style=width:236px><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
+                x += addHtmlValue("Invitation Type", '<select id="d2InviteType" class="form-select" onchange="d2ChangedInviteType()" style="width:236px;"><option value="0">Link invitation</option><option value="1">Email invitation</option></select>') + '<hr />';
+                x += '<div id="emailInviteDiv" style="display:none">' + format("Invite someone to install the mesh agent. An email will be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
+                x += addHtmlValue("Name (optional)", '<input id="agentInviteName" class="form-control" value="" style="width:230px;" maxlength="64" />');
+                x += addHtmlValue("Email", '<input id="agentInviteEmail" class="form-control" style="width:230px;" placeholder="example@email.com" onkeyup="validateAgentInvite()"></input>');
+                x += addHtmlValue("Operating System", '<select id="agentInviteNameOs" class="form-select" onchange="d2ChangedInviteType()" style="width:236px;"><option value="4">Send installation link</option><option value="0" selected>Any supported</option><option value="1">Windows only</option><option value="3">Apple macOS only</option><option value="2">Linux only</option><option value="5">MeshCentral Assistant</option></select>');
+                x += '<div id="d2agentexpirediv">';
+                x += addHtmlValue("Link Expiration", '<select id="agentInviteExpire" class="form-select" style="width:236px;"><option value="1">1 hour</option><option value="8">8 hours</option><option value="24">1 day</option><option value="168">1 week</option><option value="5040">1 month</option><option value="0">Unlimited</option></select>');
                 x += '</div>';
-                x += '<div id=d2agentInstallTypeDiv2>';
-                x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+                x += '<div id="d2agentInstallTypeDiv2">';
+                x += addHtmlValue("Installation Type", '<select id="agentInviteType" class="form-select" style="width:236px;"><option value="0">Background and interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
                 x += '</div>';
-                x += addHtmlValue("Message" + '<br />' + "(optional)", '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
+                x += addHtmlValue("Message (optional)", '<textarea id="agentInviteMessage" class="form-control" style="width:230px;height:100px;resize:none;" maxlength="1024"></textarea>');
                 x += '</div>';
             }
-            x += '<div id=urlInviteDiv>' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Link Expiration", '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
-            x += addHtmlValue("Agents", '<select id=d2agentType style=width:236px onchange=d2ChangedInviteType()><option value=0>' + "All Available Agents" + '</option><option value=1>' + "Windows MeshAgent" + '</option><option value=2>' + "Linux MeshAgent" + '</option><option value=4>' + "MacOS MeshAgent" + '</option><option value=8>' + "MeshCentral Assistant" + '</option><option value=16>' + "Android MeshAgent" + '</option></select>');
-            x += '<div id=d2agentInstallTypeDiv>';
-            x += addHtmlValue("Installation Type", '<select id=d2agentInviteType style=width:236px onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+            x += '<div id="urlInviteDiv">' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue("Link Expiration", '<select id="d2inviteExpire" class="form-select" style="width:236px;" onchange="d2RequestInvitationLink()"><option value="1">1 hour</option><option value="8">8 hours</option><option value="24">1 day</option><option value="168">1 week</option><option value="5040">1 month</option><option value="0">Unlimited</option></select>');
+            x += addHtmlValue("Agents", '<select id="d2agentType" class="form-select" style="width:236px;" onchange="d2ChangedInviteType()"><option value="0">All Available Agents</option><option value="1">Windows MeshAgent</option><option value="2">Linux MeshAgent</option><option value="4">MacOS MeshAgent</option><option value="8">MeshCentral Assistant</option><option value="16">Android MeshAgent</option></select>');
+            x += '<div id="d2agentInstallTypeDiv">';
+            x += addHtmlValue("Installation Type", '<select id="d2agentInviteType" class="form-select" style="width:236px;" onchange="d2RequestInvitationLink()"><option value="0">Background and interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
             x += '</div>';
-            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
-            setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
-            if (features & 64) { Q('d2InviteType').focus(); d2ChangedInviteType(); } else { Q('d2inviteExpire').focus(); validateAgentInvite(); }
+            x += '<div id="agentInvitationLinkDiv" class="text-center" style="font-size:large;margin:16px;display:none;"><a href="#" id="agentInvitationLink" rel="noreferrer noopener" target="_blank" style="cursor:pointer;"></a> <img src="images/link4.png" height="10" width="10" title="Copy link to clipboard" style="cursor:pointer;" onclick="d2CopyInviteToClip()"></div></div>';
+
+            setModalContent('xxAddAgent', "Invite", x);
             d2RequestInvitationLink();
+            var inviteAgentToMeshModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            inviteAgentToMeshModal.show();
+
+
+            if (features & 64) {
+                document.getElementById('d2InviteType').focus();
+                d2ChangedInviteType();
+            } else {
+                document.getElementById('d2inviteExpire').focus();
+                validateAgentInvite();
+            }
             return false;
         }
 
@@ -6136,11 +5986,11 @@
             if (xxdialogMode) return false;
             var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
 
-            var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px class=form-control><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
-            if ((features & 2) == 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; } // Don't display mobile setup in LAN mode.
-            opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
-            opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option><option value=8>' + "Apple macOS (UnInstall)" + '</option></select>';
-            x += addHtmlValue("<label for=aginsSelect class=form-label>Operating System</label>", opts);
+            var opts = '<select id="aginsSelect" onchange="addAgentToMeshClick()" style="width:236px" class="form-control"><option value="0">Windows</option><option value="1">Linux / BSD</option><option value="5">Linux / BSD / macOS Binary Installer</option><option value="2">Apple macOS</option>';
+            if ((features & 2) == 0) { opts += '<option value="6">Mobile device</option>'; } // Don't display mobile setup in LAN mode.
+            opts += '<option value="7">MeshCentral Assistant</option>';
+            opts += '<option value="3">Windows (UnInstall)</option><option value="4">Linux / BSD (UnInstall)</option><option value="8">Apple macOS (UnInstall)</option></select>';
+            x += addHtmlValue('<label for="aginsSelect" class="form-label">Operating System</label>', opts);
 
             var servername = serverinfo.name;
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
@@ -6150,111 +6000,169 @@
             // Add Linux/macOS binary installer option
             var binaryInstallAgentsOrder = [6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 16, 29];
             var binaryInstallAgents = { 6: 'Linux x86-64', 5: 'Linux x86-32', 10005: 'Apple OSX Universal', 25: 'Linux ARM-HF, Rasberry Pi', 26: 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30: 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
-            for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
-            x += '<div id=aginsSysTypeDiv>';
-            x += addHtmlValue("<label for=aginsSysType class=form-label>System Type</label>", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px class=form-control>' + moreoptions + '</select>');
+            for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value="' + binaryInstallAgentsOrder[i] + '">' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
+            x += '<div id="aginsSysTypeDiv">';
+            x += addHtmlValue('<label for="aginsSysType" class="form-label">System Type</label>', '<select id="aginsSysType" onchange="addAgentToMeshClick()" style="width:236px" class="form-control">' + moreoptions + '</select>');
             x += '</div>';
 
             // Add agent and assistant installation type option
-            x += '<div id=aginsTypeDiv>';
-            x += addHtmlValue("<label for=aginsType class=form-label>Installation Type</label>", '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px class=form-control><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
-            x += '</div><div id=asinsTypeDiv>';
-            x += addHtmlValue("<label for=asinsType class=form-label>Installation Type</label>", '<select id=asinsType onchange=addAgentToMeshClick() style=width:236px class=form-control><option value=2>' + "Application, Connect on user request" + '</option><option value=3>' + "Application, Always connected" + '</option><option value=0>' + "System Tray, Connect on user request" + '</option><option value=1>' + "System Tray, Always connected" + '</option><option value=4>' + "System Tray, Monitor only" + '</option></select>');
+            x += '<div id="aginsTypeDiv">';
+            x += addHtmlValue('<label for="aginsType" class="form-label">Installation Type</label>', '<select id="aginsType" onchange="addAgentToMeshClick()" style="width:236px" class="form-control"><option value="0">Background & interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
+            x += '</div><div id="asinsTypeDiv">';
+            x += addHtmlValue('<label for="asinsType" class="form-label">Installation Type</label>', '<select id="asinsType" onchange="addAgentToMeshClick()" style="width:236px" class="form-control"><option value="2">Application, Connect on user request</option><option value="3">Application, Always connected</option><option value="0">System Tray, Connect on user request</option><option value="1">System Tray, Always connected</option><option value="4">System Tray, Monitor only</option></select>');
             x += '</div><hr>';
 
-            // \/:*?"<>|
-            var meshfilename = mesh.name
-            meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+            // Remove invalid characters from the mesh name
+            var meshfilename = mesh.name.replace(/[\\/:*?"<>| ']/g, '');
 
             // Windows agent install
-            x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '" class=link-default>' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '" class=link-default>' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '" class=link-default>' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" class=link-default>' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
+            x += '<div id="agins_windows">' + format('To add a new computer to device group "{0}", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw32lnk" name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 32bit version of the MeshAgent" class="link-default">Windows x86-32 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 32bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw64lnk" name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 64bit version of the MeshAgent" class="link-default">Windows x86-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginswa64lnk" name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="ARM 64bit version of the MeshAgent" class="link-default">Windows ARM-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows ARM 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=\',1)">');
+            if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id="aginswmshlnk" name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" class="link-default">' + format('{0} settings (.msh)', EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
             // Linux agent install
-            x += '<div id=agins_linux style=display:none>' + format("To add a computer to <span class=fw-bold>\"{0}\"</span> run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
-            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px class="form-control"></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
+            x += '<div id="agins_linux" style="display:none">' + format('To add a computer to <span class="fw-bold">"{0}"</span> run the following command. Root credentials will be needed.', EscapeHtml(mesh.name)) + '<br />';
+            x += '<textarea id="agins_linux_area" rows="2" cols="20" readonly="readonly" style="border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px" class="form-control"></textarea>';
+            x += '<div style="font-size:x-small;float:right">* For BSD, run "pkg install wget sudo bash" first.</div><a style="text-decoration:none" title="Copy to clipboard" onclick="copyAgentIdValue(\'agins_linux_area\')"><img src="images/link4.png" height="10" width="10" style="cursor:pointer"> Copy</a></div>';
 
             // macOS agent install
-            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group <span class=fw-bold>\"{0}\"</span>, download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '" class=default-link>macOS Agent (Universal)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
+            x += '<div id="agins_osx" style="display:none">' + format('To add a new computer to device group <span class="fw-bold">"{0}"</span>, download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a onclick="downloadFile(\'meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '&installflags=0\')" class="link-default">Apple macOS (.pkg)</a> <img src="images/link4.png" height="10" width="10" title="Copy Apple macOS agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '&installflags=0\',1)">');
             x += '</div>';
 
-            // QR code agent install
-            x += '<div id=agins_qrcode style=display:none;min-height:180px><a id=agins_qrimage_a rel=\"noreferrer noopener\" target=_blank><div id=agins_qrimage style=float:right;margin-left:10px;width:180px;height:180px;cursor:pointer></div></a><div>' + format("To add a mobile device to group <span class=fw-bold>\"{0}\"</span>, download the MeshAgent application and scan this QR code.", EscapeHtml(mesh.name)) + '</div>';
-            x += "<table style=width:180px>";
-            x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\"><img style=cursor:pointer src=\"images/google-play-140.png\" width=140 srcset=\"images/google-play-280.png 2x\" /></a></td></tr>";
-            x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\"><img style=cursor:pointer src=\"images/amazon-appstore-140.png\"  width=140 srcset=\"images/amazon-appstore-280.png 2x\" /></a></td></tr>";
-            x += "</table>";
-            x += addHtmlValue("Android APK", '<a onclick=downloadFile("meshagents?id=14' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "APK version of the MeshAgent" + '" class=default-link>' + "APK" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=14&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>');
-            x += '</div>'
-
-            // MeshCentral Assistant
-            x += '<div id=agins_assistant style=display:none><table><tr><td style=vertical-align:top><div>' + format("MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will connect to device group <span class=fw-bold>\"{0}\"</span>.", EscapeHtml(mesh.name)) + '</div><div></div><br />';
-            x += '<a id=asinslnk name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '" class=default-link>' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>';
-            x += '</td><td><img id=agass_img1 src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"><img id=agass_img2 src=images/assistant2-100.png width=74 height=100 srcset="images/assistant2-200.png 2x"></td></tr></table></div>';
-
-            // MeshCentral Assistant2
-            x += '<div id=agins_assistant2 style=display:none><table><tr><td style=vertical-align:top><div>' + "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will monitor the background agent." + '</div><div></div><br />';
-            x += '<a id=asinslnk2 name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '" class=default-link>' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>';
-            x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
-
-            // Windows agent uninstall
-            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click <span class=fw-bold>\"uninstall\"</span>." + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '" class=default-link>' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '" class=default-link>' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '" class=default-link>' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            // macOS uninstall agent
+            x += '<div id="agins_osx_remove" style="display:none">' + format('To remove a computer from device group <span class="fw-bold">"{0}"</span>, download the mesh agent uninstaller and run it on the computer to remove.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a onclick="downloadFile(\'meshosxagent?id=20005&meshid=' + meshid.split('/')[2] + '&installflags=0\')" class="link-default">Apple macOS UnInstaller (.pkg)</a> <img src="images/link4.png" height="10" width="10" title="Copy Apple macOS agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshosxagent?id=20005&meshid=' + meshid.split('/')[2] + '&installflags=0\',1)">');
             x += '</div>';
 
-            // Linux agent uninstall
-            x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
-            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px class=form-control></textarea>';
-            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un") class=default-link><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
-
-            // macOS agent uninstall
-            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right click on the <span class=fw-bold>\".mpkg\"</span> file and click <span class=fw-bold>\"Show Package Contents\"</span>, then right click on <span class=fw-bold>\"Uninstall.command\"</span> and click <span class=fw-bold>\"Open\"</span>" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '" class=default-link>macOS Agent (Universal)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
+            // Linux Binary Installer agent install
+            x += '<div id="agins_binaryinstall" style="display:none">' + format('To add a new computer to device group <span class="fw-bold">"{0}"</span>, download the mesh agent installer and run it with root credentials.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a id="aginsBinaryInstallLnk" onclick="downloadFile(\'meshagents?meshid=' + meshid.split('/')[2] + '&installflags=0&linuxbinary=1&osarch=6&archmode=0\')" class="link-default"></a> <img src="images/link4.png" height="10" width="10" title="Copy Linux / BSD agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?meshid=' + meshid.split('/')[2] + '&installflags=0&linuxbinary=1&osarch=6&archmode=0\',1)">');
             x += '</div>';
 
-            // Linux binary installer
-            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" class=default-link>' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("<label for=aginsbincmd class=form-label>Command</label>", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' class=form-control /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
+            // MeshCentral Assistant install
+            x += '<div id="agins_assist" style="display:none">' + format('To add a new assistant to device group <span class="fw-bold">"{0}"</span>, download the assistant installer and install it on the assistant\'s computer.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('MeshCentral Assistant', '<a onclick="downloadFile(\'meshinstallassistant?id=' + meshid.split('/')[2] + '&installflags=0\')" class="link-default">MeshCentral Assistant Installer</a> <img src="images/link4.png" height="10" width="10" title="Copy Assistant agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshinstallassistant?id=' + meshid.split('/')[2] + '&installflags=0\',1)">');
             x += '</div>';
 
-            setDialogMode(2, "Add Mesh Agent", 2, null, x, 'fileDownload');
+            // Mobile device setup
+            x += '<div id="agins_mobile" style="display:none">' + format('To setup a mobile device on device group <span class="fw-bold">"{0}"</span>, scan the following QRCode with your device. This code will open a page that will start the installation of MeshCentral mobile app and enroll the device in this device group.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<center><canvas id="agentqrcode"></canvas></center>';
+            x += '<div style="font-size:x-small">This QRCode has enrollment and server information embedded within it. It will only work on this server and in this device group.</div>';
+            x += '</div>';
 
-            // Create the QR code
-            new QRCode(Q('agins_qrimage'), { text: serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
-            Q('agins_qrimage_a').setAttribute('href', serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2])
+            // Uninstall
+            x += '<div id="agins_uninstall" style="display:none">' + format('To uninstall and remove a computer from device group <span class="fw-bold">"{0}"</span>, download the mesh agent uninstaller and install it the computer to remove.', EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw32lnkremove" name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 32bit version of the MeshAgent" class="link-default">Windows x86-32 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 32bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=2\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginsw64lnkremove" name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="x86 64bit version of the MeshAgent" class="link-default">Windows x86-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows x86 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=2\',1)">');
+            x += addHtmlValue('Mesh Agent', '<a id="aginswa64lnkremove" name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="ARM 64bit version of the MeshAgent" class="link-default">Windows ARM-64 (.exe)</a> <img src="images/link4.png" height="10" width="10" title="Copy Windows ARM 64bit agent URL to clipboard" style="cursor:pointer" onclick="copyAgentUrl(\'meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=2\',1)">');
+            if (debugmode > 0) { x += addHtmlValue('Settings File', '<a id="aginswmshlnkremove" name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=2' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" class="link-default">' + format('{0} settings (.msh)', EscapeHtml(mesh.name)) + '</a>'); }
+            x += '</div>';
 
-            if ((features & 0x2000) == 0) {
-                Q('agins_linux_area').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '"' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                Q('agins_linux_area_un').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '"' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                //Q('agins_linux_area_un').value = '(wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '"' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' -O ./meshinstall.sh || wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1" --no-proxy' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' -O ./meshinstall.sh) && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
-            }
-            else {
-                // Server asked that agent be installed to preferably not use a HTTP proxy.
-                Q('agins_linux_area').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" --no-proxy' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo -E ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\' || ./meshinstall.sh uninstall https://' + servername + portStr + domainUrlNoSlash + ' \'' + meshid.split('/')[2] + '\'\r\n';
-                //Q('agins_linux_area_un').value = 'wget "https://' + servername + portStr + domainUrl + 'meshagents?script=1' + (urlargs.key?('&key=' + urlargs.key):'') + '" --no-proxy' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' -O ./meshinstall.sh && chmod 755 ./meshinstall.sh && sudo ./meshinstall.sh uninstall\r\n';
-            }
-            Q('aginsSelect').focus();
+            setModalContent('xxAddAgent', "Add Agent to Device Group", x);
+
+            // Show the modal
+            var modal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            modal.show();
+
+            // Add QRCode
+            var qrcodetext = domainUrlNoSlash + ':' + portStr + '/mobile.htm?key=' + meshid.split('/')[2] + ((urlargs.key) ? ('&key=' + urlargs.key) : '');
+            //$('#agentqrcode').qrcode({ text: qrcodetext, width: 128, height: 128 });
+
+            // Focus the input text box
+            if (document.getElementById('aginsw64lnk')) { document.getElementById('aginsw64lnk').focus(); }
+
             addAgentToMeshClick();
             return false;
         }
 
+        function setModalContent(modalId, title, bodyContent) {
+            // Check if the modal elements exist
+            var modalTitleElement = document.getElementById(modalId + 'Title');
+            var modalBodyElement = document.getElementById(modalId + 'Body');
+
+            if (modalTitleElement && modalBodyElement) {
+                // Set the modal title
+                modalTitleElement.innerHTML = title;
+
+                // Set the modal body content
+                modalBodyElement.innerHTML = bodyContent;
+            } else {
+                console.error('Modal elements not found:', modalId + 'Title', modalId + 'Body');
+            }
+        }
+
+        function account_createMesh() {
+            // Check if we are disallowed from creating a device group
+            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) {
+                setDialogMode(2, "New Device Group", 1, null, "This account does not have the rights to create a new device group.");
+                return false;
+            }
+
+            // Remind the user to verify the email address
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) {
+                setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until an email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address.");
+                return false;
+            }
+
+            // Remind the user to add two-factor authentication
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) {
+                setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section.");
+                return false;
+            }
+
+            // Look for all relay devices
+            var relayDevices = [];
+            if ((features & 2) == 0) {
+                for (var i in nodes) {
+                    var node = nodes[i];
+                    if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) {
+                        relayDevices.push(node);
+                    }
+                }
+            }
+
+            // We are allowed, let's prompt for information
+            var x = "Create a new device group using the options below" + '<br /><br />', localGroupType = '';
+            x += addHtmlValue("<label for=dp2meshname class=form-label>Name</>", '<input id=dp2meshname style=width:230px maxlength=128 class=form-control onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
+            if ((features & 1) == 0) { localGroupType += '<option value=3>' + "Local devices, no agent" + '</option>'; }
+            if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=103>' + "No agent devices relayed thru agent" + '</option>'; }
+            if (features2 & 0x10000) {
+                if ((features & 1) == 0) { localGroupType += '<option value=4>' + "IP-KVM / Power device" + '</option>'; }
+                if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=104>' + "IP-KVM / Power device relayed thru agent" + '</option>'; }
+            }
+            x += addHtmlValue("<label for=dp2meshtype class=form-label>Type</>", '<div style=width:230px;margin:0;padding:0><select id=dp2meshtype style=width:100% class=form-control onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) ><option value=2>' + "Manage using a software agent" + '</option><option value=1>' + "Intel&reg; AMT only, no agent" + '</option>' + localGroupType + '</select></div>');
+            if (relayDevices.length > 0) {
+                x += '<div id=d2devrelaydiv style=display:none>';
+                relayDevices.sort(nameSort);
+                var relayDevices2 = [];
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + relayDevices[i]._id + '">' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                x += addHtmlValue("<label for=d2devrelay class=form-label>Relay Device</label>", '<div style=width:230px;margin:0;padding:0><select id=d2devrelay style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) class=form-control >' + relayDevices2.join('') + '</select></div>');
+                x += '</div>';
+            }
+            x += addHtmlValue("<label for=dp2meshdesc class=form-label>Description</label>", '<div style=width:230px;margin:0;padding:0><textarea id=dp2meshdesc maxlength=1024 style=width:100%;resize:none class=form-control></textarea></div>');
+            x += '<div id=d2ipkvm style=display:none><hr />';
+            x += addHtmlValue("<label for=dp2ipkvmmodel class=form-label>Model</label>", '<div style=width:230px;margin:0;padding:0><select id=dp2ipkvmmodel style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) class=form-control ><option value=1>' + "Raritan Dominion KX III" + '</option><option value=2>' + "Web Power Switch 7" + '</option></select></div>');
+            x += addHtmlValue("<label for=dp2ipkvmhost class=form-label>Hostname</label>", '<input id=dp2ipkvmhost style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) class=form-control />');
+            x += addHtmlValue("<label for=dp2ipkvmuser class=form-label>Username</label>", '<input id=dp2ipkvmuser style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) class=form-control />');
+            x += addHtmlValue("<label for=dp2ipkvmpass class=form-label>Password</label>", '<input id=dp2ipkvmpass type=password style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) class="form-control" />');
+            x += '</div>';
+
+            // Inject content into the modal
+            setModalContent('xxAddAgent', 'New Device Group', x);
+            return true;
+        }
+
         function copyAgentIdValue(id) {
-             copyTextToClip(Q(id).value);
+            copyTextToClip(Q(id).value);
             // Show notification
             //showNotification('center', null, 'Copied to clipboard', 'success', null, 3000, '300px', '30px');
         }
 
-       function showNotification(position, title, text, icon, confirmButtonText, timer, width, height) {
+        function showNotification(position, title, text, icon, confirmButtonText, timer, width, height) {
             Swal.fire({
                 position: position,
                 title: title,
@@ -6967,7 +6875,7 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '')?null:'#FDFFBE';
+            QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '') ? null : '#FDFFBE';
             QV('SearchInputClearButton', (x != ''));
             QV('KvmSearchInputClearButton', (x != ''));
 
@@ -9671,8 +9579,8 @@
                     if (desktop && desktop.m.mouseCursorActive) { desktop.m.mouseCursorActive(true); }
                     QV('DeskInputLockedButton', desktop.m.RemoteInputLock == true);
                     QV('DeskInputUnLockedButton', desktop.m.RemoteInputLock == false);
-                    desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
-                    desktop.m.onKeyboardStateChanged = function(obj, state) {
+                    desktop.m.onRemoteInputLockChanged = function (obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
+                    desktop.m.onKeyboardStateChanged = function (obj, state) {
                         QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
                         QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
                         QS('p11capslock').display = ((state & 4) ? 'inline-block' : 'none');
@@ -13731,23 +13639,45 @@
         }
 
         function account_createMesh() {
-            if (xxdialogMode) return false;
-
             // Check if we are disallowed from creating a device group
-            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) { setDialogMode(2, "New Device Group", 1, null, "This account does not have the rights to create a new device group."); return false; }
+            if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) {
+                setModalContent('xxAddAgent', 'New Device Group', 'This account does not have the rights to create a new device group.');
+                var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                xxAddAgentModal.show();
+                return false;
+            }
 
             // Remind the user to verify the email address
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return false; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) {
+                setModalContent('xxAddAgent', 'Account Security', 'Unable to access this feature until an email address is verified. This is required for password recovery. Go to the "My Account" tab to change and verify an email address.');
+                var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                xxAddAgentModal.show();
+                return false;
+            }
 
-            // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return false; }
+            // Remind the user to add two-factor authentication
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) {
+                setModalContent('xxAddAgent', 'Account Security', 'Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the "My Account" tab and look at the "Account Security" section.');
+                var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                xxAddAgentModal.show();
+                return false;
+            }
 
             // Look for all relay devices
             var relayDevices = [];
-            if ((features & 2) == 0) { for (var i in nodes) { var node = nodes[i]; if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) { relayDevices.push(node); } } }
+            if ((features & 2) == 0) {
+                for (var i in nodes) {
+                    var node = nodes[i];
+                    if ((node.mtype == 2) && (node.agent != null) && (GetNodeRights(node) == 0xFFFFFFFF)) {
+                        relayDevices.push(node);
+                    }
+                }
+            }
 
-            // We are allowed, let's prompt to information
-            var x = "Create a new device group using the options below" + '<br /><br />', localGroupType = '';
+            // Prepare the modal content
+            var x = "Create a new device group using the options below" + '<br /><br />';
+            var localGroupType = '';
+
             x += addHtmlValue("<label for=dp2meshname class=form-label>Name</>", '<input id=dp2meshname style=width:230px maxlength=128 class=form-control onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) />');
             if ((features & 1) == 0) { localGroupType += '<option value=3>' + "Local devices, no agent" + '</option>'; }
             if (((features & 2) == 0) && (relayDevices.length > 0)) { localGroupType += '<option value=103>' + "No agent devices relayed thru agent" + '</option>'; }
@@ -13771,9 +13701,23 @@
             x += addHtmlValue("<label for=dp2ipkvmuser class=form-label>Username</label>", '<input id=dp2ipkvmuser style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) class=form-control />');
             x += addHtmlValue("<label for=dp2ipkvmpass class=form-label>Password</label>", '<input id=dp2ipkvmpass type=password style=width:230px maxlength=128 onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,1) class="form-control" />');
             x += '</div>';
-            setDialogMode(2, "New Device Group", 3, account_createMeshEx, x);
+
+            // Inject content into the modal
+            setModalContent('xxAddAgent', 'New Device Group', x);
+
+            // Show the modal
+            var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            xxAddAgentModal.show();
+
+            // Submit the mesh create form
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_createMeshEx();
+                xxAddAgentModal.hide();
+            };
+
+            // Validate the mesh create form
             account_validateMeshCreate();
-            Q('dp2meshname').focus();
+            document.getElementById('dp2meshname').focus();
             return false;
         }
 
