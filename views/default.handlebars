@@ -14468,52 +14468,28 @@
             if (editType == 2) { consent = (currentUser.consent) ? currentUser.consent : 0; title = "Edit User Consent"; }
             if (editType == 3) { consent = (currentNode.consent) ? currentNode.consent : 0; title = "Edit Device User Consent"; }
             if (editType == 4) { consent = (currentUserGroup.consent) ? currentUserGroup.consent : 0; title = "Edit User Group User Consent"; }
-            x += `
-            <div class="accordion" id="accordionId">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingDesktop">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDesktop" aria-expanded="true" aria-controls="collapseDesktop">
-                    Desktop
-                </button>
-                </h2>
-                <div id="collapseDesktop" class="accordion-collapse collapse show" aria-labelledby="headingDesktop" data-bs-parent="#accordionId">
-                <div class="accordion-body">
-                    <div><label><input type="checkbox" id="d20flag1" class="form-check-input" ${((consent & 0x0001) ? 'checked' : '')}> Notify user</label></div>
-                    <div><label><input type="checkbox" id="d20flag2" class="form-check-input" ${((consent & 0x0008) ? 'checked' : '')}> Prompt for user consent</label></div>
-                    <div><label><input type="checkbox" id="d20flag7" class="form-check-input" ${((consent & 0x0040) ? 'checked' : '')}> Show connection toolbar</label></div>
-                </div>
-                </div>
-            </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingTerminal">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTerminal" aria-expanded="false" aria-controls="collapseTerminal">
-                    Terminal
-                </button>
-                </h2>
-                <div id="collapseTerminal" class="accordion-collapse collapse" aria-labelledby="headingTerminal" data-bs-parent="#accordionId">
-                <div class="accordion-body">
-                    <div><label><input type="checkbox" id="d20flag3" class="form-check-input" ${((consent & 0x0002) ? 'checked' : '')}> Notify user</label></div>
-                    <div><label><input type="checkbox" id="d20flag4" class="form-check-input" ${((consent & 0x0010) ? 'checked' : '')}> Prompt for user consent</label></div>
-                </div>
-                </div>
-            </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingFiles">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFiles" aria-expanded="false" aria-controls="collapseFiles">
-                    Files
-                </button>
-                </h2>
-                <div id="collapseFiles" class="accordion-collapse collapse" aria-labelledby="headingFiles" data-bs-parent="#accordionId">
-                <div class="accordion-body">
-                    <div><label><input type="checkbox" id="d20flag5" class="form-check-input" ${((consent & 0x0004) ? 'checked' : '')}> Notify user</label></div>
-                    <div><label><input type="checkbox" id="d20flag6" class="form-check-input" ${((consent & 0x0020) ? 'checked' : '')}> Prompt for user consent</label></div>
-                </div>
-                </div>
-            </div>
-            </div>
-            `;
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
+            x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Terminal" + '</b></div>';
+            x += '<div><label><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Files" + '</b></div>';
+            x += '<div><label><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
 
-            setDialogMode(2, title, 3, p20editmeshconsentEx, x, editType);
+            setModalContent('xxAddAgent', title, x);
+            
+            var editUserConsentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            editUserConsentModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                console.log("Hello clicked");
+                p20editmeshconsentEx();
+                editUserConsentModal.hide();
+            };
+
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
                 if (serverinfo.consent & 0x0008) { Q('d20flag2').checked = true; }
@@ -15148,7 +15124,17 @@
                 x += '<div class="form-check"><label><input id=p20emsgDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
                 x += '<div class="form-check"><label><input id=p20emsgDeviceHelp class="form-check-input" type=checkbox />' + "Help requests" + '</label></div>';
             }
-            setDialogMode(2, "Notification Settings", 3, p20editMeshNotifyEx, x, emailNotify);
+
+            setModalContent('xxAddAgent', 'Notification Settings', x);
+
+            var editMeshNotifyModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            editMeshNotifyModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p20editMeshNotifyEx();
+                editMeshNotifyModal.hide();
+            };
+
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
             if (currentMesh.mtype < 3) { Q('p20notifyIntelAmtKvmActions').checked = (meshNotify & 8); }
