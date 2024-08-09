@@ -14569,7 +14569,16 @@
                 }
             }
 
-            setDialogMode(2, "Edit Device Group Features", 3, p20editmeshfeaturesEx, x);
+            setModalContent('xxAddAgent', 'Edit Device Group Features', x);
+
+            var editDeviceGroupFeaturesModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            editDeviceGroupFeaturesModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p20editmeshfeaturesEx();
+                editDeviceGroupFeaturesModal.hide();
+            };
+
             p20editmeshfeaturesValidate();
         }
 
