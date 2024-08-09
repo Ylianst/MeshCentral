@@ -16582,8 +16582,18 @@
             var user = users[userid.toLowerCase()], groups = "";
             if (user.groups != null) { groups = user.groups.join(', ') }
             var x = "Enter a comma seperate list of administrative realms names." + '<br /><br />';
-            x += addHtmlValue("Realms", '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="' + "Name1, Name2, Name3" + '" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() />');
-            setDialogMode(2, "Administrative Realms", 3, showUserGroupDialogEx, x, user);
+            x += addHtmlValue("<label class=form-label for=dp4usergroups>Realms</label>", '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="' + "Name1, Name2, Name3" + '" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() class=form-control />');
+
+            setModalContent('xxAddAgent', 'Administrative Realms', x);
+
+            var editAdministrativeRealmsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            editAdministrativeRealmsModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                showUserGroupDialogEx();
+                editAdministrativeRealmsModal.hide();
+            };
+
             focusTextBox('dp4usergroups');
             p4validateUserGroups();
             return false;
@@ -16628,7 +16638,17 @@
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
             x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_locksettings>' + "Lock Account Settings" + '</label><br>';
             x += '</div>';
-            setDialogMode(2, "Server Permissions", 2 + (uself ? 0 : 1), showUserAdminDialogEx, x, user);
+
+            setModalContent('xxAddAgent', "Server Permissions", x);
+
+            var userServerPermissionsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            userServerPermissionsModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                showUserAdminDialogEx();
+                userServerPermissionsModal.hide();
+            };
+
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
                 Q('ua_serverbackup').checked = ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1) != 0));       // Server Backup
@@ -17519,7 +17539,17 @@
             x += '<div><label><input type=checkbox id=d20flag9 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag10 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag11 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
-            setDialogMode(2, "Edit User Features", 3, p20edituserfeaturesEx, x);
+
+            setModalContent('xxAddAgent', 'Edit User Features', x);
+
+            var editUserFeaturesModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            editUserFeaturesModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p20edituserfeaturesEx();
+                editUserFeaturesModal.hide();
+            };
+
             p20edituserfeaturesValidate();
         }
 
@@ -17566,8 +17596,18 @@
         function p30showUserRealNameChangeDialog(event) {
             if (xxdialogMode) return false;
             var x = '';
-            x += addHtmlValue("Real Name", '<input id=dp30realname style=width:230px maxlength=256 />');
-            setDialogMode(2, format("Change Real Name for {0}", EscapeHtml(currentUser.name)), 3, p30showUserRealNameChangeDialogEx, x);
+            x += addHtmlValue("<label class=form-label for=dp30realname>Real Name</label>", '<input id=dp30realname style=width:230px maxlength=256 class=form-control/>');
+
+            setModalContent('xxAddAgent', format("Change Real Name for {0}", EscapeHtml(currentUser.name)), x);
+
+            var changeUserRealNameModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            changeUserRealNameModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p30showUserRealNameChangeDialogEx();
+                changeUserRealNameModal.hide();
+            };
+
             Q('dp30realname').focus();
             Q('dp30realname').value = (currentUser.realname ? currentUser.realname : '');
             return false;
@@ -17582,9 +17622,19 @@
         function p30showUserEmailChangeDialog(event) {
             if (xxdialogMode) return false;
             var x = '';
-            x += addHtmlValue("Email", '<input id=dp30email style=width:230px maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() />');
-            if (serverinfo.emailcheck) { x += addHtmlValue("Status", '<select id=dp30verified style=width:230px onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
-            setDialogMode(2, format("Change Email for {0}", EscapeHtml(currentUser.name)), 3, p30showUserEmailChangeDialogEx, x);
+            x += addHtmlValue("<label class=form-label for=dp30email>Email</label>", '<input id=dp30email type=email style=width:230px maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() class=form-control/>');
+            if (serverinfo.emailcheck) { x += addHtmlValue("<label class=form-label for=dp30verified> Status</label>", '<select id=dp30verified style=width:230px onchange=p30validateEmail() class=form-select><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
+
+            setModalContent('xxAddAgent', format("Change Email for {0}", EscapeHtml(currentUser.name)), x);
+
+            var editUserConsentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            editUserConsentModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p30showUserEmailChangeDialogEx();
+                editUserConsentModal.hide();
+            };
+
             Q('dp30email').focus();
             Q('dp30email').value = (currentUser.email ? currentUser.email : '');
             if (serverinfo.emailcheck) { Q('dp30verified').value = currentUser.emailVerified ? 1 : 0; }
