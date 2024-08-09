@@ -14297,7 +14297,17 @@
             if ((features & 0x100000) != 0) { acmoption = '<option value=3>' + "Simple Admin Control Mode (ACM)" + '</option>'; }
             x += addHtmlValue("Type", '<select id=dp20amtpolicy class="form-select" onchange=p20editMeshAmtChange()><option value=0>' + "No Policy" + '</option><option value=1>' + "Deactivate" + '</option><option value=2>' + "Simple Client Control Mode (CCM)" + '</option>' + acmoption + '<option value=4>' + "Fully Automatic" + '</option></select>');
             x += '<div id=dp20amtpolicydiv></div>';
-            setDialogMode(2, "Intel&reg; AMT Policy", 3, p20editMeshAmtEx, x);
+
+            setModalContent('xxAddAgent', 'Intel&reg; AMT Policy', x);
+
+            var editMeshAmtModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            editMeshAmtModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p20editMeshAmtEx();
+                editMeshAmtModal.hide();
+            };
+
             if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }
             p20editMeshAmtChange();
 
@@ -14469,15 +14479,15 @@
             if (editType == 3) { consent = (currentNode.consent) ? currentNode.consent : 0; title = "Edit Device User Consent"; }
             if (editType == 4) { consent = (currentUserGroup.consent) ? currentUserGroup.consent : 0; title = "Edit User Group User Consent"; }
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px"><b>' + "Desktop" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
+            x += '<div><label for=d20flag1><input type=checkbox id=d20flag1 ' + ((consent & 0x0001) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
+            x += '<div><label for=d20flag2><input type=checkbox id=d20flag2 ' + ((consent & 0x0008) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div><label for=d20flag7><input type=checkbox id=d20flag7 ' + ((consent & 0x0040) ? 'checked' : '') + '>' + "Show connection toolbar" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Terminal" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div><label for=d20flag3><input type=checkbox id=d20flag3 ' + ((consent & 0x0002) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
+            x += '<div><label for=d20flag4><input type=checkbox id=d20flag4 ' + ((consent & 0x0010) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Files" + '</b></div>';
-            x += '<div><label><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
-            x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div><label for=d20flag5><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
+            x += '<div><label for=d20flag6><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
 
             setModalContent('xxAddAgent', title, x);
             
