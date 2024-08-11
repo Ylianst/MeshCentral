@@ -1097,9 +1097,9 @@ NoMeshesPanel img {
     padding: 0;
 }
 
-#p4name, #p4email, #p4pass1, #p4pass2 {
+/* #p4name, #p4email, #p4pass1, #p4pass2 {
     width: 230px;
-}
+} */
 
 #p5toolbar {
     width: 100%;
@@ -3297,4 +3297,8 @@ nav .lbbuttonsel2 {
 
 .sidebar .nav-link {
     font-size: xx-large;
+}
+  
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
