@@ -776,16 +776,20 @@ function hexToAscii(hexString) {
 
 function win_chassisType()
 {
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', 'SystemEnclosure', 'get', 'ChassisTypes']);
+    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
+    if (child == null) { return ([]); }
+
+    child.descriptorMetadata = 'process-manager';
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+
+    child.stdin.write('Get-CimInstance Win32_SystemEnclosure| Select-Object -ExpandProperty ChassisTypes\r\n');
+    child.stdin.write('exit\r\n');
     child.waitExit();
 
     try
     {
-        var tok = child.stdout.str.split('{')[1].split('}')[0];
-        var val = tok.split(',')[0];
-        return (parseInt(val));
+        return (parseInt(child.stdout.str));
     }
     catch (e)
     {
@@ -795,13 +799,19 @@ function win_chassisType()
 
 function win_systemType()
 {
-    var CSV = '/FORMAT:"' + require('util-language').wmicXslPath + 'csv"';
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', 'ComputerSystem', 'get', 'PCSystemType', CSV]);
+    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
+    if (child == null) { return ([]); }
+
+    child.descriptorMetadata = 'process-manager';
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+
+    child.stdin.write('Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty PCSystemType\r\n');
+    child.stdin.write('exit\r\n');
     child.waitExit();
 
-    return (parseInt(child.stdout.str.trim().split(',').pop()));
+
+    return (parseInt(child.stdout.str.trim()));
 }
 
 function win_formFactor(chassistype)

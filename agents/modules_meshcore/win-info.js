@@ -18,9 +18,19 @@ var promise = require('promise');
 
 function qfe()
 {
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', 'qfe', 'list', 'full', '/FORMAT:CSV']);
+    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
+    if (child == null) { return ([]); }
+
+    child.descriptorMetadata = 'process-manager';
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+
+    child.stdin.write('Write-Host "Node,Caption,CSName,Description,FixComments,HotFixID,InstallDate,InstalledBy,InstalledOn,Name,ServicePackInEffect,Status"\r\n')
+    child.stdin.write('Get-CimInstance Win32_quickfixengineering | ');
+    child.stdin.write('ForEach-Object -Process {');
+    child.stdin.write('  Write-Host ("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}" -f $_.CSName,$_.Caption,$_.CSName,$_.Description,$_.FixComments,$_.HotFixID,$_.InstallDate,$_.InstalledBy,$_.InstalledOn.toString("M/d/yyyy"),$_.Name,$_.ServicePackInEffect,$_.Status)');
+    child.stdin.write('}\r\n');
+    child.stdin.write('exit\r\n');
     child.waitExit();
 
     var lines = child.stdout.str.trim().split('\r\n');
