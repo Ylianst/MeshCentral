@@ -14698,32 +14698,33 @@
             x += '</div>';
 
             if (userid == null) {
-                setDialogMode(2, "Add Users to Device Group", 3, p20showAddMeshUserDialogEx, x);
+                setModalContent('xxAddAgent', "Add Users to Device Group", x);
+
                 QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
                 Q('dp20username').focus();
             } else if (userid === 1) {
-                setDialogMode(2, (selected == null) ? "Add Device Group Permissions" : "Edit Device Group Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                setModalContent('xxAddAgent', (selected == null) ? "Add Device Group Permissions" : "Edit Device Group Permissions", x);
                 if (selected != null) { urights = meshes[decodeURIComponent(selected)].links[currentUser._id].rights; }
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
             } else if (userid === 2) {
-                setDialogMode(2, "Add User Group", 3, p20showAddMeshUserDialogEx, x, userid);
+                setModalContent('xxAddAgent', "Add User Group", x);
                 QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
             } else if (userid === 3) {
-                setDialogMode(2, (selected == null) ? "Add Device Group" : "Edit Device Group", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                setModalContent('xxAddAgent', (selected == null) ? "Add Device Group" : "Edit Device Group", selected ? 7 : 3, x);
                 QE('dp2groupid', selected == null);
                 if (selected != null) { urights = currentUserGroup.links[decodeURIComponent(selected)].rights; }
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
             } else if (userid === 4) {
-                setDialogMode(2, (selected == null) ? "Add Device Permissions" : "Edit Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                setModalContent('xxAddAgent', (selected == null) ? "Add Device Permissions" : "Edit Device Permissions", selected ? 7 : 3, x);
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
             } else if (userid === 7) {
-                setDialogMode(2, (selected == null) ? "Add Device Permissions" : "Edit Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                setModalContent('xxAddAgent', (selected == null) ? "Add Device Permissions" : "Edit Device Permissions", selected ? 7 : 3, selected ? 7 : 3, x);
                 QE('dp2meshid', selected == null);
                 QE('dp2nodeid', selected == null);
                 if (selected != null) { urights = currentUserGroup.links[decodeURIComponent(selected)].rights; QE('dp20username', false); }
             } else if (userid === 5) {
-                setDialogMode(2, selected ? "Edit User Device Permissions" : "Add User Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                setModalContent('xxAddAgent', selected ? "Edit User Device Permissions" : "Add User Device Permissions", x);
                 if (selected != null) {
                     selected = decodeURIComponent(selected);
                     if ((users != null) && (users[selected] != null)) { Q('dp20username').value = users[selected].name; } else { Q('dp20username').value = selected.split('/')[2]; }
@@ -14732,7 +14733,7 @@
                 }
                 Q('dp20username').focus();
             } else if (userid === 6) {
-                setDialogMode(2, selected ? "Edit User Group Device Permissions" : "Add User Group Device Permissions", selected ? 7 : 3, p20showAddMeshUserDialogEx, x, userid);
+                setModalContent('xxAddAgent', selected ? "Edit User Device Permissions" : "Add User Device Permissions", x);
                 if (selected != null) { urights = currentNode.links[decodeURIComponent(selected)].rights; }
             } else {
                 if (userid.startsWith('ugrp/')) {
@@ -14744,6 +14745,14 @@
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
                 QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
             }
+
+            var addUsersToDeviceGroupModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            addUsersToDeviceGroupModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p20showAddMeshUserDialogEx();
+                addUsersToDeviceGroupModal.hide();
+            };
 
             if (urights != -1) {
                 if (meshRightsActive) {
