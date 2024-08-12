@@ -651,6 +651,46 @@
                 <div id="p3title">
                     <h1>My Events</h1>
                 </div>
+
+{{!-- 
+                <div class="row me-2 bg-secondary">
+                    <div class="col-auto me-auto"></div>
+                    <div class="col-auto">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <label for="p3filterevents">Filter</label>
+                            </div>
+                            <div class="col">
+                                <select id=p3filterevents class="form-control" onchange=refreshEvents()>
+                                    <option value="">All Logs</option>
+                                    <option value=agentlog>Agent Logs</option>
+                                    <option value=relaylog>Relay Logs</option>
+                                    <option value=manual>Manual Logs</option>
+                                    <option value=runcommands>Run Command Logs</option>
+                                    <option value=batchupload>Batch Upload Logs</option>
+                                    <option value=changenode>Change Node Logs</option>
+                                    <option value=removenode>Remove Node Logs</option>
+                                </select>
+                            </div>
+
+                            <div class="col-auto">
+                                <label for="p3limitdropdown">Show</label>
+                            </div>
+                            <div class="col">
+                                <select id=p3limitdropdown class="form-control" onchange=refreshEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                    <option value="">No limit</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div> --}}
+
+
                 <table class="pTable">
                     <tr>
                         <td class="h1"></td>
@@ -679,8 +719,7 @@
                                 <option value=1000>Last 1000</option>
                                 <option value="">No limit</option>
                             </select>&nbsp;
-                            <a href=# onclick=p3showDownloadEventsDialog(2)><img src=images/link4.png height=10 width=10
-                                    title="Download Events" style=cursor:pointer></a>&nbsp;
+                            <a href=# onclick=p3showDownloadEventsDialog(2)><i class="fas fa-download" title="Download Events"></i></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -1860,17 +1899,16 @@
                 <div id="p60title">
                     <h1>My Reports</h1>
                 </div>
-                <table class="pTable">
+                <table class="table table-striped table-hover pTable">
                     <tr>
                         <td class="h1"></td>
                         <td class="style14">
                             <div style="float:right;line-height:22px">
                                 <a id="p60downloadReportDiv" style="display:none" href=#
-                                    onclick=p60downloadReport()><img src=images/link4.png height=10 width=10
-                                        title="Download Report" style=cursor:pointer></a>&nbsp;
+                                    onclick=p60downloadReport()><i class="fas fa-download" title="Download Report"></i></a>&nbsp;
                             </div>
                             <div>
-                                <input type=button onclick=generateReportDialog() value="Generate Report..." />
+                                <input type=button class="btn btn-outline-primary" onclick=generateReportDialog() value="Generate Report..." />
                             </div>
                         </td>
                         <td class="h2"></td>
@@ -1882,12 +1920,12 @@
         </div>
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
-            <div class="footer2">
+            <div class="footer2" style="display:none;">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
                         <span>Themes: </span>
                         <select id="theme-switcher" class="form-select form-select-xs">
-                            <option value="default">Default</option>
+                            {{!-- <option value="default">Default</option> --}}
                             <option value="cerulean">Cerulean</option>
                             <option value="cosmo">Cosmo</option>
                             <option value="cyborg">Cyborg</option>
@@ -4287,7 +4325,7 @@
                     if (y.length == 0) { y.push("None"); }
                     x += addHtmlValue("User Consent", y.join(', '));
                     var type = ''; if (message.p <= 7) { type = ['', "Remote Terminal Link", "Remote Desktop Link", "Remote Desktop + Terminal Link", "Remote Files Link", "Remote Terminal + Files Link", "Remote Desktop + Files Link", "Remote Desktop + Terminal + Files Link"][message.p]; } else if (message.p == 8) { type = format("HTTP/{0} link", message.port); } else if (message.p == 16) { type = format("HTTPS/{0}", message.port); }
-                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + type + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
+                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + type + '</a> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></i></div></div>';
                     setDialogMode(2, "Share Device", 1, null, x);
                     break;
                 }
@@ -4393,8 +4431,8 @@
                     var x = "Take note of this username and password, the password cannot be shown again." + '<br /><br />';
                     x += addHtmlValue("Name", EscapeHtml(message.name))
                     if (message.expire != 0) { x += addHtmlValue("Expire", EscapeHtml(printDateTime(new Date(message.expire)))); }
-                    x += addHtmlValue("Username", '<img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '") width=10 height=10><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
-                    x += addHtmlValue("Password", '<img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '") width=10 height=10><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
+                    x += addHtmlValue("Username", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard..." + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
+                    x += addHtmlValue("Password", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard..." + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
                     setDialogMode(2, "Create Login Token", 1, null, x);
                     break;
                 }
@@ -5928,7 +5966,7 @@
             x += '<div id=d2agentInstallTypeDiv>';
             x += addHtmlValue("Installation Type", '<select id=d2agentInviteType class=form-select onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>', ['col-md-4', 'col-md-8']);
             x += '</div>';
-            x += '<div id="agentInvitationLinkDiv" class="text-center" style="font-size:large;margin:16px;display:none;"><a href="#" id="agentInvitationLink" rel="noreferrer noopener" target="_blank" style="cursor:pointer;"></a> <img src="images/link4.png" height="10" width="10" title="Copy link to clipboard" style="cursor:pointer;" onclick="d2CopyInviteToClip()"></div></div>';
+            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer></a> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()><i/></div></div>';
 
             setModalContent('xxAddAgent', "Invite", x);
             d2RequestInvitationLink();
@@ -8478,10 +8516,10 @@
                         if ((usergroups != null) && (usergroups[userid] != null)) { username = EscapeHtml(usergroups[userid].name); ugroup = true; }
                         if ((meshrights & 2) != 0) {
                             if (ugroup) {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                                 rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(6,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             } else {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                                 rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(5,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             }
                         }
@@ -8902,13 +8940,13 @@
                     z += '<option value=' + i + '>' + options[i] + '</option>';
                 }
             }
-            x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option><option value=2>' + "Recurring daily" + '</option><option value=3>' + "Recurring weekly" + '</option></select>');
+            x += addHtmlValue("Validity", '<select id=d2timeRange class="form-select" onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option><option value=2>' + "Recurring daily" + '</option><option value=3>' + "Recurring weekly" + '</option></select>');
             x += '<div id=d2modenow>';
-            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
+            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire class="form-select">' + y + '</select>');
             x += '</div><div id=d2moderange style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div><div id=d2moderecurring style=display:none>';
-            x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
             x += '</div>';
             if (currentNode.agent.caps & 1) { x += '<div id=d2userConsentSelector>' + addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=0>' + "Notify Only" + '<option value=1>' + "Prompt for consent" + '</option><option value=2>' + "No Consent" + '</option></select>') + '</div>'; }
@@ -12344,7 +12382,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
@@ -12373,7 +12411,7 @@
                         }
                     }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -13851,10 +13889,10 @@
         function updateLoginTokens() {
             var x = '', count = 1;
             if ((loginTokens != null) && (loginTokens.length > 0)) {
-                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
+                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
                 for (var i = 0; i < loginTokens.length; i++) {
                     var ltoken = loginTokens[i];
-                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                     var details = '';
                     if (ltoken.expire != 0) { details = EscapeHtml(format("Expires {0}", printDateTime(new Date(ltoken.expire)))) + ' '; }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + EscapeHtml(ltoken.name) + '<div></div></div></td><td style=width:70%><div style=float:right>' + details + trash + '</div><div>' + EscapeHtml(ltoken.tokenUser) + '</div></td></tr>';
@@ -14646,7 +14684,7 @@
                 if (selected) { selected = decodeURIComponent(selected); }
                 var omeshs = getOrderedList(meshes, 'name');
                 for (var i in omeshs) { if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selected == omeshs[i]._id) ? ' selected' : ' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
-                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2groupid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("Device Group", '<div><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2groupid class=form-control>' + y + '</select></div>', ['col-md-4', 'col-md-8']);
             } else if ((userid == 4) || (userid == 7)) {
                 var y = '', selectedMeshId = null, selectedNode = null;
                 if (selected != null) { selectedNode = getNodeFromId(decodeURIComponent(selected)); if (selectedNode != null) { selectedMeshId = selectedNode.meshid; } }
@@ -15406,10 +15444,10 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
-                    if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '") width=10 height=10>'; }
+                    if (publicfolder) { publiclink = '<i class="fa-regular fa-copy" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>'; }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -15468,7 +15506,7 @@
         }
 
         function p5showPublicLink(u) {
-            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(u) + '") width=10 height=10>');
+            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(u) + '")></i>');
             return false;
         }
 
@@ -15877,7 +15915,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'ugrp') icon = 'm4';
@@ -15923,7 +15961,7 @@
                     }
                     if (event.remoteaddr) { msg += ' (' + event.remoteaddr + ')'; }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -15942,11 +15980,11 @@
         function p3showReportDialog() {
             if (xxdialogMode) return;
             var x = '<div style=float:right><img src=\'images/report60.png\' height=74 width=60 style=padding-top:2px /></div><div>';
-            x += addHtmlValue("Report Type", '<select id=d2reportType style=width:160px onchange=p3showReportValidation()><option value=1>' + "All Events" + '</option>');
-            x += addHtmlValue("Time Span", '<select id=d2reportSpan style=width:160px onchange=p3showReportValidation()><option value=1>' + "All Available" + '</option><option value=2>' + "One Day" + '</option></select>');
+            x += addHtmlValue("Report Type", '<select id=d2reportType class="form-select" onchange=p3showReportValidation()><option value=1>' + "All Events" + '</option>');
+            x += addHtmlValue("Time Span", '<select id=d2reportSpan class="form-select" onchange=p3showReportValidation()><option value=1>' + "All Available" + '</option><option value=2>' + "One Day" + '</option></select>');
             x += '<div id=d2daySelector>' + addHtmlValue("Report Day", '<input type=date id=d2reportDay style=width:160px onchange=p3showReportValidation()></input>') + '</div>';
-            x += addHtmlValue("Group By", '<select id=d2reportGroupBy style=width:160px onchange=p3showReportValidation()><option value=1>' + "None" + '</option><option value=2>' + "Device Group" + '</option><option value=3>' + "User" + '</option>');
-            x += addHtmlValue("Format", '<select id=d2reportFormat style=width:160px onchange=p3showReportValidation()><option value=1>' + "CSV" + '</option><option value=2>' + "JSON" + '</option>');
+            x += addHtmlValue("Group By", '<select id=d2reportGroupBy class="form-select" onchange=p3showReportValidation()><option value=1>' + "None" + '</option><option value=2>' + "Device Group" + '</option><option value=3>' + "User" + '</option>');
+            x += addHtmlValue("Format", '<select id=d2reportFormat class="form-select" onchange=p3showReportValidation()><option value=1>' + "CSV" + '</option><option value=2>' + "JSON" + '</option>');
             x += '</div>';
             setDialogMode(2, "Download Report", 3, null, x);
             p3showReportValidation();
@@ -16936,7 +16974,7 @@
             if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) {
                 x += '<a href=# onclick="return p51showAddUserDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</a>';
             }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Group Members" + '</th><th scope=col style=text-align:left></th></tr>';
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Group Members" + '</th><th scope=col></th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -16968,7 +17006,7 @@
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (currentUserGroup._id.split('/')[1] != meshes[i]._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
             if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(3)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</a>'; }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Device Groups" + '</th><th scope=col style=text-align:left></th></tr>';
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var omeshes = [];
                 for (var i in currentUserGroup.links) { if (i.startsWith('mesh/')) { if (meshes[i] != null) { omeshes.push(meshes[i]); } } }
@@ -16979,7 +17017,7 @@
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else { }
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
@@ -16992,7 +17030,7 @@
             count = 1;
             x += '<br />';
             if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>'; }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var onodes = [];
                 for (var i in currentUserGroup.links) { if (i.startsWith('node/')) { var node = getNodeFromId(i); if (node != null) { onodes.push(node); } } }
@@ -17721,7 +17759,7 @@
                             groupname = EscapeHtml(group.name);
                             if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
                         }
-                        if ((group.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></a>'; }
+                        if ((group.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>'; }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User Group" + '" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                     }
                 }
@@ -17835,7 +17873,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
@@ -17873,7 +17911,7 @@
                         msg = '<span title="' + "This is a guest sharing session" + '">' + EscapeHtml(event.guestname) + '</span> &rarr; ' + msg;
                     }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -18140,20 +18178,20 @@
             var options = { 1: "Remote Sessions", 2: "User Traffic Usage", 3: "User Logins" }
             if (userinfo.siteadmin == 0xFFFFFFFF) { options[4] = "Database Records"; }
             for (var i in options) { y += '<option value=' + i + ((settings.type == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Type", '<select id=d2reportType style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Type", '<select id=d2reportType class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
 
             x += '<div id=d2GroupByDiv style=display:none>';
             y = '';
             var options = { 1: "User", 2: "Device", 3: "Day" }
             for (var i in options) { y += '<option value=' + i + ((settings.groupBy == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Group by", '<select id=d2groupBy style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Group by", '<select id=d2groupBy class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2GroupByDiv2 style=display:none>';
             y = '';
             var options = { 1: "User", 3: "Day" }
             for (var i in options) { y += '<option value=' + i + ((settings.groupBy2 == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Group by", '<select id=d2groupBy2 style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Group by", '<select id=d2groupBy2 class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2DeviceGroupDiv style=display:none>';
@@ -18168,11 +18206,11 @@
             if (settings.timeRange == null) { settings.timeRange = 1; }
             var options = { 1: "Last Day", 7: "Last 7 days", 30: "Last 30 days", 0: "Time range" }
             for (var i in options) { y += '<option value=' + i + ((settings.timeRange == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Time", '<select id=d2timeRange style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Time", '<select id=d2timeRange class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2timeRangeDiv style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector class="flatpickr form-control" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
 
             x += '<div id=d2showTrafficDiv style=display:none>';
@@ -18219,7 +18257,7 @@
 
         function renderReport(r) {
             var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out", os: "Operating System", ip: "IP Address", browser: "Browser", msg: "Message", twofactor: "2nd Factor" }
-            var x = '<table style=width:100%>', firstItem;
+            var x = '<table class="table table-striped table-hover">', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by
 
@@ -18373,7 +18411,7 @@
                 }
             }
             if (f == 'msg') {
-                if (v == 107) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny1"></div>' + "Succesful login";
+                if (v == 107) return '<div style=float:left;margin-right:4px;cursor:pointer><i class="fas fa-check-circle text-success"></i></div>' + "Succesful login";
                 if (v == 108) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny2"></div>' + "Incorrect 2nd factor";
                 if (v == 109) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny4"></div>' + "Locked account";
                 if (v == 110) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny3"></div>' + "Invalid login attempt";
