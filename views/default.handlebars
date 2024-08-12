@@ -651,6 +651,46 @@
                 <div id="p3title">
                     <h1>My Events</h1>
                 </div>
+
+{{!-- 
+                <div class="row me-2 bg-secondary">
+                    <div class="col-auto me-auto"></div>
+                    <div class="col-auto">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <label for="p3filterevents">Filter</label>
+                            </div>
+                            <div class="col">
+                                <select id=p3filterevents class="form-control" onchange=refreshEvents()>
+                                    <option value="">All Logs</option>
+                                    <option value=agentlog>Agent Logs</option>
+                                    <option value=relaylog>Relay Logs</option>
+                                    <option value=manual>Manual Logs</option>
+                                    <option value=runcommands>Run Command Logs</option>
+                                    <option value=batchupload>Batch Upload Logs</option>
+                                    <option value=changenode>Change Node Logs</option>
+                                    <option value=removenode>Remove Node Logs</option>
+                                </select>
+                            </div>
+
+                            <div class="col-auto">
+                                <label for="p3limitdropdown">Show</label>
+                            </div>
+                            <div class="col">
+                                <select id=p3limitdropdown class="form-control" onchange=refreshEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                    <option value="">No limit</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div> --}}
+
+
                 <table class="pTable">
                     <tr>
                         <td class="h1"></td>
@@ -679,8 +719,7 @@
                                 <option value=1000>Last 1000</option>
                                 <option value="">No limit</option>
                             </select>&nbsp;
-                            <a href=# onclick=p3showDownloadEventsDialog(2)><img src=images/link4.png height=10 width=10
-                                    title="Download Events" style=cursor:pointer></a>&nbsp;
+                            <a href=# onclick=p3showDownloadEventsDialog(2)><i class="fas fa-download" title="Download Events"></i></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -1541,10 +1580,6 @@
             <div id=p20 style="display:none">
                 <div id=p20main style="overflow-y:auto">
                     <div id="p20title">
-                        <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
-                            <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
-                            <img alt="" width=200 height=200 src=images/mesh-256.png />
-                        </picture>
                         <div style="float:left">
                             <div class="backButton" tabindex=0 onclick=goBack() title="Back"
                                 onkeypress="if (event.key == 'Enter') goBack()">
@@ -1553,6 +1588,10 @@
                         </div>
                         <h1>General - <span id=p20meshName></span></h1>
                     </div>
+                    <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
+                        <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
+                        <img alt="" width=200 height=200 src=images/mesh-256.png />
+                    </picture>
                     <p id=p20info></p>
                     <p id=p20info2></p>
                 </div>
@@ -1860,17 +1899,16 @@
                 <div id="p60title">
                     <h1>My Reports</h1>
                 </div>
-                <table class="pTable">
+                <table class="table table-striped table-hover pTable">
                     <tr>
                         <td class="h1"></td>
                         <td class="style14">
                             <div style="float:right;line-height:22px">
                                 <a id="p60downloadReportDiv" style="display:none" href=#
-                                    onclick=p60downloadReport()><img src=images/link4.png height=10 width=10
-                                        title="Download Report" style=cursor:pointer></a>&nbsp;
+                                    onclick=p60downloadReport()><i class="fas fa-download" title="Download Report"></i></a>&nbsp;
                             </div>
                             <div>
-                                <input type=button onclick=generateReportDialog() value="Generate Report..." />
+                                <input type=button class="btn btn-outline-primary" onclick=generateReportDialog() value="Generate Report..." />
                             </div>
                         </td>
                         <td class="h2"></td>
@@ -1882,12 +1920,12 @@
         </div>
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
-            <div class="footer2">
+            <div class="footer2" style="display:none;">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
                         <span>Themes: </span>
                         <select id="theme-switcher" class="form-select form-select-xs">
-                            <option value="default">Default</option>
+                            {{!-- <option value="default">Default</option> --}}
                             <option value="cerulean">Cerulean</option>
                             <option value="cosmo">Cosmo</option>
                             <option value="cyborg">Cyborg</option>
@@ -4287,7 +4325,7 @@
                     if (y.length == 0) { y.push("None"); }
                     x += addHtmlValue("User Consent", y.join(', '));
                     var type = ''; if (message.p <= 7) { type = ['', "Remote Terminal Link", "Remote Desktop Link", "Remote Desktop + Terminal Link", "Remote Files Link", "Remote Terminal + Files Link", "Remote Desktop + Files Link", "Remote Desktop + Terminal + Files Link"][message.p]; } else if (message.p == 8) { type = format("HTTP/{0} link", message.port); } else if (message.p == 16) { type = format("HTTPS/{0}", message.port); }
-                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + type + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
+                    x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + type + '</a> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></i></div></div>';
                     setDialogMode(2, "Share Device", 1, null, x);
                     break;
                 }
@@ -4393,8 +4431,8 @@
                     var x = "Take note of this username and password, the password cannot be shown again." + '<br /><br />';
                     x += addHtmlValue("Name", EscapeHtml(message.name))
                     if (message.expire != 0) { x += addHtmlValue("Expire", EscapeHtml(printDateTime(new Date(message.expire)))); }
-                    x += addHtmlValue("Username", '<img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '") width=10 height=10><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
-                    x += addHtmlValue("Password", '<img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '") width=10 height=10><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
+                    x += addHtmlValue("Username", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard..." + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
+                    x += addHtmlValue("Password", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard..." + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
                     setDialogMode(2, "Create Login Token", 1, null, x);
                     break;
                 }
@@ -5908,27 +5946,27 @@
             if (xxdialogMode) return false;
             var x = '', mesh = meshes[meshid];
             if (features & 64) {
-                x += addHtmlValue("Invitation Type", '<select id="d2InviteType" class="form-select" onchange="d2ChangedInviteType()" style="width:236px;"><option value="0">Link invitation</option><option value="1">Email invitation</option></select>') + '<hr />';
-                x += '<div id="emailInviteDiv" style="display:none">' + format("Invite someone to install the mesh agent. An email will be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
-                x += addHtmlValue("Name (optional)", '<input id="agentInviteName" class="form-control" value="" style="width:230px;" maxlength="64" />');
-                x += addHtmlValue("Email", '<input id="agentInviteEmail" class="form-control" style="width:230px;" placeholder="example@email.com" onkeyup="validateAgentInvite()"></input>');
-                x += addHtmlValue("Operating System", '<select id="agentInviteNameOs" class="form-select" onchange="d2ChangedInviteType()" style="width:236px;"><option value="4">Send installation link</option><option value="0" selected>Any supported</option><option value="1">Windows only</option><option value="3">Apple macOS only</option><option value="2">Linux only</option><option value="5">MeshCentral Assistant</option></select>');
-                x += '<div id="d2agentexpirediv">';
-                x += addHtmlValue("Link Expiration", '<select id="agentInviteExpire" class="form-select" style="width:236px;"><option value="1">1 hour</option><option value="8">8 hours</option><option value="24">1 day</option><option value="168">1 week</option><option value="5040">1 month</option><option value="0">Unlimited</option></select>');
+                x += addHtmlValue("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() class=form-select><option value=0>' + "Link invitation" + '</option><option value=1>' + "Email invitation" + '</option></select>', ['col-md-4', 'col-md-8']) + '<hr />';
+                x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
+                x += addHtmlValue("Name (optional)", '<input id=agentInviteName value="" style=width:230px maxlength=64 />');
+                x += addHtmlValue("Email", '<input id=agentInviteEmail style=width:230px placeholder="' + "example@email.com" + '" onkeyup=validateAgentInvite()></input>');
+                x += addHtmlValue("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() class=form-select><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option><option value=5>' + "MeshCentral Assistant" + '</option></select>', ['col-md-4', 'col-md-8']);
+                x += '<div id=d2agentexpirediv>';
+                x += addHtmlValue("Link Expiration", '<select id=agentInviteExpire class=form-select><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>', ['col-md-4', 'col-md-8']);
                 x += '</div>';
-                x += '<div id="d2agentInstallTypeDiv2">';
-                x += addHtmlValue("Installation Type", '<select id="agentInviteType" class="form-select" style="width:236px;"><option value="0">Background and interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
+                x += '<div id=d2agentInstallTypeDiv2>';
+                x += addHtmlValue("Installation Type", '<select id=agentInviteType class=form-select><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>', ['col-md-4', 'col-md-8']);
                 x += '</div>';
                 x += addHtmlValue("Message (optional)", '<textarea id="agentInviteMessage" class="form-control" style="width:230px;height:100px;resize:none;" maxlength="1024"></textarea>');
                 x += '</div>';
             }
-            x += '<div id="urlInviteDiv">' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Link Expiration", '<select id="d2inviteExpire" class="form-select" style="width:236px;" onchange="d2RequestInvitationLink()"><option value="1">1 hour</option><option value="8">8 hours</option><option value="24">1 day</option><option value="168">1 week</option><option value="5040">1 month</option><option value="0">Unlimited</option></select>');
-            x += addHtmlValue("Agents", '<select id="d2agentType" class="form-select" style="width:236px;" onchange="d2ChangedInviteType()"><option value="0">All Available Agents</option><option value="1">Windows MeshAgent</option><option value="2">Linux MeshAgent</option><option value="4">MacOS MeshAgent</option><option value="8">MeshCentral Assistant</option><option value="16">Android MeshAgent</option></select>');
-            x += '<div id="d2agentInstallTypeDiv">';
-            x += addHtmlValue("Installation Type", '<select id="d2agentInviteType" class="form-select" style="width:236px;" onchange="d2RequestInvitationLink()"><option value="0">Background and interactive</option><option value="2">Background only</option><option value="1">Interactive only</option></select>');
+            x += '<div id=urlInviteDiv>' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += addHtmlValue("Link Expiration", '<select id=d2inviteExpire class=form-select onchange=d2RequestInvitationLink()><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Agents", '<select id=d2agentType class=form-select onchange=d2ChangedInviteType()><option value=0>' + "All Available Agents" + '</option><option value=1>' + "Windows MeshAgent" + '</option><option value=2>' + "Linux MeshAgent" + '</option><option value=4>' + "MacOS MeshAgent" + '</option><option value=8>' + "MeshCentral Assistant" + '</option><option value=16>' + "Android MeshAgent" + '</option></select>', ['col-md-4', 'col-md-8']);
+            x += '<div id=d2agentInstallTypeDiv>';
+            x += addHtmlValue("Installation Type", '<select id=d2agentInviteType class=form-select onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>', ['col-md-4', 'col-md-8']);
             x += '</div>';
-            x += '<div id="agentInvitationLinkDiv" class="text-center" style="font-size:large;margin:16px;display:none;"><a href="#" id="agentInvitationLink" rel="noreferrer noopener" target="_blank" style="cursor:pointer;"></a> <img src="images/link4.png" height="10" width="10" title="Copy link to clipboard" style="cursor:pointer;" onclick="d2CopyInviteToClip()"></div></div>';
+            x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer></a> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()><i/></div></div>';
 
             setModalContent('xxAddAgent', "Invite", x);
             d2RequestInvitationLink();
@@ -8452,14 +8490,14 @@
                 // Show user device permissions
                 x = '';
                 if (meshrights & 7) {
-                    x += '<a href=# onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User" + '</a>';
+                    x += '<a href=# onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User" + '</a>';
                     if (usergroups != null) {
                         var userGroupCount = 0, newUserGroup = false;
                         for (var i in usergroups) {
                             if ((usergroups[i].membershipType != null) || (usergroups[i]._id.split('/')[1] != nodeid.split('/')[1])) continue;
                             userGroupCount++; if ((currentNode.links == null) || (currentNode.links[i] == null)) { newUserGroup = true; }
                         }
-                        if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(6)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
+                        if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(6)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
                     }
                 }
 
@@ -8478,10 +8516,10 @@
                         if ((usergroups != null) && (usergroups[userid] != null)) { username = EscapeHtml(usergroups[userid].name); ugroup = true; }
                         if ((meshrights & 2) != 0) {
                             if (ugroup) {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                                 rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(6,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             } else {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                                 rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(5,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             }
                         }
@@ -8691,7 +8729,7 @@
         function showNotes(readonly, noteid) {
             if (xxdialogMode) return;
             if (noteid == null) { noteid = encodeURIComponentEx('p' + userinfo._id); }
-            var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+            var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly class="form-control" style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
             if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
             setDialogMode(2, "Notes", 3, showNotesEx, x, noteid);
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
@@ -8902,13 +8940,13 @@
                     z += '<option value=' + i + '>' + options[i] + '</option>';
                 }
             }
-            x += addHtmlValue("Validity", '<select id=d2timeRange style=float:right;width:250px onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option><option value=2>' + "Recurring daily" + '</option><option value=3>' + "Recurring weekly" + '</option></select>');
+            x += addHtmlValue("Validity", '<select id=d2timeRange class="form-select" onchange=showShareDeviceValidate()><option value=0>' + "Starting now" + '</option><option value=1>' + "Time range" + '</option><option value=2>' + "Recurring daily" + '</option><option value=3>' + "Recurring weekly" + '</option></select>');
             x += '<div id=d2modenow>';
-            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
+            x += addHtmlValue("Expire Time", '<select id=d2inviteExpire class="form-select">' + y + '</select>');
             x += '</div><div id=d2moderange style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div><div id=d2moderecurring style=display:none>';
-            x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
             x += '</div>';
             if (currentNode.agent.caps & 1) { x += '<div id=d2userConsentSelector>' + addHtmlValue("User Consent", '<select id=d2userConsent style=float:right;width:250px><option value=0>' + "Notify Only" + '<option value=1>' + "Prompt for consent" + '</option><option value=2>' + "No Consent" + '</option></select>') + '</div>'; }
@@ -9177,7 +9215,7 @@
             return false;
         }
 
-        function addDeviceAttribute(name, value) { return '<tr><td class=style7>' + name + '</td><td class=style9>' + value + '</td></tr>'; }
+        function addDeviceAttribute(name, value, classNames = []){ return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-2'}"> ${name} </div><div class="${classNames[1] || 'col-md-10'}"><b> ${value} </b></div></div>`; }
 
         function editDeviceAmtSettings(nodeid, func, arg) {
             if (xxdialogMode) return;
@@ -12344,7 +12382,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
@@ -12373,7 +12411,7 @@
                         }
                     }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -13200,7 +13238,7 @@
         function account_manageImage(mode) {
             if (xxdialogMode) return;
             var user = (mode == 0) ? userinfo : currentUser;
-            var x = '<input id=p2file type=file style=width:100% accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;box-shadow: 0px 0px 15px #000" onclick=account_canvasClick() /></div>';
+            var x = '<input id=p2file type=file class="form-control" accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;box-shadow: 0px 0px 15px #000" onclick=account_canvasClick() /></div>';
             setDialogMode(2, "Manage Account Image", 7, account_manageImageEx2, x, user._id);
             var ctx = Q('p2canvas').getContext('2d');
             if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
@@ -13431,7 +13469,7 @@
         function account_showLocalizationSettings() {
             if (xxdialogMode) return false;
             var n = getstore('loctag', 0), y = '';
-            var x = '<select id=d2locselect class="form-select" style=width:240px><option value="*">' + "User browser value" + '</option>';
+            var x = '<select id=d2locselect class="form-select"><option value="*">' + "User browser value" + '</option>';
             for (var i in loclist) { x += '<option value="' + i + '"' + ((n == i) ? ' selected' : '') + '>' + i + ' - ' + loclist[i] + '</option>'; }
             x += '</select>';
             if (serverinfo.languages && serverinfo.languages.length > 0) {
@@ -13444,7 +13482,7 @@
                 z += '</select>';
                 y += addHtmlValue("Language", z);
             }
-            y += addHtmlValue("Dates & Time", x);
+            y += addHtmlValue("Dates & Time", x, ['col-md-4', 'col-md-8']);
 
             if ((userinfo.siteadmin == 0xFFFFFFFF) && (domain == '')) {
                 y += '<br /><a rel="noreferrer noopener" target="_blank" href="translator.htm">' + "Help translate MeshCentral" + '</a>';
@@ -13800,7 +13838,7 @@
         }
 
         function updateMeshes() {
-            var r = '', c = 0, count = 0;
+            var r = '<div class="row">', c = 0, count = 0;
 
             // Sort the device groups
             var sortedMeshes = [];
@@ -13819,8 +13857,29 @@
                 if (meshrights == 0xFFFFFFFF) rights = "Full Administrator"; else if (meshrights == 0) rights = "No Rights";
 
                 // Print the mesh information
-                r += '<div onmouseover=devGrpMouseHover(this,1) onmouseout=devGrpMouseHover(this,0) style=display:inline-block;width:431px;height:50px;padding-top:1px;padding-bottom:1px;float:left><div style=float:left;width:30px;height:100%></div><div tabindex=0 style=height:100%;cursor:pointer onclick=gotoMesh(\'' + sortedMeshes[i]._id + '\') onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + sortedMeshes[i]._id + '\')"><div class=mi style=float:left;width:50px;height:50px></div><div style=height:100%><div class=g1></div><div class=e2 style=width:300px><div class=e1>' + EscapeHtml(sortedMeshes[i].name) + '</div><div>' + rights + '</div></div><div class=g2 style=float:left></div></div></div></div>';
+                r += `
+                    <div class="col-md-3 mb-2"
+                            onclick="gotoMesh('` + sortedMeshes[i]._id + `')" 
+                            onkeypress="if (event.key=='Enter') gotoMesh('` + sortedMeshes[i]._id + `')"
+                            style="cursor:pointer;">
+                        <div class="card mb-3 bg-secondary">
+                            <div class="row g-0">
+                                <div class="col-md-2 parent" style="display: flex; justify-content: center; align-items: center;">
+                                    <div class="mi child"></div>
+                                </div>
+                                <div class="col-md-10 mx-auto" tabindex="0">
+                                    <div class="card-body" style=padding:0;>
+                                        <h5 class="card-title e1">` + EscapeHtml(sortedMeshes[i].name) + `</h5>
+                                        <p class="card-text">` + rights + `</p>
+                                        <div class="g2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
             }
+            r += '</div>';
 
             meshcount = count;
             QH('p2meshes', r);
@@ -13830,10 +13889,10 @@
         function updateLoginTokens() {
             var x = '', count = 1;
             if ((loginTokens != null) && (loginTokens.length > 0)) {
-                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
+                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
                 for (var i = 0; i < loginTokens.length; i++) {
                     var ltoken = loginTokens[i];
-                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                     var details = '';
                     if (ltoken.expire != 0) { details = EscapeHtml(format("Expires {0}", printDateTime(new Date(ltoken.expire)))) + ' '; }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + EscapeHtml(ltoken.name) + '<div></div></div></td><td style=width:70%><div style=float:right>' + details + trash + '</div><div>' + EscapeHtml(ltoken.tokenUser) + '</div></td></tr>';
@@ -13973,10 +14032,10 @@
 
             var x = '';
             if ((args.hide & 8) != 0) { x += addHtmlValue("Name", mname); } // If title bar is hidden, display the mesh name here
-            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
+            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0), ['col-md-2', 'col-md-10']);
 
             // Display group type
-            x += addHtmlValue("Type", meshtype);
+            x += addHtmlValue("Type", meshtype, ['col-md-2', 'col-md-10']);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
             // Display the relay device if applicable
@@ -13984,25 +14043,25 @@
                 var relayName = '<i>' + "Unknown" + '</i>';
                 var relayNode = getNodeFromId(currentMesh.relayid);
                 if (relayNode != null) { relayName = EscapeHtml(relayNode.name); }
-                x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0));
+                x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0), ['col-md-2', 'col-md-10']);
             }
 
             // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
-                x += addHtmlValue("Hostname", currentMesh.kvm.host);
-                x += addHtmlValue("Username", currentMesh.kvm.user);
+                x += addHtmlValue("Hostname", currentMesh.kvm.host, ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Username", currentMesh.kvm.user, ['col-md-2', 'col-md-10']);
             }
 
             // Display device group creator
             if ((currentMesh.creatorid != null) && (users != null) && (users[currentMesh.creatorid] != null)) {
                 var meshcreator = users[currentMesh.creatorid];
-                x += addHtmlValue("Creator", '<a onclick=gotoUser(\"' + encodeURIComponentEx(meshcreator._id) + '\",false,null)>' + EscapeHtml(meshcreator.name) + '</a>');
+                x += addHtmlValue("Creator", '<a onclick=gotoUser(\"' + encodeURIComponentEx(meshcreator._id) + '\",false,null)>' + EscapeHtml(meshcreator.name) + '</a>', ['col-md-2', 'col-md-10']);
             } else if (currentMesh.creatorname != null) {
-                x += addHtmlValue("Creator", EscapeHtml(currentMesh.creatorname));
+                x += addHtmlValue("Creator", EscapeHtml(currentMesh.creatorname), ['col-md-2', 'col-md-10']);
             }
 
             // Display creation time
-            if (currentMesh.creation != null) { x += addHtmlValue("Creation Time", printDateTime(new Date(currentMesh.creation))); }
+            if (currentMesh.creation != null) { x += addHtmlValue("Creation Time", printDateTime(new Date(currentMesh.creation)), ['col-md-2', 'col-md-10']); }
 
             // Display features
             if (currentMesh.mtype != 3) {
@@ -14015,7 +14074,7 @@
                 if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { meshFeatures.push("Remove inactive"); }
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
-                x += addHtmlValue("Features", addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1));
+                x += addHtmlValue("Features", addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1), ['col-md-2', 'col-md-10']);
             }
 
             // Display device group user consent
@@ -14032,7 +14091,7 @@
 
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
-                x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1));
+                x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1), ['col-md-2', 'col-md-10']);
             }
 
             if (currentMesh.mtype != 3) {
@@ -14055,7 +14114,7 @@
                         if (xx > 0) { meshNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                     if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
-                    x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
+                    x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'), ['col-md-2', 'col-md-10']);
                 }
             }
 
@@ -14063,7 +14122,7 @@
             if ((features & 0x01000000) && (currentMesh.mtype == 2)) {
                 var inviteCodeStr = '<i>' + "None" + '</i>', icodes = false;
                 if (currentMesh.invite != null) { icodes = true; inviteCodeStr = currentMesh.invite.codes.join(', '); /* + ', ' + currentMesh.invite.flags;*/ }
-                x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
+                x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)), ['col-md-2', 'col-md-10']);
             }
 
             // If the Intel AMT manager is active on the server, show the Intel AMT policy edit box.
@@ -14082,15 +14141,15 @@
                         intelAmtPolicy = "Fully Automatic";
                     }
                 }
-                x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
+                x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1), ['col-md-2', 'col-md-10']);
             }
 
             // Display device group note support
-            if (meshrights & 1) { x += '<br><input type=button value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
+            if (meshrights & 1) { x += '<br><input type=button class="btn btn-outline-primary" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
 
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
-                x += '<a href=# onclick="return p20showAddMeshUserDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Users" + '</a>';
+                x += '<a href=# onclick="return p20showAddMeshUserDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</a>';
                 if (usergroups != null) {
                     var userGroupCount = 0, newUserGroup = false;
                     for (var i in usergroups) {
@@ -14098,7 +14157,7 @@
                         userGroupCount++;
                         if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(2)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(2)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
                 }
             }
 
@@ -14115,17 +14174,17 @@
                 }
             }
             if ((currentMesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Agent" + '</a>';
-                x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Invite" + '</a>';
+                x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><i class="fas fa-plus-circle"></i> ' + "Add Agent" + '</a>';
+                x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><i class="fas fa-plus-circle"></i> ' + "Invite" + '</a>';
             }
             if ((currentMesh.mtype == 3) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<a href=# onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add device located on the local network." + '"><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>';
+                x += '<a href=# onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add device located on the local network." + '"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>';
             }
             if (currentMesh.amt && (currentMesh.amt.type > 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // ACM activation or Full Automatic
                 x += '<a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "ACM" + '</a>';
             }
 
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Authorizations" + '</th><th scope=col style=text-align:left></th></tr>';
+            x += '<table class="table table-striped table-hover" cellpadding=2 cellspacing=0><tbody><tr><th scope=col>' + "User Authorizations" + '</th><th scope=col></th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -14143,9 +14202,9 @@
                 var trash = '', r = sortedusers[i].rights, rights = makeDeviceGroupRightsString(r), icon = 2;
                 if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) {
                     if ((meshrights == 0xFFFFFFFF) || (currentMesh.links[sortedusers[i].id].rights != 0xFFFFFFFF)) {
-                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                     }
-                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <i class="fas fa-pencil hoverButton"></i></span>';
                 }
                 if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
@@ -14211,14 +14270,14 @@
                 if ((features & 1) == 0) { dllist += ' <a onclick=meshImportDeviceList()><img title="' + "Import device list" + '" src="images/link6.png" /></a>'; } // Show import only in LAN or Hybrid mode
             }
 
-            var y = '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Devices" + '</th><th scope=col style=text-align:right>' + dllist + '</th></tr>';
+            var y = '<table class="table table-striped table-hover"><tbody><tr class="class="fw-bold"><th>' + "Devices" + '</th><th scope=col class="text-end">' + dllist + '</th></tr>';
             for (var i in nodes) {
                 var node = nodes[i], gray = ((node.conn > 0) ? '' : ' gray');
                 if (currentMesh._id != node.meshid) continue;
-                y += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left class="j' + node.icon + gray + '"></div>&nbsp;<a onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + EscapeHtml(node.name) + '</a></div></div></td><td style=width:70%><div style=float:right>' + PowerStateStr(node.pwr) + '&nbsp;</div><div>' + (node.osdesc ? EscapeHtml(node.osdesc) : '') + '</div></td></tr>';
+                y += '<tr><td style=width:30%><div onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\' style=float:left class="j' + node.icon + gray + '"></div>&nbsp;<a onclick=\'gotoDevice("' + node._id + '",10);haltEvent(event);\'>' + EscapeHtml(node.name) + '</a></div></div></td><td><div style=float:right>' + PowerStateStr(node.pwr) + '&nbsp;</div><div>' + (node.osdesc ? EscapeHtml(node.osdesc) : '') + '</div></td></tr>';
                 ++count;
             }
-            if (count == 0) { y += '<tr><td><i>' + "None" + '</i></td></tr>'; }
+            if (count == 0) { y += '<tr><td colspan="2"><i>' + "None" + '</i></td></tr>'; }
             y += '</tbody></table>';
 
             // If we are full administrator on this mesh, allow deletion of the mesh
@@ -14383,7 +14442,7 @@
         function p20showDeleteMeshDialog() {
             if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
-            x += '<label><input id=p20check type=checkbox onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
+            x += '<label class=form-check-label><input id=p20check type=checkbox class="form-check-input m-1" onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
             setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
             return false;
@@ -14586,7 +14645,7 @@
                     x += '<br /><br />';
                 }
                 x += '<div style=\'position:relative\'>';
-                x += addHtmlValue("User Identifiers", '<input id=dp20username style=width:230px maxlength=256 onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" />');
+                x += '<div class="form-floating mb-2"><input id=dp20username maxlength=256 class=form-control onchange=p20validateAddMeshUserDialog() onkeyup=p20validateAddMeshUserDialog() placeholder="user1, user2, user3" /><label for=dp20username>User Identifiers</label></div>'
                 x += '<div id=dp20usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
                 x += '</div><br>';
             } else if (userid == 1) {
@@ -14606,7 +14665,7 @@
                     if (currentMesh._id.split('/')[1] != ousergroups[i]._id.split('/')[1]) continue;
                     if ((currentMesh.links == null) || (currentMesh.links[ousergroups[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(ousergroups[i]._id) + '>' + EscapeHtml(ousergroups[i].name) + '</option>'; }
                 }
-                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("User Group", '<div><select onchange=p20validateAddMeshUserDialog() id=dp2groupid class=form-select>' + y + '</select></div>', ['col-md-4', 'col-md-8']);
             } else if (userid == 6) {
                 if (usergroups == null) return;
                 var y = '';
@@ -14619,13 +14678,13 @@
                 } else {
                     y += '<option value=' + selected + '>' + EscapeHtml(usergroups[decodeURIComponent(selected)].name) + '</option>';
                 }
-                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%' + (selected ? ' disabled' : '') + '>' + y + '</select></div>');
+                x += addHtmlValue("User Group", '<div><select onchange=p20validateAddMeshUserDialog() id=dp2groupid class=form-select' + (selected ? ' disabled' : '') + '>' + y + '</select></div>');
             } else if (userid == 3) {
                 var y = '';
                 if (selected) { selected = decodeURIComponent(selected); }
                 var omeshs = getOrderedList(meshes, 'name');
                 for (var i in omeshs) { if ((selected != null) || (currentUserGroup.links == null) || (currentUserGroup.links[omeshs[i]._id] == null)) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selected == omeshs[i]._id) ? ' selected' : ' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; } }
-                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2groupid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("Device Group", '<div><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2groupid class=form-control>' + y + '</select></div>', ['col-md-4', 'col-md-8']);
             } else if ((userid == 4) || (userid == 7)) {
                 var y = '', selectedMeshId = null, selectedNode = null;
                 if (selected != null) { selectedNode = getNodeFromId(decodeURIComponent(selected)); if (selectedNode != null) { selectedMeshId = selectedNode.meshid; } }
@@ -14635,11 +14694,11 @@
                         if (selectedMeshId == null) { selectedMeshId = omeshs[i]._id; } y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((selectedMeshId == omeshs[i]._id) ? ' selected' : ' ') + '>' + EscapeHtml(omeshs[i].name) + '</option>';
                     }
                 }
-                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20changeMeshAddMeshUserDialog(' + userid + ') id=dp2meshid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("Device Group", '<div><select onchange=p20changeMeshAddMeshUserDialog(' + userid + ') id=dp2meshid class=form-select>' + y + '</select></div>', ['col-md-4', 'col-md-8']);
                 y = '';
                 var onodes = getOrderedList(nodes, 'name');
                 for (var i in onodes) { if (onodes[i].meshid == selectedMeshId) { y += '<option value=' + encodeURIComponentEx(onodes[i]._id) + ((selectedNode == onodes[i]) ? ' selected' : ' ') + '>' + EscapeHtml(onodes[i].name) + '</option>'; } }
-                x += addHtmlValue("Device", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2nodeid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("Device", '<div><select onchange=p20validateAddMeshUserDialog(' + userid + ') id=dp2nodeid class=form-select>' + y + '</select></div>', ['col-md-4', 'col-md-8']);
             } else {
                 userid = decodeURIComponent(userid);
                 var uname = userid.split('/')[2];
@@ -14657,30 +14716,30 @@
 
             x += '<div style="height:120px;overflow-y:scroll;border:1px solid gray;resize:vertical;">';
             if (meshRightsActive) {
-                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
-                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
-                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
-                x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
+                x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20fulladmin>' + "Full Administrator" + '</label><br>';
+                x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20editmesh>' + "Edit Device Group" + '</label><br>';
+                x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20manageusers>' + "Manage Device Group Users" + '</label><br>';
+                x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20managecomputers>' + "Manage Device Group Computers" + '</label><br>';
             }
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
-            if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20wakedevices>' + "Wake Devices" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "Edit Device Notes" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
+            if (serverinfo.guestdevicesharing !== false) { x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20wakedevices>' + "Wake Devices" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20editnotes>' + "Edit Device Notes" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20limitevents>' + "Show Only Own Events" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
+            x += '<label class=form-check-label><input type=checkbox class="form-check-input m-1" onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
             x += '</div>';
 
             if (userid == null) {
@@ -15385,10 +15444,10 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
-                    if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '") width=10 height=10>'; }
+                    if (publicfolder) { publiclink = '<i class="fa-regular fa-copy" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>'; }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -15447,7 +15506,7 @@
         }
 
         function p5showPublicLink(u) {
-            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(u) + '") width=10 height=10>');
+            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(u) + '")></i>');
             return false;
         }
 
@@ -15856,7 +15915,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'ugrp') icon = 'm4';
@@ -15902,7 +15961,7 @@
                     }
                     if (event.remoteaddr) { msg += ' (' + event.remoteaddr + ')'; }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -15921,11 +15980,11 @@
         function p3showReportDialog() {
             if (xxdialogMode) return;
             var x = '<div style=float:right><img src=\'images/report60.png\' height=74 width=60 style=padding-top:2px /></div><div>';
-            x += addHtmlValue("Report Type", '<select id=d2reportType style=width:160px onchange=p3showReportValidation()><option value=1>' + "All Events" + '</option>');
-            x += addHtmlValue("Time Span", '<select id=d2reportSpan style=width:160px onchange=p3showReportValidation()><option value=1>' + "All Available" + '</option><option value=2>' + "One Day" + '</option></select>');
+            x += addHtmlValue("Report Type", '<select id=d2reportType class="form-select" onchange=p3showReportValidation()><option value=1>' + "All Events" + '</option>');
+            x += addHtmlValue("Time Span", '<select id=d2reportSpan class="form-select" onchange=p3showReportValidation()><option value=1>' + "All Available" + '</option><option value=2>' + "One Day" + '</option></select>');
             x += '<div id=d2daySelector>' + addHtmlValue("Report Day", '<input type=date id=d2reportDay style=width:160px onchange=p3showReportValidation()></input>') + '</div>';
-            x += addHtmlValue("Group By", '<select id=d2reportGroupBy style=width:160px onchange=p3showReportValidation()><option value=1>' + "None" + '</option><option value=2>' + "Device Group" + '</option><option value=3>' + "User" + '</option>');
-            x += addHtmlValue("Format", '<select id=d2reportFormat style=width:160px onchange=p3showReportValidation()><option value=1>' + "CSV" + '</option><option value=2>' + "JSON" + '</option>');
+            x += addHtmlValue("Group By", '<select id=d2reportGroupBy class="form-select" onchange=p3showReportValidation()><option value=1>' + "None" + '</option><option value=2>' + "Device Group" + '</option><option value=3>' + "User" + '</option>');
+            x += addHtmlValue("Format", '<select id=d2reportFormat class="form-select" onchange=p3showReportValidation()><option value=1>' + "CSV" + '</option><option value=2>' + "JSON" + '</option>');
             x += '</div>';
             setDialogMode(2, "Download Report", 3, null, x);
             p3showReportValidation();
@@ -16475,6 +16534,7 @@
 
             if ((features & 0x200000) == 0) { x += addHtmlValue('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
             x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email type=email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += '';
             x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
@@ -16541,18 +16601,8 @@
             var user = users[userid.toLowerCase()], groups = "";
             if (user.groups != null) { groups = user.groups.join(', ') }
             var x = "Enter a comma seperate list of administrative realms names." + '<br /><br />';
-            x += addHtmlValue("<label class=form-label for=dp4usergroups>Realms</label>", '<input id=dp4usergroups style=width:230px value="' + groups + '" placeholder="' + "Name1, Name2, Name3" + '" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() class=form-control />');
-
-            setModalContent('xxAddAgent', 'Administrative Realms', x);
-
-            var editAdministrativeRealmsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editAdministrativeRealmsModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                showUserGroupDialogEx();
-                editAdministrativeRealmsModal.hide();
-            };
-
+            x += `<div class="form-floating mb-2"><input id=dp4usergroups value="${groups}" class="form-control" placeholder="Name1, Name2, Name3" maxlength=256 onchange=p4validateUserGroups() onkeyup=p4validateUserGroups() /><label for=dp4usergroups>Realms</label></div>`;
+            setDialogMode(2, "Administrative Realms", 3, showUserGroupDialogEx, x, user);
             focusTextBox('dp4usergroups');
             p4validateUserGroups();
             return false;
@@ -16580,22 +16630,22 @@
             if (user == null) return;
             var uself = (userinfo._id == user._id);
             var x = '';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fileaccess>' + "Server Files" + '</label>, <input type=number onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>' + "k max, blank for default" + '<br><hr/>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_fulladmin>' + "Full Administrator" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverbackup>' + "Server Backup" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverrestore>' + "Server Restore" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_serverupdate>' + "Server Updates" + '</label><br></div>';
-            x += '<div id=d2MngUsr><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusers>' + "Manage Users" + '</label><br></div>';
-            x += '<div id=d2MngGrp><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_manageusergroups>' + "Manage User Groups" + '</label><br></div>';
-            x += '<div id=d2MngRec><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_managerecordings>' + "Manage Recordings" + '</label><br></div>';
-            x += '<div id=d2AllEvnt><label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_allevents>' + "View All Events" + '</label><br></div>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_fileaccess>' + "Server Files" + '</label>, <input type=number class="me-1" onchange=showUserAdminDialogValidate() maxlength=10 id=ua_fileaccessquota>' + "k max, blank for default" + '<br><hr/>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_fulladmin>' + "Full Administrator" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_serverbackup>' + "Server Backup" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_serverrestore>' + "Server Restore" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_serverupdate>' + "Server Updates" + '</label><br></div>';
+            x += '<div id=d2MngUsr><label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_manageusers>' + "Manage Users" + '</label><br></div>';
+            x += '<div id=d2MngGrp><label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_manageusergroups>' + "Manage User Groups" + '</label><br></div>';
+            x += '<div id=d2MngRec><label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_managerecordings>' + "Manage Recordings" + '</label><br></div>';
+            x += '<div id=d2AllEvnt><label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_allevents>' + "View All Events" + '</label><br></div>';
             if (x != '') { x += '<hr/>'; }
             x = '<div><div id=d2AdminPermissions>' + x;
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nonewdevices>' + "No New Devices" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
-            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() id=ua_locksettings>' + "Lock Account Settings" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_lockedaccount>' + "Lock Account" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_nonewgroups>' + "No New Device Groups" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_nonewdevices>' + "No New Devices" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_nomeshcmd>' + "No Tools (MeshCmd/Router)" + '</label><br>';
+            x += '<label><input type=checkbox onchange=showUserAdminDialogValidate() class="form-check-input me-2" id=ua_locksettings>' + "Lock Account Settings" + '</label><br>';
             x += '</div>';
 
             setModalContent('xxAddAgent', "Server Permissions", x);
@@ -16922,9 +16972,9 @@
 
             x = '<br />';
             if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) {
-                x += '<a href=# onclick="return p51showAddUserDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Users" + '</a>';
+                x += '<a href=# onclick="return p51showAddUserDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</a>';
             }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Group Members" + '</th><th scope=col style=text-align:left></th></tr>';
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Group Members" + '</th><th scope=col></th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -16955,8 +17005,8 @@
             count = 1;
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (currentUserGroup._id.split('/')[1] != meshes[i]._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
-            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(3)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device Group" + '</a>'; }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Device Groups" + '</th><th scope=col style=text-align:left></th></tr>';
+            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(3)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</a>'; }
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var omeshes = [];
                 for (var i in currentUserGroup.links) { if (i.startsWith('mesh/')) { if (meshes[i] != null) { omeshes.push(meshes[i]); } } }
@@ -16967,7 +17017,7 @@
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else { }
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
@@ -16979,8 +17029,8 @@
             // Display all devices for this user group
             count = 1;
             x += '<br />';
-            if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>'; }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+            if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>'; }
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var onodes = [];
                 for (var i in currentUserGroup.links) { if (i.startsWith('node/')) { var node = getNodeFromId(i); if (node != null) { onodes.push(node); } } }
@@ -17336,7 +17386,7 @@
             x += '</table></div><br />';
 
             // Add action buttons
-            x += '<input type=button value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
+            x += '<input type=button class="btn btn-outline-primary" value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
             if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
             if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
             if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
@@ -17486,18 +17536,18 @@
             var flags = (currentUser.flags) ? currentUser.flags : 0, x = ''; // Flags: 1 = Account Image, 2 = Session Recording
             var removeRights = (currentUser.removeRights) ? currentUser.removeRights : 0, x = ''; // Remove Device Group Rights
             if (serverinfo.usersSessionRecording == 1) {
-                x += '<div><label><input type=checkbox id=d20flag1 onchange=p20edituserfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
+                x += '<div><label><input type=checkbox id=d20flag1 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
-            x += '<div><label><input type=checkbox id=d20flag7 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000008) ? 'checked' : '') + '>' + "No Remote Control" + '</label><br></div>';
-            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
-            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag3 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
-            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
-            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag6 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag8 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag9 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag10 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag11 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag7 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000008) ? 'checked' : '') + '>' + "No Remote Control" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag2 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
+            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag3 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag6 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag8 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag9 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag10 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag11 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
 
             setModalContent('xxAddAgent', 'Edit User Features', x);
 
@@ -17555,18 +17605,8 @@
         function p30showUserRealNameChangeDialog(event) {
             if (xxdialogMode) return false;
             var x = '';
-            x += addHtmlValue("<label class=form-label for=dp30realname>Real Name</label>", '<input id=dp30realname style=width:230px maxlength=256 class=form-control/>');
-
-            setModalContent('xxAddAgent', format("Change Real Name for {0}", EscapeHtml(currentUser.name)), x);
-
-            var changeUserRealNameModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            changeUserRealNameModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p30showUserRealNameChangeDialogEx();
-                changeUserRealNameModal.hide();
-            };
-
+            x += '<div class="form-floating mb-2"><input id=dp30realname class="form-control" placeholder="Real Name" maxlength=256 /><label for=dp30realname>Real Name</label></div>';
+            setDialogMode(2, format("Change Real Name for {0}", EscapeHtml(currentUser.name)), 3, p30showUserRealNameChangeDialogEx, x);
             Q('dp30realname').focus();
             Q('dp30realname').value = (currentUser.realname ? currentUser.realname : '');
             return false;
@@ -17581,19 +17621,9 @@
         function p30showUserEmailChangeDialog(event) {
             if (xxdialogMode) return false;
             var x = '';
-            x += addHtmlValue("<label class=form-label for=dp30email>Email</label>", '<input id=dp30email type=email style=width:230px maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() class=form-control/>');
-            if (serverinfo.emailcheck) { x += addHtmlValue("<label class=form-label for=dp30verified> Status</label>", '<select id=dp30verified style=width:230px onchange=p30validateEmail() class=form-select><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
-
-            setModalContent('xxAddAgent', format("Change Email for {0}", EscapeHtml(currentUser.name)), x);
-
-            var editUserConsentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editUserConsentModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p30showUserEmailChangeDialogEx();
-                editUserConsentModal.hide();
-            };
-
+            x += '<div class="form-floating mb-2"><input id=dp30email class="form-control" maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() placeholder=Email /><label for=dp30email>Email</label></div>';
+            if (serverinfo.emailcheck) { x += addHtmlValue("Status", '<select id=dp30verified style=width:230px onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
+            setDialogMode(2, format("Change Email for {0}", EscapeHtml(currentUser.name)), 3, p30showUserEmailChangeDialogEx, x);
             Q('dp30email').focus();
             Q('dp30email').value = (currentUser.email ? currentUser.email : '');
             if (serverinfo.emailcheck) { Q('dp30verified').value = currentUser.emailVerified ? 1 : 0; }
@@ -17626,9 +17656,10 @@
         function p30showUserChangePassDialog(multiFactor) {
             if (xxdialogMode) return;
             var x = '';
-            x += addHtmlValue("Password", '<input id=p4pass1 type=password style=width:230px maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
-            x += addHtmlValue("Password", '<input id=p4pass2 type=password style=width:230px maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1)></input>');
-            if (features & 0x00010000) { x += addHtmlValue("Password hint", '<input id=p4hint type=text style=width:230px maxlength=256></input>'); }
+            x += '<div class="form-floating mb-2"><input id=p4pass1 type=password class="form-control" maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1) placeholder=Password></input><label for=p4pass1>Password</label></div>';
+            x += '<div class="form-floating mb-2"><input id=p4pass2 type=password class="form-control" maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1) placeholder=Password></input><label for=p4pass2>Password</label></div>';
+            
+            if (features & 0x00010000) { x += '<div class="form-floating mb-2"><input id=p4hint type=text class="form-control" maxlength=256 placeholder="Password hint"></input><label for=p4hint>Password hint</label></div>'; }
 
             if (passRequirements) {
                 var r = [], rc = 0;
@@ -17636,7 +17667,7 @@
                 if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>' + format("Requirements: {0}.", r.join(', ')) + '</div>'; }
             }
 
-            x += '<div><label><input id=p4resetNextLogin type=checkbox />' + "Force password reset on next login." + '</label></div>';
+            x += '<div><label><input id=p4resetNextLogin class="form-check-input me-2" type=checkbox />' + "Force password reset on next login." + '</label></div>';
             if (multiFactor == 1) { x += '<div><label><input id=p4twoFactorRemove type=checkbox />' + "Remove all 2nd factor authentication." + '</label></div>'; }
             setDialogMode(2, format("Change Password for {0}", EscapeHtml(currentUser.name)), 3, p30showUserChangePassDialogEx, x, multiFactor);
             p30showUserChangePassDialogValidate();
@@ -17666,7 +17697,7 @@
 
         function p30showDeleteUserDialog() {
             if (xxdialogMode) return;
-            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
+            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
             p10validateDeleteNodeDialog();
         }
 
@@ -17681,8 +17712,8 @@
             // Display common device groups
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (meshes[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newDeviceGroup = true; } }
-            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device Group" + '</a>'; }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Device Groups" + '</th><th scope=col style=text-align:left></th></tr>';
+            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</a>'; }
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 var omeshes = [];
                 for (var i in currentUser.links) { if (i.startsWith('mesh/')) { if (meshes[i] != null) { omeshes.push(meshes[i]); } } }
@@ -17714,9 +17745,9 @@
                         userGroupCount++;
                         if ((currentUser.links == null) || (currentUser.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p30showAddUserGroupDialog()" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add User Group" + '</a>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p30showAddUserGroupDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
                 }
-                x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "User Group Memberships" + '</th><th scope=col style=text-align:left></th></tr>';
+                x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "User Group Memberships" + '</th><th scope=col></th></tr>';
                 if (currentUser.links) {
                     var ougroups = [];
                     for (var i in currentUser.links) { if (i.startsWith('ugrp/')) { if (usergroups[i] != null) { ougroups.push(usergroups[i]); } } }
@@ -17728,7 +17759,7 @@
                             groupname = EscapeHtml(group.name);
                             if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
                         }
-                        if ((group.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((group.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>'; }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User Group" + '" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                     }
                 }
@@ -17739,8 +17770,8 @@
             // Display common devices
             count = 1;
             x += '<br />';
-            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><img src=images/icon-addnew.png border=0 height=12 width=12> ' + "Add Device" + '</a>'; }
-            x += '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Common Devices" + '</th><th scope=col style=text-align:left></th></tr>';
+            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>'; }
+            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 // Sort the list of devices to display
                 var nodelist = [];
@@ -17806,7 +17837,7 @@
                 if ((usergroups[i].membershipType != null) || (usergroups[i]._id.split('/')[1] != currentUser._id.split('/')[1])) continue;
                 if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; }
             }
-            var x = addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp2groupid style=width:100%>' + y + '</select></div>');
+            var x = addHtmlValue("User Group", '<div><select id=dp2groupid class=form-select>' + y + '</select></div>', ['col-md-4', 'col-md-8']);
             setDialogMode(2, "Add Membership", 3, p30showAddUserGroupDialogEx, x);
             Q('dp2groupid').focus();
             return false;
@@ -17842,7 +17873,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class=p3eventsTable cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
@@ -17880,7 +17911,7 @@
                         msg = '<span title="' + "This is a guest sharing session" + '">' + EscapeHtml(event.guestname) + '</span> &rarr; ' + msg;
                     }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -18147,20 +18178,20 @@
             var options = { 1: "Remote Sessions", 2: "User Traffic Usage", 3: "User Logins" }
             if (userinfo.siteadmin == 0xFFFFFFFF) { options[4] = "Database Records"; }
             for (var i in options) { y += '<option value=' + i + ((settings.type == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Type", '<select id=d2reportType style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Type", '<select id=d2reportType class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
 
             x += '<div id=d2GroupByDiv style=display:none>';
             y = '';
             var options = { 1: "User", 2: "Device", 3: "Day" }
             for (var i in options) { y += '<option value=' + i + ((settings.groupBy == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Group by", '<select id=d2groupBy style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Group by", '<select id=d2groupBy class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2GroupByDiv2 style=display:none>';
             y = '';
             var options = { 1: "User", 3: "Day" }
             for (var i in options) { y += '<option value=' + i + ((settings.groupBy2 == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Group by", '<select id=d2groupBy2 style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Group by", '<select id=d2groupBy2 class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2DeviceGroupDiv style=display:none>';
@@ -18175,11 +18206,11 @@
             if (settings.timeRange == null) { settings.timeRange = 1; }
             var options = { 1: "Last Day", 7: "Last 7 days", 30: "Last 30 days", 0: "Time range" }
             for (var i in options) { y += '<option value=' + i + ((settings.timeRange == i) ? ' selected' : '') + '>' + options[i] + '</option>'; }
-            x += addHtmlValue("Time", '<select id=d2timeRange style=float:right;width:250px onchange=generateReportDialogValidate()>' + y + '</select>');
+            x += addHtmlValue("Time", '<select id=d2timeRange class="form-select" onchange=generateReportDialogValidate()>' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2timeRangeDiv style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector class="flatpickr form-control" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
 
             x += '<div id=d2showTrafficDiv style=display:none>';
@@ -18226,7 +18257,7 @@
 
         function renderReport(r) {
             var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out", os: "Operating System", ip: "IP Address", browser: "Browser", msg: "Message", twofactor: "2nd Factor" }
-            var x = '<table style=width:100%>', firstItem;
+            var x = '<table class="table table-striped table-hover">', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by
 
@@ -18380,7 +18411,7 @@
                 }
             }
             if (f == 'msg') {
-                if (v == 107) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny1"></div>' + "Succesful login";
+                if (v == 107) return '<div style=float:left;margin-right:4px;cursor:pointer><i class="fas fa-check-circle text-success"></i></div>' + "Succesful login";
                 if (v == 108) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny2"></div>' + "Incorrect 2nd factor";
                 if (v == 109) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny4"></div>' + "Locked account";
                 if (v == 110) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny3"></div>' + "Invalid login attempt";
@@ -19785,7 +19816,7 @@
         function getUrlVars() { var j, hash, vars = [], hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); for (var i = 0; i < hashes.length; i++) { j = hashes[i].indexOf('='); if (j > 0) { vars[hashes[i].substring(0, j)] = hashes[i].substring(j + 1, hashes[i].length); } } return vars; }
         //function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
-        function addHtmlValue(t, v) { return '<div class="row mb-1"><div class=col-md-3>' + t + '</div><div class=col-md-9><b>' + v + '</b></div></div>'; }
+        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-3'}"> ${t} </div><div class="${classNames[1] || 'col-md-9'}"><b> ${v} </b></div></div>`; }
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
         function addHtmlValue3(t, v) { return '<div><b>' + t + '</b></div><div style=margin-left:16px>' + v + '</div>'; }
         function addHtmlValue4(t, v) { return '<table style=width:100%><td style=width:120px>' + t + '<td style=text-align:right><b>' + v + '</b></table>'; }
