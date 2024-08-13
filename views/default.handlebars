@@ -8740,7 +8740,16 @@
             if (noteid == null) { noteid = encodeURIComponentEx('p' + userinfo._id); }
             var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly class="form-control" style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
             if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
-            setDialogMode(2, "Notes", 3, showNotesEx, x, noteid);
+
+            setModalContent('xxAddAgent', 'Notes', x);
+            var showNotesModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showNotesModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                showNotesEx(2, noteid);
+                showNotesModal.hide();
+            };
+
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 
