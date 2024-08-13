@@ -13492,7 +13492,7 @@
             x += '</select>';
             if (serverinfo.languages && serverinfo.languages.length > 0) {
                 y += "Changing the language will require a refresh of the page." + '<br /><br />';
-                var z = '<select id=d2langselect style=width:240px><option value="*">' + "User browser value" + '</option>';
+                var z = '<select id=d2langselect style=width:240px class="form-select"><option value="*">' + "User browser value" + '</option>';
                 for (var i in serverinfo.languages) {
                     var lang = serverinfo.languages[i];
                     z += '<option value="' + lang + '"' + ((userinfo.lang == lang) ? ' selected' : '') + '>' + lang + ' - ' + (loclist[lang] ? loclist[lang] : loclistex[lang]) + '</option>';
@@ -13506,13 +13506,21 @@
                 y += '<br /><a rel="noreferrer noopener" target="_blank" href="translator.htm">' + "Help translate MeshCentral" + '</a>';
             }
 
-            setDialogMode(2, "Localization Settings", 3, account_showLocalizationSettingsEx, y);
+            setModalContent('xxAddAgent', 'Localization Settings', y);
+            var account_showLocalizationSettingsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            account_showLocalizationSettingsModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_showLocalizationSettingsEx();
+                account_showLocalizationSettingsModal.hide();
+            };
             return false;
         }
 
         function account_showLocalizationSettingsEx() {
             // Set user language
-            var lang = Q('d2langselect').value;
+            var langSelectElement = Q('d2langselect');
+            var lang = langSelectElement ? langSelectElement.value : null;
             if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
             if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
 
@@ -14772,11 +14780,18 @@
 
             if (userid == null) {
                 setModalContent('xxAddAgent', "Add Users to Device Group", x);
-
+                document.getElementById('idx_dlgOkButton').onclick = function () {
+                    p20showAddMeshUserDialogEx(3, 2);
+                    addUsersToDeviceGroupModal.hide();
+                };
                 QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
                 Q('dp20username').focus();
             } else if (userid === 1) {
                 setModalContent('xxAddAgent', (selected == null) ? "Add Device Group Permissions" : "Edit Device Group Permissions", x);
+                document.getElementById('idx_dlgOkButton').onclick = function () {
+                    p20showAddMeshUserDialogEx(3, userid);
+                    addUsersToDeviceGroupModal.hide();
+                };
                 if (selected != null) { urights = meshes[decodeURIComponent(selected)].links[currentUser._id].rights; }
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
             } else if (userid === 2) {
@@ -14821,11 +14836,6 @@
 
             var addUsersToDeviceGroupModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
             addUsersToDeviceGroupModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20showAddMeshUserDialogEx();
-                addUsersToDeviceGroupModal.hide();
-            };
 
             if (urights != -1) {
                 if (meshRightsActive) {
