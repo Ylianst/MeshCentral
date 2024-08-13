@@ -13548,9 +13548,17 @@
             x += '<input type=text class="boxsize form-control" id=d2tokenName maxlength="100" placeholder="Token Name" onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate()>';
             x += '<label for=d2tokenName>Token Name</label>';
             x += '</div>';
-
             x += '<label for=d2tokenExpire class="form-label">Expire Time</label><select class="boxsize form-select" id=d2tokenExpire>' + y + '</select>';
-            setDialogMode(2, "Create Login Token", 3, account_createLoginTokenEx, x);
+
+            setModalContent('xxAddAgent', 'Create Login Token', x);
+            var accountCreateLoginTokenModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            accountCreateLoginTokenModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_createLoginTokenEx();
+                accountCreateLoginTokenModal.hide();
+            };
+
             QE('idx_dlgOkButton', false);
             Q('d2tokenName').focus();
         }
@@ -13615,7 +13623,15 @@
             if (xxdialogMode) return false;
             var x = "Change your account email address here." + '<br /><br />';
             x += '<div class="form-floating"><input id=dp2email class="form-control" maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) placeholder=Email /> <label for=dp2email>Email</label></div>';
-            setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
+
+            setModalContent('xxAddAgent', 'Email Address Change', x);
+            var showChangeEmailModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showChangeEmailModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_changeEmail();
+                showChangeEmailModal.hide();
+            };
             if (userinfo.email != null) { Q('dp2email').value = userinfo.email; }
             account_validateEmail();
             Q('dp2email').focus();
@@ -13646,14 +13662,19 @@
             x += '<input type=password class="form-control" id=apassword2 name=apassword2 autocomplete=off placeholder="Confirm Password" onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount()>';
             x += '<label for=apassword2>Confirm Password</label>';
             x += '</div>';
-            x += '<div class="d-flex justify-content-end">';
-            x += '<button type=button id=account_dlgCancelButton class="btn btn-secondary me-2" onclick=dialogclose(0)>Cancel</button>';
-            x += '<button type=submit id=account_dlgOkButton class="btn btn-outline-primary" onclick=dialogclose(1)>OK</button>';
-            x += '</div>';
             x += '</div>';
             x += '</form>';
 
-            setDialogMode(2, "Delete Account", 0, null, x);
+            setModalContent('xxAddAgent', 'Delete Account', x);
+
+            var deleteAccountModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            deleteAccountModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                dialogclose(1);
+                deleteAccountModal.hide();
+            };
+
             account_validateDeleteAccount();
             Q('apassword1').focus();
             return false;
@@ -13697,7 +13718,16 @@
             //x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             //x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
             //x += '</div><br /></form>';
-            setDialogMode(2, "Change Password", 3, account_showChangePasswordEx, x);
+
+            setModalContent('xxAddAgent', 'Change Password', x);
+            var changePasswordModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            changePasswordModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_showChangePasswordEx();
+                changePasswordModal.hide();
+            };
+
             Q('apassword0').focus();
             account_validateNewPassword();
             return false;
