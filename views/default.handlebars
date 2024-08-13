@@ -13269,7 +13269,16 @@
             if (xxdialogMode) return;
             var user = (mode == 0) ? userinfo : currentUser;
             var x = '<input id=p2file type=file class="form-control" accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;box-shadow: 0px 0px 15px #000" onclick=account_canvasClick() /></div>';
-            setDialogMode(2, "Manage Account Image", 7, account_manageImageEx2, x, user._id);
+
+            setModalContent('xxAddAgent', 'Manage Account Image', x);
+            var manageAccountImageModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            manageAccountImageModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_manageImageEx2();
+                manageAccountImageModal.hide();
+            };
+
             var ctx = Q('p2canvas').getContext('2d');
             if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
             var arg = '';
