@@ -13571,7 +13571,16 @@
             x += '<div class="form-check"><label><input id=p2notifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
             x += '<div class="form-check"><label><input id=p2notifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
             x += '<div class="form-check"><label><input id=p2notifyIntelAmtKvmActions class="form-check-input" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
-            setDialogMode(2, "Notification Settings", 3, account_showAccountNotifySettingsEx, x);
+
+            setModalContent('xxAddAgent', 'Notification Settings', x);
+            var notificationSettingsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            notificationSettingsModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_showAccountNotifySettingsEx();
+                notificationSettingsModal.hide();
+            };
+
             var n = getstore('notifications', 0);
             Q('p2notifyPlayNotifySound').checked = (n & 1);
             Q('p2notifyIntelDeviceConnect').checked = (n & 2);
