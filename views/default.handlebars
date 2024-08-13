@@ -12469,7 +12469,13 @@
                     }
                 }
                 x += '</div>';
-                setDialogMode(2, "Event Details", 9, null, x);
+
+                setModalContent('xxAddAgent', 'Event Details', x);
+                var eventDetailsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                eventDetailsModal.show();
+                document.getElementById('idx_dlgOkButton').onclick = function () {
+                    eventDetailsModal.hide();
+                };
             }
         }
 
