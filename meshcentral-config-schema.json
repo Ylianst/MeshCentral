@@ -2225,12 +2225,12 @@
               "TlsConnections": {
                 "type": "boolean",
                 "default": true,
-                "description": "When set to false, MeshCentral will use TLS to connect to Intel AMT, this is not recommended."
+                "description": "When set to false, MeshCentral will NOT use TLS to connect to Intel AMT, this is not recommended."
               },
               "TlsAcmActivation": {
                 "type": "boolean",
                 "default": false,
-                "description": "When set to false, MeshCentral will not attempt a TLS ACM activation on Intel AMT v14+"
+                "description": "When set to true, MeshCentral will attempt a TLS ACM activation on Intel AMT v14+"
               },
               "AdminAccounts": {
                 "description": "List of username and passwords to try when connecting to Intel AMT.",

@@ -13700,7 +13700,7 @@
             p20editMeshAmtChange();
 
             // Set the current Intel AMT policy
-            if (currentMesh.amt && (currentMesh.amt.type == 2) || (currentMesh.amt.type == 3)) {
+            if (currentMesh.amt && ((currentMesh.amt.type == 2) || (currentMesh.amt.type == 3))) {
                 Q('dp20amtpolicypass').value = currentMesh.amt.password;
                 if ((currentMesh.amt.type == 2) || (currentMesh.amt.type == 3)) {
                     if (currentMesh.amt.badpass != null) { Q('dp20amtbadpass').value = currentMesh.amt.badpass; }
