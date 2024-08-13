@@ -1965,7 +1965,7 @@
                     <div class="modal-body" id="xxAddAgentBody">
                         <!-- The body content will be dynamically populated -->
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer" id="xxAddAgentFooter">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="idx_dlgCancelButton"
                             onclick="dialogclose(0)">Cancel</button>
                         <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton"
@@ -14048,7 +14048,16 @@
             x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=' + "OK" + ' style=float:right;width:80px onclick=dialogclose(1)>';
             x += '</div><br /><br /></form>';
-            setDialogMode(2, "Restore Server", 0, null, x);
+
+            setModalContent('xxAddAgent', 'Restore Server', x);
+            var serverBackupRestoreModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            serverBackupRestoreModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                serverBackupRestoreModal.hide();
+            };
+
+            QV('xxAddAgentFooter', false);
             account_validateServerRestore();
             return false;
         }
