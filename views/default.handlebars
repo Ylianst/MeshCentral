@@ -8746,7 +8746,16 @@
             if (noteid == null) { noteid = encodeURIComponentEx('p' + userinfo._id); }
             var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly class="form-control" style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
             if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
-            setDialogMode(2, "Notes", 3, showNotesEx, x, noteid);
+
+            setModalContent('xxAddAgent', 'Notes', x);
+            var showNotesModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showNotesModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                showNotesEx(2, noteid);
+                showNotesModal.hide();
+            };
+
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
 
@@ -13489,7 +13498,7 @@
             x += '</select>';
             if (serverinfo.languages && serverinfo.languages.length > 0) {
                 y += "Changing the language will require a refresh of the page." + '<br /><br />';
-                var z = '<select id=d2langselect style=width:240px><option value="*">' + "User browser value" + '</option>';
+                var z = '<select id=d2langselect style=width:240px class="form-select"><option value="*">' + "User browser value" + '</option>';
                 for (var i in serverinfo.languages) {
                     var lang = serverinfo.languages[i];
                     z += '<option value="' + lang + '"' + ((userinfo.lang == lang) ? ' selected' : '') + '>' + lang + ' - ' + (loclist[lang] ? loclist[lang] : loclistex[lang]) + '</option>';
@@ -13503,13 +13512,21 @@
                 y += '<br /><a rel="noreferrer noopener" target="_blank" href="translator.htm">' + "Help translate MeshCentral" + '</a>';
             }
 
-            setDialogMode(2, "Localization Settings", 3, account_showLocalizationSettingsEx, y);
+            setModalContent('xxAddAgent', 'Localization Settings', y);
+            var account_showLocalizationSettingsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            account_showLocalizationSettingsModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_showLocalizationSettingsEx();
+                account_showLocalizationSettingsModal.hide();
+            };
             return false;
         }
 
         function account_showLocalizationSettingsEx() {
             // Set user language
-            var lang = Q('d2langselect').value;
+            var langSelectElement = Q('d2langselect');
+            var lang = langSelectElement ? langSelectElement.value : null;
             if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
             if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
 
@@ -13537,9 +13554,17 @@
             x += '<input type=text class="boxsize form-control" id=d2tokenName maxlength="100" placeholder="Token Name" onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate()>';
             x += '<label for=d2tokenName>Token Name</label>';
             x += '</div>';
-
             x += '<label for=d2tokenExpire class="form-label">Expire Time</label><select class="boxsize form-select" id=d2tokenExpire>' + y + '</select>';
-            setDialogMode(2, "Create Login Token", 3, account_createLoginTokenEx, x);
+
+            setModalContent('xxAddAgent', 'Create Login Token', x);
+            var accountCreateLoginTokenModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            accountCreateLoginTokenModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_createLoginTokenEx();
+                accountCreateLoginTokenModal.hide();
+            };
+
             QE('idx_dlgOkButton', false);
             Q('d2tokenName').focus();
         }
@@ -13560,7 +13585,16 @@
             x += '<div class="form-check"><label><input id=p2notifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
             x += '<div class="form-check"><label><input id=p2notifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
             x += '<div class="form-check"><label><input id=p2notifyIntelAmtKvmActions class="form-check-input" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
-            setDialogMode(2, "Notification Settings", 3, account_showAccountNotifySettingsEx, x);
+
+            setModalContent('xxAddAgent', 'Notification Settings', x);
+            var notificationSettingsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            notificationSettingsModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_showAccountNotifySettingsEx();
+                notificationSettingsModal.hide();
+            };
+
             var n = getstore('notifications', 0);
             Q('p2notifyPlayNotifySound').checked = (n & 1);
             Q('p2notifyIntelDeviceConnect').checked = (n & 2);
@@ -13595,7 +13629,15 @@
             if (xxdialogMode) return false;
             var x = "Change your account email address here." + '<br /><br />';
             x += '<div class="form-floating"><input id=dp2email class="form-control" maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) placeholder=Email /> <label for=dp2email>Email</label></div>';
-            setDialogMode(2, "Email Address Change", 3, account_changeEmail, x);
+
+            setModalContent('xxAddAgent', 'Email Address Change', x);
+            var showChangeEmailModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showChangeEmailModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_changeEmail();
+                showChangeEmailModal.hide();
+            };
             if (userinfo.email != null) { Q('dp2email').value = userinfo.email; }
             account_validateEmail();
             Q('dp2email').focus();
@@ -13626,14 +13668,19 @@
             x += '<input type=password class="form-control" id=apassword2 name=apassword2 autocomplete=off placeholder="Confirm Password" onchange=account_validateDeleteAccount() onkeyup=account_validateDeleteAccount()>';
             x += '<label for=apassword2>Confirm Password</label>';
             x += '</div>';
-            x += '<div class="d-flex justify-content-end">';
-            x += '<button type=button id=account_dlgCancelButton class="btn btn-secondary me-2" onclick=dialogclose(0)>Cancel</button>';
-            x += '<button type=submit id=account_dlgOkButton class="btn btn-outline-primary" onclick=dialogclose(1)>OK</button>';
-            x += '</div>';
             x += '</div>';
             x += '</form>';
 
-            setDialogMode(2, "Delete Account", 0, null, x);
+            setModalContent('xxAddAgent', 'Delete Account', x);
+
+            var deleteAccountModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            deleteAccountModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                dialogclose(1);
+                deleteAccountModal.hide();
+            };
+
             account_validateDeleteAccount();
             Q('apassword1').focus();
             return false;
@@ -13677,7 +13724,16 @@
             //x += '<input id=account_dlgCancelButton type=button value=Cancel style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             //x += '<input id=account_dlgOkButton type=submit value=OK style="float:right;width:80px" onclick=dialogclose(1)>';
             //x += '</div><br /></form>';
-            setDialogMode(2, "Change Password", 3, account_showChangePasswordEx, x);
+
+            setModalContent('xxAddAgent', 'Change Password', x);
+            var changePasswordModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            changePasswordModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                account_showChangePasswordEx();
+                changePasswordModal.hide();
+            };
+
             Q('apassword0').focus();
             account_validateNewPassword();
             return false;
@@ -14759,11 +14815,18 @@
 
             if (userid == null) {
                 setModalContent('xxAddAgent', "Add Users to Device Group", x);
-
+                document.getElementById('idx_dlgOkButton').onclick = function () {
+                    p20showAddMeshUserDialogEx(3, 2);
+                    addUsersToDeviceGroupModal.hide();
+                };
                 QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
                 Q('dp20username').focus();
             } else if (userid === 1) {
                 setModalContent('xxAddAgent', (selected == null) ? "Add Device Group Permissions" : "Edit Device Group Permissions", x);
+                document.getElementById('idx_dlgOkButton').onclick = function () {
+                    p20showAddMeshUserDialogEx(3, userid);
+                    addUsersToDeviceGroupModal.hide();
+                };
                 if (selected != null) { urights = meshes[decodeURIComponent(selected)].links[currentUser._id].rights; }
                 if (urights == 0xFFFFFFFF) { Q('p20fulladmin').checked = true; urights = -1; }
             } else if (userid === 2) {
@@ -14808,11 +14871,6 @@
 
             var addUsersToDeviceGroupModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
             addUsersToDeviceGroupModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20showAddMeshUserDialogEx();
-                addUsersToDeviceGroupModal.hide();
-            };
 
             if (urights != -1) {
                 if (meshRightsActive) {
