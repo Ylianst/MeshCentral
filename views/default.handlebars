@@ -1447,8 +1447,8 @@
                                 <div id=p15coreName title="Information about current core running on this agent"></div>
                                 <input type=button id=p15uploadCore value="Agent Action" onclick=p15uploadCore(event)
                                     title="Change the agent Java Script code module" />
-                                <img onclick=p15downloadConsoleText() style="cursor:pointer;margin-top:6px"
-                                    title="Download console text" src="images/link4.png" />
+                                <i onclick=p15downloadConsoleText() style="cursor:pointer;margin-top:6px"
+                                    title="Download console text" class="fas fa-download"></i>
                             </div>
                             <div id="p15statetext"></div>
                         </td>
@@ -1470,7 +1470,7 @@
                             <table style="width:100%">
                                 <tr>
                                     <td style="width:99%">
-                                        <input id=p15consoleText style=width:100% onkeyup=p15consoleSend(event)
+                                        <input id=p15consoleText class="form-control" onkeyup=p15consoleSend(event)
                                             onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
                                     </td>
                                     <td>&nbsp;</td>
@@ -1482,7 +1482,7 @@
                                         </select>
                                     </td>
                                     <td style="width:1%"><input id="id_p15consoleClear" type="button"
-                                            class="bottombutton" value="Clear" onclick="p15consoleClear()" /></td>
+                                            class="btn btn-secondary bottombutton" value="Clear" onclick="p15consoleClear()" /></td>
                                 </tr>
                             </table>
                         </td>
@@ -1731,26 +1731,30 @@
                     <div class="toright2">
                         <select id=p40server style="display:none" onchange=updateServerTimelineStats()>
                         </select>&nbsp;
-                        <select id=p40type onchange=updateServerTimelineStats()>
-                            <option value=0>Connections</option>
-                            <option value=1>Memory</option>
-                            <option value=5>CPU</option>
-                            <option value=3>Inbound Traffic</option>
-                            <option value=4>Outbound Traffic</option>
-                        </select>&nbsp;
-                        <select id=p40time onchange=updateServerTimelineHours()>
-                            <option value=3>Last 3 hours</option>
-                            <option value=8>Last 8 hours</option>
-                            <option value=24>Last day</option>
-                            <option value=168>Last week</option>
-                            <option value=720>Last 30 days</option>
-                        </select>&nbsp;
-                        <img src=images/link4.png height=10 width=10 title="Download data points (.csv)"
-                            style=cursor:pointer onclick=p40downloadEvents()>&nbsp;
+                        <div class="d-inline-flex align-items-center">
+                            <select id=p40type class="form-select" onchange=updateServerTimelineStats()>
+                                <option value=0>Connections</option>
+                                <option value=1>Memory</option>
+                                <option value=5>CPU</option>
+                                <option value=3>Inbound Traffic</option>
+                                <option value=4>Outbound Traffic</option>
+                            </select>&nbsp;
+                        </div>
+                        <div class="d-inline-flex align-items-center">
+                            <select id=p40time class="form-select" onchange=updateServerTimelineHours()>
+                                <option value=3>Last 3 hours</option>
+                                <option value=8>Last 8 hours</option>
+                                <option value=24>Last day</option>
+                                <option value=168>Last week</option>
+                                <option value=720>Last 30 days</option>
+                            </select>&nbsp;
+                        </div>
+                        <i class="fas fa-download" title="Download data points (.csv)"
+                            style=cursor:pointer onclick=p40downloadEvents()></i>&nbsp;
                     </div>
                     <div>
-                        <input value="Refresh" type="button" onclick="refreshServerTimelineStats()" />
-                        &nbsp;<label><input id=p40log type="checkbox"
+                        <input value="Refresh" type="button" class="btn btn-outline-secondary" onclick="refreshServerTimelineStats()" />
+                        &nbsp;<label><input id=p40log type="checkbox" class="form-check-input me-2"
                                 onclick="updateServerTimelineHours()" />Log-X</label>
                     </div>
                 </div>
@@ -1762,19 +1766,21 @@
                 </div>
                 <div class="areaHead">
                     <div class="toright2">
-                        Show
-                        <select id=p41limitdropdown onchange=displayServerTrace()>
-                            <option value=100>Last 100</option>
-                            <option value=250>Last 250</option>
-                            <option value=500>Last 500</option>
-                            <option value=1000>Last 1000</option>
-                        </select>
-                        <input value="Clear" type="button" onclick="clearServerTracing()" />
-                        <img src=images/link4.png height=10 width=10 title="Download trace (.csv)" style=cursor:pointer
-                            onclick=p41downloadServerTrace()>&nbsp;
+                        <div class="d-inline-flex align-items-center">
+                            <label for="p41limitdropdown" class="form-label me-2">Show</label>
+                            <select id=p41limitdropdown class="form-select" onchange=displayServerTrace()>
+                                <option value=100>Last 100</option>
+                                <option value=250>Last 250</option>
+                                <option value=500>Last 500</option>
+                                <option value=1000>Last 1000</option>
+                            </select>
+                        </div>
+                        <input value="Clear" type="button" class="btn btn-secondary" onclick="clearServerTracing()" />
+                        <i class="fas fa-download" title="Download trace (.csv)" style=cursor:pointer
+                            onclick=p41downloadServerTrace()></i>&nbsp;
                     </div>
                     <div>
-                        <input value="Tracing" type="button" onclick="setServerTracing()" />
+                        <input value="Tracing" type="button" class="btn btn-secondary" onclick="setServerTracing()" />
                         <span id="p41traceStatus">None</span>
                     </div>
                 </div>
@@ -14452,17 +14458,7 @@
             if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
             x += '<label class=form-check-label><input id=p20check type=checkbox class="form-check-input m-1" onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
-
-            setModalContent('xxAddAgent', 'Delete Group', x);
-
-            var deleteGroupModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            deleteGroupModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20showDeleteMeshDialogEx();
-                deleteGroupModal.hide();
-            };
-
+            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
             p20validateDeleteMeshDialog();
             return false;
         }
