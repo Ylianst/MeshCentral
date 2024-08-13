@@ -18296,7 +18296,13 @@
             x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox id=d2showTraffic ' + ((settings.showTraffic) ? 'checked' : '') + '>' + "Show Traffic" + '</label><div>');
             x += '</div>';
 
-            setDialogMode(2, "Generate Report", 3, generateReportDialogEx, x);
+            setModalContent('xxAddAgent', 'Generate Report', x);
+            var generateReportModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            generateReportModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                generateReportDialogEx();
+                generateReportModal.hide();
+            };
             generateReportDialogValidate();
 
             var lastWeek = new Date();
