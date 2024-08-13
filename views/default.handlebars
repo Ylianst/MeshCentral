@@ -699,26 +699,31 @@
                                 onclick=p3showReportDialog() />
                         </td>
                         <td class="auto-style1">
-                            Filter
-                            <select id=p3filterevents onchange=refreshEvents()>
-                                <option value="">All Logs</option>
-                                <option value=agentlog>Agent Logs</option>
-                                <option value=relaylog>Relay Logs</option>
-                                <option value=manual>Manual Logs</option>
-                                <option value=runcommands>Run Command Logs</option>
-                                <option value=batchupload>Batch Upload Logs</option>
-                                <option value=changenode>Change Node Logs</option>
-                                <option value=removenode>Remove Node Logs</option>
-                            </select>
-                            Show
-                            <select id=p3limitdropdown onchange=refreshEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
-                                <option value="">No limit</option>
-                            </select>&nbsp;
+                            <div class="d-inline-flex align-items-center">
+                                <label for="p3filterevents" class="form-label me-2">Filter</label>
+                                <select id=p3filterevents class="form-select" onchange=refreshEvents()>
+                                    <option value="">All Logs</option>
+                                    <option value=agentlog>Agent Logs</option>
+                                    <option value=relaylog>Relay Logs</option>
+                                    <option value=manual>Manual Logs</option>
+                                    <option value=runcommands>Run Command Logs</option>
+                                    <option value=batchupload>Batch Upload Logs</option>
+                                    <option value=changenode>Change Node Logs</option>
+                                    <option value=removenode>Remove Node Logs</option>
+                                </select>
+                            </div>
+
+                            <div class="d-inline-flex align-items-center">
+                                <label for="p3limitdropdown" class="form-label me-2">Show</label>
+                                <select id=p3limitdropdown class="form-select" onchange=refreshEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                    <option value="">No limit</option>
+                                </select>&nbsp;
+                            </div>
                             <a href=# onclick=p3showDownloadEventsDialog(2)><i class="fas fa-download" title="Download Events"></i></a>&nbsp;
                         </td>
                         <td class="h2"></td>
@@ -1687,28 +1692,31 @@
                         <td class="h1"></td>
                         <!--<td>&nbsp;<input type=button onclick=refreshUsersEvents() value="Refresh" /></td>-->
                         <td class="auto-style1">
-                            Filter
-                            <select id=p31filterevents onchange=refreshUsersEvents()>
-                                <option value="">All Logs</option>
-                                <option value=agentlog>Agent Logs</option>
-                                <option value=relaylog>Relay Logs</option>
-                                <option value=manual>Manual Logs</option>
-                                <option value=runcommands>Run Command Logs</option>
-                                <option value=batchupload>Batch Upload Logs</option>
-                                <option value=changenode>Change Node Logs</option>
-                                <option value=removenode>Remove Node Logs</option>
-                            </select>
-                            Show
-                            <select id=p31limitdropdown onchange=refreshUsersEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
-                                <option value="">No limit</option>
-                            </select>
-                            <a href=# onclick=p3showDownloadEventsDialog(3)><img src=images/link4.png height=10 width=10
-                                    title="Download Events" style=cursor:pointer></a>&nbsp;
+                            <div class="d-inline-flex align-items-center">
+                                <label for="p31filterevents" class="form-label me-2">Filter</label>
+                                <select id=p31filterevents class="form-select" onchange=refreshUsersEvents()>
+                                    <option value="">All Logs</option>
+                                    <option value=agentlog>Agent Logs</option>
+                                    <option value=relaylog>Relay Logs</option>
+                                    <option value=manual>Manual Logs</option>
+                                    <option value=runcommands>Run Command Logs</option>
+                                    <option value=batchupload>Batch Upload Logs</option>
+                                    <option value=changenode>Change Node Logs</option>
+                                    <option value=removenode>Remove Node Logs</option>
+                                </select>
+                            </div>
+                            <div class="d-inline-flex align-items-center">
+                                <label for="p31limitdropdown" class="form-label me-2">Show</label>
+                                <select id=p31limitdropdown class="form-select" onchange=refreshUsersEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                    <option value="">No limit</option>
+                                </select>
+                            </div>
+                            <a href=# onclick=p3showDownloadEventsDialog(3)><i class="fas fa-download" title="Download Events" style=cursor:pointer></i></a>&nbsp;
                         </td>
                         <td class="h2"></td>
                     </tr>
@@ -14657,7 +14665,7 @@
                 } else {
                     y += '<option value=' + selected + '>' + EscapeHtml(meshes[decodeURIComponent(selected)].name) + '</option>';
                 }
-                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid style=width:100%' + (selected ? ' disabled' : '') + '>' + y + '</select></div>');
+                x += addHtmlValue("Device Group", '<div style=width:230px;margin:0;padding:0><select onchange=p20validateAddMeshUserDialog() id=dp2groupid class=form-select' + (selected ? ' disabled' : '') + '>' + y + '</select></div>');
             } else if (userid == 2) {
                 if (usergroups == null) return;
                 var y = '';
@@ -16965,7 +16973,7 @@
             x += '</table></div><br />';
 
             if ((userinfo.siteadmin & 256) != 0) {
-                x += '<input type=button value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponentEx(group._id) + '") />';
+                x += '<input type=button class="btn btn-outline-primary" value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponentEx(group._id) + '") />';
             }
 
             // Setup the panel
