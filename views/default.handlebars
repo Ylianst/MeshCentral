@@ -14088,11 +14088,6 @@
             var serverBackupRestoreModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
             serverBackupRestoreModal.show();
 
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                serverBackupRestoreModal.hide();
-                QV('xxAddAgentFooter', true);
-            };
-
             QV('xxAddAgentFooter', false);
             account_validateServerRestore();
             return false;
@@ -19338,7 +19333,7 @@
             xxdialogTag = tag;
 
             // Reset dialog size
-            QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
+            //QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
 
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
