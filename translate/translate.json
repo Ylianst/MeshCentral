@@ -55917,6 +55917,13 @@
       ]
     },
     {
+      "en": "PNG",
+      "xloc": [
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7encoding->3",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->9->d7encoding->3"
+      ]
+    },
+    {
       "bs": "GURANJE",
       "ca": "EMPUJAR",
       "cs": "TAM",
@@ -75131,6 +75138,13 @@
       ]
     },
     {
+      "en": "TIFF",
+      "xloc": [
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7encoding->5",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->9->d7encoding->5"
+      ]
+    },
+    {
       "bs": "TLS",
       "ca": "TLS",
       "cs": "TLS",
@@ -83778,8 +83792,8 @@
       "ca": "WEB",
       "en": "WEBP",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7encoding->3",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->9->d7encoding->3"
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->6->3->d7encoding->7",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->9->d7encoding->7"
       ]
     },
     {
