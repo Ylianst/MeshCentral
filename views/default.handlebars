@@ -15637,15 +15637,52 @@
         function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format("{0} bytes", size); }
         function p5folderup(x) { if (x == null) { filetreelocation.pop(); } else { while (filetreelocation.length > x) { filetreelocation.pop(); } } updateFiles(); return false; }
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); return false; }
-        function p5createfolder() { setDialogMode(2, "New Folder", 3, p5createfolderEx, '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) />'); focusTextBox('p5renameinput'); p5fileNameCheck(); }
+        function p5createfolder() { 
+            setModalContent('xxAddAgent', 'New Folder', '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) />');
+            var createFolderModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            createFolderModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p5createfolderEx();
+                createFolderModal.hide();
+            };
+            focusTextBox('p5renameinput');
+            p5fileNameCheck();
+        }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value }); }
         function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p5recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles, rec: Q('p5recdeleteinput').checked }); }
-        function p5renamefile() { var renamefile, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } } setDialogMode(2, "Rename", 3, p5renamefileEx, '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) value="' + renamefile + '" />', { action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile }); focusTextBox('p5renameinput'); p5fileNameCheck(); }
+        function p5renamefile() {
+             var renamefile, checkboxes = document.getElementsByName('fc'); 
+             for (var i = 0; i < checkboxes.length; i++) { 
+                if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } 
+             }
+
+             setModalContent('xxAddAgent', 'Rename', '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) value="' + renamefile + '" />');
+             var renameFileModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+             renameFileModal.show();
+
+             document.getElementById('idx_dlgOkButton').onclick = function () {
+                p5renamefileEx();
+                renameFileModal.hide();
+             };
+
+             focusTextBox('p5renameinput'); p5fileNameCheck();  
+        }
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
-        function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></form>'); p5updateUploadDialogOk('p5uploadinput'); }
+        function p5uploadFile() { 
+            setModalContent('xxAddAgent', 'Upload File', '<form method = post enctype = multipart / form - data action = uploadfile.ashx target = fileUploadFrame ><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></ >');
+            var uploadFileModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            uploadFileModal.show();
+
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p5uploadFileEx();
+                uploadFileModal.hide();
+            };
+            p5updateUploadDialogOk('p5uploadinput');
+        }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
         function p5GetFileInfo(name) { var filetreex = filetree; for (var i in filetreelocation) { if ((filetreex.f != null) && (filetreex.f[filetreelocation[i]] != null)) { filetreex = filetreex.f[filetreelocation[i]]; } } return filetreex.f[name]; }
         function p5updateUploadDialogOk() {
