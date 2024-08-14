@@ -3362,10 +3362,13 @@
                         x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
                         x += '</div>';
                         if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
-                            setDialogMode(2, "MeshCentral Version", 1, null, x);
+                            setModalContent('xxAddAgent', 'MeshCentral Version', x);
                         } else {
                             x += '<hr />' + "Check and click OK to start server self-update.";
-                            setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x, message.tags);
+                            setModalContent('xxAddAgent', 'MeshCentral Version', x);
+                            document.getElementById('idx_dlgOkButton').onclick = function () {
+                                server_showVersionDlgEx(2, message.tags);
+                            };
                             server_showVersionDlgUpdate();
                         }
                     }
@@ -14068,8 +14071,14 @@
 
         function server_showVersionDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "MeshCentral Version", 1, null, "Loading...", 'MeshCentralServerUpdate');
+            xxdialogMode = 2; xxdialogTag = 'MeshCentralServerUpdate';
+            setModalContent('xxAddAgent', 'MeshCentral Version', 'Loading...');
+            var showServerVersionModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                showServerVersionModal.hide();
+            };
             meshserver.send({ action: 'serverversion' });
+            showServerVersionModal.show();
             return false;
         }
 
