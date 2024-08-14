@@ -3377,12 +3377,18 @@
                 case 'servererrors': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerErrors')) {
                         if (message.data == null) {
-                            setDialogMode(2, "Server Errors", 1, null, "Server has no error log.");
+                            setModalContent('xxAddAgent', 'Server Errors', 'Server has no error log.');
                         } else {
                             var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
                             x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
                             x += '<div><label><input id=d2clearErrorsCheck type=checkbox onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
                             setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x);
+                            setModalContent('xxAddAgent', 'MeshCentral Server Errors', x);
+                            var showServerErrorsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                            document.getElementById('idx_dlgOkButton').onclick = function () {
+                                server_showErrorsDlgEx();
+                                showServerErrorsModal.hide();
+                            };
                             server_showErrorsDlgUpdate();
                         }
                     }
@@ -14058,6 +14064,7 @@
 
             document.getElementById('idx_dlgOkButton').onclick = function () {
                 serverBackupRestoreModal.hide();
+                QV('xxAddAgentFooter', true);
             };
 
             QV('xxAddAgentFooter', false);
@@ -14097,7 +14104,13 @@
 
         function server_showErrorsDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "Server Errors", 1, null, "Loading...", 'MeshCentralServerErrors');
+            xxdialogMode = 2; xxdialogTag = 'MeshCentralServerErrors';
+            setModalContent('xxAddAgent', 'Server Errors', 'Loading...');
+            var showErrorsDlgModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                showErrorsDlgModal.hide();
+            };
+            showErrorsDlgModal.show();
             meshserver.send({ action: 'servererrors' });
             return false;
         }
