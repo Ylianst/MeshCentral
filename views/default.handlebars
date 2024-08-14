@@ -1955,7 +1955,7 @@
             </div>
         </div>
         <div class="modal fade" id="xxAddAgentModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered" id="xxAddAgentModalConf">
                 <div class="modal-content">
                     <div class="modal-header" id="dialogHeader">
                         <h5 class="modal-title text-white" id="xxAddAgentTitle"></h5>
@@ -3397,16 +3397,22 @@
                 case 'serverconfig': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerConfig')) {
                         if (message.data == null) {
-                            setDialogMode(2, "Server Configuration", 1, null, "Server has no config file.");
+                            setModalContent('xxAddAgent', 'Server Configuration', 'Server has no config file.', 'extra-large');
                         } else {
-                            setDialogMode(4, "Server Configuration", 2);
+                            var x = '<input id="d4WrapButton" type="button" value="Wrap: ON" onclick="d4ToggleWrap()">';
+                            x += '<input id="d4SizeButton" type="button" value="Size: 100%" onclick="d4ToggleSize()">';
+                            x += '<input id="d4EncodingButton" type="button" value="Encoding: RAW" onclick="d4ToggleEncoding()" style="display: none;">';
+                            x += '<textarea id="d4editorarea" autocomplete="off" class="form-control" style="height: calc(-286px + 100vh); width: 100%; overflow: auto; resize: none; font-size: 100%;" readonly="readonly"></textarea>';
+                            setModalContent('xxAddAgent', 'Server Configuration', x, 'extra-large');
                             QV('d4EncodingButton', false);
-                            QS('dialog').width = 'auto';
-                            QS('dialog').bottom = '80px';
-                            QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
                             Q('d4editorarea').value = message.data;
                             Q('d4editorarea').setAttribute('readonly', 'readonly');
                         }
+                        var showServerConfigModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                        document.getElementById('idx_dlgOkButton').onclick = function () {
+                            showServerConfigModal.hide();
+                        };
+                        showServerConfigModal.show();
                     }
                     break;
                 }
@@ -6141,8 +6147,9 @@
             return false;
         }
 
-        function setModalContent(modalId, title, bodyContent) {
+        function setModalContent(modalId, title, bodyContent, size = null) {
             // Check if the modal elements exist
+            var modalConfigurableElement = document.getElementById('xxAddAgentModalConf');
             var modalTitleElement = document.getElementById(modalId + 'Title');
             var modalBodyElement = document.getElementById(modalId + 'Body');
 
@@ -6152,6 +6159,25 @@
 
                 // Set the modal body content
                 modalBodyElement.innerHTML = bodyContent;
+                // If size is provided, set the modal size class
+                if (size) {
+                    modalConfigurableElement.classList.remove('modal-sm', 'modal-lg', 'modal-xl'); // Remove any existing size classes
+                    console.log("Here"+ "size modal is "+ size);
+                    switch (size) {
+                        case 'small':
+                            modalConfigurableElement.classList.add('modal-sm');
+                            break;
+                        case 'large':
+                            modalConfigurableElement.classList.add('modal-lg');
+                            break;
+                        case 'extra-large':
+                            modalConfigurableElement.classList.add('modal-xl');
+                            break;
+                        // Add any additional size options here
+                        default:
+                            break;
+                    }
+                }
             } else {
                 console.error('Modal elements not found:', modalId + 'Title', modalId + 'Body');
             }
@@ -14120,7 +14146,7 @@
 
         function server_showConfigDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "Server Configuration", 1, null, "Loading...", 'MeshCentralServerConfig');
+            xxdialogMode = 2; xxdialogTag = 'MeshCentralServerConfig';
             meshserver.send({ action: 'serverconfig' });
             return false;
         }
