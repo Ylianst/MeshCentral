@@ -1959,11 +1959,11 @@
                 <div class="modal-content">
                     <div class="modal-header" id="dialogHeader">
                         <h5 class="modal-title text-white" id="xxAddAgentTitle"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="id_dialogclose"
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                             onclick="setDialogMode()" onkeypress="if (event.key == 'Enter') setDialogMode()"></button>
                     </div>
                     <div class="modal-body" id="xxAddAgentBody">
-                        <!-- The body content will be dynamically populated -->
+                        <!-- The body content is dynamically populated -->
                     </div>
                     <div class="modal-footer" id="xxAddAgentFooter">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="idx_dlgCancelButton"
@@ -3352,6 +3352,7 @@
                 }
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate')) {
+                        var showServerVersionModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
                         var x = '<div class=dialogText>';
                         if (!message.tags.current) { message.tags.current = "Unknown"; }
                         if (!message.tags.stable) { message.tags.stable = "Unknown"; }
@@ -3363,6 +3364,9 @@
                         x += '</div>';
                         if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
                             setModalContent('xxAddAgent', 'MeshCentral Version', x);
+                            document.getElementById('idx_dlgOkButton').onclick = function () {
+                                showServerVersionModal.hide();
+                            };
                         } else {
                             x += '<hr />' + "Check and click OK to start server self-update.";
                             setModalContent('xxAddAgent', 'MeshCentral Version', x);
@@ -3371,11 +3375,14 @@
                             };
                             server_showVersionDlgUpdate();
                         }
+                        showServerVersionModal.show();
                     }
                     break;
                 }
                 case 'servererrors': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerErrors')) {
+                        var showErrorsDlgModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                        showErrorsDlgModal.show();
                         if (message.data == null) {
                             setModalContent('xxAddAgent', 'Server Errors', 'Server has no error log.');
                         } else {
@@ -3391,6 +3398,9 @@
                             };
                             server_showErrorsDlgUpdate();
                         }
+                        document.getElementById('idx_dlgOkButton').onclick = function () {
+                            showErrorsDlgModal.hide();
+                        };
                     }
                     break;
                 }
@@ -6162,7 +6172,6 @@
                 // If size is provided, set the modal size class
                 if (size) {
                     modalConfigurableElement.classList.remove('modal-sm', 'modal-lg', 'modal-xl'); // Remove any existing size classes
-                    console.log("Here"+ "size modal is "+ size);
                     switch (size) {
                         case 'small':
                             modalConfigurableElement.classList.add('modal-sm');
@@ -6177,6 +6186,8 @@
                         default:
                             break;
                     }
+                } else {
+                    modalConfigurableElement.classList.remove('modal-sm', 'modal-lg', 'modal-xl'); // Remove any existing size classes
                 }
             } else {
                 console.error('Modal elements not found:', modalId + 'Title', modalId + 'Body');
@@ -14080,15 +14091,16 @@
             x += '<form action="/restoreserver.ashx' + ((urlargs.key) ? ('?key=' + urlargs.key) : '') + '" enctype="multipart/form-data" method="post"><div>';
             x += '<input type=hidden name=auth value=' + authCookie + '>';
             x += '<input id=account_dlgFileInput type=file name=datafile class="form-control" accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()><br /><br />';
-            x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px>';
             x += '<input id=account_dlgOkButton type=submit value=' + "OK" + ' style=float:right;width:80px onclick=dialogclose(1)>';
             x += '</div><br /><br /></form>';
 
             setModalContent('xxAddAgent', 'Restore Server', x);
             var serverBackupRestoreModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
             serverBackupRestoreModal.show();
-
-            QV('xxAddAgentFooter', false);
+            document.getElementById('account_dlgCancelButton').onclick = function () {
+                serverBackupRestoreModal.hide();
+            };
             account_validateServerRestore();
             return false;
         }
@@ -14101,12 +14113,7 @@
             if (xxdialogMode) return false;
             xxdialogMode = 2; xxdialogTag = 'MeshCentralServerUpdate';
             setModalContent('xxAddAgent', 'MeshCentral Version', 'Loading...');
-            var showServerVersionModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                showServerVersionModal.hide();
-            };
             meshserver.send({ action: 'serverversion' });
-            showServerVersionModal.show();
             return false;
         }
 
@@ -14127,11 +14134,6 @@
             if (xxdialogMode) return false;
             xxdialogMode = 2; xxdialogTag = 'MeshCentralServerErrors';
             setModalContent('xxAddAgent', 'Server Errors', 'Loading...');
-            var showErrorsDlgModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                showErrorsDlgModal.hide();
-            };
-            showErrorsDlgModal.show();
             meshserver.send({ action: 'servererrors' });
             return false;
         }
@@ -19270,7 +19272,14 @@
             //x += '<div><label><input type=checkbox id=p41c12 ' + ((serverTraceSources.indexOf('swarm') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server" + '</label></div>";
             //x += '<div><label><input type=checkbox id=p41c13 ' + ((serverTraceSources.indexOf('swarmcmd') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server Commands" + '</label></div>";
             x += '</div>';
-            setDialogMode(2, "Server Tracing", 7, setServerTracingEx, x);
+            //setDialogMode(2, "Server Tracing", 7, setServerTracingEx, x);
+            setModalContent('xxAddAgent', 'Server Tracing', x);
+            var serverTracingModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            serverTracingModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                setServerTracingEx();
+                serverTracingModal.hide();
+            };
         }
 
         function setServerTracingEx(b) {
@@ -19353,7 +19362,6 @@
         function dialogclose(x) {
             setSessionActivity();
             var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
-            setDialogMode();
             if (((b & 8) || x) && f) f(x, t);
         }
 
