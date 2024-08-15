@@ -17811,7 +17811,13 @@
 
             x += '<div><label><input id=p4resetNextLogin class="form-check-input me-2" type=checkbox />' + "Force password reset on next login." + '</label></div>';
             if (multiFactor == 1) { x += '<div><label><input id=p4twoFactorRemove type=checkbox />' + "Remove all 2nd factor authentication." + '</label></div>'; }
-            setDialogMode(2, format("Change Password for {0}", EscapeHtml(currentUser.name)), 3, p30showUserChangePassDialogEx, x, multiFactor);
+            setModalContent('xxAddAgent', format("Change Password for {0}", EscapeHtml(currentUser.name)), x);
+            var showPasswordChangeModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showPasswordChangeModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p30showUserChangePassDialogEx(3, multiFactor);
+                showPasswordChangeModal.hide();
+            };
             p30showUserChangePassDialogValidate();
             Q('p4pass1').focus();
             if (currentUser.passchange == -1) { Q('p4resetNextLogin').checked = true; }
