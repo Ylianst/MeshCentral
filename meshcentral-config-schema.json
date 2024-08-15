@@ -846,8 +846,9 @@
             },
             "zipPassword": {
               "type": "string",
-              "default": null,
-              "description": "When specified, the ZIP backups will be password protected with the zipPassword"
+              "default": "",
+              "minLength": 1,
+              "description": "When specified, the ZIP backups will be password protected with the zipPassword and the password cannot be a blank value"
             },
             "backupPath": {
               "type": "string",

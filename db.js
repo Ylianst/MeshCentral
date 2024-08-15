@@ -3092,24 +3092,30 @@ module.exports.CreateDB = function (parent, func) {
             r += 'No Settings/AutoBackup\r\n';
         } else {
             if (parent.config.settings.autobackup.backupintervalhours != null) {
+                r += 'Backup Interval (Hours): ';
                 if (typeof parent.config.settings.autobackup.backupintervalhours != 'number') { r += 'Bad backupintervalhours type\r\n'; }
-                else { r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n'; }
+                else { r += parent.config.settings.autobackup.backupintervalhours + '\r\n'; }
             }
             if (parent.config.settings.autobackup.keeplastdaysbackup != null) {
+                r += 'Keep Last Backups (Days): ';
                 if (typeof parent.config.settings.autobackup.keeplastdaysbackup != 'number') { r += 'Bad keeplastdaysbackup type\r\n'; }
-                else { r += 'Keep Last Backups (Days): ' + parent.config.settings.autobackup.keeplastdaysbackup + '\r\n'; }
+                else { r += parent.config.settings.autobackup.keeplastdaysbackup + '\r\n'; }
             }
             if (parent.config.settings.autobackup.zippassword != null) {
-                if (typeof parent.config.settings.autobackup.zippassword != 'string') { r += 'Bad zippassword type\r\n'; }
-                else { r += 'ZIP Password Set\r\n'; }
+                r += 'ZIP Password: ';
+                if (typeof parent.config.settings.autobackup.zippassword != 'string') { r += 'Bad zippassword type, Backups will not be encrypted\r\n'; }
+                else if (parent.config.settings.autobackup.zippassword == "") { r += 'Blank, Backups will not be encrypted\r\n'; }
+                else { r += 'Set\r\n'; }
             }
             if (parent.config.settings.autobackup.mongodumppath != null) {
+                r += 'MongoDump Path: ';
                 if (typeof parent.config.settings.autobackup.mongodumppath != 'string') { r += 'Bad mongodumppath type\r\n'; }
-                else { r += 'MongoDump Path: ' + parent.config.settings.autobackup.mongodumppath + '\r\n'; }
+                else { r += parent.config.settings.autobackup.mongodumppath + '\r\n'; }
             }
             if (parent.config.settings.autobackup.mysqldumppath != null) {
+                r += 'MySqlDump Path: ';
                 if (typeof parent.config.settings.autobackup.mysqldumppath != 'string') { r += 'Bad mysqldump type\r\n'; }
-                else { r += 'MySqlDump Path: ' + parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
+                else { r += parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
             }
         }
 
@@ -3376,8 +3382,14 @@ module.exports.CreateDB = function (parent, func) {
                         var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
                         if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
-                            archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                            try { 
+                                archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
+                                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                                if (func) { func('Creating encrypted ZIP'); }
+                            } catch (ex) { // registering encryption failed, so create without encryption
+                                archive = archiver('zip', { zlib: { level: 9 } });
+                                if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
+                            }
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
                         }
@@ -3414,11 +3426,13 @@ module.exports.CreateDB = function (parent, func) {
                         var archiver = require('archiver');
                         var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
-                        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
+                        try { 
+                            archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
                             archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
-                        } else {
+                            if (func) { func('Creating encrypted ZIP'); }
+                        } catch (ex) { // registering encryption failed, so create without encryption
                             archive = archiver('zip', { zlib: { level: 9 } });
+                            if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
                         }
                         output.on('close', function () {
                             obj.performingBackup = false;
@@ -3442,8 +3456,14 @@ module.exports.CreateDB = function (parent, func) {
                 var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                 var archive = null;
                 if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                    try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
-                    archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                    try { 
+                        archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
+                        archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                        if (func) { func('Creating encrypted ZIP'); }
+                    } catch (ex) { // registering encryption failed, so create without encryption
+                        archive = archiver('zip', { zlib: { level: 9 } });
+                        if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
+                    }
                 } else {
                     archive = archiver('zip', { zlib: { level: 9 } });
                 }
