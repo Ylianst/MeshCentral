@@ -14583,7 +14583,13 @@
             if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
             x += '<label class=form-check-label><input id=p20check type=checkbox class="form-check-input m-1" onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
-            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
+            setModalContent('xxAddAgent', 'Delete Group', x);
+            var showDeleteMeshModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showDeleteMeshModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p20showDeleteMeshDialogEx(3,'');
+                showDeleteMeshModal.hide();
+            };
             p20validateDeleteMeshDialog();
             return false;
         }
