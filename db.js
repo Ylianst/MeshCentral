@@ -3426,13 +3426,17 @@ module.exports.CreateDB = function (parent, func) {
                         var archiver = require('archiver');
                         var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
-                        try { 
-                            archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
-                            archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
-                            if (func) { func('Creating encrypted ZIP'); }
-                        } catch (ex) { // registering encryption failed, so create without encryption
+                        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
+                            try { 
+                                archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
+                                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                                if (func) { func('Creating encrypted ZIP'); }
+                            } catch (ex) { // registering encryption failed, so create without encryption
+                                archive = archiver('zip', { zlib: { level: 9 } });
+                                if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
+                            }
+                        } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
-                            if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
                         }
                         output.on('close', function () {
                             obj.performingBackup = false;
