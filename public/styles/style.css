@@ -549,6 +549,7 @@ body {
     padding: 3px;
     margin-right: 3px;
     cursor: pointer;
+    background-color: white; 
 }
 
 #id_dialogtitle {
@@ -3301,4 +3302,8 @@ nav .lbbuttonsel2 {
   
 .card:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.form-control {
+    border: 1px solid #adb5bd !important;
 }

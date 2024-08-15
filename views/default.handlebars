@@ -443,11 +443,11 @@
                         <option value=7>Tagged</option>
                         <option value=8>Untagged</option>
                     </select>
-                    <label class="d-flex"><input class="form-check" style="width: auto;" type=checkbox
+                    <label class="d-flex"><input class="form-check-input me-2" type=checkbox
                             id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span
                             title="Show devices operating system name">OS
                             Name</span></label>
-                    <label style="display:none"><input type=checkbox id=OnlineCheckBox
+                    <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2"
                             onclick=onOnlineCheckBox(event) /><span
                             title="Only show devices that are online">Online</span></label>
                     <span id="devsCustomUIBar"></span>
@@ -465,7 +465,7 @@
                             <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
                             <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
                             <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
-                            <label><input type="checkbox" id="autoConnectDesktopCheckbox"
+                            <label><input type="checkbox" id="autoConnectDesktopCheckbox" class="form-check-input me-2"
                                     onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                             <input id=KvmSearchInput type=search placeholder=Filter
@@ -1165,7 +1165,7 @@
                             <input id="DeskType" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type"
                                 onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
                             <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input
-                                        id="DeskControl" type="checkbox" onkeypress="return false"
+                                        id="DeskControl" type="checkbox" class="form-check-input me-2" onkeypress="return false"
                                         onkeydown="return false"
                                         onclick="toggleKvmControl()" />Input</span></label>&nbsp;
                         </div>
@@ -3364,8 +3364,8 @@
                         if (!message.tags.latest) { message.tags.latest = "Unknown"; }
                         x += addHtmlValue2("Current Version", '<b>' + EscapeHtml(message.tags.current) + '</b>');
                         x += '<hr />';
-                        x += addHtmlValue2('<label><input id=d2updateCheck1 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.stable == "Unknown") || (message.tags.current == message.tags.stable) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Stable Version" + '</label>', '<b>' + EscapeHtml(message.tags.stable) + '</b>');
-                        x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
+                        x += addHtmlValue2('<label><input id=d2updateCheck1 type=checkbox class="form-check-input me-2" onclick=server_showVersionDlgUpdate()' + (((message.tags.stable == "Unknown") || (message.tags.current == message.tags.stable) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Stable Version" + '</label>', '<b>' + EscapeHtml(message.tags.stable) + '</b>');
+                        x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox class="form-check-input me-2" onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
                         x += '</div>';
                         if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
                             setModalContent('xxAddAgent', 'MeshCentral Version', x);
@@ -3390,7 +3390,7 @@
                         } else {
                             var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
                             x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
-                            x += '<div><label><input id=d2clearErrorsCheck type=checkbox onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
+                            x += '<div><label><input id=d2clearErrorsCheck type=checkbox class="form-check-input me-2" onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
                             setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x);
                             setModalContent('xxAddAgent', 'MeshCentral Server Errors', x);
                             showModal('xxAddAgentModal', 'idx_dlgOkButton', server_showErrorsDlgEx);
@@ -4203,7 +4203,7 @@
                                     if (shortname.length > 20) { shortname = shortname.substring(0, 20) + '...'; }
                                     var str = '<b title="' + EscapeHtml(r.hostname) + '">' + EscapeHtml(shortname) + '</b> - v' + r.ver;
                                     if (r.state == 2) { if (r.tls == 1) { str += " with TLS."; } else { str += " without TLS."; } } else { str += ' not activated.'; }
-                                    x += '<div style=width:100%;margin-bottom:2px;background-color:lightgray><div style=padding:4px><div style=display:inline-block;margin-right:5px><input class=DevScanCheckbox name=dp1checkbox tag="' + EscapeHtml(i) + '" type=checkbox onclick=addAmtScanToMeshCheckbox() /></div><div class=j1 style=display:inline-block></div><div style=display:inline-block;margin-left:5px;overflow-x:auto;white-space:nowrap>' + str + '</div></div></div>';
+                                    x += '<div style=width:100%;margin-bottom:2px;background-color:lightgray><div style=padding:4px><div style=display:inline-block;margin-right:5px><input class="DevScanCheckbox form-check-input me-2" name=dp1checkbox tag="' + EscapeHtml(i) + '" type=checkbox onclick=addAmtScanToMeshCheckbox() /></div><div class=j1 style=display:inline-block></div><div style=display:inline-block;margin-left:5px;overflow-x:auto;white-space:nowrap>' + str + '</div></div></div>';
                                 }
                                 // If no results where found, display a nice message
                                 if (x == '') { x = '<div style=width:100%;text-align:center;margin-top:12px>' + "Scan returned no results." + '</div><div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Sample IP range values" + '<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>'; }
@@ -4593,22 +4593,22 @@
 
             // Display the dialog box
             var x = '';
-            x += '<label><input id=d2c8 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('agtype') >= 0) ? ' checked' : '') + '>' + "Agent Type" + '</label><br />';
-            x += '<label><input id=d2c9 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('agver') >= 0) ? ' checked' : '') + '>' + "Agent Version" + '</label><br />';
-            x += '<label><input id=d2c6 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('desc') >= 0) ? ' checked' : '') + '>' + "Device Description" + '</label><br />';
-            x += '<label><input id=d2c5 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('os') >= 0) ? ' checked' : '') + '>' + "Operating System" + '</label><br />';
-            x += '<label><input id=d2c10 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('tags') >= 0) ? ' checked' : '') + '>' + "Tags" + '</label><br />';
-            x += '<label><input id=d2c11 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsav') >= 0) ? ' checked' : '') + '>' + "Windows AV" + '</label><br />';
-            x += '<label><input id=d2c12 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) ? ' checked' : '') + '>' + "Windows Update" + '</label><br />';
-            x += '<label><input id=d2c13 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) ? ' checked' : '') + '>' + "Windows Firewall" + '</label><br />';
-            x += '<label><input id=d2c14 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) ? ' checked' : '') + '>' + "Last Boot Up Time" + '</label><br />';
-            x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0) ? ' checked' : '') + '>' + "MeshCentral Router Links" + '</label><br />';
-            x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0) ? ' checked' : '') + '>' + "Logged in users" + '</label><br />';
-            x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0) ? ' checked' : '') + '>' + "Agent IP address" + '</label><br />';
-            x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0) ? ' checked' : '') + '>' + "Server Connectivity" + '</label><br />';
-            x += '<label><input id=d2c7 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0) ? ' checked' : '') + '>' + "Last Seen" + '</label><br />';
-            x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0) ? ' checked' : '') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
-            x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0) ? ' checked' : '') + '>' + "Intel&reg; AMT state" + '</label><br />';
+            x += '<label><input id=d2c8 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('agtype') >= 0) ? ' checked' : '') + '>' + "Agent Type" + '</label><br />';
+            x += '<label><input id=d2c9 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('agver') >= 0) ? ' checked' : '') + '>' + "Agent Version" + '</label><br />';
+            x += '<label><input id=d2c6 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('desc') >= 0) ? ' checked' : '') + '>' + "Device Description" + '</label><br />';
+            x += '<label><input id=d2c5 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('os') >= 0) ? ' checked' : '') + '>' + "Operating System" + '</label><br />';
+            x += '<label><input id=d2c10 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('tags') >= 0) ? ' checked' : '') + '>' + "Tags" + '</label><br />';
+            x += '<label><input id=d2c11 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('windowsav') >= 0) ? ' checked' : '') + '>' + "Windows AV" + '</label><br />';
+            x += '<label><input id=d2c12 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) ? ' checked' : '') + '>' + "Windows Update" + '</label><br />';
+            x += '<label><input id=d2c13 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) ? ' checked' : '') + '>' + "Windows Firewall" + '</label><br />';
+            x += '<label><input id=d2c14 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) ? ' checked' : '') + '>' + "Last Boot Up Time" + '</label><br />';
+            x += '<label><input id=d2c1 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('links') >= 0) ? ' checked' : '') + '>' + "MeshCentral Router Links" + '</label><br />';
+            x += '<label><input id=d2c2 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('user') >= 0) ? ' checked' : '') + '>' + "Logged in users" + '</label><br />';
+            x += '<label><input id=d2c3 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0) ? ' checked' : '') + '>' + "Agent IP address" + '</label><br />';
+            x += '<label><input id=d2c4 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0) ? ' checked' : '') + '>' + "Server Connectivity" + '</label><br />';
+            x += '<label><input id=d2c7 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0) ? ' checked' : '') + '>' + "Last Seen" + '</label><br />';
+            x += '<label><input id=d2c15 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0) ? ' checked' : '') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
+            x += '<label><input id=d2c17 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0) ? ' checked' : '') + '>' + "Intel&reg; AMT state" + '</label><br />';
             setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
         }
 
@@ -5313,7 +5313,7 @@
             if (((!node.conn) || (node.conn == 0)) && (node.mtype != 3)) { icon += ' gray'; }
 
             if (view == 1) {
-                div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id] ? ' checked' : '') + '></td><td><table onmouseup=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t style=width:' + ((div.clientWidth) - 120) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
+                div.innerHTML = '<table id=devs cmenu=devsContentMenu onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=width:100%;height:100%><tr><td style=width:22px><input class="' + node.meshid + ' DeviceCheckbox form-check-input me-2" onchange=p1devcheck(event) value=devid_' + node._id + ' type=checkbox ' + (checkedNodeids[node._id] ? ' checked' : '') + '></td><td><table onmouseup=gotoDevice(\'' + node._id + '\',null,null,event) border=0 cellspacing=0 style=width:100%;height:100%;cursor:pointer><tr><td style=width:50px tabindex=0 onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)"><div class="i' + icon + '" style=width:50px></div></td><td class=g1t></td><td class=e2t><div class=e1t style=width:' + ((div.clientWidth) - 120) + 'px title="' + title + '">' + name + '</div><div>' + NodeStateStr(node) + '</div></td><td class=g2t></td></tr></table></td></tr></table>' + devNotify;
             } else if (view == 2) {
                 var states = [];
                 if (node.conn) {
@@ -5349,7 +5349,7 @@
                 else if ((sort == 3) || (sort == 4)) { collapseName = 'tag:**xx**xx*TaG*xx**xx**'; }
                 var collapsed = (sort != 3) & (sort != 4) & CollapsedGroups[collapseName];
                 var r = '<td style=position:relative><div id=devs cmenu=devsContentMenu class=bar18 tabindex=0 onmouseover=devMouseHover(this,1) onmouseout=devMouseHover(this,0) style=height:18px;width:100%;font-size:medium onkeypress="if (event.key==\'Enter\') gotoDevice(\'' + node._id + '\',null,null,event)">';
-                r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox" value=devid_' + node._id + ' type=checkbox onchange=p1devcheck(event) ' + (checkedNodeids[node._id] ? ' checked' : '') + '></div>';
+                r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox form-check-input me-2" value=devid_' + node._id + ' type=checkbox onchange=p1devcheck(event) ' + (checkedNodeids[node._id] ? ' checked' : '') + '></div>';
                 r += '<div class=deviceBarIcon onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                 r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
                 r += '<div class=style10 style=cursor:pointer;font-size:14px;max-height:18px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap title="' + title + '" onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)>' + name + '</div></div>' + devNotify + '</td>';
@@ -5875,7 +5875,7 @@
             x += addHtmlValue("Old Password", '<input id=dp1password0 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlValue("New Password*", '<input id=dp1password1 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlValue("New Password*", '<input id=dp1password2 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
-            if ((features2 & 0x00000020) && (currentMesh.mtype == 1) && (serverinfo.amtProvServerMeshId == currentMesh._id)) { x += '<label><input id=dp1lanprov type=checkbox /> ' + "Use for bare-metal LAN activation." + '</label>'; } // Intel AMT LAN provisioning server is active.
+            if ((features2 & 0x00000020) && (currentMesh.mtype == 1) && (serverinfo.amtProvServerMeshId == currentMesh._id)) { x += '<label><input id=dp1lanprov type=checkbox class="form-check-input me-2" /> ' + "Use for bare-metal LAN activation." + '</label>'; } // Intel AMT LAN provisioning server is active.
             x += '<div><span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span></div>';
             setDialogMode(2, "Intel&reg; AMT ACM", 3, showAmtAcmSetupEx, x);
             Q('dp1password0').focus();
@@ -6521,7 +6521,7 @@
                     else if (ndisc > 1) { y += format("{0} selected devices are offline." + '<br />', ndisc); }
                     if (y != '') { x += '<div style=padding:8px>' + y + '</div>'; } else { x += '<br />'; }
                 }
-                x += '<label><input id=d2check type=checkbox onchange=d2groupActionFunctionDelCheck() />' + "Confirm" + '</label>';
+                x += '<label><input id=d2check type=checkbox class="form-check-input me-2" onchange=d2groupActionFunctionDelCheck() />' + "Confirm" + '</label>';
                 setDialogMode(2, "Delete Devices", 3, d2groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
             } else if (op == 102) {
@@ -6579,8 +6579,8 @@
                 x += '<input type=file name=files id=d2uploadinput class="form-control" multiple=multiple onchange="d2batchUploadValidate()" /><br /><br />';
                 if (wintype) { x += addHtmlValue("Windows Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=winpath id=d2winuploadpath placeholder="C:\\temp" value="" />'); }
                 if (linuxtype) { x += addHtmlValue("Linux Path", '<input style=width:250px type=text onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=linuxpath id=d2linuxuploadpath placeholder="/tmp" value="" />'); }
-                x += '<br /><label><input type=checkbox name=createFolder />' + "Create folder if it does not exists?" + '</label><br />';
-                x += '<label><input type=checkbox name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
+                x += '<br /><label><input type=checkbox class="form-check-input me-2" name=createFolder />' + "Create folder if it does not exists?" + '</label><br />';
+                x += '<label><input type=checkbox class="form-check-input me-2" name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
                 setDialogMode(2, "Batch File Upload", 3, d2batchUploadValidateOk, x);
                 d2batchUploadValidate();
             } else if (op == 110) {
@@ -6652,7 +6652,7 @@
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + "devicelist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
             if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + "computerlist.json" + '</a>'); }
-            x += '<div style=margin-top:8px><label><input type=checkbox id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
+            x += '<div style=margin-top:8px><label><input type=checkbox class="form-check-input me-2" id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
             setDialogMode(2, "Device Information Export", 1, null, x);
         }
 
@@ -7778,7 +7778,7 @@
             if (xxdialogMode) return;
             var x = '<div style=margin-bottom:6px><label for=selectnode-search>' + "Search" + '</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "No devices found." + '</div>';
             for (var i in nodes) {
-                x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\'' + nodes[i]._id + '\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox style=width:16px;display:inline />';
+                x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\'' + nodes[i]._id + '\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox class="form-check-input me-2" style=width:16px;display:inline />';
                 x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
             }
             setDialogMode(2, "Select a node to place", 3, placeNodeEx, x + '</div>', coords);
@@ -8682,20 +8682,20 @@
             var devNotify = 0, fx = ((features2 & 0x00004000) && (userinfo.emailVerified)) ? 1 : 0;
             if (userinfo.notify && userinfo.notify[currentNode._id]) { devNotify = userinfo.notify[currentNode._id]; }
             var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Web Page Notifications" + '</div>';
-            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
-            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
-            if (currentNode.intelamt != null) { fx += 2; x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>'; }
+            x += '<div><label><input id=p20notifyIntelDeviceConnect type=checkbox class="form-check-input me-2" />' + "Device connections" + '</label></div>';
+            x += '<div><label><input id=p20notifyIntelDeviceDisconnect type=checkbox class="form-check-input me-2" />' + "Device disconnections" + '</label></div>';
+            if (currentNode.intelamt != null) { fx += 2; x += '<div><label><input id=p20notifyIntelAmtKvmActions type=checkbox class="form-check-input me-2" />' + "Intel&reg; AMT desktop and serial events" + '</label></div>'; }
             if (fx & 1) {
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
-                x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
-                x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
-                x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceConnect type=checkbox class="form-check-input me-2" />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceDisconnect type=checkbox class="form-check-input me-2" />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20enotifyIntelDeviceHelp type=checkbox class="form-check-input me-2" />' + "Help requests" + '</label></div>';
             }
             if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
-                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox />' + "Device connections" + '</label></div>';
-                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox />' + "Device disconnections" + '</label></div>';
-                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox />' + "Help requests" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceConnect type=checkbox class="form-check-input me-2" />' + "Device connections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox class="form-check-input me-2" />' + "Device disconnections" + '</label></div>';
+                x += '<div><label><input id=p20emsgDeviceHelp type=checkbox class="form-check-input me-2" />' + "Help requests" + '</label></div>';
             }
             setDialogMode(2, "Notification Settings", 3, p20editDeviceNotifyEx, x, fx);
             Q('p20notifyIntelDeviceConnect').checked = (devNotify & 2);
@@ -9363,7 +9363,7 @@
             if (nodeids.length > 1) { x = format("Are you sure you want to uninstall the selected {0} agents?", nodeids.length); } else { x = "Are you sure you want to uninstall selected agent?"; }
             x += '<br /><br />';
             if (nodeids.length > 1) { x += "This will not remove the devices from the server, but the devices will not longer be able to connect to the server. All remote access to the devices will be lost. The devices must be connected for this command to work."; } else { x += "This will not remove this device from the server, but the device will not longer be able to connect to the server. All remote access to the device will be lost. The device must be connect for this command to work."; }
-            x += '<br /><br /><label style=color:red><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
+            x += '<br /><br /><label style=color:red><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
             setDialogMode(2, "Uninstall agent", 3, p10showSendUninstallAgentDialogEx, x, nodeids);
             p10validateSendUninstallAgentDialog();
             return false;
@@ -9401,7 +9401,7 @@
 
         function p10showDeleteNodeDialog(nodeid) {
             if (xxdialogMode) return false;
-            var x = format("Are you sure you want to delete node {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><label><input id=p10check type=checkbox onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
+            var x = format("Are you sure you want to delete node {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
             setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, x, nodeid);
             p10validateDeleteNodeDialog();
             return false;
@@ -10026,7 +10026,7 @@
             x += addHtmlValue("Domain", '<input type=text id=d2domain style=width:230px maxlength=128 />');
             x += addHtmlValue("Username", '<input type=text id=d2user style=width:230px onKeyUp=askRdpCredentialsValidate() maxlength=128 />');
             x += addHtmlValue("Password", '<input type=password id=d2pass style=width:230px maxlength=128 autocomplete=off />');
-            if ((features2 & 0x00400000) == 0) { x += addHtmlValue("", '<label><input type="checkbox" id=d2savecred>' + "Remember credentials" + '</label>'); }
+            if ((features2 & 0x00400000) == 0) { x += addHtmlValue("", '<label><input type="checkbox" class="form-check-input me-2" id=d2savecred>' + "Remember credentials" + '</label>'); }
             x += '</div>';
             x += MoreStart();
             x += addHtmlValue("Alt Shell", '<input type=text id=d2altshell style=width:230px maxlength=2048 />');
@@ -10557,7 +10557,7 @@
         function deskCustomizeKeys() {
             if (xxdialogMode) return;
             var x = '<div id=d2shortcuts style="width:100%;height:180px;padding:4px;overflow-y:auto;border:1px solid gray"></div><div style=width:100%;padding:5px>';
-            x += '<label><input id=d1kshift type=checkbox /> ' + "Shift" + '</label><label> <input id=d1kalt type=checkbox /> ' + "Alt" + '</label><label> <input id=d1kctrl type=checkbox /> ' + "Ctrl" + '</label> <input id=d1kwin type=checkbox /> ' + "Win" + '</label>';
+            x += '<label><input id=d1kshift type=checkbox class="form-check-input me-2" /> ' + "Shift" + '</label><label> <input id=d1kalt type=checkbox class="form-check-input me-2" /> ' + "Alt" + '</label><label> <input id=d1kctrl type=checkbox class="form-check-input me-2" /> ' + "Ctrl" + '</label> <input id=d1kwin type=checkbox class="form-check-input me-2" /> ' + "Win" + '</label>';
             x += ' <select id=d2keySelect>';
             for (var i in keyStrings) { x += '<option value=' + i + '>' + keyStrings[i] + '</option>'; }
             for (var i = 1; i <= 12; i++) { x += '<option value=' + (i + 111) + '>F' + i + '</option>'; }
@@ -11283,13 +11283,13 @@
             x += '</div>';
             x += '<div id=d2passauth style=display:none>';
             x += addHtmlValue("Password", '<input type=password id=dp2pass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
-            if ((features2 & 0x00400000) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox>' + "Remember credentials" + '</label>'); }
+            if ((features2 & 0x00400000) == 0) { x += addHtmlValue('', '<label><input id=dp2keep type=checkbox class="form-check-input me-2">' + "Remember credentials" + '</label>'); }
             x += '</div><div id=d2keyauth style=display:none>';
             x += addHtmlValue("Key File", '<input type=file id=dp2key class="form-control" maxlength=64 autocomplete=off onchange=sshAuthUpdate(event) />' + '<div id=d2badkey style=font-size:x-small>' + "Key file must be in OpenSSH format." + '</div>');
             x += addHtmlValue("Key Password", '<input type=password id=dp2keypass style=width:230px maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
             if ((features2 & 0x00400000) == 0) {
-                x += addHtmlValue('', '<label><input id=dp2keep1 type=checkbox onchange=sshAuthUpdate(event)>' + "Remember user & key" + '</label>');
-                x += addHtmlValue('', '<label><input id=dp2keep2 type=checkbox>' + "Remember password" + '</label>');
+                x += addHtmlValue('', '<label><input id=dp2keep1 type=checkbox class="form-check-input me-2" onchange=sshAuthUpdate(event)>' + "Remember user & key" + '</label>');
+                x += addHtmlValue('', '<label><input id=dp2keep2 type=checkbox class="form-check-input me-2">' + "Remember password" + '</label>');
             }
             x += '</div>';
             if (j.askkeypass) {
@@ -11857,7 +11857,7 @@
                 if (f.t < 3) {
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
-                    h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
+                    h += '<input file=999 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
                     h += '<span><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
                         h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + " (" + shortname + ")";
@@ -11878,7 +11878,7 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -12050,7 +12050,7 @@
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox class="form-check-input me-2" id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox class="form-check-input me-2" id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
@@ -13374,7 +13374,7 @@
             if (userinfo.phone != null) {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
                 x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.phone) + '</div>';
-                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
+                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox class="form-check-input me-2" onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
                 setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
                 account_managePhoneRemoveValidate();
             } else {
@@ -13401,7 +13401,7 @@
             if (userinfo.msghandle != null) {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/messaging40.png" style=padding:8px>';
                 x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-weight:bold>' + EscapeHtml(userinfo.msghandle) + '</div>';
-                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
+                x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox class="form-check-input me-2" onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
                 setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingRemove, x);
                 account_managePhoneRemoveValidate();
             } else {
@@ -13457,7 +13457,7 @@
             var emailU2Fenabled = ((userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
             setDialogMode(2, "Email Authentication", 1, function () {
                 if (emailU2Fenabled != Q('email2facheck').checked) { meshserver.send({ action: 'otpemail', enabled: Q('email2facheck').checked }); }
-            }, "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox ' + (emailU2Fenabled ? 'checked' : '') + '/>' + "Enable email two-factor authentication." + '</label>');
+            }, "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox class="form-check-input me-2" ' + (emailU2Fenabled ? 'checked' : '') + '/>' + "Enable email two-factor authentication." + '</label>');
         }
 
         function account_manageAuthApp() {
@@ -13635,11 +13635,11 @@
         function account_showAccountNotifySettings() {
             if (xxdialogMode) return false;
             var x = '';
-            x += '<div class="form-check"><label><input id=p2notifyPlayNotifySound class="form-check-input" type=checkbox />' + "Notification sound" + '</label></div>';
-            x += '<div class="form-check"><label><input id=p2notifyGroupName class="form-check-input" type=checkbox />' + "Display device group name" + '</label></div>';
-            x += '<div class="form-check"><label><input id=p2notifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
-            x += '<div class="form-check"><label><input id=p2notifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
-            x += '<div class="form-check"><label><input id=p2notifyIntelAmtKvmActions class="form-check-input" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyPlayNotifySound class="form-check-input me-2" type=checkbox />' + "Notification sound" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyGroupName class="form-check-input me-2" type=checkbox />' + "Display device group name" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyIntelDeviceConnect class="form-check-input me-2" type=checkbox />' + "Device connections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyIntelDeviceDisconnect class="form-check-input me-2" type=checkbox />' + "Device disconnections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p2notifyIntelAmtKvmActions class="form-check-input me-2" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
 
             setModalContent('xxAddAgent', 'Notification Settings', x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', account_showAccountNotifySettingsEx);
@@ -14031,7 +14031,7 @@
                 QE('idx_dlgOkButton', false);
             } else if (gd.state == 3) {
                 var x = '<img style=float:right src="images/googledrive-48.png" /><div>' + "Google Drive backup is currently active." + '</div>';
-                x += '<br /><label><input id=gdcheck type=checkbox onchange=server_setupGoogleDriveBackupCheck2() />' + "Remove Configuration" + '</label>';
+                x += '<br /><label><input id=gdcheck type=checkbox class="form-check-input me-2" onchange=server_setupGoogleDriveBackupCheck2() />' + "Remove Configuration" + '</label>';
                 setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd0');
                 QE('idx_dlgOkButton', false);
             }
@@ -14533,7 +14533,7 @@
         function p20showDeleteMeshDialog() {
             if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
-            x += '<label class=form-check-label><input id=p20check type=checkbox class="form-check-input m-1" onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
+            x += '<label class=form-check-label><input id=p20check type=checkbox class="form-check-input m-2" onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
             setModalContent('xxAddAgent', 'Delete Group', x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 p20showDeleteMeshDialogEx(3, '');
@@ -14665,10 +14665,10 @@
                 x += '<div><label><input type=checkbox id=d20flag4 onchange=p20editmeshfeaturesValidate() ' + ((flags & 4) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
-                x += '<div class="form-check"><label><input type=checkbox id=d20flag2 class="form-check-input" onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4) ? "Sync server device name to port name" : "Sync server device name to hostname") + '</label><br></div>';
-                x += '<div class="form-check"><label><input type=checkbox id=d20flag1 class="form-check-input" onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
+                x += '<div class="form-check"><label><input type=checkbox id=d20flag2 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4) ? "Sync server device name to port name" : "Sync server device name to hostname") + '</label><br></div>';
+                x += '<div class="form-check"><label><input type=checkbox id=d20flag1 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
             }
-            x += '<div class="form-check"><label><input type=checkbox id=d20expireDevice class="form-check-input" onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
+            x += '<div class="form-check"><label><input type=checkbox id=d20expireDevice class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
             x += '<div style=margin-left:20px id=d20expireDeviceDev>' + "Inactivate days until removal" + ' <label><input type=number inputmode=numeric class="form-control" onchange=p20editmeshfeaturesValidate() onkeyup=p20editmeshfeaturesValidate() onpaste=p20editmeshfeaturesValidate() onkeydown=p20editmeshfeaturesValidate() maxlength=4 min=1 max=2000 style=width:80px value=\"' + ((expire == 0) ? 30 : expire) + '\" id=d20expireDeviceDays></label><br></div>';
 
             if (serverinfo.autoremoveinactivedevices) {
@@ -15218,7 +15218,7 @@
                 // We can edit the mesh invite codes
                 var x = "When enabled, invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
                 x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
-                x += '<div style=margin-bottom:5px><label><input id=agentJoinCheck type=checkbox onclick=p20editmeshInviteCodeValidate() />' + "Enable Invite Codes" + '</label></div>';
+                x += '<div style=margin-bottom:5px><label><input id=agentJoinCheck type=checkbox class="form-check-input me-2" onclick=p20editmeshInviteCodeValidate() />' + "Enable Invite Codes" + '</label></div>';
                 x += addHtmlValue("Invite Codes", '<input id=agentInviteCode style=width:236px onkeyup=p20editmeshInviteCodeValidate() placeholder="code1, code2, code3" />');
                 x += addHtmlValue("Agents", '<select id=agentType style=width:236px onchange=p20editmeshInviteCodeValidate()><option value=0>' + "All Available Agents" + '</option><option value=1>' + "Windows MeshAgent" + '</option><option value=2>' + "Linux MeshAgent" + '</option><option value=4>' + "MacOS MeshAgent" + '</option><option value=8>' + "MeshCentral Assistant" + '</option></select>');
                 x += '<div id=d2agentInstallTypeDiv>';
@@ -15270,22 +15270,22 @@
             if (userinfo.notify && userinfo.notify[currentMesh._id]) { meshNotify |= userinfo.notify[currentMesh._id]; }
             //var x = "Notification settings must also be turned on in account settings." + '<br /><br />';
             var x = '<div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Web Page Notifications" + '</div>';
-            x += '<div class="form-check"><label><input id=p20notifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
-            x += '<div class="form-check"><label><input id=p20notifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p20notifyIntelDeviceConnect class="form-check-input me-2" type=checkbox />' + "Device connections" + '</label></div>';
+            x += '<div class="form-check"><label><input id=p20notifyIntelDeviceDisconnect class="form-check-input me-2" type=checkbox />' + "Device disconnections" + '</label></div>';
             if (currentMesh.mtype < 3) {
-                x += '<div class="form-check"><label><input id=p20notifyIntelAmtKvmActions class="form-check-input" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20notifyIntelAmtKvmActions class="form-check-input me-2" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
             }
             if (emailNotify) {
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Email Notifications" + '</div>';
-                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
-                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
-                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceHelp class="form-check-input" type=checkbox />' + "Help requests" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceConnect class="form-check-input me-2" type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceDisconnect class="form-check-input me-2" type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20enotifyIntelDeviceHelp class="form-check-input me-2" type=checkbox />' + "Help requests" + '</label></div>';
             }
             if ((userinfo.msghandle != null) && ((features2 & 0x02000000) != 0)) {
                 x += '<br /><div style="border-bottom: 1px solid #888;margin-bottom:3px">' + "Messaging Notifications" + '</div>';
-                x += '<div class="form-check"><label><input id=p20emsgDeviceConnect class="form-check-input" type=checkbox />' + "Device connections" + '</label></div>';
-                x += '<div class="form-check"><label><input id=p20emsgDeviceDisconnect class="form-check-input" type=checkbox />' + "Device disconnections" + '</label></div>';
-                x += '<div class="form-check"><label><input id=p20emsgDeviceHelp class="form-check-input" type=checkbox />' + "Help requests" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20emsgDeviceConnect class="form-check-input me-2" type=checkbox />' + "Device connections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20emsgDeviceDisconnect class="form-check-input me-2" type=checkbox />' + "Device disconnections" + '</label></div>';
+                x += '<div class="form-check"><label><input id=p20emsgDeviceHelp class="form-check-input me-2" type=checkbox />' + "Help requests" + '</label></div>';
             }
 
             setModalContent('xxAddAgent', 'Notification Settings', x);
@@ -15541,7 +15541,7 @@
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
                     if (publicfolder) { publiclink = '<i class="fa-regular fa-copy" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>'; }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -15648,7 +15648,7 @@
             p5fileNameCheck();
         }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value }); }
-        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p5recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox class="form-check-input me-2" id=p5recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput class="form-check-input me-2" style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles, rec: Q('p5recdeleteinput').checked }); }
         function p5renamefile() {
             var renamefile, checkboxes = document.getElementsByName('fc');
@@ -15663,7 +15663,7 @@
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() {
-            setModalContent('xxAddAgent', 'Upload File', '<form method = post enctype = multipart / form - data action = uploadfile.ashx target = fileUploadFrame ><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></ >');
+            setModalContent('xxAddAgent', 'Upload File', '<form method = post enctype = multipart / form - data action = uploadfile.ashx target = fileUploadFrame ><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox class="form-check-input me-2" id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></ >');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p5uploadFileEx);
             p5updateUploadDialogOk('p5uploadinput');
         }
@@ -16349,7 +16349,7 @@
             } else if (op == 3) {
                 // Delete accounts, ask for confirmation
                 var x = "Confirm delete selected account(s)?" + '<br /><br />';
-                x += '<label><input id=d3check type=checkbox onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
+                x += '<label><input id=d3check type=checkbox class="form-check-input me-2" onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
                 setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
             } else if (op == 4) {
@@ -16491,7 +16491,7 @@
 
             // Display the dialog box
             var x = '';
-            x += '<label><input id=d2c1 type=checkbox' + (userViewSettings.noViewLimit ? '' : ' checked') + '>' + "Only display first 100 users" + '</label><br />';
+            x += '<label><input id=d2c1 type=checkbox class="form-check-input me-2"' + (userViewSettings.noViewLimit ? '' : ' checked') + '>' + "Only display first 100 users" + '</label><br />';
             setModalContent('xxAddAgent', 'Users View', x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', onUsersViewSettingsEx);
         }
@@ -16653,12 +16653,12 @@
             x += '';
             x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Randomize the password." + '</label></div>';
-            x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Remove all previous events for this userid." + '</label></div>';
-            x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Force password reset on next login." + '</label></div>';
+            x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Randomize the password." + '</label></div>';
+            x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Remove all previous events for this userid." + '</label></div>';
+            x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Force password reset on next login." + '</label></div>';
             if (serverinfo.emailcheck) {
-                x += '<div><label><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox />' + "Email is verified." + '</label></div>';
-                x += '<div><label><input id=p4invitationEmail type=checkbox title=' + "Email verified and forced password reset required." + ' />' + "Send invitation email." + '</label></div>';
+                x += '<div><label><input id=p4verifiedEmail onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Email is verified." + '</label></div>';
+                x += '<div><label><input id=p4invitationEmail type=checkbox class="form-check-input me-2" title=' + "Email verified and forced password reset required." + ' />' + "Send invitation email." + '</label></div>';
             }
 
             if (passRequirements) {
@@ -16956,7 +16956,7 @@
             if (op == 1) {
                 // Delete user groups, ask for confirmation
                 var x = "Confirm delete selected user group(s)?" + '<br /><br />';
-                x += '<label><input id=d3check type=checkbox onchange=p50usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
+                x += '<label><input id=d3check type=checkbox class="form-check-input me-2" onchange=p50usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
                 setDialogMode(2, "Delete User Groups", 3, p50groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
             }
@@ -17182,7 +17182,7 @@
             if (xxdialogMode) return;
             var flags = (currentUserGroup.flags) ? currentUserGroup.flags : 0, x = ''; // Flags: 2 = Session Recording
             if (serverinfo.userGroupsSessionRecording == 1) {
-                x += '<div><label><input type=checkbox id=d51flag1 ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
+                x += '<div><label><input type=checkbox class="form-check-input me-2" id=d51flag1 ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
             setDialogMode(2, "Edit User Group Features", 3, p51edituserGroupFeaturesEx, x);
         }
@@ -17239,7 +17239,7 @@
         function p51showDeleteUserGroupDialog() {
             if (xxdialogMode) return false;
             var x = format("Delete user group {0}?", EscapeHtml(currentUserGroup.name)) + '<br /><br />';
-            x += '<label><input id=p51check type=checkbox onchange=p51validateDeleteGroupDialog() />' + "Confirm" + '</label>';
+            x += '<label><input id=p51check type=checkbox class="form-check-input me-2" onchange=p51validateDeleteGroupDialog() />' + "Confirm" + '</label>';
             setDialogMode(2, "Delete User Group", 3, p51showDeleteUserGroupDialogEx, x);
             p51validateDeleteGroupDialog();
             return false;
@@ -17774,7 +17774,7 @@
             }
 
             x += '<div><label><input id=p4resetNextLogin class="form-check-input me-2" type=checkbox />' + "Force password reset on next login." + '</label></div>';
-            if (multiFactor == 1) { x += '<div><label><input id=p4twoFactorRemove type=checkbox />' + "Remove all 2nd factor authentication." + '</label></div>'; }
+            if (multiFactor == 1) { x += '<div><label><input id=p4twoFactorRemove class="form-check-input me-2" type=checkbox />' + "Remove all 2nd factor authentication." + '</label></div>'; }
             setModalContent('xxAddAgent', format("Change Password for {0}", EscapeHtml(currentUser.name)), x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 p30showUserChangePassDialogEx(3, multiFactor);
@@ -18246,7 +18246,7 @@
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
-                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input style=float:left name=fcx class="fcb form-check-input me-2" type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -18308,7 +18308,7 @@
             y = '<option value=0' + ((settings.devGroup == 0) ? ' selected' : '') + '>' + "All" + '</option>';
             var omeshs = getOrderedList(meshes, 'name');
             for (var i in omeshs) { y += '<option value=' + encodeURIComponentEx(omeshs[i]._id) + ((settings.devGroup == omeshs[i]._id) ? ' selected' : '') + '>' + EscapeHtml(omeshs[i].name) + '</option>'; }
-            x += addHtmlValue("Device Group", '<select onchange=generateReportDialogValidate() id=d2groupId style=float:right;width:250px>' + y + '</select>');
+            x += addHtmlValue("Device Group", '<select onchange=generateReportDialogValidate() id=d2groupId class="form-select">' + y + '</select>');
             x += '</div>';
 
             x += '<div id=d2timeBackDiv style=display:none>';
@@ -18324,7 +18324,7 @@
             x += '</div>';
 
             x += '<div id=d2showTrafficDiv style=display:none>';
-            x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox id=d2showTraffic ' + ((settings.showTraffic) ? 'checked' : '') + '>' + "Show Traffic" + '</label><div>');
+            x += addHtmlValue("", '<div style=width:250px><label><input type=checkbox class="form-check-input me-2" id=d2showTraffic ' + ((settings.showTraffic) ? 'checked' : '') + '>' + "Show Traffic" + '</label><div>');
             x += '</div>';
 
             setModalContent('xxAddAgent', 'Generate Report', x);
@@ -19210,27 +19210,27 @@
         function setServerTracing() {
             var x = '<div style="max-height:200px;overflow-y:auto">';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Core Server" + '</b></div>';
-            x += '<div><label><input type=checkbox id=p41c1 ' + ((serverTraceSources.indexOf('cookie') >= 0) ? 'checked' : '') + '>' + "Cookie encoder" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c2 ' + ((serverTraceSources.indexOf('dispatch') >= 0) ? 'checked' : '') + '>' + "Message Dispatcher" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c3 ' + ((serverTraceSources.indexOf('main') >= 0) ? 'checked' : '') + '>' + "Main Server Messages" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c4 ' + ((serverTraceSources.indexOf('peer') >= 0) ? 'checked' : '') + '>' + "MeshCentral Server Peering" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c15 ' + ((serverTraceSources.indexOf('agent') >= 0) ? 'checked' : '') + '>' + "MeshAgent traffic" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c14 ' + ((serverTraceSources.indexOf('agentupdate') >= 0) ? 'checked' : '') + '>' + "MeshAgent update" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c16 ' + ((serverTraceSources.indexOf('cert') >= 0) ? 'checked' : '') + '>' + "Server Certificate" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c17 ' + ((serverTraceSources.indexOf('db') >= 0) ? 'checked' : '') + '>' + "Server Database" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c18 ' + ((serverTraceSources.indexOf('email') >= 0) ? 'checked' : '') + '>' + "Email/SMS/Push Traffic" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c1 ' + ((serverTraceSources.indexOf('cookie') >= 0) ? 'checked' : '') + '>' + "Cookie encoder" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c2 ' + ((serverTraceSources.indexOf('dispatch') >= 0) ? 'checked' : '') + '>' + "Message Dispatcher" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c3 ' + ((serverTraceSources.indexOf('main') >= 0) ? 'checked' : '') + '>' + "Main Server Messages" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c4 ' + ((serverTraceSources.indexOf('peer') >= 0) ? 'checked' : '') + '>' + "MeshCentral Server Peering" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c15 ' + ((serverTraceSources.indexOf('agent') >= 0) ? 'checked' : '') + '>' + "MeshAgent traffic" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c14 ' + ((serverTraceSources.indexOf('agentupdate') >= 0) ? 'checked' : '') + '>' + "MeshAgent update" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c16 ' + ((serverTraceSources.indexOf('cert') >= 0) ? 'checked' : '') + '>' + "Server Certificate" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c17 ' + ((serverTraceSources.indexOf('db') >= 0) ? 'checked' : '') + '>' + "Server Database" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c18 ' + ((serverTraceSources.indexOf('email') >= 0) ? 'checked' : '') + '>' + "Email/SMS/Push Traffic" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Web Server" + '</b></div>';
-            x += '<div><label><input type=checkbox id=p41c5 ' + ((serverTraceSources.indexOf('web') >= 0) ? 'checked' : '') + '>' + "Web Server" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c7 ' + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + '>' + "Web Socket Relay" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c20 ' + ((serverTraceSources.indexOf('httpheaders') >= 0) ? 'checked' : '') + '>' + "Web Server HTTP Headers" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c21 ' + ((serverTraceSources.indexOf('authlog') >= 0) ? 'checked' : '') + '>' + "User Authentication Log" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c5 ' + ((serverTraceSources.indexOf('web') >= 0) ? 'checked' : '') + '>' + "Web Server" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c6 ' + ((serverTraceSources.indexOf('webrequest') >= 0) ? 'checked' : '') + '>' + "Web Server Requests" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c7 ' + ((serverTraceSources.indexOf('relay') >= 0) ? 'checked' : '') + '>' + "Web Socket Relay" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c20 ' + ((serverTraceSources.indexOf('httpheaders') >= 0) ? 'checked' : '') + '>' + "Web Server HTTP Headers" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c21 ' + ((serverTraceSources.indexOf('authlog') >= 0) ? 'checked' : '') + '>' + "User Authentication Log" + '</label></div>';
             //x += '<div><label><input type=checkbox id=p41c8 ' + ((serverTraceSources.indexOf('webrelaydata') >= 0) ? 'checked' : '') + '>' + "Traffic Relay 2 Data" + '</label></div>';
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>' + "Intel&reg; AMT" + '</b></div>';
-            x += '<div><label><input type=checkbox id=p41c19 ' + ((serverTraceSources.indexOf('amt') >= 0) ? 'checked' : '') + '>' + "Intel AMT manager" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c9 ' + ((serverTraceSources.indexOf('webrelay') >= 0) ? 'checked' : '') + '>' + "Connection Relay" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c10 ' + ((serverTraceSources.indexOf('mps') >= 0) ? 'checked' : '') + '>' + "CIRA Server" + '</label></div>';
-            x += '<div><label><input type=checkbox id=p41c11 ' + ((serverTraceSources.indexOf('mpscmd') >= 0) ? 'checked' : '') + '>' + "CIRA Server Commands" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c19 ' + ((serverTraceSources.indexOf('amt') >= 0) ? 'checked' : '') + '>' + "Intel AMT manager" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c9 ' + ((serverTraceSources.indexOf('webrelay') >= 0) ? 'checked' : '') + '>' + "Connection Relay" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c10 ' + ((serverTraceSources.indexOf('mps') >= 0) ? 'checked' : '') + '>' + "CIRA Server" + '</label></div>';
+            x += '<div><label><input type=checkbox class="form-check-input me-2" id=p41c11 ' + ((serverTraceSources.indexOf('mpscmd') >= 0) ? 'checked' : '') + '>' + "CIRA Server Commands" + '</label></div>';
             //x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:5px"><b>Legacy</b></div>';
             //x += '<div><label><input type=checkbox id=p41c12 ' + ((serverTraceSources.indexOf('swarm') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server" + '</label></div>";
             //x += '<div><label><input type=checkbox id=p41c13 ' + ((serverTraceSources.indexOf('swarmcmd') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server Commands" + '</label></div>";
