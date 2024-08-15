@@ -17851,7 +17851,13 @@
 
         function p30showDeleteUserDialog() {
             if (xxdialogMode) return;
-            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
+            setModalContent('xxAddAgent', format("Delete User {0}", EscapeHtml(currentUser.name)), format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
+            var showDeleteUserModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showDeleteUserModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p30showDeleteUserDialogEx();
+                showDeleteUserModal.hide();
+            };
             p10validateDeleteNodeDialog();
         }
 
