@@ -1955,17 +1955,17 @@
             </div>
         </div>
         <div class="modal fade" id="xxAddAgentModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered" id="xxAddAgentModalConf">
                 <div class="modal-content">
                     <div class="modal-header" id="dialogHeader">
                         <h5 class="modal-title text-white" id="xxAddAgentTitle"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="id_dialogclose"
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                             onclick="setDialogMode()" onkeypress="if (event.key == 'Enter') setDialogMode()"></button>
                     </div>
                     <div class="modal-body" id="xxAddAgentBody">
-                        <!-- The body content will be dynamically populated -->
+                        <!-- The body content is dynamically populated -->
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer" id="xxAddAgentFooter">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="idx_dlgCancelButton"
                             onclick="dialogclose(0)">Cancel</button>
                         <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton"
@@ -3352,6 +3352,7 @@
                 }
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate')) {
+                        var showServerVersionModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
                         var x = '<div class=dialogText>';
                         if (!message.tags.current) { message.tags.current = "Unknown"; }
                         if (!message.tags.stable) { message.tags.stable = "Unknown"; }
@@ -3362,42 +3363,66 @@
                         x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
                         x += '</div>';
                         if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
-                            setDialogMode(2, "MeshCentral Version", 1, null, x);
+                            setModalContent('xxAddAgent', 'MeshCentral Version', x);
+                            document.getElementById('idx_dlgOkButton').onclick = function () {
+                                showServerVersionModal.hide();
+                            };
                         } else {
                             x += '<hr />' + "Check and click OK to start server self-update.";
-                            setDialogMode(2, "MeshCentral Version", 3, server_showVersionDlgEx, x, message.tags);
+                            setModalContent('xxAddAgent', 'MeshCentral Version', x);
+                            document.getElementById('idx_dlgOkButton').onclick = function () {
+                                server_showVersionDlgEx(2, message.tags);
+                            };
                             server_showVersionDlgUpdate();
                         }
+                        showServerVersionModal.show();
                     }
                     break;
                 }
                 case 'servererrors': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerErrors')) {
+                        var showErrorsDlgModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                        showErrorsDlgModal.show();
                         if (message.data == null) {
-                            setDialogMode(2, "Server Errors", 1, null, "Server has no error log.");
+                            setModalContent('xxAddAgent', 'Server Errors', 'Server has no error log.');
                         } else {
                             var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
                             x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
                             x += '<div><label><input id=d2clearErrorsCheck type=checkbox onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
                             setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x);
+                            setModalContent('xxAddAgent', 'MeshCentral Server Errors', x);
+                            var showServerErrorsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                            document.getElementById('idx_dlgOkButton').onclick = function () {
+                                server_showErrorsDlgEx();
+                                showServerErrorsModal.hide();
+                            };
                             server_showErrorsDlgUpdate();
                         }
+                        document.getElementById('idx_dlgOkButton').onclick = function () {
+                            showErrorsDlgModal.hide();
+                        };
                     }
                     break;
                 }
                 case 'serverconfig': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerConfig')) {
                         if (message.data == null) {
-                            setDialogMode(2, "Server Configuration", 1, null, "Server has no config file.");
+                            setModalContent('xxAddAgent', 'Server Configuration', 'Server has no config file.', 'extra-large');
                         } else {
-                            setDialogMode(4, "Server Configuration", 2);
+                            var x = '<input id="d4WrapButton" type="button" value="Wrap: ON" onclick="d4ToggleWrap()">';
+                            x += '<input id="d4SizeButton" type="button" value="Size: 100%" onclick="d4ToggleSize()">';
+                            x += '<input id="d4EncodingButton" type="button" value="Encoding: RAW" onclick="d4ToggleEncoding()" style="display: none;">';
+                            x += '<textarea id="d4editorarea" autocomplete="off" class="form-control" style="height: calc(-286px + 100vh); width: 100%; overflow: auto; resize: none; font-size: 100%;" readonly="readonly"></textarea>';
+                            setModalContent('xxAddAgent', 'Server Configuration', x, 'extra-large');
                             QV('d4EncodingButton', false);
-                            QS('dialog').width = 'auto';
-                            QS('dialog').bottom = '80px';
-                            QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
                             Q('d4editorarea').value = message.data;
                             Q('d4editorarea').setAttribute('readonly', 'readonly');
                         }
+                        var showServerConfigModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                        document.getElementById('idx_dlgOkButton').onclick = function () {
+                            showServerConfigModal.hide();
+                        };
+                        showServerConfigModal.show();
                     }
                     break;
                 }
@@ -4417,24 +4442,27 @@
                 case 'previousLogins': {
                     var tag = 'previousLogins';
                     if (message.userid != null) { tag += ':' + message.userid; }
-                    if ((xxdialogMode == 2) && (xxdialogTag == tag)) {
-                        var x = '', c = 'BBB', xx = '';
-                        if (message.events.length == 0) {
-                            x += 'No previous login.';
-                        } else {
-                            x += '<div style=max-height:260px;overflow-y:scroll;overflow-x:hidden><table>';
-                            for (var i in message.events) {
-                                var m = message.events[i].m;
-                                if (m == 107) { m = "Valid login"; c = 'BBD1BB'; xx = ''; if (message.events[i].tn != null) { m = format("Token: {0}", message.events[i].tn); c = '88D188' } }
-                                else if (m == 108) { m = "Invalid 2FA"; c = 'DD9DC3'; xx = 'x'; }
-                                else if (m == 109) { m = "Locked account"; c = 'E1BBBB'; xx = 'x'; }
-                                else if (m == 110) { m = "Invalid password"; c = 'E1BBBB'; xx = 'x'; }
-                                x += '<tr><td><img src=images/user-32' + xx + '.png height=32 width=32 style=float:left srcset="images/user-64' + xx + '.png 2x"><td><div style=width:300px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div>' + printDateTime(new Date(message.events[i].t)) + ', <b>' + EscapeHtml(m) + '</b></div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
-                            }
-                            x += '</table></div>';
+                    var x = '', c = 'BBB', xx = '';
+                    if (message.events.length == 0) {
+                        x += 'No previous login.';
+                    } else {
+                        x += '<div style=max-height:260px;overflow-y:scroll;overflow-x:hidden><table>';
+                        for (var i in message.events) {
+                            var m = message.events[i].m;
+                            if (m == 107) { m = "Valid login"; c = 'BBD1BB'; xx = ''; if (message.events[i].tn != null) { m = format("Token: {0}", message.events[i].tn); c = '88D188' } }
+                            else if (m == 108) { m = "Invalid 2FA"; c = 'DD9DC3'; xx = 'x'; }
+                            else if (m == 109) { m = "Locked account"; c = 'E1BBBB'; xx = 'x'; }
+                            else if (m == 110) { m = "Invalid password"; c = 'E1BBBB'; xx = 'x'; }
+                            x += '<tr><td><img src=images/user-32' + xx + '.png height=32 width=32 style=float:left srcset="images/user-64' + xx + '.png 2x"><td><div style=width:300px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div>' + printDateTime(new Date(message.events[i].t)) + ', <b>' + EscapeHtml(m) + '</b></div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
                         }
-                        setDialogMode(2, "Previous Logins", 1, null, x);
+                        x += '</table></div>';
                     }
+                    setModalContent('xxAddAgent', 'Previous Logins', x);
+                    var showPreviousLoginsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+                    showPreviousLoginsModal.show();
+                    document.getElementById('idx_dlgOkButton').onclick = function () {
+                        showPreviousLoginsModal.hide();
+                    };
                     break;
                 }
                 case 'getDeviceDetails': {
@@ -6132,8 +6160,9 @@
             return false;
         }
 
-        function setModalContent(modalId, title, bodyContent) {
+        function setModalContent(modalId, title, bodyContent, size = null) {
             // Check if the modal elements exist
+            var modalConfigurableElement = document.getElementById('xxAddAgentModalConf');
             var modalTitleElement = document.getElementById(modalId + 'Title');
             var modalBodyElement = document.getElementById(modalId + 'Body');
 
@@ -6143,6 +6172,26 @@
 
                 // Set the modal body content
                 modalBodyElement.innerHTML = bodyContent;
+                // If size is provided, set the modal size class
+                if (size) {
+                    modalConfigurableElement.classList.remove('modal-sm', 'modal-lg', 'modal-xl'); // Remove any existing size classes
+                    switch (size) {
+                        case 'small':
+                            modalConfigurableElement.classList.add('modal-sm');
+                            break;
+                        case 'large':
+                            modalConfigurableElement.classList.add('modal-lg');
+                            break;
+                        case 'extra-large':
+                            modalConfigurableElement.classList.add('modal-xl');
+                            break;
+                        // Add any additional size options here
+                        default:
+                            break;
+                    }
+                } else {
+                    modalConfigurableElement.classList.remove('modal-sm', 'modal-lg', 'modal-xl'); // Remove any existing size classes
+                }
             } else {
                 console.error('Modal elements not found:', modalId + 'Title', modalId + 'Body');
             }
@@ -14045,10 +14094,16 @@
             x += '<form action="/restoreserver.ashx' + ((urlargs.key) ? ('?key=' + urlargs.key) : '') + '" enctype="multipart/form-data" method="post"><div>';
             x += '<input type=hidden name=auth value=' + authCookie + '>';
             x += '<input id=account_dlgFileInput type=file name=datafile class="form-control" accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()><br /><br />';
-            x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
+            x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px>';
             x += '<input id=account_dlgOkButton type=submit value=' + "OK" + ' style=float:right;width:80px onclick=dialogclose(1)>';
             x += '</div><br /><br /></form>';
-            setDialogMode(2, "Restore Server", 0, null, x);
+
+            setModalContent('xxAddAgent', 'Restore Server', x);
+            var serverBackupRestoreModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            serverBackupRestoreModal.show();
+            document.getElementById('account_dlgCancelButton').onclick = function () {
+                serverBackupRestoreModal.hide();
+            };
             account_validateServerRestore();
             return false;
         }
@@ -14059,7 +14114,8 @@
 
         function server_showVersionDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "MeshCentral Version", 1, null, "Loading...", 'MeshCentralServerUpdate');
+            xxdialogMode = 2; xxdialogTag = 'MeshCentralServerUpdate';
+            setModalContent('xxAddAgent', 'MeshCentral Version', 'Loading...');
             meshserver.send({ action: 'serverversion' });
             return false;
         }
@@ -14079,7 +14135,8 @@
 
         function server_showErrorsDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "Server Errors", 1, null, "Loading...", 'MeshCentralServerErrors');
+            xxdialogMode = 2; xxdialogTag = 'MeshCentralServerErrors';
+            setModalContent('xxAddAgent', 'Server Errors', 'Loading...');
             meshserver.send({ action: 'servererrors' });
             return false;
         }
@@ -14089,7 +14146,7 @@
 
         function server_showConfigDlg() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "Server Configuration", 1, null, "Loading...", 'MeshCentralServerConfig');
+            xxdialogMode = 2; xxdialogTag = 'MeshCentralServerConfig';
             meshserver.send({ action: 'serverconfig' });
             return false;
         }
@@ -14529,7 +14586,13 @@
             if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
             x += '<label class=form-check-label><input id=p20check type=checkbox class="form-check-input m-1" onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
-            setDialogMode(2, "Delete Group", 3, p20showDeleteMeshDialogEx, x);
+            setModalContent('xxAddAgent', 'Delete Group', x);
+            var showDeleteMeshModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showDeleteMeshModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p20showDeleteMeshDialogEx(3,'');
+                showDeleteMeshModal.hide();
+            };
             p20validateDeleteMeshDialog();
             return false;
         }
@@ -17773,7 +17836,7 @@
         // Display the previous logins of this user
         function p30viewPreviousLogins() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Previous Logins", 1, null, "Loading...", 'previousLogins:' + currentUser._id);
+            setModalContent('xxAddAgent', 'Previous Logins', 'Loading...');
             meshserver.send({ action: 'previousLogins', userid: currentUser._id });
         }
 
@@ -17794,7 +17857,13 @@
 
             x += '<div><label><input id=p4resetNextLogin class="form-check-input me-2" type=checkbox />' + "Force password reset on next login." + '</label></div>';
             if (multiFactor == 1) { x += '<div><label><input id=p4twoFactorRemove type=checkbox />' + "Remove all 2nd factor authentication." + '</label></div>'; }
-            setDialogMode(2, format("Change Password for {0}", EscapeHtml(currentUser.name)), 3, p30showUserChangePassDialogEx, x, multiFactor);
+            setModalContent('xxAddAgent', format("Change Password for {0}", EscapeHtml(currentUser.name)), x);
+            var showPasswordChangeModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showPasswordChangeModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p30showUserChangePassDialogEx(3, multiFactor);
+                showPasswordChangeModal.hide();
+            };
             p30showUserChangePassDialogValidate();
             Q('p4pass1').focus();
             if (currentUser.passchange == -1) { Q('p4resetNextLogin').checked = true; }
@@ -17822,7 +17891,13 @@
 
         function p30showDeleteUserDialog() {
             if (xxdialogMode) return;
-            setDialogMode(2, format("Delete User {0}", EscapeHtml(currentUser.name)), 3, p30showDeleteUserDialogEx, format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
+            setModalContent('xxAddAgent', format("Delete User {0}", EscapeHtml(currentUser.name)), format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
+            var showDeleteUserModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            showDeleteUserModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                p30showDeleteUserDialogEx();
+                showDeleteUserModal.hide();
+            };
             p10validateDeleteNodeDialog();
         }
 
@@ -19255,7 +19330,14 @@
             //x += '<div><label><input type=checkbox id=p41c12 ' + ((serverTraceSources.indexOf('swarm') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server" + '</label></div>";
             //x += '<div><label><input type=checkbox id=p41c13 ' + ((serverTraceSources.indexOf('swarmcmd') >= 0) ? 'checked' : '') + ">' + "Legacy Swarm Server Commands" + '</label></div>";
             x += '</div>';
-            setDialogMode(2, "Server Tracing", 7, setServerTracingEx, x);
+            //setDialogMode(2, "Server Tracing", 7, setServerTracingEx, x);
+            setModalContent('xxAddAgent', 'Server Tracing', x);
+            var serverTracingModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
+            serverTracingModal.show();
+            document.getElementById('idx_dlgOkButton').onclick = function () {
+                setServerTracingEx();
+                serverTracingModal.hide();
+            };
         }
 
         function setServerTracingEx(b) {
@@ -19318,7 +19400,7 @@
             xxdialogTag = tag;
 
             // Reset dialog size
-            QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
+            //QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
 
             QE('idx_dlgOkButton', true);
             QV('idx_dlgOkButton', b & 1);
@@ -19338,7 +19420,6 @@
         function dialogclose(x) {
             setSessionActivity();
             var f = xxdialogFunc, b = xxdialogButtons, t = xxdialogTag;
-            setDialogMode();
             if (((b & 8) || x) && f) f(x, t);
         }
 
