@@ -3304,6 +3304,6 @@ nav .lbbuttonsel2 {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
-.form-control {
+.form-control, .form-select {
     border: 1px solid #adb5bd !important;
 }
