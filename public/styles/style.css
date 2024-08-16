@@ -1,4 +1,9 @@
 ﻿
+:root {
+    --sub-menu-bg: linear-gradient(180deg,#fff,#fff,#e9ecef);
+    --sub-menu-color: #888;
+}
+
 :focus {
     outline: 0;
 }
@@ -257,7 +262,7 @@ body {
 
 #uiMenuButton {
     cursor: pointer;
-    color: white;
+    /* color: white; */
     position: absolute;
     padding: 3px;
     right: 3px;
@@ -290,8 +295,8 @@ body {
 #MainSubMenuSpan, #MeshSubMenuSpan, #EventsSubMenuSpan, #UserSubMenuSpan, #UsersSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
     width: 100%;
     height: 24px;
-    color: white;
-    background-color: #808080;
+    color: var(--sub-menu-color);
+    background: var(--sub-menu-bg);
 }
 
 .menu_stack #UserDummyMenu {
@@ -727,7 +732,7 @@ body {
 #devListToolbarSpan {
     width: 100%;
     height: 24px;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg);
     vertical-align: middle;
     border-spacing: 0;
 }
@@ -1020,7 +1025,9 @@ NoMeshesPanel img {
     border-radius: 8px;
     cursor: pointer;
     margin: 8px;
-    box-shadow: 0px 0px 7px #000;
+    /* box-shadow: 0px 0px 7px #000; */
+    background: var(--sub-menu-bg);
+    border: 1px solid #cfcdcd;
 }
 
 .p2AccountActions {
@@ -1061,7 +1068,7 @@ NoMeshesPanel img {
 .pTable {
     width: 100%;
     height: 24px;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg) !important;
     margin-bottom: 4px;
     vertical-align: middle;
     border-spacing: 0;
@@ -1084,7 +1091,7 @@ NoMeshesPanel img {
 }
 
     .p3usersTable th {
-        color: gray;
+        color: var(--sub-menu-bg);
     }
 
 #p3events, #p16events, #p31events, #p41events {
@@ -1108,17 +1115,17 @@ NoMeshesPanel img {
 
 #p5filehead {
     width: 100%;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg);
     text-align: left;
     padding: 4px;
 }
 
 .night #p5filehead {
-    background-color: #333;
+    background: var(--sub-menu-bg);
 }
 
 #p5filesubhead {
-    background-color: #E4E9E7;
+    background: var(--sub-menu-bg);
     height: 28px;
 }
 
@@ -1204,7 +1211,7 @@ NoMeshesPanel img {
 
 #p10html2 table {
     color: black;
-    background-color: #EEE;
+    background: var(--sub-menu-bg);
     border-color: #AAA;
     border-width: 1px;
     border-style: solid;
@@ -1724,21 +1731,21 @@ nav .lbbuttonsel2 {
 
 .style2 {
     text-align: center;
-    background-color: #808080;
+    background: var(--sub-menu-bg);
     font-weight: bold;
 }
 
 .style3 {
     text-align: center;
     color: white;
-    background-color: #808080;
+    background: var(--sub-menu-bg);
     font-weight: bold;
 }
 
 .style3x {
     text-align: center;
-    color: white;
-    background-color: #808080;
+    color: var(--sub-menu-color);
+    background: var(--sub-menu-bg);
     font-weight: bold;
 }
 
@@ -1769,7 +1776,7 @@ nav .lbbuttonsel2 {
 
 .style5 {
     text-align: center;
-    background-color: #808080;
+    background: var(--sub-menu-bg);
     font-weight: normal;
 }
 
@@ -1819,7 +1826,8 @@ nav .lbbuttonsel2 {
 .style14 {
     height: 100%;
     text-align: left;
-    background-color: #D3D9D6;
+    /* background-color: #D3D9D6; */
+    background: var(--sub-menu-bg);
 }
 
 .night .style14 {
@@ -1828,7 +1836,7 @@ nav .lbbuttonsel2 {
 }
 
 .auto-style1 {
-    background-color: #D3D9D6;
+    background: var(--sub-menu-bg);
     text-align: right;
 }
 
@@ -1838,7 +1846,7 @@ nav .lbbuttonsel2 {
 }
 
 .night .auto-style1 {
-    background-color: #333;
+    background: var(--sub-menu-bg);
     color: #CCC;
 }
 
@@ -2402,7 +2410,11 @@ nav .lbbuttonsel2 {
     padding-left: 4px;
     padding-top: 2px;
     padding-bottom: 2px;
-    background: #C0C0C0;
+    background: var(--sub-menu-bg);
+}
+
+#consoleTable .areaHead {
+    border: 1px solid #C0C0C0;
 }
 
 .night .areaHead {
@@ -2423,7 +2435,7 @@ nav .lbbuttonsel2 {
 .areaFoot {
     padding-top: 2px;
     padding-bottom: 2px;
-    background: #C0C0C0;
+    background: var(--sub-menu-bg);
     height: 22px;
 }
 
@@ -2666,7 +2678,7 @@ nav .lbbuttonsel2 {
 .serverStateTableCell {
     width: 300px;
     height: 24px;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg);
     margin-bottom: 4px;
     vertical-align: middle;
     border-spacing: 0;
@@ -3300,10 +3312,15 @@ nav .lbbuttonsel2 {
     font-size: xx-large;
 }
   
-.card:hover {
+.card:hover, #p2AccountImage:hover, #p2canvas:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
 .form-control, .form-select {
     border: 1px solid #adb5bd !important;
+}
+
+.card {
+    background: var(--sub-menu-bg);
+    color: var(--sub-menu-color);
 }
