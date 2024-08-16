@@ -16923,17 +16923,20 @@
             var x = '', y = '';
             if (mode == 2) {
                 if (usergroups) { for (var i in usergroups) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
-                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp4groupid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp4groupid style=width:100% class=form-select>' + y + '</select></div>');
             }
             if ((mode == 1) && (serverinfo.crossDomain)) {
-                var y = '<select style=width:240px id=p4domain>';
+                var y = '<select style=width:240px id=p4domain class=form-select>';
                 for (var i in serverinfo.crossDomain) { y += '<option value=' + i + '>' + ((serverinfo.crossDomain[i] == '') ? "Default" : EscapeHtml(serverinfo.crossDomain[i])) + '</option>'; }
                 y += '</select>';
                 x += addHtmlValue("Domain", y);
             }
-            x += addHtmlValue("Name", '<input id=p4name maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
-            x += addHtmlValue("Description", '<textarea id=p4desc value="" style=width:230px;height:60px;resize:none maxlength=1024 /></textarea>');
-            setDialogMode(2, (mode == 1) ? "Create User Group" : "Duplicate User Group", 3, showCreateUserGroupDialogEx, x, mode);
+            x += addHtmlValue("Name", '<input id=p4name class=form-control maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
+            x += addHtmlValue("Description", '<textarea id=p4desc class=form-control value="" style=width:345px;height:60px;resize:none maxlength=1024 /></textarea>');
+            setModalContent('xxAddAgent', (mode == 1) ? "Create User Group" : "Duplicate User Group", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showCreateUserGroupDialogEx(3, mode);
+            });
             showCreateUserGroupDialogValidate();
             Q('p4name').focus();
         }
