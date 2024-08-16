@@ -837,8 +837,7 @@
                     <div id="bigfail" style="display:none"><b>&#10007;</b></div>
                     <span id="p5files"></span>
                 </div>
-                <table id="p5toolbarBottom" class="table table-striped table-hover" style=width:100% cellpadding=0
-                    cellspacing=0>
+                <table id="p5toolbarBottom" class="table table-hover" style=width:100% cellpadding=0 cellspacing=0>
                     <tr>
                         <td class=style6>&nbsp;<span id="p5bottomstatus"></span></td>
                     </tr>
@@ -12468,7 +12467,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
@@ -13983,7 +13982,7 @@
         function updateLoginTokens() {
             var x = '', count = 1;
             if ((loginTokens != null) && (loginTokens.length > 0)) {
-                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
+                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table class="table table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
                 for (var i = 0; i < loginTokens.length; i++) {
                     var ltoken = loginTokens[i];
                     var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
@@ -14282,7 +14281,7 @@
                 x += '<a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "ACM" + '</a>';
             }
 
-            x += '<table class="table table-striped table-hover" cellpadding=2 cellspacing=0><tbody><tr><th scope=col>' + "User Authorizations" + '</th><th scope=col></th></tr>';
+            x += '<table class="table table-hover" cellpadding=2 cellspacing=0><tbody><tr><th scope=col>' + "User Authorizations" + '</th><th scope=col></th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -14368,7 +14367,7 @@
                 if ((features & 1) == 0) { dllist += ' <a onclick=meshImportDeviceList()><img title="' + "Import device list" + '" src="images/link6.png" /></a>'; } // Show import only in LAN or Hybrid mode
             }
 
-            var y = '<table class="table table-striped table-hover"><tbody><tr class="class="fw-bold"><th>' + "Devices" + '</th><th scope=col class="text-end">' + dllist + '</th></tr>';
+            var y = '<table class="table table-hover"><tbody><tr class="class="fw-bold"><th>' + "Devices" + '</th><th scope=col class="text-end">' + dllist + '</th></tr>';
             for (var i in nodes) {
                 var node = nodes[i], gray = ((node.conn > 0) ? '' : ' gray');
                 if (currentMesh._id != node.meshid) continue;
@@ -16024,7 +16023,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'ugrp') icon = 'm4';
@@ -16173,7 +16172,7 @@
             else if (userSearch.startsWith('n:')) { emailSearch = null; userSearch = userSearch.substring(2); }
 
             // Display the users using the sorted list
-            var x = '<table class="table table-striped table-hover" cellpadding=0 cellspacing=0>', addHeader = true;
+            var x = '<table class="table table-hover" cellpadding=0 cellspacing=0>', addHeader = true;
             x += '<th>' + "Name" + '<th style=width:80px>' + "Device Groups" + '<th style=width:120px>' + nobreak("Last Access") + '<th style=width:120px>' + "Permissions";
 
             // Save the list of currently checked users
@@ -16885,7 +16884,7 @@
                 QV('DuplicateUserGroupButton', false);
             } else {
                 // Display the groups using the sorted list
-                x += '<table class="table table-striped table-hover p3usersTable" cellpadding=0 cellspacing=0>';
+                x += '<table class="table table-hover p3usersTable" cellpadding=0 cellspacing=0>';
                 x += '<th>' + "Name" + '<th style=width:80px>' + "Users" + '<th style=width:80px>' + "Device Groups" + '<th style=width:80px>' + "Devices";
                 for (var i in sortedGroups) { x += addUserGroupHtml(sortedGroups[i]); }
                 x += '</table>';
@@ -17087,7 +17086,7 @@
             if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) {
                 x += '<a href=# onclick="return p51showAddUserDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</a>';
             }
-            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Group Members" + '</th><th scope=col></th></tr>';
+            x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Group Members" + '</th><th scope=col></th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -17119,7 +17118,7 @@
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (currentUserGroup._id.split('/')[1] != meshes[i]._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
             if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(3)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</a>'; }
-            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
+            x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var omeshes = [];
                 for (var i in currentUserGroup.links) { if (i.startsWith('mesh/')) { if (meshes[i] != null) { omeshes.push(meshes[i]); } } }
@@ -17143,7 +17142,7 @@
             count = 1;
             x += '<br />';
             if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>'; }
-            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
+            x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var onodes = [];
                 for (var i in currentUserGroup.links) { if (i.startsWith('node/')) { var node = getNodeFromId(i); if (node != null) { onodes.push(node); } } }
@@ -17823,7 +17822,7 @@
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (meshes[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newDeviceGroup = true; } }
             if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</a>'; }
-            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
+            x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 var omeshes = [];
                 for (var i in currentUser.links) { if (i.startsWith('mesh/')) { if (meshes[i] != null) { omeshes.push(meshes[i]); } } }
@@ -17857,7 +17856,7 @@
                     }
                     if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p30showAddUserGroupDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
                 }
-                x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "User Group Memberships" + '</th><th scope=col></th></tr>';
+                x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "User Group Memberships" + '</th><th scope=col></th></tr>';
                 if (currentUser.links) {
                     var ougroups = [];
                     for (var i in currentUser.links) { if (i.startsWith('ugrp/')) { if (usergroups[i] != null) { ougroups.push(usergroups[i]); } } }
@@ -17881,7 +17880,7 @@
             count = 1;
             x += '<br />';
             if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>'; }
-            x += '<table class="table table-striped table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
+            x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 // Sort the list of devices to display
                 var nodelist = [];
@@ -17983,7 +17982,7 @@
                     if (printDate(time) != dateHeader) {
                         if (dateHeader != null) x += '</table>';
                         dateHeader = printDate(time);
-                        x += '<table class="table table-striped table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
+                        x += '<table class="table table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
                     var icon = 'si3';
                     if (event.etype == 'user') icon = 'm2';
@@ -18368,7 +18367,7 @@
 
         function renderReport(r) {
             var colTranslation = { time: "Time", device: "Device", session: "Session", user: "User", devgroup: "Device Group", guest: "Guest", length: "Length", bytesin: "Bytes In", bytesout: "Bytes Out", os: "Operating System", ip: "IP Address", browser: "Browser", msg: "Message", twofactor: "2nd Factor" }
-            var x = '<table class="table table-striped table-hover">', firstItem;
+            var x = '<table class="table table-hover">', firstItem;
             var sumByCol = null; // Indicate by what colum we sum by
             var sumByValues = []; // Indicate by what values we sum by
 

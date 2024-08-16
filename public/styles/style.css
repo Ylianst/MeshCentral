@@ -3324,3 +3324,8 @@ nav .lbbuttonsel2 {
     background: var(--sub-menu-bg);
     color: var(--sub-menu-color);
 }
+
+.table td,
+.table th {
+    padding: 0.05rem !important; /* Decrease padding to reduce row height */
+}
