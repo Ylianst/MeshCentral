@@ -1270,10 +1270,10 @@ function serverConnect() {
         var domainid = '', username = 'admin';
         if (args.logindomain != null) { domainid = args.logindomain; }
         if (args.loginuser != null) { username = args.loginuser; }
-        url += '?auth=' + encodeCookie({ userid: 'user/' + domainid + '/' + username, domainid: domainid }, ckey);
+        url += (url.indexOf('?key=') >= 0 ? '&auth=' : '?auth=') + encodeCookie({ userid: 'user/' + domainid + '/' + username, domainid: domainid }, ckey);
     } else {
         if (args.logindomain != null) { console.log("--logindomain can only be used along with --loginkey."); process.exit(); return; }
-        if (loginCookie != null) { url += '?auth=' + loginCookie; }
+        if (loginCookie != null) { url += (url.indexOf('?key=') >= 0 ? '&auth=' : '?auth=') + loginCookie; }
     }
 
     const ws = new WebSocket(url, options);
@@ -2401,6 +2401,8 @@ function serverConnect() {
                 if (data.cause == 'noauth') {
                     if (data.msg == 'tokenrequired') {
                         console.log('Authentication token required, use --token [number].');
+                    } else if (data.msg == 'nokey') {
+                        console.log('URL key is invalid or missing, please specify ?key=xxx in url');
                     } else {
                         if ((args.loginkeyfile != null) || (args.loginkey != null)) {
                             console.log('Invalid login, check the login key and that this computer has the correct time.');
