@@ -16440,7 +16440,8 @@
             // Display the dialog box
             var x = '';
             x += '<label><input id=d2c1 type=checkbox' + (userViewSettings.noViewLimit ? '' : ' checked') + '>' + "Only display first 100 users" + '</label><br />';
-            setDialogMode(2, "Users View", 3, onUsersViewSettingsEx, x);
+            setModalContent('xxAddAgent', 'Users View', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', onUsersViewSettingsEx);
         }
 
         function onUsersViewSettingsEx() {
@@ -16457,8 +16458,9 @@
             x += "CSV file format is as follows:" + '<br />';
             x += '<pre>user,pass,email,resetNextLogin\r\nx1,x,x1@x,\r\nx2,x,,true\r\n</pre><br />';
             x += '<input type=file id=d4importFile class="form-control" accept=".json,.csv" onchange=p4batchAccountCreateValidate() />';
-            setDialogMode(2, "User Account Import", 3, p4batchAccountCreateEx, x);
-            QE('idx_dlgOkButton', false);
+            setModalContent('xxAddAgent', 'User Account Import', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p4batchAccountCreateEx);
+            //QE('idx_dlgOkButton', false);
         }
 
         function p4batchAccountCreateValidate() {
@@ -16532,7 +16534,8 @@
             var x = "Download the list of users with one of the file formats below." + '<br /><br />';
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + "userlist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + "userlist.json" + '</a>');
-            setDialogMode(2, "User List Export", 1, null, x);
+            setModalContent('xxAddAgent', 'User List Export', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
 
         function p4downloadUserInfoCSV() {
@@ -16571,7 +16574,10 @@
             x += '<option value=60>' + "Show for 1 minute" + '</option>';
             x += '<option value=300>' + "Show for 5 minutes" + '</option>';
             x += '</select>';
-            setDialogMode(2, "Broadcast Message", 3, showUserBroadcastDialogEx, x, targetid ? decodeURIComponent(targetid) : null);
+            setModalContent('xxAddAgent', 'Broadcast Message', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showUserBroadcastDialogEx(3, targetid ? decodeURIComponent(targetid) : null);
+            });
             Q('broadcastMessage').focus();
         }
 
@@ -16609,7 +16615,8 @@
                 if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>' + format("Requirements: {0}.", r.join(', ')) + '</div>'; }
             }
 
-            setDialogMode(2, "Create Account", 3, showCreateNewAccountDialogEx, x);
+            setModalContent('xxAddAgent', 'Create Account', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', showCreateNewAccountDialogEx);
             showCreateNewAccountDialogValidate();
             if ((features & 0x200000) == 0) { Q('p4name').focus(); } else { Q('p4email').focus(); }
         }
@@ -16916,17 +16923,20 @@
             var x = '', y = '';
             if (mode == 2) {
                 if (usergroups) { for (var i in usergroups) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; } }
-                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp4groupid style=width:100%>' + y + '</select></div>');
+                x += addHtmlValue("User Group", '<div style=width:230px;margin:0;padding:0><select id=dp4groupid style=width:100% class=form-select>' + y + '</select></div>');
             }
             if ((mode == 1) && (serverinfo.crossDomain)) {
-                var y = '<select style=width:240px id=p4domain>';
+                var y = '<select style=width:240px id=p4domain class=form-select>';
                 for (var i in serverinfo.crossDomain) { y += '<option value=' + i + '>' + ((serverinfo.crossDomain[i] == '') ? "Default" : EscapeHtml(serverinfo.crossDomain[i])) + '</option>'; }
                 y += '</select>';
                 x += addHtmlValue("Domain", y);
             }
-            x += addHtmlValue("Name", '<input id=p4name maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
-            x += addHtmlValue("Description", '<textarea id=p4desc value="" style=width:230px;height:60px;resize:none maxlength=1024 /></textarea>');
-            setDialogMode(2, (mode == 1) ? "Create User Group" : "Duplicate User Group", 3, showCreateUserGroupDialogEx, x, mode);
+            x += addHtmlValue("Name", '<input id=p4name class=form-control maxlength=64 onchange=showCreateUserGroupDialogValidate() onkeyup=showCreateUserGroupDialogValidate() />');
+            x += addHtmlValue("Description", '<textarea id=p4desc class=form-control value="" style=width:345px;height:60px;resize:none maxlength=1024 /></textarea>');
+            setModalContent('xxAddAgent', (mode == 1) ? "Create User Group" : "Duplicate User Group", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showCreateUserGroupDialogEx(3, mode);
+            });
             showCreateUserGroupDialogValidate();
             Q('p4name').focus();
         }
