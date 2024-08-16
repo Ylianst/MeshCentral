@@ -3352,7 +3352,6 @@
                 }
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate')) {
-                        var showServerVersionModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
                         var x = '<div class=dialogText>';
                         if (!message.tags.current) { message.tags.current = "Unknown"; }
                         if (!message.tags.stable) { message.tags.stable = "Unknown"; }
@@ -3364,15 +3363,13 @@
                         x += '</div>';
                         if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
                             setModalContent('xxAddAgent', 'MeshCentral Version', x);
-                            document.getElementById('idx_dlgOkButton').onclick = function () {
-                                showServerVersionModal.hide();
-                            };
+                            showModal('xxAddAgentModal', 'idx_dlgOkButton');
                         } else {
                             x += '<hr />' + "Check and click OK to start server self-update.";
                             setModalContent('xxAddAgent', 'MeshCentral Version', x);
-                            document.getElementById('idx_dlgOkButton').onclick = function () {
+                            showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
                                 server_showVersionDlgEx(2, message.tags);
-                            };
+                            });
                             server_showVersionDlgUpdate();
                         }
                         showServerVersionModal.show();
@@ -3381,26 +3378,18 @@
                 }
                 case 'servererrors': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerErrors')) {
-                        var showErrorsDlgModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                        showErrorsDlgModal.show();
                         if (message.data == null) {
                             setModalContent('xxAddAgent', 'Server Errors', 'Server has no error log.');
+                            showModal('xxAddAgentModal', 'idx_dlgOkButton');
                         } else {
                             var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
                             x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
                             x += '<div><label><input id=d2clearErrorsCheck type=checkbox onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
                             setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x);
                             setModalContent('xxAddAgent', 'MeshCentral Server Errors', x);
-                            var showServerErrorsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                            document.getElementById('idx_dlgOkButton').onclick = function () {
-                                server_showErrorsDlgEx();
-                                showServerErrorsModal.hide();
-                            };
+                            showModal('xxAddAgentModal', 'idx_dlgOkButton', server_showErrorsDlgEx);
                             server_showErrorsDlgUpdate();
                         }
-                        document.getElementById('idx_dlgOkButton').onclick = function () {
-                            showErrorsDlgModal.hide();
-                        };
                     }
                     break;
                 }
@@ -3418,11 +3407,7 @@
                             Q('d4editorarea').value = message.data;
                             Q('d4editorarea').setAttribute('readonly', 'readonly');
                         }
-                        var showServerConfigModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                        document.getElementById('idx_dlgOkButton').onclick = function () {
-                            showServerConfigModal.hide();
-                        };
-                        showServerConfigModal.show();
+                        showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     }
                     break;
                 }
@@ -4458,11 +4443,7 @@
                         x += '</table></div>';
                     }
                     setModalContent('xxAddAgent', 'Previous Logins', x);
-                    var showPreviousLoginsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                    showPreviousLoginsModal.show();
-                    document.getElementById('idx_dlgOkButton').onclick = function () {
-                        showPreviousLoginsModal.hide();
-                    };
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'getDeviceDetails': {
@@ -6013,9 +5994,7 @@
 
             setModalContent('xxAddAgent', "Invite", x);
             d2RequestInvitationLink();
-            var inviteAgentToMeshModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            inviteAgentToMeshModal.show();
-
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
 
             if (features & 64) {
                 document.getElementById('d2InviteType').focus();
@@ -6146,8 +6125,7 @@
             setModalContent('xxAddAgent', "Add Agent to Device Group", x);
 
             // Show the modal
-            var modal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            modal.show();
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
 
             // Add QRCode
             var qrcodetext = domainUrlNoSlash + ':' + portStr + '/mobile.htm?key=' + meshid.split('/')[2] + ((urlargs.key) ? ('&key=' + urlargs.key) : '');
@@ -6195,6 +6173,20 @@
             } else {
                 console.error('Modal elements not found:', modalId + 'Title', modalId + 'Body');
             }
+        }
+
+        // Function used to show and hide any modal by passing appropriate `modalId` and `okButtonId`
+        function showModal(modalId, okButtonId, okCallback) {
+            var modalElement = document.getElementById(modalId);
+            var modalInstance = new bootstrap.Modal(modalElement);
+            
+            modalInstance.show();
+            document.getElementById(okButtonId).onclick = function () {
+                if (okCallback && typeof okCallback === 'function') {
+                    okCallback();
+                }
+                modalInstance.hide();
+            };
         }
 
         function account_createMesh() {
@@ -8797,13 +8789,9 @@
             if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
 
             setModalContent('xxAddAgent', 'Notes', x);
-            var showNotesModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            showNotesModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 showNotesEx(2, noteid);
-                showNotesModal.hide();
-            };
+            });
 
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
@@ -12520,11 +12508,7 @@
                 x += '</div>';
 
                 setModalContent('xxAddAgent', 'Event Details', x);
-                var eventDetailsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                eventDetailsModal.show();
-                document.getElementById('idx_dlgOkButton').onclick = function () {
-                    eventDetailsModal.hide();
-                };
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             }
         }
 
@@ -13320,13 +13304,7 @@
             var x = '<input id=p2file type=file class="form-control" accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;box-shadow: 0px 0px 15px #000" onclick=account_canvasClick() /></div>';
 
             setModalContent('xxAddAgent', 'Manage Account Image', x);
-            var manageAccountImageModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            manageAccountImageModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                account_manageImageEx2();
-                manageAccountImageModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_manageImageEx2);
 
             var ctx = Q('p2canvas').getContext('2d');
             if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
@@ -13577,13 +13555,7 @@
             }
 
             setModalContent('xxAddAgent', 'Localization Settings', y);
-            var account_showLocalizationSettingsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            account_showLocalizationSettingsModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                account_showLocalizationSettingsEx();
-                account_showLocalizationSettingsModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_showLocalizationSettingsEx);
             return false;
         }
 
@@ -13621,13 +13593,7 @@
             x += '<label for=d2tokenExpire class="form-label">Expire Time</label><select class="boxsize form-select" id=d2tokenExpire>' + y + '</select>';
 
             setModalContent('xxAddAgent', 'Create Login Token', x);
-            var accountCreateLoginTokenModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            accountCreateLoginTokenModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                account_createLoginTokenEx();
-                accountCreateLoginTokenModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_createLoginTokenEx);
 
             QE('idx_dlgOkButton', false);
             Q('d2tokenName').focus();
@@ -13651,13 +13617,7 @@
             x += '<div class="form-check"><label><input id=p2notifyIntelAmtKvmActions class="form-check-input" type=checkbox />' + "Intel&reg; AMT desktop and serial events" + '</label></div>';
 
             setModalContent('xxAddAgent', 'Notification Settings', x);
-            var notificationSettingsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            notificationSettingsModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                account_showAccountNotifySettingsEx();
-                notificationSettingsModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_showAccountNotifySettingsEx);
 
             var n = getstore('notifications', 0);
             Q('p2notifyPlayNotifySound').checked = (n & 1);
@@ -13695,13 +13655,8 @@
             x += '<div class="form-floating"><input id=dp2email class="form-control" maxlength=256 onchange=account_validateEmail() onkeyup=account_validateEmail(event) placeholder=Email /> <label for=dp2email>Email</label></div>';
 
             setModalContent('xxAddAgent', 'Email Address Change', x);
-            var showChangeEmailModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            showChangeEmailModal.show();
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_changeEmail);
 
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                account_changeEmail();
-                showChangeEmailModal.hide();
-            };
             if (userinfo.email != null) { Q('dp2email').value = userinfo.email; }
             account_validateEmail();
             Q('dp2email').focus();
@@ -13736,14 +13691,9 @@
             x += '</form>';
 
             setModalContent('xxAddAgent', 'Delete Account', x);
-
-            var deleteAccountModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            deleteAccountModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
                 dialogclose(1);
-                deleteAccountModal.hide();
-            };
+            });
 
             account_validateDeleteAccount();
             Q('apassword1').focus();
@@ -13790,13 +13740,7 @@
             //x += '</div><br /></form>';
 
             setModalContent('xxAddAgent', 'Change Password', x);
-            var changePasswordModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            changePasswordModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                account_showChangePasswordEx();
-                changePasswordModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_showChangePasswordEx);
 
             Q('apassword0').focus();
             account_validateNewPassword();
@@ -13815,24 +13759,21 @@
             // Check if we are disallowed from creating a device group
             if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) {
                 setModalContent('xxAddAgent', 'New Device Group', 'This account does not have the rights to create a new device group.');
-                var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                xxAddAgentModal.show();
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 return false;
             }
 
             // Remind the user to verify the email address
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) {
                 setModalContent('xxAddAgent', 'Account Security', 'Unable to access this feature until an email address is verified. This is required for password recovery. Go to the "My Account" tab to change and verify an email address.');
-                var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                xxAddAgentModal.show();
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 return false;
             }
 
             // Remind the user to add two-factor authentication
             if ((features & 0x00040000) && (count2factoraAuths() == 0)) {
                 setModalContent('xxAddAgent', 'Account Security', 'Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the "My Account" tab and look at the "Account Security" section.');
-                var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-                xxAddAgentModal.show();
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 return false;
             }
 
@@ -13879,14 +13820,7 @@
             setModalContent('xxAddAgent', 'New Device Group', x);
 
             // Show the modal
-            var xxAddAgentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            xxAddAgentModal.show();
-
-            // Submit the mesh create form
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                account_createMeshEx();
-                xxAddAgentModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_createMeshEx);
 
             // Validate the mesh create form
             account_validateMeshCreate();
@@ -14099,11 +14033,7 @@
             x += '</div><br /><br /></form>';
 
             setModalContent('xxAddAgent', 'Restore Server', x);
-            var serverBackupRestoreModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            serverBackupRestoreModal.show();
-            document.getElementById('account_dlgCancelButton').onclick = function () {
-                serverBackupRestoreModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             account_validateServerRestore();
             return false;
         }
@@ -14501,14 +14431,7 @@
             x += '<div id=dp20amtpolicydiv></div>';
 
             setModalContent('xxAddAgent', 'Intel&reg; AMT Policy', x);
-
-            var editMeshAmtModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editMeshAmtModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20editMeshAmtEx();
-                editMeshAmtModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editMeshAmtEx);
 
             if (currentMesh.amt) { Q('dp20amtpolicy').value = currentMesh.amt.type; }
             p20editMeshAmtChange();
@@ -14587,12 +14510,9 @@
             var x = format("Are you sure you want to delete group {0}? Deleting the device group will also delete all information about devices within this group.", EscapeHtml(currentMesh.name)) + '<br /><br />';
             x += '<label class=form-check-label><input id=p20check type=checkbox class="form-check-input m-1" onchange=p20validateDeleteMeshDialog() />' + "Confirm" + '</label>';
             setModalContent('xxAddAgent', 'Delete Group', x);
-            var showDeleteMeshModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            showDeleteMeshModal.show();
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20showDeleteMeshDialogEx(3,'');
-                showDeleteMeshModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
+                p20showDeleteMeshDialogEx(3, '');
+            });
             p20validateDeleteMeshDialog();
             return false;
         }
@@ -14639,15 +14559,8 @@
             x += '<textarea id=dp20meshdesc class="form-control" maxlength=1024 placeholder=Description></textarea>';
             x += '<label for=dp20meshdesc>Description</label>';
             x += '</div>';
-            setModalContent('xxAddAgent', 'Edit Device Group', x);
-           
-            var editMeshNameModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editMeshNameModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20editmeshEx();
-                editMeshNameModal.hide();
-            };
+            setModalContent('xxAddAgent', 'Edit Device Group', x);  
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshEx);
 
             Q('dp20meshname').value = currentMesh.name;
             if (currentMesh.desc) Q('dp20meshdesc').value = currentMesh.desc;
@@ -14683,16 +14596,8 @@
             x += '<div><label for=d20flag5><input type=checkbox id=d20flag5 class="form-check-input me-2" ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label for=d20flag6><input type=checkbox id=d20flag6 class="form-check-input me-2" ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
 
-            setModalContent('xxAddAgent', title, x);
-            
-            var editUserConsentModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editUserConsentModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                console.log("Hello clicked");
-                p20editmeshconsentEx();
-                editUserConsentModal.hide();
-            };
+            setModalContent('xxAddAgent', title, x);   
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshconsentEx);
 
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
@@ -14750,15 +14655,7 @@
             }
 
             setModalContent('xxAddAgent', 'Edit Device Group Features', x);
-
-            var editDeviceGroupFeaturesModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editDeviceGroupFeaturesModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20editmeshfeaturesEx();
-                editDeviceGroupFeaturesModal.hide();
-            };
-
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshfeaturesEx);
             p20editmeshfeaturesValidate();
         }
 
@@ -14947,8 +14844,7 @@
                 QE('p20fulladmin', GetMeshRights(currentMesh) == 0xFFFFFFFF);
             }
 
-            var addUsersToDeviceGroupModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            addUsersToDeviceGroupModal.show();
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
 
             if (urights != -1) {
                 if (meshRightsActive) {
@@ -15341,14 +15237,7 @@
             }
 
             setModalContent('xxAddAgent', 'Notification Settings', x);
-
-            var editMeshNotifyModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editMeshNotifyModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20editMeshNotifyEx();
-                editMeshNotifyModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editMeshNotifyEx);
 
             Q('p20notifyIntelDeviceConnect').checked = (meshNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (meshNotify & 4);
@@ -15702,13 +15591,7 @@
         function p5folderset(x) { filetreelocation.push(decodeURIComponent(x)); updateFiles(); return false; }
         function p5createfolder() { 
             setModalContent('xxAddAgent', 'New Folder', '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) />');
-            var createFolderModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            createFolderModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p5createfolderEx();
-                createFolderModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5createfolderEx);
             focusTextBox('p5renameinput');
             p5fileNameCheck();
         }
@@ -15720,16 +15603,8 @@
              for (var i = 0; i < checkboxes.length; i++) { 
                 if (checkboxes[i].checked) { renamefile = checkboxes[i].value; } 
              }
-
              setModalContent('xxAddAgent', 'Rename', '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) value="' + renamefile + '" />');
-             var renameFileModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-             renameFileModal.show();
-
-             document.getElementById('idx_dlgOkButton').onclick = function () {
-                p5renamefileEx();
-                renameFileModal.hide();
-             };
-
+             showModal('xxAddAgentModal', 'idx_dlgOkButton', p5renamefileEx);
              focusTextBox('p5renameinput'); p5fileNameCheck();  
         }
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
@@ -15737,13 +15612,7 @@
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() { 
             setModalContent('xxAddAgent', 'Upload File', '<form method = post enctype = multipart / form - data action = uploadfile.ashx target = fileUploadFrame ><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /><span id=p5confirmOverwriteSpan style=display:none><br /><label><input type=checkbox id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></ >');
-            var uploadFileModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            uploadFileModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p5uploadFileEx();
-                uploadFileModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5uploadFileEx);
             p5updateUploadDialogOk('p5uploadinput');
         }
         function p5uploadFileEx() { Q('p5loginSubmit').click(); }
@@ -16198,7 +16067,8 @@
             var x = "Download the list of events with one of the file formats below." + '<br /><br />';
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + "eventslist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + "eventslist.json" + '</a>');
-            setDialogMode(2, "Event List Export", 1, null, x, mode);
+            setModalContent('xxAddAgent', 'Event List Export', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
 
         function p3downloadEventsDialogCSV(mode) {
@@ -16837,14 +16707,7 @@
             x += '</div>';
 
             setModalContent('xxAddAgent', "Server Permissions", x);
-
-            var userServerPermissionsModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            userServerPermissionsModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                showUserAdminDialogEx();
-                userServerPermissionsModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', showUserAdminDialogEx);
 
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
@@ -17738,14 +17601,7 @@
             x += '<div><label><input type=checkbox id=d20flag11 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
 
             setModalContent('xxAddAgent', 'Edit User Features', x);
-
-            var editUserFeaturesModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            editUserFeaturesModal.show();
-
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p20edituserfeaturesEx();
-                editUserFeaturesModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20edituserfeaturesEx);
 
             p20edituserfeaturesValidate();
         }
@@ -17858,12 +17714,9 @@
             x += '<div><label><input id=p4resetNextLogin class="form-check-input me-2" type=checkbox />' + "Force password reset on next login." + '</label></div>';
             if (multiFactor == 1) { x += '<div><label><input id=p4twoFactorRemove type=checkbox />' + "Remove all 2nd factor authentication." + '</label></div>'; }
             setModalContent('xxAddAgent', format("Change Password for {0}", EscapeHtml(currentUser.name)), x);
-            var showPasswordChangeModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            showPasswordChangeModal.show();
-            document.getElementById('idx_dlgOkButton').onclick = function () {
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
                 p30showUserChangePassDialogEx(3, multiFactor);
-                showPasswordChangeModal.hide();
-            };
+            });
             p30showUserChangePassDialogValidate();
             Q('p4pass1').focus();
             if (currentUser.passchange == -1) { Q('p4resetNextLogin').checked = true; }
@@ -17892,12 +17745,7 @@
         function p30showDeleteUserDialog() {
             if (xxdialogMode) return;
             setModalContent('xxAddAgent', format("Delete User {0}", EscapeHtml(currentUser.name)), format("Confirm deletion of user {0}?", EscapeHtml(currentUser.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>');
-            var showDeleteUserModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            showDeleteUserModal.show();
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                p30showDeleteUserDialogEx();
-                showDeleteUserModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p30showDeleteUserDialogEx);
             p10validateDeleteNodeDialog();
         }
 
@@ -18418,12 +18266,7 @@
             x += '</div>';
 
             setModalContent('xxAddAgent', 'Generate Report', x);
-            var generateReportModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            generateReportModal.show();
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                generateReportDialogEx();
-                generateReportModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', generateReportDialogEx);
             generateReportDialogValidate();
 
             var lastWeek = new Date();
@@ -19332,12 +19175,7 @@
             x += '</div>';
             //setDialogMode(2, "Server Tracing", 7, setServerTracingEx, x);
             setModalContent('xxAddAgent', 'Server Tracing', x);
-            var serverTracingModal = new bootstrap.Modal(document.getElementById('xxAddAgentModal'));
-            serverTracingModal.show();
-            document.getElementById('idx_dlgOkButton').onclick = function () {
-                setServerTracingEx();
-                serverTracingModal.hide();
-            };
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', setServerTracingEx);
         }
 
         function setServerTracingEx(b) {
