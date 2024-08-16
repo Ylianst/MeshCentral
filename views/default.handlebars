@@ -16440,7 +16440,8 @@
             // Display the dialog box
             var x = '';
             x += '<label><input id=d2c1 type=checkbox' + (userViewSettings.noViewLimit ? '' : ' checked') + '>' + "Only display first 100 users" + '</label><br />';
-            setDialogMode(2, "Users View", 3, onUsersViewSettingsEx, x);
+            setModalContent('xxAddAgent', 'Users View', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', onUsersViewSettingsEx);
         }
 
         function onUsersViewSettingsEx() {
@@ -16457,8 +16458,9 @@
             x += "CSV file format is as follows:" + '<br />';
             x += '<pre>user,pass,email,resetNextLogin\r\nx1,x,x1@x,\r\nx2,x,,true\r\n</pre><br />';
             x += '<input type=file id=d4importFile class="form-control" accept=".json,.csv" onchange=p4batchAccountCreateValidate() />';
-            setDialogMode(2, "User Account Import", 3, p4batchAccountCreateEx, x);
-            QE('idx_dlgOkButton', false);
+            setModalContent('xxAddAgent', 'User Account Import', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p4batchAccountCreateEx);
+            //QE('idx_dlgOkButton', false);
         }
 
         function p4batchAccountCreateValidate() {
@@ -16532,7 +16534,8 @@
             var x = "Download the list of users with one of the file formats below." + '<br /><br />';
             x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + "userlist.csv" + '</a>');
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + "userlist.json" + '</a>');
-            setDialogMode(2, "User List Export", 1, null, x);
+            setModalContent('xxAddAgent', 'User List Export', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
 
         function p4downloadUserInfoCSV() {
@@ -16571,7 +16574,10 @@
             x += '<option value=60>' + "Show for 1 minute" + '</option>';
             x += '<option value=300>' + "Show for 5 minutes" + '</option>';
             x += '</select>';
-            setDialogMode(2, "Broadcast Message", 3, showUserBroadcastDialogEx, x, targetid ? decodeURIComponent(targetid) : null);
+            setModalContent('xxAddAgent', 'Broadcast Message', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showUserBroadcastDialogEx(3, targetid ? decodeURIComponent(targetid) : null);
+            });
             Q('broadcastMessage').focus();
         }
 
@@ -16609,7 +16615,8 @@
                 if (rc > 0) { x += '<div style=font-size:x-small;padding:6px>' + format("Requirements: {0}.", r.join(', ')) + '</div>'; }
             }
 
-            setDialogMode(2, "Create Account", 3, showCreateNewAccountDialogEx, x);
+            setModalContent('xxAddAgent', 'Create Account', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', showCreateNewAccountDialogEx);
             showCreateNewAccountDialogValidate();
             if ((features & 0x200000) == 0) { Q('p4name').focus(); } else { Q('p4email').focus(); }
         }
