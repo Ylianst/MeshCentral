@@ -1659,7 +1659,7 @@
                         <td class="auto-style1">
                             <div class="d-inline-flex align-items-center">
                                 <label for="p31filterevents" class="form-label me-2">Filter</label>
-                                <select id=p31filterevents class="form-select" onchange=refreshUsersEvents()>
+                                <select id=p31filterevents class="form-select-sm" onchange=refreshUsersEvents()>
                                     <option value="">All Logs</option>
                                     <option value=agentlog>Agent Logs</option>
                                     <option value=relaylog>Relay Logs</option>
@@ -1672,7 +1672,7 @@
                             </div>
                             <div class="d-inline-flex align-items-center">
                                 <label for="p31limitdropdown" class="form-label me-2">Show</label>
-                                <select id=p31limitdropdown class="form-select" onchange=refreshUsersEvents()>
+                                <select id=p31limitdropdown class="form-select-sm" onchange=refreshUsersEvents()>
                                     <option value=60>Last 60</option>
                                     <option value=120>Last 120</option>
                                     <option value=250>Last 250</option>
@@ -13912,16 +13912,16 @@
 
                 // Print the mesh information
                 r += `
-                    <div class="col-md-3 mb-2"
-                            onclick="gotoMesh('` + sortedMeshes[i]._id + `')"
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-2"
+                            onclick="gotoMesh('` + sortedMeshes[i]._id + `')" 
                             onkeypress="if (event.key=='Enter') gotoMesh('` + sortedMeshes[i]._id + `')"
                             style="cursor:pointer;">
                         <div class="card mb-3">
                             <div class="row g-0">
-                                <div class="col-md-2 parent" style="display: flex; justify-content: center; align-items: center;">
-                                    <div class="mi child"></div>
+                                <div class="col-2 parent" style="display: flex; justify-content: center; align-items: center;">
+                                    <i class="fas fa-tv fa-2x text-primary"></i>
                                 </div>
-                                <div class="col-md-10 mx-auto" tabindex="0">
+                                <div class="col-10 mx-auto" tabindex="0">
                                     <div class="card-body" style=padding:0;>
                                         <h5 class="card-title e1">` + EscapeHtml(sortedMeshes[i].name) + `</h5>
                                         <p class="card-text">` + rights + `</p>
@@ -17781,7 +17781,7 @@
             // Display common device groups
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (meshes[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newDeviceGroup = true; } }
-            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(1)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</a>'; }
+            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(1)"><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 var omeshes = [];
@@ -17814,7 +17814,7 @@
                         userGroupCount++;
                         if ((currentUser.links == null) || (currentUser.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-2" onclick="return p30showAddUserGroupDialog()"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p30showAddUserGroupDialog()"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
                 }
                 x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "User Group Memberships" + '</th><th scope=col></th></tr>';
                 if (currentUser.links) {
@@ -17839,7 +17839,7 @@
             // Display common devices
             count = 1;
             x += '<br />';
-            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-2" onclick="return p20showAddMeshUserDialog(4)"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>'; }
+            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(4)"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 // Sort the list of devices to display
@@ -18475,7 +18475,7 @@
                 if (user != null) {
                     var name = user.name;
                     if (user.realname != null) { name += ', ' + user.realname; }
-                    return '<div onclick=\'gotoUser("' + user._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m2"></div>' + EscapeHtml(name);
+                    return '<div onclick=\'gotoUser("' + user._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer><i class="fas fa-user-circle"></i></div>' + EscapeHtml(name);
                 } else {
                     return '<i>' + "Unknown User" + '</i>';
                 }
