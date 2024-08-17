@@ -3337,7 +3337,7 @@ function onTunnelData(data)
                             if (cmd.sub == 'startack') { sendNextBlock = ((typeof cmd.ack == 'number') ? cmd.ack : 8); } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
                         }
                         // Send the next download block(s)
-                        while (sendNextBlock > 0) {
+                        if (sendNextBlock > 0) {
                             sendNextBlock--;
                             var buf = Buffer.alloc(16384);
                             var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
