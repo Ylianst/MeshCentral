@@ -185,16 +185,16 @@
             <nav class="nav flex-column">
                 <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#"
                     data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i
-                        class="fas fa-desktop me-2"></i></a>
+                        class="fas fa-computer me-2"></i></a>
                 <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account"
                     onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i
-                        class="fas fa-user me-2"></i></a>
+                        class="fas fa-user-gear me-2"></i></a>
                 <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events"
                     onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i
                         class="fas fa-calendar-alt me-2"></i></a>
                 <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files"
                     onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i
-                        class="fas fa-file me-2"></i></a>
+                        class="fas fa-folder-open me-2"></i></a>
                 <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users"
                     onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i
                         class="fas fa-users me-2"></i></a>
@@ -429,13 +429,13 @@
                         src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
                     <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton"
                         src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
-                    <button class="btn btn-outline-primary me-2" id="SelectAllButton">Select All</button>
-                    <button class="btn btn-outline-primary me-2">Group Action</button>
+                    <button class="btn btn-outline-primary me-2 btn-sm" id="SelectAllButton">Select All</button>
+                    <button class="btn btn-outline-primary me-2 btn-sm">Group Action</button>
                     <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);"
-                        style="display:none;margin-right:4px" value="Scroll To Top" />
-                    <input type="text" id=SearchInput class="form-control me-2" style="width: auto;"
+                        class="btn btn-outline-primary me-2 btn-sm" value="Scroll To Top" />
+                    <input type="text" id=SearchInput class="form-control-sm me-2 btn-sm" style="width: auto;"
                         placeholder="Filter">
-                    <select class="form-select me-2" style="width: auto;" id=DevFilterSelect
+                    <select class="form-select-sm me-2" style="width: auto;" id=DevFilterSelect
                         onchange=onOnlineCheckBox(event) title="Device Filter">
                         <option value=0 selected>All</option>
                         <option value=1>Online</option>
@@ -641,7 +641,7 @@
                     </div>
                     <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
-                    <span id="p2createMeshLink1"> - <a href=# onclick="return account_createMesh()"> <i class="fas fa-plus-circle"></i> New</a></span>
+                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm me-2" onclick="return account_createMesh()"> <i class="fas fa-plus-circle"></i> New</button></span>
                     <br /><br />
                     <div id=p2meshes></div>
                     <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=#
@@ -655,45 +655,6 @@
                     <h1>My Events</h1>
                 </div>
 
-                {{!--
-                <div class="row me-2 bg-secondary">
-                    <div class="col-auto me-auto"></div>
-                    <div class="col-auto">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <label for="p3filterevents">Filter</label>
-                            </div>
-                            <div class="col">
-                                <select id=p3filterevents class="form-control" onchange=refreshEvents()>
-                                    <option value="">All Logs</option>
-                                    <option value=agentlog>Agent Logs</option>
-                                    <option value=relaylog>Relay Logs</option>
-                                    <option value=manual>Manual Logs</option>
-                                    <option value=runcommands>Run Command Logs</option>
-                                    <option value=batchupload>Batch Upload Logs</option>
-                                    <option value=changenode>Change Node Logs</option>
-                                    <option value=removenode>Remove Node Logs</option>
-                                </select>
-                            </div>
-
-                            <div class="col-auto">
-                                <label for="p3limitdropdown">Show</label>
-                            </div>
-                            <div class="col">
-                                <select id=p3limitdropdown class="form-control" onchange=refreshEvents()>
-                                    <option value=60>Last 60</option>
-                                    <option value=120>Last 120</option>
-                                    <option value=250>Last 250</option>
-                                    <option value=500>Last 500</option>
-                                    <option value=1000>Last 1000</option>
-                                    <option value="">No limit</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
-
-
                 <table class="pTable">
                     <tr>
                         {{!-- <td class="h1"></td> --}}
@@ -704,7 +665,7 @@
                         <td class="auto-style1">
                             <div class="d-inline-flex align-items-center">
                                 <label for="p3filterevents" class="form-label me-2">Filter</label>
-                                <select id=p3filterevents class="form-select" onchange=refreshEvents()>
+                                <select id=p3filterevents class="form-select-sm" onchange=refreshEvents()>
                                     <option value="">All Logs</option>
                                     <option value=agentlog>Agent Logs</option>
                                     <option value=relaylog>Relay Logs</option>
@@ -718,7 +679,7 @@
 
                             <div class="d-inline-flex align-items-center">
                                 <label for="p3limitdropdown" class="form-label me-2">Show</label>
-                                <select id=p3limitdropdown class="form-select" onchange=refreshEvents()>
+                                <select id=p3limitdropdown class="form-select-sm" onchange=refreshEvents()>
                                     <option value=60>Last 60</option>
                                     <option value=120>Last 120</option>
                                     <option value=250>Last 250</option>
@@ -744,7 +705,7 @@
                         {{!-- <td class="h1"></td> --}}
                         <td class="style14">
                             <div style="float:right">
-                                <input type=button class="btn btn-outline-primary" onclick=showUserBroadcastDialog() style=margin-right:6px
+                                <input type=button class="btn btn-outline-primary btn-sm m-1" onclick=showUserBroadcastDialog() style=margin-right:6px
                                     value="Broadcast" />
                                 <a href=# onclick=p4downloadUserInfo()><i class="fas fa-download" title="Download user information" style="cursor:pointer"></i></a>
                                 <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate
@@ -754,16 +715,17 @@
                                     class="fas fa-cog" title="Settings" onclick="onUsersViewSettings()"></i>
                             </div>
                             <div>
-                                <input type=button id=UsersSelectAllButton class="btn btn-outline-primary" onclick="p3usersSelectallButtonFunction()"
+                                <input type=button id=UsersSelectAllButton class="btn btn-outline-primary btn-sm m-1" onclick="p3usersSelectallButtonFunction()"
                                     value="Select All" />
-                                <input type=button id=UsersGroupActionButton class="btn btn-outline-primary" disabled="disabled" value="Group Action"
+                                <input type=button id=UsersGroupActionButton class="btn btn-outline-primary btn-sm m-1" disabled="disabled" value="Group Action"
                                     onclick=p3usersGroupActionFunction() />
-                                <input id=UserNewAccountButton class="btn btn-outline-primary" type=button onclick=showCreateNewAccountDialog()
+                                <input id=UserNewAccountButton class="btn btn-outline-primary btn-sm m-1" type=button onclick=showCreateNewAccountDialog()
                                     value="New Account..." />
                                 <div class="d-inline-flex align-items-center">
-                                    <input id=UserSearchInput type=search class="form-control" placeholder=Filter
-                                        onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged()
-                                        autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
+                                    <input id=UserSearchInput type=search class="form-control-sm m-1"
+                                        placeholder=Filter onchange=onUserSearchInputChanged()
+                                        onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1)
+                                        onblur=onUserSearchFocus(0) />
                                 </div>
                             </div>
                         </td>
@@ -781,27 +743,27 @@
                         <td id="p5filehead" valign=bottom>
                             <div id="p5rightOfButtons"></div>
                             <div>
-                                <input type=button id=p5FolderUp class="btn btn-outline-primary" disabled="disabled" onclick="return p5folderup();"
+                                <input type=button id=p5FolderUp class="btn btn-outline-primary btn-sm" disabled="disabled" onclick="return p5folderup();"
                                     value="Up" />&nbsp;
-                                <input type=button id=p5SelectAllButton class="btn btn-outline-primary" disabled="disabled" onclick="p5selectallfile();"
+                                <input type=button id=p5SelectAllButton class="btn btn-outline-primary btn-sm" disabled="disabled" onclick="p5selectallfile();"
                                     value="Select All" />&nbsp;
-                                <input type=button id=p5RenameFileButton class="btn btn-outline-primary" disabled="disabled" value="Rename"
+                                <input type=button id=p5RenameFileButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Rename"
                                     onclick="p5renamefile();" />&nbsp;
-                                <input type=button id=p5DeleteFileButton class="btn btn-outline-primary" disabled="disabled" value="Delete"
+                                <input type=button id=p5DeleteFileButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Delete"
                                     onclick="p5deletefile();" />&nbsp;
-                                <input type=button id=p5ViewFileButton class="btn btn-outline-primary" disabled="disabled" value="Edit"
+                                <input type=button id=p5ViewFileButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Edit"
                                     onclick="p5viewfile()" />&nbsp;
-                                <input type=button id=p5NewFolderButton class="btn btn-outline-primary" disabled="disabled" value="New Folder"
+                                <input type=button id=p5NewFolderButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="New Folder"
                                     onclick="p5createfolder();" />&nbsp;
-                                <input type=button id=p5UploadButton class="btn btn-outline-primary" disabled="disabled" value="Upload"
+                                <input type=button id=p5UploadButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Upload"
                                     onclick="p5uploadFile()" />&nbsp;
-                                <input type=button id=p5DownloadButton class="btn btn-outline-primary" disabled="disabled" value="Download"
+                                <input type=button id=p5DownloadButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Download"
                                     onclick="p5downloadButton()" />&nbsp;
-                                <input type=button id=p5CutButton class="btn btn-outline-primary" disabled="disabled" value="Cut"
+                                <input type=button id=p5CutButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Cut"
                                     onclick="p5copyFile(1)" />&nbsp;
-                                <input type=button id=p5CopyButton class="btn btn-outline-primary" disabled="disabled" value="Copy"
+                                <input type=button id=p5CopyButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Copy"
                                     onclick="p5copyFile(0)" />&nbsp;
-                                <input type=button id=p5PasteButton class="btn btn-outline-primary" disabled="disabled" value="Paste"
+                                <input type=button id=p5PasteButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Paste"
                                     onclick="p5pasteFile()" />&nbsp;
                             </div>
                         </td>
@@ -809,7 +771,7 @@
                     <tr>
                         <td id="p5filesubhead">
                             <div style=float:right>
-                                <select id=p5sortdropdown class="form-select" onchange=updateFiles()>
+                                <select id=p5sortdropdown class="form-select-sm m-1" onchange=updateFiles()>
                                     <option value="1" selected="selected">Sort by name</option>
                                     <option value="2">Sort by size</option>
                                     <option value="3">Sort by date</option>
@@ -1736,7 +1698,7 @@
                         <select id=p40server style="display:none" onchange=updateServerTimelineStats()>
                         </select>&nbsp;
                         <div class="d-inline-flex align-items-center">
-                            <select id=p40type class="form-select" onchange=updateServerTimelineStats()>
+                            <select id=p40type class="form-select-sm m-1" onchange=updateServerTimelineStats()>
                                 <option value=0>Connections</option>
                                 <option value=1>Memory</option>
                                 <option value=5>CPU</option>
@@ -1745,7 +1707,7 @@
                             </select>&nbsp;
                         </div>
                         <div class="d-inline-flex align-items-center">
-                            <select id=p40time class="form-select" onchange=updateServerTimelineHours()>
+                            <select id=p40time class="form-select-sm m-1" onchange=updateServerTimelineHours()>
                                 <option value=3>Last 3 hours</option>
                                 <option value=8>Last 8 hours</option>
                                 <option value=24>Last day</option>
@@ -1757,7 +1719,7 @@
                             onclick=p40downloadEvents()></i>&nbsp;
                     </div>
                     <div>
-                        <input value="Refresh" type="button" class="btn btn-outline-primary" onclick="refreshServerTimelineStats()" />
+                        <input value="Refresh" type="button" class="btn btn-outline-primary btn-sm m-1" onclick="refreshServerTimelineStats()" />
                         &nbsp;<label><input id=p40log type="checkbox" class="form-check-input me-2"
                                 onclick="updateServerTimelineHours()" />Log-X</label>
                     </div>
@@ -1772,19 +1734,19 @@
                     <div class="toright2">
                         <div class="d-inline-flex align-items-center">
                             <label for="p41limitdropdown" class="form-label me-2">Show</label>
-                            <select id=p41limitdropdown class="form-select" onchange=displayServerTrace()>
+                            <select id=p41limitdropdown class="form-select-sm m-1" onchange=displayServerTrace()>
                                 <option value=100>Last 100</option>
                                 <option value=250>Last 250</option>
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>
                         </div>
-                        <input value="Clear" type="button" class="btn btn-secondary" onclick="clearServerTracing()" />
+                        <input value="Clear" type="button" class="btn btn-secondary btn-sm m-1" onclick="clearServerTracing()" />
                         <i class="fas fa-download" title="Download trace (.csv)" style=cursor:pointer
                             onclick=p41downloadServerTrace()></i>&nbsp;
                     </div>
                     <div>
-                        <input value="Tracing" type="button" class="btn btn-outline-primary" onclick="setServerTracing()" />
+                        <input value="Tracing" type="button" class="btn btn-outline-primary btn-sm m-1" onclick="setServerTracing()" />
                         <span id="p41traceStatus">None</span>
                     </div>
                 </div>
@@ -1847,13 +1809,13 @@
                             <div style="float:right">
                             </div>
                             <div id="p50userGroupOps">
-                                <input type=button id=UsersGroupsSelectAllButton class="btn btn-outline-primary"
+                                <input type=button id=UsersGroupsSelectAllButton class="btn btn-outline-primary btn-sm m-1"
                                     onclick="p50usersSelectallButtonFunction()" value="Select All" />
-                                <input type=button id=UsersGroupsGroupActionButton class="btn btn-outline-primary" disabled="disabled"
+                                <input type=button id=UsersGroupsGroupActionButton class="btn btn-outline-primary btn-sm m-1" disabled="disabled"
                                     value="Group Action" onclick=p50usersGroupActionFunction() />
-                                <input id=NewUserGroupButton type=button class="btn btn-outline-primary" onclick=showCreateUserGroupDialog(1)
+                                <input id=NewUserGroupButton type=button class="btn btn-outline-primary btn-sm m-1" onclick=showCreateUserGroupDialog(1)
                                     value="New Group..." />
-                                <input id=DuplicateUserGroupButton type=button class="btn btn-outline-primary" style=display:none
+                                <input id=DuplicateUserGroupButton type=button class="btn btn-outline-primary btn-sm m-1" style=display:none
                                     onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
                             </div>
                         </td>
@@ -1927,8 +1889,7 @@
                                         class="fas fa-download" title="Download Report"></i></a>&nbsp;
                             </div>
                             <div>
-                                <input type=button class="btn btn-outline-primary" onclick=generateReportDialog()
-                                    value="Generate Report..." />
+                                <button class="btn btn-primary btn-sm me-2 m-1" onclick=generateReportDialog() ><i class="far fa-file-alt"></i> Generate Report...</button>
                             </div>
                         </td>
                         {{!-- <td class="h2"></td> --}}
@@ -5095,7 +5056,7 @@
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:small;margin-top:4px>';
                 if ((view < 3) && (sort == 0) && (Object.keys(meshes).length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
-                    r += '<a href=# onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
+                    r += '<button class="btn btn-primary btn-sm me-2" onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" ><i class="fas fa-plus-circle"></i>' + " Add Device Group" + '</button>&nbsp';
                 }
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {
                     r += '<a href=# onclick=\'return p10showMeshCmdDialog(0)\' style=cursor:pointer title="' + "Download MeshCmd, a command line tool that performs many functions." + '">' + "MeshCmd" + '</a>&nbsp';
@@ -14242,11 +14203,10 @@
             }
 
             // Display device group note support
-            if (meshrights & 1) { x += '<br><input type=button class="btn btn-outline-primary" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
-
+            if (meshrights & 1) { x += '<br><input type=button class="btn btn-outline-primary btn-sm" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
-                x += '<a href=# onclick="return p20showAddMeshUserDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</a>';
+                x += '<button class="btn btn-primary btn-sm me-2" onclick="return p20showAddMeshUserDialog()"><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</button>';
                 if (usergroups != null) {
                     var userGroupCount = 0, newUserGroup = false;
                     for (var i in usergroups) {
@@ -14254,31 +14214,31 @@
                         userGroupCount++;
                         if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(2)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2" onclick="return p20showAddMeshUserDialog(2)"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
                 }
             }
 
             //if (meshrights & 4) { }
             if (currentMesh.mtype == 1) {
-                if (meshrights & 1) { x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Import Intel&reg; AMT devices." + '" onclick=\'return showAmtImport("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Import" + '</a>'; }
+                if (meshrights & 1) { x += '<button class="btn btn-primary btn-sm me-2" title="' + "Import Intel&reg; AMT devices." + '" onclick=\'return showAmtImport("' + currentMesh._id + '")\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "Import" + '</button>'; }
                 /*
                 if ((features & 1) == 0) { // If not WAN-Only
                     x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
                 }
                 */
                 if ((currentMesh.amt != null) && (currentMesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation
-                    x += '<a href=# style=cursor:pointer;margin-right:10px title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + currentMesh._id + '")\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Setup" + '</a>';
+                    x += '<button class="btn btn-primary btn-sm me-2" title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + currentMesh._id + '")\'><i class="fa-solid fa-gear"></i> ' + "Setup" + '</button>';
                 }
             }
             if ((currentMesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<a href=# onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new computer to this device group by installing the mesh agent." + '"><i class="fas fa-plus-circle"></i> ' + "Add Agent" + '</a>';
-                x += '<a href=# onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Invite someone to install the mesh agent on this device group." + '"><i class="fas fa-plus-circle"></i> ' + "Invite" + '</a>';
+                x += '<button class="btn btn-primary btn-sm me-2" onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' title="' + "Add a new computer to this device group by installing the mesh agent." + '"><i class="fas fa-plus-circle"></i> ' + "Add Agent" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2" onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' title="' + "Invite someone to install the mesh agent on this device group." + '"><i class="fas fa-user-plus"></i> ' + "Invite" + '</button>';
             }
             if ((currentMesh.mtype == 3) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<a href=# onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add device located on the local network." + '"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>';
+                x += '<button class="btn btn-primary btn-sm me-2" onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' title="' + "Add device located on the local network." + '"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>';
             }
             if (currentMesh.amt && (currentMesh.amt.type > 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // ACM activation or Full Automatic
-                x += '<a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "ACM" + '</a>';
+                x += '<button class="btn btn-primary btn-sm me-2" title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "ACM" + '</button>';
             }
 
             x += '<table class="table table-hover" cellpadding=2 cellspacing=0><tbody><tr><th scope=col>' + "User Authorizations" + '</th><th scope=col></th></tr>';
@@ -17076,7 +17036,7 @@
             x += '</table></div><br />';
 
             if ((userinfo.siteadmin & 256) != 0) {
-                x += '<input type=button class="btn btn-outline-primary" value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponentEx(group._id) + '") />';
+                x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponentEx(group._id) + '") />';
             }
 
             // Setup the panel
@@ -17084,7 +17044,7 @@
 
             x = '<br />';
             if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) {
-                x += '<a href=# onclick="return p51showAddUserDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</a>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p51showAddUserDialog()"><i class="fas fa-plus-circle"></i> ' + " Add Users" + '</button>';
             }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Group Members" + '</th><th scope=col></th></tr>';
 
@@ -17117,7 +17077,7 @@
             count = 1;
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (currentUserGroup._id.split('/')[1] != meshes[i]._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
-            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(3)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</a>'; }
+            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1"onclick="return p20showAddMeshUserDialog(3)"><i class="fas fa-plus-circle"></i> ' + " Add Device Group" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var omeshes = [];
@@ -17141,7 +17101,7 @@
             // Display all devices for this user group
             count = 1;
             x += '<br />';
-            if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(7)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>'; }
+            if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(7)"><i class="fas fa-plus-circle"></i> ' + " Add Device" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var onodes = [];
@@ -17498,7 +17458,7 @@
             x += '</table></div><br />';
 
             // Add action buttons
-            x += '<input type=button class="btn btn-outline-primary" value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
+            x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
             if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
             if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
             if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
@@ -17854,7 +17814,7 @@
                         userGroupCount++;
                         if ((currentUser.links == null) || (currentUser.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p30showAddUserGroupDialog()" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-2" onclick="return p30showAddUserGroupDialog()"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
                 }
                 x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "User Group Memberships" + '</th><th scope=col></th></tr>';
                 if (currentUser.links) {
@@ -17879,7 +17839,7 @@
             // Display common devices
             count = 1;
             x += '<br />';
-            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<a href=# onclick="return p20showAddMeshUserDialog(4)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</a>'; }
+            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-2" onclick="return p20showAddMeshUserDialog(4)"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 // Sort the list of devices to display
