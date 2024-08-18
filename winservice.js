@@ -50,12 +50,13 @@ function start() {
             var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'debug'];
             for (var i in xenv) { if (args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: args[xenv[i]] }); } } // Set some args as service environement variables.
             var svc = new service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
-            svc.on('install', function () { console.log('MeshCentral service installed.'); svc.start(); });
-            svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); process.exit(); });
-            svc.on('start', function () { console.log('MeshCentral service started.'); process.exit(); });
-            svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (args.stop) { process.exit(); } if (args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
-            svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); process.exit(); });
-            svc.on('invalidinstallation', function () { console.log('Invalid MeshCentral service installation.'); process.exit(); });
+            svc.on('install', function () { console.log('MeshCentral service installed.'); setTimeout(function(){ svc.start(); }, 1000); });
+            svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); setTimeout(function(){ process.exit(); }, 1000); });
+            svc.on('start', function () { console.log('MeshCentral service started.'); setTimeout(function(){ process.exit(); }, 1000); });
+            svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (args.stop) { setTimeout(function(){ process.exit(); }, 1000); } if (args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
+            svc.on('alreadyinstalled', function () { console.log('MeshCentral service already installed.'); setTimeout(function(){ process.exit(); }, 1000); });
+            svc.on('invalidinstallation', function () { console.log('ERROR: Invalid MeshCentral service installation.'); setTimeout(function(){ process.exit(); }, 1000); });
+            svc.on('error', function () { console.error('ERROR: MeshCentral service generated an error.'); setTimeout(function(){ process.exit(); }, 1000); });
 
             if (args.install == true) { try { svc.install(); } catch (e) { logException(e); } }
             if (args.stop == true || args.restart == true) { try { svc.stop(); } catch (e) { logException(e); } }
