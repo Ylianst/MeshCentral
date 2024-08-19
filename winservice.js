@@ -50,7 +50,7 @@ function start() {
             var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'debug'];
             for (var i in xenv) { if (args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: args[xenv[i]] }); } } // Set some args as service environement variables.
             var svc = new service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
-            svc.on('install', function () { console.log('MeshCentral service installed.'); setTimeout(function(){ svc.start(); }, 1000); });
+            svc.on('install', function () { console.log('MeshCentral service installed.'); setTimeout(function(){ process.exit(); }, 1000); });
             svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); setTimeout(function(){ process.exit(); }, 1000); });
             svc.on('start', function () { console.log('MeshCentral service started.'); setTimeout(function(){ process.exit(); }, 1000); });
             svc.on('stop', function () { console.log('MeshCentral service stopped.'); if (args.stop) { setTimeout(function(){ process.exit(); }, 1000); } if (args.restart) { console.log('Holding 5 seconds...'); setTimeout(function () { svc.start(); }, 5000); } });
