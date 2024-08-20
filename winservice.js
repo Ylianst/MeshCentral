@@ -49,7 +49,7 @@ function start() {
         if (((args.install == true) || (args.uninstall == true) || (args.start == true) || (args.stop == true) || (args.restart == true))) {
             var env = [], xenv = ['user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'exactport', 'debug'];
             for (var i in xenv) { if (args[xenv[i]] != null) { env.push({ name: 'mesh' + xenv[i], value: args[xenv[i]] }); } } // Set some args as service environement variables.
-            var svc = new service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5 });
+            var svc = new service({ name: 'MeshCentral', description: 'MeshCentral Remote Management Server', script: path.join(__dirname, 'winservice.js'), env: env, wait: 2, grow: 0.5, stopparentfirst: 'no' });
             svc.on('install', function () { console.log('MeshCentral service installed.'); setTimeout(function(){ process.exit(); }, 1000); });
             svc.on('uninstall', function () { console.log('MeshCentral service uninstalled.'); setTimeout(function(){ process.exit(); }, 1000); });
             svc.on('start', function () { console.log('MeshCentral service started.'); setTimeout(function(){ process.exit(); }, 1000); });
