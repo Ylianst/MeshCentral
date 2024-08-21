@@ -9543,11 +9543,12 @@
             if (mode == 0) { x += '<div>' + "MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials." + '<br /><br />'; }
             if (mode == 1) { x += '<div>' + "Download \"meshcmd\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed." + '<br /><br />'; }
             x += addHtmlValue("Operating System", y);
-            x += addHtmlValue("MeshCmd", '<a id=meshcmddownloadid onclick=downloadFile("meshagents?meshcmd=3' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></a>');
-            if (mode == 0) { x += addHtmlValue("Action File", '<a onclick=downloadFile("meshagents?meshaction=generic' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>' + "MeshAction (.txt)" + '</a>'); }
-            if (mode == 1) { x += addHtmlValue("Action File", '<a onclick=downloadFile("meshagents?meshaction=route&nodeid=' + nodeid + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>' + "MeshAction (.txt)" + '</a>'); }
+            x += addHtmlValue("MeshCmd", '<a id=meshcmddownloadid onclick=downloadFile("meshagents?meshcmd=3' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") class=link-primary></a>');
+            if (mode == 0) { x += addHtmlValue("Action File", '<a onclick=downloadFile("meshagents?meshaction=generic' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") class=link-primary>' + "MeshAction (.txt)" + '</a>'); }
+            if (mode == 1) { x += addHtmlValue("Action File", '<a onclick=downloadFile("meshagents?meshaction=route&nodeid=' + nodeid + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") class=link-primary>' + "MeshAction (.txt)" + '</a>'); }
             x += '</div>';
-            setModalContent('xxAddAgentModal', 'Download MeshCmd', x);
+            xxdialogButtons = 9; xxdialogMode = 'fileDownload';
+            setModalContent('xxAddAgent', 'Download MeshCmd', x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
             meshCmdOsClick();
         }
@@ -19272,10 +19273,10 @@
             // Reset dialog size
             //QS('dialog').width = QS('dialog').top = QS('dialog').left = QS('dialog').right = QS('dialog').bottom = null;
 
-            QE('idx_dlgOkButton', true);
-            QV('idx_dlgOkButton', b & 1);
-            QV('idx_dlgCancelButton', b & 2);
-            Q('idx_dlgCancelButton').value = ((b == 2) ? "Close" : "Cancel");
+            //QE('idx_dlgOkButton', true);
+            //QV('idx_dlgOkButton', b & 1);
+            //QV('idx_dlgCancelButton', b & 2);
+            //Q('idx_dlgCancelButton').value = ((b == 2) ? "Close" : "Cancel");
             QV('id_dialogclose', (b & 2) || (b & 8));
             QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);
@@ -19898,7 +19899,7 @@
         function getUrlVars() { var j, hash, vars = [], hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); for (var i = 0; i < hashes.length; i++) { j = hashes[i].indexOf('='); if (j > 0) { vars[hashes[i].substring(0, j)] = hashes[i].substring(j + 1, hashes[i].length); } } return vars; }
         //function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
-        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-3'}"><b> ${t} </b></div><div class="${classNames[1] || 'col-md-9'}"> ${v} </div></div>`; }
+        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-4'}"><b> ${t} </b></div><div class="${classNames[1] || 'col-md-8'}"> ${v} </div></div>`; }
         function addHtmlFormFloating(t, v, classNames = []) { return `<div class="row mb-1"><div class="form-floating mb-3 ${classNames[0] || 'col-md-12'}"> ${v} <label class="${classNames[1] || 'ms-2'}"> ${t} </label></div></div>`; }
 
 
