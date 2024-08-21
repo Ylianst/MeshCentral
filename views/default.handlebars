@@ -447,9 +447,8 @@
                         <option value=7>Tagged</option>
                         <option value=8>Untagged</option>
                     </select>
-                    <label class="d-flex"><input class="form-check-input me-2" type=checkbox
-                            id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span
-                            title="Show devices operating system name">OS
+                    <label class="d-flex"><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox
+                            onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS
                             Name</span></label>
                     <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2"
                             onclick=onOnlineCheckBox(event) /><span
@@ -641,7 +640,9 @@
                     </div>
                     <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
-                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm me-2" onclick="return account_createMesh()"> <i class="fas fa-plus-circle"></i> New</button></span>
+                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm me-2"
+                            onclick="return account_createMesh()"> <i class="fas fa-plus-circle"></i>
+                            New</button></span>
                     <br /><br />
                     <div id=p2meshes></div>
                     <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=#
@@ -705,9 +706,10 @@
                         {{!-- <td class="h1"></td> --}}
                         <td class="style14">
                             <div style="float:right">
-                                <input type=button class="btn btn-outline-primary btn-sm m-1" onclick=showUserBroadcastDialog() style=margin-right:6px
-                                    value="Broadcast" />
-                                <a href=# onclick=p4downloadUserInfo()><i class="fas fa-download" title="Download user information" style="cursor:pointer"></i></a>
+                                <input type=button class="btn btn-outline-primary btn-sm m-1"
+                                    onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
+                                <a href=# onclick=p4downloadUserInfo()><i class="fas fa-download"
+                                        title="Download user information" style="cursor:pointer"></i></a>
                                 <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate
                                         style="cursor:pointer;display:none" title="Batch create many user accounts"
                                         src="images/link6.png" /></a>
@@ -715,17 +717,16 @@
                                     class="fas fa-cog" title="Settings" onclick="onUsersViewSettings()"></i>
                             </div>
                             <div>
-                                <input type=button id=UsersSelectAllButton class="btn btn-outline-primary btn-sm m-1" onclick="p3usersSelectallButtonFunction()"
-                                    value="Select All" />
-                                <input type=button id=UsersGroupActionButton class="btn btn-outline-primary btn-sm m-1" disabled="disabled" value="Group Action"
-                                    onclick=p3usersGroupActionFunction() />
-                                <input id=UserNewAccountButton class="btn btn-outline-primary btn-sm m-1" type=button onclick=showCreateNewAccountDialog()
-                                    value="New Account..." />
+                                <input type=button id=UsersSelectAllButton class="btn btn-outline-primary btn-sm m-1"
+                                    onclick="p3usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersGroupActionButton class="btn btn-outline-primary btn-sm m-1"
+                                    disabled="disabled" value="Group Action" onclick=p3usersGroupActionFunction() />
+                                <input id=UserNewAccountButton class="btn btn-outline-primary btn-sm m-1" type=button
+                                    onclick=showCreateNewAccountDialog() value="New Account..." />
                                 <div class="d-inline-flex align-items-center">
-                                    <input id=UserSearchInput type=search class="form-control-sm m-1"
-                                        placeholder=Filter onchange=onUserSearchInputChanged()
-                                        onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1)
-                                        onblur=onUserSearchFocus(0) />
+                                    <input id=UserSearchInput type=search class="form-control-sm m-1" placeholder=Filter
+                                        onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged()
+                                        autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
                                 </div>
                             </div>
                         </td>
@@ -743,28 +744,28 @@
                         <td id="p5filehead" valign=bottom>
                             <div id="p5rightOfButtons"></div>
                             <div class="m-1">
-                                <input type=button id=p5FolderUp class="btn btn-outline-primary btn-sm" disabled="disabled" onclick="return p5folderup();"
-                                    value="Up" />&nbsp;
-                                <input type=button id=p5SelectAllButton class="btn btn-outline-primary btn-sm" disabled="disabled" onclick="p5selectallfile();"
-                                    value="Select All" />&nbsp;
-                                <input type=button id=p5RenameFileButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Rename"
-                                    onclick="p5renamefile();" />&nbsp;
-                                <input type=button id=p5DeleteFileButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Delete"
-                                    onclick="p5deletefile();" />&nbsp;
-                                <input type=button id=p5ViewFileButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Edit"
-                                    onclick="p5viewfile()" />&nbsp;
-                                <input type=button id=p5NewFolderButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="New Folder"
-                                    onclick="p5createfolder();" />&nbsp;
-                                <input type=button id=p5UploadButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Upload"
-                                    onclick="p5uploadFile()" />&nbsp;
-                                <input type=button id=p5DownloadButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Download"
-                                    onclick="p5downloadButton()" />&nbsp;
-                                <input type=button id=p5CutButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Cut"
-                                    onclick="p5copyFile(1)" />&nbsp;
-                                <input type=button id=p5CopyButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Copy"
-                                    onclick="p5copyFile(0)" />&nbsp;
-                                <input type=button id=p5PasteButton class="btn btn-outline-primary btn-sm" disabled="disabled" value="Paste"
-                                    onclick="p5pasteFile()" />&nbsp;
+                                <input type=button id=p5FolderUp class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" onclick="return p5folderup();" value="Up" />&nbsp;
+                                <input type=button id=p5SelectAllButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" onclick="p5selectallfile();" value="Select All" />&nbsp;
+                                <input type=button id=p5RenameFileButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Rename" onclick="p5renamefile();" />&nbsp;
+                                <input type=button id=p5DeleteFileButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Delete" onclick="p5deletefile();" />&nbsp;
+                                <input type=button id=p5ViewFileButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Edit" onclick="p5viewfile()" />&nbsp;
+                                <input type=button id=p5NewFolderButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
+                                <input type=button id=p5UploadButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
+                                <input type=button id=p5DownloadButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Download" onclick="p5downloadButton()" />&nbsp;
+                                <input type=button id=p5CutButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
+                                <input type=button id=p5CopyButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Copy" onclick="p5copyFile(0)" />&nbsp;
+                                <input type=button id=p5PasteButton class="btn btn-outline-primary btn-sm"
+                                    disabled="disabled" value="Paste" onclick="p5pasteFile()" />&nbsp;
                             </div>
                         </td>
                     </tr>
@@ -1128,8 +1129,8 @@
                             <input id="DeskType" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type"
                                 onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
                             <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input
-                                        id="DeskControl" type="checkbox" class="form-check-input me-2" onkeypress="return false"
-                                        onkeydown="return false"
+                                        id="DeskControl" type="checkbox" class="form-check-input me-2"
+                                        onkeypress="return false" onkeydown="return false"
                                         onclick="toggleKvmControl()" />Input</span></label>&nbsp;
                         </div>
                     </div>
@@ -1719,7 +1720,8 @@
                             onclick=p40downloadEvents()></i>&nbsp;
                     </div>
                     <div>
-                        <input value="Refresh" type="button" class="btn btn-outline-primary btn-sm m-1" onclick="refreshServerTimelineStats()" />
+                        <input value="Refresh" type="button" class="btn btn-outline-primary btn-sm m-1"
+                            onclick="refreshServerTimelineStats()" />
                         &nbsp;<label><input id=p40log type="checkbox" class="form-check-input me-2"
                                 onclick="updateServerTimelineHours()" />Log-X</label>
                     </div>
@@ -1741,12 +1743,14 @@
                                 <option value=1000>Last 1000</option>
                             </select>
                         </div>
-                        <input value="Clear" type="button" class="btn btn-secondary btn-sm m-1" onclick="clearServerTracing()" />
+                        <input value="Clear" type="button" class="btn btn-secondary btn-sm m-1"
+                            onclick="clearServerTracing()" />
                         <i class="fas fa-download" title="Download trace (.csv)" style=cursor:pointer
                             onclick=p41downloadServerTrace()></i>&nbsp;
                     </div>
                     <div>
-                        <input value="Tracing" type="button" class="btn btn-outline-primary btn-sm m-1" onclick="setServerTracing()" />
+                        <input value="Tracing" type="button" class="btn btn-outline-primary btn-sm m-1"
+                            onclick="setServerTracing()" />
                         <span id="p41traceStatus">None</span>
                     </div>
                 </div>
@@ -1809,13 +1813,16 @@
                             <div style="float:right">
                             </div>
                             <div id="p50userGroupOps">
-                                <input type=button id=UsersGroupsSelectAllButton class="btn btn-outline-primary btn-sm m-1"
+                                <input type=button id=UsersGroupsSelectAllButton
+                                    class="btn btn-outline-primary btn-sm m-1"
                                     onclick="p50usersSelectallButtonFunction()" value="Select All" />
-                                <input type=button id=UsersGroupsGroupActionButton class="btn btn-outline-primary btn-sm m-1" disabled="disabled"
-                                    value="Group Action" onclick=p50usersGroupActionFunction() />
-                                <input id=NewUserGroupButton type=button class="btn btn-outline-primary btn-sm m-1" onclick=showCreateUserGroupDialog(1)
-                                    value="New Group..." />
-                                <input id=DuplicateUserGroupButton type=button class="btn btn-outline-primary btn-sm m-1" style=display:none
+                                <input type=button id=UsersGroupsGroupActionButton
+                                    class="btn btn-outline-primary btn-sm m-1" disabled="disabled" value="Group Action"
+                                    onclick=p50usersGroupActionFunction() />
+                                <input id=NewUserGroupButton type=button class="btn btn-outline-primary btn-sm m-1"
+                                    onclick=showCreateUserGroupDialog(1) value="New Group..." />
+                                <input id=DuplicateUserGroupButton type=button
+                                    class="btn btn-outline-primary btn-sm m-1" style=display:none
                                     onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
                             </div>
                         </td>
@@ -1889,7 +1896,8 @@
                                         class="fas fa-download" title="Download Report"></i></a>&nbsp;
                             </div>
                             <div>
-                                <button class="btn btn-primary btn-sm me-2 m-1" onclick=generateReportDialog() ><i class="far fa-file-alt"></i> Generate Report...</button>
+                                <button class="btn btn-primary btn-sm me-2 m-1" onclick=generateReportDialog()><i
+                                        class="far fa-file-alt"></i> Generate Report...</button>
                             </div>
                         </td>
                         {{!-- <td class="h2"></td> --}}
@@ -1932,8 +1940,8 @@
                         <!-- The body content is dynamically populated -->
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal" id="idx_dlgCancelButton"
-                            onclick="dialogclose(0)">Cancel</button>
+                        <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal"
+                            id="idx_dlgCancelButton" onclick="dialogclose(0)">Cancel</button>
                         <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton"
                             onclick="dialogclose(1)">OK</button>
                         <button type="button" class="btn btn-outline-danger" id="idx_dlgDeleteButton"
@@ -9260,7 +9268,7 @@
             return false;
         }
 
-        function addDeviceAttribute(name, value, classNames = []){ return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-2'}"><b> ${name} </b></div><div class="${classNames[1] || 'col-md-10'}"> ${value} </div></div>`; }
+        function addDeviceAttribute(name, value, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-2'}"><b> ${name} </b></div><div class="${classNames[1] || 'col-md-10'}"> ${value} </div></div>`; }
 
         function editDeviceAmtSettings(nodeid, func, arg) {
             if (xxdialogMode) return;
@@ -9482,9 +9490,8 @@
         // Show MeshCentral Router dialog
         function p10showMeshRouterDialog() {
             if (xxdialogMode) return;
-            var x = '<div>' + "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server." + '</div><br />';
-            x += addHtmlValue("Win32 Executable", '<a style=cursor:pointer onclick=downloadFile("meshagents?meshaction=winrouter' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true)>MeshCentralRouter.exe</a>');
-            x += addHtmlValue("MacOS Installer", '<a style=cursor:pointer onclick=downloadFile("meshagents?meshaction=macrouter' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true)>MeshCentralRouter.dmg</a>');
+            var x = '<div>' + "MeshCentral Router is a Windows tool for TCP port mapping. You can, for example, RDP into a remote device thru this server." + '</div><br />'; x += '<div class="row mb-1"><div class="col-md-4"><b>Win32 Executable</b></div><div class="col-md-8"><a style="cursor:pointer" onclick="downloadFile(\'meshagents?meshaction=winrouter' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '\',null,true)" class="link-primary">MeshCentralRouter.exe</a></div></div>';
+            x += '<div class="row mb-1"><div class="col-md-4"><b>MacOS Installer</b></div><div class="col-md-8"><a style="cursor:pointer" onclick="downloadFile(\'meshagents?meshaction=macrouter' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '\',null,true)" class="link-primary">MeshCentralRouter.dmg</a></div></div>';
             var servername = serverinfo.name;
             if ((servername.indexOf('.') == -1) || ((features & 2) != 0)) { servername = window.location.hostname; } // If the server name is not set or it's in LAN-only mode, use the URL hostname as server name.
             var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
@@ -9492,10 +9499,14 @@
             var url = 'mcrouter://' + servername + portStr + domainUrl + 'control.ashx?c=' + authCookie + '&t=' + serverinfo.tlshash + '&l={{{lang}}}' + (urlargs.key ? ('&key=' + urlargs.key) : '');
             //x += addHtmlValue("Launch", '<a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '">Start MeshCentral Router</a>');
             //x += '<br /><div style=width:100%><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" download href="' + url + '">' + "Start MeshCentral Router" + '</a>' + ", for this link to work you must download MeshCentral Router run it and click the install button." + '</div>';
-            x += '<br /><div>' + "Run MeshCentral Router and click \"install\" to make it launchable from the browser." + '</div>';
-            x += '<br /><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" href="' + url + '"><input type=button style=width:100%;cursor:pointer value="' + "Launch MeshCentral Router" + '" /></a>';
-            x += '<iframe style=display:none name="mcrouterframe"></iframe>';
-            setDialogMode(2, "MeshCentral Router", 1, null, x, 'fileDownload');
+            x += '<br /><div class="alert alert-info">' + "Run MeshCentral Router and click \"install\" to make it launchable from the browser." + '</div>';
+            x += '<br /><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" href="' + url + '"><input type=button style=width:100%;cursor:pointer value="' + "Launch MeshCentral Router" + '" class="btn btn-primary btn-block" /></a>';
+            x += '<iframe class="d-none" name="mcrouterframe"></iframe>';
+            xxdialogButtons = 1; xxdialogTag = 'fileDownload';
+            setModalContent('xxAddAgent', "MeshCentral Router", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                p20showAddMeshUserDialogEx(xxdialogButtons, xxdialogTag);
+            });
         }
 
         // Request MQTT login credentials
@@ -13913,7 +13924,7 @@
                 // Print the mesh information
                 r += `
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-2"
-                            onclick="gotoMesh('` + sortedMeshes[i]._id + `')" 
+                            onclick="gotoMesh('` + sortedMeshes[i]._id + `')"
                             onkeypress="if (event.key=='Enter') gotoMesh('` + sortedMeshes[i]._id + `')"
                             style="cursor:pointer;">
                         <div class="card mb-3">
