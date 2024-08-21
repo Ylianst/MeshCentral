@@ -18790,6 +18790,15 @@
         //
 
         function setupGeneralServerStats() {
+            // Destroy existing charts if they exist
+            if (window.serverStatCpu) {
+                window.serverStatCpu.destroy();
+            }
+            if (window.serverStatMemory) {
+                window.serverStatMemory.destroy();
+            }
+
+            // Create new charts
             window.serverStatCpu = new Chart(document.getElementById('serverCpuChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [0, 0], backgroundColor: ['#AAAAAA', '#00AA00'] }], labels: ["Used", "Free"] },
@@ -18831,6 +18840,8 @@
                 RelaySessions: "Relay Sessions",
                 RelayCount: "Relay Count"
             };
+
+            setupGeneralServerStats();
 
             // Paint the pie graphs
             if (typeof message.cpuavg == 'object') {
