@@ -882,7 +882,7 @@ module.exports.CreateDB = function (parent, func) {
         if (global.TextEncoder == null) { global.TextEncoder = require('util').TextEncoder; }
         if (global.TextDecoder == null) { global.TextDecoder = require('util').TextDecoder; }
 
-        require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true, useUnifiedTopology: true, enableUtf8Validation: false }, function (err, client) {
             if (err != null) { console.log("Unable to connect to database: " + err); process.exit(); return; }
             Datastore = client;
             parent.debug('db', 'Connected to MongoDB database...');
