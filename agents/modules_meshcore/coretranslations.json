@@ -274,5 +274,17 @@
     "desktopNotify": "{0} va iniciar una sessió d'escriptori remot.",
     "fileNotify": "{0} va iniciar una sessió de fitxer remota.",
     "privacyBar": "Compartint escriptori amb: {0}"
+  },
+  "uk": {
+    "allow": "Дозволити",
+    "deny": "Відмовити",
+    "autoAllowForFive": "Автоматично приймати всі підключення впродовж наступних 5 хвилин",
+    "terminalConsent": "{0} запитує доступ до віддаленого терміналу. Надати доступ?",
+    "desktopConsent": "{0} запитує віддалений доступ до стільниці. Надати доступ?",
+    "fileConsent": "{0} запитує віддалений доступ до файлу. Надати доступ?",
+    "terminalNotify": "{0} почав сеанс віддаленого терміналу.",
+    "desktopNotify": "{0} розпочав сеанс віддаленої стільниці.",
+    "fileNotify": "{0} розпочав віддалений файловий сеанс.",
+    "privacyBar": "Поширити доступ до стільниці з: {0}"
   }
 }
