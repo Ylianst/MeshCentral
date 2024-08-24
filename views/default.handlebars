@@ -3346,7 +3346,6 @@
                             });
                             server_showVersionDlgUpdate();
                         }
-                        showServerVersionModal.show();
                     }
                     break;
                 }
@@ -14593,7 +14592,10 @@
             x += '<div><label for=d20flag6><input type=checkbox id=d20flag6 class="form-check-input me-2" ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
 
             setModalContent('xxAddAgent', title, x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshconsentEx);
+            xxdialogButtons = 3, xxdialogTag = editType;
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                p20editmeshconsentEx(xxdialogButtons, xxdialogTag);
+            });
 
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
@@ -16297,8 +16299,9 @@
             if (serverinfo.emailcheck) { optionalActions += '<option value=4>' + "Validate Email" + '</option><option value=5>' + "Invalidate Email" + '</option>'; }
 
             var x = "Select an operation to perform on all selected users." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select style=width:240px id=d3groupop><option value=1>' + "Lock account" + '</option><option value=2>' + "Unlock account" + '</option>' + optionalActions + '<option value=3>' + "Delete account" + '</option></select>');
-            setDialogMode(2, "Group Action", 3, p3usersGroupActionFunctionEx, x);
+            x += addHtmlValue("Operation", '<select style=width:240px id=d3groupop class=form-select><option value=1>' + "Lock account" + '</option><option value=2>' + "Unlock account" + '</option>' + optionalActions + '<option value=3>' + "Delete account" + '</option></select>');
+            setModalContent('xxAddAgent', "Group Action", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p3usersGroupActionFunctionEx);
         }
 
         function p3usersGroupActionFunctionEx() {
@@ -16321,7 +16324,7 @@
                 // Delete accounts, ask for confirmation
                 var x = "Confirm delete selected account(s)?" + '<br /><br />';
                 x += '<label><input id=d3check type=checkbox class="form-check-input me-2" onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
-                setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
+                //setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
                 QE('idx_dlgOkButton', false);
             } else if (op == 4) {
                 // Validate emails
@@ -16737,7 +16740,9 @@
             x += '</div>';
 
             setModalContent('xxAddAgent', "Server Permissions", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', showUserAdminDialogEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showUserAdminDialogEx(2 + (uself ? 0 : 1), user);
+            });
 
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
@@ -16914,11 +16919,12 @@
             var elements = document.getElementsByClassName('UserGroupCheckbox'), checkcount = 0;
             for (var i = 0; i < elements.length; i++) { if (elements[i].checked === true) checkcount++; }
             if (checkcount == 0) return;
-
             var x = "Select an operation to perform on all selected users." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select style=width:240px id=d50groupop><option value=1>' + "Delete group" + '</option></select>');
-            setDialogMode(2, "Group Action", 3, p50usersGroupActionFunctionEx, x);
-        }
+            x += addHtmlValue("Operation", '<select style=width:240px id=d50groupop class=form-select><option value=1>' + "Delete group" + '</option></select>');
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', "Group Action", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p50usersGroupActionFunctionEx);
+        };
 
         function p50usersGroupActionFunctionEx() {
             var elements = document.getElementsByClassName('UserGroupCheckbox'), userids = [];
@@ -16928,8 +16934,11 @@
                 // Delete user groups, ask for confirmation
                 var x = "Confirm delete selected user group(s)?" + '<br /><br />';
                 x += '<label><input id=d3check type=checkbox class="form-check-input me-2" onchange=p50usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
-                setDialogMode(2, "Delete User Groups", 3, p50groupActionFunctionDelExec, x);
-                QE('idx_dlgOkButton', false);
+                setModalContent('xxAddAgent', "Delete User Groups", x);
+                // Set action manually
+                document.getElementById('idx_dlgOkButton').onclick = function () {
+                    p50groupActionFunctionDelExec(3);
+                };
             }
         }
 
@@ -19292,7 +19301,7 @@
             QV('idx_dlgDeleteButton', b & 4);
             QV('idx_dlgButtonBar', b & 7);
             QV('idx_dlgMoreButtons', b & 16);
-            if (y) QH('id_dialogtitle', y);
+            if (y) QH('xxAddAgentTitle', y);
             for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
             QV('dialog', x);
             if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
