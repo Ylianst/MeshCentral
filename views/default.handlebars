@@ -16740,7 +16740,9 @@
             x += '</div>';
 
             setModalContent('xxAddAgent', "Server Permissions", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', showUserAdminDialogEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showUserAdminDialogEx(2 + (uself ? 0 : 1), user);
+            });
 
             if (user.siteadmin && user.siteadmin != 0) {
                 Q('ua_fulladmin').checked = (user.siteadmin == 0xFFFFFFFF);
