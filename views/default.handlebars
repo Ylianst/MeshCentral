@@ -14593,7 +14593,10 @@
             x += '<div><label for=d20flag6><input type=checkbox id=d20flag6 class="form-check-input me-2" ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
 
             setModalContent('xxAddAgent', title, x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshconsentEx);
+            xxdialogButtons = 3, xxdialogTag = editType;
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                p20editmeshconsentEx(xxdialogButtons, xxdialogTag);
+            });
 
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
