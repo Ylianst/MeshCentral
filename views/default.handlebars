@@ -9023,7 +9023,7 @@
         var desktopNode;
         function setupDesktop() {
             // Setup the remote desktop
-            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
+            //if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
 
             // If the device desktop is already connected in multi-desktop, use that.
             if ((desktopNode != currentNode) || (desktop == null)) {
@@ -9057,7 +9057,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                    if(desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>'); }
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -10482,7 +10482,7 @@
         var terminalNode;
         function setupTerminal() {
             // Setup the terminal
-            if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); terminal = null; }
+            //if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); terminal = null; }
             terminalNode = currentNode;
             updateTerminalButtons();
         }
@@ -10943,7 +10943,7 @@
             QV('p13Connect', (files == null) && (filesNode.mtype == 2));
             QV('p13Connects', ((features2 & 0x200) != 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', files != null);
-            if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
+            //if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
         }
 
