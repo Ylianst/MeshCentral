@@ -9689,6 +9689,7 @@
 
         // Enter browser fullscreen
         function enterBrowserFullscreen(elem) {
+            if (navigator.keyboard && navigator.keyboard.lock) { navigator.keyboard.lock(); }
             if (elem.requestFullscreen) { elem.requestFullscreen(); }
             else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
             else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
@@ -9701,6 +9702,7 @@
             else if (document.msExitFullscreen) { document.msExitFullscreen(); }
             else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
             else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            if (navigator.keyboard && navigator.keyboard.unlock) { navigator.keyboard.unlock(); }
         }
 
         // Return true if the browser is fullscreen. This is a delayed method that will return true/false late. Not very useful.
