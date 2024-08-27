@@ -2616,11 +2616,14 @@ function kvm_tunnel_consentpromise_closehandler()
 
 function kvm_consentpromise_rejected(e)
 {
-    // User Consent Denied/Failed
-    this.ws._consentpromise = null;
-    MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-    this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-    this.ws = null;
+    if (this.ws) {
+        if(this.ws.httprequest){ // User Consent Denied
+            MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+        } else { } // Connection was closed server side, maybe log some messages somewhere?
+        this.ws._consentpromise = null;
+        this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+        this.ws = null;
+    } else { } // no websocket, maybe log some messages somewhere?
 }
 function kvm_consentpromise_resolved(always)
 {
@@ -2715,11 +2718,14 @@ function files_consentpromise_resolved(always)
 }
 function files_consentpromise_rejected(e)
 {
-    // User Consent Denied/Failed
-    this.ws._consentpromise = null;
-    MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-    this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-    this.ws = null;
+    if (this.ws) {
+        if(this.ws.httprequest){ // User Consent Denied
+            MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+        } else { } // Connection was closed server side, maybe log some messages somewhere?
+        this.ws._consentpromise = null;
+        this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+        this.ws = null;
+    } else { } // no websocket, maybe log some messages somewhere?
 }
 function files_tunnel_endhandler()
 {
@@ -2867,10 +2873,13 @@ function onTunnelData(data)
                             this.retPromise._res();
                         },
                         function (e) {
-                            // Denied
-                            MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
-                            this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-                            this.retPromise._consent = null;
+                            if (this.retPromise.that) {
+                                if(this.retPromise.that.httprequest){ // User Consent Denied
+                                    MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+                                } else { } // Connection was closed server side, maybe log some messages somewhere?
+                                this.retPromise._consent = null;
+                                this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+                            } else { } // no websocket, maybe log some messages somewhere?
                             this.retPromise._rej(e.toString());
                         });
                 }
