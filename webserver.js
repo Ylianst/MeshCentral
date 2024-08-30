@@ -6941,6 +6941,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Setup agent downloads for meshcore updates
                     obj.agentapp.get(url + 'meshagents', obj.handleMeshAgentRequest);
+
+                    // Setup agent file downloads
+                    obj.agentapp.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
                 }
 
                 // Setup web relay on this web server if needed
