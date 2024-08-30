@@ -6720,7 +6720,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 res.set('Content-Type', 'text/html');
                                 res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
                             } else {
-                                domain.passport.authenticate('twitter-' + domain.id, { failureRedirect: url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
+                                domain.passport.authenticate('twitter-' + domain.id, { failureRedirect: domain.url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
                             }
                         }, handleStrategyLogin);
                     }
@@ -6735,7 +6735,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-google-callback', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('google-' + domain.id, { failureRedirect: url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
+                            domain.passport.authenticate('google-' + domain.id, { failureRedirect: domain.url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
                         }, handleStrategyLogin);
                     }
 
@@ -6749,7 +6749,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-github-callback', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('github-' + domain.id, { failureRedirect: url })(req, res, next);
+                            domain.passport.authenticate('github-' + domain.id, { failureRedirect: domain.url })(req, res, next);
                         }, handleStrategyLogin);
                     }
 
@@ -6772,7 +6772,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             } else {
                                 if (req.query.state != null) {
                                     var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
-                                    if ((c != null) && (c.p == 'azure')) { domain.passport.authenticate('azure-' + domain.id, { failureRedirect: url })(req, res, next); return; }
+                                    if ((c != null) && (c.p == 'azure')) { domain.passport.authenticate('azure-' + domain.id, { failureRedirect: domain.url })(req, res, next); return; }
                                 }
                                 next();
                             }
@@ -6786,7 +6786,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(authURL, function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         let redirectPath;
                         if (typeof domain.authstrategies.oidc.client.redirect_uri == 'string') {
@@ -6802,7 +6802,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (domain.passport == null) { next(); return; }
                             if (req.session && req.session.userid) { next(); return; } // already logged in so dont authenticate just carry on
                             if (req.session && req.session['oidc-' + domain.id]) { // we have a request to login so do authenticate
-                                domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: url, failureFlash: true })(req, res, next);
+                                domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                             } else { // no idea so carry on
                                 next(); return;
                             }
@@ -6814,12 +6814,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-saml', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
 
@@ -6828,12 +6828,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-intel', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-intel-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
 
@@ -6842,12 +6842,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-jumpcloud-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
                 }
