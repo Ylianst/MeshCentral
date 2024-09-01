@@ -539,7 +539,7 @@
                             } else if ((data.action == 'present') && (webRtcDesktop == null)) {
                                 // Setup WebRTC channel
                                 webRtcDesktop = { platform: data.platform };
-                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.cloudflare.com:3478' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
                                 if (typeof RTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new RTCPeerConnection(configuration); }
                                 else if (typeof webkitRTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new webkitRTCPeerConnection(configuration); }
 

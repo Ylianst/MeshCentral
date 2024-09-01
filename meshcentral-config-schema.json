@@ -767,7 +767,7 @@
         },
         "webrtcConfig": {
           "type": "object",
-          "description": "The STUN servers used for WebRTC, if not specified the Google and Mozilla servers and used when the server is not in LAN mode.",
+          "description": "The STUN/TURN servers used for WebRTC, if not specified the Google and Cloudflare STUN servers are used when the server is not in LAN mode.",
           "properties": {
             "iceServers": {
               "type": "array",
@@ -776,7 +776,8 @@
                 "type": "object",
                 "properties": {
                   "urls": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "STUN/TURN URLs, examples are stun:stun3.l.google.com:19302 or turn:openrelay.metered.ca:443"
                   }
                 },
                 "required": [
