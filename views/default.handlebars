@@ -12076,7 +12076,9 @@
         }
 
         function p13gotofolder() {
-            setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput style=width:100% placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Go To Folder', '<input type=text id=p13folderinput style=width:100% placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p13gotofolderEx);
             focusTextBox('p13folderinput');
         }
         function p13gotofolderEx() {
@@ -13427,7 +13429,10 @@
             if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [consoleNode._id], type: 'default' }); } // Upload default core
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [consoleNode._id], type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>')); }
+            else {
+                setModalContent('xxAddAgent', 'Perform Agent Action', addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>'));
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', p15uploadCoreEx);
+            }
         }
 
         function p15uploadCoreEx() {
