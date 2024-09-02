@@ -1938,6 +1938,182 @@
                     </div>
                     <div class="modal-body" id="xxAddAgentBody">
                         <!-- The body content is dynamically populated -->
+                        <div id=dialog1>
+                            <div id=id_dialogMessage style=""></div>
+                        </div>
+                        <div id=dialog2 style="">
+                            <div id=id_dialogOptions></div>
+                        </div>
+                        <div id=dialog3 style="">
+                            <div id=d3upload>
+                                <div>File Selection</div>
+                                <select id=d3uploadMode onchange=d3modechange()>
+                                    <option value=1>Local file upload</option>
+                                    <option value=2>Server file selection</option>
+                                </select>
+                            </div>
+                            <div id=d3localmode style="display:none">
+                                <div>Upload File</div>
+                                <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx
+                                    target=fileUploadFrame>
+                                    <input type=text id=d3auth name=auth style="display:none" />
+                                    <input type=text id=d3filter name=filter style="display:none" />
+                                    <input type=text id=d3attrib name=attrib style="display:none" />
+                                    <input type=file id=d3localFile name=files onchange=d3setActions() />
+                                    <input type=submit id=d3submit style="display:none" />
+                                </form>
+                            </div>
+                            <div id=d3servermode>
+                                <div id=d3serveraction valign=bottom>
+                                    <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup()
+                                        value="Up" />&nbsp;<span id=p3CurrentFolder></span>
+                                </div>
+                                <div id=d3serverfiles></div>
+                            </div>
+                        </div>
+                        <div id=dialog4 style="">
+                            <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
+                            <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
+                            <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                            <textarea id=d4editorarea autocomplete="off"
+                                style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
+                        </div>
+                        <div id=dialog7 style="">
+                            <div class="dtab">
+                                <button id="td7meshkvm" class="tablinks"
+                                    onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
+                                <button id="td7rdpkvm" class="tablinks"
+                                    onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
+                                <button id="td7amtkvm" class="tablinks"
+                                    onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg;
+                                    AMT</button>
+                            </div>
+                            <div id="d7meshkvm" class="tabcontent">
+                                <!--<h4>Agent Remote Desktop</h4>-->
+                                <div style="margin-top:8px">
+                                    <div>Quality</div>
+                                    <select id="d7bitmapquality" dir="rtl"></select>
+                                </div>
+                                <div>
+                                    <div>Scaling</div>
+                                    <select id="d7bitmapscaling" style="" dir="rtl">
+                                        <option selected=selected value=1024>100%</option>
+                                        <option value=896>87.5%</option>
+                                        <option value=768>75%</option>
+                                        <option value=640>62.5%</option>
+                                        <option value=512>50%</option>
+                                        <option value=384>37.5%</option>
+                                        <option value=256>25%</option>
+                                        <option value=128>12.5%</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Frame rate</div>
+                                    <select id="d7framelimiter" dir="rtl">
+                                        <option selected=selected value=50>Fast</option>
+                                        <option value=100>Medium</option>
+                                        <option value=400>Slow</option>
+                                        <option value=1000>Very slow</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Encoding</div>
+                                    <select id="d7encoding" dir="rtl">
+                                        <option value=1>JPEG</option>
+                                        <option value=2>PNG</option>
+                                        <option value=3>TIFF</option>
+                                        <option selected=selected value=4>WEBP</option>
+                                    </select>
+                                </div>
+                                <div id="d7desktopOtherSettings">
+                                    <div>Other Settings</div>
+                                    <div id="d7otherset2" style="display:block">
+                                        <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap
+                                            Mouse Buttons</label>
+                                        <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse
+                                            Mouse Wheel</label>
+                                        <label style="display:block"><input type="checkbox"
+                                                id="d7deskRemoteKeyMap" />Use Remote Keyboard
+                                            Map</label>
+                                        <label style="display:block" id="d7deskAutoClipboardLabel"><input
+                                                type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
+                                        <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox"
+                                                id="d7deskAutoLock" />Lock
+                                            on Disconnect</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="d7amtkvm" class="tabcontent">
+                                <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
+                                <div style="margin-top:8px">
+                                    <div>Image Encoding</div>
+                                    <select id="d7desktopmode">
+                                        <option value="1">RLE8, Fastest</option>
+                                        <option value="2">RLE16, Recommended</option>
+                                        <option value="3">RAW8, Slow</option>
+                                        <option value="4">RAW16, Very Slow</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Other Settings</div>
+                                    <div id="d7otherset" style="display:block">
+                                        <label style="display:block"><input type="checkbox" id="d7showfocus" />Show
+                                            Focus Tool</label>
+                                        <label style="display:block"><input type="checkbox" id="d7showcursor" />Show
+                                            Local Mouse Cursor</label>
+                                        <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local
+                                            Keyboard Map</label>
+                                        <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse
+                                            Mouse Wheel</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="d7rdpkvm" class="tabcontent">
+                                <!--<h4>Remote Desktop Protocol</h4>-->
+                                <div style="margin-top:8px">
+                                    <div>Display Size</div>
+                                    <select id="d7rdpsize">
+                                        <option value="canvas">Canvas Size</option>
+                                        <option value="browser">Browser Size</option>
+                                        <option value="screen">Screen Size</option>
+                                        <option value="640x480">640×480</option>
+                                        <option value="1024x768">1024×768</option>
+                                        <option value="1280x800">1280×800</option>
+                                        <option value="1440x900">1440×900</option>
+                                        <option value="1600x900">1600×900</option>
+                                        <option value="1680x1050">1680×1050</option>
+                                        <option value="1920x1080">1920×1080</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Options</div>
+                                    <div id="d7rdpflags" style="display:block">
+                                        <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable
+                                            Wallpaper</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full
+                                            Window Drag</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu
+                                            Animations</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable
+                                            Theming</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor
+                                            Shadow</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor
+                                            Settings</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font
+                                            Smooting</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop
+                                            Composision</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic
+                                            Clipboard</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse
+                                            Buttons</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse
+                                            Mouse Wheel</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal"
@@ -9063,14 +9239,14 @@
             if (xxdialogMode) return;
             var rights = GetNodeRights(currentNode), count = 0;
             var x = "Select an operation to perform on this device." + '<br /><br />';
-            var y = '<select id=d2deviceop style=float:right;width:250px onchange=deviceActionFunctionValidate()>';
+            var y = '<select id=d2deviceop style=float:right;width:250px onchange=deviceActionFunctionValidate() class=form-select>';
             var z = '';
             if ((currentNode.agent != null) && (currentNode.agent.id == 14)) {
                 if (((currentNode.conn & 1) != 0) && ((rights & 8) != 0)) {
                     count++;
                     y += '<option value=400>' + "Flash" + '</option>';
                     y += '<option value=401>' + "Vibrate" + '</option>';
-                    z += '<div id=d2devicetimediv>' + addHtmlValue("Time", '<select id=d2devicetime style=float:right;width:250px><option value=1000>' + "1 second" + '</option><option value=5000>' + "5 seconds" + '</option><option value=10000>' + "10 seconds" + '</option></select>') + '</div>';
+                    z += '<div id=d2devicetimediv>' + addHtmlValue("Time", '<select id=d2devicetime style=float:right;width:250px class=form-select><option value=1000>' + "1 second" + '</option><option value=5000>' + "5 seconds" + '</option><option value=10000>' + "10 seconds" + '</option></select>') + '</div>';
                 }
             } else {
                 if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
@@ -9096,7 +9272,9 @@
             y += '</select>';
             x += addHtmlValue("Operation", y);
             if (count == 0) { x = "No actions currently available for this device."; }
-            setDialogMode(2, "Device Action", (count == 0) ? 2 : 3, deviceActionFunctionEx, x + z);
+            xxdialogButtons = (count == 0) ? 2 : 3; xxdialogTag = x + z;
+            setModalContent('xxAddAgent', 'Device Action', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', deviceActionFunctionEx);
             if (count > 0) { deviceActionFunctionValidate(); }
         }
 
@@ -10219,7 +10397,9 @@
                 else if (QS('td7amtkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7amtkvm'); }
             }
 
-            setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Remote Desktop Settings', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', showDesktopSettingsChanged);
         }
 
         function changeDesktopSettingsTab(evt, tabname) {
