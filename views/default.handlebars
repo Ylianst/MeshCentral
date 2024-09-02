@@ -9792,7 +9792,7 @@
         var showEditNodeValueDialog_modes4 = [64, 64, 64, 4096];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) class=form-control/>');
             if (mode == 3) {
                 // Get a list of all possible device tags
                 var allTags = [], y = '';
@@ -9803,7 +9803,10 @@
                     x += '<div style=margin-top:8px;width:370px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
                 }
             }
-            setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
+            setModalContent('xxAddAgent', 'Edit Device', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showEditNodeValueDialogEx(3, mode);
+            });
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
             if (Array.isArray(v)) { v = v.join(', '); }
