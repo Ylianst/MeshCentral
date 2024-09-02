@@ -1118,7 +1118,7 @@
                         </div>
                         <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
-                            <select id="deskkeys" cmenu=deskKeyShortcutContextMenu></select>
+                            <select id="deskkeys" class="form-select-sm me-2" cmenu=deskKeyShortcutContextMenu></select>
                             <input id="DeskWD" type=button class="btn btn-outline-primary btn-sm m-1" value="Send" onkeypress="return false"
                                 onkeydown="return false" onclick="deskSendKeys()" />
                             <input id="DeskESC" style="display:none" type="button" class="btn btn-outline-primary btn-sm m-1" value="ESC" onkeypress="return false"
@@ -1173,7 +1173,7 @@
                                         style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px">
                                     </div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device"
-                                        onkeypress="return false" onkeydown="return false" value=Actions
+                                        onkeypress="return false" onkeydown="return false" value=Actions class="btn btn-outline-primary me-2 btn-sm"
                                         onclick=deviceActionFunction() />
                                     <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     <div id="terminalCustomUiButtons" style="float:left"></div>
@@ -1195,9 +1195,9 @@
                                             title="Connect using Intel&reg; AMT hardware KVM"
                                             onclick=connectTerminal(event,2) onkeypress="return false"
                                             onkeydown="return false" disabled="disabled" /></span><span
-                                        id="disconnectbutton2span" style="margin-right:4px"><input type="button"
-                                            id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0)
-                                            onkeypress="return false" onkeydown="return false" /></span>
+                                        id="disconnectbutton2span" style="margin-right:4px"><button type="button"
+                                            id="disconnectbutton2" onclick=connectTerminal(event,0)
+                                            onkeypress="return false" onkeydown="return false"><i class="fas fa-play"></i> Disconnect</button></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span
                                         id="termtitle"></span>
                                 </div>
@@ -1231,28 +1231,28 @@
                                         </select>
                                     </span>
                                     <span id="specialKeyDropDown">
-                                        <select id="specialkeylist" onkeypress="return false"></select>
+                                        <select id="specialkeylist" class="form-select-sm me-2" onkeypress="return false"></select>
                                         <input id="specialkeylistinput" type="button" onkeypress="return false"
-                                            class="bottombutton" value="Send" title="Send the selected special key"
+                                            class="btn btn-primary btn-sm me-2 bottombutton" value="Send" title="Send the selected special key"
                                             onclick="sendSpecialKey()" />
                                     </span>
                                 </div>
                                 <div>
                                     &nbsp;
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="ctrlcbutton" value="Ctl-C"
+                                        class="bottombutton" id="ctrlcbutton" class="btn btn-primary btn-sm me-2" value="Ctl-C"
                                         onclick="termSendKey(3,'ctrlcbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="ctrlxbutton" value="Ctl-X"
+                                        class="bottombutton" id="ctrlxbutton" class="btn btn-primary btn-sm me-2" value="Ctl-X"
                                         onclick="termSendKey(24,'ctrlxbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="escbutton" value="ESC"
+                                        class="bottombutton" id="escbutton" class="btn btn-primary btn-sm me-2" value="ESC"
                                         onclick="termSendKey(27,'escbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="bsbutton" value="Backspace"
+                                        class="bottombutton" id="bsbutton" class="btn btn-primary btn-sm me-2" value="Backspace"
                                         onclick="termSendKey(8,'bsbutton')" style="display:none" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="pastebutton" value="Paste"
+                                        class="bottombutton" id="pastebutton" class="btn btn-primary btn-sm me-2" value="Paste"
                                         title="Paste text into the terminal" onclick="showTermPasteDialog()"
                                         style="display:none" />
                                 </div>
@@ -1278,7 +1278,7 @@
                     <tr>
                         <td class="areaHead" style="line-height:22px">
                             <div class="toright2">
-                                <input id="filesActionsBtn" type=button title="Perform power actions on the device"
+                                <input id="filesActionsBtn" class="btn btn-outline-primary me-2 btn-sm" type=button title="Perform power actions on the device"
                                     value=Actions onclick=deviceActionFunction() />
                                 <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session"
                                     style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px">
@@ -1289,8 +1289,8 @@
                             <div>
                                 <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event)
                                     type="button" style="display:none" />
-                                <input id=p13Connect value="Connect" cmenu="filesConnectButton"
-                                    onclick=connectFiles(event,1) type="button" />
+                                <button id=p13Connect cmenu="filesConnectButton"
+                                    onclick=connectFiles(event,1) type="button"><i class="fas fa-play"></i> Connect</button>
                                 <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) type="button" />
                                 <input id=p13Connects value="SFTP Connect" cmenu=sshPortContextMenu
                                     onclick=connectFiles(event,2) type="button" />
@@ -1302,39 +1302,39 @@
                         <td class="areaHead2" valign=bottom>
                             <div id="p13rightOfButtons" class="toright2"></div>
                             <div>
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FolderUp
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FolderUp class="btn btn-outline-primary me-2 btn-sm"
                                     value="Up" onclick="p13folderup()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13SelectAllButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13SelectAllButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Select All" onclick="p13selectallfile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RenameFileButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RenameFileButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Rename" onclick="p13renamefile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DeleteFileButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DeleteFileButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Delete" onclick="p13deletefile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Edit" onclick="p13viewfile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="New Folder" onclick="p13createfolder()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Upload" onclick="p13uploadFile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Download" onclick="p13downloadButton()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Cut" onclick="p13copyFile(1)" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Copy" onclick="p13copyFile(0)" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Paste" onclick="p13pasteFile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Zip" onclick="p13zipFiles()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnzipButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnzipButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Unzip" onclick="p13unzipFile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Refresh" onclick="p13folderup(9999)" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Find" onclick="p13findfile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="GoTo" onclick="p13gotofolder()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13OpenButton
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13OpenButton class="btn btn-outline-primary me-2 btn-sm"
                                     value="Open" onclick="p13openfilefolder()" />
                             </div>
                         </td>
@@ -1342,14 +1342,14 @@
                     <tr>
                         <td class="areaHead3">
                             <div class="toright2">
-                                <select id=p13sizedropdown onchange=p13updateFiles()>
+                                <select id=p13sizedropdown class="form-select-sm me-2" onchange=p13updateFiles()>
                                     <option value=0 selected="selected">Human Readable</option>
                                     <option value=1 title=Bytes>Bytes</option>
                                     <option value=10 title=KB>Kilobytes</option>
                                     <option value=20 title=MB>Megabytes</option>
                                     <option value=30 title=GB>Gigabyte</option>
                                 </select>
-                                <select id=p13sortdropdown onchange=p13updateFiles()>
+                                <select id=p13sortdropdown class="form-select-sm me-2" onchange=p13updateFiles()>
                                     <option value=1 selected="selected">Sort by name</option>
                                     <option value=2>Sort by size</option>
                                     <option value=3>Sort by date</option>
