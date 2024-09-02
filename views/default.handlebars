@@ -9016,7 +9016,10 @@
 
         function deviceUrlFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll onkeyup=deviceUrlFunctionValidate() onchange=deviceUrlFunctionValidate()></input>');
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Open Page on Device', '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll onkeyup=deviceUrlFunctionValidate() onchange=deviceUrlFunctionValidate()></input>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', deviceUrlFunctionEx);
+
             Q('d2devurl').focus();
             deviceUrlFunctionValidate();
         }
@@ -9090,10 +9093,10 @@
 
         function deviceToastFunction() {
             if (xxdialogMode) return;
-            var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
-            x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
-            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
-            x += '<select style=width:100% id=d2notifyTimeout>';
+            var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px class=form-select><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+            x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px class=form-control/>';
+            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px class=form-control></textarea>';
+            x += '<select style=width:100% id=d2notifyTimeout class=form-select>';
             x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
             x += '<option value=10>' + "Show for 10 minutes" + '</option>';
@@ -9101,7 +9104,9 @@
             x += '<option value=60>' + "Show for 60 minutes" + '</option>';
             x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
             x += '</select>';
-            setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, x);
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Device Notification', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', deviceToastFunctionEx);
             Q('d2notifyMsg').focus();
         }
 
@@ -9659,7 +9664,10 @@
         // Show network interfaces
         function p10showNodeNetInfoDialog() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "Network Interfaces", 1, null, '<div id=d2netinfo>' + "Loading..." + '</div>', 'if' + currentNode._id);
+            xxdialogButtons = 1; xxdialogTag = 'if' + currentNode._id;
+            setModalContent('xxAddAgent', 'Network Interfaces', '<div id=d2netinfo>' + "Loading..." + '</div>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
+
             meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
             return false;
         }
