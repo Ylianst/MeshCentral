@@ -3127,6 +3127,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((serverFeatures & 2) != 0) { serverFeatures -= 2; } // Disallow simple server restore
                 }
 
+                // Get WebRTC configuration
+                var webRtcConfig = null;
+                if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
+                else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }                
+
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage('default', dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
@@ -3155,7 +3160,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : ''),
                     hidePowerTimeline: (domain.hidepowertimeline ? 'true' : 'false'),
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
-                    userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId')
+                    userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
+                    webrtcconfig: webRtcConfig
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
@@ -3632,11 +3638,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Get WebRTC configuration
         var webRtcConfig = null;
-        if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)).replace(/'/g, '%27'); }
-        else if (args.webrtconfig && (typeof args.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtconfig)).replace(/'/g, '%27'); }
+        if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
+        else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }
 
         // Setup other options
-        var options = { webrtconfig: webRtcConfig };
+        var options = { webrtcconfig: webRtcConfig };
         if (typeof domain.meshmessengertitle == 'string') { options.meshMessengerTitle = domain.meshmessengertitle; } else { options.meshMessengerTitle = '!'; }
 
         // Get the userid and name
