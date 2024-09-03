@@ -1560,6 +1560,8 @@
         var debugmode = 0;
         var windowsBrowser = detectWindowsBrowser();
         var attemptWebRTC = ((features & 128) != 0);
+        var webrtcconfiguration = '{{{webrtcconfig}}}';
+        if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: "' + webrtcconfiguration + '".'); webrtcconfiguration = null; } }
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
         var customui = '{{{customui}}}';
@@ -9292,6 +9294,7 @@
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
+                    desktop.webrtcconfig = webrtcconfiguration;
                     desktop.options = {};
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }

@@ -1520,7 +1520,17 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.redirport == null) obj.args.redirport = 80;
         if (obj.args.minifycore == null) obj.args.minifycore = false;
         if (typeof obj.args.agentidletimeout != 'number') { obj.args.agentidletimeout = 150000; } else { obj.args.agentidletimeout *= 1000 } // Default agent idle timeout is 2m, 30sec.
-        if ((obj.args.lanonly != true) && (obj.args.webrtconfig == null)) { obj.args.webrtconfig = { iceservers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.services.mozilla.com' }] }; } // Setup default WebRTC STUN servers
+        if ((obj.args.lanonly != true) && (typeof obj.args.webrtconfig == 'object')) { // fix incase you are using an old mis-spelt webrtconfig 
+            obj.args.webrtcconfig = obj.args.webrtconfig;
+            delete obj.args.webrtconfig;
+        }
+        if ((obj.args.lanonly != true) && (obj.args.webrtcconfig == null)) { obj.args.webrtcconfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' }] }; } // Setup default WebRTC STUN servers
+        else if ((obj.args.lanonly != true) && (typeof obj.args.webrtcconfig == 'object')) {
+            if (obj.args.webrtcconfig.iceservers) { // webrtc is case-sensitive, so must rename iceservers to iceServers!
+                obj.args.webrtcconfig.iceServers = obj.args.webrtcconfig.iceservers;
+                delete obj.args.webrtcconfig.iceservers;
+            }
+        }
         if (typeof obj.args.ignoreagenthashcheck == 'string') { if (obj.args.ignoreagenthashcheck == '') { delete obj.args.ignoreagenthashcheck; } else { obj.args.ignoreagenthashcheck = obj.args.ignoreagenthashcheck.split(','); } }
 
         // Setup a site administrator

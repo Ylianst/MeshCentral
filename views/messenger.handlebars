@@ -83,7 +83,7 @@
         var meshMessengerImage = '{{{meshMessengerImage}}}';
         var remoteUserName = '{{{username}}}';
         var remoteUserId = '{{{userid}}}';
-        var webrtcconfiguration = '{{{webrtconfig}}}';
+        var webrtcconfiguration = '{{{webrtcconfig}}}';
         if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: "' + webrtcconfiguration + '".'); webrtcconfiguration = null; } }
         var windowFocus = true;
         var chatTextSession = new Date().toString() + '\r\n';
