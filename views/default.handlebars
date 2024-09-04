@@ -2755,7 +2755,10 @@
             var x = '<input type=radio id=night0 name=nightmoderadio value=0 ' + ((cNightMode == 0) ? 'checked' : '') + '><label for=night0>' + "Browser default" + '</label><br>';
             x += '<input type=radio id=night2 name=nightmoderadio value=2 ' + ((cNightMode == 2) ? 'checked' : '') + '><label for=night2>' + "Light mode" + '</label><br>';
             x += '<input type=radio id=night1 name=nightmoderadio value=1 ' + ((cNightMode == 1) ? 'checked' : '') + '><label for=night1>' + "Dark mode" + '</label><br>';
-            setDialogMode(2, "Night Mode", 3, toggleNightModeEx, x);
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Night Mode', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', toggleNightModeEx);
+
             QV('uiMenu', false);
         }
 
@@ -9690,10 +9693,9 @@
             x += '<br /><div class="alert alert-info">' + "Run MeshCentral Router and click \"install\" to make it launchable from the browser." + '</div>';
             x += '<br /><a style=cursor:pointer target="mcrouterframe" rel="noreferrer noopener" href="' + url + '"><input type=button style=width:100%;cursor:pointer value="' + "Launch MeshCentral Router" + '" class="btn btn-primary btn-block" /></a>';
             x += '<iframe class="d-none" name="mcrouterframe"></iframe>';
-            xxdialogButtons = 1; xxdialogTag = 'fileDownload';
             setModalContent('xxAddAgent', "MeshCentral Router", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
-                p20showAddMeshUserDialogEx(xxdialogButtons, xxdialogTag);
+                p20showAddMeshUserDialogEx(1, 'fileDownload');
             });
         }
 
