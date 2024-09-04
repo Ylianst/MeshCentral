@@ -1938,6 +1938,182 @@
                     </div>
                     <div class="modal-body" id="xxAddAgentBody">
                         <!-- The body content is dynamically populated -->
+                        <div id=dialog1>
+                            <div id=id_dialogMessage style=""></div>
+                        </div>
+                        <div id=dialog2 style="">
+                            <div id=id_dialogOptions></div>
+                        </div>
+                        <div id=dialog3 style="">
+                            <div id=d3upload>
+                                <div>File Selection</div>
+                                <select id=d3uploadMode onchange=d3modechange()>
+                                    <option value=1>Local file upload</option>
+                                    <option value=2>Server file selection</option>
+                                </select>
+                            </div>
+                            <div id=d3localmode style="display:none">
+                                <div>Upload File</div>
+                                <form id=d3localmodeform method=post enctype=multipart/form-data action=uploadfile.ashx
+                                    target=fileUploadFrame>
+                                    <input type=text id=d3auth name=auth style="display:none" />
+                                    <input type=text id=d3filter name=filter style="display:none" />
+                                    <input type=text id=d3attrib name=attrib style="display:none" />
+                                    <input type=file id=d3localFile name=files onchange=d3setActions() />
+                                    <input type=submit id=d3submit style="display:none" />
+                                </form>
+                            </div>
+                            <div id=d3servermode>
+                                <div id=d3serveraction valign=bottom>
+                                    <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup()
+                                        value="Up" />&nbsp;<span id=p3CurrentFolder></span>
+                                </div>
+                                <div id=d3serverfiles></div>
+                            </div>
+                        </div>
+                        <div id=dialog4 style="">
+                            <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
+                            <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
+                            <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                            <textarea id=d4editorarea autocomplete="off"
+                                style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
+                        </div>
+                        <div id=dialog7 style="">
+                            <div class="dtab">
+                                <button id="td7meshkvm" class="tablinks"
+                                    onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
+                                <button id="td7rdpkvm" class="tablinks"
+                                    onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
+                                <button id="td7amtkvm" class="tablinks"
+                                    onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg;
+                                    AMT</button>
+                            </div>
+                            <div id="d7meshkvm" class="tabcontent">
+                                <!--<h4>Agent Remote Desktop</h4>-->
+                                <div style="margin-top:8px">
+                                    <div>Quality</div>
+                                    <select id="d7bitmapquality" dir="rtl"></select>
+                                </div>
+                                <div>
+                                    <div>Scaling</div>
+                                    <select id="d7bitmapscaling" style="" dir="rtl">
+                                        <option selected=selected value=1024>100%</option>
+                                        <option value=896>87.5%</option>
+                                        <option value=768>75%</option>
+                                        <option value=640>62.5%</option>
+                                        <option value=512>50%</option>
+                                        <option value=384>37.5%</option>
+                                        <option value=256>25%</option>
+                                        <option value=128>12.5%</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Frame rate</div>
+                                    <select id="d7framelimiter" dir="rtl">
+                                        <option selected=selected value=50>Fast</option>
+                                        <option value=100>Medium</option>
+                                        <option value=400>Slow</option>
+                                        <option value=1000>Very slow</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Encoding</div>
+                                    <select id="d7encoding" dir="rtl">
+                                        <option value=1>JPEG</option>
+                                        <option value=2>PNG</option>
+                                        <option value=3>TIFF</option>
+                                        <option selected=selected value=4>WEBP</option>
+                                    </select>
+                                </div>
+                                <div id="d7desktopOtherSettings">
+                                    <div>Other Settings</div>
+                                    <div id="d7otherset2" style="display:block">
+                                        <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap
+                                            Mouse Buttons</label>
+                                        <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse
+                                            Mouse Wheel</label>
+                                        <label style="display:block"><input type="checkbox"
+                                                id="d7deskRemoteKeyMap" />Use Remote Keyboard
+                                            Map</label>
+                                        <label style="display:block" id="d7deskAutoClipboardLabel"><input
+                                                type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
+                                        <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox"
+                                                id="d7deskAutoLock" />Lock
+                                            on Disconnect</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="d7amtkvm" class="tabcontent">
+                                <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
+                                <div style="margin-top:8px">
+                                    <div>Image Encoding</div>
+                                    <select id="d7desktopmode">
+                                        <option value="1">RLE8, Fastest</option>
+                                        <option value="2">RLE16, Recommended</option>
+                                        <option value="3">RAW8, Slow</option>
+                                        <option value="4">RAW16, Very Slow</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Other Settings</div>
+                                    <div id="d7otherset" style="display:block">
+                                        <label style="display:block"><input type="checkbox" id="d7showfocus" />Show
+                                            Focus Tool</label>
+                                        <label style="display:block"><input type="checkbox" id="d7showcursor" />Show
+                                            Local Mouse Cursor</label>
+                                        <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local
+                                            Keyboard Map</label>
+                                        <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse
+                                            Mouse Wheel</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="d7rdpkvm" class="tabcontent">
+                                <!--<h4>Remote Desktop Protocol</h4>-->
+                                <div style="margin-top:8px">
+                                    <div>Display Size</div>
+                                    <select id="d7rdpsize">
+                                        <option value="canvas">Canvas Size</option>
+                                        <option value="browser">Browser Size</option>
+                                        <option value="screen">Screen Size</option>
+                                        <option value="640x480">640×480</option>
+                                        <option value="1024x768">1024×768</option>
+                                        <option value="1280x800">1280×800</option>
+                                        <option value="1440x900">1440×900</option>
+                                        <option value="1600x900">1600×900</option>
+                                        <option value="1680x1050">1680×1050</option>
+                                        <option value="1920x1080">1920×1080</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div>Options</div>
+                                    <div id="d7rdpflags" style="display:block">
+                                        <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable
+                                            Wallpaper</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full
+                                            Window Drag</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu
+                                            Animations</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable
+                                            Theming</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor
+                                            Shadow</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor
+                                            Settings</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font
+                                            Smooting</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop
+                                            Composision</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic
+                                            Clipboard</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse
+                                            Buttons</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse
+                                            Mouse Wheel</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal"
@@ -6731,20 +6907,23 @@
 
                 var x = '';
                 if (options.title) { x += options.title + '<br />'; }
-                x += '<select id=d2cmdtype onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px;margin-top:4px>';
+                x += '<select id=d2cmdtype onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px;margin-top:4px class=form-select>';
                 if (wintype == true) { x += '<option value=1' + ((runopt.type == 1) ? ' selected' : '') + '>' + "Windows Command Prompt" + '</option><option value=2' + ((runopt.type == 2) ? ' selected' : '') + '>' + "Windows PowerShell" + '</option>'; }
                 if (linuxtype == true) { x += '<option value=3' + ((runopt.type == 3) ? ' selected' : '') + '>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
                 if (agenttype == true) { x += '<option value=4' + ((runopt.type == 4) ? ' selected' : '') + '>' + "Agent Console" + '</option>'; } // MESHRIGHT_REMOTECONTROL & MESHRIGHT_AGENTCONSOLE are needed
                 x += '</select>';
-                x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0' + ((runopt.runAs == 0) ? ' selected' : '') + '>' + "Run as agent" + '</option><option value=1' + ((runopt.runAs == 1) ? ' selected' : '') + '>' + "Run as user, agent if no user" + '</option><option value=2' + ((runopt.runAs == 2) ? ' selected' : '') + '>' + "Must run as user" + '</option></select>';
+                x += '<select id=d2cmduser style=width:100%;margin-bottom:4px class=form-select><option value=0' + ((runopt.runAs == 0) ? ' selected' : '') + '>' + "Run as agent" + '</option><option value=1' + ((runopt.runAs == 1) ? ' selected' : '') + '>' + "Run as user, agent if no user" + '</option><option value=2' + ((runopt.runAs == 2) ? ' selected' : '') + '>' + "Must run as user" + '</option></select>';
                 if (options.selectedFile == null) {
-                    x += '<select id=d2cmdsource onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px><option value=0' + ((runopt.source == 0) ? ' selected' : '') + '>' + "Commands from text box" + '</option><option value=1' + ((runopt.source == 1) ? ' selected' : '') + '>' + "Commands from file" + '</option>';
+                    x += '<select id=d2cmdsource onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px class=form-select><option value=0' + ((runopt.source == 0) ? ' selected' : '') + '>' + "Commands from text box" + '</option><option value=1' + ((runopt.source == 1) ? ' selected' : '') + '>' + "Commands from file" + '</option>';
                     if (userinfo.siteadmin & 8) { x += '<option value=2' + ((runopt.source == 2) ? ' selected' : '') + '>' + "Commands from file on server" + '</option>'; }
-                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
+                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll class=form-control>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
                     x += '<div id=d2runfile style=display:none><input id=d2runfileex class="form-control" type=file onchange=d2runCommandValidate() id=d2localFile name=files onchange=d2runCommandValidate() /></div>';
                     if (userinfo.siteadmin & 8) { x += '<div id=d2runsfile style=display:none><div id=d2serveraction valign=bottom><input type=button id=p2FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p2CurrentFolder></span></div><div id=d2serverfiles></div></div>'; }
                 }
-                setDialogMode(2, "Run Commands", 3, d2groupActionFunctionRunCommands, x, options);
+                setModalContent('xxAddAgent', 'Run Commands', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                    d2groupActionFunctionRunCommands(3, options);
+                });
                 if (options.selectedFile == null) {
                     Q('d2runcmd').focus();
                     if (userinfo.siteadmin & 8) { d3fileoptions = { dialog: 2, files: 'd2serverfiles', folderup: 'p2FolderUp', currentFolder: 'p2CurrentFolder', func: null }; d3updatefiles(); } // Update the server files
@@ -8840,7 +9019,10 @@
 
         function deviceUrlFunction() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Open Page on Device", 3, deviceUrlFunctionEx, '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll onkeyup=deviceUrlFunctionValidate() onchange=deviceUrlFunctionValidate()></input>');
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Open Page on Device', '<input id=d2devurl placeholder="http://server.com" style=width:100%;overflow-y:scroll onkeyup=deviceUrlFunctionValidate() onchange=deviceUrlFunctionValidate()></input>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', deviceUrlFunctionEx);
+
             Q('d2devurl').focus();
             deviceUrlFunctionValidate();
         }
@@ -8914,10 +9096,10 @@
 
         function deviceToastFunction() {
             if (xxdialogMode) return;
-            var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
-            x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
-            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
-            x += '<select style=width:100% id=d2notifyTimeout>';
+            var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px class=form-select><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+            x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px class=form-control/>';
+            x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px class=form-control></textarea>';
+            x += '<select style=width:100% id=d2notifyTimeout class=form-select>';
             x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
             x += '<option value=10>' + "Show for 10 minutes" + '</option>';
@@ -8925,7 +9107,9 @@
             x += '<option value=60>' + "Show for 60 minutes" + '</option>';
             x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
             x += '</select>';
-            setDialogMode(2, "Device Notification", 3, deviceToastFunctionEx, x);
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Device Notification', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', deviceToastFunctionEx);
             Q('d2notifyMsg').focus();
         }
 
@@ -9063,14 +9247,14 @@
             if (xxdialogMode) return;
             var rights = GetNodeRights(currentNode), count = 0;
             var x = "Select an operation to perform on this device." + '<br /><br />';
-            var y = '<select id=d2deviceop style=float:right;width:250px onchange=deviceActionFunctionValidate()>';
+            var y = '<select id=d2deviceop style=float:right;width:250px onchange=deviceActionFunctionValidate() class=form-select>';
             var z = '';
             if ((currentNode.agent != null) && (currentNode.agent.id == 14)) {
                 if (((currentNode.conn & 1) != 0) && ((rights & 8) != 0)) {
                     count++;
                     y += '<option value=400>' + "Flash" + '</option>';
                     y += '<option value=401>' + "Vibrate" + '</option>';
-                    z += '<div id=d2devicetimediv>' + addHtmlValue("Time", '<select id=d2devicetime style=float:right;width:250px><option value=1000>' + "1 second" + '</option><option value=5000>' + "5 seconds" + '</option><option value=10000>' + "10 seconds" + '</option></select>') + '</div>';
+                    z += '<div id=d2devicetimediv>' + addHtmlValue("Time", '<select id=d2devicetime style=float:right;width:250px class=form-select><option value=1000>' + "1 second" + '</option><option value=5000>' + "5 seconds" + '</option><option value=10000>' + "10 seconds" + '</option></select>') + '</div>';
                 }
             } else {
                 if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
@@ -9096,7 +9280,9 @@
             y += '</select>';
             x += addHtmlValue("Operation", y);
             if (count == 0) { x = "No actions currently available for this device."; }
-            setDialogMode(2, "Device Action", (count == 0) ? 2 : 3, deviceActionFunctionEx, x + z);
+            xxdialogButtons = (count == 0) ? 2 : 3; xxdialogTag = x + z;
+            setModalContent('xxAddAgent', 'Device Action', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', deviceActionFunctionEx);
             if (count > 0) { deviceActionFunctionValidate(); }
         }
 
@@ -9481,7 +9667,10 @@
         // Show network interfaces
         function p10showNodeNetInfoDialog() {
             if (xxdialogMode) return false;
-            setDialogMode(2, "Network Interfaces", 1, null, '<div id=d2netinfo>' + "Loading..." + '</div>', 'if' + currentNode._id);
+            xxdialogButtons = 1; xxdialogTag = 'if' + currentNode._id;
+            setModalContent('xxAddAgent', 'Network Interfaces', '<div id=d2netinfo>' + "Loading..." + '</div>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
+
             meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
             return false;
         }
@@ -9603,7 +9792,7 @@
         var showEditNodeValueDialog_modes4 = [64, 64, 64, 4096];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) />');
+            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) class=form-control/>');
             if (mode == 3) {
                 // Get a list of all possible device tags
                 var allTags = [], y = '';
@@ -9614,7 +9803,10 @@
                     x += '<div style=margin-top:8px;width:370px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
                 }
             }
-            setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
+            setModalContent('xxAddAgent', 'Edit Device', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                showEditNodeValueDialogEx(3, mode);
+            });
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
             if (Array.isArray(v)) { v = v.join(', '); }
@@ -10219,7 +10411,9 @@
                 else if (QS('td7amtkvm').display != 'none') { changeDesktopSettingsTab(null, 'd7amtkvm'); }
             }
 
-            setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Remote Desktop Settings', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', showDesktopSettingsChanged);
         }
 
         function changeDesktopSettingsTab(evt, tabname) {
@@ -11882,7 +12076,9 @@
         }
 
         function p13gotofolder() {
-            setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput style=width:100% placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Go To Folder', '<input type=text id=p13folderinput style=width:100% placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p13gotofolderEx);
             focusTextBox('p13folderinput');
         }
         function p13gotofolderEx() {
@@ -13233,7 +13429,10 @@
             if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [consoleNode._id], type: 'default' }); } // Upload default core
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [consoleNode._id], type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>')); }
+            else {
+                setModalContent('xxAddAgent', 'Perform Agent Action', addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>'));
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', p15uploadCoreEx);
+            }
         }
 
         function p15uploadCoreEx() {
