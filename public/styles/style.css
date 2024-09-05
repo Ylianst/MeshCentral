@@ -1782,7 +1782,7 @@ nav .lbbuttonsel2 {
 
 .style6 {
     text-align: left;
-    background-color: #D3D9D6;
+    background: var(--sub-menu-bg);
     padding: 3px;
 }
 
@@ -1801,8 +1801,8 @@ nav .lbbuttonsel2 {
 }
 
 .style10 {
-    background-color: #C9C9C9;
-    color: #000;
+    background: var(--sub-menu-bg);
+    color: var(--sub-menu-color)
 }
 
 .night .style10 {
@@ -2740,13 +2740,13 @@ nav .lbbuttonsel2 {
 
     #p13toolbar .areaHead2 {
         width: 100%;
-        background-color: #d3d9d6;
+        background: var(--sub-menu-bg);
         text-align: left;
         padding: 4px;
     }
 
     .night #p13toolbar .areaHead2 {
-        background-color: #333;
+        background: var(--sub-menu-bg);
     }
 
     #p13toolbar .areaHead3 {
