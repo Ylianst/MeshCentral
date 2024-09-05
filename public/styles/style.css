@@ -1801,8 +1801,8 @@ nav .lbbuttonsel2 {
 }
 
 .style10 {
-    background-color: #C9C9C9;
-    color: #000;
+    background: var(--sub-menu-bg);
+    color: var(--sub-menu-color)
 }
 
 .night .style10 {
