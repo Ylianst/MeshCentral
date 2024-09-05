@@ -104,7 +104,7 @@ There are plenty of options at your disposal if you need them. In fact, you can 
                         "issuer": "https://sso.your.domain",
                         "authorization_endpoint": "https://auth.your.domain/auth-endpoint",
                         "token_endpoint": "https://tokens.sso.your.domain/token-endpoint",
-                        "endsession_endpoint": "https://sso.your.domain/logout",
+                        "end_session_endpoint": "https://sso.your.domain/logout",
                         "jwks_uri": "https://sso.your.domain/jwks-uri"
                     },
                     "client": {
@@ -161,14 +161,14 @@ In the advanced example config above, did you notice that the issuer property ha
    "issuer": "https://sso.your.domain",
    "authorization_endpoint": "https://auth.your.domain/auth-endpoint",
    "token_endpoint": "https://tokens.sso.your.domain/token-endpoint",
-   "endsession_endpoint": "https://sso.your.domain/logout",
+   "end_session_endpoint": "https://sso.your.domain/logout",
    "jwks_uri": "https://sso.your.domain/jwks-uri"
 },
 ```
 
 #### *Required and Commonly Used Configs*
 
-The `issuer` property in the `issuer` object is the only one required, and its only required if you aren't using a preset. Besides the issuer, these are mostly options related to the endpoints and their configuration. The schema below looks intimidating but it comes down to being able to support any IdP. Setting the issuer, and endsession_endpoint are the two main ones you want to setup.
+The `issuer` property in the `issuer` object is the only one required, and its only required if you aren't using a preset. Besides the issuer, these are mostly options related to the endpoints and their configuration. The schema below looks intimidating but it comes down to being able to support any IdP. Setting the issuer, and end_session_endpoint are the two main ones you want to setup.
 
 #### *Schema*
 
