@@ -2763,7 +2763,6 @@ function onTunnelData(data)
         // Handle tunnel data
         if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
             // Take a look at the protocol
-            if (data[0] == 123) { data = data.toString(); } // convert to string to fix binary data coming from peer servers
             if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
             this.httprequest.protocol = parseInt(data);
             if (typeof this.httprequest.protocol != 'number') { this.httprequest.protocol = 0; }

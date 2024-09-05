@@ -3926,10 +3926,18 @@ function InstallModules(modules, args, func) {
         for (var i in modules) {
             // Modules may contain a version tag (foobar@1.0.0), remove it so the module can be found using require
             const moduleNameAndVersion = modules[i];
-            const moduleInfo = moduleNameAndVersion.split('@', 2);
-            var moduleName = moduleInfo[0];
-            var moduleVersion = moduleInfo[1];
-            if (moduleName == '') { moduleName = moduleNameAndVersion; moduleVersion = null; } // If the module name starts with @, don't use @ as a version seperator.
+            const moduleInfo = moduleNameAndVersion.split('@', 3);
+            var moduleName = null;
+            var moduleVersion = null; 
+            if(moduleInfo.length == 1){ // normal package without version
+                moduleName = moduleInfo[0];
+            } else if (moduleInfo.length == 2) { // normal package with a version OR custom repo package with no version
+                moduleName = moduleInfo[0] === '' ? moduleNameAndVersion : moduleInfo[0];
+                moduleVersion = moduleInfo[0] === '' ? null : moduleInfo[1];
+            } else if (moduleInfo.length == 3) { // custom repo package and package with a version
+                moduleName = "@" + moduleInfo[1];
+                moduleVersion = moduleInfo[2];
+            }
             try {
                 // Does the module need a specific version?
                 if (moduleVersion) {

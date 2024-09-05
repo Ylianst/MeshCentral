@@ -11762,7 +11762,7 @@
                 if (start >= data.byteLength) {
                     files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
                 } else {
-                var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
+                    var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
                     if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
                     var dataslice = new Uint8Array(data.slice(start, end))
                     if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
