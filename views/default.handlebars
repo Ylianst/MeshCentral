@@ -1368,6 +1368,7 @@
                     <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
                     <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
                     <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                    <input id="d4LineBreakButton" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
                     <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                 </div>
                 <div id=dialog7 style="">
@@ -1778,12 +1779,14 @@
             QV('p4UserBatchCreate', (features & 0x00080000) == 0);
 
             // Set the file editor
-            d4EditWrapVal = getstore('editorWrap', 0);
-            d4EditSizeVal = getstore('editorSize', 0);
-            d4EditEncodingVal = getstore('editorEncoding', 0);
+            d4EditWrapVal = Number(getstore('editorWrap', 0));
+            d4EditSizeVal = Number(getstore('editorSize', 0));
+            d4EditEncodingVal = Number(getstore('editorEncoding', 0));
+            d4EditLineBreakVal = Number(getstore('editorLineBreak', 0));
             d4ToggleWrap(true);
             d4ToggleSize(true);
             d4ToggleEncoding(true);
+            d4ToggleLineBreak(true);
             if (pluginHandler != null) pluginHandler.callHook('onWebUIStartupEnd');
 
             // Deleted non-english style and fix all topbar titles
@@ -2894,6 +2897,7 @@
                         } else {
                             setDialogMode(4, "Server Configuration", 2);
                             QV('d4EncodingButton', false);
+                            QV('d4LineBreakButton', false);
                             QS('dialog').width = 'auto';
                             QS('dialog').bottom = '80px';
                             QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -3127,15 +3131,20 @@
                     // View the file in the dialog box
                     var p5editSaveBack = function(b, tag) {
                         var data;
+                        var value = Q('d4editorarea').value;
+                        value = d4EditLineBreakVal === 0 ? value.replace(/\r?\n|\r/g, '\r\n') : // Windows
+                                d4EditLineBreakVal === 2 ? value.replace(/\r\n|\n/g, '\r') : // Mac
+                                value.replace(/\r\n|\r/g, '\n'); // Linux
                         if (d4EditEncodingVal == 1) {
-                            data = encode_utf8(Q('d4editorarea').value); // UTF8 encoding
+                            data = encode_utf8(value); // UTF8 encoding
                         } else {
-                            data = Q('d4editorarea').value; // RAW encoding
+                            data = value; // RAW encoding
                         }
                         meshserver.send({ action: 'fileoperation', fileop: 'set', path: tag.path, file: tag.file, data: btoa(data) });
                     }
                     setDialogMode(4, EscapeHtml(message.file), 3, p5editSaveBack, null, message);
                     QV('d4EncodingButton', true);
+                    QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -11562,6 +11571,7 @@
                     // View the file in the dialog box
                     setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
                     QV('d4EncodingButton', true);
+                    QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -11597,6 +11607,7 @@
         var d4EditWrapVal = 0;
         var d4EditSizeVal = 0;
         var d4EditEncodingVal = 0;
+        var d4EditLineBreakVal = 0;
         function d4ToggleWrap(update) {
             if (!update) { d4EditWrapVal = ++d4EditWrapVal % 2; }
             Q('d4WrapButton').value = ["Wrap: ON","Wrap: OFF"][d4EditWrapVal];
@@ -11625,12 +11636,24 @@
             putstore('editorEncoding', d4EditEncodingVal);
         }
 
+        function d4ToggleLineBreak(update) {
+            if (!update) {
+                d4EditLineBreakVal = ++d4EditLineBreakVal % 3;
+            }
+            Q('d4LineBreakButton').value = ["Line Break: Windows (CR LF)","Line Break: Linux (LF)","Line Break: Mac (CR)"][d4EditLineBreakVal];
+            putstore('editorLineBreak', d4EditLineBreakVal);
+        }
+
         function p13editSaveBack(b, tag) {
             var data;
+            var value = Q('d4editorarea').value;
+            value = d4EditLineBreakVal === 0 ? value.replace(/\r?\n|\r/g, '\r\n') : // Windows
+                    d4EditLineBreakVal === 2 ? value.replace(/\r\n|\n/g, '\r') : // Mac
+                    value.replace(/\r\n|\r/g, '\n'); // Linux
             if (d4EditEncodingVal == 1) {
-                data = new TextEncoder().encode(Q('d4editorarea').value); // UTF8 encoding
+                data = new TextEncoder().encode(value); // UTF8 encoding
             } else {
-                data = new TextEncoder().encode(decode_utf8(Q('d4editorarea').value)); // RAW encoding
+                data = new TextEncoder().encode(decode_utf8(value)); // RAW encoding
             }
             p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
         }
@@ -19116,6 +19139,7 @@
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
         function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34,42,43].indexOf(node.agent.id) >= 0); }
+        function isMacNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([11,16,29].indexOf(node.agent.id) >= 0); }
 
         function downloadFile(link, name, closeDialog) {
             var element = document.createElement('a');
