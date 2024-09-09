@@ -1179,23 +1179,23 @@
                                     <div id="terminalCustomUiButtons" style="float:left"></div>
                                 </div>
                                 <div>
-                                    <input type="button" id="autoconnectbutton2" value="AutoConnect"
+                                    <button type="button" id="autoconnectbutton2" class="btn btn-primary btn-sm me-2"
                                         onclick=autoConnectTerminal(event) onkeypress="return false"
-                                        onkeydown="return false" style="display:none" /><span id="connectbutton2span"
-                                        style="margin-right:4px"><input type="button" id="connectbutton2"
-                                            cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1)
+                                        onkeydown="return false" style="display:none"><i class="fas fa-play"></i> AutoConnect</button><span id="connectbutton2span"
+                                        style="margin-right:4px"><button type="button" id="connectbutton2" class="btn btn-primary btn-sm me-2"
+                                            cmenu="termConnectButton" onclick=connectTerminal(event,1)
                                             onkeypress="return false" onkeydown="return false"
-                                            disabled="disabled" /></span><span id="connectbutton2sspan"
-                                        style="margin-right:4px"><input type="button" id="connectbutton2s"
-                                            cmenu=sshPortContextMenu value="SSH Connect"
+                                            disabled="disabled"><i class="fas fa-play"></i> Connect</button></span><span id="connectbutton2sspan"
+                                        style="margin-right:4px"><button type="button" id="connectbutton2s"
+                                            cmenu=sshPortContextMenu class="btn btn-primary btn-sm me-2"
                                             onclick=connectTerminal(event,3) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled" /></span><span
-                                        id="connectbutton2hspan" style="margin-right:4px"><input type="button"
-                                            id="connectbutton2h" value="HW Connect"
+                                            onkeydown="return false" disabled="disabled"><i class="fas fa-play"></i> SSH Connect</button></span><span
+                                        id="connectbutton2hspan" style="margin-right:4px"><button type="button" class="btn btn-primary btn-sm me-2"
+                                            id="connectbutton2h"
                                             title="Connect using Intel&reg; AMT hardware KVM"
                                             onclick=connectTerminal(event,2) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled" /></span><span
-                                        id="disconnectbutton2span" style="margin-right:4px"><button type="button"
+                                            onkeydown="return false" disabled="disabled"><i class="fas fa-play"></i> HW Connect</button></span><span
+                                        id="disconnectbutton2span" style="margin-right:4px"><button type="button" class="btn btn-primary btn-sm me-2"
                                             id="disconnectbutton2" onclick=connectTerminal(event,0)
                                             onkeypress="return false" onkeydown="return false"><i class="fas fa-play"></i> Disconnect</button></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span
@@ -1243,16 +1243,16 @@
                                         class="bottombutton" id="ctrlcbutton" class="btn btn-primary btn-sm me-2" value="Ctl-C"
                                         onclick="termSendKey(3,'ctrlcbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="ctrlxbutton" class="btn btn-primary btn-sm me-2" value="Ctl-X"
+                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="ctrlxbutton" class="btn btn-primary btn-sm me-2" value="Ctl-X"
                                         onclick="termSendKey(24,'ctrlxbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="escbutton" class="btn btn-primary btn-sm me-2" value="ESC"
+                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="escbutton" class="btn btn-primary btn-sm me-2" value="ESC"
                                         onclick="termSendKey(27,'escbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="bsbutton" class="btn btn-primary btn-sm me-2" value="Backspace"
+                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="bsbutton" class="btn btn-primary btn-sm me-2" value="Backspace"
                                         onclick="termSendKey(8,'bsbutton')" style="display:none" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="pastebutton" class="btn btn-primary btn-sm me-2" value="Paste"
+                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="pastebutton" class="btn btn-primary btn-sm me-2" value="Paste"
                                         title="Paste text into the terminal" onclick="showTermPasteDialog()"
                                         style="display:none" />
                                 </div>
@@ -6687,8 +6687,8 @@
             } else if (op == 107) {
                 // Edit tags
                 var x = "Perform batch device tag operation" + '<br /><br />';
-                x += addHtmlValue("Operation", '<select id=d2deviceop style=float:right;width:250px><option value=1>' + "Add tags" + '</option><option value=2>' + "Set tags" + '</option><option value=3>' + "Remove tags" + '</option></select>');
-                x += addHtmlValue("Tags", '<input id=dp10devicevalue maxlength=4096 placeholder="' + "Tag1, Tag2, Tag3" + '" />');
+                x += addHtmlFormFloating("Operation", '<select id=d2deviceop class="form-select-sm me-2"><option value=1>' + "Add tags" + '</option><option value=2>' + "Set tags" + '</option><option value=3>' + "Remove tags" + '</option></select>');
+                x += addHtmlFormFloating("Tags", '<input id=dp10devicevalue class="form-control" maxlength=4096 placeholder="' + "Tag1, Tag2, Tag3" + '" />');
                 // Get a list of all possible device tags
                 var allTags = [], y = '';
                 for (var i in nodes) { if (nodes[i].tags) { for (var j in nodes[i].tags) { if (allTags.indexOf(nodes[i].tags[j]) == -1) { allTags.push(nodes[i].tags[j]); } } } }
@@ -6701,7 +6701,7 @@
             } else if (op == 108) {
                 // Device notification
                 var x = "<div style=margin-bottom:4px>Perform batch device notification</div>";
-                x += '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
+                x += '<select id=d2deviceop class="form-select-sm me-2" style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
                 x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
                 x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
                 x += '<select style=width:100% id=d2notifyTimeout>';
@@ -9249,7 +9249,7 @@
             if (xxdialogMode) return;
             var rights = GetNodeRights(currentNode), count = 0;
             var x = "Select an operation to perform on this device." + '<br /><br />';
-            var y = '<select id=d2deviceop style=float:right;width:250px onchange=deviceActionFunctionValidate() class=form-select>';
+            var y = '<select id=d2deviceop onchange=deviceActionFunctionValidate() class=form-select>';
             var z = '';
             if ((currentNode.agent != null) && (currentNode.agent.id == 14)) {
                 if (((currentNode.conn & 1) != 0) && ((rights & 8) != 0)) {
@@ -9280,7 +9280,7 @@
                 if (((currentNode.conn & 1) != 0) && ((rights & 32768) != 0)) { count++; y += '<option value=104>' + "Uninstall Agent" + '</option>'; }
             }
             y += '</select>';
-            x += addHtmlValue("Operation", y);
+            x += addHtmlFormFloating("Operation", y);
             if (count == 0) { x = "No actions currently available for this device."; }
             xxdialogButtons = (count == 0) ? 2 : 3; xxdialogTag = x + z;
             setModalContent('xxAddAgent', 'Device Action', x);
@@ -9793,7 +9793,7 @@
         var showEditNodeValueDialog_modes4 = [64, 64, 64, 4096];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlValue(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) class=form-control/>');
+            var x = addHtmlFormFloating(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) class=form-control/>');
             if (mode == 3) {
                 // Get a list of all possible device tags
                 var allTags = [], y = '';
@@ -13431,7 +13431,7 @@
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [consoleNode._id], type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
             else {
-                setModalContent('xxAddAgent', 'Perform Agent Action', addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>'));
+                setModalContent('xxAddAgent', 'Perform Agent Action', addHtmlFormFloating("Action", '<select id=d3coreMode class="form-select-sm me-2"><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>'));
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', p15uploadCoreEx);
             }
         }
