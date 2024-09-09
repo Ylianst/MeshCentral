@@ -90,6 +90,12 @@ If you're getting a `port 4433 is not available` error, this is because another 
 
 In general the problem is that you are running two MeshCentral instances at the same time. Probably one as a background Windows Service and one in the command line. Which ever instance can grab port 4433 will have a running MPS and CIRA should work, but the second instance will not have port 4433 and CIRA will not work.
 
+### Running Meshcentral server in debug mode
+
+```bash
+node node_modules/meshcentral --debug
+```
+
 ### Enabling trace in your browser Dev Tools
 
 `Trace=1` as a parameter in chrome dev tools for debugging
