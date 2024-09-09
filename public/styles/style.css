@@ -2750,7 +2750,7 @@ nav .lbbuttonsel2 {
     }
 
     #p13toolbar .areaHead3 {
-        background-color: #E4E9E7;
+        background: var(--sub-menu-bg);
         height: 28px;
     }
 
