@@ -1287,13 +1287,13 @@
                                 <div id="filesCustomUiButtons" style="float:left"></div>
                             </div>
                             <div>
-                                <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event)
-                                    type="button" style="display:none" />
-                                <button id=p13Connect cmenu="filesConnectButton"
+                                <button id=p13AutoConnect onclick=autoConnectFiles(event) class="btn btn-primary btn-sm me-2"
+                                    type="button" style="display:none"><i class="fas fa-play"></i> AutoConnect</button>
+                                <button id=p13Connect cmenu="filesConnectButton" class="btn btn-primary btn-sm me-2"
                                     onclick=connectFiles(event,1) type="button"><i class="fas fa-play"></i> Connect</button>
-                                <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) type="button" />
-                                <input id=p13Connects value="SFTP Connect" cmenu=sshPortContextMenu
-                                    onclick=connectFiles(event,2) type="button" />
+                                <button id=p13Disconnect class="btn btn-primary btn-sm me-2" onclick=connectFiles(event) type="button"><i class="fas fa-play"></i> Disconnect</button>
+                                <button id=p13Connects class="btn btn-primary btn-sm me-2" cmenu=sshPortContextMenu
+                                    onclick=connectFiles(event,2) type="button"><i class="fas fa-play"></i> SFTP Connect</button>
                                 <span id=p13Status>Disconnected</span>
                             </div>
                         </td>
