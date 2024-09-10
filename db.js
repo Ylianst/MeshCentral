@@ -3117,6 +3117,17 @@ module.exports.CreateDB = function (parent, func) {
                 if (typeof parent.config.settings.autobackup.mysqldumppath != 'string') { r += 'Bad mysqldump type\r\n'; }
                 else { r += parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
             }
+            if (typeof parent.config.settings.autobackup.s3 == 'object') {
+                r += 'S3 Backups: Enabled';
+            }
+            if (typeof parent.config.settings.autobackup.webdav == 'object') {
+                r += 'WebDAV Backups: Enabled';
+            }
+            if (typeof parent.config.settings.autobackup.googledrive == 'object') {
+                r += 'Google Drive Backups: Enabled';
+            }
+
+
         }
 
         return r;
