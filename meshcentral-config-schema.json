@@ -1870,6 +1870,11 @@
                 "type": "boolean",
                 "default": false,
                 "description": "If true, user consent is accepted after the timeout."
+              },
+              "oldStyle": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent will be shown in an old style prompt box rather than the new style consent-box."
               }
             }
           },

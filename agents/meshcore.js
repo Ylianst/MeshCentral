@@ -1158,6 +1158,7 @@ function handleServerCommand(data) {
                                 tunnel.soptions = data.soptions;
                                 tunnel.consentTimeout = (tunnel.soptions && tunnel.soptions.consentTimeout) ? tunnel.soptions.consentTimeout : 30;
                                 tunnel.consentAutoAccept = (tunnel.soptions && (tunnel.soptions.consentAutoAccept === true));
+                                tunnel.oldStyle = (tunnel.soptions && tunnel.soptions.oldStyle) ? tunnel.soptions.oldStyle : false;
                                 tunnel.tcpaddr = data.tcpaddr;
                                 tunnel.tcpport = data.tcpport;
                                 tunnel.udpaddr = data.udpaddr;
@@ -2836,7 +2837,9 @@ function onTunnelData(data)
                     if (process.platform == 'win32')
                     {
                         var enhanced = false;
-                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        if (this.httprequest.oldStyle === false) {
+                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        }
                         if (enhanced)
                         {
                             var ipr = server_getUserImage(this.httprequest.userid);
@@ -3000,7 +3003,9 @@ function onTunnelData(data)
                     if (process.platform == 'win32')
                     {
                         var enhanced = false;
-                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        if (this.httprequest.oldStyle === false) {
+                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        }
                         if (enhanced)
                         {
                             var ipr = server_getUserImage(this.httprequest.userid);
@@ -3153,7 +3158,9 @@ function onTunnelData(data)
                     if (process.platform == 'win32')
                     {
                         var enhanced = false;
-                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        if (this.httprequest.oldStyle === false) {
+                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        }
                         if (enhanced)
                         {
                             var ipr = server_getUserImage(this.httprequest.userid);
