@@ -3118,13 +3118,13 @@ module.exports.CreateDB = function (parent, func) {
                 else { r += parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
             }
             if (typeof parent.config.settings.autobackup.s3 == 'object') {
-                r += 'S3 Backups: Enabled';
+                r += 'S3 Backups: Enabled\r\n';
             }
             if (typeof parent.config.settings.autobackup.webdav == 'object') {
-                r += 'WebDAV Backups: Enabled';
+                r += 'WebDAV Backups: Enabled\r\n';
             }
             if (typeof parent.config.settings.autobackup.googledrive == 'object') {
-                r += 'Google Drive Backups: Enabled';
+                r += 'Google Drive Backups: Enabled\r\n';
             }
 
 
