@@ -9038,7 +9038,11 @@
         var desktopNode;
         function setupDesktop() {
             // Setup the remote desktop
-            //if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
+            if ((desktopNode != currentNode) && (desktop != null)) {
+                if (desktopNode._id != currentNode._id) {
+                    desktop.Stop(); desktopNode = null; desktop = null;
+                }
+            }
 
             // If the device desktop is already connected in multi-desktop, use that.
             if ((desktopNode != currentNode) || (desktop == null)) {
@@ -10500,7 +10504,11 @@
         var terminalNode;
         function setupTerminal() {
             // Setup the terminal
-            //if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); terminal = null; }
+            if ((terminalNode != currentNode) && (terminal != null)) {
+                if (terminalNode._id != currentNode._id) {
+                    terminal.Stop(); terminalNode = null; terminal = null;
+                }
+            }
             terminalNode = currentNode;
             updateTerminalButtons();
         }
@@ -10953,6 +10961,11 @@
         var filesNode;
         function setupFiles() {
             // Setup the files tab
+            if ((filesNode != currentNode) && (files != null)) {
+                if (filesNode._id != currentNode._id) {
+                    files.Stop(); filesNode = null; files = null;
+                }
+            }
             var samenode = (filesNode == currentNode);
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
@@ -10961,7 +10974,6 @@
             QV('p13Connect', (files == null) && (filesNode.mtype == 2));
             QV('p13Connects', ((features2 & 0x200) != 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', files != null);
-            //if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
         }
 
