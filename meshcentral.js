@@ -4143,7 +4143,7 @@ function mainStart() {
         else if (config.settings.xmongodb != null) { modules.push('mongojs@3.1.0'); } // Add MongoJS, old driver.
         if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.9.8'); } // Add SMTP support
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
-        if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('minify-js@0.0.4'); modules.push('html-minifier@4.0.0'); } // Translation support
+        if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('html-minifier@4.0.0'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer@0.1.0'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
 
         if (typeof config.settings.autobackup == 'object') {
