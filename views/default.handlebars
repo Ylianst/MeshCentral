@@ -12018,42 +12018,40 @@
             var sections = [], s = {};
 
             // Operating System
-            if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
-                var x = '';
-                if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
-                if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
-                if (hardware.windows && hardware.windows.osinfo) {
-                    var m = hardware.windows.osinfo;
-                    if (m.OSArchitecture) {
-                        if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
-                        else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
-                        else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
-                    }
-                    if(m.LastBootUpTime){
-                        var thedate = {
-                            year: parseInt(m.LastBootUpTime.substring(0, 4)),
-                            month: parseInt(m.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
-                            day: parseInt(m.LastBootUpTime.substring(6, 8)),
-                            hours: parseInt(m.LastBootUpTime.substring(8, 10)),
-                            minutes: parseInt(m.LastBootUpTime.substring(10, 12)),
-                            seconds: parseInt(m.LastBootUpTime.substring(12, 14)),
-                        };
-                        const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
-                        x += addDetailItem("Last Boot Up Time", date);
-                    }
+            var x = '';
+            if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
+            if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
+            if (hardware.windows && hardware.windows.osinfo) {
+                var m = hardware.windows.osinfo;
+                if (m.OSArchitecture) {
+                    if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
+                    else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
+                    else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
                 }
-                if(hardware.linux && hardware.linux.LastBootUpTime){
-                    var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
-                    const date = printDateTime(lastBootUpTime);
+                if(m.LastBootUpTime){
+                    var thedate = {
+                        year: parseInt(m.LastBootUpTime.substring(0, 4)),
+                        month: parseInt(m.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
+                        day: parseInt(m.LastBootUpTime.substring(6, 8)),
+                        hours: parseInt(m.LastBootUpTime.substring(8, 10)),
+                        minutes: parseInt(m.LastBootUpTime.substring(10, 12)),
+                        seconds: parseInt(m.LastBootUpTime.substring(12, 14)),
+                    };
+                    const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
-                if(hardware.darwin && hardware.darwin.LastBootUpTime){
-                    var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
-                    const date = printDateTime(lastBootUpTime);
-                    x += addDetailItem("Last Boot Up Time", date);
-                }
-                if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png'}); }
             }
+            if(hardware.linux && hardware.linux.LastBootUpTime){
+                var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
+                const date = printDateTime(lastBootUpTime);
+                x += addDetailItem("Last Boot Up Time", date);
+            }
+            if(hardware.darwin && hardware.darwin.LastBootUpTime){
+                var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
+                const date = printDateTime(lastBootUpTime);
+                x += addDetailItem("Last Boot Up Time", date);
+            }
+            if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png'}); }    
 
             // MeshAgent
             if (node.agent) {

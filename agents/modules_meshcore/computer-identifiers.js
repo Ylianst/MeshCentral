@@ -364,7 +364,18 @@ function linux_identifiers()
         child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
         child.stderr.on('data', function () { });
         child.waitExit();
-        values.linux.LastBootUpTime = child.stdout.str.trim();
+        var regex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+        if (regex.test(child.stdout.str.trim())) {
+            values.linux.LastBootUpTime = child.stdout.str.trim();
+        } else {
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+            child.stdin.write('date -d "@$(( $(date +%s) - $(awk \'{print int($1)}\' /proc/uptime) ))" "+%Y-%m-%d %H:%M:%S"\nexit\n');
+            child.waitExit();
+            if (regex.test(child.stdout.str.trim())) {
+                values.linux.LastBootUpTime = child.stdout.str.trim();
+            }
+        }
         child = null;
     } catch (ex) { }
 
