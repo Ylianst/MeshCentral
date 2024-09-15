@@ -1,5 +1,5 @@
     "@yetzt/nedb": "1.8.0",
-    "archiver": "7.0.0",
+    "archiver": "7.0.1",
     "body-parser": "1.20.3",
     "cbor": "5.2.0",
     "compression": "1.7.4",
