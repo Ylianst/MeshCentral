@@ -4634,6 +4634,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (typeof command.logmsg == 'string') { message.msg = command.logmsg; } else { message.nolog = 1; }
                     parent.parent.DispatchEvent(['*', user._id], obj, message);
                 }
+                
+                if (parent.parent.pluginHandler != null) // If the plugin's are not supported, reject this command.
+                {
+                    command.userid = user._id;
+                    try {
+                        for( var pluginName in parent.parent.pluginHandler.plugins)
+                            if( typeof parent.parent.pluginHandler.plugins[pluginName].uiCustomEvent === 'function' )
+                                parent.parent.pluginHandler.plugins[pluginName].uiCustomEvent(command, obj);
+                    } catch (ex) { console.log('Error loading plugin handler (' + ex + ')'); }
+                }
                 break;
             }
             case 'serverBackup': {
