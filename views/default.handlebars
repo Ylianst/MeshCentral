@@ -425,35 +425,36 @@
                 </div>
                 <div class="d-flex align-items-center" id="devListToolbar"
                     style="background: linear-gradient(180deg,#fff,#fff,#e9ecef);padding:5px;">
-                    <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All" id="CollapseAllButton"
-                        src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
-                    <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton"
-                        src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
-                    <button class="btn btn-outline-primary me-2 btn-sm" id="SelectAllButton">Select All</button>
-                    <button class="btn btn-outline-primary me-2 btn-sm">Group Action</button>
-                    <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);"
-                        class="btn btn-outline-primary me-2 btn-sm" value="Scroll To Top" />
-                    <input type="text" id=SearchInput class="form-control-sm me-2 btn-sm" style="width: auto;"
-                        placeholder="Filter">
-                    <select class="form-select-sm me-2" style="width: auto;" id=DevFilterSelect
-                        onchange=onOnlineCheckBox(event) title="Device Filter">
-                        <option value=0 selected>All</option>
-                        <option value=1>Online</option>
-                        <option value=5>Offline</option>
-                        <option value=2>Sessions</option>
-                        <option value=3>Starred</option>
-                        <option value=4>Intel&reg; AMT</option>
-                        <option value=6>Help</option>
-                        <option value=7>Tagged</option>
-                        <option value=8>Untagged</option>
-                    </select>
-                    <label class="d-flex"><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox
-                            onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS
-                            Name</span></label>
-                    <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2"
-                            onclick=onOnlineCheckBox(event) /><span
-                            title="Only show devices that are online">Online</span></label>
-                    <span id="devsCustomUIBar"></span>
+                    <div>
+                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All" id="CollapseAllButton" class="mb-1"
+                            src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
+                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton" class="mb-1"
+                            src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
+                        <button class="btn btn-outline-primary me-2 mb-1 btn-sm" id="SelectAllButton">Select All</button>
+                        <button class="btn btn-outline-primary me-2 mb-1 btn-sm">Group Action</button>
+                        <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm"
+                            value="Scroll To Top" />
+                        <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;" placeholder="Filter">
+                        <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event)
+                            title="Device Filter">
+                            <option value=0 selected>All</option>
+                            <option value=1>Online</option>
+                            <option value=5>Offline</option>
+                            <option value=2>Sessions</option>
+                            <option value=3>Starred</option>
+                            <option value=4>Intel&reg; AMT</option>
+                            <option value=6>Help</option>
+                            <option value=7>Tagged</option>
+                            <option value=8>Untagged</option>
+                        </select>
+                        <label class="d-flex"><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox
+                                onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS
+                                Name</span></label>
+                        <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2"
+                                onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                        <span id="devsCustomUIBar"></span>
+                    </div>
+                    
                 </div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tr>
@@ -743,27 +744,27 @@
                         <td id="p5filehead" valign=bottom>
                             <div id="p5rightOfButtons"></div>
                             <div class="m-1">
-                                <input type=button id=p5FolderUp class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5FolderUp class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" onclick="return p5folderup();" value="Up" />&nbsp;
-                                <input type=button id=p5SelectAllButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5SelectAllButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" onclick="p5selectallfile();" value="Select All" />&nbsp;
-                                <input type=button id=p5RenameFileButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5RenameFileButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Rename" onclick="p5renamefile();" />&nbsp;
-                                <input type=button id=p5DeleteFileButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5DeleteFileButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Delete" onclick="p5deletefile();" />&nbsp;
-                                <input type=button id=p5ViewFileButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5ViewFileButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Edit" onclick="p5viewfile()" />&nbsp;
-                                <input type=button id=p5NewFolderButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5NewFolderButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
-                                <input type=button id=p5UploadButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5UploadButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
-                                <input type=button id=p5DownloadButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5DownloadButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Download" onclick="p5downloadButton()" />&nbsp;
-                                <input type=button id=p5CutButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5CutButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
-                                <input type=button id=p5CopyButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5CopyButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Copy" onclick="p5copyFile(0)" />&nbsp;
-                                <input type=button id=p5PasteButton class="btn btn-outline-primary btn-sm"
+                                <input type=button id=p5PasteButton class="btn btn-outline-primary btn-sm mb-1"
                                     disabled="disabled" value="Paste" onclick="p5pasteFile()" />&nbsp;
                             </div>
                         </td>
@@ -771,7 +772,7 @@
                     <tr>
                         <td id="p5filesubhead">
                             <div style=float:right>
-                                <select id=p5sortdropdown class="form-select-sm m-1" onchange=updateFiles()>
+                                <select id=p5sortdropdown class="form-select-sm m-1 mb-1" onchange=updateFiles()>
                                     <option value="1" selected="selected">Sort by name</option>
                                     <option value="2">Sort by size</option>
                                     <option value="3">Sort by date</option>
@@ -9766,7 +9767,7 @@
         // Show MeshCmd dialog
         function p10showMeshCmdDialog(mode, nodeid) {
             if (xxdialogMode) return;
-            var y = '<select id=aginsSelect onclick=meshCmdOsClick() style=width:236px class=form-select>';
+            var y = '<select id=aginsSelect onclick=meshCmdOsClick() class=form-select>';
             y += '<option value=4>' + "Windows x86 (64bit)" + '</option>';
             y += '<option value=3>' + "Windows x86 (32bit)" + '</option>';
             y += '<option value=43>' + "Windows ARM (64bit)" + '</option>';
@@ -9781,7 +9782,7 @@
             var x = '';
             if (mode == 0) { x += '<div>' + "MeshCmd is a command line tool that performs lots of different operations. The action file can optionally be downloaded and edited to provide server information and credentials." + '<br /><br />'; }
             if (mode == 1) { x += '<div>' + "Download \"meshcmd\" with an action file to route traffic thru this server to this device. Make sure to edit meshaction.txt and add your account password or make any changes needed." + '<br /><br />'; }
-            x += addHtmlValue("Operating System", y);
+            x += addHtmlFormFloating("Operating System", y);
             x += addHtmlValue("MeshCmd", '<a id=meshcmddownloadid onclick=downloadFile("meshagents?meshcmd=3' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") class=link-primary></a>');
             if (mode == 0) { x += addHtmlValue("Action File", '<a onclick=downloadFile("meshagents?meshaction=generic' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") class=link-primary>' + "MeshAction (.txt)" + '</a>'); }
             if (mode == 1) { x += addHtmlValue("Action File", '<a onclick=downloadFile("meshagents?meshaction=route&nodeid=' + nodeid + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") class=link-primary>' + "MeshAction (.txt)" + '</a>'); }
@@ -14173,7 +14174,7 @@
 
                 // Print the mesh information
                 r += `
-                    <div class="col-lg-3 col-md-4 col-sm-6 mb-2"
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-2"
                             onclick="gotoMesh('` + sortedMeshes[i]._id + `')"
                             onkeypress="if (event.key=='Enter') gotoMesh('` + sortedMeshes[i]._id + `')"
                             style="cursor:pointer;">
@@ -14464,10 +14465,10 @@
             }
 
             // Display device group note support
-            if (meshrights & 1) { x += '<br><input type=button class="btn btn-outline-primary btn-sm" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
+            if (meshrights & 1) { x += '<br><input type=button class="btn btn-outline-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
-                x += '<button class="btn btn-primary btn-sm me-2" onclick="return p20showAddMeshUserDialog()"><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog()"><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</button>';
                 if (usergroups != null) {
                     var userGroupCount = 0, newUserGroup = false;
                     for (var i in usergroups) {
@@ -14475,13 +14476,13 @@
                         userGroupCount++;
                         if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2" onclick="return p20showAddMeshUserDialog(2)"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(2)"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
                 }
             }
 
             //if (meshrights & 4) { }
             if (currentMesh.mtype == 1) {
-                if (meshrights & 1) { x += '<button class="btn btn-primary btn-sm me-2" title="' + "Import Intel&reg; AMT devices." + '" onclick=\'return showAmtImport("' + currentMesh._id + '")\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "Import" + '</button>'; }
+                if (meshrights & 1) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" title="' + "Import Intel&reg; AMT devices." + '" onclick=\'return showAmtImport("' + currentMesh._id + '")\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "Import" + '</button>'; }
                 /*
                 if ((features & 1) == 0) { // If not WAN-Only
                     x += '<a href=# onclick=\'return addDeviceToMesh("' + currentMesh._id + '")\' style=cursor:pointer;margin-right:10px title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '"><img src=images/icon-installmesh.png border=0 height=12 width=12> ' + "Install local" + '</a>';
@@ -14492,14 +14493,14 @@
                 }
             }
             if ((currentMesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<button class="btn btn-primary btn-sm me-2" onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' title="' + "Add a new computer to this device group by installing the mesh agent." + '"><i class="fas fa-plus-circle"></i> ' + "Add Agent" + '</button>';
-                x += '<button class="btn btn-primary btn-sm me-2" onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' title="' + "Invite someone to install the mesh agent on this device group." + '"><i class="fas fa-user-plus"></i> ' + "Invite" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' title="' + "Add a new computer to this device group by installing the mesh agent." + '"><i class="fas fa-plus-circle"></i> ' + "Add Agent" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' title="' + "Invite someone to install the mesh agent on this device group." + '"><i class="fas fa-user-plus"></i> ' + "Invite" + '</button>';
             }
             if ((currentMesh.mtype == 3) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<button class="btn btn-primary btn-sm me-2" onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' title="' + "Add device located on the local network." + '"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' title="' + "Add device located on the local network." + '"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>';
             }
             if (currentMesh.amt && (currentMesh.amt.type > 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // ACM activation or Full Automatic
-                x += '<button class="btn btn-primary btn-sm me-2" title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "ACM" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "ACM" + '</button>';
             }
 
             x += '<table class="table table-hover" cellpadding=2 cellspacing=0><tbody><tr><th scope=col>' + "User Authorizations" + '</th><th scope=col></th></tr>';
@@ -16549,7 +16550,7 @@
             if (serverinfo.emailcheck) { optionalActions += '<option value=4>' + "Validate Email" + '</option><option value=5>' + "Invalidate Email" + '</option>'; }
 
             var x = "Select an operation to perform on all selected users." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select style=width:240px id=d3groupop class=form-select><option value=1>' + "Lock account" + '</option><option value=2>' + "Unlock account" + '</option>' + optionalActions + '<option value=3>' + "Delete account" + '</option></select>');
+            x += addHtmlFormFloating("Operation", '<select id=d3groupop class=form-select><option value=1>' + "Lock account" + '</option><option value=2>' + "Unlock account" + '</option>' + optionalActions + '<option value=3>' + "Delete account" + '</option></select>');
             setModalContent('xxAddAgent', "Group Action", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p3usersGroupActionFunctionEx);
         }
@@ -16872,11 +16873,11 @@
                 x += addHtmlValue("Domain", y);
             }
 
-            if ((features & 0x200000) == 0) { x += addHtmlValue('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
-            x += addHtmlValue('<span id=p4hemail>' + "Email" + '</span>', '<input id=p4email type=email maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            if ((features & 0x200000) == 0) { x += addHtmlFormFloating('<span id=p4hname>' + "Username" + '</span>', '<input id=p4name class="form-control" maxlength=64 autocomplete=username onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />'); }
+            x += addHtmlFormFloating('<span id=p4hemail>' + "Email", '<input id=p4email type=email class="form-control" maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '';
-            x += addHtmlValue('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlValue('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlFormFloating('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password class="form-control" maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlFormFloating('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password class="form-control" maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Randomize the password." + '</label></div>';
             x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Remove all previous events for this userid." + '</label></div>';
             x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Force password reset on next login." + '</label></div>';
@@ -17173,7 +17174,7 @@
             for (var i = 0; i < elements.length; i++) { if (elements[i].checked === true) checkcount++; }
             if (checkcount == 0) return;
             var x = "Select an operation to perform on all selected users." + '<br /><br />';
-            x += addHtmlValue("Operation", '<select style=width:240px id=d50groupop class=form-select><option value=1>' + "Delete group" + '</option></select>');
+            x += addHtmlFormFloating("Operation", '<select id=d50groupop class=form-select><option value=1>' + "Delete group" + '</option></select>');
             xxdialogButtons = 3;
             setModalContent('xxAddAgent', "Group Action", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p50usersGroupActionFunctionEx);
@@ -19137,7 +19138,7 @@
                 for (var i in message.values) {
                     x += '<div class=userTableHeader style=margin-bottom:4px;width:200px>' + (serverStatsStrings[i] ? serverStatsStrings[i] : i) + '</div>';
                     for (var j in message.values[i]) {
-                        x += '<div style=display:inline-block><table class=serverStateTableCell><tr><td class=h1></td><td><span>' + (serverStatsStrings[j] ? serverStatsStrings[j] : j) + '</span><span style=float:right>' + message.values[i][j] + '</span></td><td class=h2></td></tr></table></div>';
+                        x += '<div style=display:inline-block class="me-2"><table class=serverStateTableCell><tr><td></td><td><span>' + (serverStatsStrings[j] ? serverStatsStrings[j] : j) + '</span><span style=float:right>' + message.values[i][j] + '</span></td><td></td></tr></table></div>';
                     }
                 }
             }
