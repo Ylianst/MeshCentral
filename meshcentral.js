@@ -394,6 +394,92 @@ function CreateMeshCentralServer(config, args) {
                 return;
             }
         }
+        
+        // FreeBSD background service handling, MUST USE SPAWN FOR SERVICE COMMANDS!
+        if (obj.platform == 'freebsd') {
+            if (obj.args.install == true) {
+                // Install MeshCentral in rc.d
+                console.log('Installing MeshCentral as background Service...');
+                var systemdConf = "/usr/local/etc/rc.d/meshcentral";
+                const userinfo = require('os').userInfo();
+                console.log('Writing config file...');
+                require('child_process').exec('which node', {}, function (error, stdout, stderr) {
+                    if ((error != null) || (stdout.indexOf('\n') == -1)) { console.log('ERROR: Unable to get node location: ' + error); process.exit(); return; }
+                    const nodePath = stdout.substring(0, stdout.indexOf('\n'));
+                    const config = '#!/bin/sh\n# MeshCentral FreeBSD Service Script\n# PROVIDE: meshcentral\n# REQUIRE: NETWORKING\n# KEYWORD: shutdown\n. /etc/rc.subr\nname=meshcentral\nuser=' + userinfo.username + '\nrcvar=meshcentral_enable\n: \\${meshcentral_enable:=\\"NO\\"}\n: \\${meshcentral_args:=\\"\\"}\npidfile=/var/run/meshcentral/meshcentral.pid\ncommand=\\"/usr/sbin/daemon\\"\nmeshcentral_chdir=\\"' + obj.parentpath + '\\"\ncommand_args=\\"-r -u \\${user} -P \\${pidfile} -S -T meshcentral -m 3 ' + nodePath + ' ' + __dirname + ' \\${meshcentral_args}\\"\nload_rc_config \\$name\nrun_rc_command \\"\\$1\\"\n';
+                    require('child_process').exec('echo \"' + config + '\" | tee ' + systemdConf + ' && chmod +x ' + systemdConf, {}, function (error, stdout, stderr) {
+                        if ((error != null) && (error != '')) { console.log('ERROR: Unable to write config file: ' + error); process.exit(); return; }
+                        console.log('Enabling service...');
+                        require('child_process').exec('sysrc meshcentral_enable="YES"', {}, function (error, stdout, stderr) {
+                            if ((error != null) && (error != '')) { console.log('ERROR: Unable to enable MeshCentral as a service: ' + error); process.exit(); return; }
+                            if (stdout.length > 0) { console.log(stdout); }
+                            console.log('Starting service...');
+                            const service = require('child_process').spawn('service', ['meshcentral', 'start']);
+                            service.stdout.on('data', function (data) { console.log(data.toString()); });
+                            service.stderr.on('data', function (data) { console.log(data.toString()); });
+                            service.on('exit', function (code) {
+                                console.log((code === 0) ? 'Done.' : 'ERROR: Unable to start MeshCentral as a service');
+                                process.exit(); // Must exit otherwise we just hang
+                            });
+                        });
+                    });
+                });
+                return;
+            } else if (obj.args.uninstall == true) {
+                // Uninstall MeshCentral in rc.d
+                console.log('Uninstalling MeshCentral background service...');
+                var systemdConf = "/usr/local/etc/rc.d/meshcentral";
+                console.log('Stopping service...');
+                const service = require('child_process').spawn('service', ['meshcentral', 'stop']);
+                service.stdout.on('data', function (data) { console.log(data.toString()); });
+                service.stderr.on('data', function (data) { console.log(data.toString()); });
+                service.on('exit', function (code) {
+                    if (code !== 0) { console.log('ERROR: Unable to stop MeshCentral as a service'); }
+                    console.log('Disabling service...');
+                    require('child_process').exec('sysrc -x meshcentral_enable', {}, function (err, stdout, stderr) {
+                        if ((err != null) && (err != '')) { console.log('ERROR: Unable to disable MeshCentral as a service: ' + err); }
+                        if (stdout.length > 0) { console.log(stdout); }
+                        console.log('Removing config file...');
+                        require('child_process').exec('rm ' + systemdConf, {}, function (err, stdout, stderr) {
+                            if ((err != null) && (err != '')) { console.log('ERROR: Unable to delete MeshCentral config file: ' + err); }
+                            console.log('Done.');
+                            process.exit(); // Must exit otherwise we just hang
+                        });
+                    });
+                });
+                return;
+            } else if (obj.args.start == true) {
+                // Start MeshCentral in rc.d
+                const service = require('child_process').spawn('service', ['meshcentral', 'start']);
+                service.stdout.on('data', function (data) { console.log(data.toString()); });
+                service.stderr.on('data', function (data) { console.log(data.toString()); });
+                service.on('exit', function (code) {
+                    console.log((code === 0) ? 'Done.' : 'ERROR: Unable to start MeshCentral as a service: ' + error);
+                    process.exit(); // Must exit otherwise we just hang
+                });
+                return;
+            } else if (obj.args.stop == true) {
+                // Stop MeshCentral in rc.d
+                const service = require('child_process').spawn('service', ['meshcentral', 'stop']);
+                service.stdout.on('data', function (data) { console.log(data.toString()); });
+                service.stderr.on('data', function (data) { console.log(data.toString()); });
+                service.on('exit', function (code) {
+                    console.log((code === 0) ? 'Done.' : 'ERROR: Unable to stop MeshCentral as a service: ' + error);
+                    process.exit(); // Must exit otherwise we just hang
+                });
+                return;
+            } else if (obj.args.restart == true) {
+                // Restart MeshCentral in rc.d
+                const service = require('child_process').spawn('service', ['meshcentral', 'restart']);
+                service.stdout.on('data', function (data) { console.log(data.toString()); });
+                service.stderr.on('data', function (data) { console.log(data.toString()); });
+                service.on('exit', function (code) {
+                    console.log((code === 0) ? 'Done.' : 'ERROR: Unable to restart MeshCentral as a service: ' + error);
+                    process.exit(); // Must exit otherwise we just hang
+                });
+                return;
+            }
+        }
 
         // Index a recorded file
         if (obj.args.indexmcrec != null) {
