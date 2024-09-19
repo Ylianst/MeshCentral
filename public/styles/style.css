@@ -1341,7 +1341,7 @@ NoMeshesPanel img {
     position: absolute;
     width: 400px;
     height: 100%;
-    background-color: gray;
+    background: var(--sub-menu-bg);
     top: 0;
     right: 0;
     border-left: 2px solid lightgray;
