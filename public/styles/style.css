@@ -3313,7 +3313,7 @@ nav .lbbuttonsel2 {
 }
   
 .card:hover, #p2AccountImage:hover, #p2canvas:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    background: #f3f5f7 !important;
 }
 
 .form-control, .form-control-sm, .form-select, .form-select-sm {
@@ -3321,8 +3321,7 @@ nav .lbbuttonsel2 {
 }
 
 .card {
-    background: var(--sub-menu-bg);
-    color: var(--sub-menu-color);
+    background: #f8f9fa !important;
 }
 
 .table td,
