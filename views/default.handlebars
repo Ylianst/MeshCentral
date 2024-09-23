@@ -203,7 +203,7 @@
                         class="fas fa-server me-2"></i></a>
             </nav>
         </div>
-        <div id="topbar" class="noselect flex-grow-1">
+        <div id=topbar class=noselect>
             <div>
                 <div style="position:relative">
                     <span id=logoutControlSpan2></span>
@@ -2836,7 +2836,6 @@
 
         // Toggle the web page to full screen
         function toggleFullScreen(toggle) {
-            const leftBar = document.getElementById('page_leftbar');
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
             if (webPageFullScreen == false) {
                 QC('body').remove('menu_stack');
@@ -2844,7 +2843,7 @@
                 QC('body').remove('arg_hide');
                 if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
                 QV('UserDummyMenuSpan', false);
-                leftBar.classList.toggle('d-none');
+                //QV('page_leftbar', false);
             } else {
                 QC('body').add('fullscreen');
                 if (args.hide & 16) QC('body').add('arg_hide');
@@ -2852,7 +2851,6 @@
                 QV('MainMenuSpan', !(args.hide & 16));
                 if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
-                leftBar.classList.toggle('d-none');
             }
             mainUpdate(512);
             QV('body', true);
