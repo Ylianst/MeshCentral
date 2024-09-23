@@ -426,17 +426,21 @@
                 <div class="d-flex align-items-center" id="devListToolbar"
                     style="background: linear-gradient(180deg,#fff,#fff,#e9ecef);padding:5px;">
                     <div>
-                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All" id="CollapseAllButton" class="mb-1"
-                            src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
-                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton" class="mb-1"
-                            src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
-                        <button class="btn btn-outline-primary me-2 mb-1 btn-sm" id="SelectAllButton">Select All</button>
+                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All"
+                            id="CollapseAllButton" class="mb-1" src="images/icon-collapse.png" loading=lazy width=9
+                            height=11 onclick="cmexpandaction(2)" />
+                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton"
+                            class="mb-1" src="images/icon-expand.png" loading=lazy width=9 height=11
+                            onclick="cmexpandaction(1)" />
+                        <button class="btn btn-outline-primary me-2 mb-1 btn-sm" id="SelectAllButton">Select
+                            All</button>
                         <button class="btn btn-outline-primary me-2 mb-1 btn-sm">Group Action</button>
-                        <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm"
-                            value="Scroll To Top" />
-                        <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;" placeholder="Filter">
-                        <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event)
-                            title="Device Filter">
+                        <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);"
+                            class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
+                        <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;"
+                            placeholder="Filter">
+                        <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect
+                            onchange=onOnlineCheckBox(event) title="Device Filter">
                             <option value=0 selected>All</option>
                             <option value=1>Online</option>
                             <option value=5>Offline</option>
@@ -448,13 +452,15 @@
                             <option value=8>Untagged</option>
                         </select>
                         <label class="d-flex"><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox
-                                onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS
+                                onclick=onRealNameCheckBox() /> &nbsp; <span
+                                title="Show devices operating system name">OS
                                 Name</span></label>
                         <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2"
-                                onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                                onclick=onOnlineCheckBox(event) /><span
+                                title="Only show devices that are online">Online</span></label>
                         <span id="devsCustomUIBar"></span>
                     </div>
-                    
+
                 </div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tr>
@@ -2836,6 +2842,7 @@
 
         // Toggle the web page to full screen
         function toggleFullScreen(toggle) {
+            const leftBar = document.getElementById('page_leftbar');
             if (toggle === 1) { webPageFullScreen = !webPageFullScreen; putstore('webPageFullScreen', webPageFullScreen); }
             if (webPageFullScreen == false) {
                 QC('body').remove('menu_stack');
@@ -2843,6 +2850,7 @@
                 QC('body').remove('arg_hide');
                 if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
                 QV('UserDummyMenuSpan', false);
+                leftBar.classList.add('d-none');
                 //QV('page_leftbar', false);
             } else {
                 QC('body').add('fullscreen');
@@ -2851,6 +2859,7 @@
                 QV('MainMenuSpan', !(args.hide & 16));
                 if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
                 QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
+                leftBar.classList.remove('d-none');
             }
             mainUpdate(512);
             QV('body', true);
