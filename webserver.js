@@ -3724,6 +3724,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
+    // Return a customised mainifest.json for PWA
+    function handleManifestRequest(req, res){
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
+        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleManifestRequest: invalid ip'); return; } // Check server-wide IP filter only.
+        parent.debug('web', 'handleManifestRequest()');
+        var manifest = {
+            "name": (domain.title != null) ? domain.title : 'MeshCentral',
+            "short_name": (domain.title != null) ? domain.title : 'MeshCentral',
+            "description": "Open source web based, remote computer management.",
+            "scope": ".",
+            "start_url": "/",
+            "display": "fullscreen",
+            "orientation": "portrait",
+            "theme_color": "#ffffff",
+            "background_color": "#ffffff",
+            "icons": [{
+                "src": "pwalogo.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }]
+        };
+        res.json(manifest);
+    }
+
     // Handle user public file downloads
     function handleDownloadUserFiles(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3843,6 +3868,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         } else {
             res.sendStatus(404);
+        }
+    }
+
+    // Handle PWA logo request
+    function handlePWALogoRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+
+        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
+        if (domain.pwalogo) {
+            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.pwalogo] != null)) {
+                // Use the logo in the database
+                res.set({ 'Content-Type': domain.pwalogo.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
+                res.send(parent.configurationFiles[domain.pwalogo]);
+                return;
+            } else {
+                // Use the logo on file
+                try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.pwalogo)); return; } catch (ex) { }
+            }
+        }
+
+        if ((domain.webpublicpath != null) && (obj.fs.existsSync(obj.path.join(domain.webpublicpath, 'android-chrome-512x512.png')))) {
+            // Use the domain logo picture
+            try { res.sendFile(obj.path.join(domain.webpublicpath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
+        } else if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'android-chrome-512x512.png'))) {
+            // Use the override logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
+        } else {
+            // Use the default logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
         }
     }
 
@@ -6222,7 +6277,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Setup middleware
-        obj.app.engine('handlebars', obj.exphbs({ defaultLayout: false }));
+        obj.app.engine('handlebars', obj.exphbs.engine({ defaultLayout: false }));
         obj.app.set('view engine', 'handlebars');
         if (obj.args.trustedproxy) {
             // Reverse proxy should add the "X-Forwarded-*" headers
@@ -6542,6 +6597,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.post(url + 'tokenlogin', obj.bodyParser.urlencoded({ extended: false }), handleLoginRequest);
                 obj.app.get(url + 'logout', handleLogoutRequest);
                 obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
+                obj.app.get(url + 'manifest.json', handleManifestRequest);
                 obj.app.post(url + 'changepassword', obj.bodyParser.urlencoded({ extended: false }), handlePasswordChangeRequest);
                 obj.app.post(url + 'deleteaccount', obj.bodyParser.urlencoded({ extended: false }), handleDeleteAccountRequest);
                 obj.app.post(url + 'createaccount', obj.bodyParser.urlencoded({ extended: false }), handleCreateAccountRequest);
@@ -6603,6 +6659,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
                 obj.app.get(url + 'logo.png', handleLogoRequest);
                 obj.app.get(url + 'loginlogo.png', handleLoginLogoRequest);
+                obj.app.get(url + 'pwalogo.png', handlePWALogoRequest);
                 obj.app.post(url + 'translations', obj.bodyParser.urlencoded({ extended: false }), handleTranslationsRequest);
                 obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
                 obj.app.get(url + 'welcome.png', handleWelcomeImageRequest);
