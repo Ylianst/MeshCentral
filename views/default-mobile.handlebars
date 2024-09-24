@@ -989,6 +989,9 @@
                                     <div class="toright2"></div>
                                     <div style="height:28px">
                                         <input id="termActionsBtn" style="margin-left:3px;height:28px" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                        <input id="ctrlcbutton" style="margin-left:3px;height:28px" type=button onkeypress="return false" onkeydown="return false" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
+                                        <input id="ctrlxbutton" style="margin-left:3px;height:28px" type=button onkeypress="return false" onkeydown="return false" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
+                                        <input id="escbutton" style="margin-left:3px;height:28px" type=button onkeypress="return false" onkeydown="return false" value="ESC" onclick="termSendKey(27,'escbutton')" />
                                     </div>
                                 </div>
                             </div>
@@ -5148,6 +5151,9 @@
 
             // Enable action button if mesh type is not "local devices"
             QV('termActionsBtn', terminalNode.mtype != 3);
+            QE('ctrlcbutton', termState);
+            QE('ctrlxbutton', termState);
+            QE('escbutton', termState);
             if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent == null) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
                 QH('terminalCustomUpperRight', '');
             } else {
@@ -5465,6 +5471,26 @@
                 if (fullscreen) { deskToggleFull(); }
             }
             Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
+        }
+
+        function termSendKey(key, id) {
+            if (!terminal || xxdialogMode) return;
+            if (xterm != null) {
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    // SSH
+                    terminal.socket.send('~' + String.fromCharCode(key));
+                } else if (terminal.sendText) {
+                    // MeshAgent
+                    terminal.sendText(String.fromCharCode(key));
+                } else {
+                    // CIRA
+                    terminal.send(String.fromCharCode(key));
+                }
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(key);
+                Q(id).blur(); // Deselect the connect button so the button does not get key presses.
+            }
         }
 
         //
