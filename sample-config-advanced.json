@@ -189,6 +189,7 @@
       "title2": "Servername",
       "_titlePicture": "title-sample.png",
       "_loginPicture": "title-sample.png",
+      "_pwaLogo": "title-sample.png",
       "_rootRedirect": "https://www.youtube.com/watch?v=Gs069dndIYk",
       "_mobileSite": false,
       "_maxDeviceView": 1000,

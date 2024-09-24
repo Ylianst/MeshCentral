@@ -1112,6 +1112,11 @@
             "default": null,
             "description": "Web site .png logo file placed in meshcentral-data that used on the login page when sitestyle is 2."
           },
+          "pwaLogo": {
+            "type": "string",
+            "default": null,
+            "description": "Web site .png logo file that is 512x512 in size placed in meshcentral-data that is used for PWA installs on iOS and Android."
+          },
           "rootRedirect": {
             "type": "string",
             "default": null,
