@@ -6396,14 +6396,14 @@
         }
 
         // Function used to show and hide any modal by passing appropriate `modalId` and `okButtonId`
-        function showModal(modalId, okButtonId, okCallback) {
+        function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
             var modalElement = document.getElementById(modalId);
             var modalInstance = new bootstrap.Modal(modalElement);
 
             modalInstance.show();
             document.getElementById(okButtonId).onclick = function () {
                 if (okCallback && typeof okCallback === 'function') {
-                    okCallback();
+                    okCallback(b, tag);
                 }
                 modalInstance.hide();
             };
@@ -17442,7 +17442,10 @@
             if (xxdialogMode) return;
             var node = getNodeFromId(decodeURIComponent(nodeid));
             if (node == null) return;
-            setDialogMode(2, "Remove Device Permissions", 3, p51removeDeviceFromUserGroupEx, format("Confirm removal of access rights for device \"{0}\"?", node.name), node._id);
+            setModalContent('xxAddAgent', 'Remove Device Permissions', format("Confirm removal of access rights for device \"{0}\"?", node.name));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, tag) {
+                p51removeDeviceFromUserGroupEx(b, tag);
+            }, 3, node._id);
         }
 
         function p51removeDeviceFromUserGroupEx(b, nodeid) {
@@ -17453,7 +17456,10 @@
             if (xxdialogMode) return;
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
-            setDialogMode(2, "Remove Device Group Permissions", 3, p51removeMeshFromUserGroupEx, format("Confirm removal of access rights for device group \"{0}\"?", mesh.name), mesh._id);
+            setModalContent('xxAddAgent', 'Remove Device Group Permissions', format("Confirm removal of access rights for device group \"{0}\"?", mesh.name));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, tag) {
+                p51removeMeshFromUserGroupEx(b, tag);
+            }, 3, mesh._id);
         }
 
         function p51removeMeshFromUserGroupEx(b, meshid) {
@@ -17464,7 +17470,11 @@
             if (xxdialogMode) return;
             var x = addHtmlFormFloating("Name", '<input id=dp51name class="form-control" maxlength=32 onchange=p51editgroupValidate() onkeyup=p51editgroupValidate(event) ' + (nameReadOnly ? 'readonly disabled' : '') + '/>');
             x += addHtmlFormFloating("Description", '<textarea id=dp51desc class="form-control" maxlength=1024 style=width:100%;resize:none></textarea>');
-            setDialogMode(2, "Edit User Group", 3, p51editgroupEx, x);
+
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Edit User Group', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p51editgroupEx);
+
             Q('dp51name').value = currentUserGroup.name;
             if (currentUserGroup.desc) Q('dp51desc').value = currentUserGroup.desc;
             p51editgroupValidate();
@@ -17483,7 +17493,13 @@
             if (xxdialogMode) return false;
             var x = format("Delete user group {0}?", EscapeHtml(currentUserGroup.name)) + '<br /><br />';
             x += '<label><input id=p51check type=checkbox class="form-check-input me-2" onchange=p51validateDeleteGroupDialog() />' + "Confirm" + '</label>';
-            setDialogMode(2, "Delete User Group", 3, p51showDeleteUserGroupDialogEx, x);
+
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Delete User Group', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                p51showDeleteUserGroupDialogEx(xxdialogButtons, xxdialogTag);
+            });
+
             p51validateDeleteGroupDialog();
             return false;
         }
@@ -17507,7 +17523,8 @@
             var uname = userid.split('/')[2];
             if (users && users[userid]) { uname = users[userid].name; }
             if (userinfo._id == userid) { uname = userinfo.name; }
-            setDialogMode(2, "Remove User Membership", 3, p51viewuserEx2, format("Confirm membership removal of user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))), userid);
+            setModalContent('xxAddAgent', 'Remove User Membership', format("Confirm membership removal of user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p51viewuserEx2(3, userid));
         }
         function p51viewuserEx2(button, userid) { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); }
 
@@ -17519,7 +17536,12 @@
             x += addHtmlFormFloating("User Identifiers", '<input id=dp51username maxlength=32 class="form-control" onchange=p51validateAddUserDialog() onkeyup=p51validateAddUserDialog() placeholder="user1, user2, user3" />');
             x += '<div id=dp51usersuggest class=suggestionBox style=\'top:30px;left:130px;display:none\'></div>';
             x += '</div><br>';
-            setDialogMode(2, "Add Users to User Group", 3, p51showAddUserDialogEx, x);
+
+            setModalContent('xxAddAgent', 'Add Users to User Group', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                p51showAddUserDialogEx(3, xxdialogTag)
+            });
+
             Q('dp51username').focus();
             p51validateAddUserDialog();
             return false;
@@ -17596,7 +17618,7 @@
             if (xxdialogMode && !force) return;
             if ((event != null) && (event.originalTarget != null) && (event.originalTarget.href != null)) return;
             var user = currentUser = users[decodeURIComponent(userid)];
-            if (user == null) { setDialogMode(0); go(4); return; }
+            if (user == null) { go(4); return; }
             QH('p30userName', EscapeHtml(user.name));
             QH('p31userName', EscapeHtml(user.name));
             var self = (user._id == userinfo._id), activeSessions = 0;
@@ -17805,7 +17827,9 @@
             var x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
             x += '<td style=width:100%;text-align:center>' + "SMS capable phone number for this user." + '<br />' + "Leave blank for none.";
             x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone ? currentUser.phone : '') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
-            setDialogMode(2, "Phone Notifications", 3, p30editPhoneEx, x, 'verifyPhone');
+            xxdialogButtons = 3; xxdialogTag = "verifyPhone";
+            setModalContent('xxAddAgent', 'Phone Notifications', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p30editPhoneEx);
             Q('d2phoneinput').focus();
             p30editPhoneValidate();
         }
@@ -17832,7 +17856,9 @@
             x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
             x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
             x += '<div id=d2slackinfo style=display:none><br /><a href=https://api.slack.com/messaging/webhooks target="_slack">' + "Slack Webhook Setup" + '</a></div>';
-            setDialogMode(2, "Messaging Notifications", 3, p30editMessagingEx, x, 'verifyMessaging');
+            xxdialogButtons = 3; xxdialogTag = 'verifyMessaging';
+            setModalContent('xxAddAgent', 'Messaging Notifications', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p30editMessagingEx);
             Q('d2handleinput').focus();
             if (currentUser.msghandle) {
                 if (currentUser.msghandle.startsWith('telegram:') && ((serverinfo.userMsgProviders & 1) != 0)) { Q('d2serviceselect').value = 1; Q('d2handleinput').value = currentUser.msghandle.substring(10); }
@@ -18156,25 +18182,33 @@
 
         function p30removeDeviceSharing(event, nodeid, publicid, guestname) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Remove Device Share", 3, function (b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, format("Confirm removal of device share \"{0}\"?", decodeURIComponent(guestname)), [decodeURIComponent(nodeid), decodeURIComponent(publicid)]);
+            setModalContent('xxAddAgent', 'Remove Device Share', format("Confirm removal of device share \"{0}\"?", decodeURIComponent(guestname)));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, 3, [decodeURIComponent(nodeid), decodeURIComponent(publicid)]);
         }
 
         function p30removeNodeFromUser(event, nodeid) {
             if (xxdialogMode) return;
             var node = getNodeFromId(decodeURIComponent(nodeid));
-            setDialogMode(2, "Remove Device Permissions", 3, function (b, node) { meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [currentUser._id], rights: 0, remove: true }); }, format("Confirm removal of access rights for device \"{0}\"?", node.name), node);
+            setModalContent('xxAddAgent', 'Remove Device Permissions', format("Confirm removal of access rights for device \"{0}\"?", node.name));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, node) { meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [currentUser._id], rights: 0, remove: true }); }, 3, node);
         }
 
         function p30removeUserFromNode(event, userid) {
             if (xxdialogMode) return;
             var user = null, name = '';
             userid = decodeURIComponent(userid);
+            xxdialogButtons = 3; xxdialogTag = user;
             if (userid.startsWith('user/')) {
                 if (users) { user = users[userid]; if (user != null) { name = user.name; } }
-                setDialogMode(2, "Remove User Permissions", 3, function (b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [userid], rights: 0, remove: true }); }, name ? format("Confirm removal of access rights for user \"{0}\"?", name) : "Confirm removal of access rights?", user);
+                setModalContent('xxAddAgent', 'Remove User Permissions', name ? format("Confirm removal of access rights for user \"{0}\"?", name) : "Confirm removal of access rights?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [userid], rights: 0, remove: true }); });
             } else if (userid.startsWith('ugrp/')) {
                 if (usergroups) { user = usergroups[userid]; if (user != null) { name = user.name; } }
-                setDialogMode(2, "Remove User Group Permissions", 3, function (b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [userid], rights: 0, remove: true }); }, name ? format("Confirm removal of access rights for user group \"{0}\"?", name) : "Confirm removal of access rights?", user);
+                setModalContent('xxAddAgent', 'Remove User Group Permissions', name ? format("Confirm removal of access rights for user group \"{0}\"?", name) : "Confirm removal of access rights?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, user) {
+                    meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [userid], rights: 0, remove: true });
+                });
+
             }
         }
 
@@ -18182,7 +18216,10 @@
             if (xxdialogMode || (usergroups == null)) return;
             var groupid = decodeURIComponent(ugrpid), group = usergroups[groupid];
             var name = (group != null) ? EscapeHtml(group.name) : ('<i>' + "Unknown" + '</i>');
-            setDialogMode(2, "Remove User Group Membership", 3, p30RemoveUserGroupEx, format("Confirm membership removal of user group \"{0}\"?", name), groupid);
+            setModalContent('xxAddAgent', 'Remove User Group Membership', format("Confirm membership removal of user group \"{0}\"?", name));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                p30RemoveUserGroupEx(3, groupid);
+            });
         }
 
         function p30RemoveUserGroupEx(b, groupid) {
@@ -18197,7 +18234,9 @@
                 if ((currentUser.links == null) || (currentUser.links[i] == null)) { y += '<option value=' + encodeURIComponentEx(i) + '>' + EscapeHtml(usergroups[i].name) + '</option>'; }
             }
             var x = addHtmlFormFloating("User Group", '<select id=dp2groupid class="form-select">' + y + '</select>');
-            setDialogMode(2, "Add Membership", 3, p30showAddUserGroupDialogEx, x);
+            xxdialogButtons = 3;
+            setModalContent('xxAddAgent', 'Add Membership', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p30showAddUserGroupDialogEx);
             Q('dp2groupid').focus();
             return false;
         }
@@ -18210,7 +18249,11 @@
             if (xxdialogMode) return;
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
-            setDialogMode(2, "Remove Device Group Permissions", 3, p30removeMeshFromUserEx, format("Confirm removal of access rights for device group \"{0}\"?", mesh.name), mesh._id);
+
+            setModalContent('xxAddAgent', 'Remove Device Group Permissions', format("Confirm removal of access rights for device group \"{0}\"?", mesh.name));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                p30removeMeshFromUserEx(3, mesh._id);
+            });
         }
 
         function p30removeMeshFromUserEx(b, meshid) {
@@ -18403,7 +18446,10 @@
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true) { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
-            setDialogMode(2, "Recording Details", 9, null, x);
+
+            xxdialogButtons = 9;
+            setModalContent('xxAddAgent', 'Recording Details', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', null);
         }
 
         function refreshRecodings() { meshserver.send({ action: 'recordings', limit: 1000 }); }
@@ -19462,7 +19508,9 @@
             for (var i in e.args) {
                 if (typeof e.args[i] == 'object') { x += EscapeHtml(JSON.stringify(e.args[i])) + '<br /><br />'; } else { x += EscapeHtml(e.args[i]) + '<br /><br />'; }
             }
-            setDialogMode(2, "Server Tracing Event", 1, null, '<div class=selecttext style=max-height:300px;overflow-y:auto>' + x + '</div>');
+            xxdialogButtons = 1;
+            setModalContent('xxAddAgent', 'Server Tracing Event', '<div class=selecttext style=max-height:300px;overflow-y:auto>' + x + '</div>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', null);
         }
 
         function clearServerTracing() { serverTrace = []; displayServerTrace(); }
