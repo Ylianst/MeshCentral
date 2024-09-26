@@ -586,6 +586,20 @@ module.exports.CreateMultiServer = function (parent, args) {
                 }
                 break;
             }
+            case 'agentCommand': {
+                if (msg.nodeid != null) {
+                    // Route this message to a connected agent
+                    var agent = obj.parent.webserver.wsagents[msg.nodeid];
+                    if (agent != null) { agent.send(JSON.stringify(msg.command)); }
+                } else if (msg.meshid != null) {
+                    // Route this message to all connected agents of this mesh
+                    for (var nodeid in obj.parent.webserver.wsagents) {
+                        var agent = obj.parent.webserver.wsagents[nodeid];
+                        if (agent.dbMeshKey == msg.meshid) { try { agent.send(JSON.stringify(msg.command)); } catch (ex) { } }
+                    }
+                }
+                break;
+            }
             default: {
                 // Unknown peer server command
                 console.log('Unknown action from peer server ' + peerServerId + ': ' + msg.action + '.');

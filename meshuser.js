@@ -2967,13 +2967,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         return;
                                     }
 
-                                    // Send the commands to the agent
-                                    var agent = parent.wsagents[node._id];
-                                    if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
-                                        try { agent.send(JSON.stringify({ action: 'msg', type: 'console', value: command.cmds, rights: rights, sessionid: ws.sessionId })); } catch (ex) { }
+                                    var theCommand = { action: 'msg', type: 'console', value: command.cmds, rights: rights, sessionid: ws.sessionId };
+                                    if (parent.parent.multiServer != null) { // peering setup
+                                        parent.parent.multiServer.DispatchMessage({ action: 'agentCommand', nodeid: node._id, command: theCommand});
                                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
                                     } else {
-                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                        // Send the commands to the agent
+                                        var agent = parent.wsagents[node._id];
+                                        if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                            try { agent.send(JSON.stringify(theCommand)); } catch (ex) { }
+                                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                                        } else {
+                                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                        }
                                     }
                                 } else {
                                     // This is a standard (bash/shell/powershell) command.
@@ -2984,40 +2990,50 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         return;
                                     }
 
-                                    // Get the agent and run the commands
-                                    var agent = parent.wsagents[node._id];
-                                    if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
-                                        // Check if this agent is correct for this command type
-                                        // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
-                                        var commandsOk = false;
-                                        if ((agent.agentInfo.agentId > 0) && (agent.agentInfo.agentId < 5)) {
-                                            // Windows Agent
-                                            if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
-                                            else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
-                                        } else {
-                                            // Non-Windows Agent
-                                            if (command.type == 3) { commandsOk = true; }
-                                            else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
-                                        }
-                                        if (commandsOk == true) {
+                                    if (typeof command.reply != 'boolean') command.reply = false;
+                                    if (typeof command.responseid != 'string') command.responseid = null;
+                                    var msgid = 24; // "Running commands"
+                                    if (command.type == 1) { msgid = 99; } // "Running commands as user"
+                                    if (command.type == 2) { msgid = 100; } // "Running commands as user if possible"
+                                    // Check if this agent is correct for this command type
+                                    // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
+                                    var commandsOk = false;
+                                    if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                                        // Windows Agent
+                                        if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
+                                        else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
+                                    } else {
+                                        // Non-Windows Agent
+                                        if (command.type == 3) { commandsOk = true; }
+                                        else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
+                                    }
+                                    if (commandsOk == true) {
+                                        var theCommand = { action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser, reply: command.reply, responseid: command.responseid };
+                                        if (parent.parent.multiServer != null) { // peering setup
                                             // Send the commands to the agent
-                                            if (typeof command.reply != 'boolean') command.reply = false;
-                                            if (typeof command.responseid != 'string') command.responseid = null;
-                                            try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser, reply: command.reply, responseid: command.responseid })); } catch (ex) { }
+                                            parent.parent.multiServer.DispatchMessage({ action: 'agentCommand', nodeid: node._id, command: theCommand});
                                             if (command.responseid != null && command.reply == false) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
-
                                             // Send out an event that these commands where run on this device
                                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
-                                            var msgid = 24; // "Running commands"
-                                            if (command.type == 1) { msgid = 99; } // "Running commands as user"
-                                            if (command.type == 2) { msgid = 100; } // "Running commands as user if possible"
                                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
-                                            parent.parent.DispatchEvent(targets, obj, event);
-                                        } else {
-                                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
+                                            parent.parent.multiServer.DispatchEvent(targets, obj, event);
+                                        } else { // normal setup
+                                            // Get the agent and run the commands
+                                            var agent = parent.wsagents[node._id];
+                                            if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                                // Send the commands to the agent
+                                                try { agent.send(JSON.stringify(theCommand)); } catch (ex) { }
+                                                if (command.responseid != null && command.reply == false) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                                                // Send out an event that these commands where run on this device
+                                                var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                                parent.parent.DispatchEvent(targets, obj, event);
+                                            } else {
+                                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                            }
                                         }
                                     } else {
-                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
                                     }
                                 }
                             });
