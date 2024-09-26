@@ -6403,22 +6403,25 @@
             modalInstance.show();
             document.getElementById(okButtonId).onclick = function () {
                 if (okCallback && typeof okCallback === 'function') {
-                    okCallback(b, tag);
+                    var callbackResult = okCallback(b, tag);
+                    // Close the modal if 0 is returned
+                    if (callbackResult === 0) {
+                        modalInstance.hide();
+                    }
                 }
-                modalInstance.hide();
             };
         }
 
         function account_createMesh() {
             // Check if we are disallowed from creating a device group
             if ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 64) != 0)) {
-                setDialogMode(2, "New Device Group", 1, null, "This account does not have the rights to create a new device group.");
+                setModalContent('xxAddAgent', 'New Device Group', "This account does not have the rights to create a new device group.");
                 return false;
             }
 
             // Remind the user to verify the email address
             if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) {
-                setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until an email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address.");
+                setModalContent('xxAddAgent', 'Account Security', "Unable to access this feature until an email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address.");
                 return false;
             }
 
@@ -16330,7 +16333,8 @@
             x += addHtmlFormFloating("Group By", '<select id=d2reportGroupBy class="form-select" onchange=p3showReportValidation()><option value=1>' + "None" + '</option><option value=2>' + "Device Group" + '</option><option value=3>' + "User" + '</option>');
             x += addHtmlFormFloating("Format", '<select id=d2reportFormat class="form-select" onchange=p3showReportValidation()><option value=1>' + "CSV" + '</option><option value=2>' + "JSON" + '</option>');
             x += '</div>';
-            setDialogMode(2, "Download Report", 3, null, x);
+            setModalContent('xxAddAgent', 'Download Report', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             p3showReportValidation();
             Q('d2reportType').focus();
         }
@@ -16671,7 +16675,8 @@
 
         function showSendSMS(userid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Send SMS", 3, showSendSMSEx, '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>', userid);
+            setModalContent('xxAddAgent', 'Send SMS', '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showSendSMSEx(3, userid));
             Q('d2smsText').focus();
             showSendSMSValidate();
         }
@@ -16681,7 +16686,9 @@
 
         function showSendMessage(userid) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Send Message", 3, showSendMessageEx, '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>', userid);
+            setModalContent('xxAddAgent', 'Send Message', '<textarea id=d2smsText maxlength=160 style=background-color:#fcf3cf;width:100%;height:100px;resize:none onKeyUp=showSendSMSValidate()></textarea><span style=font-size:10px><span>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showSendMessageEx(3, userid));
+
             Q('d2smsText').focus();
             showSendSMSValidate();
         }
@@ -16692,7 +16699,10 @@
             if (xxdialogMode) return;
             var x = '<input id=d2emailSubject style=background-color:#fcf3cf;width:100% placeholder="' + "Subject" + '"></input>';
             x += '<textarea id=d2emailText maxlength=10000 style="background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:auto" onKeyUp=showSendEmailValidate()></textarea>';
-            setDialogMode(2, "Send Email", 3, showSendEmailEx, x, userid);
+
+            setModalContent('xxAddAgent', 'Send Email', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showSendEmailEx(3, userid));
+
             Q('d2emailSubject').focus();
             showSendEmailValidate();
         }
@@ -16710,7 +16720,8 @@
             x += '<option value=60>' + "Show for 1 minute" + '</option>';
             x += '<option value=300>' + "Show for 5 minutes" + '</option>';
             x += '</select>';
-            setDialogMode(2, format("Notify {0}", EscapeHtml(users[decodeURIComponent(userid)].name)), 3, showUserAlertDialogEx, x, userid);
+            setModalContent('xxAddAgent', format("Notify {0}", EscapeHtml(users[decodeURIComponent(userid)].name)), x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showUserAlertDialogEx(3, userid));
             Q('d2notifyText').focus();
             return false;
         }
@@ -16810,8 +16821,14 @@
                             if (checkPasswordRequirements(j[i].pass, passRequirements) == false) { ok = false; }
                             if ((j[i].email != null) && ((typeof j[i].email != 'string') || (j[i].email.length < 1) || (j[i].email.length > 128))) { ok = false; }
                         }
-                        if (ok == false) { setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format."); } else { meshserver.send({ action: 'adduserbatch', users: j }); }
-                    } else { setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format."); }
+                        if (ok == false) {
+                            setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format.");
+                        } else {
+                            meshserver.send({ action: 'adduserbatch', users: j });
+                        }
+                    } else {
+                        setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format.");
+                    }
                 }
             };
             fr.readAsText(Q('d4importFile').files[0]);
@@ -17255,7 +17272,7 @@
         function gotoUserGroup(groupid, force) {
             if (xxdialogMode && !force) return;
             var group = currentUserGroup = usergroups ? usergroups[decodeURIComponent(groupid)] : null;
-            if (group == null) { if (xxcurrentView == 51) { setDialogMode(0); go(50); } return; }
+            if (group == null) { if (xxcurrentView == 51) { go(50); } return; }
 
             // Add user group name
             var gname = EscapeHtml(group.name);
@@ -17429,8 +17446,7 @@
             if (serverinfo.userGroupsSessionRecording == 1) {
                 x += '<div><label><input type=checkbox class="form-check-input me-2" id=d51flag1 ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
-            setDialogMode(2, "Edit User Group Features", 3, p51edituserGroupFeaturesEx, x);
-
+            xxdialogButtons = 3;
             setModalContent('xxAddAgent', 'Edit User Group Features', x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p51edituserGroupFeaturesEx);
         }
