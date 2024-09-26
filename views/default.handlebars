@@ -9617,7 +9617,9 @@
         function p10showDeleteNodeDialog(nodeid) {
             if (xxdialogMode) return false;
             var x = format("Are you sure you want to delete node {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
-            setDialogMode(2, "Delete Node", 3, p10showDeleteNodeDialogEx, x, nodeid);
+            xxdialogButtons = 3; xxdialogTag = nodeid;
+            setModalContent('xxAddAgent', 'Delete Node', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p10showDeleteNodeDialogEx);
             p10validateDeleteNodeDialog();
             return false;
         }
@@ -17428,6 +17430,9 @@
                 x += '<div><label><input type=checkbox class="form-check-input me-2" id=d51flag1 ' + ((flags & 2) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
             setDialogMode(2, "Edit User Group Features", 3, p51edituserGroupFeaturesEx, x);
+
+            setModalContent('xxAddAgent', 'Edit User Group Features', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p51edituserGroupFeaturesEx);
         }
 
         // Send to the server the new user's real name
@@ -17443,9 +17448,7 @@
             var node = getNodeFromId(decodeURIComponent(nodeid));
             if (node == null) return;
             setModalContent('xxAddAgent', 'Remove Device Permissions', format("Confirm removal of access rights for device \"{0}\"?", node.name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, tag) {
-                p51removeDeviceFromUserGroupEx(b, tag);
-            }, 3, node._id);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p51removeDeviceFromUserGroupEx(3, node._id));
         }
 
         function p51removeDeviceFromUserGroupEx(b, nodeid) {
@@ -17457,15 +17460,8 @@
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
             setModalContent('xxAddAgent', 'Remove Device Group Permissions', format("Confirm removal of access rights for device group \"{0}\"?", mesh.name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, tag) {
-                p51removeMeshFromUserGroupEx(b, tag);
-            }, 3, mesh._id);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p51removeMeshFromUserGroupEx(3, mesh._id));
         }
-
-        function p51removeMeshFromUserGroupEx(b, meshid) {
-            meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUserGroup._id });
-        }
-
         function p51editgroup(focus, nameReadOnly) {
             if (xxdialogMode) return;
             var x = addHtmlFormFloating("Name", '<input id=dp51name class="form-control" maxlength=32 onchange=p51editgroupValidate() onkeyup=p51editgroupValidate(event) ' + (nameReadOnly ? 'readonly disabled' : '') + '/>');
