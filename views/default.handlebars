@@ -64,6 +64,7 @@
         <div id="cxwebrdp" class="cmtext" onclick="cmaction(11,event)">Web-RDP</div>
         <div id="cxwebvnc" class="cmtext" onclick="cmaction(12,event)">Web-VNC</div>
         <div id="cxwebssh" class="cmtext" onclick="cmaction(13,event)">Web-SSH</div>
+        <div id="cxrdp" class="cmtext" onclick="cmaction(14,event)">RDP</div>
         <div id="cxplugins" class="cmtext" onclick="cmaction(8,event)" style="display:none">Plugins</div>
         <hr id="cxmgroupsplit" />
         <div id="cxstar" class="cmtext" onclick="cmaction(10,event)" style="display:none">Toggle Star</div>
@@ -6448,7 +6449,16 @@
                     QV('cxwebrdp', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x40000000) == 0)));
                     QV('cxwebssh', ((features2 & 0x200) && (((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)));
                     QV('cxconsole', (consoleRights && (node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
-
+                    QV('cxrdp', false); // always have the RDP hidden
+                    if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)) {
+                        if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                            if (navigator.platform.toLowerCase() == 'win32') {
+                                if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
+                                    QV('cxrdp', true);
+                                }
+                            }
+                        }
+                    }
                     QV('cxmgroupsplit', true);
                     QV('cxstar', true);
                     break;
@@ -6516,6 +6526,7 @@
             else if (action == 11) { p10mstsc(nodeid); } // Web-RDP
             else if (action == 12) { p10rfb(nodeid); } // Web-VNC
             else if (action == 13) { p10ssh(nodeid); } // Web-SSH
+            else if (action == 14) { p10MCRouter(nodeid,3); } // RDP
         }
 
         function cmmeshaction(action) {
