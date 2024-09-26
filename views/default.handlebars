@@ -14729,7 +14729,7 @@
                     fullPath += ' / ' + filetreelocation[i];
                     if ((folderdepth == 1)) {
                         var sp = filetreelocation[i].split('/');
-                        publicPath = (("" + window.location).split('?')[0]) + sp[0] + 'files/' + sp[2];
+                        publicPath = window.location.origin + '/' + sp[0] + 'files/' + sp[2];
                         //if (filetreelocation[i] === userinfo._id) { filetreelinkpath += 'self'; } else { filetreelinkpath += (sp[0] + '/' + sp[2]); }
                         filetreelinkpath += filetreelocation[i];
                     } else {
@@ -17394,7 +17394,7 @@
                     d3filetreelocation2.push(d3filetreelocation[i]);
                     if ((folderdepth == 1)) {
                         var sp = d3filetreelocation[i].split('/');
-                        publicPath = window.location + sp[0] + 'files/' + sp[2];
+                        publicPath = window.location.origin + '/' + sp[0] + 'files/' + sp[2];
                         if (d3filetreelocation[i] === userinfo._id) { d3filetreelinkpath += 'self'; } else { d3filetreelinkpath += (sp[0] + '/' + sp[2]); }
                     } else {
                         if (d3filetreelinkpath != '') { d3filetreelinkpath += '/' + d3filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + d3filetreelocation[i]; } }
