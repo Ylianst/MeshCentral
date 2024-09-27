@@ -3224,13 +3224,13 @@ function CreateMeshCentralServer(config, args) {
 
         // Setup the time server
         var timeStampUrl = 'http://timestamp.comodoca.com/authenticode';
-        if (args.agenttimestampserver === false) { timeStampUrl = null; }
-        else if (typeof args.agenttimestampserver == 'string') { timeStampUrl = args.agenttimestampserver; }
+        if (obj.args.agenttimestampserver === false) { timeStampUrl = null; }
+        else if (typeof obj.args.agenttimestampserver == 'string') { timeStampUrl = obj.args.agenttimestampserver; }
 
         // Setup the time server proxy
         var timeStampProxy = null;
-        if (typeof args.agenttimestampproxy == 'string') { timeStampProxy = args.agenttimestampproxy; }
-        else if ((args.agenttimestampproxy !== false) && (typeof args.npmproxy == 'string')) { timeStampProxy = args.npmproxy; }
+        if (typeof obj.args.agenttimestampproxy == 'string') { timeStampProxy = obj.args.agenttimestampproxy; }
+        else if ((obj.args.agenttimestampproxy !== false) && (typeof obj.args.npmproxy == 'string')) { timeStampProxy = obj.args.npmproxy; }
 
         // Setup the pending operations counter
         var pendingOperations = 1;
