@@ -11567,7 +11567,7 @@
             gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
             //console.log('p13downloadFileCancel', gdownloadFile);
             files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
-            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + gdownloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + EscapeHtml(gdownloadFile.file) + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
         }
 
         // Called by the html page to cancel the download
@@ -11738,7 +11738,7 @@
             if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
                 uploadFile.xptr = 0;
                 var file = uploadFile.xfiles[uploadFile.xfilePtr];
-                QH('p13dfileName', file.name);
+                QH('p13dfileName', EscapeHtml(file.name));
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
                 if (file.xdata == null) {

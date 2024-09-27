@@ -814,6 +814,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return parent.config.domains[''];
     }
 
+    function cleanReqQuery(req, res) {
+
+    }
+
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -861,7 +865,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // This is the default logout redirect to the login page
-        if (req.query.key != null) { res.redirect(domain.url + 'login?key=' + req.query.key); } else { res.redirect(domain.url + 'login'); }
+        if (req.query.key != null) { res.redirect(domain.url + 'login?key=' + encodeURIComponent(req.query.key)); } else { res.redirect(domain.url + 'login'); }
     }
 
     // Return an object with 2FA type if 2-step auth can be skipped
@@ -2081,7 +2085,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         for (var i in obj.meshes) {
             if ((obj.meshes[i].domain == domain.id) && (obj.meshes[i].deleted == null) && (obj.meshes[i].invite != null) && (obj.meshes[i].invite.codes.indexOf(req.body.inviteCode) >= 0)) {
                 // Send invitation link, valid for 1 minute.
-                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, ag: obj.meshes[i].invite.ag, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + req.query.key) : '') + (req.query.hide ? ('&hide=' + req.query.hide) : ''));
+                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, ag: obj.meshes[i].invite.ag, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + (req.query.hide ? ('&hide=' + encodeURIComponent(req.query.hide)) : ''));
                 return;
             }
         }
@@ -2816,7 +2820,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
         let url = domain.url;
-        if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return key + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
+        if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
     }
 
@@ -3027,7 +3031,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If the request has a "meshmessengerid", redirect to MeshMessenger
             // This situation happens when you get a push notification for a chat session, but are not logged in.
             if (req.query.meshmessengerid != null) {
-                res.redirect(domain.url + 'messenger?id=' + req.query.meshmessengerid + ((req.query.key != null) ? ('&key=' + req.query.key) : ''));
+                res.redirect(domain.url + 'messenger?id=' + encodeURIComponent(req.query.meshmessengerid) + ((req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : ''));
                 return;
             }
 
@@ -3507,7 +3511,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((node == null) || ((rights & 8) == 0) || ((rights != 0xFFFFFFFF) && ((rights & 512) != 0))) { res.redirect(domain.url + getQueryPortion(req)); return; }
 
                 var logoutcontrols = { name: user.name };
-                var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
 
                 // Create a authentication cookie
@@ -3564,7 +3568,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
                 var user = obj.users[req.session.userid];
                 var logoutcontrols = { name: user.name };
-                var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
                 render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
             } else {
@@ -3583,7 +3587,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
                         var user = obj.users[req.session.userid];
                         var logoutcontrols = { name: user.name };
-                        var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                        var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                         if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
                         render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
                     } else {
@@ -3598,7 +3602,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
                     var user = obj.users[req.session.userid];
                     var logoutcontrols = { name: user.name };
-                    var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                    var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                     if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
                     render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
                 } else {
@@ -3630,7 +3634,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var user2 = idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]
             if (!req.session || !req.session.userid) {
                 // Redirect to login page
-                if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key + '&meshmessengerid=' + req.query.id); } else { res.redirect(domain.url + '?meshmessengerid=' + req.query.id); }
+                if (req.query.key != null) { res.redirect(domain.url + '?key=' + encodeURIComponent(req.query.key) + '&meshmessengerid=' + encodeURIComponent(req.query.id)); } else { res.redirect(domain.url + '?meshmessengerid=' + encodeURIComponent(req.query.id)); }
                 return;
             }
             if ((req.session.userid != user1) && (req.session.userid != user2)) { res.sendStatus(404); return; }
@@ -5480,7 +5484,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         meshsettings += 'MeshServer=local\r\n';
                         if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
                     }
-                    if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+                    if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
                     if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
                 }
                 if (req.query.id == '10006') { // Assistant settings and customizations
@@ -5769,9 +5773,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             agentinfo: agentinfo,
                                             filestats: filestats,
                                             currentAgent: agentinfo.hashhex.startsWith(fileSplit[1].toLowerCase()),
-                                            downloadUrl: req.originalUrl.split('?')[0] + '?dldump=' + file + (req.query.key ? ('&key=' + req.query.key) : ''),
-                                            deleteUrl: req.originalUrl.split('?')[0] + '?deldump=' + file + (req.query.key ? ('&key=' + req.query.key) : ''),
-                                            agentUrl: req.originalUrl.split('?')[0] + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : ''),
+                                            downloadUrl: req.originalUrl.split('?')[0] + '?dldump=' + file + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
+                                            deleteUrl: req.originalUrl.split('?')[0] + '?deldump=' + file + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
+                                            agentUrl: req.originalUrl.split('?')[0] + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
                                             time: new Date(filestats.ctime)
                                         });
                                     }
@@ -5787,7 +5791,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             response += '<td>' + d.fileSplit[1].toLowerCase() + '</td><td>' + d.fileSplit[2] + '</td><td><a href="' + d.deleteUrl + '">Delete</a></td></tr>';
                         }
                     }
-                    response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + req.query.key) : '') + '">Mesh Agents</a></body></html>';
+                    response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">Mesh Agents</a></body></html>';
                     res.send(response);
                     return;
                 }
@@ -5798,9 +5802,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var response = '<html><head><title>Mesh Agents Cores</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
                 response += '<tr style="background-color:lightgray"><th>Name</th><th>Size</th><th>Comp</th><th>Decompressed Hash SHA384</th></tr>';
                 for (var i in parent.defaultMeshCores) {
-                    response += '<tr><td>' + i.split(' ').join('&nbsp;') + '</td><td style="text-align:right"><a download href="/meshagents?dlcore=' + i + '">' + parent.defaultMeshCores[i].length + (req.query.key ? ('?key=' + req.query.key) : '') + '</a></td><td style="text-align:right"><a download href="/meshagents?dlccore=' + i + (req.query.key ? ('?key=' + req.query.key) : '') + '">' + parent.defaultMeshCoresDeflate[i].length + '</a></td><td>' + Buffer.from(parent.defaultMeshCoresHash[i], 'binary').toString('hex') + '</td></tr>';
+                    response += '<tr><td>' + i.split(' ').join('&nbsp;') + '</td><td style="text-align:right"><a download href="/meshagents?dlcore=' + i + '">' + parent.defaultMeshCores[i].length + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '</a></td><td style="text-align:right"><a download href="/meshagents?dlccore=' + i + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">' + parent.defaultMeshCoresDeflate[i].length + '</a></td><td>' + Buffer.from(parent.defaultMeshCoresHash[i], 'binary').toString('hex') + '</td></tr>';
                 }
-                response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + req.query.key) : '') + '">Mesh Agents</a></body></html>';
+                response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">Mesh Agents</a></body></html>';
                 res.send(response);
                 return;
             }
@@ -5809,7 +5813,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Download mesh core
                 var bin = parent.defaultMeshCores[req.query.dlcore];
                 if ((bin == null) || (bin.length < 5)) { try { res.sendStatus(404); } catch (ex) { } return; }
-                setContentDispositionHeader(res, 'application/octet-stream', req.query.dlcore + '.js', null, 'meshcore.js');
+                setContentDispositionHeader(res, 'application/octet-stream', encodeURIComponent(req.query.dlcore) + '.js', null, 'meshcore.js');
                 res.send(bin.slice(4));
                 return;
             }
@@ -5832,18 +5836,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
-                response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname + '</a>';
+                response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">' + agentinfo.rname + '</a>';
                 if ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0))) {
-                    if ((agentid == 3) || (agentid == 4)) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&pdb=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">PDB</a>'; }
+                    if ((agentid == 3) || (agentid == 4)) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&pdb=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">PDB</a>'; }
                 }
-                if (agentinfo.zdata != null) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&zip=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">ZIP</a>'; }
+                if (agentinfo.zdata != null) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&zip=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">ZIP</a>'; }
                 response += '</td>';
                 response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hashhex + '</td>';
-                response += '<td><a download href="' + originalUrl + '?meshcmd=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
+                response += '<td><a download href="' + originalUrl + '?meshcmd=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
             response += '</table>';
-            response += '<a href="' + originalUrl + '?cores=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">MeshCores</a> ';
-            if (coreDumpsAllowed) { response += '<a href="' + originalUrl + '?dumps=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">MeshAgent Crash Dumps</a>'; }
+            response += '<a href="' + originalUrl + '?cores=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">MeshCores</a> ';
+            if (coreDumpsAllowed) { response += '<a href="' + originalUrl + '?dumps=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">MeshAgent Crash Dumps</a>'; }
             response += '</body></html>';
             res.send(response);
             return;
@@ -5915,7 +5919,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
-        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
         if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
@@ -6063,7 +6067,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
-        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
         if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
@@ -6781,7 +6785,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 var url = req.url;
                                 if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
                                 res.set('Content-Type', 'text/html');
-                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + encodeURIComponent(url) + '"></head><body></body></html>');
                             } else {
                                 domain.passport.authenticate('twitter-' + domain.id, { failureRedirect: domain.url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
                             }
@@ -6831,7 +6835,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 var url = req.url;
                                 if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
                                 res.set('Content-Type', 'text/html');
-                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + encodeURIComponent(url) + '"></head><body></body></html>');
                             } else {
                                 if (req.query.state != null) {
                                     var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
