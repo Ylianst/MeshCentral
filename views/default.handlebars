@@ -10298,10 +10298,20 @@
             }
         });
         Q('DeskTools').addEventListener('mousedown', function (event) {
-            if (Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = true;
+            if (Q('DeskTools').style.cursor === 'col-resize') {
+                deskTools.resizing = true;
+                Q('Desk').removeAttribute('onmouseup');
+                Q('Desk').removeAttribute('onmousedown');
+                Q('Desk').removeAttribute('onmousemove');
+            }
         });
         document.addEventListener('mouseup', function () {
-            if(deskTools.resizing===true && Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = false;
+            if(deskTools.resizing === true && Q('DeskTools').style.cursor === 'col-resize') {
+                deskTools.resizing = false;
+                Q('Desk').setAttribute('onmouseup','dmouseup(event)');
+                Q('Desk').setAttribute('onmousedown','dmousedown(event)');
+                Q('Desk').setAttribute('onmousemove','dmousemove(event)');
+            }
         });
         document.addEventListener('mousemove', function (event) {
             if (deskTools.resizing) {
