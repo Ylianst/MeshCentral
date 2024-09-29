@@ -18,6 +18,8 @@ import Keyboard from "../core/input/keyboard.js";
 import RFB from "../core/rfb.js";
 import * as WebUtil from "./webutil.js";
 
+const PAGE_TITLE = "noVNC";
+
 // String validation
 function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
 function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1)) };
@@ -1739,9 +1741,9 @@ const UI = {
     },
 
     updateDesktopName(e) {
-        // UI.desktopName = e.detail.name;
+        UI.desktopName = e.detail.name;
         // Display the desktop name in the document title
-        // document.title = e.detail.name + " - " + PAGE_TITLE;
+        document.title = e.detail.name + " - " + PAGE_TITLE;
     },
 
     bell(e) {
