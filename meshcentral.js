@@ -3846,7 +3846,7 @@ function CreateMeshCentralServer(config, args) {
         // Send event to log file
         if (obj.config.settings && obj.config.settings.log) {
             if (typeof obj.args.log == 'string') { obj.args.log = obj.args.log.split(','); }
-            if (obj.args.log.indexOf(source) >= 0) {
+            if ((obj.args.log.indexOf(source) >= 0) || (obj.args.log[0] == '*')) {
                 const d = new Date();
                 if (obj.xxLogFile == null) {
                     try {
