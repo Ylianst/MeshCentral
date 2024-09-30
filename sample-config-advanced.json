@@ -106,6 +106,7 @@
     "_runOnServerUpdated": "c:\\tmp\\mcupdate.bat",
     "_runOnServerError": "c:\\tmp\\mcerror.bat",
     "_log": "main,web,webrequest,cert",
+    "_debug": "main,web,webrequest,cert",
     "_syslog": "meshcentral",
     "_syslogauth": "meshcentral-auth",
     "_syslogjson": "meshcentral-json",
