@@ -3333,3 +3333,74 @@ nav .lbbuttonsel2 {
     background-color: white !important;
     opacity: 1 !important;
 }
+
+.navbar-toggler {
+    border: none;
+}
+
+/* hide .sidebar when on mobile */
+@media (max-width: 768px) {
+    #page_leftbar {
+        display: none !important;
+    }
+
+    .fullscreen #container {
+        width: 100vw !important;
+        min-width: 100vw !important;
+        padding-left: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #masthead .title {
+        font-size: 36px;
+    }
+
+    #MainMeshImage /*, #p2AccountImageFrame */ {
+        /* text-align: center !important; */
+        float: none !important;
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    #p2AccountImageFrame {
+        float: none !important;
+        text-align: left;
+    }
+
+    #logoutControl {
+        display: none !important;
+    }
+
+    #topMenuIcon {
+        display: block !important;
+    }
+
+    #notificationCount {
+        margin-right: 45px;
+    }
+
+    .notifiyBox:after {
+        margin-right: 40px;
+    }
+
+    .notifiyBox:after {
+        margin-right: 40px;
+    }
+
+    .notifiyBox:before {
+        content: none;
+    }
+
+    body {
+        min-width: 100vw !important;
+    }
+
+
+    /* #container {
+        width: 100vw !important;
+        padding-left: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    } */
+}
