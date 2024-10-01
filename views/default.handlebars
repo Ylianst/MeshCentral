@@ -2604,7 +2604,10 @@
                     }
                 }
             }
-            setDialogMode(2, dialog.title, buttons, showCustomUiDialogEx, x, { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg });
+            setModalContent('xxAddAgent', dialog.title, x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg })
+
+
         }
 
         // Handle a generic custom UI dialog event
@@ -3587,7 +3590,6 @@
                             var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
                             x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
                             x += '<div><label><input id=d2clearErrorsCheck type=checkbox class="form-check-input me-2" onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
-                            setDialogMode(2, "MeshCentral Server Errors", 3, server_showErrorsDlgEx, x);
                             setModalContent('xxAddAgent', 'MeshCentral Server Errors', x);
                             showModal('xxAddAgentModal', 'idx_dlgOkButton', server_showErrorsDlgEx);
                             server_showErrorsDlgUpdate();
@@ -3709,12 +3711,14 @@
                 }
                 case 'otpauth-setup': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? ('<b style=color:green>' + "Authenticator app activation successful." + '</b> ' + "You will now need a valid token to login again.") : ('<b style=color:red>' + "2-step login activation failed." + '</b> ' + "Clear the secret from the application and try again. You only have a few minutes to enter the proper code."));
+                    setModalContent('xxAddAgent', 'Authenticator App', message.success ? ('<b style=color:green>' + "Authenticator app activation successful." + '</b> ' + "You will now need a valid token to login again.") : ('<b style=color:red>' + "2-step login activation failed." + '</b> ' + "Clear the secret from the application and try again. You only have a few minutes to enter the proper code."));
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'otpauth-clear': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? ('<b>' + "Authenticator application removed." + '</b> ' + "You can reactivate this feature at any time.") : ('<b style=color:red>' + "2-step login activation removal failed." + '</b> ' + "Try again."));
+                    setModalContent('xxAddAgent', 'Authenticator App', message.success ? ('<b>' + "Authenticator application removed." + '</b> ' + "You can reactivate this feature at any time.") : ('<b style=color:red>' + "2-step login activation removal failed." + '</b> ' + "Try again."));
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'otpauth-getpasswords': {
@@ -3746,7 +3750,8 @@
                         x += '&nbsp;<img src=images/link4.png height=10 width=10 title="' + "Copy valid codes to clipboard" + '" style=cursor:pointer onclick=copyTextToClip2("' + encodeURIComponentEx(clipb) + '")>';
                     }
                     x += '</div><br />';
-                    setDialogMode(2, "Manage Backup Codes", 8, null, x, 'otpauth-manage');
+                    setModalContent('xxAddAgent', 'Manage Backup Codes', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'otp-hkey-get': {
@@ -3773,7 +3778,8 @@
                         x += "Maximum keys reached.";
                     }
                     x += '</div><br />';
-                    setDialogMode(2, "Manage Security Keys", 8, null, x, 'otpauth-hardware-manage');
+                    setModalContent('xxAddAgent', 'Manage Security Keys', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     if (u2fSupported() == false) { QE('d2addkey1', false); }
                     break;
                 }
@@ -3781,7 +3787,8 @@
                     if (message.result) {
                         meshserver.send({ action: 'otp-hkey-get' }); // Success, ask for the full list of keys.
                     } else {
-                        setDialogMode(2, "Add Security Key", 1, null, '<br />' + "Error, Unable to add key." + '<br /><br />');
+                        setModalContent('xxAddAgent', 'Add Security Key', '<br />' + "Error, Unable to add key." + '<br /><br />');
+                        showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     }
                     break;
                 }
@@ -3790,15 +3797,16 @@
                     if (message.result == true) {
                         meshserver.send({ action: 'otp-hkey-get' }); // Success, ask for the full list of keys.
                     } else {
-                        setDialogMode(2, "Add Security Key", 1, null, '<br />' + "ERROR: Unable to add key." + '<br /><br />', 'otpauth-hardware-manage');
+                        setModalContent('xxAddAgent', 'Add Security Key', '<br />' + "Error, Unable to add key." + '<br /><br />');
+                        showModal('xxAddAgentModal', 'idx_dlgOkButton');
+
                     }
                     break;
                 }
                 case 'webauthn-startregister': {
                     if (xxdialogMode && (xxdialogTag != 'otpauth-hardware-manage')) return;
                     var x = "Press the key button now." + '<br /><br /><div style=width:100%;text-align:center><img width=120 height=117 src="images/hardware-keypress-120.png" /></div><input id=dp1keyname style=display:none value=' + message.name + ' />';
-                    setDialogMode(2, "Add Security Key", 2, null, x);
-
+                    setModalContent('xxAddAgent', 'Add Security Key', x);
                     var publicKey = message.request;
                     message.request.challenge = Uint8Array.from(atob(message.request.challenge), function (c) { return c.charCodeAt(0) })
                     message.request.user.id = Uint8Array.from(atob(message.request.user.id), function (c) { return c.charCodeAt(0) })
@@ -3809,8 +3817,9 @@
                     }, function (error) {
                         // Error
                         console.log("ERROR: " + error);
-                        setDialogMode(2, "Add Security Key", 1, null, "ERROR: " + error);
+                        setModalContent('xxAddAgent', 'Add Security Key', "ERROR: " + error);
                     });
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'verifyPhone': {
@@ -3818,7 +3827,8 @@
                     var x = '<table><tr><td><img src="images/phone80.png" style=padding:8px>';
                     x += '<td>' + "Check your phone and enter the verification code.";
                     x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
-                    setDialogMode(2, "Phone Notifications", 3, account_managePhoneConfirm, x, message.cookie);
+                    setModalContent('xxAddAgent', 'Phone Notifications', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_managePhoneConfirm(3, message.cookie));
                     Q('d2phoneCodeInput').focus();
                     account_managePhoneCodeValidate();
                     break;
@@ -3828,7 +3838,8 @@
                     var x = '<table><tr><td><img src="images/messaging40.png" style=padding:8px>';
                     x += '<td>' + "Check your messaging application and enter the verification code.";
                     x += '<br /><br /><div style=width:100%;text-align:center>' + "Verification code:" + ' <input type=tel pattern="[0-9]" inputmode="number" maxlength=6 id=d2phoneCodeInput onKeyUp=account_managePhoneCodeValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneCodeValidate(1)"></div></table>';
-                    setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingConfirm, x, message.cookie);
+                    setModalContent('xxAddAgent', 'Messaging Notifications', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageMessagingConfirm(3, message.cookie));
                     Q('d2phoneCodeInput').focus();
                     account_managePhoneCodeValidate();
                     break;
@@ -3844,7 +3855,8 @@
                         }
                         meshserver.send({ action: 'fileoperation', fileop: 'set', path: tag.path, file: tag.file, data: btoa(data) });
                     }
-                    setDialogMode(4, EscapeHtml(message.file), 3, p5editSaveBack, null, message);
+                    setModalContent('xxAddAgent', EscapeHtml(message.file), null);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p5editSaveBack(3, message));
                     QV('d4EncodingButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
@@ -4553,7 +4565,8 @@
                     x += addHtmlValue("User Consent", y.join(', '));
                     var type = ''; if (message.p <= 7) { type = ['', "Remote Terminal Link", "Remote Desktop Link", "Remote Desktop + Terminal Link", "Remote Files Link", "Remote Terminal + Files Link", "Remote Desktop + Files Link", "Remote Desktop + Terminal + Files Link"][message.p]; } else if (message.p == 8) { type = format("HTTP/{0} link", message.port); } else if (message.p == 16) { type = format("HTTPS/{0}", message.port); }
                     x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px"><a href="' + message.url + '" id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer>' + type + '</a> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></i></div></div>';
-                    setDialogMode(2, "Share Device", 1, null, x);
+                    setModalContent('xxAddAgent', 'Share Device', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'getmqttlogin': {
@@ -4571,7 +4584,8 @@
                         x += addHtmlValue('MPS Cert Hash', '<input style=width:230px readonly value="' + message.mpsCertHash + '" />');
                     }
                     */
-                    setDialogMode(2, "MQTT Credentials", 1, null, x);
+                    setModalContent('xxAddAgent', 'MQTT Credentials', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'stopped': { // Server is stopping.
@@ -4594,7 +4608,8 @@
                     var vSelect = '<select id="lastPluginVersion">';
                     message.info.versionList.forEach(function (v) { vSelect += '<option value="' + v.zipball_url + '">' + v.name + '</option>'; });
                     vSelect += '</select>';
-                    setDialogMode(2, "Plugin Action", 3, pluginActionEx, format('Select the version to downgrade the plugin: {0}', message.info.name) + '<hr />' + vSelect + '<hr />' + "Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something." + + '<input id="lastPluginAct" type="hidden" value="downgrade" /><input id="lastPluginId" type="hidden" value="' + message.info.id + '" />');
+                    setModalContent('xxAddAgent', 'Plugin Action', format('Select the version to downgrade the plugin: {0}', message.info.name) + '<hr />' + vSelect + '<hr />' + "Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something." + + '<input id="lastPluginAct" type="hidden" value="downgrade" /><input id="lastPluginId" type="hidden" value="' + message.info.id + '" />');
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', pluginActionEx);
                     break;
                 }
                 case 'serverBackup': {
@@ -4606,7 +4621,8 @@
                             var x = '<img style=float:right src="images/googledrive-48.png" /><div>' + "Nagivate to the URL below, grant access and copy the token code back." + '</div><br />';
                             x += addHtmlValue("Activation", '<a href=\"' + message.url + '\" rel="noreferrer noopener" target="_blank">Browse to this URL</a>');
                             x += addHtmlFormFloating("Code", '<input id=gdcode onkeyup=server_setupGoogleDriveBackupCheck3() class=form-control></input>');
-                            setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd2');
+                            setModalContent('xxAddAgent', 'Google Drive Backup', x);
+                            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => server_setupGoogleDriveBackupEx(3, 'gd2'));
                             Q('gdcode').focus();
                             QE('idx_dlgOkButton', false);
                         }
@@ -4614,7 +4630,8 @@
                     break;
                 }
                 case 'pluginError': {
-                    setDialogMode(2, "Plugin Error", 1, null, message.msg);
+                    setModalContent('xxAddAgent', 'Plugin Error', message.msg);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'plugin': {
@@ -4659,7 +4676,8 @@
                     if (message.expire != 0) { x += addHtmlValue("Expire", EscapeHtml(printDateTime(new Date(message.expire)))); }
                     x += addHtmlValue("Username", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard..." + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
                     x += addHtmlValue("Password", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard..." + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
-                    setDialogMode(2, "Create Login Token", 1, null, x);
+                    setModalContent('xxAddAgent', 'Create Login Token', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
                 }
                 case 'loginTokens': { // Reveiced the list of login tokens
@@ -4805,7 +4823,8 @@
             x += '<label><input id=d2c7 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0) ? ' checked' : '') + '>' + "Last Seen" + '</label><br />';
             x += '<label><input id=d2c15 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0) ? ' checked' : '') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
             x += '<label><input id=d2c17 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0) ? ' checked' : '') + '>' + "Intel&reg; AMT state" + '</label><br />';
-            setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
+            setModalContent('xxAddAgent', 'Device View Columns', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => onDeviceViewSettingsEx());
         }
 
         function onDeviceViewSettingsEx() {
@@ -5679,7 +5698,11 @@
             if (nodeid == null) { node = currentNode; } else { node = getNodeFromId(nodeid); }
             if ((node == null) || (node.sessions == null)) { setDialogMode(0); return false; }
             if (node.sessions.help != null) { for (var j in node.sessions.help) { x += '<div style="background-color:#CCC;padding:6px;border-radius:6px"><a style="float:right" onclick=closeDeviceHelpRequest("' + encodeURIComponentEx(j) + '","' + encodeURIComponentEx(node._id) + '")>' + "Dismiss" + '</a><div style=margin-bottom:6px><b>' + EscapeHtml(j) + '</b></div><div style=margin-bottom:6px>' + EscapeHtml(node.sessions.help[j]) + '</div></div>'; } }
-            if (x != '') { setDialogMode(2, "Help Requests" + ' - ' + EscapeHtml(node.name), 1, null, x, 'HELPREQ-' + node._id); } else { setDialogMode(0); }
+            if (x != '') {
+                xxdialogTag = 'HELPREQ-' + node._id;
+                setModalContent('xxAddAgent', "Help Requests" + ' - ' + EscapeHtml(node.name), x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            }
             return false;
         }
 
@@ -5744,7 +5767,13 @@
                     }
                 }
             }
-            if (x != '') { setDialogMode(2, "Sessions" + ' - ' + EscapeHtml(node.name), 1, null, x, 'SESSIONS-' + node._id); } else { setDialogMode(0); }
+            if (x != '') {
+                xxdialogTag = 'SESSIONS-' + node._id;
+                setModalContent('xxAddAgent', "Sessions" + ' - ' + EscapeHtml(node.name), x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            } else {
+                setDialogMode(0);
+            }
             return false;
         }
 
@@ -5982,7 +6011,8 @@
             x += addHtmlFormFloating("Device Name", '<input id=dp1devicename class=form-control maxlength=32 autocomplete=off onchange=validateLocalDeviceToMesh() onkeyup=validateLocalDeviceToMesh() />');
             x += addHtmlFormFloating("Hostname", '<input id=dp1hostname class=form-control maxlength=32 autocomplete=off placeholder="' + "Same as device name" + '" onchange=validateLocalDeviceToMesh() onkeyup=validateLocalDeviceToMesh() />');
             x += addHtmlFormFloating("Type", '<select id=dp1type class=form-select><option value=4>' + "Windows (RDP)" + '</option><option value=6>' + "Linux (SSH/SCP/VNC)" + '</option><option value=29>' + "macOS (SSH/SCP/VNC)" + '</option></select>');
-            setDialogMode(2, "Add local device", 3, addLocalDeviceToMeshEx, x, meshid);
+            setModalContent('xxAddAgent', 'Add local device', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => addLocalDeviceToMeshEx(3, meshid));
             validateLocalDeviceToMesh();
             Q('dp1devicename').focus();
         }
@@ -6006,7 +6036,10 @@
             x += addHtmlFormFloating("Username", '<input id=dp1username class="form-control" maxlength=32 autocomplete=off placeholder="' + "admin" + '" onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlFormFloating("Password", '<input id=dp1password type=password class="form-control" autocomplete=off maxlength=32 onchange=validateDeviceToMesh() onkeyup=validateDeviceToMesh() />');
             x += addHtmlFormFloating("Security", '<select id=dp1tls class="form-select"><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>');
-            setDialogMode(2, "Add Intel&reg; AMT device", 3, addDeviceToMeshEx, x, meshid);
+
+            setModalContent('xxAddAgent', 'Add Intel&reg; AMT device', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => addDeviceToMeshEx(3, meshid));
+
             validateDeviceToMesh();
             Q('dp1devicename').focus();
             return false;
@@ -6023,7 +6056,8 @@
         function showAmtImport(meshid) {
             if (xxdialogMode) return;
             var x = "Create many Intel&reg; AMT device at once by importing a JSON file with the following format:" + '<br /><pre>[\r\n  {\r\n    "fqdn":"mycomputer.com",\r\n    "uuid":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",\r\n    "version":"12.0.1",\r\n    "username":"admin",\r\n    "password":"password",\r\n    "tls":true\r\n  }\r\n]</pre><input type=file id=d4importFile class="form-control" accept=".json" onchange=showAmtImportValidate() />';
-            setDialogMode(2, "Intel&reg; AMT Device Import", 3, showAmtImportEx, x, meshid);
+            setModalContent('xxAddAgent', 'Intel&reg; AMT Device Import', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showAmtImportEx(3, meshid));
             QE('idx_dlgOkButton', false);
         }
 
@@ -6059,7 +6093,8 @@
             if (serverinfo.amtAcmFqdn != null) {
                 x += ('<div style=margin-top:8px>' + "For ACM activation, Intel&reg; AMT will need to be set to the following trusted FQDN:" + ' <b>' + serverinfo.amtAcmFqdn.join(', ') + '</b></div>');
             }
-            setDialogMode(2, "Intel&reg; AMT setup", 9, null, x);
+            setModalContent('xxAddAgent', 'Intel&reg; AMT setup', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             Q('idx_dlgOkButton').focus();
             return false;
         }
@@ -6073,7 +6108,8 @@
             x += addHtmlFormFloating("New Password*", '<input id=dp1password2 type=password class="form-control" autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             if ((features2 & 0x00000020) && (currentMesh.mtype == 1) && (serverinfo.amtProvServerMeshId == currentMesh._id)) { x += '<label><input id=dp1lanprov type=checkbox class="form-check-input me-2" /> ' + "Use for bare-metal LAN activation." + '</label>'; } // Intel AMT LAN provisioning server is active.
             x += '<div><span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span></div>';
-            setDialogMode(2, "Intel&reg; AMT ACM", 3, showAmtAcmSetupEx, x);
+            setModalContent('xxAddAgent', 'Intel&reg; AMT ACM', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', showAmtAcmSetupEx);
             Q('dp1password0').focus();
             validateAmtAcmSetupEx();
         }
@@ -6105,7 +6141,9 @@
             x += '<div id=dp1results style="width:100%;height:200px;background-color:white;border:1px gray solid;overflow-y:scroll"></div>';
             x += '<input type=hidden id=amtScanMeshId value="' + meshid + '" />';
             x += '<div style="padding:10px;margin-bottom:5px"><input id="idx_dlgCancelButton2" type="button" value="' + "Cancel" + '" style="" onclick="dialogclose(0)" /><input id="idx_dlgOkButton2" type="button" value="OK" style="" onclick="dialogclose(1)" /><div><input id="d2scanSelectButton" type="button" value="' + "Select All" + '" onclick="scanSelectAll()" /></div></div>';
-            setDialogMode(2, "Scan for Intel&reg; AMT devices", 0, addAmtScanToMeshEx, x, meshid);
+            xxdialogTag = meshid;
+            setModalContent('xxAddAgent', 'Scan for Intel&reg; AMT devices', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', addAmtScanToMeshEx);
             QE('idx_dlgOkButton2', false);
             QE('d2scanSelectButton', false);
             QH('dp1results', '<div style=width:100%;text-align:center;margin-top:12px;color:gray;line-height:1.5>' + "Sample IP range values" + '<br />192.168.0.100<br />192.168.1.0/24<br />192.167.0.1-192.168.0.100</div>');
@@ -6427,7 +6465,7 @@
 
             // Remind the user to add two-factor authentication
             if ((features & 0x00040000) && (count2factoraAuths() == 0)) {
-                setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section.");
+                setModalContent('xxAddAgent', 'Account Security', "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section.");
                 return false;
             }
 
@@ -6653,7 +6691,11 @@
             var addedOptions = [], nodeids = getCheckedDevices(), added = 0;
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) {
+                setModalContent('xxAddAgent', 'Account Security', "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section.");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                return;
+            }
 
             // Check if any of the selected devices have a MQTT connection active
             if (features & 0x00400000) {
@@ -6686,7 +6728,9 @@
             for (var i in addedOptions) { addedOptionsStr += '<option value=' + addedOptions[i].v + (addedOptions[i].s ? ' selected' : '') + '>' + addedOptions[i].name + '</option>'; }
             var x = "Select an operation to perform on all selected devices. Actions will be performed only with proper rights." + '<br /><br />';
             x += addHtmlFormFloating("Operation", '<select id=d2groupop class="form-select">' + addedOptionsStr + '</select>');
-            setDialogMode(2, "Group Action", 3, groupActionFunctionEx, x);
+
+            setModalContent('xxAddAgent', 'Group Action', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', groupActionFunctionEx);
         }
 
         // Get the list of checked devices
@@ -15950,7 +15994,12 @@
             for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (checkboxes[i].attributes.file.value == '3')) { p5clipboard.push(checkboxes[i].value); } }
             p5updateClipview();
         }
-        function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confirm {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0 ? 'copy' : 'move'), p5clipboard.length, ((p5clipboard.length > 1) ? 's' : '')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
+        function p5pasteFile() {
+            var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confirm {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0 ? 'copy' : 'move'), p5clipboard.length, ((p5clipboard.length > 1) ? 's' : '')) }
+            setModalContent('xxAddAgent', 'Paste', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5pasteFileEx);
+
+        }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0 ? 'copy' : 'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
         function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "copy" : "move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }
@@ -15985,7 +16034,8 @@
                 p5PerformUpload(1, e.dataTransfer.files);
             } else {
                 // Otherwise, prompt for confirmation
-                setDialogMode(2, "Upload File", 3, p5PerformUpload, format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount), e.dataTransfer.files);
+                setModalContent('xxAddAgent', 'Upload File', format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount));
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p5PerformUpload(3, e.dataTransfer.files));
             }
         }
 
@@ -19663,7 +19713,11 @@
         function go(x, event) {
             if (event && ((event.which == 3) || (event.button == 2))) return; // ignore right clicks as they are handled elsewhere
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && (count2factoraAuths() == 0) && (x > 2)) { x = 2; setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); }
+            if ((features & 0x00040000) && (count2factoraAuths() == 0) && (x > 2)) {
+                x = 2;
+                setModalContent('xxAddAgent', 'Account Security', 'Unable to access this feature until two - factor authentication is enabled.This is required for extra security.Go to the \"My Account\" tab and look at the \"Account Security\" section.');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            }
 
             if (pluginHandler != null) pluginHandler.callHook('goPageStart', x, event);
             setSessionActivity();
@@ -19976,7 +20030,8 @@
             } else {
                 var plugin = null;
                 for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
-                setDialogMode(2, "Plugin Action", 3, pluginActionEx, format("Are you sure you want to {0} the plugin: {1}", elem.value, plugin.name) + '<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + id + '" /><input id="lastPluginVersion" type="hidden" value="" />');
+                setModalContent('xxAddAgent', 'Plugin Action', format("Are you sure you want to {0} the plugin: {1}", elem.value, plugin.name) + '<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + id + '" /><input id="lastPluginVersion" type="hidden" value="" />');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => pluginActionEx();
             }
             elem.value = '';
         }
