@@ -6260,6 +6260,9 @@
                 x += addDetailItem("Antivirus", y.join('<br />'));
             }
 
+            // Active Users
+            if (node.users && (node.users.length > 0)) { x += addDetailItem(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
+
             if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
 
             // MeshAgent
