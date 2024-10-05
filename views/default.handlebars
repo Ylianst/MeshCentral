@@ -5804,7 +5804,11 @@
                 count++;
             }
             x += '</div>';
-            if (count > 0) setDialogMode(2, "Agent Messages" + ' - ' + EscapeHtml(node.name), 1, null, x, 'MESSAGES-' + node._id);
+            if (count > 0) {
+                xxdialogTag = 'MESSAGES-' + node._id;
+                setModalContent('xxAddAgent', "Agent Messages" + ' - ' + EscapeHtml(node.name), x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            }
             return false;
         }
 
@@ -5868,7 +5872,11 @@
                         }
                     }
                 }
-                if (count > 8) { setDialogMode(2, "Connect All", 3, function () { connectAllKvmFunction(true); }, format("Are you sure you want to connect to {0} devices?", count)); return; }
+                if (count > 8) {
+                    setModalContent('xxAddAgent', 'Connect All', format("Are you sure you want to connect to {0} devices?", count));
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { connectAllKvmFunction(true); });
+                    return;
+                }
             }
 
             // Perform connect all
@@ -5916,7 +5924,8 @@
             d7bitmapscaling.value = multidesktopsettings.scaling;
             d7encoding.value = multidesktopsettings.agentencoding;
             if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 100; }
-            setDialogMode(7, "Remote Desktop Settings", 3, showMultiDesktopSettingsChanged);
+            setModalContent('xxAddAgent', 'Remote Desktop Settings', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showMultiDesktopSettingsChanged());
         }
 
         function showMultiDesktopSettingsChanged() {
@@ -6069,8 +6078,19 @@
             var fr = new FileReader();
             fr.onload = function (r) {
                 var j = null;
-                try { j = JSON.parse(r.target.result); } catch (ex) { setDialogMode(2, "Intel&reg; AMT Device Import", 1, null, format("Invalid JSON file: {0}.", ex)); return; }
-                if (j != null) { meshserver.send({ action: 'importamtdevices', meshid: meshid, amtdevices: j }); } else { setDialogMode(2, "Intel&reg; AMT Device Import", 1, null, "Invalid JSON file format."); }
+                try {
+                    j = JSON.parse(r.target.result);
+                } catch (ex) {
+                    setModalContent('xxAddAgent', 'Intel&reg; AMT Device Import', format("Invalid JSON file: {0}.", ex));
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                    return;
+                }
+                if (j != null) {
+                    meshserver.send({ action: 'importamtdevices', meshid: meshid, amtdevices: j });
+                } else {
+                    setModalContent('xxAddAgent', 'Intel&reg; AMT Device Import', "Invalid JSON file format.");
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                }
             };
             fr.readAsText(Q('d4importFile').files[0]);
         }
@@ -6765,7 +6785,8 @@
                     if (y != '') { x += '<div style=padding:8px>' + y + '</div>'; } else { x += '<br />'; }
                 }
                 x += '<label><input id=d2check type=checkbox class="form-check-input me-2" onchange=d2groupActionFunctionDelCheck() />' + "Confirm" + '</label>';
-                setDialogMode(2, "Delete Devices", 3, d2groupActionFunctionDelExec, x);
+                setModalContent('xxAddAgent', 'Delete Devices', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2groupActionFunctionDelExec());
                 QE('idx_dlgOkButton', false);
             } else if (op == 102) {
                 // Move computers to a different group
@@ -6795,7 +6816,8 @@
                     for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span> '; }
                     x += '<div style=margin-top:8px;width:370px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
                 }
-                setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionTagsExec, x);
+                setModalContent('xxAddAgent', 'Edit Device Tags', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2groupActionFunctionTagsExec());
             } else if (op == 108) {
                 // Device notification
                 var x = "<div style=margin-bottom:4px>Perform batch device notification</div>";
@@ -6810,7 +6832,8 @@
                 x += '<option value=60>' + "Show for 60 minutes" + '</option>';
                 x += '<option value=0>' + "Show message until dismissed by user" + '</option>';
                 x += '</select>';
-                setDialogMode(2, "Device Notification", 3, d2groupActionFunctionNotifyExec, x);
+                setModalContent('xxAddAgent', 'Device Notification', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2groupActionFunctionNotifyExec());
                 Q('d2notifyMsg').focus();
             } else if (op == 109) {
                 // Upload files
@@ -6824,20 +6847,24 @@
                 if (linuxtype) { x += addHtmlFormFloating("Linux Path", '<input type=text class="form-control" onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=linuxpath id=d2linuxuploadpath placeholder="/tmp" value="" />'); }
                 x += '<br /><label><input type=checkbox class="form-check-input me-2" name=createFolder />' + "Create folder if it does not exists?" + '</label><br />';
                 x += '<label><input type=checkbox class="form-check-input me-2" name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
-                setDialogMode(2, "Batch File Upload", 3, d2batchUploadValidateOk, x);
+                setModalContent('xxAddAgent', 'Batch File Upload', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2batchUploadValidateOk());
                 d2batchUploadValidate();
             } else if (op == 110) {
                 // Force agent update
                 var x = "Force agent update on selected devices?" + '<br /><br />';
-                setDialogMode(2, "For agent update", 3, d2groupActionFunctionAgentUpdateExec, x);
+                setModalContent('xxAddAgent', 'For agent update', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2groupActionFunctionAgentUpdateExec());
             } else if (op == 111) {
                 // Clear agent core
                 var x = "Clear agent core on selected devices?" + '<br /><br />';
-                setDialogMode(2, "Clear agent core", 3, d2groupActionFunctionAgentClearCoreExec, x);
+                setModalContent('xxAddAgent', 'Clear agent core', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2groupActionFunctionAgentClearCoreExec());
             } else if (op == 112) {
                 // Upload default server core
                 var x = "Upload default server core on selected devices?" + '<br /><br />';
-                setDialogMode(2, "Upload default server core", 3, d2groupActionFunctionAgentDefaultCodeExec, x);
+                setModalContent('xxAddAgent', 'Upload default server core', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2groupActionFunctionAgentDefaultCodeExec());
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
@@ -6896,7 +6923,8 @@
             x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
             if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + "computerlist.json" + '</a>'); }
             x += '<div style=margin-top:8px><label><input type=checkbox class="form-check-input me-2" id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
-            setDialogMode(2, "Device Information Export", 1, null, x);
+            setModalContent('xxAddAgent', 'Device Information Export', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
 
         function csvClean(v) {
@@ -7452,12 +7480,13 @@
         function cmaltportaction(action) {
             if (xxdialogMode) return;
             var x = "RDP remote connection port:" + '<br /><br /><input type=text placeholder="3389" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10rdpport type=text>';
-            setDialogMode(2, "RDP Connection", 3, function () {
+            setModalContent('xxAddAgent', 'RDP Connection', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 // Save the new RDP port to the server
                 var rdpport = ((Q('d10rdpport').value.length > 0) ? parseInt(Q('d10rdpport').value) : 3389);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdpport: rdpport });
                 //if (currentNode != null) { p10MCRouter(currentNode._id, 3, rdpport); }
-            }, x, currentNode);
+            });
             Q('d10rdpport').focus();
             if (currentNode.rdpport != null) { Q('d10rdpport').value = currentNode.rdpport; }
         }
@@ -7465,12 +7494,13 @@
         function cmsshportaction(action) {
             if (xxdialogMode) return;
             var x = "SSH remote connection port:" + '<br /><br /><input type=text placeholder="22" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10sshport type=text>';
-            setDialogMode(2, "SSH Connection", 3, function () {
+            setModalContent('xxAddAgent', 'SSH Connection', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 // Save the new SSH port to the server
                 var sshport = ((Q('d10sshport').value.length > 0) ? parseInt(Q('d10sshport').value) : 22);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, sshport: sshport });
                 //if (currentNode != null) { p10MCRouter(currentNode._id, 3, sshport); }
-            }, x, currentNode);
+            });
             Q('d10sshport').focus();
             if (currentNode.sshport != null) { Q('d10sshport').value = currentNode.sshport; }
         }
@@ -7478,12 +7508,13 @@
         function cmrfbportaction(action) {
             if (xxdialogMode) return;
             var x = "VNC remote connection port:" + '<br /><br /><input type=text placeholder="5900" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10rfbport type=text>';
-            setDialogMode(2, "VNC Connection", 3, function () {
+            setModalContent('xxAddAgent', 'VNC Connection', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 // Save the new RFB port to the server
                 var rfbport = ((Q('d10rfbport').value.length > 0) ? parseInt(Q('d10rfbport').value) : 3389);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rfbport: rfbport });
                 //if (currentNode != null) { p10rfb(currentNode._id, rfbport); }
-            }, x, currentNode);
+            });
             Q('d10rfbport').focus();
             if (currentNode.rfbport != null) { Q('d10rfbport').value = currentNode.rfbport; }
         }
@@ -7491,12 +7522,13 @@
         function cmhttpportaction(action) {
             if (xxdialogMode) return;
             var x = "HTTP remote connection port:" + '<br /><br /><input type=text placeholder="80" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10httpport type=text>';
-            setDialogMode(2, "HTTP Connection", 3, function () {
+            setModalContent('xxAddAgent', 'HTTP Connection', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 // Save the new HTTP port to the server
                 var httpport = ((Q('d10httpport').value.length > 0) ? parseInt(Q('d10httpport').value) : 80);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, httpport: httpport });
                 //if (currentNode != null) { p10rfb(currentNode._id, httpport); }
-            }, x, currentNode);
+            });
             Q('d10httpport').focus();
             if (currentNode.httpport != null) { Q('d10httpport').value = currentNode.httpport; }
         }
@@ -7504,12 +7536,13 @@
         function cmhttpsportaction(action) {
             if (xxdialogMode) return;
             var x = "HTTPS remote connection port:" + '<br /><br /><input type=text placeholder="443" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" maxlength=5 id=d10httpsport type=text>';
-            setDialogMode(2, "HTTPS Connection", 3, function () {
+            setModalContent('xxAddAgent', 'HTTPS Connection', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 // Save the new HTTP port to the server
                 var httpsport = ((Q('d10httpsport').value.length > 0) ? parseInt(Q('d10httpsport').value) : 443);
                 meshserver.send({ action: 'changedevice', nodeid: currentNode._id, httpsport: httpsport });
                 //if (currentNode != null) { p10rfb(currentNode._id, httpsport); }
-            }, x, currentNode);
+            });
             Q('d10httpsport').focus();
             if (currentNode.httpsport != null) { Q('d10httpsport').value = currentNode.httpsport; }
         }
@@ -7519,15 +7552,18 @@
             var filetreexx = p13sort_files(p13filetree.dir);
             var file = filetreexx[parseInt(contextelement.attributes.fileindex.nodeValue)];
             if (action == 1) { // Rename the file
-                setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + file.n + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: file.n });
+                setModalContent('xxAddAgent', 'Rename', '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + file.n + '" />');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: file.n }));
                 focusTextBox('p13renameinput');
                 p13fileNameCheck();
             } else if (action == 2) { // Edit the file
                 if (file.s <= 204800) {
                     p13downloadfile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + file.n), encodeURIComponentEx(file.n), file.s, 'viewer');
                 } else { messagebox("File Editor", "Only files less than 200k can be edited."); }
-            } else if (action == 3) { // Delete the file
-                setDialogMode(2, "Delete", 3, p13deletefileCm, "Delete item?", file);
+            } else if (action == 3) {
+                // Delete the file
+                setModalContent('xxAddAgent', 'Delete', "Delete item?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13deletefileCm(3, file));
             }
         }
 
@@ -8027,7 +8063,8 @@
                 x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\'' + nodes[i]._id + '\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox class="form-check-input me-2" style=width:16px;display:inline />';
                 x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
             }
-            setDialogMode(2, "Select a node to place", 3, placeNodeEx, x + '</div>', coords);
+            setModalContent('xxAddAgent', 'Select a node to place', x + '</div>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => placeNodeEx(3, coords));
             onPlaceNodeInputChange();
         }
 
@@ -8245,10 +8282,18 @@
         function gotoDevice(nodeid, panel, refresh, event) {
             if (event && ((event.which == 3) || (event.button == 2))) return; // ignore right click events here as handled elsewhere
             // Remind the user to verify the email address
-            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address."); return; }
+            if ((userinfo.emailVerified !== true) && (serverinfo.emailcheck == true) && (userinfo.siteadmin != 0xFFFFFFFF)) {
+                setModalContent('xxAddAgent', 'Account Security', "Unable to access this feature until a email address is verified. This is required for password recovery. Go to the \"My Account\" tab to change and verify an email address.");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                return;
+            }
 
             // Remind the user to add two factor authentication
-            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) {
+                setModalContent('xxAddAgent', 'Account Security', "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section.");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                return;
+            }
 
             if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1))) {
                 // Open the device in a different tab
@@ -8917,9 +8962,13 @@
 
         function setIpPduState(op) {
             if (op == 0) {
-                setDialogMode(2, "Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: 2 }); }, "Perform power off?"); // Turn off
+                // Turn off
+                setModalContent('xxAddAgent', 'Power Operation', 'Perform power off?');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: 2 }); });
             } else {
-                setDialogMode(2, "Power Operation", 3, function () { meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] }); }, "Perform power on?"); // Turn on
+                // Turn on
+                setModalContent('xxAddAgent', 'Power Operation', 'Perform power on?');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] }); });
             }
         }
 
@@ -8943,7 +8992,8 @@
                 x += '<div><label><input id=p20emsgDeviceDisconnect type=checkbox class="form-check-input me-2" />' + "Device disconnections" + '</label></div>';
                 x += '<div><label><input id=p20emsgDeviceHelp type=checkbox class="form-check-input me-2" />' + "Help requests" + '</label></div>';
             }
-            setDialogMode(2, "Notification Settings", 3, p20editDeviceNotifyEx, x, fx);
+            setModalContent('xxAddAgent', 'Notification Settings', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p20editDeviceNotifyEx(3, fx));
             Q('p20notifyIntelDeviceConnect').checked = (devNotify & 2);
             Q('p20notifyIntelDeviceDisconnect').checked = (devNotify & 4);
             if (fx & 2) { Q('p20notifyIntelAmtKvmActions').checked = (devNotify & 8); }
@@ -9180,7 +9230,8 @@
         // Called to lock or unlock remote desktop user input
         function deskInputLockFunction(value) {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
-            setDialogMode(2, "Remote Input Lock", 3, function () { try { desktop.m.SendRemoteInputLock(value); } catch (ex) { } }, (value == 1) ? "Lock remote user's mouse and keyboard?" : "Unlock remote user's mouse and keyboard?");
+            setModalContent('xxAddAgent', 'Remote Input Lock', (value == 1) ? "Lock remote user's mouse and keyboard?" : "Unlock remote user's mouse and keyboard?");
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { try { desktop.m.SendRemoteInputLock(value); } catch (ex) { } });
         }
 
         function deskClipboardOutFunction() {
@@ -9235,7 +9286,10 @@
 
         // Lock desktop
         function deviceLockFunction() {
-            if ((xxdialogMode == null) && (desktop != null) && (desktop.contype == 1)) { setDialogMode(2, "Lock Desktop", 3, function () { if ((desktop != null) && (desktop.contype == 1)) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"lock"}'); } }, "Lock user desktop?"); }
+            if ((xxdialogMode == null) && (desktop != null) && (desktop.contype == 1)) {
+                setModalContent('xxAddAgent', 'Lock Desktop', "Lock user desktop?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { if ((desktop != null) && (desktop.contype == 1)) { desktop.sendCtrlMsg('{"ctrlChannel":"102938","type":"lock"}'); } });
+            }
         }
 
         function showShareDevice() {
@@ -9425,7 +9479,8 @@
                     }
                     x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0>' + "Run as agent" + '</option><option value=1>' + "Run as user, agent if no user" + '</option><option value=2>' + "Must run as user" + '</option></select>';
                     x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
-                    setDialogMode(2, "Run Commands", 3, deviceRunCmdsFunctionEx, x);
+                    setModalContent('xxAddAgent', 'Run Commands', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => deviceRunCmdsFunctionEx());
                     Q('d2runcmd').focus();
                     //QE('idx_dlgOkButton', true);
                 }
@@ -9435,18 +9490,24 @@
                 Q('d3auth').value = authCookie;
                 Q('d3filter').value = '.iso';
                 Q('d3attrib').value = currentNode._id;
-                setDialogMode(3, "Intel&reg; AMT One Click Recovery", 3, deviceActionOneClickRecovery);
+                setModalContent('xxAddAgent', 'Intel&reg; AMT One Click Recovery', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => deviceActionOneClickRecovery());
                 d3init();
             } else if (op == 302) { // Intel AMT power on
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power on?");
+                setModalContent('xxAddAgent', 'Intel&reg; AMT Power Operation', "Perform Intel&reg; AMT power on?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
             } else if (op == 308) { // Intel AMT power off
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>");
+                setModalContent('xxAddAgent', 'Intel&reg; AMT Power Operation', "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
             } else if (op == 310) { // Intel AMT reset
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
+                setModalContent('xxAddAgent', 'Intel&reg; AMT Power Operation', "Perform Intel&reg; AMT reset?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
             } else if (op == 311) { // Intel AMT power on to BIOS
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); }, "Perform Intel&reg; AMT power on to BIOS?");
+                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT power on to BIOS?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); });
             } else if (op == 312) { // Intel AMT reset to BIOS
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); }, "Perform Intel&reg; AMT reset to BIOS?");
+                setModalContent('xxAddAgent', 'Intel&reg; AMT Power Operation', "Perform Intel&reg; AMT reset to BIOS?");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); });
             } else if ((op == 400) || (op == 401)) {
                 // Flash / vibrate
                 meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
@@ -9573,7 +9634,8 @@
             // Only display the TLS setting if the Intel AMT manager is not running on the server. With the manager TLS is auto-detected.
             if ((features2 & 1) == 0) { x += addHtmlFormFloating("Security", '<select id=dp10tls class="form-select"><option value=0>' + "No TLS security" + '</option><option value=1>' + "TLS security required" + '</option></select>'); }
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { buttons = 7; }
-            setDialogMode(2, "Edit Intel&reg; AMT credentials", buttons, editDeviceAmtSettingsEx, x, { node: node, func: func, arg: arg });
+            setModalContent('xxAddAgent', 'Edit Intel&reg; AMT credentials', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => editDeviceAmtSettingsEx(buttons, { node: node, func: func, arg: arg }));
             if ((node.intelamt.user != null) && (node.intelamt.user != '')) { Q('dp10username').value = node.intelamt.user; } else { Q('dp10username').value = 'admin'; }
             if ((features2 & 1) == 0) { Q('dp10tls').value = node.intelamt.tls; }
             validateDeviceAmtSettings();
@@ -9604,7 +9666,8 @@
             if (xxdialogMode) return false;
             var x = addHtmlFormFloating("Topic", '<input id=dp2topic class="form-control" maxlength=64 onchange=p10validateSendMqttMsgDialog() onkeyup=p10validateSendMqttMsgDialog(event,1) />');
             x += addHtmlFormFloating("Message", '<textarea id=dp2msg class="form-control" maxlength=4096 style=width:100%;height:150px;resize:none onchange=p10validateSendMqttMsgDialog() onkeyup=p10validateSendMqttMsgDialog(event,1)></textarea>');
-            setDialogMode(2, "Send MQTT message", 3, p10showSendMqttMsgDialogEx, x, nodeids);
+            setModalContent('xxAddAgent', 'Send MQTT message', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p10showSendMqttMsgDialogEx(3, nodeids));
             p10validateSendMqttMsgDialog();
             Q('dp2topic').focus();
             return false;
@@ -9626,7 +9689,9 @@
             x += '<br /><br />';
             if (nodeids.length > 1) { x += "This will not remove the devices from the server, but the devices will not longer be able to connect to the server. All remote access to the devices will be lost. The devices must be connected for this command to work."; } else { x += "This will not remove this device from the server, but the device will not longer be able to connect to the server. All remote access to the device will be lost. The device must be connect for this command to work."; }
             x += '<br /><br /><label style=color:red><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
-            setDialogMode(2, "Uninstall agent", 3, p10showSendUninstallAgentDialogEx, x, nodeids);
+            setModalContent('xxAddAgent', 'Uninstall agent', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p10showSendUninstallAgentDialogEx(3, nodeids));
+
             p10validateSendUninstallAgentDialog();
             return false;
         }
@@ -9649,9 +9714,11 @@
             if (count > 0) {
                 var x = (nodeids.length == 1) ? ("Select a new group for this device" + '<br /><br />') : ("Select a new group for selected devices" + '<br /><br />');
                 x += addHtmlFormFloating("New Device Group", y);
-                setDialogMode(2, "Change Group", 3, p10showChangeGroupDialogEx, x, nodeids);
+                setModalContent('xxAddAgent', 'Change Group', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p10showChangeGroupDialogEx(3, nodeids));
             } else {
-                setDialogMode(2, "Change Group", 1, null, "No other device group of same type exists.");
+                setModalContent('xxAddAgent', 'Change Group', 'No other device group of same type exists.');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             }
             return false;
         }
@@ -9752,7 +9819,9 @@
 
             //var x = '<div><a href="https://www.google.com/maps/preview/@' + lat + ',' + lng + ',12z" rel="noreferrer noopener" target=_blank>Open in Google maps</a></div>';
             var x = '<div id=d2map style=width:100%;height:300px></div>';
-            setDialogMode(2, "Device Location", 1, null, x, '@xxmap');
+            xxdialogTag = '@xxmap';
+            setModalContent('xxAddAgent', 'Device Location', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
 
             var clng = 0, clat = 0, zoom = 8;
             if (boundingBox != null) {
@@ -9882,7 +9951,8 @@
             x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i7 onclick=p10setIcon(7) onkeypress="if (event.key==\'Enter\') p10setIcon(7)"></div>';
             x += '<div tabindex=0 style="display:inline-block;margin:0 10px 0 10px" class=i8 onclick=p10setIcon(8) onkeypress="if (event.key==\'Enter\') p10setIcon(8)"></div>';
             x += '<br /><br /></div>';
-            setDialogMode(2, "Icon Selection", 0, null, x);
+            setModalContent('xxAddAgent', 'Icon Selection', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             QV('id_dialogclose', true);
         }
 
@@ -9891,9 +9961,15 @@
             meshserver.send({ action: 'changedevice', nodeid: currentNode._id, icon: icon });
         }
 
-        function showClearSshDialog() { setDialogMode(2, "Edit Device", 3, showClearSshDialogEx, "Clear SSH credentials?"); }
+        function showClearSshDialog() {
+            setModalContent('xxAddAgent', 'Edit Device', 'Clear SSH credentials?');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showClearSshDialogEx(3));
+        }
         function showClearSshDialogEx(button, mode) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, ssh: 0 }); }
-        function showClearRdpDialog() { setDialogMode(2, "Edit Device", 3, showClearRdpDialogEx, "Clear RDP credentials?"); }
+        function showClearRdpDialog() {
+            setModalContent('xxAddAgent', 'Edit Device', 'Clear RDP credentials?');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showClearRdpDialogEx(3));
+        }
         function showClearRdpDialogEx(button, mode) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdp: 0 }); }
 
         var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
@@ -10305,7 +10381,8 @@
             x += addHtmlFormFloating("Alt Shell", '<input type=text id=d2altshell class="form-control" maxlength=2048 />');
             x += addHtmlFormFloating("Working Dir", '<input type=text id=d2workdir class="form-control" maxlength=2048 />');
             x += MoreEnd();
-            setDialogMode(2, "RDP Credentials", 19, askRdpCredentialsEx, x);
+            setModalContent('xxAddAgent', 'RDP Credentials', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => askRdpCredentialsEx());
         }
 
         function askRdpCredentialsValidate() {
@@ -10370,7 +10447,9 @@
                         x += addHtmlValue2(getUserName(i), val);
                     }
                 }
-                setDialogMode(2, "Session Information", 1, null, x, 'sessionMetadata' + cid);
+                xxdialogTag = 'sessionMetadata' + cid;
+                setModalContent('xxAddAgent', 'Session Information', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             }
         }
 
@@ -10840,7 +10919,8 @@
             for (var i = 0; i < 26; i++) { x += '<option value=' + (i + 65) + '>' + String.fromCharCode(i + 65) + '</option>'; }
             x += '</select> <input type=button value=' + "Add" + ' onclick=addDeskCustomizeKey() /></div>';
             x += '<div style=width:100%;padding:2px;text-align:center><input type=button value="' + "Restore Default Keyboard Shortcuts" + '" onclick=restoreDeskCustomizeKey() /></div>';
-            setDialogMode(2, "Keyboard Shortcuts Customization", 1, deskCustomizeKeysEx, x);
+            setModalContent('xxAddAgent', 'Keyboard Shortcuts Customization', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => deskCustomizeKeysEx());
             deskUpdateShortcutList();
         }
 
@@ -10908,7 +10988,8 @@
             x += addHtmlFormFloating("Value", '<input type=text id=d2shortcutvalue class="form-control" maxlength=256 autocomplete=off onkeyup=deskCustomizeStringsUpdate(event) />');
             x += addHtmlFormFloating('', '<input id=d2addbutton type=button value=' + "Add" + ' onclick=addDeskCustomizeString() class="form-control" />');
             x + '</div>';
-            setDialogMode(2, "Keyboard Strings Customization", 1, deskCustomizeStringsEx, x);
+            setModalContent('xxAddAgent', 'Keyboard Strings Customization', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => deskCustomizeStringsEx());
             deskUpdateStringsList();
             deskCustomizeStringsUpdate();
         }
@@ -11061,7 +11142,8 @@
             Q('DeskType').blur();
             var x = '<div>' + "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding." + '<div>';
             x += '<textarea id=d2typeText style="margin-top:5px;width:100%;height:184px;resize:none" maxlength=2000>' + (text ? EscapeHtml(text) : '') + '</textarea>';
-            setDialogMode(2, "Remote Keyboard Entry", 3, showDeskTypeEx, x);
+            setModalContent('xxAddAgent', 'Remote Keyboard Entry', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showDeskTypeEx());
             Q('d2typeText').focus();
         }
 
@@ -11123,7 +11205,9 @@
             x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
             x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
             x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
-            setDialogMode(2, "Remote Clipboard", 8, null, x, 'clipboard');
+            xxdialogTag = 'clipboard';
+            setModalContent('xxAddAgent', 'Remote Clipboard', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             Q('d2clipText').focus();
         }
 
@@ -11238,7 +11322,9 @@
         }
         function showProcessDetails(pid) {
             if (xxdialogMode) return;
-            setDialogMode(2, format("Process Details, #{0}", pid), 1, null, "Requesting Process Details...", 'ps|' + currentNode._id + '|' + pid);
+            setModalContent('xxAddAgent', format("Process Details, #{0}", pid), 'Requesting Process Details...');
+            xxdialogTag = 'ps|' + currentNode._id + '|' + pid;
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             meshserver.send({ action: 'msg', type: 'psinfo', nodeid: currentNode._id, pid: pid });
         }
         function showDeskToolsServices(message) {
@@ -11316,7 +11402,9 @@
                         }
                     }
                     x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
-                    setDialogMode(2, "Service Details", 8, null, x, "service_" + index);
+                    xxdialogTag = "service_" + index;
+                    setModalContent('xxAddAgent', 'Service Details', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 }
             }
         }
@@ -11326,7 +11414,9 @@
             var service = deskTools.services[index];
             if (service != null) {
                 meshserver.send({ action: 'msg', type: 'service', nodeid: currentNode._id, serviceName: service.name });
-                setDialogMode(2, "Service Details", 1, null, "Requesting Service Details...", "service_" + index);
+                xxdialogTag = "service_" + index;
+                setModalContent('xxAddAgent', 'Service Details', 'Requesting Service Details...');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             }
             return false;
         }
@@ -11405,7 +11495,11 @@
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
+        function stopProcess(id, name) {
+            setModalContent('xxAddAgent', 'Process Control', format("Stop process #{0} \"{1}\"?", id, name));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => stopProcessEx(3, id));
+            return false;
+        }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //
@@ -11572,7 +11666,8 @@
                 x += addHtmlFormFloating("Password", '<input type=password id=dp2keypass2 class="form-control" maxlength=64 autocomplete=off onkeyup=sshAuthUpdate(event) />');
                 x += '</div>';
             }
-            setDialogMode(2, "Authentication", 11, func, x, 'ssh');
+            setModalContent('xxAddAgent', 'Authentication', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => func(11, 'ssh'));
             Q('dp2user').focus();
             sshAuthUpdate();
             setTimeout(sshAuthUpdate, 50);
@@ -11833,7 +11928,8 @@
         function showTermPasteDialog() {
             if (!terminal || xxdialogMode) return;
             Q('pastebutton').blur();
-            setDialogMode(2, "Paste", 3, showTermPasteDialogEx, '<textarea id=d2pasteText style="width:100%;height:184px;resize:none"></textarea>');
+            setModalContent('xxAddAgent', 'Paste', '<textarea id=d2pasteText style="width:100%;height:184px;resize:none"></textarea>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showTermPasteDialogEx());
             Q('d2pasteText').focus();
         }
 
@@ -12014,16 +12110,20 @@
                     setDialogMode(0); // Close the dialog box
                 } else if ((data.msg == 'zipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + "Compressing files..." + '</div>', 'fileMsgDialog');
+                    setModalContent('xxAddAgent', 'File Operation', '<div style=margin:10px>' + "Compressing files..." + '</div>');
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13fileOperationDialogEx(10));
                 } else if ((data.msg == 'unzipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, null, '<div style=margin:10px>' + "Unzipping file..." + '</div>', 'fileMsgDialog');
+                    setModalContent('xxAddAgent', 'File Operation', '<div style=margin:10px>' + "Unzipping file..." + '</div>');
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 } else if ((data.msg == 'unziperror') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, null, '<div style=margin:10px>' + "Unzipping Error" + '</div><br />' + EscapeHtml(data.error), 'fileMsgDialog');
+                    setModalContent('xxAddAgent', 'File Operation', '<div style=margin:10px>' + "Unzipping Error" + '</div><br />' + EscapeHtml(data.error));
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 } else if ((data.msg == 'zippingFile') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
-                    setDialogMode(2, "File Operation", 10, p13fileOperationDialogEx, '<div style=margin:10px>' + EscapeHtml(data.file) + '</div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />', 'fileMsgDialog');
+                    setModalContent('xxAddAgent', 'File Operation', '<div style=margin:10px>' + EscapeHtml(data.file) + '</div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />');
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13fileOperationDialogEx(10));
                 }
                 return;
             }
@@ -12172,7 +12272,8 @@
         }
 
         function p13openfilefolder() {
-            setDialogMode(2, "Open File/Folder", 3, p13openfilefolderEx, "Are you sure you want to open this file/folder on the remote devices desktop ?");
+            setModalContent('xxAddAgent', 'Open File/Folder', 'Are you sure you want to open this file/folder on the remote devices desktop ?');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13openfilefolderEx());
         }
         function p13openfilefolderEx() {
             var openfilefolder = "", checkboxes = document.getElementsByName('fd');
@@ -12226,7 +12327,8 @@
             x += '<div id=d2findResults style="width:100%;height:184px;background-color:white;border:1px solid black;padding:3px;overflow:scroll;margin-top:8px"></div>';
             x += '<div style=margin-top:8px><input id=filefind_dlgCancelButton type=button value=' + "Close" + ' style=float:right;width:80px;margin-left:5px onclick=p13findfileCancel()>';
             x += '<input id=filefind_dlgOkButton type=submit value=' + "Search" + ' style=float:right;width:80px onclick=p13findfileEx()><br /><br /></div>';
-            setDialogMode(2, "Find Files", 0, null, x);
+            setModalContent('xxAddAgent', 'Find Files', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             p13findfileValidate();
             Q('d2findFilter').focus();
         }
@@ -12325,14 +12427,37 @@
         function p13getFileCount() { var cc = 0; var checkboxes = document.getElementsByName('fd'); return checkboxes.length; }
         function p13getFileSelAllowedExt(ext) { var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && (!p13filetree.dir[checkboxes[i].value].n.endsWith(ext))) return false; } return true; }
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
-        function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13createfolder() {
+            setModalContent('xxAddAgent', 'New Folder', '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13createfolderEx());
+            focusTextBox('p13renameinput'); p13fileNameCheck();
+        }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
-        function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox class="form-check-input me-2" id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox class="form-check-input me-2" id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p13deletefile() {
+            var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox class="form-check-input me-2" id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox class="form-check-input me-2" id=p13recdeleteinput style=\'display:none\'>';
+            setModalContent('xxAddAgent', 'Delete', (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13deletefileEx());
+        }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
-        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13renamefile() {
+            var renamefile, checkboxes = document.getElementsByName('fd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    renamefile = p13filetree.dir[checkboxes[i].value].n;
+                }
+            }
+            setModalContent('xxAddAgent', 'Rename', '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, oldname: renamefile));
+            focusTextBox('p13renameinput');
+            p13fileNameCheck();
+        }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
-        function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput class="form-control" multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
+        function p13uploadFile() {
+            setModalContent('xxAddAgent', 'Upload File', '<input type=file name=files id=p13uploadinput class="form-control" multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13uploadFileEx);
+            updateUploadDialogOk('p13uploadinput');
+        }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q('p13uploadinput').files.length > 0); }
         function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
         function p13viewfile() {
@@ -12356,7 +12481,8 @@
                     input = (isWindowsNode(currentNode) ? '' : '/') + p13filetreelocation.join(slash) + slash + p13filetree.dir[checkboxes[i].value].n;
                 }
             }
-            setDialogMode(2, "Unzip To Folder", 3, p13unzipFileEx, '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />', { action: 'unzip', input: input });
+            setModalContent('xxAddAgent', 'Unzip To Folder', '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p13unzipFileEx(3, { action: 'unzip', input: input }));
             focusTextBox('p13unzipfolderinput');
         }
 
@@ -12368,7 +12494,8 @@
         function p13zipFiles() {
             var inputFiles = [], checkboxes = document.getElementsByName('fd');
             for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { inputFiles.push(p13filetree.dir[checkboxes[i].value].n); } }
-            setDialogMode(2, "Zip Filename", 3, p13zipFilesEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="" />', { action: 'zip', path: p13filetreelocation.join('/'), files: inputFiles });
+            setModalContent('xxAddAgent', 'Zip Filename', '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="" />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13zipFilesEx(3, { action: 'zip', path: p13filetreelocation.join('/'), files: inputFiles }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
         }
@@ -12390,7 +12517,8 @@
                     if (p13clipboard.length > 1) { x = format("Confirm move of {0} entries to this location?", p13clipboard.length); } else { x = format("Confirm move of 1 entrie to this location?"); }
                 }
             }
-            setDialogMode(2, "Paste", 3, p13pasteFileEx, x);
+            setModalContent('xxAddAgent', 'Paste', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13pasteFileEx);
         }
         function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0 ? 'copy' : 'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
         function p13updateClipview() {
@@ -12460,11 +12588,15 @@
             gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
             //console.log('p13downloadFileCancel', gdownloadFile);
             files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
-            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + gdownloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            setModalContent('xxAddAgent', 'Download File', '<div>' + gdownloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13downloadFileCancel);
         }
 
         // Called by the html page to cancel the download
-        function p13downloadFileCancel() { setDialogMode(0); files.sendText({ action: 'download', sub: 'cancel', id: gdownloadFile.id }); gdownloadFile = null; }
+        function p13downloadFileCancel() {
+            setDialogMode(0);
+            files.sendText({ action: 'download', sub: 'cancel', id: gdownloadFile.id }); gdownloadFile = null;
+        }
 
         // Called by the transport when download control command is received
         function p13gotDownloadCommand(cmd) {
@@ -12485,7 +12617,8 @@
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
-                    setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    setModalContent('xxAddAgent', EscapeHtml(gdownloadFile.file), '');
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13editSaveBack(3, gdownloadFile.file));
                     QV('d4EncodingButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
@@ -12585,7 +12718,8 @@
                 p13uploadFileContinue(1, files);
             } else {
                 // Otherwise, prompt for confirmation
-                setDialogMode(2, "Upload File", 3, p13uploadFileContinue, format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount), files);
+                setModalContent('xxAddAgent', 'Upload File', p13uploadFileContinue, format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount));
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13uploadFileContinue(3, files));
             }
         }
 
@@ -12594,7 +12728,8 @@
             uploadFile.xpath = p13filetreelocation.join('/');
             uploadFile.xfiles = files;
             uploadFile.xfilePtr = -1;
-            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
+            setModalContent('xxAddAgent', 'Upload File', '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13uploadFileCancel(10));
             p13uploadNextFile();
         }
 
@@ -13352,7 +13487,8 @@
             if (xxdialogMode) return false;
             var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + (identifier ? decodeURIComponent(identifier) : "Unknown") + '</p>';
             x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + (password ? decodeURIComponent(password) : "Unknown") + '</p></div>';
-            setDialogMode(2, decodeURIComponent(drive) + ': ' + "BitLocker Information", 1, null, x, '');
+            setModalContent('xxAddAgent', decodeURIComponent(drive) + ': ' + "BitLocker Information", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
 
         //
@@ -13577,7 +13713,8 @@
             Q('d3auth').value = authCookie;
             Q('d3filter').value = '.js';
             Q('d3attrib').value = currentNode._id;
-            setDialogMode(3, "Upload Mesh Agent Core", 3, p15uploadCoreEx2);
+            setModalContent('xxAddAgent', 'Upload Mesh Agent Core', '');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p15uploadCoreEx2);
             d3init();
         }
 
@@ -13599,7 +13736,9 @@
 
         function account_viewPreviousLogins() {
             if (xxdialogMode) return;
-            setDialogMode(2, "Previous Logins", 1, null, "Loading...", 'previousLogins');
+            xxdialogTag = 'previousLogins';
+            setModalContent('xxAddAgent', 'Previous Logins', 'Loading...');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             meshserver.send({ action: 'previousLogins' });
         }
 
@@ -13655,13 +13794,16 @@
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
                 x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.phone) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox class="form-check-input me-2" onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
-                setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
+                setModalContent('xxAddAgent', 'Phone Notifications', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_managePhoneRemove);
                 account_managePhoneRemoveValidate();
             } else {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
                 x += '<td>' + "Enter your SMS capable phone number. Once verified, the number may be used for login verification and other notifications.";
                 x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=account_managePhoneValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneValidate(1)"></div></table>';
-                setDialogMode(2, "Phone Notifications", 3, account_managePhoneAdd, x, 'verifyPhone');
+                xxdialogTag = 'verifyPhone';
+                setModalContent('xxAddAgent', 'Phone Notifications', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_managePhoneAdd);
                 Q('d2phoneinput').focus();
                 account_managePhoneValidate();
             }
@@ -13682,7 +13824,8 @@
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/messaging40.png" style=padding:8px>';
                 x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-weight:bold>' + EscapeHtml(userinfo.msghandle) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox class="form-check-input me-2" onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
-                setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingRemove, x);
+                setModalContent('xxAddAgent', 'Messaging Notifications', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageMessagingRemove);
                 account_managePhoneRemoveValidate();
             } else {
                 x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
@@ -13706,7 +13849,9 @@
                 console.log(serverinfo.userMsgNftyUrl);
                 x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
                 x += '<div id=d2slackinfo style=display:none><br /><a href=https://api.slack.com/messaging/webhooks target="_slack">' + "Slack Webhook Setup" + '</a></div>';
-                setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingAdd, x, 'verifyMessaging');
+                xxdialogTag = 'VerifyMessaging';
+                setModalContent('xxAddAgent', 'Messaging Notifications', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', account_manageMessagingAdd());
                 Q('d2handleinput').focus();
                 account_manageMessagingValidate();
             }
@@ -13735,9 +13880,10 @@
         function account_manageAuthEmail() {
             if (xxdialogMode || ((features & 0x00800000) == 0)) return;
             var emailU2Fenabled = ((userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
-            setDialogMode(2, "Email Authentication", 1, function () {
+            setModalContent('xxAddAgent', 'Email Authentication', "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox class="form-check-input me-2" ' + (emailU2Fenabled ? 'checked' : '') + '/>' + "Enable email two-factor authentication." + '</label>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 if (emailU2Fenabled != Q('email2facheck').checked) { meshserver.send({ action: 'otpemail', enabled: Q('email2facheck').checked }); }
-            }, "When enabled, on each login, you will be given the option to receive a login token to you email account for added security." + '<br /><br /><label><input id=email2facheck type=checkbox class="form-check-input me-2" ' + (emailU2Fenabled ? 'checked' : '') + '/>' + "Enable email two-factor authentication." + '</label>');
+            });
         }
 
         function account_manageAuthApp() {
@@ -13748,7 +13894,9 @@
 
         function account_addOtp() {
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Authenticator App", 2, function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); }, ('<div id=d2optinfo>' + "Loading..." + '</div>'), 'otpauth-request');
+            xxdialogTag = 'otpauth-request';
+            setModalContent('xxAddAgent', 'Authenticator App', ('<div id=d2optinfo>' + "Loading..." + '</div>'));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); });
             meshserver.send({ action: 'otpauth-request' });
         }
 
@@ -13760,7 +13908,8 @@
 
         function account_removeOtp() {
             if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
-            setDialogMode(2, "Authenticator App", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of authenticator application 2-step login?");
+            setModalContent('xxAddAgent', 'Authenticator App', 'Confirm removal of authenticator application 2-step login?');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'otpauth-clear' }); });
         }
 
         function account_manageOtp(action) {
@@ -13774,14 +13923,16 @@
             if (xxdialogMode || ((features2 & 0x40) == 0)) return;
             if (userinfo.otpdev == 1) {
                 // Remove the 2FA device
-                setDialogMode(2, "Authentication Device", 3, function () { meshserver.send({ action: 'otpdev-clear' }); }, "Confirm removal of push authentication device?");
+                setModalContent('xxAddAgent', 'Authentication Device', 'Confirm removal of push authentication device?');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'otpdev-clear' }); });
             } else {
                 // Create a list of all mobile devices
                 var mobileDevices = [];
                 for (var i in nodes) { var node = nodes[i]; if ((node.agent != null) && (node.agent.id == 14) && (node.pmt == 1) && (GetNodeRights(node) == 0xFFFFFFFF)) { mobileDevices.push(node); } }
                 if (mobileDevices.length == 0) {
                     // No mobile devices found
-                    setDialogMode(2, "Authentication Device", 1, null, "In order to use push notification authentication, a mobile device must be setup in your account with full rights.");
+                    setModalContent('xxAddAgent', 'Authentication Device', 'In order to use push notification authentication, a mobile device must be setup in your account with full rights.');
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 } else {
                     // Set a 2FA device
                     var x = "Select a device to register for push notification authentication. Once selected, the device will prompt for confirmation." + '<br /><br />';
@@ -13789,7 +13940,8 @@
                     for (var i in mobileDevices) { y += '<option value="' + mobileDevices[i]._id + '">' + EscapeHtml(mobileDevices[i].name) + '</option>'; }
                     y += '</select>';
                     x += addHtmlFormFloating("Device", y);
-                    setDialogMode(2, "Authentication Device", 3, function () { meshserver.send({ action: 'otpdev-set', nodeid: Q('d2devselect').value }); }, x);
+                    setModalContent('xxAddAgent', 'Authentication Device', x);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'otpdev-set', nodeid: Q('d2devselect').value }); });
                 }
             }
             return false;
@@ -13811,7 +13963,8 @@
                 x += addHtmlFormFloating("Key Name", '<input id=dp1keyname class="form-control" maxlength=20 autocomplete=off placeholder="' + "MyKey" + '" onkeyup=account_addhkeyValidate(event,1) />');
                 x += addHtmlFormFloating("YubiKey&trade; OTP", '<input id=dp1key class="form-control" autocomplete=off onkeyup=account_addhkeyValidate(event,2) />');
             }
-            setDialogMode(2, "Add Security Key", 3, account_addhkeyEx, x, type);
+            setModalContent('xxAddAgent', 'Add Security Key', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_addhkeyEx(3, type));
             Q('dp1keyname').focus();
         }
 
@@ -13824,7 +13977,9 @@
             if (name == '') { name = 'MyKey'; }
             if (type == 2) {
                 meshserver.send({ action: 'otp-hkey-yubikey-add', name: name, otp: Q('dp1key').value });
-                setDialogMode(2, "Add Security Key", 0, null, '<br />' + "Checking..." + '<br /><br /><br />', 'otpauth-hardware-manage');
+                xxdialogTag = 'otpauth-hardware-manage';
+                setModalContent('xxAddAgent', 'Add Security Key', '<br />' + "Checking..." + '<br /><br /><br />');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             } else if (type == 3) {
                 meshserver.send({ action: 'webauthn-startregister', name: name });
             }
@@ -13946,7 +14101,8 @@
         function account_showVerifyEmail() {
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return false;
             var x = "Click ok to send a verification mail to:" + '<br /><div style=padding:8px><b>' + EscapeHtml(userinfo.email) + '</b></div>' + "Please wait a few minute to receive the verification.";
-            setDialogMode(2, "Email Verification", 3, account_showVerifyEmailEx, x);
+            setModalContent('xxAddAgent', 'Email Verification', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_showVerifyEmailEx);
             return false;
         }
 
@@ -14288,7 +14444,8 @@
             var x = "Confirm removal of this login token?" + '<br /><br />';
             x += addHtmlValue("Name", EscapeHtml(token.name));
             x += addHtmlValue("Username", EscapeHtml(token.tokenUser));
-            setDialogMode(2, "Remove Login Token", 3, function (b, tokenUser) { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); }, x, tokenUser);
+            setModalContent('xxAddAgent', 'Remove Login Token', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => function (b, tokenUser) { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); });
         }
 
         function gotoMesh(meshid) {
@@ -14306,13 +14463,15 @@
                 x += addHtmlValue("Credentials", '<a href="https://console.developers.google.com/apis/api/drive.googleapis.com/credentials" rel="noreferrer noopener" target="_blank">' + "Google Drive Console" + '</a>');
                 x += addHtmlFormFloating("Client ID", '<input id=gdclientid class="form-control" placeholder="xxxxxxxx.apps.googleusercontent.com" onkeyup=server_setupGoogleDriveBackupCheck1()></input>');
                 x += addHtmlFormFloating("Client Secret", '<input id=gdclientsecret class="form-control" onkeyup=server_setupGoogleDriveBackupCheck1()></input>');
-                setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd1');
+                setModalContent('xxAddAgent', 'Google Drive Backup', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => server_setupGoogleDriveBackupEx(3, 'gd1'));
                 Q('gdclientid').focus();
                 QE('idx_dlgOkButton', false);
             } else if (gd.state == 3) {
                 var x = '<img style=float:right src="images/googledrive-48.png" /><div>' + "Google Drive backup is currently active." + '</div>';
                 x += '<br /><label><input id=gdcheck type=checkbox class="form-check-input me-2" onchange=server_setupGoogleDriveBackupCheck2() />' + "Remove Configuration" + '</label>';
-                setDialogMode(2, "Google Drive Backup", 3, server_setupGoogleDriveBackupEx, x, 'gd0');
+                setModalContent('xxAddAgent', 'Google Drive Backup', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => server_setupGoogleDriveBackupEx(3, 'gd0'));
                 QE('idx_dlgOkButton', false);
             }
         }
@@ -14694,7 +14853,8 @@
         function meshImportDeviceList() {
             if (xxdialogMode) return;
             var x = "Import a list of local Intel&reg; AMT devices in MeshCommander JSON format." + '<br /><br /><input type=file id=d4importFile class="form-control" accept=".json" onchange=meshImportDeviceListValidate() />';
-            setDialogMode(2, "Import Intel&reg; AMT Devices", 3, meshImportDeviceListEx, x);
+            setModalContent('xxAddAgent', 'Import Intel&reg; AMT Devices', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => meshImportDeviceListEx());
             QE('idx_dlgOkButton', false);
         }
 
@@ -14706,7 +14866,13 @@
             var fr = new FileReader();
             fr.onload = function (r) {
                 var j = null;
-                try { j = JSON.parse(r.target.result); } catch (ex) { setDialogMode(2, "Import Intel&reg; AMT Devices", 1, null, format("Invalid JSON file: {0}.", ex)); return; }
+                try {
+                    j = JSON.parse(r.target.result);
+                } catch (ex) {
+                    setModalContent('xxAddAgent', 'Import Intel&reg; AMT Devices', format("Invalid JSON file: {0}.", ex));
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                    return;
+                }
                 if ((typeof j == 'object') && (typeof j.webappversion == 'string') && (typeof j.computers == 'object') && (Array.isArray(j.computers))) {
                     var ok = 0;
                     for (var k in j.computers) {
@@ -14721,8 +14887,13 @@
                             ok++;
                         }
                     }
-                    if (ok == 0) { setDialogMode(2, "User Account Import", 1, null, "Unable to import any device."); }
-                } else { setDialogMode(2, "Import Intel&reg; AMT Devices", 1, null, "Invalid JSON file format."); }
+                    if (ok == 0) {
+                        setModalContent('xxAddAgent', 'User Account Import', 'Unable to import any device.');
+                    }
+                } else {
+                    setModalContent('xxAddAgent', 'Import Intel&reg; AMT Devices', 'Invalid JSON file format.');
+                }
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             };
             fr.readAsText(Q('d4importFile').files[0]);
         }
@@ -14839,12 +15010,15 @@
 
             if (relayDevices.length == 0) {
                 // Relay relay devices available
-                setDialogMode(2, "Edit Device Group", 1, null, "No relay devices available.");
+                x = "No relay devices available.";
+                setModalContent('xxAddAgent', 'Edit Device Group', "No relay devices available.");
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             } else {
                 var relayDevices2 = [];
                 for (var i in relayDevices) { relayDevices2.push('<option value="' + (relayDevices[i]._id + '"' + ((currentMesh.relayid == relayDevices[i]._id) ? ' selected' : '')) + '>' + EscapeHtml(relayDevices[i].name) + '</option>'); }
                 var x = addHtmlFormFloating("Relay Device", '<select id=d2devrelay class="form-select">' + relayDevices2.join('') + '</select>');
-                setDialogMode(2, "Edit Device Group", 3, p20editmeshrelayEx, x);
+                setModalContent('xxAddAgent', 'Edit Device Group', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshrelayEx);
             }
         }
 
@@ -15465,7 +15639,8 @@
 
                 x += addHtmlValue("Permissions", r.join(", "));
                 if (((userinfo._id) != xuserid) && (cmeshrights == 0xFFFFFFFF || (((cmeshrights & 2) != 0) && (meshrights != 0xFFFFFFFF)))) buttons += 4;
-                setDialogMode(2, "Device Group User", buttons, p20viewuserEx, x, xuserid);
+                setModalContent('xxAddAgent', 'Device Group User', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p20viewuserEx(buttons, xuserid));
             }
         }
 
@@ -15475,8 +15650,13 @@
             if (users && users[userid]) { uname = users[userid].name; }
             if (usergroups && usergroups[userid]) { uname = usergroups[userid].name; }
             if (userinfo._id == userid) { uname = userinfo.name; }
-            if (userid.startsWith('user/')) { setDialogMode(2, "Remove User Permissions", 3, p20viewuserEx2, format("Confirm removal of rights for user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))), userid); }
-            if (userid.startsWith('ugrp/')) { setDialogMode(2, "Remove User Group Permissions", 3, p20viewuserEx2, format("Confirm removal of rights for user group \"{0}\"?", EscapeHtml(decodeURIComponent(uname))), userid); }
+            if (userid.startsWith('user/')) {
+                setModalContent('xxAddAgent', 'Remove User Permissions', format("Confirm removal of rights for user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))));
+            }
+            if (userid.startsWith('ugrp/')) {
+                setModalContent('xxAddAgent', 'Remove User Group Permissions', format("Confirm removal of rights for user group \"{0}\"?", EscapeHtml(decodeURIComponent(uname))), userid);
+            }
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p20viewuserEx2(3, userid));
         }
         function p20deleteUser(e, userid) { haltEvent(e); p20viewuserEx(2, decodeURIComponent(userid)); return false; }
         function p20viewuserEx2(button, userid) { meshserver.send({ action: 'removemeshuser', meshid: currentMesh._id, meshname: currentMesh.name, userid: userid }); }
@@ -15506,7 +15686,8 @@
                 x += '<div id=d2agentInstallTypeDiv>';
                 x += addHtmlFormFloating("Installation Type", '<select id=agentInviteType class="form-select"><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
                 x += '</div>';
-                setDialogMode(2, "Invite Codes", 3, p20editmeshInviteCodeEx, x);
+                setModalContent('xxAddAgent', 'Invite Codes', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshInviteCodeEx);
                 if (currentMesh.invite != null) {
                     Q('agentJoinCheck').checked = true;
                     Q('agentInviteCode').value = currentMesh.invite.codes.join(', ');
@@ -15520,7 +15701,8 @@
                 x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
                 x += addHtmlValue("Invite Codes", currentMesh.invite.codes.join(', '));
                 x += addHtmlValue("Installation Type", ["Background and interactive", "Interactive only", "Background only"][currentMesh.invite.flags & 3]);
-                setDialogMode(2, "Invite Codes", 1, null, x);
+                setModalContent('xxAddAgent', 'Invite Codes', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton');
             }
         }
 
@@ -15880,7 +16062,8 @@
         }
 
         function p5showPublicLink(u) {
-            setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:350px value="' + u + '" readonly /> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(u) + '")></i>');
+            setModalContent('xxAddAgent', 'Public Link', '<input type=text style=width:350px value="' + u + '" readonly /> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(u) + '")></i>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             return false;
         }
 
@@ -15930,7 +16113,11 @@
             p5fileNameCheck();
         }
         function p5createfolderEx() { meshserver.send({ action: 'fileoperation', fileop: 'createfolder', path: filetreelocation, newfolder: Q('p5renameinput').value }); }
-        function p5deletefile() { var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox class="form-check-input me-2" id=p5recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput class="form-check-input me-2" style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p5deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
+        function p5deletefile() {
+            var cc = getFileSelCount(), rec = (getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox class="form-check-input me-2" id=p5recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p5recdeleteinput class="form-check-input me-2" style=\'display:none\'>';
+            setModalContent('xxAddAgent', 'Delete', (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5deletefileEx);
+        }
         function p5deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(checkboxes[i].value); } } meshserver.send({ action: 'fileoperation', fileop: 'delete', path: filetreelocation, delfiles: delfiles, rec: Q('p5recdeleteinput').checked }); }
         function p5renamefile() {
             var renamefile, checkboxes = document.getElementsByName('fc');
@@ -16859,10 +17046,22 @@
                             if (checkPasswordRequirements(j[i].pass, passRequirements) == false) { ok = false; }
                             if ((j[i].email != null) && ((typeof j[i].email != 'string') || (j[i].email.length < 1) || (j[i].email.length > 128))) { ok = false; }
                         }
-                        if (ok == false) { setDialogMode(2, "User Account Import", 1, null, "Invalid CSV file format."); } else { meshserver.send({ action: 'adduserbatch', users: j }); }
-                    } else { setDialogMode(2, "User Account Import", 1, null, "Invalid CSV file format."); }
+                        if (ok == false) {
+                            setModalContent('xxAddAgent', 'User Account Import', "Invalid CSV file format.");
+                        } else {
+                            meshserver.send({ action: 'adduserbatch', users: j });
+                        }
+                    } else {
+                        setModalContent('xxAddAgent', 'User Account Import', "Invalid CSV file format.");
+                    }
                 } else {
-                    try { j = JSON.parse(r.target.result); } catch (ex) { setDialogMode(2, "User Account Import", 1, null, format("Invalid JSON file: {0}.", ex)); return; }
+                    try {
+                        j = JSON.parse(r.target.result);
+                    } catch (ex) {
+                        setModalContent('xxAddAgent', 'User Account Import', format("Invalid JSON file: {0}.", ex));
+                        showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                        return;
+                    }
                     if ((j != null) && (Array.isArray(j))) {
                         var ok = true;
                         for (var i in j) {
@@ -16872,13 +17071,14 @@
                             if ((j[i].email != null) && ((typeof j[i].email != 'string') || (j[i].email.length < 1) || (j[i].email.length > 128))) { ok = false; }
                         }
                         if (ok == false) {
-                            setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format.");
+                            setModalContent('xxAddAgent', 'User Account Import', "Invalid JSON file format.");
                         } else {
                             meshserver.send({ action: 'adduserbatch', users: j });
                         }
                     } else {
-                        setDialogMode(2, "User Account Import", 1, null, "Invalid JSON file format.");
+                        setModalContent('xxAddAgent', 'User Account Import', "Invalid JSON file format.");
                     }
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 }
             };
             fr.readAsText(Q('d4importFile').files[0]);
@@ -19933,6 +20133,7 @@
                     }
                 };
                 var vers_not_compat = ' [ <span onclick="return setDialogMode(2, \'Compatibility Issue\', 1, null, \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');" title="' + "Version incompatible, please upgrade your MeshCentral installation first" + '" style="cursor: pointer; color:red;"> ! </span> ]';
+                var vers_not_compat = ' [ <span onclick="return setModalContent(\'xxAddAgent\', \'Compatibility Issue\', \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');showModal(\'xxAddAgentModal\', \'idx_dlgOkButton\');" title="' + "Version incompatible, please upgrade your MeshCentral installation first" + '" style="cursor: pointer; color:red;"> ! </span> ]';
 
                 var tbl = Q('p42tbl');
                 installedPluginList.forEach(function (p) {
@@ -20031,7 +20232,7 @@
                 var plugin = null;
                 for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
                 setModalContent('xxAddAgent', 'Plugin Action', format("Are you sure you want to {0} the plugin: {1}", elem.value, plugin.name) + '<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + id + '" /><input id="lastPluginVersion" type="hidden" value="" />');
-                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => pluginActionEx();
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => pluginActionEx());
             }
             elem.value = '';
         }
