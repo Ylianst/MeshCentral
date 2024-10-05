@@ -773,14 +773,16 @@
         }
 
         function validateLogin(box, e) {
-            var ok = ((Q('username').value.length > 0) && (Q('username').value.indexOf(' ') == -1) && (Q('password').value.length > 0));
-            QE('loginButton', ok);
-            setDialogMode(0);
-            if ((e != null) && (e.keyCode == 13)) {
-                if ((box == 1) && (Q('username').value != '')) { Q('password').focus(); }
-                else if ((box == 2) && (Q('password').value != '')) { Q('loginButton').click(); }
-            }
-            if (e != null) { haltEvent(e); }
+            setTimeout(function(){
+                var ok = ((Q('username').value.length > 0) && (Q('username').value.indexOf(' ') == -1) && (Q('password').value.length > 0));
+                QE('loginButton', ok);
+                setDialogMode(0);
+                if ((e != null) && (e.keyCode == 13)) {
+                    if ((box == 1) && (Q('username').value != '')) { Q('password').focus(); }
+                    else if ((box == 2) && (Q('password').value != '')) { Q('loginButton').click(); }
+                }
+                if (e != null) { haltEvent(e); }
+            }, 100);
         }
 
         function validateCreate(box, e) {
