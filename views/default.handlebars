@@ -2606,8 +2606,6 @@
             }
             setModalContent('xxAddAgent', dialog.title, x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg })
-
-
         }
 
         // Handle a generic custom UI dialog event
@@ -6453,7 +6451,17 @@
             }
         }
 
-        // Function used to show and hide any modal by passing appropriate `modalId` and `okButtonId`
+        /**
+        * Function to show and hide a modal.
+        *
+        * @param {string} modalId - The ID of the modal to display.
+        * @param {string} okButtonId - The ID of the button that triggers the OK action.
+        * @param {function} okCallback - A callback function that runs when the OK button is clicked.
+        *        If the callback returns `false`, the modal will remain open.
+        *        Any other return value (or no return) will close the modal by default.
+        * @param {*} [b=null] - An optional parameter passed to the callback.
+        * @param {*} [tag=null] - Another optional parameter passed to the callback.
+        */
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
             var modalElement = document.getElementById(modalId);
             var modalInstance = new bootstrap.Modal(modalElement);
@@ -6462,10 +6470,12 @@
             document.getElementById(okButtonId).onclick = function () {
                 if (okCallback && typeof okCallback === 'function') {
                     var callbackResult = okCallback(b, tag);
-                    // Close the modal if 0 is returned
-                    if (callbackResult === 0) {
+                    // Close the modal by default unless `false` is explicitly returned
+                    if (callbackResult !== false) {
                         modalInstance.hide();
                     }
+                } else {
+                    modalInstance.hide();
                 }
             };
         }
@@ -12447,7 +12457,7 @@
                 }
             }
             setModalContent('xxAddAgent', 'Rename', '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, oldname: renamefile));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { oldname: renamefile }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
         }
