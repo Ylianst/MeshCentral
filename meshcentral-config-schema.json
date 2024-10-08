@@ -488,11 +488,6 @@
           "default": true,
           "description": "When enabled, MeshCentral will automatically monitor and manage Intel AMT devices."
         },
-        "orphanAgentUser": {
-          "type": "string",
-          "default": null,
-          "description": "If an agent attempts to connect to a unknown device group, automatically create a new device group and grant access to the specified user. Example: admin"
-        },
         "agentIdleTimeout": {
           "type": "integer",
           "minimum": 1,
@@ -1132,6 +1127,11 @@
             "type": "boolean",
             "default": true,
             "description": "When set to false, this setting will disable the mobile site."
+          },
+          "orphanAgentUser": {
+            "type": "string",
+            "default": null,
+            "description": "If an agent attempts to connect to a unknown device group, automatically create a new device group and grant access to the specified user. Example: admin"
           },
           "maxDeviceView": {
             "type": "integer",
