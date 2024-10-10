@@ -3858,7 +3858,8 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.xxLogFile != null) {
                     try {
                         if (obj.xxLogDateStr != d.toLocaleDateString()) { obj.xxLogDateStr = d.toLocaleDateString(); obj.fs.writeSync(obj.xxLogFile, '---- ' + d.toLocaleDateString() + ' ----\r\n'); }
-                        obj.fs.writeSync(obj.xxLogFile, new Date().toLocaleTimeString() + ' - ' + source + ': ' + args.join(', ') + '\r\n');
+                        const formattedArgs = args.map(function (arg) { return (typeof arg === 'object' && arg !== null) ? JSON.stringify(arg) : arg; });
+                        obj.fs.writeSync(obj.xxLogFile, new Date().toLocaleTimeString() + ' - ' + source + ': ' + formattedArgs.join(', ') + '\r\n');
                     } catch (ex) { }
                 }
             }
