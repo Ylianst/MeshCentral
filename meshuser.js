@@ -6594,7 +6594,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
         if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) return; // Asking for a device group that is not allowed
 
-        const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126];
+        const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126, 144];
         switch (command.type) {
             case 1: {
                 remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter);
@@ -7714,6 +7714,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Session length
                 if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
                 else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
+                else if ((docs[i].msgid == 144) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[1] == 'number')) { entry.length = docs[i].msgArgs[1]; }
 
                 if (command.groupBy == 1) { // Add entry to per user
                     if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
@@ -7780,6 +7781,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Session length
                 if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { userEntry.length += docs[i].msgArgs[3]; }
                 else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { userEntry.length += docs[i].msgArgs[0]; }
+                else if ((docs[i].msgid == 144) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[1] == 'number')) { userEntry.length += docs[i].msgArgs[1]; }
 
                 // Set the user entry
                 userEntries[docs[i].userid] = userEntry;
