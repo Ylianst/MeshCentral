@@ -6360,7 +6360,7 @@
 
             // Check filter dropdown
             var devFilter = Q('DevFilterSelect').value;
-            if (devFilter == 1) { for (var d in nodes) { if ((nodes[d].conn == null) || (nodes[d].conn == 0)) { nodes[d].v = false; } } } // Online
+            if (devFilter == 1) { for (var d in nodes) { if (((nodes[d].conn == null) || (nodes[d].conn == 0)) && (nodes[d].mtype != 3)) { nodes[d].v = false; } } } // Online, also include Local devices and relayed devices
             if (devFilter == 2) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || ((n.sessions.kvm == null) && (n.sessions.terminal == null) && (n.sessions.files == null) && (n.sessions.tcp == null) && (n.sessions.udp == null))) { n.v = false; } } } // Sessions
             if (devFilter == 3) { for (var d in nodes) { if (stars[nodes[d]._id] != 1) { nodes[d].v = false; } } } // Starred
             if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
