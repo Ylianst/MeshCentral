@@ -1,4 +1,9 @@
 ﻿
+:root {
+    --sub-menu-bg: linear-gradient(180deg,#fff,#fff,#e9ecef);
+    --sub-menu-color: #888;
+}
+
 :focus {
     outline: 0;
 }
@@ -257,7 +262,7 @@ body {
 
 #uiMenuButton {
     cursor: pointer;
-    color: white;
+    /* color: white; */
     position: absolute;
     padding: 3px;
     right: 3px;
@@ -290,8 +295,8 @@ body {
 #MainSubMenuSpan, #MeshSubMenuSpan, #EventsSubMenuSpan, #UserSubMenuSpan, #UsersSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
     width: 100%;
     height: 24px;
-    color: white;
-    background-color: #808080;
+    color: var(--sub-menu-color);
+    background: var(--sub-menu-bg);
 }
 
 .menu_stack #UserDummyMenu {
@@ -549,6 +554,7 @@ body {
     padding: 3px;
     margin-right: 3px;
     cursor: pointer;
+    background-color: white; 
 }
 
 #id_dialogtitle {
@@ -726,7 +732,7 @@ body {
 #devListToolbarSpan {
     width: 100%;
     height: 24px;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg);
     vertical-align: middle;
     border-spacing: 0;
 }
@@ -1019,7 +1025,9 @@ NoMeshesPanel img {
     border-radius: 8px;
     cursor: pointer;
     margin: 8px;
-    box-shadow: 0px 0px 7px #000;
+    /* box-shadow: 0px 0px 7px #000; */
+    background: var(--sub-menu-bg);
+    border: 1px solid #cfcdcd;
 }
 
 .p2AccountActions {
@@ -1060,7 +1068,7 @@ NoMeshesPanel img {
 .pTable {
     width: 100%;
     height: 24px;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg) !important;
     margin-bottom: 4px;
     vertical-align: middle;
     border-spacing: 0;
@@ -1083,7 +1091,7 @@ NoMeshesPanel img {
 }
 
     .p3usersTable th {
-        color: gray;
+        color: var(--sub-menu-bg);
     }
 
 #p3events, #p16events, #p31events, #p41events {
@@ -1097,9 +1105,9 @@ NoMeshesPanel img {
     padding: 0;
 }
 
-#p4name, #p4email, #p4pass1, #p4pass2 {
+/* #p4name, #p4email, #p4pass1, #p4pass2 {
     width: 230px;
-}
+} */
 
 #p5toolbar {
     width: 100%;
@@ -1107,17 +1115,17 @@ NoMeshesPanel img {
 
 #p5filehead {
     width: 100%;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg);
     text-align: left;
     padding: 4px;
 }
 
 .night #p5filehead {
-    background-color: #333;
+    background: var(--sub-menu-bg);
 }
 
 #p5filesubhead {
-    background-color: #E4E9E7;
+    background: var(--sub-menu-bg);
     height: 28px;
 }
 
@@ -1203,7 +1211,7 @@ NoMeshesPanel img {
 
 #p10html2 table {
     color: black;
-    background-color: #EEE;
+    background: var(--sub-menu-bg);
     border-color: #AAA;
     border-width: 1px;
     border-style: solid;
@@ -1333,7 +1341,7 @@ NoMeshesPanel img {
     position: absolute;
     width: 400px;
     height: 100%;
-    background-color: gray;
+    background: var(--sub-menu-bg);
     top: 0;
     right: 0;
     border-left: 2px solid lightgray;
@@ -1531,10 +1539,12 @@ a {
     opacity: 0.9;
 }
 
-.lbbuttonsel2 {
-    width: 82px;
+nav .lbbuttonsel2 {
+    width: 100%;
     border-radius: 5px 0px 0px 5px;
     opacity: 1;
+    background-color: #ffffff;
+    color: #113962 !important;
 }
 
 /*groups all buttons repeated code into one block*/
@@ -1721,21 +1731,21 @@ a {
 
 .style2 {
     text-align: center;
-    background-color: #808080;
+    background: var(--sub-menu-bg);
     font-weight: bold;
 }
 
 .style3 {
     text-align: center;
     color: white;
-    background-color: #808080;
+    background: var(--sub-menu-bg);
     font-weight: bold;
 }
 
 .style3x {
     text-align: center;
-    color: white;
-    background-color: #808080;
+    color: var(--sub-menu-color);
+    background: var(--sub-menu-bg);
     font-weight: bold;
 }
 
@@ -1766,13 +1776,13 @@ a {
 
 .style5 {
     text-align: center;
-    background-color: #808080;
+    background: var(--sub-menu-bg);
     font-weight: normal;
 }
 
 .style6 {
     text-align: left;
-    background-color: #D3D9D6;
+    background: var(--sub-menu-bg);
     padding: 3px;
 }
 
@@ -1816,7 +1826,8 @@ a {
 .style14 {
     height: 100%;
     text-align: left;
-    background-color: #D3D9D6;
+    /* background-color: #D3D9D6; */
+    background: var(--sub-menu-bg);
 }
 
 .night .style14 {
@@ -1825,7 +1836,7 @@ a {
 }
 
 .auto-style1 {
-    background-color: #D3D9D6;
+    background: var(--sub-menu-bg);
     text-align: right;
 }
 
@@ -1835,7 +1846,7 @@ a {
 }
 
 .night .auto-style1 {
-    background-color: #333;
+    background: var(--sub-menu-bg);
     color: #CCC;
 }
 
@@ -2399,7 +2410,11 @@ a {
     padding-left: 4px;
     padding-top: 2px;
     padding-bottom: 2px;
-    background: #C0C0C0;
+    background: var(--sub-menu-bg);
+}
+
+#consoleTable .areaHead {
+    border: 1px solid #C0C0C0;
 }
 
 .night .areaHead {
@@ -2420,7 +2435,7 @@ a {
 .areaFoot {
     padding-top: 2px;
     padding-bottom: 2px;
-    background: #C0C0C0;
+    background: var(--sub-menu-bg);
     height: 22px;
 }
 
@@ -2663,7 +2678,7 @@ a {
 .serverStateTableCell {
     width: 300px;
     height: 24px;
-    background-color: #d3d9d6;
+    background: var(--sub-menu-bg);
     margin-bottom: 4px;
     vertical-align: middle;
     border-spacing: 0;
@@ -2725,17 +2740,17 @@ a {
 
     #p13toolbar .areaHead2 {
         width: 100%;
-        background-color: #d3d9d6;
+        background: var(--sub-menu-bg);
         text-align: left;
         padding: 4px;
     }
 
     .night #p13toolbar .areaHead2 {
-        background-color: #333;
+        background: var(--sub-menu-bg);
     }
 
     #p13toolbar .areaHead3 {
-        background-color: #E4E9E7;
+        background: var(--sub-menu-bg);
         height: 28px;
     }
 
@@ -3291,4 +3306,101 @@ a {
 #notesPanel thead tr {
     background-color: #AAA;
     font-weight: bold;
+}
+
+.sidebar .nav-link {
+    font-size: xx-large;
+}
+  
+.card:hover, #p2AccountImage:hover, #p2canvas:hover {
+    background: #f3f5f7 !important;
+}
+
+.form-control, .form-control-sm, .form-select, .form-select-sm {
+    border: 1px solid #adb5bd !important;
+}
+
+.card {
+    background: #f8f9fa !important;
+}
+
+.table td,
+.table th {
+    padding: 0.05rem !important; /* Decrease padding to reduce row height */
+}
+
+.btn-close {
+    background-color: white !important;
+    opacity: 1 !important;
+}
+
+.navbar-toggler {
+    border: none;
+}
+
+/* hide .sidebar when on mobile */
+@media (max-width: 768px) {
+    #page_leftbar {
+        display: none !important;
+    }
+
+    .fullscreen #container {
+        width: 100vw !important;
+        min-width: 100vw !important;
+        padding-left: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #masthead .title {
+        font-size: 36px;
+    }
+
+    #MainMeshImage /*, #p2AccountImageFrame */ {
+        /* text-align: center !important; */
+        float: none !important;
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    #p2AccountImageFrame {
+        float: none !important;
+        text-align: left;
+    }
+
+    #logoutControl {
+        display: none !important;
+    }
+
+    #topMenuIcon {
+        display: block !important;
+    }
+
+    #notificationCount {
+        margin-right: 45px;
+    }
+
+    .notifiyBox:after {
+        margin-right: 40px;
+    }
+
+    .notifiyBox:after {
+        margin-right: 40px;
+    }
+
+    .notifiyBox:before {
+        content: none;
+    }
+
+    body {
+        min-width: 100vw !important;
+    }
+
+
+    /* #container {
+        width: 100vw !important;
+        padding-left: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    } */
 }
