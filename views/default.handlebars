@@ -179,6 +179,7 @@
             </div>
             <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
                     style="color:yellow"></span></p>
+            <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
         <div class="sidebar d-flex flex-column" id="page_leftbar">
             <div style="height:16px"></div>
@@ -306,7 +307,22 @@
                         </table>
                     </div>
                     <div id=EventsSubMenuSpan style="display:none">
-                        <table id=EventsSubMenu cellpadding=0 cellspacing=0 class=style1>
+                        <div id=EventsSubMenu class="style1">
+                            <div class="row d-flex">
+                                <div class="col flex-grow-0 flex-shrink-0">
+                                    <div tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event)
+                                        onkeypress="if (event.key == 'Enter') go(3)">Events</div>
+                                </div>
+                                <div class="col flex-grow-0 flex-shrink-0">
+                                    <div tabindex=0 id=EventsReport class="topbar_td style3x" onmouseup=go(60,event)
+                                        onkeypress="if (event.key == 'Enter') go(60)">Reports</div>
+                                </div>
+                                <div class="col flex-grow-0 flex-shrink-0">
+                                    <div class="style3">&nbsp;</div>
+                                </div>
+                            </div>
+                        </div>
+                        {{!-- <table id=EventsSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
                                 <td tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event)
                                     onkeypress="if (event.key == 'Enter') go(3)">Events</td>
@@ -314,7 +330,7 @@
                                     onkeypress="if (event.key == 'Enter') go(60)">Reports</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
                             </tr>
-                        </table>
+                        </table> --}}
                     </div>
                     <div id=UserSubMenuSpan style="display:none">
                         <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
@@ -1662,7 +1678,7 @@
                     <h1>General - <span id=p30userName></span></h1>
                 </div>
                 <div id="p30info" style="overflow-y:auto">
-                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                    {{!-- <table style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style=width:auto valign=top>
                                 <div id=p30html></div>
@@ -1683,7 +1699,38 @@
                                             id=MainUserState></span></strong></div>
                             </td>
                         </tr>
-                    </table><br />
+                    </table><br /> --}}
+                    <div class="row">
+                        <!-- First column: p30html div -->
+                        <div class="col">
+                            <div id="p30html"></div>
+                        </div>
+                    
+                        <!-- Spacer column (20px width) -->
+                        <div class="col-auto" style="width: 20px;"></div>
+                    
+                        <!-- Second column: User image and state -->
+                        <div class="col-auto" style="width: 200px; position: relative;">
+                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class="userAuthStrategyLogo" width="64"
+                                height="64">
+                    
+                            <picture id="MainUserImage" style="display:none; border-width:0px; height:200px; width:200px; float:right"
+                                onclick="account_manageImage(1)">
+                                <source type="image/webp" width="200" height="200" srcset="images/webp/user-256.webp" />
+                                <img alt="" width="200" height="200" src="images/user-256.png" />
+                            </picture>
+                    
+                            <img id="MainUserImageEx" alt="" width="200" height="200" src="images/user-256.png"
+                                onclick="account_manageImage(1)" />
+                    
+                            <div style="width:100%;text-align:center;">
+                                <strong><span id="MainUserState"></span></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+
+
                     <div id=p30html2></div>
                     <div id=p30html3></div>
                 </div>
@@ -1887,7 +1934,7 @@
                     <h1>User Group - <span id=p51groupName></span></h1>
                 </div>
                 <div id="p51info" style="overflow-y:auto">
-                    <table style="width:100%" cellpadding="0" cellspacing="0">
+                    {{!-- <table style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style=width:auto valign=top>
                                 <div id=p51group></div>
@@ -1903,7 +1950,28 @@
                                             id=MainUserState></span></strong></div>
                             </td>
                         </tr>
-                    </table>
+                    </table> --}}
+                    <div class="row">
+                        <!-- First column: p51group div -->
+                        <div class="col">
+                            <div id="p51group"></div>
+                        </div>
+                    
+                        <!-- Spacer column (20px width) -->
+                        <div class="col-auto" style="width: 20px;"></div>
+                    
+                        <!-- Second column: User image and state -->
+                        <div class="col-auto" style="width: 200px;">
+                            <picture id="MainUserImage" style="border-width:0px;height:200px;width:200px;float:right">
+                                <source type="image/webp" width="200" height="200" srcset="images/webp/group-256.webp" />
+                                <img alt="" width="200" height="200" src="images/group-256.png" />
+                            </picture>
+                            <div style="width:100%;text-align:center">
+                                <strong><span id="MainUserState"></span></strong>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id=p51group2></div>
                     <br />
                 </div>
@@ -2183,12 +2251,23 @@
         <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data
             target=fileUploadFrame><input id=p5fileDragName name="name" /><input id=p5fileDragAuthCookie
                 name="auth" /><input id=p5fileDragSize name="size" /><input id=p5fileDragType name="type" /><input
-                id=p5fileDragData name="data" /><input id=p5fileDragLink name="link" /><input type=submit
-                id=p5loginSubmit2 style="display:none" /></form>
+                id=p5fileDragData name="data" /><input id=p5fileDragLink name="link" class="btn btn-outline-success" /><input type=submit
+                id=p5loginSubmit2 style="display:none" class="btn btn-outline-success" /></form>
         <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data
-            target=fileUploadFrame><input id=p13fileDragName name="name" /><input id=p13fileDragSize
-                name="size" /><input id=p13fileDragType name="type" /><input id=p13fileDragData name="data" /><input
-                id=p13fileDragLink name="link" /><input type=submit id=p13loginSubmit2 style="display:none" /></form>
+            target=fileUploadFrame><input id=p13fileDragName name="name" class="btn btn-outline-success" /><input id=p13fileDragSize
+                name="size" class="btn btn-outline-success" /><input id=p13fileDragType name="type" class="btn btn-outline-success" /><input id=p13fileDragData name="data" class="btn btn-outline-success" /><input
+                id=p13fileDragLink name="link" class="btn btn-outline-success" /><input type=submit id=p13loginSubmit2 style="display:none" class="btn btn-outline-success" /></form>
+        
+        <div id=topMenu style="z-index:1000;background-color:#ffffff;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Devices</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Account</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(3)>My Events</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(5)>My Files</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(4)>My Users</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(6)>My Server</div>
+            <div id="logoutMenuOption"><a id="logoutMenuOptionRef" href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
+        </div>
+
         <audio id="chimes">
             <source src="sounds/chimes.mp3" type="audio/mp3" />
         </audio>
@@ -4744,6 +4823,23 @@
         // MY DEVICES
         //
 
+        function topMenu(select) {
+            if ((xxdialogMode != null) && (xxdialogMode != 0) && (xxdialogMode != 999)) return;
+            if (select === undefined) {
+                var x = (QS('topMenu').display == 'none');
+                if (x == true) { if ((xxdialogMode == 0) || (xxdialogMode == null)) { QV('topMenu', true); xxdialogMode = 999; } } else { QV('topMenu', false); xxdialogMode = 0; }
+            } else {
+                QV('topMenu', false);
+                xxdialogMode = 0;
+                if ((select == 1)) { goForward('devices'); }
+                if ((select == 2)) { goForward('account'); }
+                if ((select == 3)) { goForward('events'); }
+                if ((select == 4)) { goForward('users'); }
+                if ((select == 5)) { goForward('files'); }
+                if ((select == 6)) { goForward('server'); }
+            }
+        }
+
         function onRealNameCheckBox() {
             showRealNames = Q('RealNameCheckBox').checked;
             putstore('showRealNames', showRealNames ? 1 : 0);
@@ -6331,9 +6427,9 @@
 
             // Windows agent install
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>', ['col-md-4', 'col-md-8']);
             if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
@@ -9633,7 +9729,7 @@
             return false;
         }
 
-        function addDeviceAttribute(name, value, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-2'}"><b> ${name} </b></div><div class="${classNames[1] || 'col-md-10'}"> ${value} </div></div>`; }
+        function addDeviceAttribute(name, value, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b> ${name} </b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}"> ${value} </div></div>`; }
 
         function editDeviceAmtSettings(nodeid, func, arg) {
             if (xxdialogMode) return;
@@ -14398,14 +14494,14 @@
 
                 // Print the mesh information
                 r += `
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-2"
+                    <div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 mb-2"
                             onclick="gotoMesh('` + sortedMeshes[i]._id + `')"
                             onkeypress="if (event.key=='Enter') gotoMesh('` + sortedMeshes[i]._id + `')"
                             style="cursor:pointer;">
                         <div class="card mb-3">
                             <div class="row g-0">
                                 <div class="col-2 parent" style="display: flex; justify-content: center; align-items: center;">
-                                    <i class="fas fa-tv fa-2x text-primary"></i>
+                                    <i class="mi me-1"></i>
                                 </div>
                                 <div class="col-10 mx-auto" tabindex="0">
                                     <div class="card-body" style=padding:0;>
@@ -14579,10 +14675,10 @@
 
             var x = '';
             if ((args.hide & 8) != 0) { x += addHtmlValue("Name", mname); } // If title bar is hidden, display the mesh name here
-            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0), ['col-md-2', 'col-md-10']);
+            x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '') ? EscapeHtml(currentMesh.desc) : ('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
 
             // Display group type
-            x += addHtmlValue("Type", meshtype, ['col-md-2', 'col-md-10']);
+            x += addHtmlValue("Type", meshtype);
             //x += addHtmlValue('Identifier', currentMesh._id.split('/')[2]);
 
             // Display the relay device if applicable
@@ -14590,25 +14686,25 @@
                 var relayName = '<i>' + "Unknown" + '</i>';
                 var relayNode = getNodeFromId(currentMesh.relayid);
                 if (relayNode != null) { relayName = EscapeHtml(relayNode.name); }
-                x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0), ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0));
             }
 
             // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
-                x += addHtmlValue("Hostname", currentMesh.kvm.host, ['col-md-2', 'col-md-10']);
-                x += addHtmlValue("Username", currentMesh.kvm.user, ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Hostname", currentMesh.kvm.host);
+                x += addHtmlValue("Username", currentMesh.kvm.user);
             }
 
             // Display device group creator
             if ((currentMesh.creatorid != null) && (users != null) && (users[currentMesh.creatorid] != null)) {
                 var meshcreator = users[currentMesh.creatorid];
-                x += addHtmlValue("Creator", '<a href=# onclick=gotoUser(\"' + encodeURIComponentEx(meshcreator._id) + '\",false,null)>' + EscapeHtml(meshcreator.name) + '</a>', ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Creator", '<a href=# onclick=gotoUser(\"' + encodeURIComponentEx(meshcreator._id) + '\",false,null)>' + EscapeHtml(meshcreator.name) + '</a>');
             } else if (currentMesh.creatorname != null) {
-                x += addHtmlValue("Creator", EscapeHtml(currentMesh.creatorname), ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Creator", EscapeHtml(currentMesh.creatorname));
             }
 
             // Display creation time
-            if (currentMesh.creation != null) { x += addHtmlValue("Creation Time", printDateTime(new Date(currentMesh.creation)), ['col-md-2', 'col-md-10']); }
+            if (currentMesh.creation != null) { x += addHtmlValue("Creation Time", printDateTime(new Date(currentMesh.creation))); }
 
             // Display features
             if (currentMesh.mtype != 3) {
@@ -14621,7 +14717,7 @@
                 if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { meshFeatures.push("Remove inactive"); }
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
-                x += addHtmlValue("Features", addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1), ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Features", addLinkConditional(meshFeatures, 'p20editmeshfeatures()', meshrights & 1));
             }
 
             // Display device group user consent
@@ -14638,7 +14734,7 @@
 
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
-                x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1), ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("User Consent", addLinkConditional(meshFeatures, 'p20editmeshconsent(1)', meshrights & 1));
             }
 
             if (currentMesh.mtype != 3) {
@@ -14661,7 +14757,7 @@
                         if (xx > 0) { meshNotifyStr.push(format("Messaging ({0})", xx)); }
                     }
                     if (meshNotifyStr.length == 0) { meshNotifyStr.push('<i>' + "None" + '</i>'); }
-                    x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'), ['col-md-2', 'col-md-10']);
+                    x += addHtmlValue("Notifications", addLink(meshNotifyStr.join(', '), 'p20editMeshNotify()'));
                 }
             }
 
@@ -14669,7 +14765,7 @@
             if ((features & 0x01000000) && (currentMesh.mtype == 2)) {
                 var inviteCodeStr = '<i>' + "None" + '</i>', icodes = false;
                 if (currentMesh.invite != null) { icodes = true; inviteCodeStr = currentMesh.invite.codes.join(', '); /* + ', ' + currentMesh.invite.flags;*/ }
-                x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)), ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
             }
 
             // If the Intel AMT manager is active on the server, show the Intel AMT policy edit box.
@@ -14688,7 +14784,7 @@
                         intelAmtPolicy = "Fully Automatic";
                     }
                 }
-                x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1), ['col-md-2', 'col-md-10']);
+                x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
             }
 
             // Display device group note support
@@ -16142,7 +16238,7 @@
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() {
-            setModalContent('xxAddAgent', 'Upload File', '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none/><span id=p5confirmOverwriteSpan style=display:none><br/><label><input type=checkbox class="form-check-input me-2" id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></ >');
+            setModalContent('xxAddAgent', 'Upload File', '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit class="btn btn-outline-success mt-2" style=display:none/><span id=p5confirmOverwriteSpan style=display:none><br/><label><input type=checkbox class="form-check-input me-2" id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></ >');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p5uploadFileEx);
             p5updateUploadDialogOk('p5uploadinput');
         }
@@ -19912,12 +20008,31 @@
         function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
 
+        var backStack = [];
         function goBack() {
             setSessionActivity();
             if (xxdialogMode || (goBackStack.length == 0)) return;
             if (fullscreen) { deskToggleFull(); }
             go(goBackStack.pop());
             goBackStack.pop();
+        }
+
+        function goForward(id) { if (xxdialogMode) return; backStack.push(id); goStack(); }
+        function goStack() {
+            if (backStack.length == 0) { go(2); return; }
+            var id = backStack[backStack.length - 1], idtype = id.split('/')[0];
+            if (idtype == 'node') { setupDeviceMenu(0); gotoDevice(id); }
+            if (idtype == 'mesh') { gotoMesh(id); }
+            if (idtype == 'devices') { go(1); }
+            if (idtype == 'account') { go(2); }
+            if (idtype == 'events') { go(3); }
+            if (idtype == 'users') { go(4); }
+            if (idtype == 'files') {
+                // Remind the user to add two factor authentication
+                if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }  
+                go(5);
+            }
+            if (idtype == 'server') { go(6); }
         }
 
         function go(x, event) {
@@ -20514,7 +20629,7 @@
         function getUrlVars() { var j, hash, vars = [], hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); for (var i = 0; i < hashes.length; i++) { j = hashes[i].indexOf('='); if (j > 0) { vars[hashes[i].substring(0, j)] = hashes[i].substring(j + 1, hashes[i].length); } } return vars; }
         //function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
-        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-4'}"><b> ${t} </b></div><div class="${classNames[1] || 'col-md-8'}"> ${v} </div></div>`; }
+        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b> ${t} </b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}"> ${v} </div></div>`; }
         function addHtmlFormFloating(t, v, classNames = []) { return `<div class="row mb-1"><div class="form-floating mb-3 ${classNames[0] || 'col-md-12'}"> ${v} <label class="${classNames[1] || 'ms-2'}"> ${t} </label></div></div>`; }
 
 
