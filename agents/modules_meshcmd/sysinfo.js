@@ -285,16 +285,10 @@ function macos_thermals()
     return (ret);
 }
 
-switch(process.platform)
-{
-    case 'linux':
-        module.exports = { cpuUtilization: linux_cpuUtilization, memUtilization: linux_memUtilization, thermals: linux_thermals };
-        break;
-    case 'win32':
-        module.exports = { cpuUtilization: windows_cpuUtilization, memUtilization: windows_memUtilization, thermals: windows_thermals };
-        break;
-    case 'darwin':
-        module.exports = { cpuUtilization: macos_cpuUtilization, memUtilization: macos_memUtilization, thermals: macos_thermals };
-        break;
-}
+const platformConfig = {
+    linux: { cpuUtilization: linux_cpuUtilization, memUtilization: linux_memUtilization, thermals: linux_thermals },
+    win32: { cpuUtilization: windows_cpuUtilization, memUtilization: windows_memUtilization, thermals: windows_thermals },
+    darwin: { cpuUtilization: macos_cpuUtilization, memUtilization: macos_memUtilization, thermals: macos_thermals }
+};
 
+module.exports = platformConfig[process.platform];
