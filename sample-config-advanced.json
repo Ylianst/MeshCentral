@@ -106,13 +106,14 @@
     "_runOnServerUpdated": "c:\\tmp\\mcupdate.bat",
     "_runOnServerError": "c:\\tmp\\mcerror.bat",
     "_log": "main,web,webrequest,cert",
+    "_debug": "main,web,webrequest,cert",
     "_syslog": "meshcentral",
     "_syslogauth": "meshcentral-auth",
     "_syslogjson": "meshcentral-json",
     "_syslogtcp": "localhost:514",
     "_webrtcConfig": {
       "iceServers": [
-        { "urls": "stun:stun.services.mozilla.com" },
+        { "urls": "stun:stun.cloudflare.com:3478" },
         { "urls": "stun:stun.l.google.com:19302" }
       ]
     },
@@ -189,6 +190,7 @@
       "title2": "Servername",
       "_titlePicture": "title-sample.png",
       "_loginPicture": "title-sample.png",
+      "_pwaLogo": "title-sample.png",
       "_rootRedirect": "https://www.youtube.com/watch?v=Gs069dndIYk",
       "_mobileSite": false,
       "_maxDeviceView": 1000,
@@ -338,7 +340,8 @@
         "terminal": "{0} requesting remote terminal access. Grant access?",
         "files": "{0} requesting remote files access. Grant access?",
         "consentTimeout": 30,
-        "autoAcceptOnTimeout": false
+        "autoAcceptOnTimeout": false,
+        "oldStyle": true
       },
       "_notificationMessages": {
         "title": "MeshCentral",

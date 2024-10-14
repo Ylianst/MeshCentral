@@ -90,10 +90,55 @@ If you're getting a `port 4433 is not available` error, this is because another 
 
 In general the problem is that you are running two MeshCentral instances at the same time. Probably one as a background Windows Service and one in the command line. Which ever instance can grab port 4433 will have a running MPS and CIRA should work, but the second instance will not have port 4433 and CIRA will not work.
 
+### Running Meshcentral server in debug mode
+
+Debug more will cause MeshCentral to output a lot of debug messages to the console. To display all debug messages, run MeshCentral like this:
+
+```bash
+node node_modules/meshcentral --debug
+```
+
+A more practical way to run the debug command it to specify what messages you want printed out using a comma seperated list, for example:
+
+```bash
+node node_modules/meshcentral --debug web,amt,mps
+```
+
+Here is the list of all debug options:
+
+```
+cookie       - Cookie encoder
+dispatch     - Message Dispatcher
+main         - Main Server Messages
+peer         - MeshCentral Server Peering
+agent        - MeshAgent traffic
+agentupdate  - MeshAgent update
+cert         - Server Certificate
+db           - Server Database
+email        - Email/SMS/Push Traffic
+web          - Web Server
+webrequest   - Web Server Requests
+relay        - Web Socket Relay
+httpheaders  - Web Server HTTP Headers
+authlog      - User Authentication Log
+amt          - Intel AMT
+webrelay     - Connection Relay
+mps          - CIRA Server
+mpscmd       - CIRA Server Commands
+```
+
+You can also specify the `debug` option in the config.json file in the `settings` section. For example:
+
+```
+"settings": {
+  "debug": "web,amt,mps"
+}
+```
+
+
 ### Enabling trace in your browser Dev Tools
 
-`Trace=1` as a parameter in chrome dev tools for debugging
-
+You can enable browser console tracing by adding `trace=1` as a parameter to the URL of the MeshCentral main web page. For example `https://myserver.com/?trace=1`. Once present, open the browser's console window to see all web client tracing messages.
 
 To log all database queries, change log_statement in /etc/postgresql/13/main/postgresql.conf
 

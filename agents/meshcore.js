@@ -1158,6 +1158,7 @@ function handleServerCommand(data) {
                                 tunnel.soptions = data.soptions;
                                 tunnel.consentTimeout = (tunnel.soptions && tunnel.soptions.consentTimeout) ? tunnel.soptions.consentTimeout : 30;
                                 tunnel.consentAutoAccept = (tunnel.soptions && (tunnel.soptions.consentAutoAccept === true));
+                                tunnel.oldStyle = (tunnel.soptions && tunnel.soptions.oldStyle) ? tunnel.soptions.oldStyle : false;
                                 tunnel.tcpaddr = data.tcpaddr;
                                 tunnel.tcpport = data.tcpport;
                                 tunnel.udpaddr = data.udpaddr;
@@ -2616,11 +2617,14 @@ function kvm_tunnel_consentpromise_closehandler()
 
 function kvm_consentpromise_rejected(e)
 {
-    // User Consent Denied/Failed
-    this.ws._consentpromise = null;
-    MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-    this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-    this.ws = null;
+    if (this.ws) {
+        if(this.ws.httprequest){ // User Consent Denied
+            MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+        } else { } // Connection was closed server side, maybe log some messages somewhere?
+        this.ws._consentpromise = null;
+        this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+        this.ws = null;
+    } else { } // no websocket, maybe log some messages somewhere?
 }
 function kvm_consentpromise_resolved(always)
 {
@@ -2715,11 +2719,14 @@ function files_consentpromise_resolved(always)
 }
 function files_consentpromise_rejected(e)
 {
-    // User Consent Denied/Failed
-    this.ws._consentpromise = null;
-    MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
-    this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-    this.ws = null;
+    if (this.ws) {
+        if(this.ws.httprequest){ // User Consent Denied
+            MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+        } else { } // Connection was closed server side, maybe log some messages somewhere?
+        this.ws._consentpromise = null;
+        this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+        this.ws = null;
+    } else { } // no websocket, maybe log some messages somewhere?
 }
 function files_tunnel_endhandler()
 {
@@ -2830,7 +2837,9 @@ function onTunnelData(data)
                     if (process.platform == 'win32')
                     {
                         var enhanced = false;
-                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        if (this.httprequest.oldStyle === false) {
+                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        }
                         if (enhanced)
                         {
                             var ipr = server_getUserImage(this.httprequest.userid);
@@ -2867,10 +2876,13 @@ function onTunnelData(data)
                             this.retPromise._res();
                         },
                         function (e) {
-                            // Denied
-                            MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
-                            this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-                            this.retPromise._consent = null;
+                            if (this.retPromise.that) {
+                                if(this.retPromise.that.httprequest){ // User Consent Denied
+                                    MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+                                } else { } // Connection was closed server side, maybe log some messages somewhere?
+                                this.retPromise._consent = null;
+                                this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+                            } else { } // no websocket, maybe log some messages somewhere?
                             this.retPromise._rej(e.toString());
                         });
                 }
@@ -2991,7 +3003,9 @@ function onTunnelData(data)
                     if (process.platform == 'win32')
                     {
                         var enhanced = false;
-                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        if (this.httprequest.oldStyle === false) {
+                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        }
                         if (enhanced)
                         {
                             var ipr = server_getUserImage(this.httprequest.userid);
@@ -3144,7 +3158,9 @@ function onTunnelData(data)
                     if (process.platform == 'win32')
                     {
                         var enhanced = false;
-                        try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        if (this.httprequest.oldStyle === false) {
+                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+                        }
                         if (enhanced)
                         {
                             var ipr = server_getUserImage(this.httprequest.userid);
@@ -3337,7 +3353,7 @@ function onTunnelData(data)
                             if (cmd.sub == 'startack') { sendNextBlock = ((typeof cmd.ack == 'number') ? cmd.ack : 8); } else if (cmd.sub == 'stop') { delete this.filedownload; } else if (cmd.sub == 'ack') { sendNextBlock = 1; }
                         }
                         // Send the next download block(s)
-                        while (sendNextBlock > 0) {
+                        if (sendNextBlock > 0) {
                             sendNextBlock--;
                             var buf = Buffer.alloc(16384);
                             var len = fs.readSync(this.filedownload.f, buf, 4, 16380, null);
@@ -5772,6 +5788,7 @@ function handleServerConnection(state) {
 
         // Update the server on with basic info, logged in users and more advanced stuff, like Intel ME and Network Settings
         meInfoStr = null;
+        LastPeriodicServerUpdate = null;
         sendPeriodicServerUpdate(null, true);
         if (selfInfoUpdateTimer == null) {
             selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); // 20 minutes

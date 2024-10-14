@@ -997,6 +997,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (typeof domain.consentmessages.files == 'string') { command.soptions.consentMsgFiles = domain.consentmessages.files; }
                             if ((typeof domain.consentmessages.consenttimeout == 'number') && (domain.consentmessages.consenttimeout > 0)) { command.soptions.consentTimeout = domain.consentmessages.consenttimeout; }
                             if (domain.consentmessages.autoacceptontimeout === true) { command.soptions.consentAutoAccept = true; }
+                            if (domain.consentmessages.oldstyle === true) { command.soptions.oldStyle = true; }
                         }
                         if (typeof domain.notificationmessages == 'object') {
                             if (typeof domain.notificationmessages.title == 'string') { command.soptions.notifyTitle = domain.notificationmessages.title; }
@@ -2966,13 +2967,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         return;
                                     }
 
-                                    // Send the commands to the agent
-                                    var agent = parent.wsagents[node._id];
-                                    if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
-                                        try { agent.send(JSON.stringify({ action: 'msg', type: 'console', value: command.cmds, rights: rights, sessionid: ws.sessionId })); } catch (ex) { }
+                                    var theCommand = { action: 'msg', type: 'console', value: command.cmds, rights: rights, sessionid: ws.sessionId };
+                                    if (parent.parent.multiServer != null) { // peering setup
+                                        parent.parent.multiServer.DispatchMessage({ action: 'agentCommand', nodeid: node._id, command: theCommand});
                                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
                                     } else {
-                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                        // Send the commands to the agent
+                                        var agent = parent.wsagents[node._id];
+                                        if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                            try { agent.send(JSON.stringify(theCommand)); } catch (ex) { }
+                                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                                        } else {
+                                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                        }
                                     }
                                 } else {
                                     // This is a standard (bash/shell/powershell) command.
@@ -2983,40 +2990,50 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         return;
                                     }
 
-                                    // Get the agent and run the commands
-                                    var agent = parent.wsagents[node._id];
-                                    if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
-                                        // Check if this agent is correct for this command type
-                                        // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
-                                        var commandsOk = false;
-                                        if ((agent.agentInfo.agentId > 0) && (agent.agentInfo.agentId < 5)) {
-                                            // Windows Agent
-                                            if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
-                                            else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
-                                        } else {
-                                            // Non-Windows Agent
-                                            if (command.type == 3) { commandsOk = true; }
-                                            else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
-                                        }
-                                        if (commandsOk == true) {
+                                    if (typeof command.reply != 'boolean') command.reply = false;
+                                    if (typeof command.responseid != 'string') command.responseid = null;
+                                    var msgid = 24; // "Running commands"
+                                    if (command.type == 1) { msgid = 99; } // "Running commands as user"
+                                    if (command.type == 2) { msgid = 100; } // "Running commands as user if possible"
+                                    // Check if this agent is correct for this command type
+                                    // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
+                                    var commandsOk = false;
+                                    if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                                        // Windows Agent
+                                        if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
+                                        else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
+                                    } else {
+                                        // Non-Windows Agent
+                                        if (command.type == 3) { commandsOk = true; }
+                                        else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
+                                    }
+                                    if (commandsOk == true) {
+                                        var theCommand = { action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser, reply: command.reply, responseid: command.responseid };
+                                        if (parent.parent.multiServer != null) { // peering setup
                                             // Send the commands to the agent
-                                            if (typeof command.reply != 'boolean') command.reply = false;
-                                            if (typeof command.responseid != 'string') command.responseid = null;
-                                            try { agent.send(JSON.stringify({ action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser, reply: command.reply, responseid: command.responseid })); } catch (ex) { }
+                                            parent.parent.multiServer.DispatchMessage({ action: 'agentCommand', nodeid: node._id, command: theCommand});
                                             if (command.responseid != null && command.reply == false) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
-
                                             // Send out an event that these commands where run on this device
                                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
-                                            var msgid = 24; // "Running commands"
-                                            if (command.type == 1) { msgid = 99; } // "Running commands as user"
-                                            if (command.type == 2) { msgid = 100; } // "Running commands as user if possible"
                                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
-                                            parent.parent.DispatchEvent(targets, obj, event);
-                                        } else {
-                                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
+                                            parent.parent.multiServer.DispatchEvent(targets, obj, event);
+                                        } else { // normal setup
+                                            // Get the agent and run the commands
+                                            var agent = parent.wsagents[node._id];
+                                            if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                                // Send the commands to the agent
+                                                try { agent.send(JSON.stringify(theCommand)); } catch (ex) { }
+                                                if (command.responseid != null && command.reply == false) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                                                // Send out an event that these commands where run on this device
+                                                var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                                parent.parent.DispatchEvent(targets, obj, event);
+                                            } else {
+                                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                            }
                                         }
                                     } else {
-                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
+                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
                                     }
                                 }
                             });
@@ -3129,8 +3146,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
 
                                 if ((command.actiontype >= 300) && (command.actiontype < 400)) {
-                                    if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype < 310) && (command.actiontype > 312)) return; // Invalid action type.
-                                    // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
+                                    if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype < 310) && (command.actiontype > 316)) return; // Invalid action type.
+                                    // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL, 15 = Power on to PXE, 16 = Reset to PXE
                                     parent.parent.DispatchEvent('*', obj, { action: 'amtpoweraction', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, actiontype: command.actiontype - 300 });
                                 } else {
                                     if ((command.actiontype < 2) && (command.actiontype > 4)) return; // Invalid action type.
@@ -4632,6 +4649,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.values != null) { message.values = command.values; }
                     if (typeof command.logmsg == 'string') { message.msg = command.logmsg; } else { message.nolog = 1; }
                     parent.parent.DispatchEvent(['*', user._id], obj, message);
+                }
+                
+                if (parent.parent.pluginHandler != null) // If the plugin's are not supported, reject this command.
+                {
+                    command.userid = user._id;
+                    try {
+                        for( var pluginName in parent.parent.pluginHandler.plugins)
+                            if( typeof parent.parent.pluginHandler.plugins[pluginName].uiCustomEvent === 'function' )
+                                parent.parent.pluginHandler.plugins[pluginName].uiCustomEvent(command, obj);
+                    } catch (ex) { console.log('Error loading plugin handler (' + ex + ')'); }
                 }
                 break;
             }
@@ -6567,7 +6594,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
         if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) return; // Asking for a device group that is not allowed
 
-        const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126];
+        const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126, 144];
         switch (command.type) {
             case 1: {
                 remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter);
@@ -7687,6 +7714,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Session length
                 if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { entry.length = docs[i].msgArgs[3]; }
                 else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { entry.length = docs[i].msgArgs[0]; }
+                else if ((docs[i].msgid == 144) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[1] == 'number')) { entry.length = docs[i].msgArgs[1]; }
 
                 if (command.groupBy == 1) { // Add entry to per user
                     if (data.groups[docs[i].userid] == null) { data.groups[docs[i].userid] = { entries: [] }; }
@@ -7753,6 +7781,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Session length
                 if (((docs[i].msgid >= 10) && (docs[i].msgid <= 12)) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[3] == 'number')) { userEntry.length += docs[i].msgArgs[3]; }
                 else if ((docs[i].msgid >= 122) && (docs[i].msgid <= 126) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[0] == 'number')) { userEntry.length += docs[i].msgArgs[0]; }
+                else if ((docs[i].msgid == 144) && (docs[i].msgArgs != null) && (typeof docs[i].msgArgs == 'object') && (typeof docs[i].msgArgs[1] == 'number')) { userEntry.length += docs[i].msgArgs[1]; }
 
                 // Set the user entry
                 userEntries[docs[i].userid] = userEntry;

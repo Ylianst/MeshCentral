@@ -488,11 +488,6 @@
           "default": true,
           "description": "When enabled, MeshCentral will automatically monitor and manage Intel AMT devices."
         },
-        "orphanAgentUser": {
-          "type": "string",
-          "default": null,
-          "description": "If an agent attempts to connect to a unknown device group, automatically create a new device group and grant access to the specified user. Example: admin"
-        },
         "agentIdleTimeout": {
           "type": "integer",
           "minimum": 1,
@@ -744,9 +739,15 @@
           "type": "boolean",
           "default": false
         },
+        "debug": {
+          "type": "string",
+          "default": null,
+          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to the MeshCentral console. Setting it to '*' will output all logs."
+        },
         "log": {
           "type": "string",
-          "default": null
+          "default": null,
+          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to a file named 'log.txt' located inside the 'meshcentral-data' folder. Setting it to '*' will output all logs."
         },
         "syslog": {
           "type": "string",
@@ -767,7 +768,7 @@
         },
         "webrtcConfig": {
           "type": "object",
-          "description": "The STUN servers used for WebRTC, if not specified the Google and Mozilla servers and used when the server is not in LAN mode.",
+          "description": "The STUN/TURN servers used for WebRTC, if not specified the Google and Cloudflare STUN servers are used when the server is not in LAN mode.",
           "properties": {
             "iceServers": {
               "type": "array",
@@ -776,7 +777,8 @@
                 "type": "object",
                 "properties": {
                   "urls": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "STUN/TURN URLs, examples are stun:stun3.l.google.com:19302 or turn:openrelay.metered.ca:443"
                   }
                 },
                 "required": [
@@ -846,8 +848,9 @@
             },
             "zipPassword": {
               "type": "string",
-              "default": null,
-              "description": "When specified, the ZIP backups will be password protected with the zipPassword"
+              "default": "",
+              "minLength": 1,
+              "description": "When specified, the ZIP backups will be password protected with the zipPassword and the password cannot be a blank value"
             },
             "backupPath": {
               "type": "string",
@@ -1110,6 +1113,11 @@
             "default": null,
             "description": "Web site .png logo file placed in meshcentral-data that used on the login page when sitestyle is 2."
           },
+          "pwaLogo": {
+            "type": "string",
+            "default": null,
+            "description": "Web site .png logo file that is 512x512 in size placed in meshcentral-data that is used for PWA installs on iOS and Android."
+          },
           "rootRedirect": {
             "type": "string",
             "default": null,
@@ -1119,6 +1127,11 @@
             "type": "boolean",
             "default": true,
             "description": "When set to false, this setting will disable the mobile site."
+          },
+          "orphanAgentUser": {
+            "type": "string",
+            "default": null,
+            "description": "If an agent attempts to connect to a unknown device group, automatically create a new device group and grant access to the specified user. Example: admin"
           },
           "maxDeviceView": {
             "type": "integer",
@@ -1868,6 +1881,11 @@
                 "type": "boolean",
                 "default": false,
                 "description": "If true, user consent is accepted after the timeout."
+              },
+              "oldStyle": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent will be shown in an old style prompt box rather than the new style consent-box."
               }
             }
           },
@@ -2225,12 +2243,12 @@
               "TlsConnections": {
                 "type": "boolean",
                 "default": true,
-                "description": "When set to false, MeshCentral will use TLS to connect to Intel AMT, this is not recommended."
+                "description": "When set to false, MeshCentral will NOT use TLS to connect to Intel AMT, this is not recommended."
               },
               "TlsAcmActivation": {
                 "type": "boolean",
                 "default": false,
-                "description": "When set to false, MeshCentral will not attempt a TLS ACM activation on Intel AMT v14+"
+                "description": "When set to true, MeshCentral will attempt a TLS ACM activation on Intel AMT v14+"
               },
               "AdminAccounts": {
                 "description": "List of username and passwords to try when connecting to Intel AMT.",

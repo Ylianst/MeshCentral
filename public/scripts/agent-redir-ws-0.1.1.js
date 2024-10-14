@@ -23,6 +23,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
     obj.ctrlMsgAllowed = true;
     obj.attemptWebRTC = false;
     obj.webRtcActive = false;
+    obj.webrtcconfig = null;
     obj.webSwitchOk = false;
     obj.webchannel = null;
     obj.webrtc = null;
@@ -158,7 +159,7 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
 
                 if (obj.attemptWebRTC == true) {
                     // Try to get WebRTC setup
-                    var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+                    var configuration = obj.webrtcconfig; //{ "iceServers": [ { 'urls': 'stun:stun.cloudflare.com:3478' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
                     if (typeof RTCPeerConnection !== 'undefined') { obj.webrtc = new RTCPeerConnection(configuration); }
                     else if (typeof webkitRTCPeerConnection !== 'undefined') { obj.webrtc = new webkitRTCPeerConnection(configuration); }
                     if ((obj.webrtc != null) && (obj.webrtc.createDataChannel)) {

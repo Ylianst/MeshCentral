@@ -217,6 +217,13 @@
             <div id=dialog2 style="">
                 <div id=id_dialogOptions></div>
             </div>
+            <div id=dialog4 style="">
+                <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
+                <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
+                <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                <input id="d4LineBreakButton" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
+                <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
+            </div>
             <div id=dialog7 style="">
                 <div id="d7meshkvm">
                     <h4>Agent Remote Desktop</h4>
@@ -339,6 +346,16 @@
             setupDesktop();
             setupTerminal();
             setupFiles();
+
+            // Set the file editor
+            d4EditWrapVal = Number(getstore('editorWrap', 0));
+            d4EditSizeVal = Number(getstore('editorSize', 0));
+            d4EditEncodingVal = Number(getstore('editorEncoding', 0));
+            d4EditLineBreakVal = Number(getstore('editorLineBreak', 0));
+            d4ToggleWrap(true);
+            d4ToggleSize(true);
+            d4ToggleEncoding(true);
+            d4ToggleLineBreak(true);
 
             // Set the document title
             if (nodeName.length > 0) { document.title += ' - ' + nodeName; }
@@ -539,7 +556,7 @@
                             } else if ((data.action == 'present') && (webRtcDesktop == null)) {
                                 // Setup WebRTC channel
                                 webRtcDesktop = { platform: data.platform };
-                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.cloudflare.com:3478' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
                                 if (typeof RTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new RTCPeerConnection(configuration); }
                                 else if (typeof webkitRTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new webkitRTCPeerConnection(configuration); }
 
@@ -812,6 +829,7 @@
 
         // Enter browser fullscreen
         function enterBrowserFullscreen(elem) {
+            if (navigator.keyboard && navigator.keyboard.lock) { navigator.keyboard.lock(); }
             if (elem.requestFullscreen) { elem.requestFullscreen(); }
             else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
             else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
@@ -824,6 +842,7 @@
             else if (document.msExitFullscreen) { document.msExitFullscreen(); }
             else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
             else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            if (navigator.keyboard && navigator.keyboard.unlock) { navigator.keyboard.unlock(); }
         }
 
         // Return true if the browser is fullscreen. This is a delayed method that will return true/false late. Not very useful.
@@ -2028,6 +2047,8 @@
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
                     setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    QV('d4EncodingButton', true);
+                    QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -2044,6 +2065,9 @@
 
         var d4EditWrapVal = 0;
         var d4EditSizeVal = 0;
+        var d4EditEncodingVal = 0;
+        var d4EditLineBreakVal = 0;
+
         function d4ToggleWrap(update) {
             if (!update) { d4EditWrapVal = ++d4EditWrapVal % 2; }
             Q('d4WrapButton').value = ["Wrap: ON", "Wrap: OFF"][d4EditWrapVal];
@@ -2059,8 +2083,38 @@
             putstore('editorSize', d4EditSizeVal);
         }
 
+        function d4ToggleEncoding(update) {
+            if (!update) {
+                d4EditEncodingVal = ++d4EditEncodingVal % 2;
+                if (d4EditEncodingVal == 1) {
+                    Q('d4editorarea').value = decode_utf8(Q('d4editorarea').value);
+                } else {
+                    Q('d4editorarea').value = encode_utf8(Q('d4editorarea').value);
+                }
+            }
+            Q('d4EncodingButton').value = ["Encoding: RAW","Encoding: UTF8"][d4EditEncodingVal];
+            putstore('editorEncoding', d4EditEncodingVal);
+        }
+
+        function d4ToggleLineBreak(update) {
+            if (!update) {
+                d4EditLineBreakVal = ++d4EditLineBreakVal % 3;
+            }
+            Q('d4LineBreakButton').value = ["Line Break: Windows (CR LF)","Line Break: Linux (LF)","Line Break: Mac (CR)"][d4EditLineBreakVal];
+            putstore('editorLineBreak', d4EditLineBreakVal);
+        }
+
         function p13editSaveBack(b, tag) {
-            var data = new TextEncoder().encode(Q('d4editorarea').value);
+            var data;
+            var value = Q('d4editorarea').value;
+            value = d4EditLineBreakVal === 0 ? value.replace(/\r?\n|\r/g, '\r\n') : // Windows
+                    d4EditLineBreakVal === 2 ? value.replace(/\r\n|\n/g, '\r') : // Mac
+                    value.replace(/\r\n|\r/g, '\n'); // Linux
+            if (d4EditEncodingVal == 1) {
+                data = new TextEncoder().encode(value); // UTF8 encoding
+            } else {
+                data = new TextEncoder().encode(decode_utf8(value)); // RAW encoding
+            }
             p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
         }
 
@@ -2191,7 +2245,7 @@
             if (start >= data.byteLength) {
                 files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
             } else {
-                var end = uploadFile.xptr + 65565;
+                var end = uploadFile.xptr + 65536;
                 if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
                 var dataslice = new Uint8Array(data.slice(start, end))
                 if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
@@ -2258,6 +2312,27 @@
             xxcurrentView = x;
         }
 
+        function putstore(name, val) {
+            try {
+                if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return;
+                if (val == null) { localStorage.removeItem(name); } else { localStorage.setItem(name, val); }
+            } catch (ex) { }
+            if (name[0] != '_') {
+                var s = {};
+                try {
+                    for (var i = 0, len = localStorage.length; i < len; ++i) {
+                        var k = localStorage.key(i);
+                        if (k[0] != '_') {
+                            s[k] = localStorage.getItem(k);
+                            if ((k != 'desktopsettings') && (k != 'stars') && (k != 'deskKeyShortcuts') && (k != 'deskStrings') && (k != 'cmdopt') && (typeof s[k] == 'string') && (s[k].length > 64)) { delete s[k]; }
+                        }
+                    }
+                } catch (ex) {}
+                // meshserver.send({ action: 'userWebState', state: JSON.stringify(s) });
+            }
+        }
+
+        function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
         function messagebox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t, 1); }
         function statusbox(t, m) { setSessionActivity(); QH('id_dialogMessage', m); setDialogMode(1, t); }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }

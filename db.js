@@ -417,14 +417,66 @@ module.exports.CreateDB = function (parent, func) {
     };
 
     // Get encryption key
-    obj.getEncryptDataKey = function (password) {
+    obj.getEncryptDataKey = function (password, salt, iterations) {
         if (typeof password != 'string') return null;
-        return parent.crypto.createHash('sha384').update(password).digest("raw").slice(0, 32);
+        let key;
+        try {
+            key = parent.crypto.pbkdf2Sync(password, salt, iterations, 32, 'sha384');
+        } catch (ex) {
+            // If this previous call fails, it's probably because older pbkdf2 did not specify the hashing function, just use the default.
+            key = parent.crypto.pbkdf2Sync(password, salt, iterations, 32);
+        }
+        return key
     }
 
     // Encrypt data 
     obj.encryptData = function (password, plaintext) {
-        var key = obj.getEncryptDataKey(password);
+        let encryptionVersion = 0x01;
+        let iterations = 100000
+        const iv = parent.crypto.randomBytes(16);
+        var key = obj.getEncryptDataKey(password, iv, iterations);
+        if (key == null) return null;
+        const aes = parent.crypto.createCipheriv('aes-256-gcm', key, iv);
+        var ciphertext = aes.update(plaintext);
+        let versionbuf = Buffer.allocUnsafe(2);
+        versionbuf.writeUInt16BE(encryptionVersion);
+        let iterbuf = Buffer.allocUnsafe(4);
+        iterbuf.writeUInt32BE(iterations);
+        let encryptedBuf = aes.final();
+        ciphertext = Buffer.concat([versionbuf, iterbuf, aes.getAuthTag(), iv, ciphertext, encryptedBuf]);
+        return ciphertext.toString('base64');
+    }
+
+    // Decrypt data 
+    obj.decryptData = function (password, ciphertext) {
+        // Adding an encryption version lets us avoid try catching in the future
+        let ciphertextBytes = Buffer.from(ciphertext, 'base64');
+        let encryptionVersion = ciphertextBytes.readUInt16BE(0);
+        try {
+            switch (encryptionVersion) {
+                case 0x01:
+                    let iterations = ciphertextBytes.readUInt32BE(2);
+                    let authTag = ciphertextBytes.slice(6, 22);
+                    const iv = ciphertextBytes.slice(22, 38);
+                    const data = ciphertextBytes.slice(38);
+                    let key = obj.getEncryptDataKey(password, iv, iterations);
+                    if (key == null) return null;
+                    const aes = parent.crypto.createDecipheriv('aes-256-gcm', key, iv);
+                    aes.setAuthTag(authTag);
+                    let plaintextBytes = Buffer.from(aes.update(data));
+                    plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
+                    return plaintextBytes;
+                default:
+                    return obj.oldDecryptData(password, ciphertextBytes);
+            }
+        } catch (ex) { return obj.oldDecryptData(password, ciphertextBytes); }
+    }
+
+    // Encrypt data 
+    // The older encryption system uses CBC without integraty checking.
+    // This method is kept only for testing
+    obj.oldEncryptData = function (password, plaintext) {
+        let key = parent.crypto.createHash('sha384').update(password).digest('raw').slice(0, 32);
         if (key == null) return null;
         const iv = parent.crypto.randomBytes(16);
         const aes = parent.crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -433,16 +485,17 @@ module.exports.CreateDB = function (parent, func) {
         return ciphertext.toString('base64');
     }
 
-    // Decrypt data 
-    obj.decryptData = function (password, ciphertext) {
+    // Decrypt data
+    // The older encryption system uses CBC without integraty checking.
+    // This method is kept only to convert the old encryption to the new one.
+    obj.oldDecryptData = function (password, ciphertextBytes) {
+        if (typeof password != 'string') return null;
         try {
-            var key = obj.getEncryptDataKey(password);
-            if (key == null) return null;
-            const ciphertextBytes = Buffer.from(ciphertext, 'base64');
             const iv = ciphertextBytes.slice(0, 16);
             const data = ciphertextBytes.slice(16);
+            let key = parent.crypto.createHash('sha384').update(password).digest('raw').slice(0, 32);
             const aes = parent.crypto.createDecipheriv('aes-256-cbc', key, iv);
-            var plaintextBytes = Buffer.from(aes.update(data));
+            let plaintextBytes = Buffer.from(aes.update(data));
             plaintextBytes = Buffer.concat([plaintextBytes, aes.final()]);
             return plaintextBytes;
         } catch (ex) { return null; }
@@ -829,7 +882,7 @@ module.exports.CreateDB = function (parent, func) {
         if (global.TextEncoder == null) { global.TextEncoder = require('util').TextEncoder; }
         if (global.TextDecoder == null) { global.TextDecoder = require('util').TextDecoder; }
 
-        require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        require('mongodb').MongoClient.connect(parent.args.mongodb, { useNewUrlParser: true, useUnifiedTopology: true, enableUtf8Validation: false }, function (err, client) {
             if (err != null) { console.log("Unable to connect to database: " + err); process.exit(); return; }
             Datastore = client;
             parent.debug('db', 'Connected to MongoDB database...');
@@ -1482,9 +1535,9 @@ module.exports.CreateDB = function (parent, func) {
             obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) {
-                sqlDbQuery('SELECT doc FROM main WHERE (type = \'node\') AND (extraex IS NOT NULL)', null, function (err, docs) {
+                sqlDbQuery('SELECT doc FROM main WHERE (type = \'node\') AND (extraex IS NULL)', null, function (err, docs) {
                     if (docs != null) { for (var i in docs) { if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
-                    var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null) { r.push(docs[i]); } } } func(err, r);
+                    var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null && docs[i].intelamt != null) { r.push(docs[i]); } } } func(err, r);
                 });
             };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) {
@@ -2038,7 +2091,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.DeleteDomain = function (domain, func) { sqlDbQuery('DELETE FROM main WHERE domain = $1', [domain], func); };
             obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
-            obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM main WHERE (type = \'node\') AND (extraex IS NOT NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null) { r.push(docs[i]); } } } func(err, r); }); };
+            obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM main WHERE (type = \'node\') AND (extraex IS NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null && docs[i].intelamt != null) { r.push(docs[i]); } } } func(err, r); }); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extraex = $2', [domainid, 'uuid/' + uuid], func); };
             obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { sqlDbExec('SELECT COUNT(id) FROM main WHERE domain = $1 AND type = $2', [domainid, type], function (err, response) { func((response['COUNT(id)'] == null) || (response['COUNT(id)'] > max), response['COUNT(id)']) }); } }
 
@@ -2298,7 +2351,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.DeleteDomain = function (domain, func) { sqlDbQuery('DELETE FROM main WHERE domain = ?', [domain], func); };
             obj.SetUser = function (user) { if (user == null) return; if (user.subscriptions != null) { var u = Clone(user); if (u.subscriptions) { delete u.subscriptions; } obj.Set(u); } else { obj.Set(user); } };
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
-            obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM main WHERE (type = "node") AND (extraex IS NOT NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null) { r.push(docs[i]); } } } func(err, r); }); };
+            obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM main WHERE (type = "node") AND (extraex IS NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null && docs[i].intelamt != null) { r.push(docs[i]); } } } func(err, r); }); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extraex = ?', [domainid, 'uuid/' + uuid], func); };
             obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { sqlDbExec('SELECT COUNT(id) FROM main WHERE domain = ? AND type = ?', [domainid, type], function (err, response) { func((response['COUNT(id)'] == null) || (response['COUNT(id)'] > max), response['COUNT(id)']) }); } }
 
@@ -3039,25 +3092,42 @@ module.exports.CreateDB = function (parent, func) {
             r += 'No Settings/AutoBackup\r\n';
         } else {
             if (parent.config.settings.autobackup.backupintervalhours != null) {
+                r += 'Backup Interval (Hours): ';
                 if (typeof parent.config.settings.autobackup.backupintervalhours != 'number') { r += 'Bad backupintervalhours type\r\n'; }
-                else { r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n'; }
+                else { r += parent.config.settings.autobackup.backupintervalhours + '\r\n'; }
             }
             if (parent.config.settings.autobackup.keeplastdaysbackup != null) {
+                r += 'Keep Last Backups (Days): ';
                 if (typeof parent.config.settings.autobackup.keeplastdaysbackup != 'number') { r += 'Bad keeplastdaysbackup type\r\n'; }
-                else { r += 'Keep Last Backups (Days): ' + parent.config.settings.autobackup.keeplastdaysbackup + '\r\n'; }
+                else { r += parent.config.settings.autobackup.keeplastdaysbackup + '\r\n'; }
             }
             if (parent.config.settings.autobackup.zippassword != null) {
-                if (typeof parent.config.settings.autobackup.zippassword != 'string') { r += 'Bad zippassword type\r\n'; }
-                else { r += 'ZIP Password Set\r\n'; }
+                r += 'ZIP Password: ';
+                if (typeof parent.config.settings.autobackup.zippassword != 'string') { r += 'Bad zippassword type, Backups will not be encrypted\r\n'; }
+                else if (parent.config.settings.autobackup.zippassword == "") { r += 'Blank, Backups will not be encrypted\r\n'; }
+                else { r += 'Set\r\n'; }
             }
             if (parent.config.settings.autobackup.mongodumppath != null) {
+                r += 'MongoDump Path: ';
                 if (typeof parent.config.settings.autobackup.mongodumppath != 'string') { r += 'Bad mongodumppath type\r\n'; }
-                else { r += 'MongoDump Path: ' + parent.config.settings.autobackup.mongodumppath + '\r\n'; }
+                else { r += parent.config.settings.autobackup.mongodumppath + '\r\n'; }
             }
             if (parent.config.settings.autobackup.mysqldumppath != null) {
+                r += 'MySqlDump Path: ';
                 if (typeof parent.config.settings.autobackup.mysqldumppath != 'string') { r += 'Bad mysqldump type\r\n'; }
-                else { r += 'MySqlDump Path: ' + parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
+                else { r += parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
             }
+            if (typeof parent.config.settings.autobackup.s3 == 'object') {
+                r += 'S3 Backups: Enabled\r\n';
+            }
+            if (typeof parent.config.settings.autobackup.webdav == 'object') {
+                r += 'WebDAV Backups: Enabled\r\n';
+            }
+            if (typeof parent.config.settings.autobackup.googledrive == 'object') {
+                r += 'Google Drive Backups: Enabled\r\n';
+            }
+
+
         }
 
         return r;
@@ -3323,8 +3393,14 @@ module.exports.CreateDB = function (parent, func) {
                         var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
                         if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
-                            archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                            try { 
+                                archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
+                                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                                if (func) { func('Creating encrypted ZIP'); }
+                            } catch (ex) { // registering encryption failed, so create without encryption
+                                archive = archiver('zip', { zlib: { level: 9 } });
+                                if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
+                            }
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
                         }
@@ -3362,8 +3438,14 @@ module.exports.CreateDB = function (parent, func) {
                         var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                         var archive = null;
                         if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
-                            archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                            try { 
+                                archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
+                                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                                if (func) { func('Creating encrypted ZIP'); }
+                            } catch (ex) { // registering encryption failed, so create without encryption
+                                archive = archiver('zip', { zlib: { level: 9 } });
+                                if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
+                            }
                         } else {
                             archive = archiver('zip', { zlib: { level: 9 } });
                         }
@@ -3389,8 +3471,14 @@ module.exports.CreateDB = function (parent, func) {
                 var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
                 var archive = null;
                 if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                    try { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); } catch (ex) { }
-                    archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                    try { 
+                        archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
+                        archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                        if (func) { func('Creating encrypted ZIP'); }
+                    } catch (ex) { // registering encryption failed, so create without encryption
+                        archive = archiver('zip', { zlib: { level: 9 } });
+                        if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
+                    }
                 } else {
                     archive = archiver('zip', { zlib: { level: 9 } });
                 }
@@ -3768,6 +3856,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Called when a node has changed
     function dbNodeChange(nodeChange, added) {
+        if (parent.webserver == null) return;
         common.unEscapeLinksFieldName(nodeChange.fullDocument);
         const node = performTypedRecordDecrypt([nodeChange.fullDocument])[0];
         parent.DispatchEvent(['*', node.meshid], obj, { etype: 'node', action: (added ? 'addnode' : 'changenode'), node: parent.webserver.CloneSafeNode(node), nodeid: node._id, domain: node.domain, nolog: 1 });

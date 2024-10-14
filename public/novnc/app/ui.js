@@ -18,6 +18,8 @@ import Keyboard from "../core/input/keyboard.js";
 import RFB from "../core/rfb.js";
 import * as WebUtil from "./webutil.js";
 
+const PAGE_TITLE = "noVNC";
+
 // String validation
 function isAlphaNumeric(str) { return (str.match(/^[A-Za-z0-9]+$/) != null); };
 function isSafeString(str) { return ((typeof str == 'string') && (str.indexOf('<') == -1) && (str.indexOf('>') == -1) && (str.indexOf('&') == -1) && (str.indexOf('"') == -1) && (str.indexOf('\'') == -1) && (str.indexOf('+') == -1) && (str.indexOf('(') == -1) && (str.indexOf(')') == -1) && (str.indexOf('#') == -1) && (str.indexOf('%') == -1)) };
@@ -89,7 +91,7 @@ const UI = {
         // insecure context
         if (!window.isSecureContext) {
             // FIXME: This gets hidden when connecting
-            UI.showStatus(_("HTTPS is required for full functionality"), 'error');
+            UI.showStatus(_("Running without HTTPS is not recommended, crashes or other issues are likely."), 'error');
         }
 
         // Try to fetch version number
@@ -1056,11 +1058,18 @@ const UI = {
 
 
 
+        try {
+            UI.rfb = new RFB(document.getElementById('noVNC_container'), urlargs.ws,
+                             { shared: UI.getSetting('shared'),
+                               repeaterID: UI.getSetting('repeaterID'),
+                               credentials: { password: password } });
+        } catch (exc) {
+            Log.Error("Failed to connect to server: " + exc);
+            UI.updateVisualState('disconnected');
+            UI.showStatus(_("Failed to connect to server: ") + exc, 'error');
+            return;
+        }
 
-        UI.rfb = new RFB(document.getElementById('noVNC_container'), urlargs.ws,
-                         { shared: UI.getSetting('shared'),
-                           repeaterID: UI.getSetting('repeaterID'),
-                           credentials: { password: password } });
         UI.rfb.addEventListener("connect", UI.connectFinished);
         UI.rfb.addEventListener("disconnect", UI.disconnectFinished);
         UI.rfb.addEventListener("serververification", UI.serverVerify);
@@ -1166,6 +1175,7 @@ const UI = {
             UI.showStatus(_("Disconnected"), 'normal');
         }
 
+        document.title = PAGE_TITLE;
 
         UI.openControlbar();
         UI.openConnectPanel();
@@ -1739,9 +1749,9 @@ const UI = {
     },
 
     updateDesktopName(e) {
-        // UI.desktopName = e.detail.name;
+        UI.desktopName = e.detail.name;
         // Display the desktop name in the document title
-        // document.title = e.detail.name + " - " + PAGE_TITLE;
+        document.title = e.detail.name + " - " + PAGE_TITLE;
     },
 
     bell(e) {
@@ -1778,20 +1788,8 @@ const UI = {
 
 // Set up translations
 const LINGUAS = ["cs", "de", "el", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt_BR", "ru", "sv", "tr", "zh_CN", "zh_TW"];
-l10n.setup(LINGUAS);
-if (l10n.language === "en" || l10n.dictionary !== undefined) {
-    UI.prime();
-} else {
-    fetch('app/locale/' + l10n.language + '.json')
-        .then((response) => {
-            if (!response.ok) {
-                throw Error("" + response.status + " " + response.statusText);
-            }
-            return response.json();
-        })
-        .then((translations) => { l10n.dictionary = translations; })
-        .catch(err => Log.Error("Failed to load translations: " + err))
-        .then(UI.prime);
-}
+l10n.setup(LINGUAS, "app/locale/")
+    .catch(err => Log.Error("Failed to load translations: " + err))
+    .then(UI.prime);
 
 export default UI;
