@@ -713,5 +713,36 @@
     ],
     "statusDescription": "Estat actual de l'agent",
     "description": "Feu clic als botons següents per instal·lar o desinstal·lar aquest programari de gestió remota. Quan s'instal·la, aquest programari s'executa en segon pla i permet que aquest ordinador sigui gestionat i controlat per un administrador remot."
+  },
+  "uk": {
+    "agent": "Агент",
+    "agentVersion": "Нова Версія",
+    "group": "Група Пристроїв",
+    "url": "URL Сервера",
+    "meshName": "Ім'я Групи",
+    "meshId": "Ідентифікатор групи",
+    "serverId": "Ідентифікатор серверу",
+    "setup": "Налаштувати",
+    "update": "Оновлення",
+    "install": "Інсталювати",
+    "uninstall": "Видалити",
+    "connect": "Підключитися",
+    "disconnect": "Відключити",
+    "cancel": "Скасувати",
+    "close": "Закрити",
+    "pressok": "Натисніть OK, щоб від'єднатися",
+    "elevation": "Для інсталяції/деінсталяції цього програмного забезпечення потрібні підвищені дозволи.",
+    "sudo": "Будь ласка, спробуйте ще раз за допомогою sudo.",
+    "ctrlc": "Натисніть Ctrl-C, щоб вийти",
+    "commands": "Ви можете запустити текстову версію з командного рядка за допомогою таких команд",
+    "graphicalerror": "Графічна версія цього інсталятора не може працювати в цій системі",
+    "zenity": "Спробуйте встановити/оновити Zenity та запустіть наново",
+    "status": [
+      "НЕ ВСТАНОВЛЕНО",
+      "ВИКОНУЄТЬСЯ",
+      "НЕ ПРАЦЮЄ"
+    ],
+    "statusDescription": "Поточний Статус Агента",
+    "description": "Клікнути кнопки нижче, щоб інсталювати або видалити це програмне забезпечення для віддаленого керування. Після інсталювання ця програма працює у фоновому режимі, що дозволяє віддаленому адміністратору керувати цим комп'ютером."
   }
 }

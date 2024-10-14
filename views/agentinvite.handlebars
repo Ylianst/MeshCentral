@@ -83,8 +83,10 @@
                     <button id="twintab32" class="tablinks" onclick="openTab(event, 'wintab32')">Windows 32bit</button>
                     <button id="twintabarm64" class="tablinks" onclick="openTab(event, 'wintabarm64')">Windows ARM 64bit</button>
                     <button id="tlinuxtab" class="tablinks" onclick="openTab(event, 'linuxtab')">Linux / BSD Scripts</button>
-                    <button id="tlinuxbinarytab" class="tablinks" onclick="openTab(event, 'linuxbinarytab')">Linux / BSD / macOS Binary</button>
-                    <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">MacOS</button>
+                    <button id="tlinuxbinarytab" class="tablinks" onclick="openTab(event, 'linuxbinarytab')">Linux / BSD / macOS Binary Installer</button>
+                    <button id="tmacostab64" class="tablinks" onclick="openTab(event, 'macostab64')">macOS x86-64bit</button>
+                    <button id="tmacostabarm64" class="tablinks" onclick="openTab(event, 'macostabarm64')">macOS ARM (64bit)</button>
+                    <button id="tmacostab" class="tablinks" onclick="openTab(event, 'macostab')">macOS (Universal)</button>
                     <button id="tandrotab" class="tablinks" onclick="openTab(event, 'androtab')">Android</button>
                     <button id="tassistab" class="tablinks" onclick="openTab(event, 'assistab')">Assistant</button>
                 </div>
@@ -126,8 +128,24 @@
 
                 <div id="linuxbinarytab" class="tabcontent" style="background-color:white;color:black"></div>
 
+                <div id="macostab64" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Apple&trade; MacOS x86-64bit</h3>
+                    <p><a id="macos64url">Download the installer here</a>, right click on it or press "control" and click on the file. Then select "Open" and follow the instructions.</p>
+                    <div style="text-align:center">
+                        <a id="macos64url2"><img src="images/macosagent.png" /></a>
+                    </div>
+                </div>
+
+                <div id="macostabarm64" class="tabcontent" style="background-color:white;color:black">
+                    <h3>Apple&trade; MacOS ARM 64bit</h3>
+                    <p><a id="macosarm64url">Download the installer here</a>, right click on it or press "control" and click on the file. Then select "Open" and follow the instructions.</p>
+                    <div style="text-align:center">
+                        <a id="macosarm64url2"><img src="images/macosagent.png" /></a>
+                    </div>
+                </div>
+
                 <div id="macostab" class="tabcontent" style="background-color:white;color:black">
-                    <h3>Apple&trade; MacOS</h3>
+                    <h3>Apple&trade; MacOS Universal</h3>
                     <p><a id="macosurl">Download the installer here</a>, right click on it or press "control" and click on the file. Then select "Open" and follow the instructions.</p>
                     <div style="text-align:center">
                         <a id="macosurl2"><img src="images/macosagent.png" /></a>
@@ -239,12 +257,16 @@
             var tab3 = (showAgents == 0) || (showAgents & 1); //winarm64
             var tab4 = (showAgents == 0) || (showAgents & 2); //linux
             var tab5 = (showAgents == 0) || (showAgents & 2); //linuxbinary
-            var tab6 = (showAgents == 0) || (showAgents & 4); //macos
-            var tab7 = (showAgents == 0) || (showAgents & 16); //android
-            var tab8 = (showAgents == 0) || (showAgents & 8); //assistant
-            if (tab8) { tabcount++; tabselect = 'assistab'; }
-            if (tab7) { tabcount++; tabselect = 'androtab'; }
-            if (tab6) { tabcount++; tabselect = 'macostab'; }
+            var tab6 = (showAgents == 0) || (showAgents & 4); //macos64
+            var tab7 = (showAgents == 0) || (showAgents & 4); //macosarm64
+            var tab8 = (showAgents == 0) || (showAgents & 4); //macos
+            var tab9 = (showAgents == 0) || (showAgents & 16); //android
+            var tab10 = (showAgents == 0) || (showAgents & 8); //assistant
+            if (tab10) { tabcount++; tabselect = 'assistab'; }
+            if (tab9) { tabcount++; tabselect = 'androtab'; }
+            if (tab8) { tabcount++; tabselect = 'macostab'; }
+            if (tab7) { tabcount++; tabselect = 'macostabarm64'; }
+            if (tab6) { tabcount++; tabselect = 'macostab64'; }
             if (tab5) { tabcount++; tabselect = 'linuxbinarytab'; }
             if (tab4) { tabcount++; tabselect = 'linuxtab'; }
             if (tab3) { tabcount++; tabselect = 'wintabarm64'; }
@@ -255,9 +277,11 @@
             QV('twintabarm64', tab3 && (tabcount > 1));
             QV('tlinuxtab', tab4 && (tabcount > 1));
             QV('tlinuxbinarytab', tab5 && (tabcount > 1));
-            QV('tmacostab', tab6 && (tabcount > 1));
-            QV('tandrotab', tab7 && (tabcount > 1));
-            QV('tassistab', tab8 && (tabcount > 1));
+            QV('tmacostab64', tab6 && (tabcount > 1));
+            QV('tmacostabarm64', tab7 && (tabcount > 1));
+            QV('tmacostab', tab8 && (tabcount > 1));
+            QV('tandrotab', tab9 && (tabcount > 1));
+            QV('tassistab', tab10 && (tabcount > 1));
 
             userInterfaceSelectMenu();
             setup();
@@ -419,10 +443,20 @@
             Q('winarm64url').href = url;
             Q('winarm64url2').href = url;
 
-            // MacOS Setup
+            // MacOS Universal Setup
             url = 'meshosxagent?id=10005&meshid=' + meshid;
             Q('macosurl').href = url;
             Q('macosurl2').href = url;
+            
+            // MacOS ARM 64 Setup
+            url = 'meshosxagent?id=29&meshid=' + meshid;
+            Q('macosarm64url').href = url;
+            Q('macosarm64url2').href = url;
+
+            // MacOS x86-64 Setup
+            url = 'meshosxagent?id=16&meshid=' + meshid;
+            Q('macos64url').href = url;
+            Q('macos64url2').href = url;
 
             // Linux Setup
             if (serverHttps == 1) {

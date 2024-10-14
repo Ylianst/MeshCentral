@@ -955,7 +955,7 @@ module.exports.CreateAmtManager = function (parent) {
         });
     }
 
-    // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
+    // Perform a power action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL, 15 = Power on to PXE, 16 = Reset to PXE
     function performPowerAction(nodeid, action) {
         console.log('performPowerAction', nodeid, action);
         var devices = obj.amtDevices[nodeid];
@@ -970,7 +970,7 @@ module.exports.CreateAmtManager = function (parent) {
                     // Action: 2 = Power up, 5 = Power cycle, 8 = Power down, 10 = Reset
                     try { dev.amtstack.RequestPowerStateChange(action, performPowerActionResponse); } catch (ex) { }
                 } else {
-                    // 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL
+                    // 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL, 15 = Power on to PXE, 16 = Reset to PXE
                     dev.amtstack.BatchEnum(null, ['*AMT_BootSettingData'], performAdvancedPowerActionResponse);
                 }
             }
@@ -1003,8 +1003,8 @@ module.exports.CreateAmtManager = function (parent) {
         // Ready boot parameters
         bootSettingData['BIOSSetup'] = ((action >= 11) && (action <= 14));
         bootSettingData['UseSOL'] = ((action >= 13) && (action <= 14));
-        if ((action == 11) || (action == 13)) { dev.powerAction = 2; } // Power on
-        if ((action == 12) || (action == 14)) { dev.powerAction = 10; } // Reset
+        if ((action == 11) || (action == 13) || (action == 15)) { dev.powerAction = 2; } // Power on
+        if ((action == 12) || (action == 14) || (action == 16)) { dev.powerAction = 10; } // Reset
 
         // Set boot parameters
         dev.amtstack.Put('AMT_BootSettingData', bootSettingData, function (stack, name, response, status, tag) {
@@ -1015,7 +1015,8 @@ module.exports.CreateAmtManager = function (parent) {
                 const dev = stack.dev;
                 if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
                 // Set boot order
-                dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder(null, function (stack, name, response, status) {
+                var bootDevice = (action === 15 || action === 16) ? '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: Force PXE Boot</Selector></SelectorSet></ReferenceParameters>' : null;
+                dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder(bootDevice, function (stack, name, response, status) {
                     const dev = stack.dev;
                     if ((obj.amtDevices[dev.nodeid] == null) || (status != 200)) return; // Device no longer exists or error
                     // Perform power action
@@ -1068,7 +1069,7 @@ module.exports.CreateAmtManager = function (parent) {
         if (status != 200) { dev.consoleMsg("Failed to get security information (" + status + ")."); delete dev.ocrfile; return; }
 
         // Check if this Intel AMT device supports OCR
-        if (responses['AMT_PublicKeyCertificate'].responses['ForceUEFIHTTPSBoot'] !== true) {
+        if (responses['AMT_BootCapabilities'].response['ForceUEFIHTTPSBoot'] !== true) {
             dev.consoleMsg("This Intel AMT device does not support UEFI HTTPS boot  (" + status + ")."); delete dev.ocrfile; return;
         }
 
@@ -1098,11 +1099,14 @@ module.exports.CreateAmtManager = function (parent) {
 
         // Generate the one-time URL.
         var cookie = obj.parent.encodeCookie({ a: 'f', f: dev.ocrfile }, obj.parent.loginCookieEncryptionKey)
-        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/c/' + cookie + '.iso';
+        var url = 'https://' + parent.webserver.certificates.AmtMpsName + ':' + ((parent.args.mpsaliasport != null) ? parent.args.mpsaliasport : parent.args.mpsport) + '/c/' + cookie + '.efi';
         delete dev.ocrfile;
 
         // Generate the boot data for OCR with URL
         var r = response.Body;
+        r['BIOSPause'] = false;
+        r['BIOSSetup'] = false;
+        r['EnforceSecureBoot'] = false;
         r['UefiBootParametersArray'] = Buffer.from(makeUefiBootParam(1, url) + makeUefiBootParam(20, 1, 1) + makeUefiBootParam(30, 0, 2), 'binary').toString('base64');
         r['UefiBootNumberOfParams'] = 3;
         r['BootMediaIndex'] = 0; // Do not use boot media index for One Click Recovery (OCR)
@@ -1123,8 +1127,7 @@ module.exports.CreateAmtManager = function (parent) {
         dev.amtstack.SetBootConfigRole(1, function (stack, name, response, status) {
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             if (status != 200) { dev.consoleMsg("Failed to set boot config role (" + status + ")."); return; }
-            var bootSource = 'Force OCR UEFI HTTPS Boot';
-            dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder((bootSource == null) ? bootSource : '<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: ' + bootSource + '</Selector></SelectorSet></ReferenceParameters>', function (stack, name, response, status) {
+            dev.amtstack.CIM_BootConfigSetting_ChangeBootOrder('<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_BootSourceSetting</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="InstanceID">Intel(r) AMT: Force OCR UEFI HTTPS Boot</Selector></SelectorSet></ReferenceParameters>', function (stack, name, response, status) {
                 if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
                 if (status != 200) { dev.consoleMsg("Failed to set boot config (" + status + ")."); return; }
                 dev.amtstack.RequestPowerStateChange(10, function (stack, name, response, status) { // 10 = Reset, 2 = Power Up

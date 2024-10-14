@@ -96,10 +96,8 @@ var minifyMeshCentralSourceFiles = [
     "../public/scripts/amt-terminal-0.0.2.js",
     "../public/scripts/amt-wsman-0.2.0.js",
     "../public/scripts/amt-wsman-ws-0.2.0.js",
-    "../public/scripts/charts.js",
     "../public/scripts/common-0.0.1.js",
     "../public/scripts/meshcentral.js",
-    "../public/scripts/ol.js",
     "../public/scripts/ol3-contextmenu.js",
     "../public/scripts/u2f-api.js",
     "../public/scripts/xterm-addon-fit.js",
@@ -142,7 +140,7 @@ if (directRun && (NodeJSVer >= 12)) {
             // Get things setup
             jsdom = require('jsdom');
             esprima = require('esprima'); // https://www.npmjs.com/package/esprima
-            if (minifyLib == 1) { minify = require('minify-js'); }
+            if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
             if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
 
             switch (op) {
@@ -159,8 +157,8 @@ if (directRun && (NodeJSVer >= 12)) {
 if (directRun) { setup(); }
 
 function setup() {
-    var libs = ['jsdom@22.1.0', 'esprima@4.0.1', 'minify-js@0.0.4'];
-    if (minifyLib == 1) { libs.push('minify-js@0.0.4'); }
+    var libs = ['jsdom@22.1.0', 'esprima@4.0.1'];
+    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
     if (minifyLib == 2) { libs.push('html-minifier@4.0.0'); }
     InstallModules(libs, start);
 }
@@ -171,7 +169,7 @@ function startEx(argv) {
     // Load dependencies
     jsdom = require('jsdom');
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
-    if (minifyLib == 1) { minify = require('minify-js'); }
+    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
     if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
 
     var command = null;
@@ -492,6 +490,8 @@ function startEx(argv) {
             outnamemin = (outname.substring(0, outname.length - 5) + '-min.html');
         } else if (outname.endsWith('.htm')) {
             outnamemin = (outname.substring(0, outname.length - 4) + '-min.htm');
+        } else if (outname.endsWith('.js')) {
+            outnamemin = (outname.substring(0, outname.length - 3) + '-min.js');
         } else {
             outnamemin = (outname, outname + '.min');
         }

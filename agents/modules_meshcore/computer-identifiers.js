@@ -75,6 +75,19 @@ function linux_identifiers()
                 identifiers['board_vendor'] = 'Raspberry Pi';
                 identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
                 identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
+                const memorySlots = [];
+                var child = require('child_process').execFile('/bin/sh', ['sh']);
+                child.stdout.str = ''; child.stdout.on('data', dataHandler);
+                child.stdin.write('vcgencmd get_mem arm && vcgencmd get_mem gpu\nexit\n');
+                child.waitExit();
+                try { 
+                    const lines = child.stdout.str.trim().split('\n');
+                    if (lines.length == 2) {
+                        memorySlots.push({ Locator: "ARM Memory", Size: lines[0].split('=')[1].trim() })
+                        memorySlots.push({ Locator: "GPU Memory", Size: lines[1].split('=')[1].trim() })
+                        ret.memory = { Memory_Device: memorySlots };
+                    }
+                } catch (xx) { }
             } else {
                 throw('Unknown board');
             }
@@ -143,7 +156,7 @@ function linux_identifiers()
     // Fetch storage volumes using df
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
-    child.stdin.write('df --output=size,used,avail,target,fstype | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+    child.stdin.write('df -T | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
     child.waitExit();
     try { ret.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
     child = null;
@@ -351,7 +364,18 @@ function linux_identifiers()
         child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
         child.stderr.on('data', function () { });
         child.waitExit();
-        values.linux.LastBootUpTime = child.stdout.str.trim();
+        var regex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+        if (regex.test(child.stdout.str.trim())) {
+            values.linux.LastBootUpTime = child.stdout.str.trim();
+        } else {
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
+            child.stdin.write('date -d "@$(( $(date +%s) - $(awk \'{print int($1)}\' /proc/uptime) ))" "+%Y-%m-%d %H:%M:%S"\nexit\n');
+            child.waitExit();
+            if (regex.test(child.stdout.str.trim())) {
+                values.linux.LastBootUpTime = child.stdout.str.trim();
+            }
+        }
         child = null;
     } catch (ex) { }
 
@@ -411,7 +435,7 @@ function windows_volumes()
     p1.child = child;
     child.promise = p1;
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stdin.write('Get-Volume | Select-Object -Property DriveLetter,FileSystemLabel,FileSystemType,Size,SizeRemaining,DriveType | ConvertTo-Csv -NoTypeInformation\nexit\n');
+    child.stdin.write('Get-Volume | Select-Object -Property DriveLetter,FileSystemLabel,FileSystemType,Size,SizeRemaining,DriveType | ConvertTo-Csv -NoTypeInformation\r\nexit\r\n');
     child.on('exit', function (c)
     {
         var a, i, tokens, key;
@@ -447,7 +471,7 @@ function windows_volumes()
         child.promise = p2;
         child.tokens = tokens;
         child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-        child.stdin.write('Get-BitLockerVolume | Select-Object -Property MountPoint,VolumeStatus,ProtectionStatus | ConvertTo-Csv -NoTypeInformation\nexit\n');
+        child.stdin.write('Get-BitLockerVolume | Select-Object -Property MountPoint,VolumeStatus,ProtectionStatus | ConvertTo-Csv -NoTypeInformation\r\nexit\r\n');
         child.on('exit', function ()
         {
             var i;

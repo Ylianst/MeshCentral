@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
@@ -989,6 +989,9 @@
                                     <div class="toright2"></div>
                                     <div style="height:28px">
                                         <input id="termActionsBtn" style="margin-left:3px;height:28px" type=button title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() />
+                                        <input id="ctrlcbutton" style="margin-left:3px;height:28px" type=button onkeypress="return false" onkeydown="return false" value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
+                                        <input id="ctrlxbutton" style="margin-left:3px;height:28px" type=button onkeypress="return false" onkeydown="return false" value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
+                                        <input id="escbutton" style="margin-left:3px;height:28px" type=button onkeypress="return false" onkeydown="return false" value="ESC" onclick="termSendKey(27,'escbutton')" />
                                     </div>
                                 </div>
                             </div>
@@ -1236,6 +1239,8 @@
                             <td style="width:100px">
                                 <select id="d7encoding" style="float:right;width:200px" dir="rtl">
                                     <option value=1>JPEG</option>
+                                    <option value=2>PNG</option>
+                                    <option value=3>TIFF</option>
                                     <option selected=selected value=4>WEBP</option>
                                 </select>
                             </td>
@@ -1336,6 +1341,8 @@
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
         var attemptWebRTC = ((features & 128) != 0);
+        var webrtcconfiguration = '{{{webrtcconfig}}}';
+        if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: "' + webrtcconfiguration + '".'); webrtcconfiguration = null; } }
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
         var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android ARM", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service"];
         var files;
@@ -2687,7 +2694,7 @@
                     d3filetreelocation2.push(d3filetreelocation[i]);
                     if ((folderdepth == 1)) {
                         var sp = d3filetreelocation[i].split('/');
-                        publicPath = window.location + sp[0] + 'files/' + sp[2];
+                        publicPath = window.location.origin + domainUrl + sp[0] + 'files/' + sp[2];
                         if (d3filetreelocation[i] === userinfo._id) { d3filetreelinkpath += 'self'; } else { d3filetreelinkpath += (sp[0] + '/' + sp[2]); }
                     } else {
                         if (d3filetreelinkpath != '') { d3filetreelinkpath += '/' + d3filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + d3filetreelocation[i]; } }
@@ -2781,7 +2788,7 @@
                     fullPath += ' / ' + filetreelocation[i];
                     if ((folderdepth == 1)) {
                         var sp = filetreelocation[i].split('/');
-                        publicPath = window.location + sp[0] + 'files/' + sp[2];
+                        publicPath = window.location.origin + domainUrl + sp[0] + 'files/' + sp[2];
                         //if (filetreelocation[i] === userinfo._id) { filetreelinkpath += 'self'; } else { filetreelinkpath += (sp[0] + '/' + sp[2]); }
                         filetreelinkpath += filetreelocation[i];
                     } else {
@@ -4563,6 +4570,7 @@
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
+                    desktop.webrtcconfig = webrtcconfiguration;
                     desktop.options = {};
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
@@ -5143,6 +5151,9 @@
 
             // Enable action button if mesh type is not "local devices"
             QV('termActionsBtn', terminalNode.mtype != 3);
+            QE('ctrlcbutton', termState);
+            QE('ctrlxbutton', termState);
+            QE('escbutton', termState);
             if (((termState == true) && (terminal.contype != 3)) || (terminalNode.agent == null) || (terminalNode.agent.id == 3) || (terminalNode.agent.id == 4)) {
                 QH('terminalCustomUpperRight', '');
             } else {
@@ -5462,6 +5473,26 @@
             Q('connectbutton2').blur(); // Deselect the connect button so the button does not get key presses.
         }
 
+        function termSendKey(key, id) {
+            if (!terminal || xxdialogMode) return;
+            if (xterm != null) {
+                if (terminal.urlname == 'sshterminalrelay.ashx') {
+                    // SSH
+                    terminal.socket.send('~' + String.fromCharCode(key));
+                } else if (terminal.sendText) {
+                    // MeshAgent
+                    terminal.sendText(String.fromCharCode(key));
+                } else {
+                    // CIRA
+                    terminal.send(String.fromCharCode(key));
+                }
+                xterm.focus();
+            } else if (terminal != null) {
+                terminal.m.TermSendKey(key);
+                Q(id).blur(); // Deselect the connect button so the button does not get key presses.
+            }
+        }
+
         //
         // Terminal Shortcut Keys
         //
@@ -5564,6 +5595,7 @@
                 if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 files.contype = contype;
                 files.attemptWebRTC = attemptWebRTC;
+                files.webrtcconfig = webrtcconfiguration;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
                     if (files.consoleMessage) {
@@ -5863,7 +5895,7 @@
             downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random() }
             //console.log('p13downloadFileCancel', downloadFile);
             files.sendText({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path });
-            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + downloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + HtmlEscape(downloadFile.file) + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
         }
 
         // Called by the html page to cancel the download
@@ -6011,7 +6043,7 @@
             if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
                 uploadFile.xptr = 0;
                 var file = uploadFile.xfiles[uploadFile.xfilePtr];
-                QH('p13dfileName', file.name);
+                QH('p13dfileName', HtmlEscape(file.name));
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
                 if (file.xdata == null) {
@@ -6081,7 +6113,7 @@
                 if (start >= data.byteLength) {
                     files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
                 } else {
-                    var end = uploadFile.xptr + 65565;
+                    var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
                     if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
                     var dataslice = new Uint8Array(data.slice(start, end))
                     if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
@@ -6097,7 +6129,7 @@
             } else if (uploadFile.xfile) {
                 if (uploadFile.xreader != null) return; // Data reading already in process
                 if (uploadFile.xptr >= uploadFile.xfile.size) return;
-                var end = uploadFile.xptr + 65565;
+                var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
                 if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
                 uploadFile.xreader = new FileReader();
                 uploadFile.xreader.onerror = function (err) { console.log(err); }
@@ -6146,91 +6178,92 @@
             var sections = [], s = {};
 
             // Operating System
-            if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
-                var x = '';
-                if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
-                if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
-                if (hardware.windows && hardware.windows.osinfo) {
-                    var m = hardware.windows.osinfo;
-                    if (m.OSArchitecture) {
-                        if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
-                        else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
-                        else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
-                    }
-                    if(m.LastBootUpTime){
-                        var thedate = {
-                            year: parseInt(m.LastBootUpTime.substring(0, 4)),
-                            month: parseInt(m.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
-                            day: parseInt(m.LastBootUpTime.substring(6, 8)),
-                            hours: parseInt(m.LastBootUpTime.substring(8, 10)),
-                            minutes: parseInt(m.LastBootUpTime.substring(10, 12)),
-                            seconds: parseInt(m.LastBootUpTime.substring(12, 14)),
-                        };
-                        const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
-                        x += addDetailItem("Last Boot Up Time", date);
-                    }
+            var x = '';
+            if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
+            if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
+            if (hardware.windows && hardware.windows.osinfo) {
+                var m = hardware.windows.osinfo;
+                if (m.OSArchitecture) {
+                    if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
+                    else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
+                    else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
                 }
-                if(hardware.linux && hardware.linux.LastBootUpTime){
-                    var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
+                if(m.LastBootUpTime){
                     var thedate = {
-                        year: lastBootUpTime.getFullYear(),
-                        month: lastBootUpTime.getMonth(),
-                        day: lastBootUpTime.getDate(),
-                        hours: lastBootUpTime.getHours(),
-                        minutes: lastBootUpTime.getMinutes(),
-                        seconds: lastBootUpTime.getSeconds()
+                        year: parseInt(m.LastBootUpTime.substring(0, 4)),
+                        month: parseInt(m.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
+                        day: parseInt(m.LastBootUpTime.substring(6, 8)),
+                        hours: parseInt(m.LastBootUpTime.substring(8, 10)),
+                        minutes: parseInt(m.LastBootUpTime.substring(10, 12)),
+                        seconds: parseInt(m.LastBootUpTime.substring(12, 14)),
                     };
                     const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
-                if(hardware.darwin && hardware.darwin.LastBootUpTime){
-                    var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
-                    var thedate = {
-                        year: lastBootUpTime.getFullYear(),
-                        month: lastBootUpTime.getMonth(),
-                        day: lastBootUpTime.getDate(),
-                        hours: lastBootUpTime.getHours(),
-                        minutes: lastBootUpTime.getMinutes(),
-                        seconds: lastBootUpTime.getSeconds()
-                    };
-                    const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
-                    x += addDetailItem("Last Boot Up Time", date);
-                }
-                     
-                // Windows Security Central
-                if (node.wsc) {
-                    var y = [];
-                    if (node.wsc.antiVirus != null) { if (node.wsc.antiVirus == 'OK') { y.push("AV" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("AV" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
-                    if (node.wsc.autoUpdate != null) { if (node.wsc.autoUpdate == 'OK') { y.push("Update" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Update" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
-                    if (node.wsc.firewall != null) { if (node.wsc.firewall == 'OK') { y.push("Firewall" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Firewall" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
-                    x += addDetailItem("Windows Security", y.join(', '));
-                }
-
-                // Defender for Windows Server
-                if(node.defender && !node.wsc) {
-                    var y = [];
-                    if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
-                    if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
-                    x += addDetailItem("Windows Defender", y.join(', '));
-                }
-
-                // Antivirus
-                if (node.av && node.av.length > 0) {
-                    var y = [];
-                    for (var i in node.av) {
-                        if (node.av[i].product) {
-                            var avx = EscapeHtml(node.av[i].product);
-                            if (node.av[i].enabled !== true) { avx += ' - <span style=color:red>' + "Disabled" + '</span>'; }
-                            if (node.av[i].updated !== true) { avx += ' - <span style=color:red>' + "Out of date" + '</span>'; }
-                            if ((node.av[i].enabled == true) && (node.av[i].updated == true)) { avx += ' - <span style=color:green>' + "OK" + '</span>'; }
-                            y.push(avx);
-                        }
-                    }
-                    x += addDetailItem("Antivirus", y.join('<br />'));
-                }
-
-                if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
             }
+            if(hardware.linux && hardware.linux.LastBootUpTime){
+                var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
+                var thedate = {
+                    year: lastBootUpTime.getFullYear(),
+                    month: lastBootUpTime.getMonth(),
+                    day: lastBootUpTime.getDate(),
+                    hours: lastBootUpTime.getHours(),
+                    minutes: lastBootUpTime.getMinutes(),
+                    seconds: lastBootUpTime.getSeconds()
+                };
+                const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
+                x += addDetailItem("Last Boot Up Time", date);
+            }
+            if(hardware.darwin && hardware.darwin.LastBootUpTime){
+                var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
+                var thedate = {
+                    year: lastBootUpTime.getFullYear(),
+                    month: lastBootUpTime.getMonth(),
+                    day: lastBootUpTime.getDate(),
+                    hours: lastBootUpTime.getHours(),
+                    minutes: lastBootUpTime.getMinutes(),
+                    seconds: lastBootUpTime.getSeconds()
+                };
+                const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
+                x += addDetailItem("Last Boot Up Time", date);
+            }
+                    
+            // Windows Security Central
+            if (node.wsc) {
+                var y = [];
+                if (node.wsc.antiVirus != null) { if (node.wsc.antiVirus == 'OK') { y.push("AV" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("AV" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                if (node.wsc.autoUpdate != null) { if (node.wsc.autoUpdate == 'OK') { y.push("Update" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Update" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                if (node.wsc.firewall != null) { if (node.wsc.firewall == 'OK') { y.push("Firewall" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Firewall" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                x += addDetailItem("Windows Security", y.join(', '));
+            }
+
+            // Defender for Windows Server
+            if(node.defender && !node.wsc) {
+                var y = [];
+                if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                x += addDetailItem("Windows Defender", y.join(', '));
+            }
+
+            // Antivirus
+            if (node.av && node.av.length > 0) {
+                var y = [];
+                for (var i in node.av) {
+                    if (node.av[i].product) {
+                        var avx = EscapeHtml(node.av[i].product);
+                        if (node.av[i].enabled !== true) { avx += ' - <span style=color:red>' + "Disabled" + '</span>'; }
+                        if (node.av[i].updated !== true) { avx += ' - <span style=color:red>' + "Out of date" + '</span>'; }
+                        if ((node.av[i].enabled == true) && (node.av[i].updated == true)) { avx += ' - <span style=color:green>' + "OK" + '</span>'; }
+                        y.push(avx);
+                    }
+                }
+                x += addDetailItem("Antivirus", y.join('<br />'));
+            }
+
+            // Active Users
+            if (node.users && (node.users.length > 0)) { x += addDetailItem(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
+
+            if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
 
             // MeshAgent
             if (node.agent) {
@@ -6328,6 +6361,7 @@
             if (node.intelamt != null) {
                 var x = '';
                 x += addDetailItem("Version", (node.intelamt.ver) ? ('v' + EscapeHtml(node.intelamt.ver)) : ('<i>' + "Unknown" + '</i>'), s);
+                x += addDetailItem("Identifier", (node.intelamt.uuid) ? (EscapeHtml(node.intelamt.uuid)) : ('<i>' + "Unknown" + '</i>'), s);
                 var provisioningStates = { 0: nobreak("Not Activated (Pre)"), 1: nobreak("Not Activated (In)"), 2: nobreak("Activated") };
                 var provisioningMode = '';
                 if ((node.intelamt.state == 2) && node.intelamt.flags) { if (node.intelamt.flags & 2) { provisioningMode = (', ' + "Client Control Mode (CCM)"); } else if (node.intelamt.flags & 4) { provisioningMode = (', ' + "Admin Control Mode (ACM)"); } }
@@ -6753,7 +6787,7 @@
             if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'default' }); } // Upload default core
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option></select>')); }
+            else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option><option value=8>' + "Restart agent service" + '</select>')); }
         }
 
         function p15uploadCoreEx() {
@@ -6778,6 +6812,9 @@
             } else if (Q('d3coreMode').value == 7) {
                 // Upload a tiny core
                 meshserver.send({ action: 'uploadagentcore', nodeid: consoleNode._id, type: 'tiny' });
+            } else if (Q('d3coreMode').value == 8) {
+                // Restart MeshAgent service
+                meshserver.send({ action: 'msg', type: 'console', nodeid: consoleNode._id, value:'service restart' });
             }
         }
 

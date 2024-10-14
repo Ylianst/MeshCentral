@@ -861,7 +861,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // This is the default logout redirect to the login page
-        if (req.query.key != null) { res.redirect(domain.url + 'login?key=' + req.query.key); } else { res.redirect(domain.url + 'login'); }
+        if (req.query.key != null) { res.redirect(domain.url + 'login?key=' + encodeURIComponent(req.query.key)); } else { res.redirect(domain.url + 'login'); }
     }
 
     // Return an object with 2FA type if 2-step auth can be skipped
@@ -2081,7 +2081,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         for (var i in obj.meshes) {
             if ((obj.meshes[i].domain == domain.id) && (obj.meshes[i].deleted == null) && (obj.meshes[i].invite != null) && (obj.meshes[i].invite.codes.indexOf(req.body.inviteCode) >= 0)) {
                 // Send invitation link, valid for 1 minute.
-                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, ag: obj.meshes[i].invite.ag, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + req.query.key) : '') + (req.query.hide ? ('&hide=' + req.query.hide) : ''));
+                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, ag: obj.meshes[i].invite.ag, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + (req.query.hide ? ('&hide=' + encodeURIComponent(req.query.hide)) : ''));
                 return;
             }
         }
@@ -2816,7 +2816,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         //res.redirect(domain.url); // This does not handle cookie correctly.
         res.set('Content-Type', 'text/html');
         let url = domain.url;
-        if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return key + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
+        if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
     }
 
@@ -3027,7 +3027,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If the request has a "meshmessengerid", redirect to MeshMessenger
             // This situation happens when you get a push notification for a chat session, but are not logged in.
             if (req.query.meshmessengerid != null) {
-                res.redirect(domain.url + 'messenger?id=' + req.query.meshmessengerid + ((req.query.key != null) ? ('&key=' + req.query.key) : ''));
+                res.redirect(domain.url + 'messenger?id=' + encodeURIComponent(req.query.meshmessengerid) + ((req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : ''));
                 return;
             }
 
@@ -3127,6 +3127,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((serverFeatures & 2) != 0) { serverFeatures -= 2; } // Disallow simple server restore
                 }
 
+                // Get WebRTC configuration
+                var webRtcConfig = null;
+                if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
+                else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }                
+
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage('default', dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
@@ -3155,7 +3160,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : ''),
                     hidePowerTimeline: (domain.hidepowertimeline ? 'true' : 'false'),
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
-                    userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId')
+                    userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
+                    webrtcconfig: webRtcConfig
                 }, dbGetFunc.req, domain), user);
             }
             xdbGetFunc.req = req;
@@ -3501,7 +3507,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((node == null) || ((rights & 8) == 0) || ((rights != 0xFFFFFFFF) && ((rights & 512) != 0))) { res.redirect(domain.url + getQueryPortion(req)); return; }
 
                 var logoutcontrols = { name: user.name };
-                var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
 
                 // Create a authentication cookie
@@ -3558,7 +3564,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
                 var user = obj.users[req.session.userid];
                 var logoutcontrols = { name: user.name };
-                var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
                 render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
             } else {
@@ -3577,7 +3583,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
                         var user = obj.users[req.session.userid];
                         var logoutcontrols = { name: user.name };
-                        var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                        var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                         if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
                         render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
                     } else {
@@ -3592,7 +3598,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
                     var user = obj.users[req.session.userid];
                     var logoutcontrols = { name: user.name };
-                    var extras = (req.query.key != null) ? ('&key=' + req.query.key) : '';
+                    var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
                     if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
                     render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
                 } else {
@@ -3624,7 +3630,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var user2 = idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]
             if (!req.session || !req.session.userid) {
                 // Redirect to login page
-                if (req.query.key != null) { res.redirect(domain.url + '?key=' + req.query.key + '&meshmessengerid=' + req.query.id); } else { res.redirect(domain.url + '?meshmessengerid=' + req.query.id); }
+                if (req.query.key != null) { res.redirect(domain.url + '?key=' + encodeURIComponent(req.query.key) + '&meshmessengerid=' + encodeURIComponent(req.query.id)); } else { res.redirect(domain.url + '?meshmessengerid=' + encodeURIComponent(req.query.id)); }
                 return;
             }
             if ((req.session.userid != user1) && (req.session.userid != user2)) { res.sendStatus(404); return; }
@@ -3632,11 +3638,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Get WebRTC configuration
         var webRtcConfig = null;
-        if (obj.parent.config.settings && obj.parent.config.settings.webrtconfig && (typeof obj.parent.config.settings.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtconfig)).replace(/'/g, '%27'); }
-        else if (args.webrtconfig && (typeof args.webrtconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtconfig)).replace(/'/g, '%27'); }
+        if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
+        else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }
 
         // Setup other options
-        var options = { webrtconfig: webRtcConfig };
+        var options = { webrtcconfig: webRtcConfig };
         if (typeof domain.meshmessengertitle == 'string') { options.meshMessengerTitle = domain.meshmessengertitle; } else { options.meshMessengerTitle = '!'; }
 
         // Get the userid and name
@@ -3718,6 +3724,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         res.send(Buffer.from(getRootCertBase64(), 'base64'));
     }
 
+    // Return a customised mainifest.json for PWA
+    function handleManifestRequest(req, res){
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
+        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleManifestRequest: invalid ip'); return; } // Check server-wide IP filter only.
+        parent.debug('web', 'handleManifestRequest()');
+        var manifest = {
+            "name": (domain.title != null) ? domain.title : 'MeshCentral',
+            "short_name": (domain.title != null) ? domain.title : 'MeshCentral',
+            "description": "Open source web based, remote computer management.",
+            "scope": ".",
+            "start_url": "/",
+            "display": "fullscreen",
+            "orientation": "portrait",
+            "theme_color": "#ffffff",
+            "background_color": "#ffffff",
+            "icons": [{
+                "src": "pwalogo.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }]
+        };
+        res.json(manifest);
+    }
+
     // Handle user public file downloads
     function handleDownloadUserFiles(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3726,6 +3757,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         if (obj.common.validateString(req.path, 1, 4096) == false) { res.sendStatus(404); return; }
         var domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
+        if (spliturl[1] != 'userfiles') { spliturl.splice(1,1); } // remove domain.id from url for domains without dns
         if ((spliturl.length < 3) || (obj.common.IsFilenameValid(spliturl[2]) == false) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         if (domain.id != '') { domainname = 'domain-' + domain.id; }
         var path = obj.path.join(obj.filespath, domainname + '/user-' + spliturl[2] + '/Public');
@@ -3837,6 +3869,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         } else {
             res.sendStatus(404);
+        }
+    }
+
+    // Handle PWA logo request
+    function handlePWALogoRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+
+        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
+        if (domain.pwalogo) {
+            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.pwalogo] != null)) {
+                // Use the logo in the database
+                res.set({ 'Content-Type': domain.pwalogo.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
+                res.send(parent.configurationFiles[domain.pwalogo]);
+                return;
+            } else {
+                // Use the logo on file
+                try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.pwalogo)); return; } catch (ex) { }
+            }
+        }
+
+        if ((domain.webpublicpath != null) && (obj.fs.existsSync(obj.path.join(domain.webpublicpath, 'android-chrome-512x512.png')))) {
+            // Use the domain logo picture
+            try { res.sendFile(obj.path.join(domain.webpublicpath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
+        } else if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'android-chrome-512x512.png'))) {
+            // Use the override logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
+        } else {
+            // Use the default logo picture
+            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
         }
     }
 
@@ -5419,7 +5481,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         meshsettings += 'MeshServer=local\r\n';
                         if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
                     }
-                    if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+                    if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
                     if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
                 }
                 if (req.query.id == '10006') { // Assistant settings and customizations
@@ -5603,7 +5665,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (user != null) { meshaction.username = user.name; }
                     if (req.query.key != null) { meshaction.loginKey = req.query.key; }
                     var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                    if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain, req) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                    if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain, req) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : (domain.id + '/')) + 'meshrelay.ashx'; }
 
                     setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                     res.send(JSON.stringify(meshaction, null, ' '));
@@ -5708,9 +5770,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             agentinfo: agentinfo,
                                             filestats: filestats,
                                             currentAgent: agentinfo.hashhex.startsWith(fileSplit[1].toLowerCase()),
-                                            downloadUrl: req.originalUrl.split('?')[0] + '?dldump=' + file + (req.query.key ? ('&key=' + req.query.key) : ''),
-                                            deleteUrl: req.originalUrl.split('?')[0] + '?deldump=' + file + (req.query.key ? ('&key=' + req.query.key) : ''),
-                                            agentUrl: req.originalUrl.split('?')[0] + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : ''),
+                                            downloadUrl: req.originalUrl.split('?')[0] + '?dldump=' + file + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
+                                            deleteUrl: req.originalUrl.split('?')[0] + '?deldump=' + file + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
+                                            agentUrl: req.originalUrl.split('?')[0] + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
                                             time: new Date(filestats.ctime)
                                         });
                                     }
@@ -5726,7 +5788,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             response += '<td>' + d.fileSplit[1].toLowerCase() + '</td><td>' + d.fileSplit[2] + '</td><td><a href="' + d.deleteUrl + '">Delete</a></td></tr>';
                         }
                     }
-                    response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + req.query.key) : '') + '">Mesh Agents</a></body></html>';
+                    response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">Mesh Agents</a></body></html>';
                     res.send(response);
                     return;
                 }
@@ -5737,9 +5799,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var response = '<html><head><title>Mesh Agents Cores</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
                 response += '<tr style="background-color:lightgray"><th>Name</th><th>Size</th><th>Comp</th><th>Decompressed Hash SHA384</th></tr>';
                 for (var i in parent.defaultMeshCores) {
-                    response += '<tr><td>' + i.split(' ').join('&nbsp;') + '</td><td style="text-align:right"><a download href="/meshagents?dlcore=' + i + '">' + parent.defaultMeshCores[i].length + (req.query.key ? ('?key=' + req.query.key) : '') + '</a></td><td style="text-align:right"><a download href="/meshagents?dlccore=' + i + (req.query.key ? ('?key=' + req.query.key) : '') + '">' + parent.defaultMeshCoresDeflate[i].length + '</a></td><td>' + Buffer.from(parent.defaultMeshCoresHash[i], 'binary').toString('hex') + '</td></tr>';
+                    response += '<tr><td>' + i.split(' ').join('&nbsp;') + '</td><td style="text-align:right"><a download href="/meshagents?dlcore=' + i + '">' + parent.defaultMeshCores[i].length + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '</a></td><td style="text-align:right"><a download href="/meshagents?dlccore=' + i + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">' + parent.defaultMeshCoresDeflate[i].length + '</a></td><td>' + Buffer.from(parent.defaultMeshCoresHash[i], 'binary').toString('hex') + '</td></tr>';
                 }
-                response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + req.query.key) : '') + '">Mesh Agents</a></body></html>';
+                response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">Mesh Agents</a></body></html>';
                 res.send(response);
                 return;
             }
@@ -5748,7 +5810,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Download mesh core
                 var bin = parent.defaultMeshCores[req.query.dlcore];
                 if ((bin == null) || (bin.length < 5)) { try { res.sendStatus(404); } catch (ex) { } return; }
-                setContentDispositionHeader(res, 'application/octet-stream', req.query.dlcore + '.js', null, 'meshcore.js');
+                setContentDispositionHeader(res, 'application/octet-stream', encodeURIComponent(req.query.dlcore) + '.js', null, 'meshcore.js');
                 res.send(bin.slice(4));
                 return;
             }
@@ -5771,18 +5833,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var agentinfo = obj.parent.meshAgentBinaries[agentid];
                 if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
-                response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname + '</a>';
+                response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">' + agentinfo.rname + '</a>';
                 if ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0))) {
-                    if ((agentid == 3) || (agentid == 4)) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&pdb=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">PDB</a>'; }
+                    if ((agentid == 3) || (agentid == 4)) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&pdb=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">PDB</a>'; }
                 }
-                if (agentinfo.zdata != null) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&zip=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">ZIP</a>'; }
+                if (agentinfo.zdata != null) { response += ', <a download href="' + originalUrl + '?id=' + agentinfo.id + '&zip=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">ZIP</a>'; }
                 response += '</td>';
                 response += '<td>' + agentinfo.size + '</td><td>' + agentinfo.hashhex + '</td>';
-                response += '<td><a download href="' + originalUrl + '?meshcmd=' + agentinfo.id + (req.query.key ? ('&key=' + req.query.key) : '') + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
+                response += '<td><a download href="' + originalUrl + '?meshcmd=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
             response += '</table>';
-            response += '<a href="' + originalUrl + '?cores=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">MeshCores</a> ';
-            if (coreDumpsAllowed) { response += '<a href="' + originalUrl + '?dumps=1' + (req.query.key ? ('&key=' + req.query.key) : '') + '">MeshAgent Crash Dumps</a>'; }
+            response += '<a href="' + originalUrl + '?cores=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">MeshCores</a> ';
+            if (coreDumpsAllowed) { response += '<a href="' + originalUrl + '?dumps=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">MeshAgent Crash Dumps</a>'; }
             response += '</body></html>';
             res.send(response);
             return;
@@ -5854,7 +5916,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
-        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
         if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
@@ -6002,7 +6064,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             meshsettings += 'MeshServer=local\r\n';
             if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
         }
-        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + req.query.tag + '\r\n'; }
+        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
         if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
         if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
         if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
@@ -6216,7 +6278,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Setup middleware
-        obj.app.engine('handlebars', obj.exphbs({ defaultLayout: false }));
+        obj.app.engine('handlebars', obj.exphbs.engine({ defaultLayout: false }));
         obj.app.set('view engine', 'handlebars');
         if (obj.args.trustedproxy) {
             // Reverse proxy should add the "X-Forwarded-*" headers
@@ -6536,6 +6598,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.post(url + 'tokenlogin', obj.bodyParser.urlencoded({ extended: false }), handleLoginRequest);
                 obj.app.get(url + 'logout', handleLogoutRequest);
                 obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
+                obj.app.get(url + 'manifest.json', handleManifestRequest);
                 obj.app.post(url + 'changepassword', obj.bodyParser.urlencoded({ extended: false }), handlePasswordChangeRequest);
                 obj.app.post(url + 'deleteaccount', obj.bodyParser.urlencoded({ extended: false }), handleDeleteAccountRequest);
                 obj.app.post(url + 'createaccount', obj.bodyParser.urlencoded({ extended: false }), handleCreateAccountRequest);
@@ -6573,12 +6636,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             try { ws.close(); } catch (ex) { }
                             return;
                         }
-                        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { ws.close(); return; } // Check 3FA URL key
+                        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { // Check 3FA URL key
+                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'nokey' })); } catch (ex) { }
+                            try { ws.close(); } catch (ex) { }
+                            return;
+                        }
                         PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                             if (user == null) { // User is not authenticated, perform inner server authentication
                                 if (req.headers['x-meshauth'] === '*') {
                                     PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user, authData); }); // User is authenticated
                                 } else {
+                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth' })); } catch (ex) { }
                                     try { ws.close(); } catch (ex) { } // user is not authenticated and inner authentication was not requested, disconnect now.
                                 }
                             } else {
@@ -6592,6 +6660,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
                 obj.app.get(url + 'logo.png', handleLogoRequest);
                 obj.app.get(url + 'loginlogo.png', handleLoginLogoRequest);
+                obj.app.get(url + 'pwalogo.png', handlePWALogoRequest);
                 obj.app.post(url + 'translations', obj.bodyParser.urlencoded({ extended: false }), handleTranslationsRequest);
                 obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
                 obj.app.get(url + 'welcome.png', handleWelcomeImageRequest);
@@ -6713,9 +6782,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 var url = req.url;
                                 if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
                                 res.set('Content-Type', 'text/html');
-                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + encodeURIComponent(url) + '"></head><body></body></html>');
                             } else {
-                                domain.passport.authenticate('twitter-' + domain.id, { failureRedirect: url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
+                                domain.passport.authenticate('twitter-' + domain.id, { failureRedirect: domain.url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
                             }
                         }, handleStrategyLogin);
                     }
@@ -6730,7 +6799,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-google-callback', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('google-' + domain.id, { failureRedirect: url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
+                            domain.passport.authenticate('google-' + domain.id, { failureRedirect: domain.url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
                         }, handleStrategyLogin);
                     }
 
@@ -6744,7 +6813,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-github-callback', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('github-' + domain.id, { failureRedirect: url })(req, res, next);
+                            domain.passport.authenticate('github-' + domain.id, { failureRedirect: domain.url })(req, res, next);
                         }, handleStrategyLogin);
                     }
 
@@ -6763,11 +6832,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 var url = req.url;
                                 if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
                                 res.set('Content-Type', 'text/html');
-                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + encodeURIComponent(url) + '"></head><body></body></html>');
                             } else {
                                 if (req.query.state != null) {
                                     var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
-                                    if ((c != null) && (c.p == 'azure')) { domain.passport.authenticate('azure-' + domain.id, { failureRedirect: url })(req, res, next); return; }
+                                    if ((c != null) && (c.p == 'azure')) { domain.passport.authenticate('azure-' + domain.id, { failureRedirect: domain.url })(req, res, next); return; }
                                 }
                                 next();
                             }
@@ -6781,7 +6850,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(authURL, function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         let redirectPath;
                         if (typeof domain.authstrategies.oidc.client.redirect_uri == 'string') {
@@ -6797,7 +6866,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (domain.passport == null) { next(); return; }
                             if (req.session && req.session.userid) { next(); return; } // already logged in so dont authenticate just carry on
                             if (req.session && req.session['oidc-' + domain.id]) { // we have a request to login so do authenticate
-                                domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: url, failureFlash: true })(req, res, next);
+                                domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                             } else { // no idea so carry on
                                 next(); return;
                             }
@@ -6809,12 +6878,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-saml', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
 
@@ -6823,12 +6892,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-intel', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-intel-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
 
@@ -6837,12 +6906,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-jumpcloud-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: url, failureFlash: true })(req, res, next);
+                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
                 }
@@ -6884,7 +6953,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
                     if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
                     //console.log('Agent connect: ' + req.clientIp);
-                    try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
+                    try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
                 });
 
                 // Setup MQTT broker over websocket
@@ -6936,6 +7005,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Setup agent downloads for meshcore updates
                     obj.agentapp.get(url + 'meshagents', obj.handleMeshAgentRequest);
+
+                    // Setup agent file downloads
+                    obj.agentapp.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
                 }
 
                 // Setup web relay on this web server if needed

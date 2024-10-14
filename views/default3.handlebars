@@ -10,7 +10,7 @@
     <meta name="robots" content="noindex,nofollow">
     <link rel="manifest" href="{{{domainurl}}}manifest.json">
     <link type="image/x-icon" href="{{{domainurl}}}favicon.ico" rel="shortcut icon" />
-    <link keeplink=1 type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
+    <link keeplink=1 type="text/css" href="styles/style-bootstrap.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
@@ -59,6 +59,8 @@
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
+    <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
     <title>{{{title}}}</title>
 </head>
 
@@ -76,6 +78,7 @@
         <div id="cxwebrdp" class="cmtext" onclick="cmaction(11,event)">Web-RDP</div>
         <div id="cxwebvnc" class="cmtext" onclick="cmaction(12,event)">Web-VNC</div>
         <div id="cxwebssh" class="cmtext" onclick="cmaction(13,event)">Web-SSH</div>
+        <div id="cxrdp" class="cmtext" onclick="cmaction(14,event)">RDP</div>
         <div id="cxplugins" class="cmtext" onclick="cmaction(8,event)" style="display:none">Plugins</div>
         <hr id="cxmgroupsplit" />
         <div id="cxstar" class="cmtext" onclick="cmaction(10,event)" style="display:none">Toggle Star</div>
@@ -179,7 +182,9 @@
             </div>
             <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
                     style="color:yellow"></span></p>
-            <img id="topMenuIcon" class=noselect style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none" onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
+            <img id="topMenuIcon" class=noselect
+                style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none"
+                onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
         <div class="sidebar d-flex flex-column" id="page_leftbar">
             <div style="height:16px"></div>
@@ -1705,24 +1710,25 @@
                         <div class="col">
                             <div id="p30html"></div>
                         </div>
-                    
+
                         <!-- Spacer column (20px width) -->
                         <div class="col-auto" style="width: 20px;"></div>
-                    
+
                         <!-- Second column: User image and state -->
                         <div class="col-auto" style="width: 200px; position: relative;">
-                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class="userAuthStrategyLogo" width="64"
-                                height="64">
-                    
-                            <picture id="MainUserImage" style="display:none; border-width:0px; height:200px; width:200px; float:right"
+                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none"
+                                class="userAuthStrategyLogo" width="64" height="64">
+
+                            <picture id="MainUserImage"
+                                style="display:none; border-width:0px; height:200px; width:200px; float:right"
                                 onclick="account_manageImage(1)">
                                 <source type="image/webp" width="200" height="200" srcset="images/webp/user-256.webp" />
                                 <img alt="" width="200" height="200" src="images/user-256.png" />
                             </picture>
-                    
+
                             <img id="MainUserImageEx" alt="" width="200" height="200" src="images/user-256.png"
                                 onclick="account_manageImage(1)" />
-                    
+
                             <div style="width:100%;text-align:center;">
                                 <strong><span id="MainUserState"></span></strong>
                             </div>
@@ -1956,14 +1962,15 @@
                         <div class="col">
                             <div id="p51group"></div>
                         </div>
-                    
+
                         <!-- Spacer column (20px width) -->
                         <div class="col-auto" style="width: 20px;"></div>
-                    
+
                         <!-- Second column: User image and state -->
                         <div class="col-auto" style="width: 200px;">
                             <picture id="MainUserImage" style="border-width:0px;height:200px;width:200px;float:right">
-                                <source type="image/webp" width="200" height="200" srcset="images/webp/group-256.webp" />
+                                <source type="image/webp" width="200" height="200"
+                                    srcset="images/webp/group-256.webp" />
                                 <img alt="" width="200" height="200" src="images/group-256.png" />
                             </picture>
                             <div style="width:100%;text-align:center">
@@ -2251,21 +2258,34 @@
         <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data
             target=fileUploadFrame><input id=p5fileDragName name="name" /><input id=p5fileDragAuthCookie
                 name="auth" /><input id=p5fileDragSize name="size" /><input id=p5fileDragType name="type" /><input
-                id=p5fileDragData name="data" /><input id=p5fileDragLink name="link" class="btn btn-outline-success" /><input type=submit
-                id=p5loginSubmit2 style="display:none" class="btn btn-outline-success" /></form>
+                id=p5fileDragData name="data" /><input id=p5fileDragLink name="link"
+                class="btn btn-outline-success" /><input type=submit id=p5loginSubmit2 style="display:none"
+                class="btn btn-outline-success" /></form>
         <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data
-            target=fileUploadFrame><input id=p13fileDragName name="name" class="btn btn-outline-success" /><input id=p13fileDragSize
-                name="size" class="btn btn-outline-success" /><input id=p13fileDragType name="type" class="btn btn-outline-success" /><input id=p13fileDragData name="data" class="btn btn-outline-success" /><input
-                id=p13fileDragLink name="link" class="btn btn-outline-success" /><input type=submit id=p13loginSubmit2 style="display:none" class="btn btn-outline-success" /></form>
-        
-        <div id=topMenu style="z-index:1000;background-color:#ffffff;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Devices</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Account</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(3)>My Events</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(5)>My Files</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(4)>My Users</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(6)>My Server</div>
-            <div id="logoutMenuOption"><a id="logoutMenuOptionRef" href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a></div>
+            target=fileUploadFrame><input id=p13fileDragName name="name" class="btn btn-outline-success" /><input
+                id=p13fileDragSize name="size" class="btn btn-outline-success" /><input id=p13fileDragType name="type"
+                class="btn btn-outline-success" /><input id=p13fileDragData name="data"
+                class="btn btn-outline-success" /><input id=p13fileDragLink name="link"
+                class="btn btn-outline-success" /><input type=submit id=p13loginSubmit2 style="display:none"
+                class="btn btn-outline-success" /></form>
+
+        <div id=topMenu
+            style="z-index:1000;background-color:#ffffff;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Devices
+            </div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Account
+            </div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(3)>My Events
+            </div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(5)>My Files
+            </div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(4)>My Users
+            </div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(6)>My Server
+            </div>
+            <div id="logoutMenuOption"><a id="logoutMenuOptionRef" href=/logout>
+                    <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div>
+                </a></div>
         </div>
 
         <audio id="chimes">
@@ -2336,6 +2356,8 @@
         var debugmode = 0;
         var windowsBrowser = detectWindowsBrowser();
         var attemptWebRTC = ((features & 128) != 0);
+        var webrtcconfiguration = '{{{webrtcconfig}}}';
+        if (webrtcconfiguration == '') { webrtcconfiguration = null; } else { try { webrtcconfiguration = JSON.parse(decodeURIComponent(webrtcconfiguration)); } catch (ex) { console.log('Invalid WebRTC config: "' + webrtcconfiguration + '".'); webrtcconfiguration = null; } }
         var passRequirements = '{{{passRequirements}}}';
         if (passRequirements != '') { passRequirements = JSON.parse(decodeURIComponent(passRequirements)); }
         var customui = '{{{customui}}}';
@@ -2552,12 +2574,14 @@
             QV('p4UserBatchCreate', (features & 0x00080000) == 0);
 
             // Set the file editor
-            d4EditWrapVal = getstore('editorWrap', 0);
-            d4EditSizeVal = getstore('editorSize', 0);
-            d4EditEncodingVal = getstore('editorEncoding', 0);
+            d4EditWrapVal = Number(getstore('editorWrap', 0));
+            d4EditSizeVal = Number(getstore('editorSize', 0));
+            d4EditEncodingVal = Number(getstore('editorEncoding', 0));
+            d4EditLineBreakVal = Number(getstore('editorLineBreak', 0));
             d4ToggleWrap(true);
             d4ToggleSize(true);
             d4ToggleEncoding(true);
+            d4ToggleLineBreak(true);
             if (pluginHandler != null) pluginHandler.callHook('onWebUIStartupEnd');
 
             // Deleted non-english style and fix all topbar titles
@@ -3925,16 +3949,21 @@
                     // View the file in the dialog box
                     var p5editSaveBack = function (b, tag) {
                         var data;
+                        var value = Q('d4editorarea').value;
+                        value = d4EditLineBreakVal === 0 ? value.replace(/\r?\n|\r/g, '\r\n') : // Windows
+                            d4EditLineBreakVal === 2 ? value.replace(/\r\n|\n/g, '\r') : // Mac
+                                value.replace(/\r\n|\r/g, '\n'); // Linux
                         if (d4EditEncodingVal == 1) {
-                            data = encode_utf8(Q('d4editorarea').value); // UTF8 encoding
+                            data = encode_utf8(value); // UTF8 encoding
                         } else {
-                            data = Q('d4editorarea').value; // RAW encoding
+                            data = value; // RAW encoding
                         }
                         meshserver.send({ action: 'fileoperation', fileop: 'set', path: tag.path, file: tag.file, data: btoa(data) });
                     }
                     setModalContent('xxAddAgent', EscapeHtml(message.file), null);
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p5editSaveBack(3, message));
                     QV('d4EncodingButton', true);
+                    QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -6059,6 +6088,7 @@
                     desk.m.mouseCursorActive(xxcurrentView == 11);
                     desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
+                    desk.webrtcconfig = webrtcconfiguration;
                     desk.onStateChanged = onMultiDesktopStateChange;
                     //desk.onConsoleMessageChange = function () { console.log('CONSOLEMSG:', desk.consoleMessage); }
                     desk.m.ImageType = multidesktopsettings.agentencoding; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
@@ -7382,7 +7412,7 @@
 
             // Check filter dropdown
             var devFilter = Q('DevFilterSelect').value;
-            if (devFilter == 1) { for (var d in nodes) { if ((nodes[d].conn == null) || (nodes[d].conn == 0)) { nodes[d].v = false; } } } // Online
+            if (devFilter == 1) { for (var d in nodes) { if (((nodes[d].conn == null) || (nodes[d].conn == 0)) && (nodes[d].mtype != 3)) { nodes[d].v = false; } } } // Online, also include Local devices and relayed devices
             if (devFilter == 2) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || ((n.sessions.kvm == null) && (n.sessions.terminal == null) && (n.sessions.files == null) && (n.sessions.tcp == null) && (n.sessions.udp == null))) { n.v = false; } } } // Sessions
             if (devFilter == 3) { for (var d in nodes) { if (stars[nodes[d]._id] != 1) { nodes[d].v = false; } } } // Starred
             if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
@@ -7471,7 +7501,16 @@
                     QV('cxwebrdp', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x40000000) == 0)));
                     QV('cxwebssh', ((features2 & 0x200) && (((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)));
                     QV('cxconsole', (consoleRights && (node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
-
+                    QV('cxrdp', false); // always have the RDP hidden
+                    if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)) {
+                        if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                            if (navigator.platform.toLowerCase() == 'win32') {
+                                if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
+                                    QV('cxrdp', true);
+                                }
+                            }
+                        }
+                    }
                     QV('cxmgroupsplit', true);
                     QV('cxstar', true);
                     break;
@@ -7539,6 +7578,7 @@
             else if (action == 11) { p10mstsc(nodeid); } // Web-RDP
             else if (action == 12) { p10rfb(nodeid); } // Web-VNC
             else if (action == 13) { p10ssh(nodeid); } // Web-SSH
+            else if (action == 14) { p10MCRouter(nodeid, 3); } // RDP
         }
 
         function cmmeshaction(action) {
@@ -9226,7 +9266,7 @@
         }
 
         function showNotesEx(buttons, tag) {
-            QH('notesPanelArea', Q('d2devNotes').value);
+            Q('notesPanelArea').innerHTML = (marked && DOMPurify) ? DOMPurify.sanitize(marked.parse(Q('d2devNotes').value, { breaks: true }), { USE_PROFILES: { html: true } }) : Q('d2devNotes').value;
             meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) });
             if (showNotesPanel && Q('d2devNotes').value != '') { QV('notesPanel', true); } else { QV('notesPanel', false); }
         }
@@ -9537,6 +9577,8 @@
                     if ((xxcurrentView == 11) || (xxcurrentView == 12)) { // Only show these options on terminal or desktop tabs
                         y += '<option value=312>' + "Intel&reg; AMT Reset to BIOS" + '</option>';
                         y += '<option value=311>' + "Intel&reg; AMT Power on to BIOS" + '</option>';
+                        y += '<option value=315>' + "Intel&reg; AMT Power on to PXE" + '</option>';
+                        y += '<option value=316>' + "Intel&reg; AMT Reset to PXE" + '</option>';
                     }
                 }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 64) != 0)) {
@@ -9594,7 +9636,7 @@
                 // Intel AMT One Click Recovery (OCR)
                 Q('d3localmodeform').action = 'oneclickrecovery.ashx';
                 Q('d3auth').value = authCookie;
-                Q('d3filter').value = '.iso';
+                Q('d3filter').value = '.efi';
                 Q('d3attrib').value = currentNode._id;
                 setModalContent('xxAddAgent', 'Intel&reg; AMT One Click Recovery', x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', () => deviceActionOneClickRecovery());
@@ -10135,7 +10177,11 @@
         var desktopNode;
         function setupDesktop() {
             // Setup the remote desktop
-            if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
+            if ((desktopNode != currentNode) && (desktop != null)) {
+                if (desktopNode._id != currentNode._id) {
+                    desktop.Stop(); desktopNode = null; desktop = null;
+                }
+            }
 
             // If the device desktop is already connected in multi-desktop, use that.
             if ((desktopNode != currentNode) || (desktop == null)) {
@@ -10169,7 +10215,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                    if (desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>'); }
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -10328,7 +10374,7 @@
                             } else if ((data.action == 'present') && (webRtcDesktop == null)) {
                                 // Setup WebRTC channel
                                 webRtcDesktop = { platform: data.platform };
-                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
+                                var configuration = null; //{ "iceServers": [ { 'urls': 'stun:stun.cloudflare.com:3478' }, { 'urls': 'stun:stun.l.google.com:19302' } ] };
                                 if (typeof RTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new RTCPeerConnection(configuration); }
                                 else if (typeof webkitRTCPeerConnection !== 'undefined') { webRtcDesktop.webrtc = new webkitRTCPeerConnection(configuration); }
 
@@ -10401,6 +10447,7 @@
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
+                    desktop.webrtcconfig = webrtcconfiguration;
                     desktop.options = {};
                     if (tsid != null) { desktop.options.tsid = tsid; }
                     if (consent != null) { desktop.options.consent = consent; }
@@ -10806,6 +10853,7 @@
 
         // Enter browser fullscreen
         function enterBrowserFullscreen(elem) {
+            if (navigator.keyboard && navigator.keyboard.lock) { navigator.keyboard.lock(); }
             if (elem.requestFullscreen) { elem.requestFullscreen(); }
             else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
             else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
@@ -10818,6 +10866,7 @@
             else if (document.msExitFullscreen) { document.msExitFullscreen(); }
             else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
             else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            if (navigator.keyboard && navigator.keyboard.unlock) { navigator.keyboard.unlock(); }
         }
 
         // Return true if the browser is fullscreen. This is a delayed method that will return true/false late. Not very useful.
@@ -11387,7 +11436,12 @@
             }
         });
         Q('DeskTools').addEventListener('mousedown', function (event) {
-            if (Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = true;
+            if (Q('DeskTools').style.cursor === 'col-resize') {
+                deskTools.resizing = true;
+                Q('Desk').removeAttribute('onmouseup');
+                Q('Desk').removeAttribute('onmousedown');
+                Q('Desk').removeAttribute('onmousemove');
+            }
         });
         document.addEventListener('mouseup', function () {
             if (deskTools.resizing === true && Q('DeskTools').style.cursor === 'col-resize') deskTools.resizing = false;
@@ -11615,7 +11669,11 @@
         var terminalNode;
         function setupTerminal() {
             // Setup the terminal
-            if ((terminalNode != currentNode) && (terminal != null)) { terminal.Stop(); terminal = null; }
+            if ((terminalNode != currentNode) && (terminal != null)) {
+                if (terminalNode._id != currentNode._id) {
+                    terminal.Stop(); terminalNode = null; terminal = null;
+                }
+            }
             terminalNode = currentNode;
             updateTerminalButtons();
         }
@@ -12070,6 +12128,11 @@
         var filesNode;
         function setupFiles() {
             // Setup the files tab
+            if ((filesNode != currentNode) && (files != null)) {
+                if (filesNode._id != currentNode._id) {
+                    files.Stop(); filesNode = null; files = null;
+                }
+            }
             var samenode = (filesNode == currentNode);
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
@@ -12078,7 +12141,6 @@
             QV('p13Connect', (files == null) && (filesNode.mtype == 2));
             QV('p13Connects', ((features2 & 0x200) != 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', files != null);
-            if (((samenode == false) || (online == false)) && files) { files.Stop(); files = null; }
             p13setActions();
         }
 
@@ -12147,6 +12209,7 @@
                 files.contype = contype;
                 files.options = { consent: consent }
                 files.attemptWebRTC = attemptWebRTC;
+                files.webrtcconfig = webrtcconfiguration;
                 files.onStateChanged = onFilesStateChange;
                 files.onConsoleMessageChange = function () {
                     if (files.consoleMessage) {
@@ -12726,6 +12789,7 @@
                     setModalContent('xxAddAgent', EscapeHtml(gdownloadFile.file), '');
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13editSaveBack(3, gdownloadFile.file));
                     QV('d4EncodingButton', true);
+                    QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
@@ -12761,6 +12825,7 @@
         var d4EditWrapVal = 0;
         var d4EditSizeVal = 0;
         var d4EditEncodingVal = 0;
+        var d4EditLineBreakVal = 0;
         function d4ToggleWrap(update) {
             if (!update) { d4EditWrapVal = ++d4EditWrapVal % 2; }
             Q('d4WrapButton').value = ["Wrap: ON", "Wrap: OFF"][d4EditWrapVal];
@@ -12789,12 +12854,24 @@
             putstore('editorEncoding', d4EditEncodingVal);
         }
 
+        function d4ToggleLineBreak(update) {
+            if (!update) {
+                d4EditLineBreakVal = ++d4EditLineBreakVal % 3;
+            }
+            Q('d4LineBreakButton').value = ["Line Break: Windows (CR LF)", "Line Break: Linux (LF)", "Line Break: Mac (CR)"][d4EditLineBreakVal];
+            putstore('editorLineBreak', d4EditLineBreakVal);
+        }
+
         function p13editSaveBack(b, tag) {
             var data;
+            var value = Q('d4editorarea').value;
+            value = d4EditLineBreakVal === 0 ? value.replace(/\r?\n|\r/g, '\r\n') : // Windows
+                d4EditLineBreakVal === 2 ? value.replace(/\r\n|\n/g, '\r') : // Mac
+                    value.replace(/\r\n|\r/g, '\n'); // Linux
             if (d4EditEncodingVal == 1) {
-                data = new TextEncoder().encode(Q('d4editorarea').value); // UTF8 encoding
+                data = new TextEncoder().encode(value); // UTF8 encoding
             } else {
-                data = new TextEncoder().encode(decode_utf8(Q('d4editorarea').value)); // RAW encoding
+                data = new TextEncoder().encode(decode_utf8(value)); // RAW encoding
             }
             p13uploadFileContinue(1, [{ name: tag, size: data.byteLength, type: 'text/plain', xdata: data }]);
         }
@@ -12858,7 +12935,7 @@
             if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
                 uploadFile.xptr = 0;
                 var file = uploadFile.xfiles[uploadFile.xfilePtr];
-                QH('p13dfileName', file.name);
+                QH('p13dfileName', EscapeHtml(file.name));
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
                 if (file.xdata == null) {
@@ -12928,7 +13005,7 @@
                 if (start >= data.byteLength) {
                     files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
                 } else {
-                    var end = uploadFile.xptr + 65565;
+                    var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
                     if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
                     var dataslice = new Uint8Array(data.slice(start, end))
                     if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
@@ -12944,7 +13021,7 @@
             } else if (uploadFile.xfile) {
                 if (uploadFile.xreader != null) return; // Data reading already in process
                 if (uploadFile.xptr >= uploadFile.xfile.size) return;
-                var end = uploadFile.xptr + 65565;
+                var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
                 if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
                 uploadFile.xreader = new FileReader();
                 uploadFile.xreader.onerror = function (err) { console.log(err); }
@@ -13188,6 +13265,17 @@
                 }
                 if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png' }); }
             }
+            if (hardware.linux && hardware.linux.LastBootUpTime) {
+                var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
+                const date = printDateTime(lastBootUpTime);
+                x += addDetailItem("Last Boot Up Time", date);
+            }
+            if (hardware.darwin && hardware.darwin.LastBootUpTime) {
+                var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
+                const date = printDateTime(lastBootUpTime);
+                x += addDetailItem("Last Boot Up Time", date);
+            }
+            if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png' }); }
 
             // MeshAgent
             if (node.agent) {
@@ -15018,7 +15106,7 @@
             p20editMeshAmtChange();
 
             // Set the current Intel AMT policy
-            if (currentMesh.amt && (currentMesh.amt.type == 2) || (currentMesh.amt.type == 3)) {
+            if (currentMesh.amt && ((currentMesh.amt.type == 2) || (currentMesh.amt.type == 3))) {
                 Q('dp20amtpolicypass').value = currentMesh.amt.password;
                 if ((currentMesh.amt.type == 2) || (currentMesh.amt.type == 3)) {
                     if (currentMesh.amt.badpass != null) { Q('dp20amtbadpass').value = currentMesh.amt.badpass; }
@@ -16070,7 +16158,7 @@
                     fullPath += ' / ' + filetreelocation[i];
                     if ((folderdepth == 1)) {
                         var sp = filetreelocation[i].split('/');
-                        publicPath = (("" + window.location).split('?')[0]) + sp[0] + 'files/' + sp[2];
+                        publicPath = window.location.origin + domainUrl + sp[0] + 'files/' + sp[2];
                         //if (filetreelocation[i] === userinfo._id) { filetreelinkpath += 'self'; } else { filetreelinkpath += (sp[0] + '/' + sp[2]); }
                         filetreelinkpath += filetreelocation[i];
                     } else {
@@ -18160,7 +18248,7 @@
 
             // Show bottom buttons
             x = '<div style=float:right;font-size:small>';
-            if (userAdminRights) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="' + "Remove this user" + '">' + "Delete User" + '</a>'; }
+            if (userAdminRights && (userinfo._id != user._id)) { x += '<a href=# style=cursor:pointer onclick=\'return p30showDeleteUserDialog()\' title="' + "Remove this user" + '">' + "Delete User" + '</a>'; }
             x += '</div><div style=font-size:small>';
             // If user admin rights and not SSPI/LDAP and UserID does not start with ~, show change password
             if (userAdminRights && ((features & 0x00080000) == 0) && (user._id.split('/')[2][0] != '~')) {
@@ -18868,7 +18956,7 @@
                     d3filetreelocation2.push(d3filetreelocation[i]);
                     if ((folderdepth == 1)) {
                         var sp = d3filetreelocation[i].split('/');
-                        publicPath = window.location + sp[0] + 'files/' + sp[2];
+                        publicPath = window.location.origin + domainUrl + sp[0] + 'files/' + sp[2];
                         if (d3filetreelocation[i] === userinfo._id) { d3filetreelinkpath += 'self'; } else { d3filetreelinkpath += (sp[0] + '/' + sp[2]); }
                     } else {
                         if (d3filetreelinkpath != '') { d3filetreelinkpath += '/' + d3filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + d3filetreelocation[i]; } }
@@ -20029,7 +20117,7 @@
             if (idtype == 'users') { go(4); }
             if (idtype == 'files') {
                 // Remind the user to add two factor authentication
-                if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }  
+                if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1)))) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); return; }
                 go(5);
             }
             if (idtype == 'server') { go(6); }

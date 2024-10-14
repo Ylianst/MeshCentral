@@ -586,6 +586,20 @@ module.exports.CreateMultiServer = function (parent, args) {
                 }
                 break;
             }
+            case 'agentCommand': {
+                if (msg.nodeid != null) {
+                    // Route this message to a connected agent
+                    var agent = obj.parent.webserver.wsagents[msg.nodeid];
+                    if (agent != null) { agent.send(JSON.stringify(msg.command)); }
+                } else if (msg.meshid != null) {
+                    // Route this message to all connected agents of this mesh
+                    for (var nodeid in obj.parent.webserver.wsagents) {
+                        var agent = obj.parent.webserver.wsagents[nodeid];
+                        if (agent.dbMeshKey == msg.meshid) { try { agent.send(JSON.stringify(msg.command)); } catch (ex) { } }
+                    }
+                }
+                break;
+            }
             default: {
                 // Unknown peer server command
                 console.log('Unknown action from peer server ' + peerServerId + ': ' + msg.action + '.');
@@ -634,7 +648,7 @@ module.exports.CreateMultiServer = function (parent, args) {
             peerTunnel.ws2.on('close', function (req) { peerTunnel.parent.parent.debug('peer', 'FTunnel disconnect ' + peerTunnel.serverid); peerTunnel.close(); });
 
             // If a message is received from the peer, Peer ---> Browser (TODO: Pipe this?)
-            peerTunnel.ws2.on('message', function (msg) { try { peerTunnel.ws2._socket.pause(); peerTunnel.ws1.send(msg, function () { peerTunnel.ws2._socket.resume(); }); } catch (e) { } });
+            peerTunnel.ws2.on('message', function (msg, isBinary) { try { peerTunnel.ws2._socket.pause(); peerTunnel.ws1.send((isBinary ? msg : msg.toString('binary')), function () { peerTunnel.ws2._socket.resume(); }); } catch (e) { } });
 
             // Register the connection event
             peerTunnel.ws2.on('open', function () {

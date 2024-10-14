@@ -58,15 +58,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         dataAccounting();
 
         if ((arg == 1) || (arg == null)) { try { ws.close(); if (obj.nodeid != null) { parent.parent.debug('agent', 'Soft disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); } } catch (e) { console.log(e); } } // Soft close, close the websocket
-        if (arg == 2) { 
-            try { 
+        if (arg == 2) {
+            try {
                 if (ws._socket._parent != null)
                     ws._socket._parent.end();
                 else
                     ws._socket.end();
-                
-                if (obj.nodeid != null) { 
-                    parent.parent.debug('agent', 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); 
+
+                if (obj.nodeid != null) {
+                    parent.parent.debug('agent', 'Hard disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ')');
                 }
             } catch (e) { console.log(e); }
         }
@@ -616,7 +616,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
 
         if ((mesh == null) && (typeof domain.orphanagentuser == 'string')) {
-            const adminUser = parent.users['user/' + domain.id + '/' + domain.orphanagentuser.toLowerCase()];
+            const adminUser = parent.users['user/' + domain.id + '/' + domain.orphanagentuser];
             if ((adminUser != null) && (adminUser.siteadmin == 0xFFFFFFFF)) {
                 // Mesh name is hex instead of base64
                 const meshname = obj.meshid.substring(0, 18);

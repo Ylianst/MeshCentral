@@ -209,9 +209,13 @@ function macos_memUtilization()
     {
         var usage = lines[0].split(':')[1];
         var bdown = usage.split(',');
-
-        mem.MemTotal = parseInt(bdown[0].trim().split(' ')[0]);
-        mem.MemFree = parseInt(bdown[1].trim().split(' ')[0]);
+        if (bdown.length > 2){ // new style - PhysMem: 5750M used (1130M wired, 634M compressor), 1918M unused.
+            mem.MemFree = parseInt(bdown[2].trim().split(' ')[0]);
+        } else { // old style - PhysMem: 6683M used (1606M wired), 9699M unused.
+            mem.MemFree = parseInt(bdown[1].trim().split(' ')[0]);
+        }
+        mem.MemUsed = parseInt(bdown[0].trim().split(' ')[0]);
+        mem.MemTotal = (mem.MemFree + mem.MemUsed);
         mem.percentFree = ((mem.MemFree / mem.MemTotal) * 100);//.toFixed(2);
         mem.percentConsumed = (((mem.MemTotal - mem.MemFree) / mem.MemTotal) * 100);//.toFixed(2);
         return (mem);
