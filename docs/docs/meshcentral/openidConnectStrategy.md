@@ -32,6 +32,23 @@ OpenID Connect allows clients of all types, including Web-based, mobile, and Jav
 
 That description was straight from [OpenID Connect Documentation](https://openid.net/connect/), but basically, OAuth2 is the foundation upon which OpenID Connect was built, allowing for wide ranging compatability and interconnection. OpenID Connect appends the secure user *authentication* OAuth2 is known for, with user *authorization* by allowing the request of additional *scopes* that provide additional *claims* or access to API's in an easily expandable way.
 
+### Annotations
+
+#### Own IDP, CA and Docker
+
+If you operate your own identity provider, your own certification authority and MeshCentral via Docker, it is necessary to provide the complete certificate chain, otherwise NodeJS (in particular the openid-client module) will refuse the connection to the IDP server. 
+
+The following errors can be found in the log file:
+> OIDC: Discovery failed.
+
+> UNABLE_TO_GET_ISSUER_CERT_LOCALLY
+
+To solve this problem, the certificate chain in PEM format must be placed in the data directory and the following entry must be added to the docker-compose.yml file in the “environment” section:
+```
+    environment:
+            - NODE_EXTRA_CA_CERTS=/opt/meshcentral/meshcentral-data/chain.pem
+```
+
 ## Basic Config
 
 ### *Introduction*
