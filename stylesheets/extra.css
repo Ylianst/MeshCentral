@@ -1,0 +1,99 @@
+/* Maximum space for text block */
+.md-grid {
+    max-width: 95%; /* or 100%, if you want to stretch to full-width */
+  }
+
+.md-header {
+    background-color: #0b3e81 !important;
+    color: white !important;
+}
+.md-search__input {
+    background-color: white !important;
+}
+.md-search__icon[for=__search]{
+    color: initial;
+}
+.md-container {
+    background-color: #0b3e81;
+}
+.md-footer-meta__inner {
+    background-color: #0b3e81;
+}
+.md-grid {
+}
+.md-nav__item .md-nav__link--active {
+    color: white;
+}
+.md-nav__link {
+    color: white;
+}
+.md-nav__link[data-md-state=blur] {
+    color: white;
+}
+.md-tabs {
+    background-color: #0b3e81;
+    color: white;
+}
+.md-tabs__list {
+}
+.md-typeset a {
+    color: whitesmoke;
+    text-decoration: underline;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h1 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h2 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h3 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h4 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset h5 {
+    color: white;
+    text-shadow: 4px 4px 8px black;
+}
+.md-typeset table {
+    color: black;
+}
+.md-main {
+    color: white !important;
+    background-color: #113962;
+    background: linear-gradient(to bottom, #104893 0%,#113962 100%);
+}
+a:link {
+    color: #c8c8c8;
+}
+.html {
+    background-color: #0b3e81;
+}
+.dlspan {
+    background-color:gray;
+    color:black;
+    font-size:16px;
+    padding:4px;
+    border-radius:4px;
+    box-shadow: 2px 2px 4px black;
+}
+.md-typeset .tabbed-set {
+    border-left-width: 0.2rem;
+    border-left-color: rgb(244, 244, 244);
+    border-left-style: solid;
+    border-radius: 4px;
+    background-color: rgba(68,138,255,.1);
+    border-color: rgb(244, 244, 244);
+    padding: 5px;
+}
+@media only screen and (max-width: 76.1875em) {
+    .md-nav__link {
+        color: black;
+    }
+  }
