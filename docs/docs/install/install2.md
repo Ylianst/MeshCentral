@@ -79,6 +79,12 @@ chmod 755 mc-azure-ubuntu1804.sh
 
 In this situation, port 3389 will be used to receive Intel AMT CIRA connections instead of port 4433. After these scripts are run, try accessing the server using a browser. MeshCentral will take a minute or two to create certificates after that, the server will be up. The first account to be created will be the site administrator – so don’t delay and create an account right away. Once running, move on to the MeshCentral’s user’s guide to configure your new server.
 
+### Elestio
+
+You can deploy MeshCentral on Elestio using one-click deployment. Elestio handles version updates, maintenance, securtiy, backups, etc. Additionally, Elestio supports MeshCentral by providing revenue share so go ahead and click below to deploy and start using.
+
+[![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/meshcentral)
+
 ## Server Security - Adding Crowdsec
 
 MeshCentral has built-in support for a CrowdSec bouncer. This allows MeshCentral to get threat signals from the community and block or CAPTCHA requests coming from known bad IP addresses.
