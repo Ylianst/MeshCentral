@@ -3133,7 +3133,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }                
 
                 // Refresh the session
-                render(dbGetFunc.req, dbGetFunc.res, getRenderPage('default', dbGetFunc.req, domain), getRenderArgs({
+                render(dbGetFunc.req, dbGetFunc.res, getRenderPage((domain.sitestyle == 3 ? 'default3' : 'default'), dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
                     authRelayCookie: authRelayCookie,
                     viewmode: viewmode,
