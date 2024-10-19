@@ -6,14 +6,16 @@ document.addEventListener('DOMContentLoaded', function () {
   // Load saved theme from local storage
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme) {
-    themeStylesheet.href = `styles/themes/${savedTheme}/bootstrap.min.css`;
+    const safeTheme = encodeURIComponent(savedTheme);
+    themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap.min.css`;
     themeSwitcher.value = savedTheme;
   }
 
   // Change theme on selection
   themeSwitcher.addEventListener('change', function () {
     const selectedTheme = themeSwitcher.value;
-    themeStylesheet.href = `styles/themes/${selectedTheme}/bootstrap.min.css`;
+    const safeTheme = encodeURIComponent(selectedTheme);
+    themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap.min.css`;
     // Save selected theme to local storage
     localStorage.setItem('theme', selectedTheme);
   });
