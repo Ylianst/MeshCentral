@@ -69,12 +69,12 @@
                             <table style="width:100%">
                                 <tr>
                                     <td>
-                                        <input id=username title="Username" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" {{{autocomplete}}}="username" placeholder="Username" type=text maxlength=64 name=username onchange=validateLogin(1) onkeyup=validateLogin(1,event) />
+                                        <input id=username title="Username" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" {{{autocomplete}}}="username" placeholder="Username" type=text maxlength=64 name=username required />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <input id=password title="Password" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" {{{autocomplete}}}="current-password" placeholder="Password" type=password maxlength=256 name=password onchange=validateLogin(2) onkeyup=validateLogin(2,event) />
+                                        <input id=password title="Password" style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px;background-color:#FFF8CC" {{{autocomplete}}}="current-password" placeholder="Password" type=password maxlength=256 name=password required />
                                     </td>
                                 </tr>
                                 <tr>
@@ -84,7 +84,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <input id=loginButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" onclick="submitButtonClicked('loginpanelform')" type=button value="Log In" disabled="disabled" />
+                                        <input id=loginButton style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:6px" onclick="submitButtonClicked('loginpanelform')" type=button value="Log In" />
                                     </td>
                                 </tr>
                                 <tr id="topLanguageSelectRow" style="display:none"><td id="topLanguageSelect"></td></tr>
@@ -529,7 +529,6 @@
                 if (authStrategies.indexOf('saml') >= 0) { QV('auth-saml', true); }
             }
 
-            validateLogin();
             validateCreate();
             if (loginMode.length != 0) { go(parseInt(loginMode)); } else { go(1); }
             QV('newAccountDiv', (newAccount === '1') || (newAccount === 'true')); // If new accounts are not allowed, don't display the new account link.
@@ -770,19 +769,6 @@
 
         function submitButtonClicked(v) {
             if (!formSubmitted) { formSubmitted = true; document.getElementById(v).submit(); }
-        }
-
-        function validateLogin(box, e) {
-            setTimeout(function(){
-                var ok = ((Q('username').value.length > 0) && (Q('username').value.indexOf(' ') == -1) && (Q('password').value.length > 0));
-                QE('loginButton', ok);
-                setDialogMode(0);
-                if ((e != null) && (e.keyCode == 13)) {
-                    if ((box == 1) && (Q('username').value != '')) { Q('password').focus(); }
-                    else if ((box == 2) && (Q('password').value != '')) { Q('loginButton').click(); }
-                }
-                if (e != null) { haltEvent(e); }
-            }, 100);
         }
 
         function validateCreate(box, e) {
