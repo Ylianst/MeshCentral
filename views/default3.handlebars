@@ -16,7 +16,7 @@
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
     <link id="theme-stylesheet" href="styles/bootstrap.min.css" rel="stylesheet" title="CSS">
-    <link href="styles/fontawesome/all.min.css" rel="stylesheet" title="CSS">
+    {{!-- <link href="styles/fontawesome/all.min.css" rel="stylesheet" title="CSS"> --}}
     <link href="styles/sweetalert2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2-bootstrap-5-theme.min.css" rel="stylesheet" title="CSS">
@@ -187,7 +187,7 @@
                 onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
         <div class="sidebar d-flex flex-column" id="page_leftbar">
-            <div style="height:16px"></div>
+            <div style="height:24px"></div>
             <nav class="nav flex-column">
                 <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#"
                     data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i
@@ -394,7 +394,10 @@
                         style=cursor:pointer><u>click to reconnect</u></href>.</div>
             </div>
             <div id=p1 style="display:none">
-                <div id="p1title">
+                <div id="p1title" class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="text-primary">My Devices</h1>
+                    </div>
                     <div style="display:none" id="devListToolbarViewIcons">
                         <div id=devViewPageState
                             style="float:left;line-height:32px;height:32px;font-size:16px;display:none"></div>
@@ -440,48 +443,30 @@
                             <div class="viewSelector4"></div>
                         </div>
                     </div>
-                    <div>
-                        <h1 class="text-primary">My Devices</h1>
-                    </div>
                 </div>
-                <div class="d-flex align-items-center" id="devListToolbar"
-                    style="background: linear-gradient(180deg,#fff,#fff,#e9ecef);padding:5px;">
-                    <div>
-                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All"
-                            id="CollapseAllButton" class="mb-1" src="images/icon-collapse.png" loading=lazy width=9
-                            height=11 onclick="cmexpandaction(2)" />
-                        <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton"
-                            class="mb-1" src="images/icon-expand.png" loading=lazy width=9 height=11
-                            onclick="cmexpandaction(1)" />
-                        <button class="btn btn-outline-primary me-2 mb-1 btn-sm" id="SelectAllButton">Select
-                            All</button>
-                        <button class="btn btn-outline-primary me-2 mb-1 btn-sm">Group Action</button>
-                        <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);"
-                            class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
-                        <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;"
-                            placeholder="Filter">
-                        <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect
-                            onchange=onOnlineCheckBox(event) title="Device Filter">
-                            <option value=0 selected>All</option>
-                            <option value=1>Online</option>
-                            <option value=5>Offline</option>
-                            <option value=2>Sessions</option>
-                            <option value=3>Starred</option>
-                            <option value=4>Intel&reg; AMT</option>
-                            <option value=6>Help</option>
-                            <option value=7>Tagged</option>
-                            <option value=8>Untagged</option>
-                        </select>
-                        <label class="d-flex"><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox
-                                onclick=onRealNameCheckBox() /> &nbsp; <span
-                                title="Show devices operating system name">OS
-                                Name</span></label>
-                        <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2"
-                                onclick=onOnlineCheckBox(event) /><span
-                                title="Only show devices that are online">Online</span></label>
-                        <span id="devsCustomUIBar"></span>
-                    </div>
-
+                <div class="d-flex align-items-center" id="devListToolbar" style="background: linear-gradient(180deg,#fff,#fff,#e9ecef);padding:5px;">
+                        <div>
+                            <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All" id="CollapseAllButton" class="mb-1 me-1" src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
+                            <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton" class="mb-1 me-1" src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
+                            <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
+                            <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" disabled="disabled" value="Group Action" onclick=groupActionFunction() />
+                            <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
+                            <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;" placeholder="Filter">
+                            <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
+                                <option value=0 selected>All</option>
+                                <option value=1>Online</option>
+                                <option value=5>Offline</option>
+                                <option value=2>Sessions</option>
+                                <option value=3>Starred</option>
+                                <option value=4>Intel&reg; AMT</option>
+                                <option value=6>Help</option>
+                                <option value=7>Tagged</option>
+                                <option value=8>Untagged</option>
+                            </select>
+                            <label><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS Name</span></label>
+                            <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2" onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                            <span id="devsCustomUIBar"></span>
+                        </div>
                 </div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tr>
@@ -2095,6 +2080,7 @@
                             <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
                             <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
                             <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                            <input id="d4LineBreakButton" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
                             <textarea id=d4editorarea autocomplete="off"
                                 style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                         </div>
@@ -2112,9 +2098,7 @@
                                 <!--<h4>Agent Remote Desktop</h4>-->
                                 <div style="margin-top:8px">
                                     <div>Quality</div>
-                                    {{!--
-                                    Lets comment this for now
-                                    <select id="d7bitmapquality" dir="rtl"></select> --}}
+                                    <select id="d7bitmapquality" dir="rtl"></select>
                                 </div>
                                 <div>
                                     <div>Scaling</div>
@@ -5404,27 +5388,26 @@
                         if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user', 'ip', 'conn']; }
 
                         // Display configured columns
-                        if (deviceViewSettings.devsCols.indexOf('agtype') >= 0) { colums += '<th style=color:gray;width:100px>' + "Agent Type"; }
-                        if (deviceViewSettings.devsCols.indexOf('agver') >= 0) { colums += '<th style=color:gray;width:100px>' + "Agent Version"; }
-                        if (deviceViewSettings.devsCols.indexOf('os') >= 0) { colums += '<th style=color:gray;width:160px>' + "OS"; }
-                        if (deviceViewSettings.devsCols.indexOf('tags') >= 0) { colums += '<th style=color:gray;width:120px>' + "Tags"; }
-                        if (deviceViewSettings.devsCols.indexOf('windowsav') >= 0) { colums += '<th style=color:gray;width:100px>' + "Windows AV"; }
-                        if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Update"; }
-                        if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Firewall"; }
-                        if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { colums += '<th style=color:gray;width:120px>' + "Last Boot Up Time"; }
-                        if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=color:gray;width:120px>' + "Links"; }
-                        if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
-                        if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
-                        if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
-                        if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT Host"; }
-                        if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT State"; }
+                        if (deviceViewSettings.devsCols.indexOf('agtype') >= 0) { colums += '<th style=width:100px>' + "Agent Type"; }
+                        if (deviceViewSettings.devsCols.indexOf('agver') >= 0) { colums += '<th style=width:100px>' + "Agent Version"; }
+                        if (deviceViewSettings.devsCols.indexOf('os') >= 0) { colums += '<th style=width:160px>' + "OS"; }
+                        if (deviceViewSettings.devsCols.indexOf('tags') >= 0) { colums += '<th style=width:120px>' + "Tags"; }
+                        if (deviceViewSettings.devsCols.indexOf('windowsav') >= 0) { colums += '<th style=width:100px>' + "Windows AV"; }
+                        if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) { colums += '<th style=width:120px>' + "Windows Update"; }
+                        if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { colums += '<th style=width:120px>' + "Windows Firewall"; }
+                        if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { colums += '<th style=width:120px>' + "Last Boot Up Time"; }
+                        if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=width:120px>' + "Links"; }
+                        if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=width:120px>' + "User"; }
+                        if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=width:120px>' + "Address"; }
+                        if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=width:100px>' + "Connectivity"; }
+                        if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { colums += '<th style=width:100px>' + "AMT Host"; }
+                        if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) { colums += '<th style=width:100px>' + "AMT State"; }
                         if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) {
-                            colums += '<th style=color:gray;width:120px>' + "Last Seen";
+                            colums += '<th style=width:120px>' + "Last Seen";
                             if (requestedLastConnects == false) { requestedLastConnects = true; meshserver.send({ action: 'lastconnects' }); }
                         }
-
                         // This height of 1 div at the end to fix a problem in Linux firefox browsers
-                        r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray>' + colums + r + '</tr></table><div style=height:1px></div>';
+                        r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th>' + colums + r + '</tr></table><div style=height:1px></div>';
                     }
                 } else {
                     r += '</table>';
@@ -5434,13 +5417,13 @@
                 // Add a "Add Device Group" option
                 r += '<div style=border-top-style:solid;border-top-width:1px;border-top-color:#DDDDDD;cursor:pointer;font-size:small;margin-top:4px>';
                 if ((view < 3) && (sort == 0) && (Object.keys(meshes).length > 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 64) == 0))) {
-                    r += '<button class="btn btn-primary btn-sm me-2" onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" ><i class="fas fa-plus-circle"></i>' + " Add Device Group" + '</button>&nbsp';
+                    r += '<a href=# onclick="return account_createMesh()" title="' + "Create a new group of devices." + '" style=cursor:pointer>' + "Add Device Group" + '</a>&nbsp';
                 }
                 if ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 128) == 0)) {
                     r += '<a href=# onclick=\'return p10showMeshCmdDialog(0)\' style=cursor:pointer title="' + "Download MeshCmd, a command line tool that performs many functions." + '">' + "MeshCmd" + '</a>&nbsp';
                     if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) { r += '<a href=# onclick=\'return p10showMeshRouterDialog()\' style=cursor:pointer title="' + "Download MeshCentral Router, a TCP port mapping tool." + '">' + "Router" + '</a>&nbsp'; }
                 }
-                r += '</div><br/>';
+                r += '</div><div style=height:60px></div>';
 
                 QH('xdevices', r);
                 deviceHeaderSet();
@@ -6457,22 +6440,22 @@
 
             // Windows agent install
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
             // Linux agent install
             x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px class=form-control></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")>' + "Copy" + ' <i class="far fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "x86-64bit version of macOS Mesh Agent" + '">' + "macOS x86-64bit" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "ARM 64bit version of macOS Mesh Agent" + '">' + "macOS ARM (64bit)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + '",0)>');
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">' + "macOS (Universal)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "x86-64bit version of macOS Mesh Agent" + '">' + "macOS x86-64bit" + '</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "ARM 64bit version of macOS Mesh Agent" + '">' + "macOS ARM (64bit)" + '</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">' + "macOS (Universal)" + '</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
             // QR code agent install
@@ -6481,40 +6464,40 @@
             x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\"><img style=cursor:pointer src=\"images/google-play-140.png\" width=140 srcset=\"images/google-play-280.png 2x\" /></a></td></tr>";
             x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\"><img style=cursor:pointer src=\"images/amazon-appstore-140.png\"  width=140 srcset=\"images/amazon-appstore-280.png 2x\" /></a></td></tr>";
             x += "</table>";
-            x += addHtmlValue("Android APK", '<a onclick=downloadFile("meshagents?id=14' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "APK version of the MeshAgent" + '">' + "APK" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=14&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>');
+            x += addHtmlValue("Android APK", '<a class=text-decoration-underline onclick=downloadFile("meshagents?id=14' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "APK version of the MeshAgent" + '">' + "APK" + '</a> <i class="far fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=14&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>');
             x += '</div>'
 
             // MeshCentral Assistant
             x += '<div id=agins_assistant style=display:none><table><tr><td style=vertical-align:top><div>' + format("MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will connect to device group \"{0}\".", EscapeHtml(mesh.name)) + '</div><div></div><br />';
-            x += '<a id=asinslnk name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>';
+            x += '<a class=text-decoration-underline id=asinslnk name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>';
             x += '</td><td><img id=agass_img1 src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"><img id=agass_img2 src=images/assistant2-100.png width=74 height=100 srcset="images/assistant2-200.png 2x"></td></tr></table></div>';
 
             // MeshCentral Assistant2
             x += '<div id=agins_assistant2 style=display:none><table><tr><td style=vertical-align:top><div>' + "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will monitor the background agent." + '</div><div></div><br />';
-            x += '<a id=asinslnk2 name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")>';
+            x += '<a class=text-decoration-underline id=asinslnk2 name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>';
             x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
 
             // Windows agent uninstall
             x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlValue("Mesh Agent", '<a id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
             // Linux agent uninstall
             x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
-            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
-            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
+            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px  class=form-control></textarea>';
+            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")>Copy <i class="far fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent uninstall
             x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right click on the \".mpkg\" file and click \"Show Package Contents\", then right click on \"Uninstall.command\" and click \"Open\"" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
             // Linux binary installer
             x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
-            x += addHtmlFormFloating("Command", '<input id=aginsbincmd type=text class="form-control" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' /> <i class="fas fa-download" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")></i>');
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + "meshagent" + '</a> <i class="far fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Command" + '&nbsp;<i class="far fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")></i>', '<input id=aginsbincmd type=text class="form-control" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' />', ['col-md-4 d-flex align-items-center', 'col-md-8']);
             x += '</div>';
 
             setModalContent("xxAddAgent", "Add Mesh Agent", x);
@@ -13263,7 +13246,6 @@
                     const date = printDateTime(lastBootUpTime);
                     x += addDetailItem("Last Boot Up Time", date);
                 }
-                if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png' }); }
             }
             if (hardware.linux && hardware.linux.LastBootUpTime) {
                 var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
@@ -20717,8 +20699,8 @@
         function getUrlVars() { var j, hash, vars = [], hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); for (var i = 0; i < hashes.length; i++) { j = hashes[i].indexOf('='); if (j > 0) { vars[hashes[i].substring(0, j)] = hashes[i].substring(j + 1, hashes[i].length); } } return vars; }
         //function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
-        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b> ${t} </b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}"> ${v} </div></div>`; }
-        function addHtmlFormFloating(t, v, classNames = []) { return `<div class="row mb-1"><div class="form-floating mb-3 ${classNames[0] || 'col-md-12'}"> ${v} <label class="${classNames[1] || 'ms-2'}"> ${t} </label></div></div>`; }
+        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b>${t}</b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}">${v}</div></div>`; }
+        function addHtmlFormFloating(t, v, classNames = []) { return `<div class="row mb-1"><div class="form-floating mb-3 ${classNames[0] || 'col-md-12'}">${v}<label class="${classNames[1] || 'ms-2'}">${t}</label></div></div>`; }
 
 
         function addHtmlValue2(t, v) { return '<div><div style=display:inline-block;float:right>' + v + '</div><div style=display:inline-block>' + t + '</div></div>'; }
