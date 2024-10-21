@@ -954,6 +954,11 @@ NoMeshesPanel img {
     -webkit-overflow-scrolling: touch;
 }
 
+#xdevices th {
+    color: gray;
+    text-align: center;
+}
+
 #xdevicesmap {
     height: calc(100vh - 239px);
     width: 100%;
