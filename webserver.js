@@ -6334,6 +6334,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Handle all incoming web sockets, see if some need to be handled as web relays
         obj.app.ws('/*', function (ws, req, next) {
+            // Global error catcher
+            ws.on('error', function (err) { parent.debug('web', 'GENERAL WSERR: ' + err); console.log(err); });
             if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) { handleWebRelayWebSocket(ws, req); return; }
             return next();
         });
