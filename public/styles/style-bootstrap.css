@@ -1540,8 +1540,12 @@ a {
         opacity: 1;
     }
 
-.lbbuttonsel {
+nav .lbbuttonsel {
+    width: 100%;
+    border-radius: 5px 0px 0px 5px;
     opacity: 0.9;
+    background-color: #ffffff;
+    color: #113962 !important;
 }
 
 nav .lbbuttonsel2 {
@@ -3252,14 +3256,14 @@ nav .lbbuttonsel2 {
     color: #000;
 }
 
-.desktopButtons {
+/* .desktopButtons {
     padding-top: 2px;
 }
 
     .night .desktopButtons {
         filter: invert(60%);
         -webkit-filter: invert(60%);
-    }
+    } */
 
 
 .dtab {
