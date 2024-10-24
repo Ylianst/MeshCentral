@@ -1957,7 +1957,7 @@
                             onclick="setDialogMode()" onkeypress="if (event.key == 'Enter') setDialogMode()"></button>
                     </div>
                     <div class="modal-body" id="xxAddAgentBody">
-                        <!-- The body content is dynamically populated -->
+                        <!-- The default dialog is 2 but possible to specify others -->
                         <div id=dialog1>
                             <div id=id_dialogMessage style=""></div>
                         </div>
@@ -6428,14 +6428,18 @@
             // Check if the modal elements exist
             var modalConfigurableElement = document.getElementById('xxAddAgentModalConf');
             var modalTitleElement = document.getElementById(modalId + 'Title');
-            var modalBodyElement = document.getElementById(modalId + 'Body');
 
-            if (modalTitleElement && modalBodyElement) {
+            if (modalConfigurableElement && modalTitleElement) {
                 // Set the modal title
                 modalTitleElement.innerHTML = title;
 
-                // Set the modal body content
-                modalBodyElement.innerHTML = bodyContent;
+                // Set the modal body content based on the bodyContent Type
+                if (typeof bodyContent == 'number') {
+                    for (var i = 1; i < 24; i++) { QV('dialog' + i, i == bodyContent); } // Edit this line when more dialogs are added
+                } else if (typeof bodyContent == 'string'){
+                    Q('dialog2').innerHTML = bodyContent;
+                    for (var i = 1; i < 24; i++) { QV('dialog' + i, i == 2); } // Edit this line when more dialogs are added
+                }
                 // If size is provided, set the modal size class
                 if (size) {
                     modalConfigurableElement.classList.remove('modal-sm', 'modal-lg', 'modal-xl'); // Remove any existing size classes
@@ -10638,7 +10642,7 @@
             }
 
             xxdialogButtons = 3;
-            setModalContent('xxAddAgent', 'Remote Desktop Settings', x);
+            setModalContent('xxAddAgent', 'Remote Desktop Settings', 7);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', showDesktopSettingsChanged);
         }
 
@@ -20660,7 +20664,7 @@
 
         // Make the dialog box movable
         function dialogBoxDrag() {
-            var elmnt = Q('dialog');
+            var elmnt = Q('xxAddAgentModal');
             var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             Q('dialogHeader').onmousedown = dragMouseDown;
             function dragMouseDown(e) {
