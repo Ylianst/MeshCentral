@@ -186,36 +186,22 @@
                 style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none"
                 onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
         </div>
-        <div class="sidebar d-flex flex-column" id="page_leftbar">
+        <div class="sidebar flex-column" id="page_leftbar">
             <div style="height:24px"></div>
             <nav class="nav flex-column">
-                <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#"
-                    data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i
-                        class="fas fa-computer me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account"
-                    onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i
-                        class="fas fa-user-gear me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events"
-                    onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i
-                        class="fas fa-calendar-alt me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files"
-                    onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i
-                        class="fas fa-folder-open me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users"
-                    onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i
-                        class="fas fa-users me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyServer" href="#" data-target="server"
-                    onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i
-                        class="fas fa-server me-2"></i></a>
+                <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#" data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i class="fa-solid fa-computer me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account" onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i class="fa-solid fa-user-gear me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events" onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i class="fa-solid fa-calendar-alt me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files" onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i class="fa-solid fa-folder-open me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users" onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i class="fa-solid fa-users me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyServer" href="#" data-target="server" onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i class="fa-solid fa-server me-2"></i></a>
             </nav>
         </div>
         <div id=topbar class=noselect>
             <div>
                 <div style="position:relative">
                     <span id=logoutControlSpan2></span>
-                    <div tabindex=0 id=uiMenuButton title="User interface selection"
-                        onclick="showUserInterfaceSelectMenu()"
-                        onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
+                    <div tabindex=0 id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
                         &diams;
                         <div id=uiMenu style="display:none">
                             <table>
@@ -388,7 +374,7 @@
                 </div>
             </div>
         </div>
-        <div id="column_l">
+        <div id="column_l" class='pt-3'>
             <div id=p0 style="display:none">
                 <div id=p0message><span id=p0span>Server disconnected</span>, <href onclick=reload()
                         style=cursor:pointer><u>click to reconnect</u></href>.</div>
@@ -652,9 +638,7 @@
                     </div>
                     <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
-                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm me-2"
-                            onclick="return account_createMesh()"> <i class="fas fa-plus-circle"></i>
-                            New</button></span>
+                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm me-2" onclick="return account_createMesh()"> <i class="fa-solid fa-plus-circle"></i>New</button></span>
                     <br /><br />
                     <div id=p2meshes></div>
                     <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=#
@@ -701,8 +685,7 @@
                                     <option value="">No limit</option>
                                 </select>&nbsp;
                             </div>
-                            <a href=# onclick=p3showDownloadEventsDialog(2)><i class="fas fa-download"
-                                    title="Download Events"></i></a>&nbsp;
+                            <a href=# onclick=p3showDownloadEventsDialog(2)><i class="fa-solid fa-download" title="Download Events"></i></a>&nbsp;
                         </td>
                         {{!-- <td class="h2"></td> --}}
                     </tr>
@@ -720,13 +703,9 @@
                             <div style="float:right">
                                 <input type=button class="btn btn-outline-primary btn-sm m-1"
                                     onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
-                                <a href=# onclick=p4downloadUserInfo()><i class="fas fa-download"
-                                        title="Download user information" style="cursor:pointer"></i></a>
-                                <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate
-                                        style="cursor:pointer;display:none" title="Batch create many user accounts"
-                                        src="images/link6.png" /></a>
-                                <i style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings
-                                    class="fas fa-cog" title="Settings" onclick="onUsersViewSettings()"></i>
+                                <a href=# onclick=p4downloadUserInfo()><i class="fa-solid fa-download" title="Download user information" style="cursor:pointer"></i></a>
+                                <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" /></a>
+                                <i style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings class="fa-solid fa-cog" title="Settings" onclick="onUsersViewSettings()"></i>
                             </div>
                             <div>
                                 <input type=button id=UsersSelectAllButton class="btn btn-outline-primary btn-sm m-1"
@@ -884,16 +863,13 @@
                 </div>
             </div>
             <div id=p10 style="display:none">
-                <div id=p10title>
-                    <div id="p10BackButton">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id=p10title class="d-flex align-items-center">
+                    <div id="p10BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>General - <span id=p10deviceName></span></h1>
+                    <div class='fs-4 fw-bold'>General - <span id=p10deviceName></span></div>
                 </div>
-                <div id=p10info style="overflow-y:auto">
+                <div id=p10info style="overflow-y:auto" class="pt-3">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style=width:auto valign=top>
@@ -940,27 +916,18 @@
                 </div>
             </div>
             <div id=p11 class="noselect" style="display:none">
-                <div id="p11title">
-                    <div id=p11deviceNameHeader>
-                        <div id="p11BackButton">
-                            <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                                onkeypress="if (event.key == 'Enter') goBack()">
-                                <div class="backButtonEx"></div>
-                            </div>
-                        </div>
-                        <div id="devListToolbarViewIcons">
-                            <div class="viewSelector" onclick=deskToggleFull(event)
-                                title="Full Screen. Hold shift to browser full screen.">
-                                <div class="viewSelector5"></div>
-                            </div>
-                        </div>
-                        <h1>Desktop - <span id=p11deviceName></span></h1>
+                <div id="p11title" class="d-flex align-items-center">
+                    <div id="p11BackButton" class="pe-2">
+                        <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
+                    </div>
+                    <div class='fs-4 fw-bold'>Desktop - <span id=p11deviceName></span></div>
+                    <div id="devListToolbarViewIcons" class="ms-auto">
+                        <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
                 </div>
                 <div id="p11warning" onclick="showFeaturesDlg()">
                     <div class="icon2"></div>
-                    <div class="warningbox">Redirection port or KVM feature is disabled<span id="p11warninga">, click
-                            here to enable it.</span></div>
+                    <div class="warningbox">Redirection port or KVM feature is disabled<span id="p11warninga">, click here to enable it.</span></div>
                 </div>
                 <div id="p11warning2" onclick="showPowerActionDlg()">
                     <div class="icon2"></div>
@@ -968,34 +935,19 @@
                     </div>
                 </div>
                 <div style="position:absolute;right:16px;margin-top:-14px;font-size:x-small;color:black">
-                    <div id="p11capslock"
-                        style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">
-                        CAPS
-                    </div>
-                    <div id="p11scrolllock"
-                        style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">
-                        SCROLL
-                    </div>
-                    <div id="p11numlock"
-                        style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">
-                        NUM
-                    </div>
+                    <div id="p11capslock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">CAPS</div>
+                    <div id="p11scrolllock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">SCROLL</div>
+                    <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
                 </div>
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
                     <div id=deskarea1 class="areaHead">
                         <div class="toright2">
-                            <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:right">&nbsp;&#x2716;
-                            </div>
+                            <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:right">&nbsp;&#x2716;</div>
                             <span id="p11power"></span>&nbsp;
-                            <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;
-                            </div>
-                            <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)"><i
-                                    class="fas fa-rotate-left"></i></div>
-                            <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)"><i
-                                    class="fas fa-rotate-right"></i></div>
-                            <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session"
-                                style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px">
-                            </div>
+                            <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
+                            <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)"><i class="fa-solid fa-rotate-left"></i></div>
+                            <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)"><i class="fa-solid fa-rotate-right"></i></div>
+                            <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                             <input id="deskFocusBtn" type="button"
                                 title="Toggle focus mode, when active only the region around the mouse is updated"
                                 onkeypress="return false" onkeydown="return false" value="Focus All"
@@ -1021,19 +973,19 @@
                                     id=connectbutton1 cmenu="deskConnectButton"
                                     title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,3)
                                     onkeypress="return false" onkeydown="return false" disabled="disabled"><i
-                                        class="fas fa-circle-play"></i> Connect</button></span>
+                                        class="fa-solid fa-circle-play"></i> Connect</button></span>
                             <span id=connectbutton1rspan><button class="btn btn-primary btn-sm me-2" type=button
                                     id=connectbutton1r cmenu="altPortContextMenu" title="Connect using RDP"
                                     onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false"
-                                    disabled="disabled"><i class="fas fa-circle-play"></i> RDP Connect</button></span>
+                                    disabled="disabled"><i class="fa-solid fa-circle-play"></i> RDP Connect</button></span>
                             <span id=connectbutton1hspan><button class="btn btn-primary btn-sm me-2" type=button
                                     id=connectbutton1h title="Connect using hardware KVM"
                                     onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false"
-                                    disabled="disabled"><i class="fas fa-circle-play"></i> HW Connect</button></span>
+                                    disabled="disabled"><i class="fa-solid fa-circle-play"></i> HW Connect</button></span>
                             <span id=disconnectbutton1span><button class="btn btn-primary btn-sm me-2" type=button
                                     id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect"
                                     onclick=connectDesktop(event,0) onkeypress="return false"
-                                    onkeydown="return false"><i class="fas fa-power-off"></i> Disconnect</button></span>
+                                    onkeydown="return false"><i class="fa-solid fa-power-off"></i> Disconnect</button></span>
                             <span id="deskstatus" style="line-height:22px">Disconnected</span><span
                                 id="deskmetadata"></span>
                         </div>
@@ -1050,7 +1002,7 @@
                         </div>
                         <div id=DeskTools>
                             <div id=deskToolsAreaTop>
-                                <a id=DeskToolsRefreshButton style="right:2px" onclick="refreshDeskTools()">Refresh</a>
+                                <a id=DeskToolsRefreshButton class="link-underline-primary" style="right:2px" onclick="refreshDeskTools()">Refresh</a>
                                 <div id=deskToolsTopTabProcess class="deskToolsTopTab" onclick="changeDeskToolTab(0)"
                                     style="left:0px;bottom:0px">Processes</div>
                                 <div id=deskToolsTopTabService class="deskToolsTopTab" onclick="changeDeskToolTab(1)"
@@ -1083,57 +1035,52 @@
                     </div>
                     <div id=deskarea4 class="areaFoot">
                         <div class="toright2">
-                            <span id="DeskLatency" style="line-height:22px;width:50px"
-                                title="Desktop Session Latency"></span>
+                            <span id="DeskLatency" style="line-height:22px;width:50px" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" style="line-height:22px" title="Session time"></span>
-                            <input id=DeskToolsButton type=button class="btn btn-outline-primary btn-sm m-1" value=Tools
-                                title="Toggle tools view" onkeypress="return false" onkeydown="return false"
-                                onclick="toggleDeskTools()" />
+                            <input id=DeskToolsButton type=button class="btn btn-outline-primary btn-sm m-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span>&nbsp;</span>
-                            <span id=DeskRunButton cmenu="deskPreConfigScriptContextMenu" class="deskarea"
-                                title="Run a script on this computer"><i class="fas fa-play desktopButtons"
-                                    onclick=runDeviceCmd() height=16 width=16 style=padding-top:2px></i></span>
-                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer"><i
-                                    class="fas fa-message desktopButtons" onclick=deviceChat(event) height=16 width=16
-                                    style=padding-top:2px></i></span>
-                            <span id=DeskNotifyButton title="Display a notification on the remote computer"><i
-                                    class="fas fa-bell desktopButtons" onclick=deviceToastFunction() height=16 width=16
-                                    style=padding-top:2px></i></span>
-                            <span id=DeskLockButton title="Lock the remote computer"><img src='images/icon-lock.png'
-                                    class="desktopButtons" onclick=deviceLockFunction() height=16 width=16 /></span>
-                            <span id=DeskOpenWebButton title="Open a web address on the remote computer"><i
-                                    class="desktopButtons fas fa-globe" onclick=deviceUrlFunction() height=16
-                                    width=16></i></span>
-                            <span id=DeskBackgroundButton title="Toggle remote desktop background"><img
-                                    class="desktopButtons" id=DeskBackgroundButtonImage src='images/icon-background.png'
-                                    onclick=deviceToggleBackground(event) height=16 width=16 /></span>
-                            <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop"><img
-                                    class="desktopButtons" src='images/icon-camera.png' onclick=deskSaveImage()
-                                    height=16 width=16 /></span>
-                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu
-                                title="Record remote desktop session to file" style="display:none"><img
-                                    class="desktopButtons" id=DeskRecordButtonImage src='images/icon-film.png'
-                                    onclick=deskRecordSession() height=16 width=16 /></span>
-                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard"
-                                style="display:none"><img class="desktopButtons" id=DeskClipboardInButtonImage
-                                    src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16
-                                    width=16 /></span>
-                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img
-                                    class="desktopButtons" id=DeskClipboardOutButtonImage
-                                    src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16
-                                    width=16 /></span>
-                            <span id=DeskRefreshButton title="Refresh the desktop"><img class="desktopButtons"
-                                    id=DeskRefreshButtonImage src='images/icon-refresh.png'
-                                    onclick=deskRefreshFunction() height=16 width=16 /></span>
-                            <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons"
-                                    id=DeskInputLockedButtonImage src='images/icon-keylock-red.png'
-                                    onclick=deskInputLockFunction(0) height=16 width=16 /></span>
-                            <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img
-                                    class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png'
-                                    onclick=deskInputLockFunction(1) height=16 width=16 /></span>
-                            <span id=DeskGuestShareButton title="Share the device with a guest"><i
-                                    class="desktopButtons fas fa-share-nodes" id=DeskInputUnLockedButtonImage
-                                    onclick=showShareDevice() height=16 width=16></i></span>
+                            <span id=DeskRunButton cmenu="deskPreConfigScriptContextMenu" class="deskarea" title="Run a script on this computer" role="button">
+                                <i class="fa-solid fa-fw fa-play" onclick=runDeviceCmd()></i>
+                            </span>
+                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer" role="button">
+                                <i class="fa-solid fa-fw fa-message" onclick=deviceChat(event)></i>
+                            </span>
+                            <span id=DeskNotifyButton title="Display a notification on the remote computer" role="button">
+                                <i class="fa-solid fa-fw fa-bell" onclick=deviceToastFunction()></i>
+                            </span>
+                            <span id=DeskLockButton title="Lock the remote computer" role="button">
+                                <i class="fa-solid fa-fw fa-lock" onclick=deviceLockFunction()></i>
+                            </span>
+                            <span id=DeskOpenWebButton title="Open a web address on the remote computer" role="button">
+                                <i class="fa-solid fa-fw fa-globe" onclick=deviceUrlFunction()></i>
+                            </span>
+                            <span id=DeskBackgroundButton title="Toggle remote desktop background" role="button">
+                                <i class="fa-solid fa-fw fa-image" onclick=deviceToggleBackground(event) id=DeskBackgroundButtonImage >></i>
+                            </span>
+                            <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop" role="button">
+                                <i class="fa-solid fa-fw fa-camera" onclick=deskSaveImage()></i>
+                            </span>
+                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none" role="button">
+                                <i class="fa-solid fa-fw fa-video" onclick=deskRecordSession() id=DeskRecordButtonImage></i>
+                            </span>
+                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none">
+                                <i class="fa-solid fa-fw fa-down-long" data-fa-transform="shrink-9 down-4" data-fa-mask="fa-solid fa-clipboard" onclick=deskClipboardInFunction()></i>
+                            </span>
+                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device">
+                                <i class="fa-solid fa-fw fa-up-long" data-fa-transform="shrink-9 down-4" data-fa-mask="fa-solid fa-clipboard" onclick=deskClipboardOutFunction()></i>
+                            </span>
+                            <span id=DeskRefreshButton title="Refresh the desktop" role="button">
+                                <i class="fa-solid fa-fw fa-rotate" onclick=deskRefreshFunction()></i>
+                            </span>
+                            <span id=DeskInputLockedButton title="Remote input is locked">
+                                <i class="fa-solid fa-fw fa-keyboard" style=color:red onclick=deskInputLockFunction(0)></i>
+                            </span>
+                            <span id=DeskInputUnLockedButton title="Remote input is unlocked" role="button">
+                                <i class="fa-solid fa-fw fa-keyboard" onclick=deskInputLockFunction(1)></i>
+                            </span>
+                            <span id=DeskGuestShareButton title="Share the device with a guest">
+                                <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
+                            </span>
                         </div>
                         <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
@@ -1158,20 +1105,14 @@
                 </div>
             </div>
             <div id=p12 style="display:none">
-                <div id="p12title">
-                    <div id="p12BackButton">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p12title" class="d-flex align-items-center">
+                    <div id="p12BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div id="devListToolbarViewIcons2" style="float:right">
-                        <div class="viewSelector" onclick=deskToggleFull(event)
-                            title="Full Screen. Hold shift to browser full screen.">
-                            <i class="fas fa-maximize"></i>
-                        </div>
+                    <div class='fs-4 fw-bold'>Terminal - <span id=p12deviceName></span></div>
+                    <div id="devListToolbarViewIcons2" class="ms-auto">
+                        <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
-                    <h1>Terminal - <span id=p12deviceName></span></h1>
                 </div>
                 <div id="p12warning" onclick=showFeaturesDlg()>
                     <div class="icon2"></div>
@@ -1203,28 +1144,28 @@
                                 <div>
                                     <button type="button" id="autoconnectbutton2" class="btn btn-primary btn-sm me-2"
                                         onclick=autoConnectTerminal(event) onkeypress="return false"
-                                        onkeydown="return false" style="display:none"><i class="fas fa-play"></i>
+                                        onkeydown="return false" style="display:none"><i class="fa-solid fa-play"></i>
                                         AutoConnect</button><span id="connectbutton2span"
                                         style="margin-right:4px"><button type="button" id="connectbutton2"
                                             class="btn btn-primary btn-sm me-2" cmenu="termConnectButton"
                                             onclick=connectTerminal(event,1) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled"><i class="fas fa-play"></i>
+                                            onkeydown="return false" disabled="disabled"><i class="fa-solid fa-play"></i>
                                             Connect</button></span><span id="connectbutton2sspan"
                                         style="margin-right:4px"><button type="button" id="connectbutton2s"
                                             cmenu=sshPortContextMenu class="btn btn-primary btn-sm me-2"
                                             onclick=connectTerminal(event,3) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled"><i class="fas fa-play"></i> SSH
+                                            onkeydown="return false" disabled="disabled"><i class="fa-solid fa-play"></i> SSH
                                             Connect</button></span><span id="connectbutton2hspan"
                                         style="margin-right:4px"><button type="button"
                                             class="btn btn-primary btn-sm me-2" id="connectbutton2h"
                                             title="Connect using Intel&reg; AMT hardware KVM"
                                             onclick=connectTerminal(event,2) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled"><i class="fas fa-play"></i> HW
+                                            onkeydown="return false" disabled="disabled"><i class="fa-solid fa-play"></i> HW
                                             Connect</button></span><span id="disconnectbutton2span"
                                         style="margin-right:4px"><button type="button"
                                             class="btn btn-primary btn-sm me-2" id="disconnectbutton2"
                                             onclick=connectTerminal(event,0) onkeypress="return false"
-                                            onkeydown="return false"><i class="fas fa-play"></i>
+                                            onkeydown="return false"><i class="fa-solid fa-play"></i>
                                             Disconnect</button></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span
                                         id="termtitle"></span>
@@ -1298,14 +1239,11 @@
                 </div>
             </div>
             <div id=p13 style="display:none">
-                <div id="p13title">
-                    <div id="p13BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p13title" class="d-flex align-items-center">
+                    <div id="p13BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>Files - <span id=p13deviceName></span></h1>
+                    <div class='fs-4 fw-bold'>Files - <span id=p13deviceName></span></div>
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
                     <tr>
@@ -1323,14 +1261,14 @@
                             <div>
                                 <button id=p13AutoConnect onclick=autoConnectFiles(event)
                                     class="btn btn-primary btn-sm me-2" type="button" style="display:none"><i
-                                        class="fas fa-play"></i> AutoConnect</button>
+                                        class="fa-solid fa-play"></i> AutoConnect</button>
                                 <button id=p13Connect cmenu="filesConnectButton" class="btn btn-primary btn-sm me-2"
-                                    onclick=connectFiles(event,1) type="button"><i class="fas fa-play"></i>
+                                    onclick=connectFiles(event,1) type="button"><i class="fa-solid fa-play"></i>
                                     Connect</button>
                                 <button id=p13Disconnect class="btn btn-primary btn-sm me-2" onclick=connectFiles(event)
-                                    type="button"><i class="fas fa-play"></i> Disconnect</button>
+                                    type="button"><i class="fa-solid fa-play"></i> Disconnect</button>
                                 <button id=p13Connects class="btn btn-primary btn-sm me-2" cmenu=sshPortContextMenu
-                                    onclick=connectFiles(event,2) type="button"><i class="fas fa-play"></i> SFTP
+                                    onclick=connectFiles(event,2) type="button"><i class="fa-solid fa-play"></i> SFTP
                                     Connect</button>
                                 <span id=p13Status>Disconnected</span>
                             </div>
@@ -1426,43 +1364,31 @@
                 </table>
             </div>
             <div id=p14 style="display:none">
-                <div id="p14title">
-                    <div id="p14BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p14title" class="d-flex align-items-center">
+                    <div id="p14BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div id="devListToolbarViewIcons">
-                        <div class="viewSelector" onclick=deskToggleFull(event)
-                            title="Full Screen. Hold shift to browser full screen.">
-                            <div class="viewSelector5"></div>
-                        </div>
+                    <div class='fs-4 fw-bold'><span id=p14deviceNamePrefix>Intel&reg; AMT</span> - <span id=p14deviceName></span></div>
+                    <div id="devListToolbarViewIcons" class="ms-auto">
+                        <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
-                    <h1><span id=p14deviceNamePrefix>Intel&reg; AMT</span> - <span id=p14deviceName></span></h1>
                 </div>
                 <iframe id=p14iframe src="{{{domainurl}}}commander.ashx"></iframe>
             </div>
             <div id=p15 style="display:none">
-                <div id="p15title">
-                    <div id="p15BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p15title" class="d-flex align-items-center">
+                    <div id="p15BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1><span id=p15deviceName></span></h1>
+                    <div class='fs-4 fw-bold'><span id=p15deviceName></span></div>
                 </div>
                 <table id="consoleTable" cellpadding=0 cellspacing=0>
                     <tr>
                         <td class="areaHead">
                             <div class="toright2">
                                 <div id=p15coreName title="Information about current core running on this agent"></div>
-                                <input type=button id=p15uploadCore class="btn btn-outline-primary me-2 btn-sm"
-                                    value="Agent Action" onclick=p15uploadCore(event)
-                                    title="Change the agent Java Script code module" />
-                                <i onclick=p15downloadConsoleText() style="cursor:pointer;margin-top:6px"
-                                    title="Download console text" class="fas fa-download"></i>
+                                <input type=button id=p15uploadCore class="btn btn-outline-primary me-2 btn-sm" value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
+                                <i onclick=p15downloadConsoleText() style="margin-top:6px" title="Download console text" class="fa-solid fa-download"></i>
                             </div>
                             <div id="p15statetext"></div>
                         </td>
@@ -1505,14 +1431,11 @@
                 </table>
             </div>
             <div id=p16 style="display:none">
-                <div id="p16title">
-                    <div id="p16BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p16title" class="d-flex align-items-center">
+                    <div id="p16BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>Events - <span id=p16deviceName></span></h1>
+                    <div class='fs-4 fw-bold'>Events - <span id=p16deviceName></span></div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1540,8 +1463,7 @@
                                 <option value=500>Last 500</option>
                                 <option value=1000>Last 1000</option>
                             </select>
-                            <a href=# onclick=p3showDownloadEventsDialog(1)><i class="fas fa-download"
-                                    title="Download Events" style=cursor:pointer></i></a>&nbsp;
+                            <i onclick=p3showDownloadEventsDialog(1) class="fa-solid fa-download" title="Download Events" style=cursor:pointer></i>
                         </td>
                         {{!-- <td class="h2"></td> --}}
                     </tr>
@@ -1549,20 +1471,14 @@
                 <div id=p16events></div>
             </div>
             <div id=p17 style="display:none;">
-                <div id="p17title" style="margin-left:18px">
-                    <div id="p17BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p17title" class="d-flex align-items-center">
+                    <div id="p17BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div id="devListToolbarViewIcons3">
-                        <div class="viewSelector" onclick=deskToggleCpuGraph(event)
-                            title="Show device CPU and memory usage.">
-                            <div class="viewSelector6"></div>
-                        </div>
+                    <div class='fs-4 fw-bold'>Details - <span id=p17deviceName></span></div>
+                    <div id="devListToolbarViewIcons3" class="ms-auto">
+                        <i class="fa-solid fa-chart-line fa-xl fa-border" role="button" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."></i>
                     </div>
-                    <h1>Details - <span id=p17deviceName></span></h1>
                 </div>
                 <div id=p17info style="overflow-y:auto">
                     <div id=p17graph style="width:100%">
@@ -1765,8 +1681,7 @@
                                     <option value="">No limit</option>
                                 </select>
                             </div>
-                            <a href=# onclick=p3showDownloadEventsDialog(3)><i class="fas fa-download"
-                                    title="Download Events" style=cursor:pointer></i></a>&nbsp;
+                            <a href=# onclick=p3showDownloadEventsDialog(3)><i class="fa-solid fa-download" title="Download Events" style=cursor:pointer></i></a>&nbsp;
                         </td>
                         {{!-- <td class="h2"></td> --}}
                     </tr>
@@ -1799,7 +1714,7 @@
                                 <option value=720>Last 30 days</option>
                             </select>&nbsp;
                         </div>
-                        <i class="fas fa-download" title="Download data points (.csv)" style=cursor:pointer
+                        <i class="fa-solid fa-download" title="Download data points (.csv)" style=cursor:pointer
                             onclick=p40downloadEvents()></i>&nbsp;
                     </div>
                     <div>
@@ -1828,7 +1743,7 @@
                         </div>
                         <input value="Clear" type="button" class="btn btn-secondary btn-sm m-1"
                             onclick="clearServerTracing()" />
-                        <i class="fas fa-download" title="Download trace (.csv)" style=cursor:pointer
+                        <i class="fa-solid fa-download" title="Download trace (.csv)" style=cursor:pointer
                             onclick=p41downloadServerTrace()></i>&nbsp;
                     </div>
                     <div>
@@ -1998,11 +1913,11 @@
                         <td class="style14">
                             <div style="float:right;line-height:22px">
                                 <a id="p60downloadReportDiv" style="display:none" href=# onclick=p60downloadReport()><i
-                                        class="fas fa-download" title="Download Report"></i></a>&nbsp;
+                                        class="fa-solid fa-download" title="Download Report"></i></a>&nbsp;
                             </div>
                             <div>
                                 <button class="btn btn-primary btn-sm me-2 m-1" onclick=generateReportDialog()><i
-                                        class="far fa-file-alt"></i> Generate Report...</button>
+                                        class="fa-regular fa-file-alt"></i> Generate Report...</button>
                             </div>
                         </td>
                         {{!-- <td class="h2"></td> --}}
@@ -2081,18 +1996,13 @@
                             <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
                             <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
                             <input id="d4LineBreakButton" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
-                            <textarea id=d4editorarea autocomplete="off"
-                                style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
+                            <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                         </div>
                         <div id=dialog7 style="">
                             <div class="dtab">
-                                <button id="td7meshkvm" class="tablinks"
-                                    onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
-                                <button id="td7rdpkvm" class="tablinks"
-                                    onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
-                                <button id="td7amtkvm" class="tablinks"
-                                    onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg;
-                                    AMT</button>
+                                <button id="td7meshkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
+                                <button id="td7rdpkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
+                                <button id="td7amtkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg; AMT</button>
                             </div>
                             <div id="d7meshkvm" class="tabcontent">
                                 <!--<h4>Agent Remote Desktop</h4>-->
@@ -2253,28 +2163,19 @@
                 class="btn btn-outline-success" /><input type=submit id=p13loginSubmit2 style="display:none"
                 class="btn btn-outline-success" /></form>
 
-        <div id=topMenu
-            style="z-index:1000;background-color:#ffffff;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Devices
+        <div id=topMenu style="z-index:1000;background-color:#ffffff;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Devices</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Account</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(3)>My Events</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(5)>My Files</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(4)>My Users</div>
+            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(6)>My Server</div>
+            <div id="logoutMenuOption">
+                <a id="logoutMenuOptionRef" href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a>
             </div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Account
-            </div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(3)>My Events
-            </div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(5)>My Files
-            </div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(4)>My Users
-            </div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(6)>My Server
-            </div>
-            <div id="logoutMenuOption"><a id="logoutMenuOptionRef" href=/logout>
-                    <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div>
-                </a></div>
         </div>
 
-        <audio id="chimes">
-            <source src="sounds/chimes.mp3" type="audio/mp3" />
-        </audio>
+        <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
         <iframe style=display:none name="fileDownloadFrame"></iframe>
     </div>
     <script type="text/javascript">
@@ -3555,9 +3456,9 @@
                                 }
                             } else if (message.type === 'deskBackground') {
                                 if (message.data != "") {
-                                    Q('DeskBackgroundButtonImage').src = 'images/icon-background.png';
+                                    Q('DeskBackgroundButtonImage').style.color = '';
                                 } else {
-                                    Q('DeskBackgroundButtonImage').src = 'images/icon-background-red.png';
+                                    Q('DeskBackgroundButtonImage').style.color = 'red';
                                 }
                             }
                         }
@@ -6440,22 +6341,22 @@
 
             // Windows agent install
             x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             if (debugmode > 0) { x += addHtmlValue("Settings File", '<a id=aginswmshlnk name="meshsettings?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + format("{0} settings (.msh)", EscapeHtml(mesh.name)) + '</a>'); }
             x += '</div>';
 
             // Linux agent install
             x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px class=form-control></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")>' + "Copy" + ' <i class="far fa-clipboard" style=cursor:pointer></i></a></div>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")>' + "Copy" + ' <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent install
             x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "x86-64bit version of macOS Mesh Agent" + '">' + "macOS x86-64bit" + '</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "ARM 64bit version of macOS Mesh Agent" + '">' + "macOS ARM (64bit)" + '</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">' + "macOS (Universal)" + '</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "x86-64bit version of macOS Mesh Agent" + '">' + "macOS x86-64bit" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "ARM 64bit version of macOS Mesh Agent" + '">' + "macOS ARM (64bit)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">' + "macOS (Universal)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
             // QR code agent install
@@ -6464,40 +6365,40 @@
             x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\"><img style=cursor:pointer src=\"images/google-play-140.png\" width=140 srcset=\"images/google-play-280.png 2x\" /></a></td></tr>";
             x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\"><img style=cursor:pointer src=\"images/amazon-appstore-140.png\"  width=140 srcset=\"images/amazon-appstore-280.png 2x\" /></a></td></tr>";
             x += "</table>";
-            x += addHtmlValue("Android APK", '<a class=text-decoration-underline onclick=downloadFile("meshagents?id=14' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "APK version of the MeshAgent" + '">' + "APK" + '</a> <i class="far fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=14&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>');
+            x += addHtmlValue("Android APK", '<a class=text-decoration-underline onclick=downloadFile("meshagents?id=14' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "APK version of the MeshAgent" + '">' + "APK" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=14&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>');
             x += '</div>'
 
             // MeshCentral Assistant
             x += '<div id=agins_assistant style=display:none><table><tr><td style=vertical-align:top><div>' + format("MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will connect to device group \"{0}\".", EscapeHtml(mesh.name)) + '</div><div></div><br />';
-            x += '<a class=text-decoration-underline id=asinslnk name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>';
+            x += '<a class=text-decoration-underline id=asinslnk name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>';
             x += '</td><td><img id=agass_img1 src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"><img id=agass_img2 src=images/assistant2-100.png width=74 height=100 srcset="images/assistant2-200.png 2x"></td></tr></table></div>';
 
             // MeshCentral Assistant2
             x += '<div id=agins_assistant2 style=display:none><table><tr><td style=vertical-align:top><div>' + "MeshCentral Assistant is a Windows tool that users can use to ask for help. Use the link below to download a version that will monitor the background agent." + '</div><div></div><br />';
-            x += '<a class=text-decoration-underline id=asinslnk2 name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>';
+            x += '<a class=text-decoration-underline id=asinslnk2 name="meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "MeshCentral Assistant for Windows" + '">' + "Assistant for Windows (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=10006&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '")></i>';
             x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
 
             // Windows agent uninstall
             x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="far fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
             // Linux agent uninstall
             x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
             x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px  class=form-control></textarea>';
-            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")>Copy <i class="far fa-clipboard" style=cursor:pointer></i></a></div>';
+            x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")>Copy <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent uninstall
             x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right click on the \".mpkg\" file and click \"Show Package Contents\", then right click on \"Uninstall.command\" and click \"Open\"" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <i class="far fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
             // Linux binary installer
             x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
-            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + "meshagent" + '</a> <i class="far fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
-            x += addHtmlValue("Command" + '&nbsp;<i class="far fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")></i>', '<input id=aginsbincmd type=text class="form-control" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' />', ['col-md-4 d-flex align-items-center', 'col-md-8']);
+            x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + "meshagent" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
+            x += addHtmlValue("Command" + '&nbsp;<i class="fa-regular fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")></i>', '<input id=aginsbincmd type=text class="form-control" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' />', ['col-md-4 d-flex align-items-center', 'col-md-8']);
             x += '</div>';
 
             setModalContent("xxAddAgent", "Add Mesh Agent", x);
@@ -8479,7 +8380,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name), nnameEx;
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
-                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class=\'fa-solid fa-pencil fa-2xs\'/></i></span>'; }
                 nnameEx = nname;
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
@@ -8506,13 +8407,13 @@
 
                 // Attribute: Host
                 if ((((features & 1) == 0) && (node.mtype != 4)) || (node.mtype == 3)) { // If not WAN-only, local hostname is in use
-                    x += addDeviceAttribute("Hostname", addLinkConditional('<span onclick=showEditNodeValueDialog(1) style=cursor:pointer>' + (node.host ? EscapeHtml(node.host) : ('<i>' + "None" + '</i>')) + '</span>', 'showEditNodeValueDialog(1)', meshrights & 4));
+                    x += addDeviceAttribute("Hostname", addLinkConditional((node.host ? EscapeHtml(node.host) : ('<i>' + "None" + '</i>')), 'showEditNodeValueDialog(1)', meshrights & 4));
                 }
 
                 // Attribute: Description
                 var description = node.desc ? EscapeHtml(node.desc) : ('<i>' + "None" + '</i>');
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Description", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + ' <img class=hoverButton src="images/link5.png" /></span>');
+                    x += addDeviceAttribute("Description", '<span onclick=showEditNodeValueDialog(2) style=cursor:pointer>' + description + ' <i class="fa-solid fa-pencil fa-xs" role="button"></i></span>');
                 } else {
                     x += addDeviceAttribute("Description", description);
                 }
@@ -8700,7 +8601,7 @@
                 var groupingTags = '<i>' + "None" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class=tagSpan>' + EscapeHtml(node.tags[i]) + '</span> '; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer>' + groupingTags + ' <i class="fa-solid fa-pencil fa-xs" role="button"></i></span>');
                 } else {
                     x += addDeviceAttribute("Tags", '<span style=line-height:26px>' + groupingTags + '</span>');
                 }
@@ -8709,8 +8610,8 @@
                 if ((node.ssh != null) || (node.rdp != null)) {
                     var y = [];
                     if ((meshrights & 4) != 0) {
-                        if (node.ssh != null) { y.push('<span onclick=showClearSshDialog(3) style=cursor:pointer>' + ((node.ssh == 1) ? "SSH-User+Pass" : ((node.ssh == 2) ? "SSH-User+Key+Pass" : "SSH-User+Key")) + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
-                        if (node.rdp != null) { y.push('<span onclick=showClearRdpDialog(3) style=cursor:pointer>' + "RDP" + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>'); }
+                        if (node.ssh != null) { y.push('<span onclick=showClearSshDialog(3) style=cursor:pointer>' + ((node.ssh == 1) ? "SSH-User+Pass" : ((node.ssh == 2) ? "SSH-User+Key+Pass" : "SSH-User+Key")) + ' <i class="fa-solid fa-pencil fa-xs" role="button"></i></span>'); }
+                        if (node.rdp != null) { y.push('<span onclick=showClearRdpDialog(3) style=cursor:pointer>' + "RDP" + ' <i class="fa-solid fa-pencil fa-xs" role="button"></i></span>'); }
                     } else {
                         if (node.ssh != null) { y.push(((node.ssh == 1) ? "SSH-User+Pass" : ((node.ssh == 2) ? "SSH-User+Key+Pass" : "SSH-User+Key"))); }
                         if (node.rdp != null) { y.push("RDP"); }
@@ -8990,14 +8891,14 @@
                 // Show user device permissions
                 x = '';
                 if (meshrights & 7) {
-                    x += '<button class="btn btn-primary btn-sm me-2" onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User" + '</button>';
+                    x += '<button class="btn btn-primary btn-sm me-2" onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><i class="fa-solid fa-plus-circle"></i> ' + "Add User" + '</button>';
                     if (usergroups != null) {
                         var userGroupCount = 0, newUserGroup = false;
                         for (var i in usergroups) {
                             if ((usergroups[i].membershipType != null) || (usergroups[i]._id.split('/')[1] != nodeid.split('/')[1])) continue;
                             userGroupCount++; if ((currentNode.links == null) || (currentNode.links[i] == null)) { newUserGroup = true; }
                         }
-                        if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(6)" style=cursor:pointer;margin-right:10px><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
+                        if ((userGroupCount > 0) && (newUserGroup)) { x += '<a href=# onclick="return p20showAddMeshUserDialog(6)" style=cursor:pointer;margin-right:10px><i class="fa-solid fa-plus-circle"></i> ' + "Add User Group" + '</a>'; }
                     }
                 }
 
@@ -9016,10 +8917,10 @@
                         if ((usergroups != null) && (usergroups[userid] != null)) { username = EscapeHtml(usergroups[userid].name); ugroup = true; }
                         if ((meshrights & 2) != 0) {
                             if (ugroup) {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
                                 rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(6,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             } else {
-                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
+                                trash = '<a href=# onclick=\'return p30removeUserFromNode(event,"' + encodeURIComponentEx(userid) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
                                 rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(5,"' + encodeURIComponentEx(userid) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                             }
                         }
@@ -9740,7 +9641,7 @@
             // Add the language and timezone of the browser to the server so the server can localize the time correctly.
             var tz = '';
             try { tz = '&tz=' + encodeURIComponentEx(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (ex) { }
-            QH('p10html2', '<table class="table table-hover table-light" cellpadding=2 cellspacing=0><thead><tr style=><th scope=col style=text-align:center;width:150px>' + "Day" + '</th><th scope=col style=text-align:center><a onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + '&tf=' + new Date().getTimezoneOffset() + '&l=' + encodeURIComponentEx(getLang()) + tz + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true)><img title="' + "Download power events" + '" src="images/link4.png" /></a>' + "7 Day Power State" + '</th></tr></thead><tbody>' + x + '</tbody></table>');
+            QH('p10html2', '<table class="table table-striped align-middle text-center" cellpadding=2 cellspacing=0><thead><tr><th scope=col style=width:150px>' + "Day" + '</th><th scope=col>' + "7 Day Power State" + '<div class="float-end pe-1"><i role="button" onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + '&tf=' + new Date().getTimezoneOffset() + '&l=' + encodeURIComponentEx(getLang()) + tz + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "Download power events" + '" class="fas fa-download"></i></div></th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -11452,11 +11353,11 @@
                 for (var i in p) {
                     if (p[i].p != 0) {
                         var c = p[i].c;
-                        x += '<div onclick=showProcessDetails(' + p[i].p + ') class=deskToolsBar>';
-                        x += '<div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div>';
-                        x += '<a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a>';
-                        x += '<div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div>';
-                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:5px" title="' + EscapeHtml(c) + '">' + c + '</div>';
+                        x += '<div onclick=showProcessDetails(' + p[i].p + ') class="deskToolsBar d-flex">';
+                        x += '<div class="pe-1 text-start" style=width:50px;>' + EscapeHtml(p[i].p) + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + EscapeHtml(c) + '">' + c + '</div>';
+                        x += '<div class="ms-auto">' + (p[i].u ? EscapeHtml(p[i].u) : '');
+                        x += '<i class="ps-1 fa-solid fa-trash-can" role="button" title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'></i></div>';
                         x += '</div>';
                     }
                 }
@@ -11584,11 +11485,11 @@
             if (desktop == null) return;
             if (desktop.m.recordedData == null) {
                 // Start recording
-                Q('DeskRecordButtonImage').src = 'images/icon-film-red.png';
+                Q('DeskRecordButtonImage').style.color = 'red';
                 desktop.m.StartRecording();
             } else {
                 // Stop recording
-                Q('DeskRecordButtonImage').src = 'images/icon-film.png';
+                Q('DeskRecordButtonImage').style.color = '';
                 var d = new Date(), n = "DesktopSession" + '-' + currentNode.name + '-' + d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + d.getHours()).slice(-2) + '-' + ('0' + d.getMinutes()).slice(-2);
                 saveAs(data2blob(desktop.m.StopRecording().join('')), n + '.mcrec');
             }
@@ -14598,7 +14499,7 @@
                 x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table class="table table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
                 for (var i = 0; i < loginTokens.length; i++) {
                     var ltoken = loginTokens[i];
-                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
+                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
                     var details = '';
                     if (ltoken.expire != 0) { details = EscapeHtml(format("Expires {0}", printDateTime(new Date(ltoken.expire)))) + ' '; }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + EscapeHtml(ltoken.name) + '<div></div></div></td><td style=width:70%><div style=float:right>' + details + trash + '</div><div>' + EscapeHtml(ltoken.tokenUser) + '</div></td></tr>';
@@ -14861,7 +14762,7 @@
             if (meshrights & 1) { x += '<br><input type=button class="btn btn-outline-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
-                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog()"><i class="fas fa-plus-circle"></i> ' + "Add Users" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog()"><i class="fa-solid fa-plus-circle"></i> ' + "Add Users" + '</button>';
                 if (usergroups != null) {
                     var userGroupCount = 0, newUserGroup = false;
                     for (var i in usergroups) {
@@ -14869,7 +14770,7 @@
                         userGroupCount++;
                         if ((currentMesh.links == null) || (currentMesh.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(2)"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(2)"><i class="fa-solid fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
                 }
             }
 
@@ -14886,11 +14787,11 @@
                 }
             }
             if ((currentMesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' title="' + "Add a new computer to this device group by installing the mesh agent." + '"><i class="fas fa-plus-circle"></i> ' + "Add Agent" + '</button>';
-                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' title="' + "Invite someone to install the mesh agent on this device group." + '"><i class="fas fa-user-plus"></i> ' + "Invite" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return addAgentToMesh("' + currentMesh._id + '")\' title="' + "Add a new computer to this device group by installing the mesh agent." + '"><i class="fa-solid fa-plus-circle"></i> ' + "Add Agent" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return inviteAgentToMesh("' + currentMesh._id + '")\' title="' + "Invite someone to install the mesh agent on this device group." + '"><i class="fa-solid fa-user-plus"></i> ' + "Invite" + '</button>';
             }
             if ((currentMesh.mtype == 3) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) {
-                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' title="' + "Add device located on the local network." + '"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick=\'return addLocalDeviceToMesh("' + currentMesh._id + '")\' title="' + "Add device located on the local network." + '"><i class="fa-solid fa-plus-circle"></i> ' + "Add Device" + '</button>';
             }
             if (currentMesh.amt && (currentMesh.amt.type > 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // ACM activation or Full Automatic
                 x += '<button class="btn btn-primary btn-sm me-2 mb-1" title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "ACM" + '</button>';
@@ -14914,9 +14815,9 @@
                 var trash = '', r = sortedusers[i].rights, rights = makeDeviceGroupRightsString(r), icon = 2;
                 if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) {
                     if ((meshrights == 0xFFFFFFFF) || (currentMesh.links[sortedusers[i].id].rights != 0xFFFFFFFF)) {
-                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
+                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
                     }
-                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <i class="fas fa-pencil hoverButton"></i></span>';
+                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <i class="fa-solid fa-pencil hoverButton"></i></span>';
                 }
                 if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
@@ -15117,9 +15018,9 @@
                 x += '<span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span>';
                 if ((currentMesh.mtype == 2) && (ptype == 2)) { x += '<span style="font-size:10px"> ' + "This policy will not impact devices with Intel&reg; AMT in ACM mode." + '</span>'; }
             }
-            if (ptype == 0) { x = '<div class="row"><div class="col-2"><i class="fas fa-times-circle text-danger" style="padding-right:8px; font-size:60px;"></i></div><div class="col-10">When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it.</div></div>'; }
-            if (ptype == 1) { x = '<div class="row"><div class="col-2"><i class="fas fa-times-circle text-danger" style="font-size:60px; padding-right:8px; color:green;"></i></div><div class="col-10">When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually.</div></div>'; }
-            if (ptype == 4) { x = '<div class="row"><div class="col-2"><i class="fas fa-check-circle text-success" style="font-size:60px; padding-right:8px; color:blue;"></i></div><div class="col-10">This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.</div></div>'; }
+            if (ptype == 0) { x = '<div class="row"><div class="col-2"><i class="fa-solid fa-times-circle text-danger" style="padding-right:8px; font-size:60px;"></i></div><div class="col-10">When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it.</div></div>'; }
+            if (ptype == 1) { x = '<div class="row"><div class="col-2"><i class="fa-solid fa-times-circle text-danger" style="font-size:60px; padding-right:8px; color:green;"></i></div><div class="col-10">When this policy is selected, any Intel&reg; AMT in Client Control Mode (CCM) will be deactivated. Other devices will have CIRA cleared and can still be managed manually.</div></div>'; }
+            if (ptype == 4) { x = '<div class="row"><div class="col-2"><i class="fa-solid fa-check-circle text-success" style="font-size:60px; padding-right:8px; color:blue;"></i></div><div class="col-10">This is the recommended policy. Intel&reg; AMT activation and management is completely automated and the server will attempt to make best possible use of hardware management.</div></div>'; }
             QH('dp20amtpolicydiv', x);
             setTimeout(dp20amtValidatePolicy, 500);
         }
@@ -17773,7 +17674,7 @@
 
             x = '<br />';
             if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) {
-                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p51showAddUserDialog()"><i class="fas fa-plus-circle"></i> ' + " Add Users" + '</button>';
+                x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p51showAddUserDialog()"><i class="fa-solid fa-plus-circle"></i> ' + " Add Users" + '</button>';
             }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Group Members" + '</th><th scope=col></th></tr>';
 
@@ -17806,7 +17707,7 @@
             count = 1;
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (currentUserGroup._id.split('/')[1] != meshes[i]._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUserGroup.links == null) || (currentUserGroup.links[i] == null)) { newDeviceGroup = true; } }
-            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1"onclick="return p20showAddMeshUserDialog(3)"><i class="fas fa-plus-circle"></i> ' + " Add Device Group" + '</button>'; }
+            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1"onclick="return p20showAddMeshUserDialog(3)"><i class="fa-solid fa-plus-circle"></i> ' + " Add Device Group" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var omeshes = [];
@@ -17818,7 +17719,7 @@
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else { }
                     if ((cr & 2) != 0) {
-                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>';
+                        trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
                     x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div title="' + "Device Group" + '" class=m99></div><div>&nbsp;' + meshname + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
@@ -17830,7 +17731,7 @@
             // Display all devices for this user group
             count = 1;
             x += '<br />';
-            if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(7)"><i class="fas fa-plus-circle"></i> ' + " Add Device" + '</button>'; }
+            if (currentUserGroup._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(7)"><i class="fa-solid fa-plus-circle"></i> ' + " Add Device" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUserGroup.links) {
                 var onodes = [];
@@ -18535,7 +18436,7 @@
             // Display common device groups
             var deviceGroupCount = 0, newDeviceGroup = false;
             for (var i in meshes) { if (meshes[i]._id.split('/')[1] != currentUser._id.split('/')[1]) continue; deviceGroupCount++; if ((currentUser.links == null) || (currentUser.links[i] == null)) { newDeviceGroup = true; } }
-            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(1)"><i class="fas fa-plus-circle"></i> ' + "Add Device Group" + '</button>'; }
+            if ((deviceGroupCount > 0) && (newDeviceGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(1)"><i class="fa-solid fa-plus-circle"></i> ' + "Add Device Group" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Device Groups" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 var omeshes = [];
@@ -18568,7 +18469,7 @@
                         userGroupCount++;
                         if ((currentUser.links == null) || (currentUser.links[i] == null)) { newUserGroup = true; }
                     }
-                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p30showAddUserGroupDialog()"><i class="fas fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
+                    if ((userGroupCount > 0) && (newUserGroup)) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p30showAddUserGroupDialog()"><i class="fa-solid fa-plus-circle"></i> ' + "Add User Group" + '</button>'; }
                 }
                 x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "User Group Memberships" + '</th><th scope=col></th></tr>';
                 if (currentUser.links) {
@@ -18582,7 +18483,7 @@
                             groupname = EscapeHtml(group.name);
                             if (usergroups != null) { groupname = '<a href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(ougroups[i]._id) + '");haltEvent(event);\'>' + groupname + '</a>'; }
                         }
-                        if ((group.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><i class="fas fa-trash text-danger hoverButton"></i></a>'; }
+                        if ((group.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { trash = '<a href=# onclick=\'return p30RemoveUserGroup(event,"' + encodeURIComponentEx(ougroups[i]._id) + '")\' title="' + "Remove user group membership" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>'; }
                         x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User Group" + '" class=m4></div><div>&nbsp;' + groupname + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
                     }
                 }
@@ -18593,7 +18494,7 @@
             // Display common devices
             count = 1;
             x += '<br />';
-            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(4)"><i class="fas fa-plus-circle"></i> ' + "Add Device" + '</button>'; }
+            if (currentUser._id.split('/')[1] == userinfo._id.split('/')[1]) { x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog(4)"><i class="fa-solid fa-plus-circle"></i> ' + "Add Device" + '</button>'; }
             x += '<table class="table table-hover"><tbody><tr class="table-active"><th scope=col>' + "Common Devices" + '</th><th scope=col></th></tr>';
             if (currentUser.links) {
                 // Sort the list of devices to display
@@ -19249,16 +19150,16 @@
                 if (user != null) {
                     var name = user.name;
                     if (user.realname != null) { name += ', ' + user.realname; }
-                    return '<div onclick=\'gotoUser("' + user._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer><i class="fas fa-user-circle"></i></div>' + EscapeHtml(name);
+                    return '<div onclick=\'gotoUser("' + user._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer><i class="fa-solid fa-user-circle"></i></div>' + EscapeHtml(name);
                 } else {
                     return '<i>' + "Unknown User" + '</i>';
                 }
             }
             if (f == 'msg') {
-                if (v == 107) return '<div style=float:left;margin-right:4px;cursor:pointer><i class="fas fa-check-circle text-success"></i></div>' + "Succesful login";
+                if (v == 107) return '<div style=float:left;margin-right:4px;cursor:pointer><i class="fa-solid fa-check-circle text-success"></i></div>' + "Succesful login";
                 if (v == 108) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny2"></div>' + "Incorrect 2nd factor";
                 if (v == 109) return '<div style=float:left;margin-right:4px;cursor:pointer class="NotifyIconTiny4"></div>' + "Locked account";
-                if (v == 110) return '<div style=float:left;margin-right:4px;cursor:pointer><i class="fas fa-exclamation-triangle text-warning"></i></div>' + "Invalid login attempt";
+                if (v == 110) return '<div style=float:left;margin-right:4px;cursor:pointer><i class="fa-solid fa-exclamation-triangle text-warning"></i></div>' + "Invalid login attempt";
             }
             if (f == '2fa') {
                 if (v == '') { return "None"; }
@@ -20673,7 +20574,8 @@
         function getLang() { if (navigator.languages != undefined) { return navigator.languages[0]; } return navigator.language; }
         function getNodeAmtVersion(node) { if ((node == null) || (node.intelamt == null) || (typeof node.intelamt.ver != 'string')) return 0; var verSplit = node.intelamt.ver.split('.'); if (verSplit.length < 2) return 0; return parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100); }
         function getstore(name, val) { try { if (typeof (localStorage) === 'undefined') return val; var v = localStorage.getItem(name); if ((v == null) || (v == null)) return val; return v; } catch (e) { return val; } }
-        function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
+        // function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
+        function addLink(x, f) { return '<span tabindex=0 role="button" onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <i class="fa-solid fa-pencil fa-xs"></i></span>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function addKeyLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <img class=hoverButton src=images/key16.png></span>'; }
         function addKeyLinkConditional(x, f, c) { if (c) return addKeyLink(x, f); return x; }
