@@ -2555,77 +2555,98 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'addlocaldevice':
                 {
-                    if (common.validateString(command.meshid, 8, 134) == false) break; // Check meshid
-                    if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                    if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name
-                    if (common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
-                    if (typeof command.type != 'number') break; // Type must be a number
-                    if ((command.type != 4) && (command.type != 6) && (command.type != 29)) break; // Check device type
-
-                    // Get the mesh
-                    mesh = parent.meshes[command.meshid];
-                    if (mesh) {
-                        if (mesh.mtype != 3) return; // This operation is only allowed for mesh type 3, local device agentless mesh.
-
-                        // Check if this user has rights to do this
-                        if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
-
-                        // Create a new nodeid
-                        parent.crypto.randomBytes(48, function (err, buf) {
-                            // Create the new node
-                            nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, mtype: 3, icon: 1, name: command.devicename, host: command.hostname, domain: domain.id, agent: { id: command.type, caps: 0 } };
-                            db.Set(device);
-
-                            // Event the new node
-                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
-                        });
+                    var err = null;
+                    // Perform input validation
+                    try {
+                        if (common.validateString(command.meshid, 8, 134) == false) { err = "Invalid device group id"; } // Check meshid
+                        if (common.validateString(command.devicename, 1, 256) == false) { err = "Invalid devicename"; } // Check device name
+                        if (common.validateString(command.hostname, 1, 256) == false) { err = "Invalid hostname"; } // Check hostname
+                        if (typeof command.type != 'number') { err = "Invalid type"; } // Type must be a number
+                        if ((command.type != 4) && (command.type != 6) && (command.type != 29)) { err = "Invalid type"; } // Check device type
+                        else {
+                            if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                            mesh = parent.meshes[command.meshid];
+                            if (mesh == null) { err = "Unknown device group"; }
+                            if (mesh.mtype != 3) { err = "Local device agentless mesh only allowed" } // This operation is only allowed for mesh type 3, local device agentless mesh.
+                            else if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) { err = "Permission denied"; }
+                            else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = "Invalid domain"; } // Invalid domain, operation only valid for current domain
+                        }
+                    } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
                     }
 
+                    // Create a new nodeid
+                    parent.crypto.randomBytes(48, function (err, buf) {
+                        // Create the new node
+                        nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                        var device = { type: 'node', _id: nodeid, meshid: command.meshid, mtype: 3, icon: 1, name: command.devicename, host: command.hostname, domain: domain.id, agent: { id: command.type, caps: 0 } };
+                        db.Set(device);
+
+                        // Event the new node
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
+                        // Send response if required
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addlocaldevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                    });
                     break;
                 }
             case 'addamtdevice':
                 {
                     if (args.wanonly == true) return; // This is a WAN-only server, local Intel AMT computers can't be added
-                    if (common.validateString(command.meshid, 8, 134) == false) break; // Check meshid
-                    if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) return; // Invalid domain, operation only valid for current domain
-                    if (common.validateString(command.devicename, 1, 256) == false) break; // Check device name
-                    if (common.validateString(command.hostname, 1, 256) == false) break; // Check hostname
-                    if (common.validateString(command.amtusername, 0, 16) == false) break; // Check username
-                    if (common.validateString(command.amtpassword, 0, 16) == false) break; // Check password
-                    if (command.amttls == '0') { command.amttls = 0; } else if (command.amttls == '1') { command.amttls = 1; } // Check TLS flag
-                    if ((command.amttls != 1) && (command.amttls != 0)) break;
+                    var err = null;
+                    // Perform input validation
+                    try {
+                        if (common.validateString(command.meshid, 8, 134) == false) { err = "Invalid device group id"; } // Check meshid
+                        if (common.validateString(command.devicename, 1, 256) == false) { err = "Invalid devicename"; } // Check device name
+                        if (common.validateString(command.hostname, 1, 256) == false) { err = "Invalid hostname"; } // Check hostname
+                        if (common.validateString(command.amtusername, 0, 16) == false) { err = "Invalid amtusername"; } // Check username
+                        if (common.validateString(command.amtpassword, 0, 16) == false) { err = "Invalid amtpassword"; } // Check password
+                        if (command.amttls == '0') { command.amttls = 0; } else if (command.amttls == '1') { command.amttls = 1; } // Check TLS flag
+                        if ((command.amttls != 1) && (command.amttls != 0)) { err = "Invalid amttls"; }
+                        else {
+                            if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                            // Get the mesh
+                            mesh = parent.meshes[command.meshid];
+                            if (mesh == null) { err = "Unknown device group"; }
+                            if (mesh.mtype != 1) { err = "Intel AMT agentless mesh only allowed"; } // This operation is only allowed for mesh type 1, Intel AMT agentless mesh.
+                            // Check if this user has rights to do this
+                            else if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) { err = "Permission denied"; }
+                            else if ((command.meshid.split('/').length != 3) || (command.meshid.split('/')[1] != domain.id)) { err = "Invalid domain"; } // Invalid domain, operation only valid for current domain
+                        }
+                    } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
+
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changeDeviceMesh', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
 
                     // If we are in WAN-only mode, hostname is not used
                     if ((args.wanonly == true) && (command.hostname)) { delete command.hostname; }
 
-                    // Get the mesh
-                    mesh = parent.meshes[command.meshid];
-                    if (mesh) {
-                        if (mesh.mtype != 1) return; // This operation is only allowed for mesh type 1, Intel AMT agentless mesh.
+                    // Create a new nodeid
+                    parent.crypto.randomBytes(48, function (err, buf) {
+                        // Create the new node
+                        nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
+                        var device = { type: 'node', _id: nodeid, meshid: command.meshid, mtype: 1, icon: 1, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
 
-                        // Check if this user has rights to do this
-                        if ((parent.GetMeshRights(user, mesh) & MESHRIGHT_MANAGECOMPUTERS) == 0) return;
+                        // Add optional feilds
+                        if (common.validateInt(command.state, 0, 3)) { device.intelamt.state = command.state; }
+                        if (common.validateString(command.ver, 1, 16)) { device.intelamt.ver = command.ver; }
+                        if (common.validateString(command.hash, 1, 256)) { device.intelamt.hash = command.hash; }
+                        if (common.validateString(command.realm, 1, 256)) { device.intelamt.realm = command.realm; }
 
-                        // Create a new nodeid
-                        parent.crypto.randomBytes(48, function (err, buf) {
-                            // Create the new node
-                            nodeid = 'node/' + domain.id + '/' + buf.toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-                            var device = { type: 'node', _id: nodeid, meshid: command.meshid, mtype: 1, icon: 1, name: command.devicename, host: command.hostname, domain: domain.id, intelamt: { user: command.amtusername, pass: command.amtpassword, tls: command.amttls } };
+                        // Save the device to the database
+                        db.Set(device);
 
-                            // Add optional feilds
-                            if (common.validateInt(command.state, 0, 3)) { device.intelamt.state = command.state; }
-                            if (common.validateString(command.ver, 1, 16)) { device.intelamt.ver = command.ver; }
-                            if (common.validateString(command.hash, 1, 256)) { device.intelamt.hash = command.hash; }
-                            if (common.validateString(command.realm, 1, 256)) { device.intelamt.realm = command.realm; }
+                        // Event the new node
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
+                        // Send response if required
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addamtdevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                    });
 
-                            // Save the device to the database
-                            db.Set(device);
-
-                            // Event the new node
-                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
-                        });
-                    }
                     break;
                 }
             case 'scanamtdevice':
