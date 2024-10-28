@@ -15,8 +15,7 @@
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
-    <link id="theme-stylesheet" href="styles/bootstrap.min.css" rel="stylesheet" title="CSS">
-    {{!-- <link href="styles/fontawesome/all.min.css" rel="stylesheet" title="CSS"> --}}
+    <link id="theme-stylesheet" href="styles/bootstrap{{{min}}}.css" rel="stylesheet" title="CSS">
     <link href="styles/sweetalert2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2-bootstrap-5-theme.min.css" rel="stylesheet" title="CSS">
@@ -46,8 +45,8 @@
     <script type="text/javascript" src="mstsc/rle.js"></script>
     <script type="text/javascript" src="mstsc/client.js"></script>
     <script type="text/javascript" src="mstsc/canvas.js"></script>
-    <script type="text/javascript" src="scripts/jquery.min.js"></script>
-    <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="scripts/jquery{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/bootstrap{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/fontawesome/all.min.js"></script>
     <script type="text/javascript" src="scripts/sweetalert2.all.min.js"></script>
     <script type="text/javascript" src="scripts/select2.full.min.js"></script>
@@ -382,7 +381,7 @@
             <div id=p1 style="display:none">
                 <div id="p1title" class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h1 class="text-primary">My Devices</h1>
+                        <h1>My Devices</h1>
                     </div>
                     <div style="display:none" id="devListToolbarViewIcons">
                         <div id=devViewPageState
@@ -435,7 +434,7 @@
                             <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All" id="CollapseAllButton" class="mb-1 me-1" src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
                             <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton" class="mb-1 me-1" src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
                             <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
-                            <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" disabled="disabled" value="Group Action" onclick=groupActionFunction() />
+                            <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
                             <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
                             <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;" placeholder="Filter">
                             <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
@@ -884,9 +883,7 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td><textarea id=notesPanelArea readonly
-                                                    style=width:300px;height:200px;resize:none;overflow-y:scroll></textarea>
-                                            </td>
+                                            <td><div id=notesPanelArea style=width:300px;height:200px;resize:none;overflow-y:scroll></div></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1518,14 +1515,11 @@
             </div>
             <div id=p20 style="display:none">
                 <div id=p20main style="overflow-y:auto">
-                    <div id="p20title">
-                        <div style="float:left">
-                            <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                                onkeypress="if (event.key == 'Enter') goBack()">
-                                <div class="backButtonEx"></div>
-                            </div>
+                    <div id=p20title class="d-flex align-items-center">
+                        <div id="p20BackButton" class="pe-2">
+                            <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                         </div>
-                        <h1>General - <span id=p20meshName></span></h1>
+                        <div class='fs-4 fw-bold'>General - <span id=p20meshName></span></div>
                     </div>
                     <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
                         <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
@@ -1536,14 +1530,11 @@
                 </div>
             </div>
             <div id=p21 style="display:none">
-                <div id="p21title">
-                    <div style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id=p21title class="d-flex align-items-center">
+                    <div id="p21BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>Summary - <span id=p21meshName></span></h1>
+                    <div class='fs-4 fw-bold'>Summary - <span id=p21meshName></span></div>
                 </div>
                 <div id=p21main style="overflow-y:auto">
                     <div style="width:100%">
@@ -1574,14 +1565,11 @@
                 </div>
             </div>
             <div id=p30 style="display:none">
-                <div id="p30title">
-                    <div style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id=p30title class="d-flex align-items-center">
+                    <div id="p30BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>General - <span id=p30userName></span></h1>
+                    <div class='fs-4 fw-bold'>General - <span id=p30userName></span></div>
                 </div>
                 <div id="p30info" style="overflow-y:auto">
                     {{!-- <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -1643,14 +1631,11 @@
                 </div>
             </div>
             <div id=p31 style="display:none">
-                <div id="p31title">
-                    <div style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id=p31title class="d-flex align-items-center">
+                    <div id="p31BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>Events - <span id=p31userName></span></h1>
+                    <div class='fs-4 fw-bold'>Events - <span id=p31userName></span></div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1830,14 +1815,11 @@
                 <div id="p50groups"></div>
             </div>
             <div id=p51 style="display:none">
-                <div id="p51title">
-                    <div style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id=p51title class="d-flex align-items-center">
+                    <div id="p51BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>User Group - <span id=p51groupName></span></h1>
+                    <div class='fs-4 fw-bold'>User Group - <span id=p51groupName></span></div>
                 </div>
                 <div id="p51info" style="overflow-y:auto">
                     {{!-- <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -2343,7 +2325,10 @@
             QV('autoconnectbutton1', debugmode); // Desktop
             //QV('DeskClip', debugmode); // Clipboard feature, not completed so show in in debug mode only.
 
-            if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; }
+            if (nightMode) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                QC('body').add('night'); QS('body')['background-color'] = '#000';
+            }
             toggleFullScreen();
 
             // Setup stared devices
@@ -2817,7 +2802,13 @@
             if ((features2 & 0x00200000) != 0) { nNightMode = '2'; }
             if (nNightMode == '1') { nightMode = true; }
             else if ((nNightMode == '0') && (window.matchMedia)) { nightMode = window.matchMedia('(prefers-color-scheme: dark)').matches }
-            if (nightMode) { QC('body').add('night'); QS('body')['background-color'] = '#000'; } else { QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6'; }
+            if (nightMode) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                QC('body').add('night'); QS('body')['background-color'] = '#000';
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                QC('body').remove('night'); QS('body')['background-color'] = '#d3d9d6';
+            }
             return nightMode;
         }
 
@@ -3672,7 +3663,7 @@
                             focusTextBox('d2devNotes');
                         }
                     } else {
-                        if (message.notes) { QH('notesPanelArea', decodeURIComponent(message.notes)); } else { QH('notesPanelArea', ''); }
+                        Q('notesPanelArea').innerHTML = (message.notes && marked && DOMPurify) ? DOMPurify.sanitize(marked.parse(decodeURIComponent(message.notes), { breaks: true }), { USE_PROFILES: { html: true } }) : '';
                         if (showNotesPanel && message.notes) { QV('notesPanel', true); } else { QV('notesPanel', false); }
                     }
                     break;
@@ -6001,19 +5992,19 @@
             var r = '';
             if (mesh.mtype == 1) {
                 if ((features & 1) == 0) { // If not WAN-Only
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '" onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "Add Local" + '</a>';
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
+                    r += ' <a href=# role="button" title="' + "Add a new Intel&reg; AMT computer that is located on the local network." + '" onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "Add Local" + '</a>';
+                    r += ' <a href=# role="button" title="' + "Add a new Intel&reg; AMT computer by scanning the local network." + '" onclick=\'return addAmtScanToMesh("' + mesh._id + '")\'>' + "Scan Network" + '</a>';
                 }
                 if (mesh.amt && (mesh.amt.type > 0)) { // CCM Deactivate, CCM or ACM activation, Full Automatic
-                    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + mesh._id + '")\'>' + "Setup" + '</a>';
+                    r += ' <a href=# role="button" title="' + "Perform Intel&reg; AMT activation and configuration." + '" onclick=\'return showAmtSetup("' + mesh._id + '")\'>' + "Setup" + '</a>';
                 }
             }
             if ((mesh.mtype == 2) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { // Agent device group
-                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
-                if ((features & 2) == 0) { r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
+                r += ' <a href=# role="button" title="' + "Add a new computer to this device group by installing the mesh agent." + '" onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "Add Agent" + '</a>';
+                if ((features & 2) == 0) { r += ' <a href=# role="button" title="' + "Invite someone to install the mesh agent on this device group." + '" onclick=\'return inviteAgentToMesh("' + mesh._id + '")\'>' + "Invite" + '</a>'; }
             }
             if (mesh.mtype == 3) { // Local device group
-                r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Add device located on the local network." + '" onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "Add Device" + '</a>';
+                r += ' <a href=# role="button" title="' + "Add device located on the local network." + '" onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "Add Device" + '</a>';
             }
             //if (mesh.amt && (mesh.amt.type > 2)) { // ACM activation or Full Automatic
             //    r += ' <a href=# style=cursor:pointer;font-size:small title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'>' + "ACM" + '</a>';
@@ -6238,18 +6229,18 @@
             if (xxdialogMode) return false;
             var x = '', mesh = meshes[meshid];
             if (features & 64) {
-                x += addHtmlFormFloating("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() class=form-select><option value=0>' + "Link invitation" + '</option><option value=1>' + "Email invitation" + '</option></select>', ['col-md-4', 'col-md-8']) + '<hr />';
+                x += addHtmlFormFloating("Invitation Type", '<select id=d2InviteType onchange=d2ChangedInviteType() class=form-select><option value=0>' + "Link invitation" + '</option><option value=1>' + "Email invitation" + '</option></select>') + '<hr />';
                 x += '<div id=emailInviteDiv style=display:none>' + format("Invite someone to install the mesh agent. An email with be sent with the link to the mesh agent installation for the \"{0}\" device group.", EscapeHtml(mesh.name)) + '<br /><br />';
                 x += addHtmlFormFloating("Name (optional)", '<input id=agentInviteName value="" placeholder="Name (optional)" class="form-control" maxlength=64 />');
-                x += addHtmlFormFloating("Email", '<input id=agentInviteEmail placeholder="' + "example@email.com" + '" onkeyup=validateAgentInvite()></input>');
-                x += addHtmlFormFloating("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() class=form-select><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option><option value=5>' + "MeshCentral Assistant" + '</option></select>', ['col-md-4', 'col-md-8']);
+                x += addHtmlFormFloating("Email", '<input id=agentInviteEmail placeholder="' + "example@email.com" + '" class="form-control" onkeyup=validateAgentInvite() />');
+                x += addHtmlFormFloating("Operating System", '<select id=agentInviteNameOs onchange=d2ChangedInviteType() class=form-select><option value=4>' + "Send installation link" + '</option><option value=0 selected>' + "Any supported" + '</option><option value=1>' + "Windows only" + '</option><option value=3>' + "Apple macOS only" + '</option><option value=2>' + "Linux only" + '</option><option value=5>' + "MeshCentral Assistant" + '</option></select>');
                 x += '<div id=d2agentexpirediv>';
-                x += addHtmlFormFloating("Link Expiration", '<select id=agentInviteExpire class=form-select><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>', ['col-md-4', 'col-md-8']);
+                x += addHtmlFormFloating("Link Expiration", '<select id=agentInviteExpire class=form-select><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
                 x += '</div>';
                 x += '<div id=d2agentInstallTypeDiv2>';
-                x += addHtmlFormFloating("Installation Type", '<select id=agentInviteType class=form-select><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>', ['col-md-4', 'col-md-8']);
+                x += addHtmlFormFloating("Installation Type", '<select id=agentInviteType class=form-select><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
                 x += '</div>';
-                x += addHtmlFormFloating("Message (optional)", '<textarea id="agentInviteMessage" class="form-control" style="width:230px;height:100px;resize:none;" maxlength="1024"></textarea>');
+                x += addHtmlFormFloating("Message (optional)", '<textarea id="agentInviteMessage" class="form-control" style="height:100px;resize:none;" maxlength="1024"></textarea>');
                 x += '</div>';
             }
             x += '<div id=urlInviteDiv>' + format("Invite someone to install the mesh agent by sharing an invitation link. This link points the user to installation instructions for the \"{0}\" device group. The link is public and no account for this server is needed.", EscapeHtml(mesh.name)) + '<br /><br />';
@@ -6349,7 +6340,7 @@
 
             // Linux agent install
             x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
-            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px class=form-control></textarea>';
+            x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px class=form-control></textarea>';
             x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")>' + "Copy" + ' <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent install
@@ -6387,7 +6378,7 @@
 
             // Linux agent uninstall
             x += '<div id=agins_linux_un style=display:none>' + "To remove a mesh agent, run the following command. Root credentials will be needed." + '<br />';
-            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px  class=form-control></textarea>';
+            x += '<textarea id=agins_linux_area_un rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px  class=form-control></textarea>';
             x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")>Copy <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent uninstall
@@ -6423,6 +6414,8 @@
             addAgentToMeshClick();
             return false;
         }
+
+        var xxModal;
 
         function setModalContent(modalId, title, bodyContent, size = null) {
             // Check if the modal elements exist
@@ -6477,21 +6470,24 @@
         * @param {*} [tag=null] - Another optional parameter passed to the callback.
         */
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
-            var modalElement = document.getElementById(modalId);
-            var modalInstance = new bootstrap.Modal(modalElement);
-
-            modalInstance.show();
+            if (xxModal == null) {
+                QE(okButtonId, true);
+                xxModal = new bootstrap.Modal(document.getElementById(modalId));
+                document.getElementById(modalId).addEventListener('hidden.bs.modal', function (event) {
+                    if (xxModal) { xxModal.dispose(); xxModal = null; }
+                });
+            }
+            xxModal.show();
             document.getElementById(okButtonId).onclick = function () {
-                if (okCallback && typeof okCallback === 'function') {
+                if (typeof okCallback === 'function' && okCallback) {
                     var callbackResult = okCallback(b, tag);
-                    // Close the modal by default unless `false` is explicitly returned
-                    if (callbackResult !== false) {
-                        modalInstance.hide();
-                    }
+                    // Close the modal by default unless `false` is explicitly returned from the callback function
+                    if (callbackResult !== false) { xxModal.hide(); }
                 } else {
-                    modalInstance.hide();
+                    if (xxModal) { xxModal.hide(); }
                 }
             };
+
         }
 
         function account_createMesh() {
@@ -6792,6 +6788,7 @@
                 // Group wake
                 meshserver.send({ action: 'wakedevices', nodeids: getCheckedDevices() });
                 uncheckAllDevices();
+                return true;
             } else if (op == 101) {
                 // Group delete, ask for confirmation
                 var chkNodeIds = getCheckedDevices(), x = '';
@@ -6847,7 +6844,7 @@
                 var x = "<div style=margin-bottom:4px>Perform batch device notification</div>";
                 x += '<select id=d2deviceop class="form-select-sm me-2" style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
                 x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
-                x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
+                x += '<textarea id=d2notifyMsg style=width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
                 x += '<select style=width:100% id=d2notifyTimeout>';
                 x += '<option disabled value="">Only Applicable to Message Box Notifications</option>';
                 x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
@@ -6877,7 +6874,7 @@
             } else if (op == 110) {
                 // Force agent update
                 var x = "Force agent update on selected devices?" + '<br /><br />';
-                setModalContent('xxAddAgent', 'For agent update', x);
+                setModalContent('xxAddAgent', 'Force agent update', x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2groupActionFunctionAgentUpdateExec());
             } else if (op == 111) {
                 // Clear agent core
@@ -6893,7 +6890,9 @@
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: getCheckedDevices(), actiontype: parseInt(op) });
                 uncheckAllDevices();
+                return true;
             }
+            return false;
         }
 
         function d2batchUploadValidate() { QE('idx_dlgOkButton', (Q('d2uploadinput').files.length != 0) && ((Q('d2winuploadpath') == null) || (Q('d2winuploadpath').value != '')) && ((Q('d2linuxuploadpath') == null) || (Q('d2linuxuploadpath').value != ''))); }
@@ -7291,7 +7290,8 @@
 
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '') ? null : '#FDFFBE';
+            x == '' ? QC('SearchInput').remove('search') : QC('SearchInput').add('search');
+            //QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '') ? null : '#FDFFBE';
             QV('SearchInputClearButton', (x != ''));
             QV('KvmSearchInputClearButton', (x != ''));
 
@@ -8384,7 +8384,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name), nnameEx;
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
-                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class=\'fa-solid fa-pencil fa-2xs\'/></i></span>'; }
+                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class="fa-solid fa-pencil fa-2xs"/></i></span>'; }
                 nnameEx = nname;
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
@@ -9130,7 +9130,7 @@
 
         function writeDeviceEvent(nodeid) {
             if (xxdialogMode) return;
-            setModalContent('xxAddAgent', 'Add Device Event', '<textarea id=d2devEvent style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>' + "This will add an entry to this device's event log." + '<span>');
+            setModalContent('xxAddAgent', 'Add Device Event', '<textarea id=d2devEvent style=width:100%;height:200px;resize:none;overflow-y:scroll></textarea><span style=font-size:10px>' + "This will add an entry to this device's event log." + '<span>');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 writeDeviceEventEx(3, nodeid);
             });
@@ -9142,7 +9142,7 @@
         function showNotes(readonly, noteid) {
             if (xxdialogMode) return;
             if (noteid == null) { noteid = encodeURIComponentEx('p' + userinfo._id); }
-            var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly class="form-control" style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+            var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly class="form-control" style=width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
             if (noteid.startsWith('node%2F%2F')) { x += '<span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '<span>'; }
 
             setModalContent('xxAddAgent', 'Notes', x);
@@ -9226,7 +9226,7 @@
         function deviceMessageFunction() {
             if (xxdialogMode) return;
             var x = '<div style=margin-bottom:4px>' + "Display a message box on the remote device." + '</div>';
-            x += '<textarea id=d2devMessage style=background-color:#fcf3cf;width:100%;height:80px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
+            x += '<textarea id=d2devMessage style=width:100%;height:80px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
             x += '<select style=width:100% id=d2devTimeout>';
             x += '<option value=2 selected>' + "Show for 2 Minutes (Default)" + '</option>';
             x += '<option value=10>' + "Show for 10 minutes" + '</option>';
@@ -9514,7 +9514,7 @@
                         x += '</select>';
                     }
                     x += '<select id=d2cmduser style=width:100%;margin-bottom:4px><option value=0>' + "Run as agent" + '</option><option value=1>' + "Run as user, agent if no user" + '</option><option value=2>' + "Must run as user" + '</option></select>';
-                    x += '<textarea id=d2runcmd style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
+                    x += '<textarea id=d2runcmd style=width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
                     setModalContent('xxAddAgent', 'Run Commands', x);
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', () => deviceRunCmdsFunctionEx());
                     Q('d2runcmd').focus();
@@ -10014,26 +10014,34 @@
         var showEditNodeValueDialog_modes4 = [64, 64, 64, 4096];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = addHtmlFormFloating(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) class=form-control/>');
+            var x = '<select id=dp10devicevalue multiple class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' class=form-control>';
+            var y = '';
+            var v = currentNode[showEditNodeValueDialog_modes2[mode]];
+            if (v == null) v = '';
             if (mode == 3) {
                 // Get a list of all possible device tags
-                var allTags = [], y = '';
+                var allTags = [];
                 for (var i in nodes) { if (nodes[i].tags) { for (var j in nodes[i].tags) { if (allTags.indexOf(nodes[i].tags[j]) == -1) { allTags.push(nodes[i].tags[j]); } } } }
                 if (allTags.length > 0) {
                     allTags.sort();
-                    for (var i in allTags) { y += '<span style=padding:4px;background-color:#BBB;border-radius:3px;cursor:pointer onclick=showEditNodeValueDialogAddTag("' + encodeURIComponentEx(allTags[i]) + '")>' + EscapeHtml(allTags[i]) + '</span> '; }
-                    x += '<div style=margin-top:8px;width:370px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
+                    for (var i in allTags) {
+                        var tag = EscapeHtml(allTags[i]);
+                        y += Array.isArray(v) && v.indexOf(allTags[i]) !== -1 ? '<option selected=selected>' + EscapeHtml(allTags[i]) + '</option>' : '<option>' + EscapeHtml(allTags[i]) + '</option>';
+                    }
                 }
             }
-            setModalContent('xxAddAgent', 'Edit Device', x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
-                showEditNodeValueDialogEx(3, mode);
+            x += y + '</select>'
+            setModalContent('xxAddAgent', "Edit Tags", x);
+            $('#dp10devicevalue').select2({
+                theme: "bootstrap-5",
+                width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+                placeholder: showEditNodeValueDialog_modes3[mode],
+                closeOnSelect: false,
+                allowClear: true,
+                tokenSeparators: [','],
+                tags: true
             });
-            var v = currentNode[showEditNodeValueDialog_modes2[mode]];
-            if (v == null) v = '';
-            if (Array.isArray(v)) { v = v.join(', '); }
-            Q('dp10devicevalue').value = v;
-            p10editdevicevalueValidate();
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { showEditNodeValueDialogEx(3, mode); });
             Q('dp10devicevalue').focus();
         }
 
@@ -10047,8 +10055,10 @@
         }
 
         function showEditNodeValueDialogEx(button, mode) {
+            var tt = $('#dp10devicevalue').select2('data'), tags = "";
+            for (var i in tt) { tags += tt[i]['text'].trim() + ', '; }
             var x = { action: 'changedevice', nodeid: currentNode._id };
-            x[showEditNodeValueDialog_modes2[mode]] = Q('dp10devicevalue').value;
+            x[showEditNodeValueDialog_modes2[mode]] = decodeURIComponent(tags.slice(0,-2));
             meshserver.send(x);
         }
 
@@ -13117,10 +13127,10 @@
             var sections = [], s = {};
 
             // Operating System
+            var x = '';
+            if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
+            if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
             if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
-                var x = '';
-                if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
-                if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
                 if (hardware.windows && hardware.windows.osinfo) {
                     var m = hardware.windows.osinfo;
                     if (m.OSArchitecture) {
@@ -16830,10 +16840,10 @@
             if (user.email != null) {
                 if (((features & 0x200000) == 0) || (user.email.toLowerCase() != user.name.toLowerCase())) {
                     // Username & email are different
-                    username += ', <a href="mailto:' + EscapeHtml(user.email) + '" \'>' + EscapeHtml(user.email) + '</a>' + emailVerified;
+                    username += ', <a href="mailto:' + EscapeHtml(user.email) + '">' + EscapeHtml(user.email) + '</a>' + emailVerified;
                 } else {
                     // Username & email are the same
-                    username += ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
+                    username += ' <a href="mailto:' + EscapeHtml(user.email) + '"><img src="images/mail12.png" height=9 width=12 title="' + "Send email to user" + '" style="margin-top:2px" /></a>' + emailVerified;
                 }
             }
 
@@ -16843,8 +16853,8 @@
                 if (userdomain != '') { username += ', <span style=color:#26F>' + userdomain + '</span>'; }
             }
 
-            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
-            if (user.phone != null) { username += ' <img src="images/phone12.png" height=12 width=7 title="' + "Verified phone number" + '" style="margin-top:2px" />'; }
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <i class="fas fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i>'; }
+            if (user.phone != null) { username += ' <i class="fa-solid fa-mobile-screen" title="' + "Verified phone number" + '" style="margin-top:2px"></i>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
             if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <img src="images/messaging12.png" height=12 width=12 title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
             x += '<tr tabindex=0 onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponentEx(user._id) + '\')"><td>';
@@ -17236,7 +17246,7 @@
             x += addHtmlFormFloating('<span id=p4hemail>' + "Email", '<input id=p4email type=email class="form-control" maxlength=256 autocomplete="email" inputmode="email" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '';
             x += addHtmlFormFloating('<span id=p4hp1>' + "Password" + '</span>', '<input id=p4pass1 type=password class="form-control" maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
-            x += addHtmlFormFloating('<span id=p4hp2>' + "Password" + '</span>', '<input id=p4pass2 type=password class="form-control" maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
+            x += addHtmlFormFloating('<span id=p4hp2>' + "Confirm Password" + '</span>', '<input id=p4pass2 type=password class="form-control" maxlength=256 autocomplete="new-password" onchange=showCreateNewAccountDialogValidate() onkeyup=showCreateNewAccountDialogValidate() />');
             x += '<div><label><input id=p4randomPassword onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Randomize the password." + '</label></div>';
             x += '<div><label><input id=p4removeEvents onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Remove all previous events for this userid." + '</label></div>';
             x += '<div><label><input id=p4resetNextLogin onchange=showCreateNewAccountDialogValidate() type=checkbox class="form-check-input me-2" />' + "Force password reset on next login." + '</label></div>';
@@ -17608,7 +17618,7 @@
             // Add user group name
             var gname = EscapeHtml(group.name);
             if (gname.length == 0) { gname = '<i>' + "None" + '</i>'; }
-            if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { gname = '<span tabindex=0 title="' + "Click here to edit the user group name" + '" onclick=p51editgroup(1) onkeyup="if (event.key == \'Enter\') p51editgroup(1)" style=cursor:pointer>' + gname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            if ((currentUserGroup.membershipType == null) && ((userinfo.siteadmin & 256) != 0)) { gname = '<span role=button tabindex=0 title="' + "Click here to edit the user group name" + '" onclick=p51editgroup(1) onkeyup="if (event.key == \'Enter\') p51editgroup(1)">' + gname + '  <i class="fa-solid fa-pencil fa-2xs"/></i></span>'; }
             QH('p51groupName', gname);
 
             var usercount = 0, meshcount = 0, devicecount = 0;
@@ -17633,7 +17643,7 @@
                 x += addDeviceAttribute("Group Type", EscapeHtml(currentUserGroup.membershipType));
             }
             if ((userinfo.siteadmin & 256) != 0) {
-                x += addDeviceAttribute("Description", '<span onclick=p51editgroup(2,' + (currentUserGroup.membershipType != null) + ') style=cursor:pointer>' + desc + ' <img class=hoverButton src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Description", '<span role=button onclick=p51editgroup(2,' + (currentUserGroup.membershipType != null) + ')>' + desc + ' <i class="fa-solid fa-pencil fa-xs"/></i></span>');
             } else {
                 x += addDeviceAttribute("Description", desc);
             }
@@ -18015,21 +18025,21 @@
             }
 
             var emailLink = '';
-            if (user.email) { emailLink = ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><img class=hoverButton src="images/link1.png" /></a>'; }
+            if (user.email) { emailLink = ' <a href="mailto:' + EscapeHtml(user.email) + '" \'><i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i></a>'; }
             if (((user.siteadmin != 0xFFFFFFFF) || (userinfo.siteadmin == 0xFFFFFFFF))) { // If we are not site admin, we can't change a admin email or real name
-                x += addDeviceAttribute("Email", '<span style=cursor:pointer onclick=p30showUserEmailChangeDialog(event,"' + encodeURIComponentEx(user._id) + '")>' + everify + email + emailLink + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
-                x += addDeviceAttribute("Real Name", '<span style=cursor:pointer onclick=p30showUserRealNameChangeDialog(event,"' + encodeURIComponentEx(user._id) + '")>' + realname + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Email", '<span role=button onclick=p30showUserEmailChangeDialog(event,"' + encodeURIComponentEx(user._id) + '")>' + everify + email + emailLink + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
+                x += addDeviceAttribute("Real Name", '<span role=button onclick=p30showUserRealNameChangeDialog(event,"' + encodeURIComponentEx(user._id) + '")>' + realname + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             } else {
                 x += addDeviceAttribute("Email", everify + email + emailLink);
                 x += addDeviceAttribute("Real Name", realname);
             }
 
             if ((features & 0x02000000) || (user.phone != null)) { // If SMS is enabled on the server or user has a phone number
-                x += addDeviceAttribute("Phone Number", '<span style=cursor:pointer onclick=p30editPhone()>' + (user.phone ? user.phone : ('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Phone Number", '<span role=button onclick=p30editPhone()>' + (user.phone ? user.phone : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
-                x += addDeviceAttribute("Messaging", '<span style=cursor:pointer onclick=p30editMessaging()><img src="images/messaging12.png" height=12 width=12 title="' + "Messaging enabled" + '" style="margin-top:2px" /> ' + (user.msghandle ? user.msghandle : ('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Messaging", '<span role=button onclick=p30editMessaging()><i class="fas fa-comment fa-xs" title="' + "Messaging enabled" + '" style="margin-top:2px"></i> ' + (user.msghandle ? user.msghandle : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             }
 
             // Display features
@@ -18052,7 +18062,7 @@
             if (userFeatures == '') { userFeatures = '<i>' + "None" + '</i>'; }
             x += addDeviceAttribute("Features", addLink(userFeatures, 'p20edituserfeatures()'));
 
-            x += addDeviceAttribute("Server Rights", '<span style=cursor:pointer onclick=\'return showUserAdminDialog(event,"' + encodeURIComponentEx(user._id) + '")\'>' + premsg + msg.join(', ') + ' <img style=cursor:pointer class=hoverButton src="images/link5.png" /></span>');
+            x += addDeviceAttribute("Server Rights", '<span role=button onclick=\'return showUserAdminDialog(event,"' + encodeURIComponentEx(user._id) + '")\'>' + premsg + msg.join(', ') + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             if (user.quota) x += addDeviceAttribute("Server Quota", EscapeHtml(parseInt(user.quota) / 1024) + ' k');
             x += addDeviceAttribute("Creation", printDateTime(new Date(user.creation * 1000)));
             if (user.login) x += addDeviceAttribute("Last Login", printDateTime(new Date(user.login * 1000)));
@@ -18101,24 +18111,24 @@
                 if (user.otpdev > 0) { factors.push("Device Push"); }
                 if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
                 if ((user.msghandle != null) && (features2 & 0x04000000)) { factors.push("Messaging"); }
-                x += addDeviceAttribute("Security", '<img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" /> ' + factors.join(', '));
+                x += addDeviceAttribute("Security", '<i class="fas fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i> ' + factors.join(', '));
             }
 
             x += '</table></div><br />';
 
             // Add action buttons
             x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
-            if (user.phone && (features & 0x02000000)) { x += '<input type=button value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
-            if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
-            if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
+            if (user.phone && (features & 0x02000000)) { x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
+            if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
+            if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
             if (!self && ((activeSessions > 0) || ((features2 & 8) && (user.webpush)))) {
-                x += '<input type=button value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
-                x += '<input type=button value="' + "Chat" + '" title="' + "Chat" + '" onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />';
+                x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
+                x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Chat" + '" title="' + "Chat" + '" onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />';
                 if ((activeSessions > 0) && (serverinfo != null) && (serverinfo.altmessenging != null)) {
                     for (var i in serverinfo.altmessenging) {
                         var am = serverinfo.altmessenging[i];
                         if ((am.type == null) || (am.type == 'user')) {
-                            x += '<input type=button value="' + EscapeHtml(am.name) + '" onclick=altUserChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '",' + i + ') />';
+                            x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + EscapeHtml(am.name) + '" onclick=altUserChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '",' + i + ') />';
                         }
                     }
                 }
@@ -18342,7 +18352,7 @@
             if (xxdialogMode) return false;
             var x = '';
             x += '<div class="form-floating mb-2"><input id=dp30email class="form-control" maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() placeholder=Email /><label for=dp30email>Email</label></div>';
-            if (serverinfo.emailcheck) { x += addHtmlFormFloating("Status", '<select id=dp30verified class=""form-control" onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
+            if (serverinfo.emailcheck) { x += addHtmlFormFloating("Status", '<select id=dp30verified class="form-control" onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
 
             setModalContent('xxAddAgent', format("Change Email for {0}", EscapeHtml(currentUser.name)), x);
             xxdialogButtons = 3;
@@ -18381,7 +18391,7 @@
             if (xxdialogMode) return;
             var x = '';
             x += '<div class="form-floating mb-2"><input id=p4pass1 type=password class="form-control" maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1) placeholder=Password></input><label for=p4pass1>Password</label></div>';
-            x += '<div class="form-floating mb-2"><input id=p4pass2 type=password class="form-control" maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1) placeholder=Password></input><label for=p4pass2>Password</label></div>';
+            x += '<div class="form-floating mb-2"><input id=p4pass2 type=password class="form-control" maxlength=256 onchange=p30showUserChangePassDialogValidate(1) onkeyup=p30showUserChangePassDialogValidate(1) placeholder=Password></input><label for=p4pass2>Confirm Password</label></div>';
 
             if (features & 0x00010000) { x += '<div class="form-floating mb-2"><input id=p4hint type=text class="form-control" maxlength=256 placeholder="Password hint"></input><label for=p4hint>Password hint</label></div>'; }
 
