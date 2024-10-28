@@ -1,5 +1,5 @@
 /**
- * marked v14.0.0 - a markdown parser
+ * marked v14.1.3 - a markdown parser
  * Copyright (c) 2011-2024, Christopher Jeffrey. (MIT Licensed)
  * https://github.com/markedjs/marked
  */
@@ -253,7 +253,7 @@
         code(src) {
             const cap = this.rules.block.code.exec(src);
             if (cap) {
-                const text = cap[0].replace(/^ {1,4}/gm, '');
+                const text = cap[0].replace(/^(?: {1,4}| {0,3}\t)/gm, '');
                 return {
                     type: 'code',
                     raw: cap[0],
@@ -437,7 +437,7 @@
                         itemContents = line.slice(indent);
                         indent += cap[1].length;
                     }
-                    if (blankLine && /^ *$/.test(nextLine)) { // Items begin with at most one blank line
+                    if (blankLine && /^[ \t]*$/.test(nextLine)) { // Items begin with at most one blank line
                         raw += nextLine + '\n';
                         src = src.substring(nextLine.length + 1);
                         endEarly = true;
@@ -447,13 +447,19 @@
                         const hrRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`);
                         const fencesBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:\`\`\`|~~~)`);
                         const headingBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}#`);
+                        const htmlBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}<[a-z].*>`, 'i');
                         // Check if following lines should be included in List Item
                         while (src) {
                             const rawLine = src.split('\n', 1)[0];
+                            let nextLineWithoutTabs;
                             nextLine = rawLine;
                             // Re-align to follow commonmark nesting rules
                             if (this.options.pedantic) {
                                 nextLine = nextLine.replace(/^ {1,4}(?=( {4})*[^ ])/g, '  ');
+                                nextLineWithoutTabs = nextLine;
+                            }
+                            else {
+                                nextLineWithoutTabs = nextLine.replace(/\t/g, '    ');
                             }
                             // End list item if found code fences
                             if (fencesBeginRegex.test(nextLine)) {
@@ -463,16 +469,20 @@
                             if (headingBeginRegex.test(nextLine)) {
                                 break;
                             }
+                            // End list item if found start of html block
+                            if (htmlBeginRegex.test(nextLine)) {
+                                break;
+                            }
                             // End list item if found start of new bullet
                             if (nextBulletRegex.test(nextLine)) {
                                 break;
                             }
                             // Horizontal rule found
-                            if (hrRegex.test(src)) {
+                            if (hrRegex.test(nextLine)) {
                                 break;
                             }
-                            if (nextLine.search(/[^ ]/) >= indent || !nextLine.trim()) { // Dedent if possible
-                                itemContents += '\n' + nextLine.slice(indent);
+                            if (nextLineWithoutTabs.search(/[^ ]/) >= indent || !nextLine.trim()) { // Dedent if possible
+                                itemContents += '\n' + nextLineWithoutTabs.slice(indent);
                             }
                             else {
                                 // not enough indentation
@@ -480,7 +490,7 @@
                                     break;
                                 }
                                 // paragraph continuation unless last line was a different block level element
-                                if (line.search(/[^ ]/) >= 4) { // indented code block
+                                if (line.replace(/\t/g, '    ').search(/[^ ]/) >= 4) { // indented code block
                                     break;
                                 }
                                 if (fencesBeginRegex.test(line)) {
@@ -499,7 +509,7 @@
                             }
                             raw += rawLine + '\n';
                             src = src.substring(rawLine.length + 1);
-                            line = nextLine.slice(indent);
+                            line = nextLineWithoutTabs.slice(indent);
                         }
                     }
                     if (!list.loose) {
@@ -507,7 +517,7 @@
                         if (endsWithBlankLine) {
                             list.loose = true;
                         }
-                        else if (/\n *\n *$/.test(raw)) {
+                        else if (/\n[ \t]*\n[ \t]*$/.test(raw)) {
                             endsWithBlankLine = true;
                         }
                     }
@@ -969,15 +979,15 @@
     /**
      * Block-Level Grammar
      */
-    const newline = /^(?: *(?:\n|$))+/;
-    const blockCode = /^( {4}[^\n]+(?:\n(?: *(?:\n|$))*)?)+/;
+    const newline = /^(?:[ \t]*(?:\n|$))+/;
+    const blockCode = /^((?: {4}| {0,3}\t)[^\n]+(?:\n(?:[ \t]*(?:\n|$))*)?)+/;
     const fences = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/;
     const hr = /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/;
     const heading = /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/;
     const bullet = /(?:[*+-]|\d{1,9}[.)])/;
     const lheading = edit(/^(?!bull |blockCode|fences|blockquote|heading|html)((?:.|\n(?!\s*?\n|bull |blockCode|fences|blockquote|heading|html))+?)\n {0,3}(=+|-+) *(?:\n+|$)/)
         .replace(/bull/g, bullet) // lists can interrupt
-        .replace(/blockCode/g, / {4}/) // indented code blocks can interrupt
+        .replace(/blockCode/g, /(?: {4}| {0,3}\t)/) // indented code blocks can interrupt
         .replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/) // fenced code blocks can interrupt
         .replace(/blockquote/g, / {0,3}>/) // blockquote can interrupt
         .replace(/heading/g, / {0,3}#{1,6}/) // ATX heading can interrupt
@@ -986,7 +996,7 @@
     const _paragraph = /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/;
     const blockText = /^[^\n]+/;
     const _blockLabel = /(?!\s*\])(?:\\.|[^\[\]\\])+/;
-    const def = edit(/^ {0,3}\[(label)\]: *(?:\n *)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n *)?| *\n *)(title))? *(?:\n+|$)/)
+    const def = edit(/^ {0,3}\[(label)\]: *(?:\n[ \t]*)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n[ \t]*)?| *\n[ \t]*)(title))? *(?:\n+|$)/)
         .replace('label', _blockLabel)
         .replace('title', /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/)
         .getRegex();
@@ -1006,9 +1016,9 @@
         + '|<\\?[\\s\\S]*?(?:\\?>\\n*|$)' // (3)
         + '|<![A-Z][\\s\\S]*?(?:>\\n*|$)' // (4)
         + '|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)' // (5)
-        + '|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n *)+\\n|$)' // (6)
-        + '|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)' // (7) open tag
-        + '|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)' // (7) closing tag
+        + '|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)' // (6)
+        + '|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)' // (7) open tag
+        + '|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)' // (7) closing tag
         + ')', 'i')
         .replace('comment', _comment)
         .replace('tag', _tag)
@@ -1055,7 +1065,7 @@
         .replace('hr', hr)
         .replace('heading', ' {0,3}#{1,6}(?:\\s|$)')
         .replace('blockquote', ' {0,3}>')
-        .replace('code', ' {4}[^\\n]')
+        .replace('code', '(?: {4}| {0,3}\t)[^\\n]')
         .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
         .replace('list', ' {0,3}(?:[*+-]|1[.)]) ') // only lists starting from 1 can interrupt
         .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)')
@@ -1118,7 +1128,7 @@
     const punctuation = edit(/^((?![*_])[\spunctuation])/, 'u')
         .replace(/punctuation/g, _punctuation).getRegex();
     // sequences em should skip over [title](link), `code`, <html>
-    const blockSkip = /\[[^[\]]*?\]\([^\(\)]*?\)|`[^`]*?`|<[^<>]*?>/g;
+    const blockSkip = /\[[^[\]]*?\]\((?:\\.|[^\\\(\)]|\((?:\\.|[^\\\(\)])*\))*\)|`[^`]*?`|<[^<>]*?>/g;
     const emStrongLDelim = edit(/^(?:\*+(?:((?!\*)[punct])|[^\s*]))|^_+(?:((?!_)[punct])|([^\s_]))/, 'u')
         .replace(/punct/g, _punctuation)
         .getRegex();
@@ -1334,11 +1344,6 @@
         blockTokens(src, tokens = [], lastParagraphClipped = false) {
             if (this.options.pedantic) {
                 src = src.replace(/\t/g, '    ').replace(/^ +$/gm, '');
-            }
-            else {
-                src = src.replace(/^( *)(\t+)/gm, (_, leading, tabs) => {
-                    return leading + '    '.repeat(tabs.length);
-                });
             }
             let token;
             let lastToken;
@@ -2082,6 +2087,7 @@
 
     class _Hooks {
         options;
+        block;
         constructor(options) {
             this.options = options || exports.defaults;
         }
@@ -2108,13 +2114,25 @@
         processAllTokens(tokens) {
             return tokens;
         }
+        /**
+         * Provide function to tokenize markdown
+         */
+        provideLexer() {
+            return this.block ? _Lexer.lex : _Lexer.lexInline;
+        }
+        /**
+         * Provide function to parse tokens
+         */
+        provideParser() {
+            return this.block ? _Parser.parse : _Parser.parseInline;
+        }
     }
 
     class Marked {
         defaults = _getDefaults();
         options = this.setOptions;
-        parse = this.parseMarkdown(_Lexer.lex, _Parser.parse);
-        parseInline = this.parseMarkdown(_Lexer.lexInline, _Parser.parseInline);
+        parse = this.parseMarkdown(true);
+        parseInline = this.parseMarkdown(false);
         Parser = _Parser;
         Renderer = _Renderer;
         TextRenderer = _TextRenderer;
@@ -2287,8 +2305,8 @@
                         if (!(prop in hooks)) {
                             throw new Error(`hook '${prop}' does not exist`);
                         }
-                        if (prop === 'options') {
-                            // ignore options property
+                        if (['options', 'block'].includes(prop)) {
+                            // ignore options and block properties
                             continue;
                         }
                         const hooksProp = prop;
@@ -2346,7 +2364,7 @@
         parser(tokens, options) {
             return _Parser.parse(tokens, options ?? this.defaults);
         }
-        parseMarkdown(lexer, parser) {
+        parseMarkdown(blockType) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const parse = (src, options) => {
                 const origOpt = { ...options };
@@ -2366,7 +2384,10 @@
                 }
                 if (opt.hooks) {
                     opt.hooks.options = opt;
+                    opt.hooks.block = blockType;
                 }
+                const lexer = opt.hooks ? opt.hooks.provideLexer() : (blockType ? _Lexer.lex : _Lexer.lexInline);
+                const parser = opt.hooks ? opt.hooks.provideParser() : (blockType ? _Parser.parse : _Parser.parseInline);
                 if (opt.async) {
                     return Promise.resolve(opt.hooks ? opt.hooks.preprocess(src) : src)
                         .then(src => lexer(src, opt))
