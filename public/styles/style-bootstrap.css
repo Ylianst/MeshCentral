@@ -746,6 +746,14 @@ body {
     width: 120px;
 }
 
+#SearchInput.search {
+    background-color: #FDFFBE;
+}
+
+.night #SearchInput.search {
+    background-color: grey;
+}
+
 #devListToolbarView, #devListToolbarSort, #devListToolbarSize, #devListToolbarSettings {
     float: right;
 }
@@ -1317,11 +1325,6 @@ NoMeshesPanel img {
     font-weight: bold;
     width: 100%;
     text-align: center;
-}
-
-#d2groupop {
-    float: right;
-    width: 250px;
 }
 
 #d2netinfo .dialogText {
@@ -2097,6 +2100,26 @@ nav .lbbuttonsel2 {
 
 .night .g2s {
     background-image: linear-gradient(to right, #444 0%, #000 100%);
+}
+
+#agins_linux_area,
+#agins_linux_area_un,
+#d2notifyMsg,
+#d2devNotes,
+#d2devEvent,
+#d2runcmd, 
+#d2devMessage {
+    background-color: #FFF9D3;
+}
+
+.night #agins_linux_area,
+.night #agins_linux_area_un,
+.night #d2notifyMsg,
+.night #d2devNotes,
+.night #d2devEvent,
+.night #d2runcmd,
+.night #d2devMessage {
+    background-color: black;
 }
 
 .h1pre {
@@ -3333,6 +3356,10 @@ nav .lbbuttonsel2 {
     background: #f8f9fa !important;
 }
 
+.night .card {
+    background-color: black !important;
+}
+
 .table td,
 .table th {
     padding: 0.05rem !important; /* Decrease padding to reduce row height */
@@ -3413,3 +3440,16 @@ nav .lbbuttonsel2 {
         flex-direction: column !important;
     } */
 }
+
+/* css fixes for select2 */
+/* .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+    display: inline;
+}
+    
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
+    display: inline-flex;
+}
+    
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-search {
+    display: inline !important;
+} */
