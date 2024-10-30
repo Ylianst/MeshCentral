@@ -137,7 +137,12 @@ module.exports.CreateDB = function (parent, func) {
                 });
             });
         } else if (obj.databaseType == DB_SQLITE) { // SQLite3
-            // TODO
+            // TODO: Combine with others?
+            sqlDbQuery('DELETE FROM events WHERE time < ?', [new Date(Date.now() - (expireEventsSeconds * 1000))], function (doc, err) { }); 
+            sqlDbQuery('DELETE FROM power WHERE time < ?', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { });
+            sqlDbQuery('DELETE FROM serverstats WHERE expire < ?', [new Date()], function (doc, err) { });
+            sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { });
+            obj.file.run( 'PRAGMA optimize;' ); //see https://sqlite.org/pragma.html#pragma_optimize
         }
         obj.removeInactiveDevices();
     }
@@ -762,7 +767,11 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE INDEX ndxsmbiostime ON smbios (time);
                         CREATE INDEX ndxsmbiosexpire ON smbios (expire);
                         `, function (err) {
-                            // Completed setup of SQLite3
+                            // Completed DB creation of SQLite3
+                            //WAL mode instead of roll-back/delete
+                            obj.file.run( 'PRAGMA journal_mode=WAL;' );
+                            //Together with the optimize in the maintenance run, see https://sqlite.org/pragma.html#pragma_optimize
+                            obj.file.run( 'PRAGMA optimize=0x10002;' ); 
                             setupFunctions(func);
                         }
                     );
@@ -771,6 +780,11 @@ module.exports.CreateDB = function (parent, func) {
             } else if (err) { console.log("SQLite Error: " + err); exit(1); return; }
 
             // Completed setup of SQLite3
+            //for existing db's
+            //WAL mode instead of roll-back/delete
+            obj.file.run( 'PRAGMA journal_mode=WAL;' );
+            //Together with the optimize in the maintenance run, see https://sqlite.org/pragma.html#pragma_optimize
+            obj.file.run( 'PRAGMA optimize=0x10002;' ); 
             setupFunctions(func);
         });
     } else if (parent.args.acebase) {
