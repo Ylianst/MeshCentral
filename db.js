@@ -3549,10 +3549,10 @@ module.exports.CreateDB = function (parent, func) {
                 });
             archive.pipe(output);
 
-            let globIgnoreFiles = (parent.config.settings.autobackup.backupignorefilesglob) ? parent.config.settings.autobackup.backupignorefilesglob.slice() : [];
-            if (parent.config.settings.sqlite3) {
-                globIgnoreFiles.push (datapathFoldername + '/' + databaseName + '.sqlite*'); //skip sqlite database files, temp files with ext -journal, -wal & -shm
-            }
+            let globIgnoreFiles;
+            //slice in case exclusion gets pushed
+            globIgnoreFiles = parent.config.settings.autobackup.backupignorefilesglob.slice();
+            if (parent.config.settings.sqlite3) { globIgnoreFiles.push (datapathFoldername + '/' + databaseName + '.sqlite*'); }; //skip sqlite database file, and temp files with ext -journal, -wal & -shm
             //archiver.glob doesn't seem to use the third param, archivesubdir. Bug?
             //workaround: go up a dir and add data dir explicitly to keep the zip tidy
             archive.glob((datapathFoldername + '/**'), {
@@ -3560,6 +3560,7 @@ module.exports.CreateDB = function (parent, func) {
                 ignore: globIgnoreFiles,
                 skip: parent.config.settings.autobackup.backupskipfoldersglob
             });
+
             if (parent.config.settings.autobackup.backupwebfolders) {
                 if (parent.webViewsOverridePath) { archive.directory(parent.webViewsOverridePath, 'meshcentral-views');; }
                 if (parent.webPublicOverridePath) { archive.directory(parent.webPublicOverridePath, 'meshcentral-public');; }

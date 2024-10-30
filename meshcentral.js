@@ -2089,11 +2089,16 @@ function CreateMeshCentralServer(config, args) {
                     obj.updateServerState('state', "running");
 
                     // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
-                    else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
-                    else if (typeof obj.config.settings.autobackup == 'object'){
-                        if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; }
-                        if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; }
+                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { delete obj.config.settings.autobackup; }
+                    else {
+                        if (obj.config.settings.autobackup === true) {obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
+                        if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
+                        if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
+                        //arrayfi in case of string and remove possible ', ' space. !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !!
+                        if (!obj.config.settings.autobackup.backupignorefilesglob) {obj.config.settings.autobackup.backupignorefilesglob = []}
+                        else if (typeof obj.config.settings.autobackup.backupignorefilesglob == 'string') { obj.config.settings.autobackup.backupignorefilesglob = obj.config.settings.autobackup.backupignorefilesglob.replaceAll(', ', ',').split(','); };
+                        if (!obj.config.settings.autobackup.backupskipfoldersglob) {obj.config.settings.autobackup.backupskipfoldersglob = []}
+                        else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
                     }
 
                     // Check that autobackup path is not within the "meshcentral-data" folder.

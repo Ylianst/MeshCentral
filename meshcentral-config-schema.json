@@ -875,7 +875,7 @@
             "backupIgnoreFilesGlob": {
               "type": "array",
               "default": [],
-              "description": "Glob for ignoring files in the data directory. For example [\"**/*.log\"]"
+              "description": "Glob for ignoring files in the data directory. For example [\"**/*.log\"] !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !! Don't do string..."
             },
             "backupSkipFoldersGlob":{
               "type": "array",
