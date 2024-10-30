@@ -32,8 +32,19 @@ module.exports.CreateDB = function (parent, func) {
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days (2592000). (Seconds * Minutes * Hours * Days)
     const common = require('./common.js');
+    const path = require('path');
     const DB_NEDB = 1, DB_MONGOJS = 2, DB_MONGODB = 3,DB_MARIADB = 4, DB_MYSQL = 5, DB_POSTGRESQL = 6, DB_ACEBASE = 7, DB_SQLITE = 8;
     const DB_LIST = ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL', 'PostgreSQL', 'AceBase', 'SQLite'];  //for the info command
+    let databaseName = 'meshcentral';
+    let datapathParentPath = path.dirname(parent.datapath);
+    let datapathFoldername = path.basename(parent.datapath);
+    obj.performingBackup = false;
+    const BACKUPFAIL_ZIPCREATE = 0x0001;
+    const BACKUPFAIL_ZIPMODULE = 0x0010;
+    const BACKUPFAIL_DBDUMP = 0x0100;
+    let backupStatus = 0x0;
+    let newAutoBackupFile;
+    let newDBDumpFile;
     obj.identifier = null;
     obj.dbKey = null;
     obj.dbRecordsEncryptKey = null;
@@ -3357,167 +3368,219 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Perform a server backup
-    obj.performingBackup = false;
     obj.performBackup = function (func) {
+        parent.debug('db','Entering performBackup');
         try {
             if (obj.performingBackup) return 1;
             obj.performingBackup = true;
-            //console.log('Performing backup...');
+            let backupPath = parent.backuppath;
+            let dataPath = parent.datapath;
 
-            var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
-            const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
-            const dburl = parent.args.mongodb;
             const currentDate = new Date();
-            const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-            const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
-            const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
+            const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2) + '-' + padNumber(currentDate.getSeconds(), 2);
+            newAutoBackupFile = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
+            newAutoBackupFile = backupPath + '/' + newAutoBackupFile + fileSuffix + '.zip';
 
             if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
-                // Perform a MongoDump backup
-                const newBackupFile = 'mongodump-' + fileSuffix;
-                var newBackupPath = parent.path.join(backupPath, newBackupFile);
+                // Perform a MongoDump in the datadir
+                const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
+                const dburl = parent.args.mongodb;
+    
+                //const newDBDumpFile = 'mongodump-' + fileSuffix;
+                newDBDumpFile = parent.path.join(dataPath, ('mongodump-' + fileSuffix + '.archive'));
 
                 var cmd = buildMongoDumpCommand();
-                cmd += (dburl) ? ' --archive=\"' + newBackupPath + '.archive\"' :
-                                 ' --db=\"' + dbname + '\" --archive=\"' + newBackupPath + '.archive\"';
+                cmd += (dburl) ? ' --archive=\"' + newDBDumpFile + '\"' :
+                                 ' --db=\"' + dbname + '\" --archive=\"' + newDBDumpFile + '\"';
 
                 const child_process = require('child_process');
-                var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
-                    try {
-                        var mongoDumpSuccess = true;
-                        backupProcess = null;
-                        if ((error != null) && (error != '')) { mongoDumpSuccess = false; console.log('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); }
+                const dumpProcess = child_process.exec(
+                    cmd,
+                    { cwd: parent.parentpath },
+                    (error)=> {if (error) {backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                );
+                dumpProcess.on('exit', (code) => {
+                    if (code != 0) {console.log(`Mongodump child process exited with code ${code}`); backupStatus |= BACKUPFAIL_DBDUMP;}
+                    obj.createBackupfile(func);
+                  });
 
-                        // Perform archive compression
-                        var archiver = require('archiver');
-                        var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
-                        var archive = null;
-                        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { 
-                                archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
-                                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
-                                if (func) { func('Creating encrypted ZIP'); }
-                            } catch (ex) { // registering encryption failed, so create without encryption
-                                archive = archiver('zip', { zlib: { level: 9 } });
-                                if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
-                            }
-                        } else {
-                            archive = archiver('zip', { zlib: { level: 9 } });
-                        }
-                        output.on('close', function () {
-                            obj.performingBackup = false;
-                            if (func) { if (mongoDumpSuccess) { func('Auto-backup completed.'); } else { func('Auto-backup completed without mongodb database: ' + error); } }
-                            obj.performCloudBackup(newAutoBackupPath + '.zip', func);
-                            setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.archive', function () { }); } catch (ex) { console.log(ex); } }, 5000);
-                        });
-                        output.on('end', function () { });
-                        output.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
-                        archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
-                        archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
-                        archive.pipe(output);
-                        if (mongoDumpSuccess == true) { archive.file(newBackupPath + '.archive', { name: newBackupFile + '.archive' }); }
-                        archive.directory(parent.datapath, 'meshcentral-data');
-                        archive.finalize();
-                    } catch (ex) { console.log(ex); }
-                });
             } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                 // Perform a MySqlDump backup
                 const newBackupFile = 'mysqldump-' + fileSuffix;
-                var newBackupPath = parent.path.join(backupPath, newBackupFile);
+                newDBDumpFile = parent.path.join(dataPath, newBackupFile + '.sql');
            
                 var cmd = buildSqlDumpCommand();
-                cmd += ' --result-file=\"' + newBackupPath + '.sql\"';
+                cmd += ' --result-file=\"' + newDBDumpFile + '\"';
+
                 const child_process = require('child_process');
-                var backupProcess = child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
-                    try {
-                        var sqlDumpSuccess = true;
-                        backupProcess = null;
-                        if ((error != null) && (error != '')) { sqlDumpSuccess = false; console.log('ERROR: Unable to perform MySQL/MariaDB backup: ' + error + '\r\n'); }
+                const dumpProcess = child_process.exec(
+                    cmd,
+                    { cwd: parent.parentpath },
+                    (error)=> {if (error) {backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MySQL backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                );
+                dumpProcess.on('exit', (code) => {
+                    if (code != 0) {console.log(`MySQLdump child process exited with code ${code}`); backupStatus |= BACKUPFAIL_DBDUMP;}
+                    obj.createBackupfile(func);
+                  });
 
-                        var archiver = require('archiver');
-                        var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
-                        var archive = null;
-                        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                            try { 
-                                archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
-                                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
-                                if (func) { func('Creating encrypted ZIP'); }
-                            } catch (ex) { // registering encryption failed, so create without encryption
-                                archive = archiver('zip', { zlib: { level: 9 } });
-                                if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
-                            }
-                        } else {
-                            archive = archiver('zip', { zlib: { level: 9 } });
-                        }
-                        output.on('close', function () {
-                            obj.performingBackup = false;
-                            if (func) { if (sqlDumpSuccess) { func('Auto-backup completed.'); } else { func('Auto-backup completed without MySQL/MariaDB database: ' + error); } }
-                            obj.performCloudBackup(newAutoBackupPath + '.zip', func);
-                            setTimeout(function () { try { parent.fs.unlink(newBackupPath + '.sql', function () { }); } catch (ex) { console.log(ex); } }, 5000);
-                        });
-                        output.on('end', function () { });
-                        output.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
-                        archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
-                        archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
-                        archive.pipe(output);
-                        if (sqlDumpSuccess == true) { archive.file(newBackupPath + '.sql', { name: newBackupFile + '.sql' }); }
-                        archive.directory(parent.datapath, 'meshcentral-data');
-                        archive.finalize();
-                    } catch (ex) { console.log(ex); }
+            } else if (obj.databaseType == DB_SQLITE) {
+                //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
+                newDBDumpFile = dataPath + '/' + databaseName + 'dump-' + fileSuffix + '.db3';
+                /*undocumented in node-sqlite3 API, check https://github.com/TryGhost/node-sqlite3/blob/593c9d498be2510d286349134537e3bf89401c4a/test/backup.test.js
+                var backup = obj.file.backup(newDBDumpFile);
+                backup.step(-1, function (err) {
+                    if (err) { console.log('SQLite start-backup error: ' + err); backupStatus |=BACKUPFAIL_DBDUMP; obj.createBackupfile(func); };
+                    backup.finish(function (err) {
+                        if (err) { console.log('SQLite backup error: ' + err); backupStatus |=BACKUPFAIL_DBDUMP;};
+                        obj.createBackupfile(func);
+                    });
                 });
+                */
+                // do a VACUUM INTO in favor of the backup API to compress the export, see https://www.sqlite.org/backup.html
+                obj.file.exec('VACUUM INTO \'' + newDBDumpFile + '\'', function (err) {
+                    if (err) { console.log('SQLite start-backup error: ' + err); backupStatus |=BACKUPFAIL_DBDUMP;};
+                    //always finish/clean up
+                    obj.createBackupfile(func);
+                });
+            } else if (obj.databaseType == DB_POSTGRESQL) {
+                // Perform a PostgresDump backup
+                // TODO
+                obj.createBackupfile(func);
             } else {
-                // Perform a NeDB backup
-                var archiver = require('archiver');
-                var output = parent.fs.createWriteStream(newAutoBackupPath + '.zip');
-                var archive = null;
-                if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
-                    try { 
-                        archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
-                        archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
-                        if (func) { func('Creating encrypted ZIP'); }
-                    } catch (ex) { // registering encryption failed, so create without encryption
-                        archive = archiver('zip', { zlib: { level: 9 } });
-                        if (func) { func('Creating encrypted ZIP failed, so falling back to normal ZIP'); }
-                    }
-                } else {
-                    archive = archiver('zip', { zlib: { level: 9 } });
-                }
-                output.on('close', function () { obj.performingBackup = false; if (func) { func('Auto-backup completed.'); } obj.performCloudBackup(newAutoBackupPath + '.zip', func); });
-                output.on('end', function () { });
-                output.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
-                archive.on('warning', function (err) { console.log('Backup warning: ' + err); if (func) { func('Backup warning: ' + err); } });
-                archive.on('error', function (err) { console.log('Backup error: ' + err); if (func) { func('Backup error: ' + err); } });
-                archive.pipe(output);
-                archive.directory(parent.datapath, 'meshcentral-data');
-                archive.finalize();
+                //NeDB backup, no db dump needed, just make a file backup
+                obj.createBackupfile(func);
             }
+        } catch (ex) { console.log(ex); };
+        return(0);
+    };
 
-            // Remove old backups
-            if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
-                var cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
-                parent.fs.readdir(parent.backuppath, function (err, dir) {
-                    try {
-                        if ((err == null) && (dir.length > 0)) {
-                            for (var i in dir) {
-                                var name = dir[i];
-                                if (name.startsWith('meshcentral-autobackup-') && name.endsWith('.zip')) {
-                                    var timex = name.substring(23, name.length - 4).split('-');
-                                    if (timex.length == 5) {
-                                        var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
-                                        if (fileDate && (cutoffDate > fileDate)) { try { parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { }); } catch (ex) { } }
+    obj.createBackupfile = function(func) {
+        parent.debug('db', 'Entering createFileBackup');
+        let archiver = require('archiver');
+        let archive = null;
+        //if password defined, create encrypted zip
+        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
+            try {
+                //Only register format once, otherwise it triggers an error
+                if (archiver.isRegisteredFormat('zip-encrypted') == false) { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); }
+                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                if (func) { func('Creating encrypted ZIP'); }
+            } catch (ex) { // registering encryption failed, do not fall back to non-encrypted, fail backup and skip old backup removal as a precaution to not lose any backups
+                backupStatus |= BACKUPFAIL_ZIPMODULE;
+                if (func) { func('Zipencryptionmodule failed, aborting'); }
+                console.log('Zipencryptionmodule failed, aborting');
+            }
+        } else {
+            if (func) { func('Creating a NON-ENCRYPTED ZIP'); }
+            archive = archiver('zip', { zlib: { level: 9 } });
+        }
+
+        if (backupStatus == 0) {
+            // Zip the data directory with the dbdump|NeDB files
+            let output = parent.fs.createWriteStream(newAutoBackupFile);
+            output.on('close', function () { 
+                if (backupStatus == 0) {
+                    //remove dump archive file, because zipped and otherwise fills up
+                    if (obj.databaseType != DB_NEDB) {
+                        try { parent.fs.unlink(newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to clean up dbdump file')};
+                    };
+                    obj.performCloudBackup(newAutoBackupFile, func);
+                    // Remove old backups
+                    if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
+                        let cutoffDate = new Date();
+                        cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
+                        parent.fs.readdir(parent.backuppath, function (err, dir) {
+                            try {
+                                if ((err == null) && (dir.length > 0)) {
+                                    let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
+                                    for (var i in dir) {
+                                        var name = dir[i];
+                                        if (name.startsWith(fileName) && name.endsWith('.zip')) {
+                                            var timex = name.substring(23, name.length - 4).split('-');
+                                            if (timex.length == 5) {
+                                                var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
+                                                if (fileDate && (cutoffDate > fileDate)) { try { parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { }); } catch (ex) { } }
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
-                    } catch (ex) { console.log(ex); }
+                            } catch (ex) { console.log(ex); }
+                        });
+                    }
+                    console.log('Auto-backup completed.');
+                    if (func) { func('Auto-backup completed.'); };
+                } else {
+                    console.log('Zipbackup failed ('+ (+backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + newAutoBackupFile );
+                    if (func) { func('Zipbackup failed ('+ (+backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + newAutoBackupFile) };
+                    try { parent.fs.unlink(newAutoBackupFile, function () { }); parent.fs.unlink(newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to delete incomplete backup files')};
+                };
+                obj.performingBackup = false;
+                backupStatus = 0x0;
+            });
+            output.on('end', function () { });
+            output.on('error', function (err) {
+                if ((backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                    console.log('Output error: ' + err);
+                    if (func) { func('Output error: ' + err); };
+                    backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    archive.abort();
+                };
+            });
+            archive.on('warning', function (err) {
+                //if files added to the archiver object aren't reachable anymore (e.g. sqlite-journal files)
+                //an ENOENT warning is given, but the archiver module has no option to/does not skip/resume
+                //so the backup needs te be aborted as it otherwise leaves an incomplete zip and never 'ends'
+                if ((backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                    console.log('Zip warning: ' + err); 
+                    if (func) { func('Zip warning: ' + err); };
+                    backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    archive.abort();
+                };
+            });
+            archive.on('error', function (err) {
+                if ((backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                    console.log('Zip error: ' + err);
+                    if (func) { func('Zip error: ' + err); };
+                    backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    archive.abort();
+                }
                 });
+            archive.pipe(output);
+
+            let globIgnoreFiles = (parent.config.settings.autobackup.backupignorefilesglob) ? parent.config.settings.autobackup.backupignorefilesglob.slice() : [];
+            if (parent.config.settings.sqlite3) {
+                globIgnoreFiles.push (datapathFoldername + '/' + databaseName + '.sqlite*'); //skip sqlite database files, temp files with ext -journal, -wal & -shm
             }
-        } catch (ex) { console.log(ex); }
-        return 0;
-    }
+            //archiver.glob doesn't seem to use the third param, archivesubdir. Bug?
+            //workaround: go up a dir and add data dir explicitly to keep the zip tidy
+            archive.glob((datapathFoldername + '/**'), {
+                cwd: datapathParentPath,
+                ignore: globIgnoreFiles,
+                skip: parent.config.settings.autobackup.backupskipfoldersglob
+            });
+            if (parent.config.settings.autobackup.backupwebfolders) {
+                if (parent.webViewsOverridePath) { archive.directory(parent.webViewsOverridePath, 'meshcentral-views');; }
+                if (parent.webPublicOverridePath) { archive.directory(parent.webPublicOverridePath, 'meshcentral-public');; }
+                if (parent.webEmailsOverridePath) { archive.directory(parent.webEmailsOverridePath, 'meshcentral-emails');; }
+            };
+            if (parent.config.settings.autobackup.backupotherfolders) {
+                archive.directory(parent.filespath, 'meshcentral-files');
+                archive.directory(parent.recordpath, 'meshcentral-recordings');
+            };
+
+            archive.finalize();
+        } else {
+            //failed somewhere before zipping
+            console.log('Backup failed ('+ (+backupStatus).toString(16).slice(-4) + ')');
+            if (func) { func('Backup failed ('+ (+backupStatus).toString(16).slice(-4) + ')') };
+            //Just in case something's there
+            try { parent.fs.unlink(newDBDumpFile, function () { }); } catch (ex) { };
+            backupStatus = 0x0;
+            obj.performingBackup = false;
+        };
+    };
 
     // Perform cloud backup
     obj.performCloudBackup = function (filename, func) {

@@ -857,6 +857,31 @@
               "default": "meshcentral-backups",
               "description": "The file path where backup files are kept. The default is \"meshcentral-backups\" which sits next to \"meshcentral-data\"."
             },
+            "backupName": {
+              "type": "string",
+              "default": "meshcentral-autobackup-",
+              "description": "The filename of the backupfile. The default is \"meshcentral-autobackup-\", the filename is appended with the time of backup."
+            },
+            "backupWebFolders": {
+              "type": "boolean",
+              "default": false,
+              "description": "Add views, public and emails directories if overridden"
+            },
+            "backupOtherFolders": {
+              "type": "boolean",
+              "default": false,
+              "description": "Also add files and recordings folder to the backup"
+            },
+            "backupIgnoreFilesGlob": {
+              "type": "array",
+              "default": [],
+              "description": "Glob for ignoring files in the data directory. For example [\"**/*.log\"]"
+            },
+            "backupSkipFoldersGlob":{
+              "type": "array",
+              "default": [],
+              "description": "Glob for ignoring directories in the data directory. For example [\"**/signedagents\"]"
+            },
             "googleDrive": {
               "type": "object",
               "description": "Enabled automated upload of the server backups to a Google Drive account, once enabled you need to go in \"My Server\" tab as administrator to associate the account.",
