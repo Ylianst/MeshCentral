@@ -32,6 +32,8 @@ module.exports.CreateDB = function (parent, func) {
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days (2592000). (Seconds * Minutes * Hours * Days)
     const common = require('./common.js');
+    const DB_NEDB = 1, DB_MONGOJS = 2, DB_MONGODB = 3,DB_MARIADB = 4, DB_MYSQL = 5, DB_POSTGRESQL = 6, DB_ACEBASE = 7, DB_SQLITE = 8;
+    const DB_LIST = ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL', 'PostgreSQL', 'AceBase', 'SQLite'];  //for the info command
     obj.identifier = null;
     obj.dbKey = null;
     obj.dbRecordsEncryptKey = null;
@@ -105,16 +107,16 @@ module.exports.CreateDB = function (parent, func) {
 
     // Perform database maintenance
     obj.maintenance = function () {
-        if (obj.databaseType == 1) { // NeDB will not remove expired records unless we try to access them. This will force the removal.
+        if (obj.databaseType == DB_NEDB) { // NeDB will not remove expired records unless we try to access them. This will force the removal.
             obj.eventsfile.remove({ time: { '$lt': new Date(Date.now() - (expireEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
             obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
             obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
-        } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) { // MariaDB or MySQL
+        } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) { // MariaDB or MySQL
             sqlDbQuery('DELETE FROM events WHERE time < ?', [new Date(Date.now() - (expireEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expireEventsSeconds
             sqlDbQuery('DELETE FROM power WHERE time < ?', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
             sqlDbQuery('DELETE FROM serverstats WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
             sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
-        } else if (obj.databaseType == 7) { // AceBase
+        } else if (obj.databaseType == DB_ACEBASE) { // AceBase
             //console.log('Performing AceBase maintenance');
             obj.file.query('events').filter('time', '<', new Date(Date.now() - (expireEventsSeconds * 1000))).remove().then(function () {
                 obj.file.query('stats').filter('time', '<', new Date(Date.now() - (expireServerStatsSeconds * 1000))).remove().then(function () {
@@ -123,7 +125,7 @@ module.exports.CreateDB = function (parent, func) {
                     });
                 });
             });
-        } else if (obj.databaseType == 8) { // SQLite3
+        } else if (obj.databaseType == DB_SQLITE) { // SQLite3
             // TODO
         }
         obj.removeInactiveDevices();
@@ -245,18 +247,18 @@ module.exports.CreateDB = function (parent, func) {
     obj.removeDomain = function (domainName, func) {
         var pendingCalls;
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
-        if (obj.databaseType == 7) {
+        if (obj.databaseType == DB_ACEBASE) {
             // AceBase
             pendingCalls = 3;
             obj.file.query('meshcentral').filter('domain', '==', domainName).remove().then(function () { if (--pendingCalls == 0) { func(); } });
             obj.file.query('events').filter('domain', '==', domainName).remove().then(function () { if (--pendingCalls == 0) { func(); } });
             obj.file.query('power').filter('domain', '==', domainName).remove().then(function () { if (--pendingCalls == 0) { func(); } });
-        } else if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
+        } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL) || (obj.databaseType == DB_POSTGRESQL)) {
             // MariaDB, MySQL or PostgreSQL
             pendingCalls = 2;
             sqlDbQuery('DELETE FROM main WHERE domain = $1', [domainName], function () { if (--pendingCalls == 0) { func(); } });
             sqlDbQuery('DELETE FROM events WHERE domain = $1', [domainName], function () { if (--pendingCalls == 0) { func(); } });
-        } else if (obj.databaseType == 3) {
+        } else if (obj.databaseType == DB_MONGODB) {
             // MongoDB
             pendingCalls = 3;
             obj.file.deleteMany({ domain: domainName }, { multi: true }, function () { if (--pendingCalls == 0) { func(); } });
@@ -276,17 +278,17 @@ module.exports.CreateDB = function (parent, func) {
         // TODO: Remove all meshes that dont have any links
 
         // Remove all events, power events and SMBIOS data from the main collection. They are all in seperate collections now.
-        if ((obj.databaseType == 4) || (obj.databaseType == 5) || (obj.databaseType == 6)) {
+        if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL) || (obj.databaseType == DB_POSTGRESQL)) {
             // MariaDB, MySQL or PostgreSQL
             obj.RemoveAllOfType('event', function () { });
             obj.RemoveAllOfType('power', function () { });
             obj.RemoveAllOfType('smbios', function () { });
-        } else if (obj.databaseType == 3) {
+        } else if (obj.databaseType == DB_MONGODB) {
             // MongoDB
             obj.file.deleteMany({ type: 'event' }, { multi: true });
             obj.file.deleteMany({ type: 'power' }, { multi: true });
             obj.file.deleteMany({ type: 'smbios' }, { multi: true });
-        } else if ((obj.databaseType == 1) || (obj.databaseType == 2)) {
+        } else if ((obj.databaseType == DB_NEDB) || (obj.databaseType == DB_MONGOJS)) {
             // NeDB or MongoJS
             obj.file.remove({ type: 'event' }, { multi: true });
             obj.file.remove({ type: 'power' }, { multi: true });
@@ -387,19 +389,19 @@ module.exports.CreateDB = function (parent, func) {
                                 if (meshChange) { obj.Set(docs[i]); }
                             }
                         }
-                        if (obj.databaseType == 8) {
+                        if (obj.databaseType == DB_SQLITE) {
                             // SQLite
 
-                        } else if (obj.databaseType == 7) {
+                        } else if (obj.databaseType == DB_ACEBASE) {
                             // AceBase
 
-                        } else if (obj.databaseType == 6) {
+                        } else if (obj.databaseType == DB_POSTGRESQL) {
                             // Postgres
                             sqlDbQuery('DELETE FROM Main WHERE ((extra != NULL) AND (extra LIKE (\'mesh/%\')) AND (extra != ANY ($1)))', [meshlist], function (err, response) { });
-                        } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+                        } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                             // MariaDB
                             sqlDbQuery('DELETE FROM Main WHERE (extra LIKE ("mesh/%") AND (extra NOT IN ?)', [meshlist], function (err, response) { });
-                        } else if (obj.databaseType == 3) {
+                        } else if (obj.databaseType == DB_MONGODB) {
                             // MongoDB
                             obj.file.deleteMany({ meshid: { $exists: true, $nin: meshlist } }, { multi: true });
                         } else {
@@ -504,33 +506,33 @@ module.exports.CreateDB = function (parent, func) {
     // Get the number of records in the database for various types, this is the slow NeDB way.
     // WARNING: This is a terrible query for database performance. Only do this when needed. This query will look at almost every document in the database.
     obj.getStats = function (func) {
-        if (obj.databaseType == 7) {
+        if (obj.databaseType == DB_ACEBASE) {
             // AceBase
             // TODO
-        } else if (obj.databaseType == 6) {
+        } else if (obj.databaseType == DB_POSTGRESQL) {
             // PostgreSQL
             // TODO
-        } else if (obj.databaseType == 5) {
+        } else if (obj.databaseType == DB_MYSQL) {
             // MySQL
             // TODO
-        } else if (obj.databaseType == 4) {
+        } else if (obj.databaseType == DB_MARIADB) {
             // MariaDB
             // TODO
-        } else if (obj.databaseType == 3) {
+        } else if (obj.databaseType == DB_MONGODB) {
             // MongoDB
             obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }]).toArray(function (err, docs) {
                 var counters = {}, totalCount = 0;
                 if (err == null) { for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } } }
                 func(counters);
             });
-        } else if (obj.databaseType == 2) {
+        } else if (obj.databaseType == DB_MONGOJS) {
             // MongoJS
             obj.file.aggregate([{ "$group": { _id: "$type", count: { $sum: 1 } } }], function (err, docs) {
                 var counters = {}, totalCount = 0;
                 if (err == null) { for (var i in docs) { if (docs[i]._id != null) { counters[docs[i]._id] = docs[i].count; totalCount += docs[i].count; } } }
                 func(counters);
             });
-        } else if (obj.databaseType == 1) {
+        } else if (obj.databaseType == DB_NEDB) {
             // NeDB version
             obj.file.count({ type: 'node' }, function (err, nodeCount) {
                 obj.file.count({ type: 'mesh' }, function (err, meshCount) {
@@ -570,7 +572,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
                 obj.GetAllType('mesh', function (err, docs) {
                     if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                    if (obj.databaseType == 1) { // If we are using NeDB, compact the database.
+                    if (obj.databaseType == DB_NEDB) { // If we are using NeDB, compact the database.
                         obj.file.persistence.compactDatafile();
                         obj.file.on('compaction.done', function () { func(count); }); // It's important to wait for compaction to finish before exit, otherwise NeDB may corrupt.
                     } else {
@@ -721,7 +723,7 @@ module.exports.CreateDB = function (parent, func) {
 
     if (parent.args.sqlite3) {
         // SQLite3 database setup
-        obj.databaseType = 8;
+        obj.databaseType = DB_SQLITE;
         const sqlite3 = require('sqlite3');
         obj.file = new sqlite3.Database(parent.path.join(parent.datapath, 'meshcentral.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
@@ -762,7 +764,7 @@ module.exports.CreateDB = function (parent, func) {
         });
     } else if (parent.args.acebase) {
         // AceBase database setup
-        obj.databaseType = 7;
+        obj.databaseType = DB_ACEBASE;
         const { AceBase } = require('acebase');
         // For information on AceBase sponsor: https://github.com/appy-one/acebase/discussions/100
         obj.file = new AceBase('meshcentral', { sponsor: ((typeof parent.args.acebase == 'object') && (parent.args.acebase.sponsor)), logLevel: 'error', storage: { path: parent.datapath } });
@@ -818,7 +820,7 @@ module.exports.CreateDB = function (parent, func) {
 
         if (parent.args.mariadb) {
             // Use MariaDB
-            obj.databaseType = 4;
+            obj.databaseType = DB_MARIADB;
             var tempDatastore = require('mariadb').createPool(connectionObject);
             tempDatastore.getConnection().then(function (conn) {
                 conn.query('CREATE DATABASE IF NOT EXISTS ' + dbname).then(function (result) {
@@ -832,7 +834,7 @@ module.exports.CreateDB = function (parent, func) {
             createTablesIfNotExist(dbname);
         } else if (parent.args.mysql) {
             // Use MySQL
-            obj.databaseType = 5;
+            obj.databaseType = DB_MYSQL;
             var tempDatastore = require('mysql2').createPool(connectionObject);
             tempDatastore.query('CREATE DATABASE IF NOT EXISTS ' + dbname, function (error) {
                 if (error != null) {
@@ -849,7 +851,7 @@ module.exports.CreateDB = function (parent, func) {
         var connectinArgs = parent.args.postgres;
         var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
         delete connectinArgs.database;
-        obj.databaseType = 6;
+        obj.databaseType = DB_POSTGRESQL;
         const { Pool, Client } = require('pg');
         connectinArgs.database = dbname;
         Datastore = new Client(connectinArgs);
@@ -876,7 +878,7 @@ module.exports.CreateDB = function (parent, func) {
         });
     } else if (parent.args.mongodb) {
         // Use MongoDB
-        obj.databaseType = 3;
+        obj.databaseType = DB_MONGODB;
 
         // If running an older NodeJS version, TextEncoder/TextDecoder is required
         if (global.TextEncoder == null) { global.TextEncoder = require('util').TextEncoder; }
@@ -1059,7 +1061,7 @@ module.exports.CreateDB = function (parent, func) {
         });
     } else if (parent.args.xmongodb) {
         // Use MongoJS, this is the old system.
-        obj.databaseType = 2;
+        obj.databaseType = DB_MONGOJS;
         Datastore = require('mongojs');
         var db = Datastore(parent.args.xmongodb);
         var dbcollection = 'meshcentral';
@@ -1163,7 +1165,7 @@ module.exports.CreateDB = function (parent, func) {
         setupFunctions(func); // Completed setup of MongoJS
     } else {
         // Use NeDB (The default)
-        obj.databaseType = 1;
+        obj.databaseType = DB_NEDB;
         try { Datastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
         if (Datastore == null) { Datastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
         var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
@@ -1275,7 +1277,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Query the database
     function sqlDbQuery(query, args, func, debug) {
-        if (obj.databaseType == 8) { // SQLite
+        if (obj.databaseType == DB_SQLITE) { // SQLite
             if (args == null) { args = []; }
             obj.file.all(query, args, function (err, docs) {
                 if (err != null) { console.log(query, args, err, docs); }
@@ -1290,7 +1292,7 @@ module.exports.CreateDB = function (parent, func) {
                 }
                 if (func) { func(err, docs); }
             });
-        } else if (obj.databaseType == 4) { // MariaDB
+        } else if (obj.databaseType == DB_MARIADB) { // MariaDB
             Datastore.getConnection()
                 .then(function (conn) {
                     conn.query(query, args)
@@ -1309,7 +1311,7 @@ module.exports.CreateDB = function (parent, func) {
                         })
                         .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log('SQLERR2', ex); } });
                 }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log('SQLERR3', ex); } } });
-        } else if (obj.databaseType == 5) { // MySQL
+        } else if (obj.databaseType == DB_MYSQL) { // MySQL
             Datastore.query(query, args, function (error, results, fields) {
                 if (error != null) {
                     if (func) try { func(error); } catch (ex) { console.log('SQLERR4', ex); }
@@ -1330,7 +1332,7 @@ module.exports.CreateDB = function (parent, func) {
                     if (func) { try { func(null, docs); } catch (ex) { console.log('SQLERR5', ex); } }
                 }
             });
-        } else if (obj.databaseType == 6) { // Postgres SQL
+        } else if (obj.databaseType == DB_POSTGRESQL) { // Postgres SQL
             Datastore.query(query, args, function (error, results) {
                 if (error != null) {
                     if (func) try { func(error); } catch (ex) { console.log('SQLERR4', ex); }
@@ -1359,7 +1361,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Exec on the database
     function sqlDbExec(query, args, func) {
-        if (obj.databaseType == 4) { // MariaDB
+        if (obj.databaseType == DB_MARIADB) { // MariaDB
             Datastore.getConnection()
                 .then(function (conn) {
                     conn.query(query, args)
@@ -1369,7 +1371,7 @@ module.exports.CreateDB = function (parent, func) {
                         })
                         .catch(function (err) { conn.release(); if (func) try { func(err); } catch (ex) { console.log(ex); } });
                 }).catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
-        } else if ((obj.databaseType == 5) || (obj.databaseType == 6)) { // MySQL or Postgres SQL
+        } else if ((obj.databaseType == DB_MYSQL) || (obj.databaseType == DB_POSTGRESQL)) { // MySQL or Postgres SQL
             Datastore.query(query, args, function (error, results, fields) {
                 if (func) try { func(error, results ? results[0] : null); } catch (ex) { console.log(ex); }
             });
@@ -1378,7 +1380,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Execute a batch of commands on the database
     function sqlDbBatchExec(queries, func) {
-        if (obj.databaseType == 4) { // MariaDB
+        if (obj.databaseType == DB_MARIADB) { // MariaDB
             Datastore.getConnection()
                 .then(function (conn) {
                     var Promises = [];
@@ -1388,7 +1390,7 @@ module.exports.CreateDB = function (parent, func) {
                         .catch(function (err) { conn.release(); if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
                 })
                 .catch(function (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } });
-        } else if (obj.databaseType == 5) { // MySQL
+        } else if (obj.databaseType == DB_MYSQL) { // MySQL
             Datastore.getConnection(function(err, connection) {
                 if (err) { if (func) { try { func(err); } catch (ex) { console.log(ex); } } return; }
                 var Promises = [];
@@ -1397,7 +1399,7 @@ module.exports.CreateDB = function (parent, func) {
                     .then(function (error, results, fields) { connection.release(); if (func) { try { func(error, results); } catch (ex) { console.log(ex); } } })
                     .catch(function (error, results, fields) { connection.release(); if (func) { try { func(error); } catch (ex) { console.log(ex); } } });
             });
-        } else if (obj.databaseType == 6) { // Postgres
+        } else if (obj.databaseType == DB_POSTGRESQL) { // Postgres
             var Promises = [];
             for (var i in queries) { if (typeof queries[i] == 'string') { Promises.push(Datastore.query(queries[i])); } else { Promises.push(Datastore.query(queries[i][0], queries[i][1])); } }
             Promise.all(Promises)
@@ -1407,7 +1409,7 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     function setupFunctions(func) {
-        if (obj.databaseType == 8) {
+        if (obj.databaseType == DB_SQLITE) {
             // Database actions on the main collection. SQLite3: https://www.linode.com/docs/guides/getting-started-with-nodejs-sqlite/
             obj.Set = function (value, func) {
                 obj.dbCounters.fileSet++;
@@ -1733,7 +1735,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE plugin SET doc=JSON_SET(doc,"$.status",$1) WHERE id=$2', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc=json_patch(doc,$1) WHERE id=$2', [JSON.stringify(args),id], func); };
             }
-        } else if (obj.databaseType == 7) {
+        } else if (obj.databaseType == DB_ACEBASE) {
             // Database actions on the main collection. AceBase: https://github.com/appy-one/acebase
             obj.Set = function (data, func) {
                 data = common.escapeLinksFieldNameEx(data);
@@ -2025,7 +2027,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.setPluginStatus = function (id, status, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).update({ status: status }).then(function (ref) { if (func) { func(); } }) };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.file.ref('plugin').child(encodeURIComponent(id)).set(args).then(function (ref) { if (func) { func(); } }) };
             }
-        } else if (obj.databaseType == 6) {
+        } else if (obj.databaseType == DB_POSTGRESQL) {
             // Database actions on the main collection (Postgres)
             obj.Set = function (value, func) {
                 obj.dbCounters.fileSet++;
@@ -2285,7 +2287,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery("UPDATE plugin SET doc= jsonb_set(doc::jsonb,'{status}',$1) WHERE id=$2", [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc= doc::jsonb || ($1) WHERE id=$2', [args,id], func); };
             }
-        } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+        } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
             // Database actions on the main collection (MariaDB or MySQL)
             obj.Set = function (value, func) {
                 obj.dbCounters.fileSet++;
@@ -2535,7 +2537,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_SET(doc,"$.status",?) WHERE id=?', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_MERGE_PATCH(doc,?) WHERE id=?', [JSON.stringify(args),id], func); };
             }
-        } else if (obj.databaseType == 3) {
+        } else if (obj.databaseType == DB_MONGODB) {
             // Database actions on the main collection (MongoDB)
 
             // Bulk operations
@@ -2919,7 +2921,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetEvents = function (ids, domain, filter, func) {
                 var finddata = { domain: domain, ids: { $in: ids } };
                 if (filter != null) finddata.action = filter; 
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func);
                 } else {
                     obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func);
@@ -2928,7 +2930,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetEventsWithLimit = function (ids, domain, limit, filter, func) {
                 var finddata = { domain: domain, ids: { $in: ids } };
                 if (filter != null) finddata.action = filter; 
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
                     obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
@@ -2937,7 +2939,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetUserEvents = function (ids, domain, userid, filter, func) {
                 var finddata = { domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] };
                 if (filter != null) finddata.action = filter; 
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).exec(func);
                 } else {
                     obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }, func);
@@ -2946,21 +2948,21 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetUserEventsWithLimit = function (ids, domain, userid, limit, filter, func) {
                 var finddata = { domain: domain, $or: [{ ids: { $in: ids } }, { userid: userid }] };
                 if (filter != null) finddata.action = filter; 
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
                     obj.eventsfile.find(finddata, { type: 0, _id: 0, domain: 0, ids: 0, node: 0 }).sort({ time: -1 }).limit(limit, func);
                 }
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) {
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }, { type: 0, _id: 0, domain: 0, node: 0 }).sort({ time: 1 }).exec(func);
                 } else {
                     obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }, { type: 0, _id: 0, domain: 0, node: 0 }).sort({ time: 1 }, func);
                 }
             };
             obj.GetUserLoginEvents = function (domain, userid, func) {
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }, { action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }).exec(func);
                 } else {
                     obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }, { action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }, func);
@@ -2969,7 +2971,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
                 var finddata = { domain: domain, nodeid: nodeid };
                 if (filter != null) finddata.action = filter;
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
                     obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func);
@@ -2978,7 +2980,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var finddata = { domain: domain, nodeid: nodeid, userid: { $in: [userid, null] } };
                 if (filter != null) finddata.action = filter;
-                if (obj.databaseType == 1) {
+                if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
                     obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit, func);
@@ -2992,7 +2994,7 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the power collection
             obj.getAllPower = function (func) { obj.powerfile.find({}, func); };
             obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insert(event, func); };
-            obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == 1) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).exec(func); } else { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }, func); } };
+            obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == DB_NEDB) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).exec(func); } else { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }, func); } };
             obj.removeAllPowerEvents = function () { obj.powerfile.remove({}, { multi: true }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.remove({ nodeid: nodeid }, { multi: true }); };
 
@@ -3083,7 +3085,7 @@ module.exports.CreateDB = function (parent, func) {
         const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
 
         r += 'DB Name: ' + dbname + '\r\n';
-        r += 'DB Type: ' + ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL', 'AceBase'][obj.databaseType] + '\r\n';
+        r += 'DB Type: ' + DB_LIST[obj.databaseType] + '\r\n';
         r += 'BackupPath: ' + backupPath + '\r\n';
         r += 'newAutoBackupFile: ' + newAutoBackupFile + '\r\n';
         r += 'newAutoBackupPath: ' + newAutoBackupPath + '\r\n';
@@ -3134,7 +3136,7 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     function buildSqlDumpCommand() {
-        var props = (obj.databaseType == 4) ? parent.args.mariadb : parent.args.mysql;
+        var props = (obj.databaseType == DB_MARIADB) ? parent.args.mariadb : parent.args.mysql;
 
         var mysqldumpPath = 'mysqldump';
         if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { 
@@ -3151,7 +3153,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // SSL options different on mariadb/mysql
         var sslOptions = '';
-        if (obj.databaseType == 4) {
+        if (obj.databaseType == DB_MARIADB) {
             if (props.ssl) {
                 sslOptions = ' --ssl';
                 if (props.ssl.cacertpath) sslOptions = ' --ssl-ca=' + props.ssl.cacertpath;
@@ -3194,7 +3196,7 @@ module.exports.CreateDB = function (parent, func) {
     // Check that the server is capable of performing a backup
     obj.checkBackupCapability = function (func) {
         if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); }
-        if ((obj.databaseType == 2) || (obj.databaseType == 3)) {
+        if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
             // Check that we have access to MongoDump
             var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
@@ -3217,7 +3219,7 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 } catch (ex) { console.log(ex); }
             });
-        } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+        } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
             // Check that we have access to mysqldump
             var backupPath = parent.backuppath;
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
@@ -3372,7 +3374,7 @@ module.exports.CreateDB = function (parent, func) {
             const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
             const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
 
-            if ((obj.databaseType == 2) || (obj.databaseType == 3)) {
+            if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
                 // Perform a MongoDump backup
                 const newBackupFile = 'mongodump-' + fileSuffix;
                 var newBackupPath = parent.path.join(backupPath, newBackupFile);
@@ -3420,7 +3422,7 @@ module.exports.CreateDB = function (parent, func) {
                         archive.finalize();
                     } catch (ex) { console.log(ex); }
                 });
-            } else if ((obj.databaseType == 4) || (obj.databaseType == 5)) {
+            } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                 // Perform a MySqlDump backup
                 const newBackupFile = 'mysqldump-' + fileSuffix;
                 var newBackupPath = parent.path.join(backupPath, newBackupFile);
