@@ -3611,7 +3611,9 @@ module.exports.CreateDB = function (parent, func) {
             // Clean up our WebDAV folder
             function performWebDavCleanup(client) {
                 if ((typeof parent.config.settings.autobackup.webdav.maxfiles == 'number') && (parent.config.settings.autobackup.webdav.maxfiles > 1)) {
-                    var directoryItems = client.getDirectoryContents(webdavfolderName);
+                    let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
+                    //only files matching our backupfilename
+                    let directoryItems = client.getDirectoryContents(webdavfolderName, { deep: false, glob: "/**/" + fileName + "*.zip" });
                     directoryItems.then(
                         function (files) {
                             for (var i in files) { files[i].xdate = new Date(files[i].lastmod); }
