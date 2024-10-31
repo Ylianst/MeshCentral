@@ -406,128 +406,124 @@
                             title="Go to last page" style="display:none;margin-right:12px">
                             <div class="viewSelector8"></div>
                         </div>
-                        <div tabindex=0 id=devViewButton1 class=viewSelector onclick=onDeviceViewChange(1)
-                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns">
-                            <div class="viewSelector2"></div>
-                        </div>
-                        <div tabindex=0 id=devViewButton2 class=viewSelector onclick=onDeviceViewChange(2)
-                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List">
-                            <div class="viewSelector1"></div>
-                        </div>
-                        <div tabindex=0 id=devViewButton3 class=viewSelector onclick=onDeviceViewChange(3)
-                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops">
-                            <div class="viewSelector3"></div>
-                        </div>
-                        <div tabindex=0 id=devViewButton5 class=viewSelector onclick=onDeviceViewChange(5)
-                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(5); }" title="Desktops">
-                            <div class="viewSelector7"></div>
-                        </div>
-                        <div tabindex=0 id=devViewButton4 class=viewSelector onclick=onDeviceViewChange(4)
-                            onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map"
-                            style="display:none">
-                            <div class="viewSelector4"></div>
-                        </div>
+                        <span role=button tabindex=0 id=devViewButton1 class="fa-layers fa-fw fa-xl" onclick=onDeviceViewChange(1) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(1); }" title="Columns">
+                            <i class="fa-solid fa-bars" data-fa-transform="shrink-8 right-4 up-2"></i>
+                            <i class="fa-solid fa-bars" data-fa-transform="shrink-8 left-4 up-2"></i>
+                            <i class="fa-solid fa-bars" data-fa-transform="shrink-8 right-4 down-3"></i>
+                            <i class="fa-solid fa-bars" data-fa-transform="shrink-8 left-4 down-3"></i>
+                        </span>
+                        <span role=button tabindex=0 id=devViewButton2 class="fa-layers fa-fw fa-xl" onclick=onDeviceViewChange(2) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(2); }" title="List">
+                            <i class="fa-solid fa-bars"></i>
+                        </span>
+                        <span role=button tabindex=0 id=devViewButton3 class="fa-layers fa-fw fa-xl" onclick=onDeviceViewChange(3) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(3); }" title="Desktops">
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-9 up-4 left-4"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-9 up-4 right-4"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-9 down-4 left-4"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-9 down-4 right-4"></i>
+                        </span>
+                        <span role=button tabindex=0 id=devViewButton5  class="fa-layers fa-fw fa-xl"  onclick=onDeviceViewChange(5) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(5); }" title="Desktops">
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-10 up-4 left-6"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-10 up-4 right-1"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-10 up-4 right-5"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-10 down-4 left-1"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-10 down-4 left-5"></i>
+                            <i class="fa-solid fa-square" data-fa-transform="shrink-10 down-4 right-6"></i>
+                        </span>
+                        <span role=button tabindex=0 id=devViewButton4 class="fa-layers fa-fw fa-xl" onclick=onDeviceViewChange(4) onkeypress="if (event.key == 'Enter') { onDeviceViewChange(4); }" title="Map" style="display:none">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </span>
                     </div>
                 </div>
-                <table id="devListToolbarSpan" class="noselect">
-                    <tr>
-                        <td id="devListToolbar" style="background: linear-gradient(180deg,#fff,#fff,#e9ecef);padding:5px;">
-                            <div>
-                                <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)">
-                                    <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
-                                    <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
-                                </span>
-                                <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)">
-                                    <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
-                                    <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
-                                </span>
-                                <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
-                                <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
-                                <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
-                                <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;" placeholder="Filter">
-                                <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
-                                    <option value=0 selected>All</option>
-                                    <option value=1>Online</option>
-                                    <option value=5>Offline</option>
-                                    <option value=2>Sessions</option>
-                                    <option value=3>Starred</option>
-                                    <option value=4>Intel&reg; AMT</option>
-                                    <option value=6>Help</option>
-                                    <option value=7>Tagged</option>
-                                    <option value=8>Untagged</option>
-                                </select>
-                                <label><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS Name</span></label>
-                                <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2" onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
-                                <span id="devsCustomUIBar"></span>
-                            </div>
-                        </td>
-                        <td id=kvmListToolbar class=style14 style="display:none">
-                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)">
+                <div id="devListToolbarSpan" class="noselect d-flex align-items-center">
+                    <div id=devListToolbar class=me-auto style="display:none"></td>
+                        <div>
+                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)">
                                 <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
                                 <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
                             </span>
-                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)">
+                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)">
                                 <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                                 <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
                             </span>
-                            <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
-                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
-                            <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
-                            <label><input type="checkbox" id="autoConnectDesktopCheckbox" class="form-check-input me-2"
-                                    onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
-                            <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
-                            <input id=KvmSearchInput type=search placeholder=Filter
-                                onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event)
-                                onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1)
-                                onblur=onSearchFocus(0) />&nbsp;
-                            <span id=KvmSearchInputClearButton style="display:none;position:relative"><img
-                                    src="images/x16.png" type="button" onclick="clearDeviceSearch()"
-                                    style="position:absolute;cursor:pointer;left:-18px;top:-8px"
-                                    srcset="images/x32.png 2x" /></span>
-                        </td>
-                        <td id=devMapToolbar class=style14 style="display:none">
-                            &nbsp;&nbsp;<input type=search id=mapSearchLocation placeholder="Search Location"
-                                onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
-                            <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
-                            <input type=button id=refreshmap title="Reset map view" value=Reset
-                                onclick=refreshMap(false,true) />
-                        </td>
-                        <td class="d-flex justify-content-end align-items-center" style=height:100%>
-                            <div style="display:none" id=devListToolbarView>
-                                View
-                                <select id=viewselect onchange=onDeviceViewChange()>
-                                    <option value=1>Columns</option>
-                                    <option value=2>List</option>
-                                    <option value=3>Desktops Fixed Width</option>
-                                    <option id=viewselectmapoption value=4 style="display:none">Map</option>
-                                    <option value=5>Desktops</option>
-                                </select>
-                            </div>
-                            <div style="display:none" id=devListToolbarSize>
-                                Size
-                                <select id=sizeselect class="form-select-sm me-2" onchange=onDeviceViewChange()>
-                                    <option value=0>Small</option>
-                                    <option value=1>Medium</option>
-                                    <option value=2>Large</option>
-                                </select>
-                                &nbsp;
-                            </div>
-                            <div style="display:none" id=devListToolbarSort>
-                                Sort
-                                <select id=sortselect class="form-select-sm me-2" onchange=mainUpdate(6)>
-                                    <option>Group</option>
-                                    <option>Power</option>
-                                    <option>Device</option>
-                                    <option>Tags</option>
-                                    <option>Group-Tags</option>
-                                    <option>Last Seen</option>
-                                </select>
-                                &nbsp;
-                            </div>
-                            <i class="fa-solid fa-gear" role="button" id=devListToolbarSettings onclick="onDeviceViewSettings()"></i>
-                        </td>
-                    </tr>
-                </table>
+                            <input type=button class="btn btn-outline-primary me-2 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
+                            <input type=button class="btn btn-outline-primary me-2 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
+                            <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
+                            <input type="text" id=SearchInput class="form-control-sm me-2 btn-sm" style="width: auto;" placeholder="Filter">
+                            <select class="form-select-sm me-2" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
+                                <option value=0 selected>All</option>
+                                <option value=1>Online</option>
+                                <option value=5>Offline</option>
+                                <option value=2>Sessions</option>
+                                <option value=3>Starred</option>
+                                <option value=4>Intel&reg; AMT</option>
+                                <option value=6>Help</option>
+                                <option value=7>Tagged</option>
+                                <option value=8>Untagged</option>
+                            </select>
+                            <label><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS Name</span></label>
+                            <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2" onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                            <span id="devsCustomUIBar"></span>
+                        </div>
+                    </div>
+                    <div id=kvmListToolbar class=style14 style="display:none">
+                        <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)">
+                            <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
+                            <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
+                        </span>
+                        <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)">
+                            <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
+                            <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
+                        </span>
+                        <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                        <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                        <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
+                        <label><input type="checkbox" id="autoConnectDesktopCheckbox" class="form-check-input me-2" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
+                        <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
+                        <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                        <span id=KvmSearchInputClearButton style="display:none;position:relative">
+                            <img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x" />
+                        </span>
+                    </div>
+                    <div id=devMapToolbar class=style14 style="display:none">
+                        &nbsp;&nbsp;<input type=search id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
+                        <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
+                        <input type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div style="display:none" id=devListToolbarView>
+                            View
+                            <select id=viewselect onchange=onDeviceViewChange()>
+                                <option value=1>Columns</option>
+                                <option value=2>List</option>
+                                <option value=3>Desktops Fixed Width</option>
+                                <option id=viewselectmapoption value=4 style="display:none">Map</option>
+                                <option value=5>Desktops</option>
+                            </select>
+                        </div>
+                        <div style="display:none" id=devListToolbarSize>
+                            Size
+                            <select id=sizeselect class="form-select-sm me-2" onchange=onDeviceViewChange()>
+                                <option value=0>Small</option>
+                                <option value=1>Medium</option>
+                                <option value=2>Large</option>
+                            </select>
+                            &nbsp;
+                        </div>
+                        <div style="display:none" id=devListToolbarSort>
+                            Sort
+                            <select id=sortselect class="form-select-sm me-2" onchange=mainUpdate(6)>
+                                <option>Group</option>
+                                <option>Power</option>
+                                <option>Device</option>
+                                <option>Tags</option>
+                                <option>Group-Tags</option>
+                                <option>Last Seen</option>
+                            </select>
+                            &nbsp;
+                        </div>
+                        <i class="fa-solid fa-gear" role="button" id=devListToolbarSettings onclick="onDeviceViewSettings()"></i>
+                    </div>
+                </div>
                 <div id=NoMeshesPanel style="display:none">
                     <table>
                         <tr>
@@ -642,7 +638,7 @@
                     </div>
                     <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
-                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm me-2" onclick="return account_createMesh()"> <i class="fa-solid fa-plus-circle"></i>New</button></span>
+                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm" onclick="return account_createMesh()"> <i class="fa-fw fa-solid fa-plus-circle"></i>New</button></span>
                     <br /><br />
                     <div id=p2meshes></div>
                     <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=#
@@ -896,14 +892,10 @@
                             <td style=width:20px></td>
                             <td style=width:200px;vertical-align:top;position:relative valign=top>
                                 <div class="deviceNotifyLargeDot">
-                                    <div id="p10deviceMsg" onclick=showDeviceMessages(null,null,event)
-                                        class=deviceNotifyDotSub></div>
-                                    <img id="p10deviceStar" class=deviceNotifyDotSub src=images/icon-star-notify-16.png
-                                        width=16 height=16>
-                                    <img id="p10deviceNotify" onclick=showDeviceSessions(null,null,event)
-                                        class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>
-                                    <img id="p10deviceHelp" onclick=showDeviceHelpRequests(null,null,event)
-                                        class=deviceNotifyDotSub src=images/icon-help-notify-16.png width=16 height=16>
+                                    <div id="p10deviceMsg" onclick=showDeviceMessages(null,null,event) class=deviceNotifyDotSub></div>
+                                    <i title="Starred" role=button class="fa-solid fa-star" id="p10deviceStar" onclick=showDeviceSessions(null,null,event) data-fa-transform="shrink-5" data-fa-mask="fa-solid fa-circle"></i>
+                                    <i title="List of remote sessions active on this computer." role=button class="fa-solid fa-arrow-right-arrow-left" id="p10deviceNotify" onclick=showDeviceSessions(null,null,event) data-fa-transform="shrink-5" data-fa-mask="fa-solid fa-circle"></i>
+                                    <i title="Help Requested" role=button class="fa-solid fa-question" id="p10deviceHelp" onclick=showDeviceHelpRequests(null,null,event) data-fa-transform="shrink-5" data-fa-mask="fa-solid fa-circle"></i>
                                 </div>
                                 <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                                 <a href=# onclick=p10showiconselector()><img id=MainComputerImage></a>
@@ -1482,7 +1474,7 @@
                         <i class="fa-solid fa-chart-line fa-xl fa-border" role="button" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."></i>
                     </div>
                 </div>
-                <div id=p17info style="overflow-y:auto">
+                <div id=p17info class="ps-0 pb-5 overflow-y-auto container-fluid">
                     <div id=p17graph style="width:100%">
                         <table style=width:100%>
                             <tr>
@@ -5727,7 +5719,7 @@
                     for (var j in node.sessions.kvm) {
                         if (j.startsWith('user/')) {
                             var trash = '';
-                            if (((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF))) { trash = ' <a href=# onclick=\'return endDeviceSession("kvm", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                            if (((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF))) { trash = ' <i role=button onclick=\'return endDeviceSession("kvm", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger" ></i>'; }
                             x += addHtmlValue2(getUserName(j), ((node.sessions.kvm[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.kvm[j]))) + trash);
                         } else if (j == 'busy') {
                             x += addHtmlValue2("Device is busy", ((node.sessions.kvm[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.kvm[j]))));
@@ -5737,35 +5729,35 @@
                     x += '<u>' + "Remote Desktop" + '</u>';
                     for (var j in node.sessions.multidesk) {
                         var trash = '';
-                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("multidesk", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <i role=button onclick=\'return endDeviceSession("multidesk", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger"></i>'; }
                         x += addHtmlValue2(getUserName(j), ((node.sessions.multidesk[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.multidesk[j]))) + trash);
                     }
                 } else if (i == 'terminal') {
                     x += '<u>' + "Terminal" + '</u>';
                     for (var j in node.sessions.terminal) {
                         var trash = '';
-                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("terminal", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <i role=button onclick=\'return endDeviceSession("terminal", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger"></i>'; }
                         x += addHtmlValue2(getUserName(j), ((node.sessions.terminal[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.terminal[j]))) + trash);
                     }
                 } else if (i == 'files') {
                     x += '<u>' + "Files" + '</u>';
                     for (var j in node.sessions.files) {
                         var trash = '';
-                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("files", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <i role=button onclick=\'return endDeviceSession("files", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger"></i>'; }
                         x += addHtmlValue2(getUserName(j), ((node.sessions.files[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.files[j]))) + trash);
                     }
                 } else if (i == 'tcp') {
                     x += '<u>' + "TCP Routing" + '</u>';
                     for (var j in node.sessions.tcp) {
                         var trash = '';
-                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("tcp", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <i role=button onclick=\'return endDeviceSession("tcp", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger"></i>'; }
                         x += addHtmlValue2(getUserName(j), ((node.sessions.tcp[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.tcp[j]))) + trash);
                     }
                 } else if (i == 'udp') {
                     x += '<u>' + "UDP Routing" + '</u>';
                     for (var j in node.sessions.udp) {
                         var trash = '';
-                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("udp", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <i role=button onclick=\'return endDeviceSession("udp", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger"></i>'; }
                         x += addHtmlValue2(getUserName(j), ((node.sessions.udp[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.udp[j]))) + trash);
                     }
                 }
@@ -8960,7 +8952,7 @@
                     for (var i = 0; i < deviceShares.length; i++) {
                         var dshare = deviceShares[i], trash = '';
                         if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> '; }
-                        trash += '<a href=# onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
+                        trash += '<i role=button onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" class="fa-fw fa-solid fa-trash text-danger"></i>';
                         var type = ''; if (dshare.p <= 7) { type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p]; } else if (dshare.p == 8) { type = "HTTP/" + dshare.port; } else if (dshare.p == 16) { type = "HTTPS/" + dshare.port; }
                         var details = type;
                         if ((dshare.startTime != null) && (dshare.expireTime != null)) { details = format("{0}, {1} to {2}", type, printFlexDateTime(new Date(dshare.startTime)), printFlexDateTime(new Date(dshare.expireTime))); }
@@ -12974,9 +12966,9 @@
                         dateHeader = printDate(time);
                         x += '<table class="table table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
-                    var icon = 'si3';
-                    if (event.etype == 'user') icon = 'm2';
-                    if (event.etype == 'server') icon = 'si3';
+                    var icon = 'fa-mobile-screen';
+                    if (event.etype == 'user') icon = 'fa-user';
+                    if (event.etype == 'server') icon = 'fa-server';
 
                     var msg;
                     if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
@@ -13000,8 +12992,8 @@
                             msg = EscapeHtml(event.username) + guestname + ' &rarr; ' + msg;
                         }
                     }
-                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
+                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'fa-arrow-right-arrow-left';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',1) onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) role="button"><td style=width:18px><i class="fa-solid ' + icon + '"></i></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -16588,8 +16580,7 @@
             e.children[1].classList.remove('g1s');
             e.children[2].classList.remove('style10s');
             //e.children[2].style['background-color'] = ((over == 0) ? '#c9c9c9' : '#b9b9b9');
-            e.children[3].classList.remove('g2s');
-            if (over == 1) { e.children[1].classList.add('g1s'); e.children[2].classList.add('style10s'); e.children[3].classList.add('g2s'); }
+            if (over == 1) { e.children[1].classList.add('g1s'); e.children[2].classList.add('style10s'); }
         }
 
         function eventsUpdate() {
@@ -16603,10 +16594,10 @@
                         dateHeader = printDate(time);
                         x += '<table class="table table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
-                    var icon = 'si3';
-                    if (event.etype == 'ugrp') icon = 'm4';
-                    if (event.etype == 'user') icon = 'm2';
-                    if (event.etype == 'server') icon = 'si3';
+                    var icon = 'fa-mobile-screen';
+                    if (event.etype == 'ugrp') icon = 'fa-users';
+                    if (event.etype == 'user') icon = 'fa-user';
+                    if (event.etype == 'server') icon = 'fa-server';
 
                     var msg;
                     if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
@@ -16632,7 +16623,18 @@
                     if (event.nodeid) {
                         var node = getNodeFromId(event.nodeid);
                         if (node != null) {
-                            icon = 'si' + node.icon;
+                            console.log(node);
+                            switch(node.icon){
+                                case 1:
+                                    icon = 'fa-computer';
+                                    break;
+                                case 2:
+                                    icon = 'fa-laptop';
+                                    break;
+                                case 8:
+                                    icon = 'fa-laptop-code';
+                                    break;
+                            }
                             msg = '<a href=# onclick=\'gotoDevice("' + event.nodeid + '",10);haltEvent(event);\'>' + EscapeHtml(node.name) + '</a> &rarr; ' + msg;
                         }
                     }
@@ -16646,8 +16648,8 @@
                         }
                     }
                     if (event.remoteaddr) { msg += ' (' + event.remoteaddr + ')'; }
-                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
+                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'fa-arrow-right-arrow-left';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) role=button><td style=width:18px><i class="fa-fw fa-solid ' + icon + '"></i></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
@@ -20602,7 +20604,7 @@
         // function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
         function addLink(x, f) { return '<span tabindex=0 role="button" onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <i class="fa-solid fa-pencil fa-xs"></i></span>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
-        function addKeyLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <img class=hoverButton src=images/key16.png></span>'; }
+        function addKeyLink(x, f) { return '<span tabindex=0 role=button onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <i class="fa-solid fa-key"></i></span>'; }
         function addKeyLinkConditional(x, f, c) { if (c) return addKeyLink(x, f); return x; }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement('option'); option.text = t; option.value = i; Q(q).add(option); }
