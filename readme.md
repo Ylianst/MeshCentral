@@ -17,11 +17,12 @@ For more information, [visit MeshCentral.com](https://meshcentral.com).
 ## Social Media
 [YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)  
 [Reddit](https://www.reddit.com/r/MeshCentral/)  
-[Twitter](https://twitter.com/MeshCentral)  
+[X](https://x.com/MeshCentral)  
 [BlogSpot](https://meshcentral2.blogspot.com/)  
+[LinkedIn](https://www.linkedin.com/groups/13067101/)  
 
 ## Documentation
-[New Searchable Documentation](https://ylianst.github.io/MeshCentral/) is available here and contains information every adminstrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
+[New Searchable Documentation](https://ylianst.github.io/MeshCentral/) is available here and contains information every administrator should know including usage, the server configuration file, databases, TLS offloading, Let's Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
 
 The [Design and Architecture Guide](https://meshcentral.com/docs/MeshCentral2DesignArchitecture.pdf) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
 
@@ -52,7 +53,7 @@ If you encounter a problem or have a suggestion to improve the product, you may 
 
 If you are filing a problem report, you should include:
 * The version of the software you are using
-* The Operating System and version
+* The operating system and version
 * The observed output
 * The expected output
 * Any troubleshooting you took to resolve the issue yourself
