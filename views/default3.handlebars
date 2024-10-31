@@ -429,40 +429,47 @@
                         </div>
                     </div>
                 </div>
-                <div class="d-flex align-items-center" id="devListToolbar" style="background: linear-gradient(180deg,#fff,#fff,#e9ecef);padding:5px;">
-                        <div>
-                            <img style="cursor:pointer;margin-top:4px;display:none;" title="Collapse All" id="CollapseAllButton" class="mb-1 me-1" src="images/icon-collapse.png" loading=lazy width=9 height=11 onclick="cmexpandaction(2)" />
-                            <img style="cursor:pointer;margin-top:4px;display:none;" title="Expand All" id="ExpandAllButton" class="mb-1 me-1" src="images/icon-expand.png" loading=lazy width=9 height=11 onclick="cmexpandaction(1)" />
-                            <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
-                            <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
-                            <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
-                            <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;" placeholder="Filter">
-                            <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
-                                <option value=0 selected>All</option>
-                                <option value=1>Online</option>
-                                <option value=5>Offline</option>
-                                <option value=2>Sessions</option>
-                                <option value=3>Starred</option>
-                                <option value=4>Intel&reg; AMT</option>
-                                <option value=6>Help</option>
-                                <option value=7>Tagged</option>
-                                <option value=8>Untagged</option>
-                            </select>
-                            <label><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS Name</span></label>
-                            <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2" onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
-                            <span id="devsCustomUIBar"></span>
-                        </div>
-                </div>
                 <table id="devListToolbarSpan" class="noselect">
                     <tr>
-                        {{!-- <td class=h1></td> --}}
+                        <td id="devListToolbar" style="background: linear-gradient(180deg,#fff,#fff,#e9ecef);padding:5px;">
+                            <div>
+                                <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)">
+                                    <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
+                                    <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
+                                </span>
+                                <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)">
+                                    <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
+                                    <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
+                                </span>
+                                <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
+                                <input type=button class="btn btn-outline-primary me-2 mb-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
+                                <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
+                                <input type="text" id=SearchInput class="form-control-sm me-2 mb-1 btn-sm" style="width: auto;" placeholder="Filter">
+                                <select class="form-select-sm me-2 mb-1" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
+                                    <option value=0 selected>All</option>
+                                    <option value=1>Online</option>
+                                    <option value=5>Offline</option>
+                                    <option value=2>Sessions</option>
+                                    <option value=3>Starred</option>
+                                    <option value=4>Intel&reg; AMT</option>
+                                    <option value=6>Help</option>
+                                    <option value=7>Tagged</option>
+                                    <option value=8>Untagged</option>
+                                </select>
+                                <label><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS Name</span></label>
+                                <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2" onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                                <span id="devsCustomUIBar"></span>
+                            </div>
+                        </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All"
-                                id="CollapseAllButton2" src="images/icon-collapse.png" loading=lazy width=9 height=11
-                                onclick="cmexpandaction(2)" />
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All"
-                                id="ExpandAllButton2" src="images/icon-expand.png" loading=lazy width=9 height=11
-                                onclick="cmexpandaction(1)" />
+                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)">
+                                <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
+                                <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
+                            </span>
+                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)">
+                                <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
+                                <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
+                            </span>
                             <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
                             <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
                             <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
@@ -485,9 +492,7 @@
                             <input type=button id=refreshmap title="Reset map view" value=Reset
                                 onclick=refreshMap(false,true) />
                         </td>
-                        <td class="auto-style1" style=height:100%>
-                            <i class="fa-solid fa-gear" style="display:none;cursor:pointer;margin-top:3px"
-                                id=devListToolbarSettings onclick="onDeviceViewSettings()"></i>
+                        <td class="d-flex justify-content-end align-items-center" style=height:100%>
                             <div style="display:none" id=devListToolbarView>
                                 View
                                 <select id=viewselect onchange=onDeviceViewChange()>
@@ -497,6 +502,15 @@
                                     <option id=viewselectmapoption value=4 style="display:none">Map</option>
                                     <option value=5>Desktops</option>
                                 </select>
+                            </div>
+                            <div style="display:none" id=devListToolbarSize>
+                                Size
+                                <select id=sizeselect class="form-select-sm me-2" onchange=onDeviceViewChange()>
+                                    <option value=0>Small</option>
+                                    <option value=1>Medium</option>
+                                    <option value=2>Large</option>
+                                </select>
+                                &nbsp;
                             </div>
                             <div style="display:none" id=devListToolbarSort>
                                 Sort
@@ -510,17 +524,8 @@
                                 </select>
                                 &nbsp;
                             </div>
-                            <div style="display:none" id=devListToolbarSize>
-                                Size
-                                <select id=sizeselect class="form-select-sm me-2" onchange=onDeviceViewChange()>
-                                    <option value=0>Small</option>
-                                    <option value=1>Medium</option>
-                                    <option value=2>Large</option>
-                                </select>
-                                &nbsp;
-                            </div>
+                            <i class="fa-solid fa-gear" role="button" id=devListToolbarSettings onclick="onDeviceViewSettings()"></i>
                         </td>
-                        {{!-- <td class=h2></td> --}}
                     </tr>
                 </table>
                 <div id=NoMeshesPanel style="display:none">
@@ -5099,7 +5104,7 @@
                             r += '</span>';
                             if ((view == 1) || (view == 2) || (view == 3) || (view == 5)) {
                                 var collapsed = CollapsedGroups[node.meshid];
-                                r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + deviceHeaderId + '" src=images/c' + ((collapsed === true) ? '1' : '2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId + '","' + node.meshid + '",' + view + ')></img>'; // Collapse action
+                                r += '<i role="button" cmenu=expandAllContextMenu onclick=toggleCollapseGroup("' + deviceHeaderId + '","' + node.meshid + '",' + view + ') class="fa-fw fa-solid ' + ((collapsed === true) ? 'fa-chevron-right' : 'fa-chevron-down') + '" id="DevxColImg' + deviceHeaderId + '"></i>';
                             }
                             if (meshes[node.meshid]) {
                                 r += '<span id=MxMESH cmenu=meshContextMenu tabindex=0 style=cursor:pointer onclick=gotoMesh("' + node.meshid + '") onkeypress="if (event.key==\'Enter\') gotoMesh(\'' + node.meshid + '\')">' + EscapeHtml(meshes[node.meshid].name) + '</span>' + getMeshActions(mesh2, meshrights) + '</div>';
@@ -5125,7 +5130,7 @@
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span id=DevxHeader' + deviceHeaderId + ' class=devHeaderx style=float:right></span>';
                             if ((view == 1) || (view == 2) || (view == 3) || (view == 5)) {
                                 var collapsed = CollapsedGroups['pwr:' + pwr];
-                                r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + deviceHeaderId + '" src=images/c' + ((collapsed === true) ? '1' : '2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId + '","pwr:' + pwr + '",' + view + ')></img>'; // Collapse action
+                                r += '<i role="button" cmenu=expandAllContextMenu onclick=toggleCollapseGroup("' + deviceHeaderId + '","pwr:' + pwr + '",' + view + ') class="fa-fw fa-solid ' + ((collapsed === true) ? 'fa-chevron-right' : 'fa-chevron-down') + '" id="DevxColImg' + deviceHeaderId + '"></i>'; // Collapse action
                             }
                             r += '<span>' + PowerStateStr2(node.pwr) + '</span></div>';
 
@@ -5201,12 +5206,12 @@
                         if (view == 2) {
                             r += '<tr><td colspan=' + colcount + '><div class=DevSt style=width:100%;padding-top:4px>';
                             var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(i)];
-                            r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true) ? '1' : '2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '",2)></img>'; // Collapse action
+                            r += '<i role="button" cmenu=expandAllContextMenu onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '",2) class="fa-fw fa-solid ' + ((collapsed === true) ? 'fa-chevron-right' : 'fa-chevron-down') + '" id="DevxColImg' + tagDeviceHeaderId + '"></i>'; // Collapse action
                             r += '<span class=devHeaderx style=float:right>' + groupCount[i] + ' node' + ((groupCount[i] > 1) ? 's' : '') + '</span><span>' + EscapeHtml(i).split('|').join(' &rarr; ').split('**INDV*~*DEVS**').join('<i>' + "Individual Devices" + '</i>') + '</span></div>' + groups[i];
                         } else {
                             r += '<div class=DevSt style=width:100%;padding-top:4px><span class=devHeaderx style=float:right>' + format(((groupCount[i] > 1) ? '{0} nodes' : '{0} node'), groupCount[i]) + '</span>';
                             var collapsed = CollapsedGroups['tag:' + encodeURIComponentEx(i)];
-                            r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + tagDeviceHeaderId + '" src=images/c' + ((collapsed === true) ? '1' : '2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '")></img>'; // Collapse action
+                            r += '<i role="button" cmenu=expandAllContextMenu onclick=toggleCollapseGroup("' + tagDeviceHeaderId + '","tag:' + encodeURIComponentEx(i) + '") class="fa-fw fa-solid ' + ((collapsed === true) ? 'fa-chevron-right' : 'fa-chevron-down') + '" id="DevxColImg' + tagDeviceHeaderId + '"></i>'; // Collapse action
                             r += '<span>' + EscapeHtml(i).split('|').join(' &rarr; ').split('**INDV*~*DEVS**').join('<i>' + "Individual Devices" + '</i>') + '</span></div>';
                             r += '<div id=DevxCol' + tagDeviceHeaderId + ((collapsed === true) ? ' style=display:none' : '') + '>' + groups[i] + '</div>'; // Open collapse div
                         }
@@ -5241,7 +5246,7 @@
                             // Collapsing header & start collapsing area
                             deviceHeaderId2++;
                             var collapsed = CollapsedGroups[mesh._id];
-                            r += '<img class=collapseImage cmenu=expandAllContextMenu id="DevxColImg' + deviceHeaderId2 + '" src=images/c' + ((collapsed === true) ? '1' : '2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleCollapseGroup("' + deviceHeaderId2 + '","' + mesh._id + '")></img>'; // Collapse action
+                            r += '<i role="button" cmenu=expandAllContextMenu onclick=toggleCollapseGroup("' + deviceHeaderId2 + '","' + mesh._id + '") class="fa-fw fa-solid ' + ((collapsed === true) ? 'fa-chevron-right' : 'fa-chevron-down') + '" id="DevxColImg' + deviceHeaderId2 + '"></i>'; // Collapse action
 
                             r += '<span id=MxMESH style=cursor:pointer onclick=gotoMesh("' + mesh._id + '")>' + EscapeHtml(mesh.name) + '</span><span>';
                             r += getMeshActions(mesh, meshrights);
@@ -5827,7 +5832,13 @@
                 if (x) { delete CollapsedGroups[id2]; } else { CollapsedGroups[id2] = true; }
                 QV('DevxCol' + id, x);
             }
-            Q('DevxColImg' + id).src = x ? 'images/c2.png' : 'images/c1.png';
+            if (x) {
+                QC('DevxColImg' + id).remove('fa-chevron-right');
+                QC('DevxColImg' + id).add('fa-chevron-down');
+            } else {
+                QC('DevxColImg' + id).remove('fa-chevron-down');
+                QC('DevxColImg' + id).add('fa-chevron-right');
+            }
             putstore('_collapse', JSON.stringify(CollapsedGroups));
             updateCollapseAllButton();
             onDevicesScrollEx();
@@ -9645,7 +9656,7 @@
             // Add the language and timezone of the browser to the server so the server can localize the time correctly.
             var tz = '';
             try { tz = '&tz=' + encodeURIComponentEx(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (ex) { }
-            QH('p10html2', '<table class="table table-striped align-middle text-center" cellpadding=2 cellspacing=0><thead><tr><th scope=col style=width:150px>' + "Day" + '</th><th scope=col>' + "7 Day Power State" + '<div class="float-end pe-1"><i role="button" onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + '&tf=' + new Date().getTimezoneOffset() + '&l=' + encodeURIComponentEx(getLang()) + tz + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "Download power events" + '" class="fas fa-download"></i></div></th></tr></thead><tbody>' + x + '</tbody></table>');
+            QH('p10html2', '<table class="table table-striped align-middle text-center" cellpadding=2 cellspacing=0><thead><tr><th scope=col style=width:150px>' + "Day" + '</th><th scope=col>' + "7 Day Power State" + '<div class="float-end pe-1"><i role="button" onclick=downloadFile("devicepowerevents.ashx?id=' + currentNode._id + '&tf=' + new Date().getTimezoneOffset() + '&l=' + encodeURIComponentEx(getLang()) + tz + (urlargs.key ? ('&key=' + urlargs.key) : '') + '",null,true) title="' + "Download power events" + '" class="fa-solid fa-download"></i></div></th></tr></thead><tbody>' + x + '</tbody></table>');
         }
 
         // Return a color for the given power state
@@ -16853,7 +16864,7 @@
                 if (userdomain != '') { username += ', <span style=color:#26F>' + userdomain + '</span>'; }
             }
 
-            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <i class="fas fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i>'; }
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <i class="fa-solid fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i>'; }
             if (user.phone != null) { username += ' <i class="fa-solid fa-mobile-screen" title="' + "Verified phone number" + '" style="margin-top:2px"></i>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
             if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <img src="images/messaging12.png" height=12 width=12 title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
@@ -18039,7 +18050,7 @@
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
-                x += addDeviceAttribute("Messaging", '<span role=button onclick=p30editMessaging()><i class="fas fa-comment fa-xs" title="' + "Messaging enabled" + '" style="margin-top:2px"></i> ' + (user.msghandle ? user.msghandle : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
+                x += addDeviceAttribute("Messaging", '<span role=button onclick=p30editMessaging()><i class="fa-solid fa-comment fa-xs" title="' + "Messaging enabled" + '" style="margin-top:2px"></i> ' + (user.msghandle ? user.msghandle : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             }
 
             // Display features
@@ -18111,7 +18122,7 @@
                 if (user.otpdev > 0) { factors.push("Device Push"); }
                 if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
                 if ((user.msghandle != null) && (features2 & 0x04000000)) { factors.push("Messaging"); }
-                x += addDeviceAttribute("Security", '<i class="fas fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i> ' + factors.join(', '));
+                x += addDeviceAttribute("Security", '<i class="fa-solid fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i> ' + factors.join(', '));
             }
 
             x += '</table></div><br />';
