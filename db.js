@@ -741,10 +741,11 @@ module.exports.CreateDB = function (parent, func) {
         // SQLite3 database setup
         obj.databaseType = DB_SQLITE;
         const sqlite3 = require('sqlite3');
-        obj.file = new sqlite3.Database(parent.path.join(parent.datapath, 'meshcentral.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
+        if (typeof parent.config.settings.sqlite3 == 'string') {databaseName = parent.config.settings.sqlite3};
+        obj.file = new sqlite3.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
                 // Database needs to be created
-                obj.file = new sqlite3.Database(parent.path.join(parent.datapath, 'meshcentral.sqlite'), function (err) {
+                obj.file = new sqlite3.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), function (err) {
                     if (err) { console.log("SQLite Error: " + err); exit(1); return; }
                     obj.file.exec(`
                         CREATE TABLE main (id VARCHAR(256) PRIMARY KEY NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON);
@@ -3099,21 +3100,20 @@ module.exports.CreateDB = function (parent, func) {
         var r = '', backupPath = parent.backuppath;
         if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
 
-        var dbname = 'meshcentral';
+        let dbname = 'meshcentral';
         if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
         else if ((typeof parent.args.mariadb == 'object') && (typeof parent.args.mariadb.database == 'string')) { dbname = parent.args.mariadb.database; }
         else if ((typeof parent.args.mysql == 'object') && (typeof parent.args.mysql.database == 'string')) { dbname = parent.args.mysql.database; }
+        else if (typeof parent.config.settings.sqlite3 == 'string') {dbname = parent.config.settings.sqlite3 + '.sqlite'};
 
         const currentDate = new Date();
         const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-        const newAutoBackupFile = 'meshcentral-autobackup-' + fileSuffix;
-        const newAutoBackupPath = parent.path.join(backupPath, newAutoBackupFile);
+        const newAutoBackupFile = ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix;
 
         r += 'DB Name: ' + dbname + '\r\n';
         r += 'DB Type: ' + DB_LIST[obj.databaseType] + '\r\n';
         r += 'BackupPath: ' + backupPath + '\r\n';
-        r += 'newAutoBackupFile: ' + newAutoBackupFile + '\r\n';
-        r += 'newAutoBackupPath: ' + newAutoBackupPath + '\r\n';
+        r += 'BackupFile: ' + newAutoBackupFile + '.zip\r\n';
 
         if (parent.config.settings.autobackup == null) {
             r += 'No Settings/AutoBackup\r\n';
@@ -3144,11 +3144,33 @@ module.exports.CreateDB = function (parent, func) {
                 if (typeof parent.config.settings.autobackup.mysqldumppath != 'string') { r += 'Bad mysqldump type\r\n'; }
                 else { r += parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
             }
+            if (parent.config.settings.autobackup.backupotherfolders) {
+                r += 'Backup other folders: ';
+                r += parent.filespath + ', ' + parent.recordpath + '\r\n';
+            }
+            if (parent.config.settings.autobackup.backupwebfolders) {
+                r += 'Backup webfolders: ';
+                if (parent.webViewsOverridePath) {r += parent.webViewsOverridePath };
+                if (parent.webPublicOverridePath) {r += ', '+ parent.webPublicOverridePath};
+                if (parent.webEmailsOverridePath) {r += ',' + parent.webEmailsOverridePath};
+                r+= '\r\n';
+            }
+            if (parent.config.settings.autobackup.backupignorefilesglob != []) {
+                r += 'Backup IgnoreFilesGlob: ';
+                { r += parent.config.settings.autobackup.backupignorefilesglob + '\r\n'; }
+            }
+            if (parent.config.settings.autobackup.backupskipfoldersglob != []) {
+                r += 'Backup SkipFoldersGlob: ';
+                { r += parent.config.settings.autobackup.backupskipfoldersglob + '\r\n'; }
+            }
+
             if (typeof parent.config.settings.autobackup.s3 == 'object') {
                 r += 'S3 Backups: Enabled\r\n';
             }
             if (typeof parent.config.settings.autobackup.webdav == 'object') {
                 r += 'WebDAV Backups: Enabled\r\n';
+                r += 'WebDAV backup path: ' + ((typeof parent.config.settings.autobackup.webdav.foldername == 'string') ? parent.config.settings.autobackup.webdav.foldername : 'MeshCentral-Backups') + '\r\n';
+                r += 'WebDAV maximum files: '+ ((typeof parent.config.settings.autobackup.webdav.maxfiles == 'number') ? parent.config.settings.autobackup.webdav.maxfiles : 'no limit') + '\r\n';
             }
             if (typeof parent.config.settings.autobackup.googledrive == 'object') {
                 r += 'Google Drive Backups: Enabled\r\n';
@@ -3393,7 +3415,7 @@ module.exports.CreateDB = function (parent, func) {
             if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
             const currentDate = new Date();
-            const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2) + '-' + padNumber(currentDate.getSeconds(), 2);
+            const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
             newAutoBackupFile = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
             newAutoBackupFile = backupPath + '/' + newAutoBackupFile + fileSuffix + '.zip';
 
