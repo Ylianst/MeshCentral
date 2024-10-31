@@ -742,7 +742,8 @@ module.exports.CreateDB = function (parent, func) {
         obj.databaseType = DB_SQLITE;
         const sqlite3 = require('sqlite3');
         if (typeof parent.config.settings.sqlite3 == 'string') {databaseName = parent.config.settings.sqlite3};
-        obj.file = new sqlite3.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
+        //use sqlite3 cache mode https://github.com/TryGhost/node-sqlite3/wiki/Caching#caching
+        obj.file = new sqlite3.cached.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
                 // Database needs to be created
                 obj.file = new sqlite3.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), function (err) {
