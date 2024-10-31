@@ -731,7 +731,6 @@ body {
 
 #devListToolbarSpan {
     width: 100%;
-    height: 24px;
     background: var(--sub-menu-bg);
     vertical-align: middle;
     border-spacing: 0;
@@ -2919,11 +2918,13 @@ nav .lbbuttonsel2 {
 .viewSelectorSel {
     background-color: #BBB;
     opacity: 0.8;
+    color: black;
 }
 
 .viewSelector:hover {
     opacity: 0.5;
     background-color: #AAA;
+    color: black;
 }
 
 
