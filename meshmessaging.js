@@ -352,9 +352,9 @@ module.exports.CreateServer = function (parent) {
             push.send(domain.title ? domain.title : 'MeshCentral', msg, function (err, res) { if (func != null) { func(err == null); } });
         } else if ((to.startsWith('ntfy:')) && (obj.ntfyClient != null)) { // ntfy
             const url = 'https://' + (((typeof parent.config.messaging.ntfy == 'object') && (typeof parent.config.messaging.ntfy.host == 'string')) ? parent.config.messaging.ntfy.host : 'ntfy.sh') + '/' + encodeURIComponent(to.substring(5));
-            const headers = (typeof parent.config.messaging.ntfy.authorization  == 'string') ? { 'Authorization': parent.config.messaging.ntfy.authorization } : {};
-            const req = require('https').request(new URL(url), { method: 'POST', headers: headers }, function (res) { if (func != null) { func(true); } });
-            req.on('error', function (err) { if (func != null) { func(false); } });
+            const headers = { 'User-Agent': 'MeshCentral v' + parent.currentVer };
+            if (typeof parent.config.messaging.ntfy.authorization  == 'string') { headers['Authorization'] = parent.config.messaging.ntfy.authorization; }
+            const req = require('https').request(new URL(url), { method: 'POST', headers: headers }, function (res) { if (func != null) { func(res.statusCode == 200); } });
             req.end(msg);
         } else if ((to.startsWith('zulip:')) && (obj.zulipClient != null)) { // zulip
             obj.zulipClient.sendMessage({
