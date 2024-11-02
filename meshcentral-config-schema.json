@@ -836,6 +836,11 @@
               "default": "mysqldump",
               "description": "The file path of where \"mysqldump\" is located. Default is \"mysqldump\""
             },
+            "pgDumpPath": {
+              "type": "string",
+              "default": "pg_dump",
+              "description": "The file path of where \"pg_dump\" is located. Default is \"pg_dump\""
+            },
             "backupIntervalHours": {
               "type": "integer",
               "default": 24,

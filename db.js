@@ -32,7 +32,8 @@ module.exports.CreateDB = function (parent, func) {
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days (2592000). (Seconds * Minutes * Hours * Days)
     const common = require('./common.js');
-    const path = require('path');
+    const path = require('node:path');
+    const fs = require('node:fs');
     const DB_NEDB = 1, DB_MONGOJS = 2, DB_MONGODB = 3,DB_MARIADB = 4, DB_MYSQL = 5, DB_POSTGRESQL = 6, DB_ACEBASE = 7, DB_SQLITE = 8;
     const DB_LIST = ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL', 'PostgreSQL', 'AceBase', 'SQLite'];  //for the info command
     let databaseName = 'meshcentral';
@@ -747,7 +748,7 @@ module.exports.CreateDB = function (parent, func) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
                 // Database needs to be created
                 obj.file = new sqlite3.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), function (err) {
-                    if (err) { console.log("SQLite Error: " + err); exit(1); return; }
+                    if (err) { console.log("SQLite Error: " + err); process.exit(1);; return; }
                     obj.file.exec(`
                         CREATE TABLE main (id VARCHAR(256) PRIMARY KEY NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON);
                         CREATE TABLE events(id INTEGER PRIMARY KEY, time TIMESTAMP, domain CHAR(64), action CHAR(255), nodeid CHAR(255), userid CHAR(255), doc JSON);
@@ -875,30 +876,43 @@ module.exports.CreateDB = function (parent, func) {
         }
     } else if (parent.args.postgres) {
         // Postgres SQL
-        var connectinArgs = parent.args.postgres;
-        var dbname = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral';
-        delete connectinArgs.database;
+        let connectinArgs = parent.args.postgres;
+        connectinArgs.Database = (databaseName = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral');
+
+        let DatastoreTest;
         obj.databaseType = DB_POSTGRESQL;
-        const { Pool, Client } = require('pg');
-        connectinArgs.database = dbname;
+        const { Client } = require('pg');
         Datastore = new Client(connectinArgs);
-        Datastore.connect();
-        sqlDbQuery('SELECT 1 FROM pg_database WHERE datname = $1', [dbname], function (dberr, dbdocs) { // check database exists first before creating
-            if (dberr == null) { // database exists now check tables exists
-                sqlDbQuery('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, docs) {
-                    if (err == null) { setupFunctions(func); } else { postgreSqlCreateTables(func); } // If not present, create the tables and indexes
-                });
-            } else { // If not present, create the tables and indexes
-                const pgtools = require('pgtools');
-                pgtools.createdb(connectinArgs, dbname, function (err, res) {
+        //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
+        connectinArgs.database = 'postgres';
+        DatastoreTest = new Client(connectinArgs);
+        DatastoreTest.connect();
+
+        DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
+            if (res.rowCount != 0) { // database exists now check tables exists
+                Datastore.connect();
+                DatastoreTest.end();
+                Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
                     if (err == null) {
-                        // Create the tables and indexes
+                      (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
+                    } else
+                    if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
                         postgreSqlCreateTables(func);
                     } else {
-                        // Database already existed, perform a test query to see if the main table is present
-                        sqlDbQuery('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, docs) {
-                            if (err == null) { setupFunctions(func); } else { postgreSqlCreateTables(func); } // If not present, create the tables and indexes
-                        });
+                        console.log('Postgresql database exists, other error: ', err.message); exit(0)
+                    };
+                });
+            } else { // If not present, create the tables and indexes
+                //not needed, just use a create db statement: const pgtools = require('pgtools'); 
+                DatastoreTest.query('CREATE DATABASE '+ databaseName + ';', [], function (err, res) {
+                    if (err == null) {
+                        // Create the tables and indexes
+                        Datastore.connect();
+                        DatastoreTest.end();
+                        postgreSqlCreateTables(func);
+                    } else {
+                            console.log('Postgresql database create error: ', err.message);
+                            exit(0);
                     }
                 });
             }
@@ -3244,13 +3258,13 @@ module.exports.CreateDB = function (parent, func) {
     // Check that the server is capable of performing a backup
     obj.checkBackupCapability = function (func) {
         if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); }
+        let backupPath = parent.backuppath;
+        if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
+        try { parent.fs.mkdirSync(backupPath); } catch (e) { }
+        if (parent.fs.existsSync(backupPath) == false) { func(1, "Backup folder \"" + backupPath + "\" does not exist, auto-backup will not be performed."); return; }
+
         if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
             // Check that we have access to MongoDump
-            var backupPath = parent.backuppath;
-            if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
-            try { parent.fs.mkdirSync(backupPath); } catch (ex) { }
-            if (parent.fs.existsSync(backupPath) == false) { func(1, "Backup folder \"" + backupPath + "\" does not exist, database auto-backup will not be performed."); return; }
-
             var cmd = buildMongoDumpCommand();
             cmd += (parent.platform == 'win32') ? ' --archive=\"nul\"' : ' --archive=\"/dev/null\"';
             const child_process = require('child_process');
@@ -3269,11 +3283,6 @@ module.exports.CreateDB = function (parent, func) {
             });
         } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
             // Check that we have access to mysqldump
-            var backupPath = parent.backuppath;
-            if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
-            try { parent.fs.mkdirSync(backupPath); } catch (e) { }
-            if (parent.fs.existsSync(backupPath) == false) { func(1, "Backup folder \"" + backupPath + "\" does not exist, database auto-backup will not be performed."); return; }
-
             var cmd = buildSqlDumpCommand();
             cmd += ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
@@ -3290,6 +3299,23 @@ module.exports.CreateDB = function (parent, func) {
                     }
                 } catch (ex) { console.log(ex); }
             });
+        } else if (obj.databaseType == DB_POSTGRESQL) {
+            // Check that we have access to pg_dump
+            parent.config.settings.autobackup.pgdumppath = path.normalize(parent.config.settings.autobackup.pgdumppath ? parent.config.settings.autobackup.pgdumppath : 'pg_dump');
+            let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
+                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
+                    + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
+            const child_process = require('child_process');
+            child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
+                try {
+                    if ((error != null) && (error != '')) {
+                            func(1, "Unable to find pg_dump, PostgreSQL database auto-backup will not be performed.");
+                    } else {
+                        func();
+                    }
+                } catch (ex) { console.log(ex); }
+            });        
         } else {
             func();
         }
@@ -3417,8 +3443,7 @@ module.exports.CreateDB = function (parent, func) {
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
             const currentDate = new Date();
             const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-            newAutoBackupFile = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
-            newAutoBackupFile = backupPath + '/' + newAutoBackupFile + fileSuffix + '.zip';
+            newAutoBackupFile = path.join(backupPath, ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix + '.zip');
 
             if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
                 // Perform a MongoDump in the datadir
@@ -3426,7 +3451,7 @@ module.exports.CreateDB = function (parent, func) {
                 const dburl = parent.args.mongodb;
     
                 //const newDBDumpFile = 'mongodump-' + fileSuffix;
-                newDBDumpFile = parent.path.join(dataPath, ('mongodump-' + fileSuffix + '.archive'));
+                newDBDumpFile = path.join(dataPath, (dbname + '-mongodump-' + fileSuffix + '.archive'));
 
                 var cmd = buildMongoDumpCommand();
                 cmd += (dburl) ? ' --archive=\"' + newDBDumpFile + '\"' :
@@ -3446,7 +3471,7 @@ module.exports.CreateDB = function (parent, func) {
             } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                 // Perform a MySqlDump backup
                 const newBackupFile = 'mysqldump-' + fileSuffix;
-                newDBDumpFile = parent.path.join(dataPath, newBackupFile + '.sql');
+                newDBDumpFile = path.join(dataPath, newBackupFile + '.sql');
            
                 var cmd = buildSqlDumpCommand();
                 cmd += ' --result-file=\"' + newDBDumpFile + '\"';
@@ -3464,7 +3489,7 @@ module.exports.CreateDB = function (parent, func) {
 
             } else if (obj.databaseType == DB_SQLITE) {
                 //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
-                newDBDumpFile = dataPath + '/' + databaseName + 'dump-' + fileSuffix + '.db3';
+                newDBDumpFile = path.join(dataPath, databaseName + '-sqlitedump-' + fileSuffix + '.db3');
                 /*undocumented in node-sqlite3 API, check https://github.com/TryGhost/node-sqlite3/blob/593c9d498be2510d286349134537e3bf89401c4a/test/backup.test.js
                 var backup = obj.file.backup(newDBDumpFile);
                 backup.step(-1, function (err) {
@@ -3483,8 +3508,22 @@ module.exports.CreateDB = function (parent, func) {
                 });
             } else if (obj.databaseType == DB_POSTGRESQL) {
                 // Perform a PostgresDump backup
-                // TODO
-                obj.createBackupfile(func);
+                const newBackupFile = databaseName + '-pgdump-' + fileSuffix + '.sql';
+                newDBDumpFile = path.join(dataPath, newBackupFile);
+                let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
+                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
+                    + " --file=" + newDBDumpFile;
+                const child_process = require('child_process');
+                const dumpProcess = child_process.exec(
+                    cmd,
+                    { cwd: dataPath },
+                    (error)=> {if (error) {backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform PostgreSQL dump: ' + error.message + '\r\n'); obj.createBackupfile(func);}}
+                );
+                dumpProcess.on('exit', (code) => {
+                    if (code != 0) {console.log(`PostgreSQLdump child process exited with code: ` + code); backupStatus |= BACKUPFAIL_DBDUMP;}
+                    obj.createBackupfile(func);
+                });
             } else {
                 //NeDB backup, no db dump needed, just make a file backup
                 obj.createBackupfile(func);
@@ -3514,6 +3553,7 @@ module.exports.CreateDB = function (parent, func) {
             archive = archiver('zip', { zlib: { level: 9 } });
         }
 
+        //original behavior, just a filebackup if dbdump fails : (backupStatus == 0 || backupStatus == BACKUPFAIL_DBDUMP)
         if (backupStatus == 0) {
             // Zip the data directory with the dbdump|NeDB files
             let output = parent.fs.createWriteStream(newAutoBackupFile);
