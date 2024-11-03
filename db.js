@@ -32,8 +32,8 @@ module.exports.CreateDB = function (parent, func) {
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire power events after 30 days (2592000). (Seconds * Minutes * Hours * Days)
     const common = require('./common.js');
-    const path = require('node:path');
-    const fs = require('node:fs');
+    const path = require('path');
+    const fs = require('fs');
     const DB_NEDB = 1, DB_MONGOJS = 2, DB_MONGODB = 3,DB_MARIADB = 4, DB_MYSQL = 5, DB_POSTGRESQL = 6, DB_ACEBASE = 7, DB_SQLITE = 8;
     const DB_LIST = ['None', 'NeDB', 'MongoJS', 'MongoDB', 'MariaDB', 'MySQL', 'PostgreSQL', 'AceBase', 'SQLite'];  //for the info command
     let databaseName = 'meshcentral';
@@ -890,8 +890,8 @@ module.exports.CreateDB = function (parent, func) {
 
         DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
             if (res.rowCount != 0) { // database exists now check tables exists
-                Datastore.connect();
                 DatastoreTest.end();
+                Datastore.connect();
                 Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
                     if (err == null) {
                       (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
@@ -907,8 +907,8 @@ module.exports.CreateDB = function (parent, func) {
                 DatastoreTest.query('CREATE DATABASE '+ databaseName + ';', [], function (err, res) {
                     if (err == null) {
                         // Create the tables and indexes
-                        Datastore.connect();
                         DatastoreTest.end();
+                        Datastore.connect();
                         postgreSqlCreateTables(func);
                     } else {
                             console.log('Postgresql database create error: ', err.message);
@@ -3639,9 +3639,9 @@ module.exports.CreateDB = function (parent, func) {
             });
 
             if (parent.config.settings.autobackup.backupwebfolders) {
-                if (parent.webViewsOverridePath) { archive.directory(parent.webViewsOverridePath, 'meshcentral-views');; }
-                if (parent.webPublicOverridePath) { archive.directory(parent.webPublicOverridePath, 'meshcentral-public');; }
-                if (parent.webEmailsOverridePath) { archive.directory(parent.webEmailsOverridePath, 'meshcentral-emails');; }
+                if (parent.webViewsOverridePath) { archive.directory(parent.webViewsOverridePath, 'meshcentral-views'); }
+                if (parent.webPublicOverridePath) { archive.directory(parent.webPublicOverridePath, 'meshcentral-public'); }
+                if (parent.webEmailsOverridePath) { archive.directory(parent.webEmailsOverridePath, 'meshcentral-emails'); }
             };
             if (parent.config.settings.autobackup.backupotherfolders) {
                 archive.directory(parent.filespath, 'meshcentral-files');
