@@ -1969,28 +1969,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var idsplit = cookie.u.split('/');
                 if ((idsplit.length != 3) || (idsplit[1] != domain.id)) {
                     parent.debug('web', 'handleCheckMailRequest: Invalid domain.');
-                    render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 1, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 1, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
                 } else {
                     obj.db.Get(cookie.u, function (err, docs) {
                         if (docs.length == 0) {
                             parent.debug('web', 'handleCheckMailRequest: Invalid username.');
-                            render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 2, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(idsplit[1]).replace(/'/g, '%27') }, req, domain));
+                            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 2, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(idsplit[1]).replace(/'/g, '%27') }, req, domain));
                         } else {
                             var user = docs[0];
                             if (user.email != cookie.e) {
                                 parent.debug('web', 'handleCheckMailRequest: Invalid e-mail.');
-                                render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 3, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
+                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 3, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
                             } else {
                                 if (cookie.a == 1) {
                                     // Account email verification
                                     if (user.emailVerified == true) {
                                         parent.debug('web', 'handleCheckMailRequest: email already verified.');
-                                        render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
+                                        render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
                                             if ((docs.length > 0) && (docs.find(function (u) { return (u._id === user._id); }) < 0)) {
                                                 parent.debug('web', 'handleCheckMailRequest: email already in use.');
-                                                render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27') }, req, domain));
+                                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27') }, req, domain));
                                             } else {
                                                 parent.debug('web', 'handleCheckMailRequest: email verification success.');
 
@@ -2005,7 +2005,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                 // Send the confirmation page
-                                                render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 6, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
+                                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 6, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
 
                                                 // Send a notification
                                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: 'Email verified', value: user.email, nolog: 1, id: Math.random() });
@@ -2019,7 +2019,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     // Account reset
                                     if (user.emailVerified != true) {
                                         parent.debug('web', 'handleCheckMailRequest: email not verified.');
-                                        render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 7, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.email), arg2: EscapeHtml(user.name) }, req, domain));
+                                        render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 7, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.email), arg2: EscapeHtml(user.name) }, req, domain));
                                     } else {
                                         if (req.query.confirm == 1) {
                                             // Set a temporary password
@@ -2043,7 +2043,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                     obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
 
                                                     // Send the new password
-                                                    render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, req, domain));
+                                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, req, domain));
                                                     parent.debug('web', 'handleCheckMailRequest: send temporary password.');
 
                                                     // Send to authLog
@@ -2053,18 +2053,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                         } else {
                                             // Display a link for the user to confirm password reset
                                             // We must do this because GMail will also load this URL a few seconds after the user does and we don't want to cause two password resets.
-                                            render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 14, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                                            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 14, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
                                         }
                                     }
                                 } else {
-                                    render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 9, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 9, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
                                 }
                             }
                         }
                     });
                 }
             } else {
-                render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
             }
         }
     }
@@ -2097,7 +2097,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Check if we are in maintenance mode
         if ((parent.config.settings.maintenancemode != null) && (req.query.loginscreen !== '1')) {
-            render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
             return;
         }
 
@@ -2836,7 +2836,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Check if we are in maintenance mode
         if ((parent.config.settings.maintenancemode != null) && (req.query.loginscreen !== '1')) {
             parent.debug('web', 'handleLoginRequest: Server under maintenance.');
-            render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
             return;
         }
 
@@ -3133,7 +3133,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }                
 
                 // Refresh the session
-                render(dbGetFunc.req, dbGetFunc.res, getRenderPage((domain.sitestyle == 3 ? 'default3' : 'default'), dbGetFunc.req, domain), getRenderArgs({
+                render(dbGetFunc.req, dbGetFunc.res, getRenderPage(((domain.sitestyle == 3) || (req.query.sitestyle == 3) ? 'default3' : 'default'), dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
                     authRelayCookie: authRelayCookie,
                     viewmode: viewmode,
@@ -3377,7 +3377,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Render the login page
         render(req, res,
-            getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'login2' : 'login', req, domain),
+            getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
                 loginmode: loginmode,
                 rootCertLink: getRootCertLink(domain),
@@ -3412,7 +3412,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,
                 showLanguageSelect: domain.showlanguageselect ? domain.showlanguageselect : false,
-            }, req, domain, (domain.sitestyle == 2 || domain.sitestyle == 3) ? 'login2' : 'login'));
+            }, req, domain, (domain.sitestyle >= 2) ? 'login2' : 'login'));
     }
 
     // Handle a post request on the root
@@ -3616,7 +3616,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Check if we are in maintenance mode
         if (parent.config.settings.maintenancemode != null) {
-            render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
             return;
         }
 
@@ -3770,10 +3770,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 setContentDispositionHeader(res, 'application/octet-stream', filename, null, 'file.bin');
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
+                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
             }
         } else {
-            render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
+            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
         }
     }
 
@@ -3985,7 +3985,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         var imagefile = 'images/mainwelcome.jpg';
-        if (domain.sitestyle == 2 || domain.sitestyle == 3) { imagefile = 'images/login/back.png'; }
+        if (domain.sitestyle >= 2) { imagefile = 'images/login/back.png'; }
         if (domain.webpublicpath != null) {
             obj.fs.exists(obj.path.join(domain.webpublicpath, imagefile), function (exists) {
                 if (exists) {
@@ -4132,7 +4132,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof c.pid != 'string') { res.sendStatus(404); return; }
 
             // Check the expired time, expire message.
-            if ((c.e != null) && (c.e <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if ((c.e != null) && (c.e <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             obj.db.Get('deviceshare-' + c.pid, function (err, docs) {
                 if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
@@ -4178,17 +4178,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Serve the guest sharing page
     function handleSharingRequestEx(req, res, domain, c) {
         // Check the expired time, expire message.
-        if ((c.expire != null) && (c.expire <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+        if ((c.expire != null) && (c.expire <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
         // Check the public id
         obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
             // Check if any sharing links are present, expire message.
-            if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Search for the device share public identifier, expire message.
             var found = false;
             for (var i = 0; i < docs.length; i++) { if ((docs[i].publicid == c.pid) && ((docs[i].extrakey == null) || (docs[i].extrakey === c.k))) { found = true; } }
-            if (found == false) { render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if (found == false) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Get information about this node
             obj.db.Get(c.nid, function (err, nodes) {
@@ -4196,7 +4196,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var node = nodes[0];
 
                 // Check the start time, not yet valid message.
-                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { render(req, res, getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
                 // If this is a web relay share, check if this feature is active
                 if ((c.p == 8) || (c.p == 16)) {
@@ -7213,7 +7213,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
                     const cspNonce = obj.crypto.randomBytes(15).toString('base64');
                     res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
-                    res.status(404).render(getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
+                    res.status(404).render(getRenderPage((domain.sitestyle >= 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
                 });
             }
 
@@ -7236,7 +7236,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.nice404 == false) { res.sendStatus(404); return; }
         const cspNonce = obj.crypto.randomBytes(15).toString('base64');
         res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
-        res.status(404).render(getRenderPage((domain.sitestyle == 2 || domain.sitestyle == 3) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
+        res.status(404).render(getRenderPage((domain.sitestyle >= 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
     }
 
     // Auth strategy flags
