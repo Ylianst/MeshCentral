@@ -780,7 +780,7 @@ module.exports.CreateDB = function (parent, func) {
                     );
                 });
                 return;
-            } else if (err) { console.log("SQLite Error: " + err); exit(1); return; }
+            } else if (err) { console.log("SQLite Error: " + err); process.exit(0); return; }
 
             // Completed setup of SQLite3
             //for existing db's
@@ -899,7 +899,7 @@ module.exports.CreateDB = function (parent, func) {
                     if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
                         postgreSqlCreateTables(func);
                     } else {
-                        console.log('Postgresql database exists, other error: ', err.message); exit(0)
+                        console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
                     };
                 });
             } else { // If not present, create the tables and indexes
@@ -912,7 +912,7 @@ module.exports.CreateDB = function (parent, func) {
                         postgreSqlCreateTables(func);
                     } else {
                             console.log('Postgresql database create error: ', err.message);
-                            exit(0);
+                            process.exit(0);
                     }
                 });
             }
@@ -3257,7 +3257,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Check that the server is capable of performing a backup
     obj.checkBackupCapability = function (func) {
-        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); }
+        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); return; };
         let backupPath = parent.backuppath;
         if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
         try { parent.fs.mkdirSync(backupPath); } catch (e) { }
