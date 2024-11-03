@@ -94,9 +94,9 @@
           }
         },
         "sqlite3": {
-          "type": "boolean",
+          "type": [ "boolean", "string" ],
           "default": false,
-          "description": "Set true to use SQLite3 as a local MeshCentral database."
+          "description": "Set boolean true to use SQLite3 as a local MeshCentral database with default db filename 'meshcentral' or enter a string for a different db filename. Extension .sqlite is appended"
         },
         "mySQL": {
           "type": "object",
@@ -836,6 +836,11 @@
               "default": "mysqldump",
               "description": "The file path of where \"mysqldump\" is located. Default is \"mysqldump\""
             },
+            "pgDumpPath": {
+              "type": "string",
+              "default": "pg_dump",
+              "description": "The file path of where \"pg_dump\" is located. Default is \"pg_dump\""
+            },
             "backupIntervalHours": {
               "type": "integer",
               "default": 24,
@@ -856,6 +861,31 @@
               "type": "string",
               "default": "meshcentral-backups",
               "description": "The file path where backup files are kept. The default is \"meshcentral-backups\" which sits next to \"meshcentral-data\"."
+            },
+            "backupName": {
+              "type": "string",
+              "default": "meshcentral-autobackup-",
+              "description": "The filename of the backupfile. The default is \"meshcentral-autobackup-\", the filename is appended with the time of backup."
+            },
+            "backupWebFolders": {
+              "type": "boolean",
+              "default": false,
+              "description": "Add views, public and emails directories if overridden"
+            },
+            "backupOtherFolders": {
+              "type": "boolean",
+              "default": false,
+              "description": "Also add files and recordings folder to the backup"
+            },
+            "backupIgnoreFilesGlob": {
+              "type": "array",
+              "default": [],
+              "description": "Glob for ignoring files in the data directory. For example [\"**/*.log\"] !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !! Don't do string..."
+            },
+            "backupSkipFoldersGlob":{
+              "type": "array",
+              "default": [],
+              "description": "Glob for ignoring directories in the data directory. For example [\"**/signedagents\"]"
             },
             "googleDrive": {
               "type": "object",
