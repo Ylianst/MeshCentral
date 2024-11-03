@@ -2089,11 +2089,16 @@ function CreateMeshCentralServer(config, args) {
                     obj.updateServerState('state', "running");
 
                     // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = { backupintervalhours: 24, keeplastdaysbackup: 10 }; }
-                    else if (obj.config.settings.autobackup === false) { delete obj.config.settings.autobackup; }
-                    else if (typeof obj.config.settings.autobackup == 'object'){
-                        if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; }
-                        if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; }
+                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { delete obj.config.settings.autobackup; }
+                    else {
+                        if (obj.config.settings.autobackup === true) {obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
+                        if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
+                        if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
+                        //arrayfi in case of string and remove possible ', ' space. !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !!
+                        if (!obj.config.settings.autobackup.backupignorefilesglob) {obj.config.settings.autobackup.backupignorefilesglob = []}
+                        else if (typeof obj.config.settings.autobackup.backupignorefilesglob == 'string') { obj.config.settings.autobackup.backupignorefilesglob = obj.config.settings.autobackup.backupignorefilesglob.replaceAll(', ', ',').split(','); };
+                        if (!obj.config.settings.autobackup.backupskipfoldersglob) {obj.config.settings.autobackup.backupskipfoldersglob = []}
+                        else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
                     }
 
                     // Check that autobackup path is not within the "meshcentral-data" folder.
@@ -4220,10 +4225,10 @@ function mainStart() {
         if (config.settings.mysql != null) { modules.push('mysql2@3.6.2'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
         if (config.settings.mongodb != null) { modules.push('mongodb@4.13.0'); modules.push('saslprep@1.0.3'); } // Add MongoDB, official driver.
-        if (config.settings.postgres != null) { modules.push('pg@8.7.1'); modules.push('pgtools@0.3.2'); } // Add Postgres, Postgres driver.
+        if (config.settings.postgres != null) { modules.push('pg@8.13.1') } // Add Postgres, official driver.
         if (config.settings.mariadb != null) { modules.push('mariadb@3.2.2'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.
-        if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.6'); } // Add sqlite3, official driver.
+        if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.7'); } // Add sqlite3, official driver.
         if (config.settings.vault != null) { modules.push('node-vault@0.10.2'); } // Add official HashiCorp's Vault module.
         if (config.settings.plugins != null) { modules.push('semver@7.5.4'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent@7.0.2'); } // Required for HTTP/HTTPS proxy support
@@ -4240,7 +4245,7 @@ function mainStart() {
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
-                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.3'); }
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.4'); }
             }
             // Enable S3 Support
             if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.1'); }
