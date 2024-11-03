@@ -94,8 +94,8 @@
           }
         },
         "sqlite3": {
-          "type": "string",
-          "default": "",
+          "type": [ "boolean", "string" ],
+          "default": false,
           "description": "Set boolean true to use SQLite3 as a local MeshCentral database with default db filename 'meshcentral' or enter a string for a different db filename. Extension .sqlite is appended"
         },
         "mySQL": {
