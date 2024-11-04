@@ -229,25 +229,14 @@ function macos_memUtilization()
 function windows_thermals()
 {
     var ret = [];
-    child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', '/namespace:\\\\root\\wmi', 'PATH', 'MSAcpi_ThermalZoneTemperature', 'get', 'CurrentTemperature,InstanceName', '/FORMAT:CSV']);
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.waitExit();
-    if(child.stdout.str.trim()!='')
-    {
-        var lines = child.stdout.str.trim().split('\r\n');
-        var keys = lines[0].trim().split(',');
-        for (var i = 1; i < lines.length; ++i)
-        {
-            var obj = {};
-            var tokens = lines[i].trim().split(',');
-            for (var key = 0; key < keys.length; ++key)
-            {
-                if (tokens[key]) {  obj[keys[key]] = key==1 ? ((parseFloat(tokens[key]) / 10) - 273.15).toFixed(2) : tokens[key]; }
+    try {
+        ret = require('win-wmi').query('ROOT\\WMI', 'SELECT CurrentTemperature,InstanceName FROM MSAcpi_ThermalZoneTemperature',['CurrentTemperature','InstanceName']);
+        if (ret[0]) {
+            for (var i = 0; i < ret.length; ++i) {
+                ret[i]['CurrentTemperature'] = ((parseFloat(ret[i]['CurrentTemperature']) / 10) - 273.15).toFixed(2);
             }
-            ret.push(obj);
         }
-    }
+    } catch (ex) { }
     return (ret);
 }
 

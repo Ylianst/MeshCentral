@@ -800,32 +800,35 @@ function hexToAscii(hexString) {
 
 function win_chassisType()
 {
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', 'SystemEnclosure', 'get', 'ChassisTypes']);
+    // needs to be replaced with win-wmi but due to bug in win-wmi it doesnt handle arrays correctly
+    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
+    if (child == null) { return ([]); }
+    child.descriptorMetadata = 'process-manager';
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write('Get-CimInstance Win32_SystemEnclosure| Select-Object -ExpandProperty ChassisTypes\r\n');
+    child.stdin.write('exit\r\n');
     child.waitExit();
-
-    try
-    {
-        var tok = child.stdout.str.split('{')[1].split('}')[0];
-        var val = tok.split(',')[0];
-        return (parseInt(val));
-    }
-    catch (e)
-    {
+    try {
+        return (parseInt(child.stdout.str));
+    } catch (e) {
         return (2); // unknown
     }
 }
 
 function win_systemType()
 {
-    var CSV = '/FORMAT:"' + require('util-language').wmicXslPath + 'csv"';
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\wbem\\wmic.exe', ['wmic', 'ComputerSystem', 'get', 'PCSystemType', CSV]);
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.waitExit();
+    try {
+        var tokens = require('win-wmi').query('ROOT\\CIMV2', 'SELECT PCSystemType FROM Win32_ComputerSystem', ['PCSystemType']);
+        if (tokens[0]) {
+            return (parseInt(tokens[0]['PCSystemType']));
+        } else {
+            return (parseInt(1)); // default is desktop
+        }
+    } catch (ex) {
+        return (parseInt(1)); // default is desktop
+    }
 
-    return (parseInt(child.stdout.str.trim().split(',').pop()));
 }
 
 function win_formFactor(chassistype)
