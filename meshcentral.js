@@ -4033,7 +4033,7 @@ function InstallModules(modules, args, func) {
             try {
                 // Does the module need a specific version?
                 if (moduleVersion) {
-                    if (require(`./node_modules/${moduleName}/package.json`).version != moduleVersion) { throw new Error(); }
+                    if (require(`${moduleName}/package.json`).version != moduleVersion) { throw new Error(); }
                 } else {
                     // For all other modules, do the check here.
                     // Is the module in package.json? Install exact version.
