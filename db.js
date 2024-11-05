@@ -43,9 +43,9 @@ module.exports.CreateDB = function (parent, func) {
     const BACKUPFAIL_ZIPCREATE = 0x0001;
     const BACKUPFAIL_ZIPMODULE = 0x0010;
     const BACKUPFAIL_DBDUMP = 0x0100;
-    let backupStatus = 0x0;
-    let newAutoBackupFile;
-    let newDBDumpFile;
+    obj.backupStatus = 0x0;
+    obj.newAutoBackupFile = null;
+    obj.newDBDumpFile = null;
     obj.identifier = null;
     obj.dbKey = null;
     obj.dbRecordsEncryptKey = null;
@@ -3123,12 +3123,12 @@ module.exports.CreateDB = function (parent, func) {
 
         const currentDate = new Date();
         const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-        const newAutoBackupFile = ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix;
+        obj.newAutoBackupFile = ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix;
 
         r += 'DB Name: ' + dbname + '\r\n';
         r += 'DB Type: ' + DB_LIST[obj.databaseType] + '\r\n';
         r += 'BackupPath: ' + backupPath + '\r\n';
-        r += 'BackupFile: ' + newAutoBackupFile + '.zip\r\n';
+        r += 'BackupFile: ' + obj.newAutoBackupFile + '.zip\r\n';
 
         if (parent.config.settings.autobackup == null) {
             r += 'No Settings/AutoBackup\r\n';
@@ -3146,7 +3146,7 @@ module.exports.CreateDB = function (parent, func) {
             if (parent.config.settings.autobackup.zippassword != null) {
                 r += 'ZIP Password: ';
                 if (typeof parent.config.settings.autobackup.zippassword != 'string') { r += 'Bad zippassword type, Backups will not be encrypted\r\n'; }
-                else if (parent.config.settings.autobackup.zippassword == "") { r += 'Blank, Backups will not be encrypted\r\n'; }
+                else if (parent.config.settings.autobackup.zippassword == "") { r += 'Blank zippassword, Backups will fail\r\n'; }
                 else { r += 'Set\r\n'; }
             }
             if (parent.config.settings.autobackup.mongodumppath != null) {
@@ -3443,85 +3443,85 @@ module.exports.CreateDB = function (parent, func) {
             try { parent.fs.mkdirSync(backupPath); } catch (e) { }
             const currentDate = new Date();
             const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-            newAutoBackupFile = path.join(backupPath, ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix + '.zip');
+            obj.newAutoBackupFile = path.join(backupPath, ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix + '.zip');
 
             if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
                 // Perform a MongoDump in the datadir
                 const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
                 const dburl = parent.args.mongodb;
     
-                //const newDBDumpFile = 'mongodump-' + fileSuffix;
-                newDBDumpFile = path.join(backupPath, (dbname + '-mongodump-' + fileSuffix + '.archive'));
+                //const obj.newDBDumpFile = 'mongodump-' + fileSuffix;
+                obj.newDBDumpFile = path.join(backupPath, (dbname + '-mongodump-' + fileSuffix + '.archive'));
 
                 var cmd = buildMongoDumpCommand();
-                cmd += (dburl) ? ' --archive=\"' + newDBDumpFile + '\"' :
-                                 ' --db=\"' + dbname + '\" --archive=\"' + newDBDumpFile + '\"';
+                cmd += (dburl) ? ' --archive=\"' + obj.newDBDumpFile + '\"' :
+                                 ' --db=\"' + dbname + '\" --archive=\"' + obj.newDBDumpFile + '\"';
 
                 const child_process = require('child_process');
                 const dumpProcess = child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
                 );
                 dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`Mongodump child process exited with code ${code}`); backupStatus |= BACKUPFAIL_DBDUMP;}
+                    if (code != 0) {console.log(`Mongodump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
                     obj.createBackupfile(func);
                   });
 
             } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                 // Perform a MySqlDump backup
                 const newBackupFile = 'mysqldump-' + fileSuffix;
-                newDBDumpFile = path.join(backupPath, newBackupFile + '.sql');
+                obj.newDBDumpFile = path.join(backupPath, newBackupFile + '.sql');
            
                 var cmd = buildSqlDumpCommand();
-                cmd += ' --result-file=\"' + newDBDumpFile + '\"';
+                cmd += ' --result-file=\"' + obj.newDBDumpFile + '\"';
 
                 const child_process = require('child_process');
                 const dumpProcess = child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MySQL backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MySQL backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
                 );
                 dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`MySQLdump child process exited with code ${code}`); backupStatus |= BACKUPFAIL_DBDUMP;}
+                    if (code != 0) {console.log(`MySQLdump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
                     obj.createBackupfile(func);
                   });
 
             } else if (obj.databaseType == DB_SQLITE) {
                 //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
-                newDBDumpFile = path.join(backupPath, databaseName + '-sqlitedump-' + fileSuffix + '.db3');
+                obj.newDBDumpFile = path.join(backupPath, databaseName + '-sqlitedump-' + fileSuffix + '.db3');
                 /*undocumented in node-sqlite3 API, check https://github.com/TryGhost/node-sqlite3/blob/593c9d498be2510d286349134537e3bf89401c4a/test/backup.test.js
-                var backup = obj.file.backup(newDBDumpFile);
+                var backup = obj.file.backup(obj.newDBDumpFile);
                 backup.step(-1, function (err) {
-                    if (err) { console.log('SQLite start-backup error: ' + err); backupStatus |=BACKUPFAIL_DBDUMP; obj.createBackupfile(func); };
+                    if (err) { console.log('SQLite start-backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP; obj.createBackupfile(func); };
                     backup.finish(function (err) {
-                        if (err) { console.log('SQLite backup error: ' + err); backupStatus |=BACKUPFAIL_DBDUMP;};
+                        if (err) { console.log('SQLite backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP;};
                         obj.createBackupfile(func);
                     });
                 });
                 */
                 // do a VACUUM INTO in favor of the backup API to compress the export, see https://www.sqlite.org/backup.html
-                obj.file.exec('VACUUM INTO \'' + newDBDumpFile + '\'', function (err) {
-                    if (err) { console.log('SQLite start-backup error: ' + err); backupStatus |=BACKUPFAIL_DBDUMP;};
+                obj.file.exec('VACUUM INTO \'' + obj.newDBDumpFile + '\'', function (err) {
+                    if (err) { console.log('SQLite start-backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP;};
                     //always finish/clean up
                     obj.createBackupfile(func);
                 });
             } else if (obj.databaseType == DB_POSTGRESQL) {
                 // Perform a PostgresDump backup
                 const newBackupFile = databaseName + '-pgdump-' + fileSuffix + '.sql';
-                newDBDumpFile = path.join(backupPath, newBackupFile);
+                obj.newDBDumpFile = path.join(backupPath, newBackupFile);
                 let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
                     + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
                     + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
-                    + " --file=" + newDBDumpFile;
+                    + " --file=" + obj.newDBDumpFile;
                 const child_process = require('child_process');
                 const dumpProcess = child_process.exec(
                     cmd,
                     { cwd: dataPath },
-                    (error)=> {if (error) {backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform PostgreSQL dump: ' + error.message + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform PostgreSQL dump: ' + error.message + '\r\n'); obj.createBackupfile(func);}}
                 );
                 dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`PostgreSQLdump child process exited with code: ` + code); backupStatus |= BACKUPFAIL_DBDUMP;}
+                    if (code != 0) {console.log(`PostgreSQLdump child process exited with code: ` + code); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
                     obj.createBackupfile(func);
                 });
             } else {
@@ -3544,7 +3544,7 @@ module.exports.CreateDB = function (parent, func) {
                 archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
                 if (func) { func('Creating encrypted ZIP'); }
             } catch (ex) { // registering encryption failed, do not fall back to non-encrypted, fail backup and skip old backup removal as a precaution to not lose any backups
-                backupStatus |= BACKUPFAIL_ZIPMODULE;
+                obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
                 if (func) { func('Zipencryptionmodule failed, aborting'); }
                 console.log('Zipencryptionmodule failed, aborting');
             }
@@ -3553,17 +3553,17 @@ module.exports.CreateDB = function (parent, func) {
             archive = archiver('zip', { zlib: { level: 9 } });
         }
 
-        //original behavior, just a filebackup if dbdump fails : (backupStatus == 0 || backupStatus == BACKUPFAIL_DBDUMP)
-        if (backupStatus == 0) {
+        //original behavior, just a filebackup if dbdump fails : (obj.backupStatus == 0 || obj.backupStatus == BACKUPFAIL_DBDUMP)
+        if (obj.backupStatus == 0) {
             // Zip the data directory with the dbdump|NeDB files
-            let output = parent.fs.createWriteStream(newAutoBackupFile);
+            let output = parent.fs.createWriteStream(obj.newAutoBackupFile);
             output.on('close', function () { 
-                if (backupStatus == 0) {
+                if (obj.backupStatus == 0) {
                     //remove dump archive file, because zipped and otherwise fills up
                     if (obj.databaseType != DB_NEDB) {
-                        try { parent.fs.unlink(newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to clean up dbdump file')};
+                        try { parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to clean up dbdump file')};
                     };
-                    obj.performCloudBackup(newAutoBackupFile, func);
+                    obj.performCloudBackup(obj.newAutoBackupFile, func);
                     // Remove old backups
                     if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
                         let cutoffDate = new Date();
@@ -3589,19 +3589,19 @@ module.exports.CreateDB = function (parent, func) {
                     console.log('Auto-backup completed.');
                     if (func) { func('Auto-backup completed.'); };
                 } else {
-                    console.log('Zipbackup failed ('+ (+backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + newAutoBackupFile );
-                    if (func) { func('Zipbackup failed ('+ (+backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + newAutoBackupFile) };
-                    try { parent.fs.unlink(newAutoBackupFile, function () { }); parent.fs.unlink(newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to delete incomplete backup files')};
+                    console.log('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile );
+                    if (func) { func('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile) };
+                    try { parent.fs.unlink(obj.newAutoBackupFile, function () { }); parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to delete incomplete backup files')};
                 };
                 obj.performingBackup = false;
-                backupStatus = 0x0;
+                obj.backupStatus = 0x0;
             });
             output.on('end', function () { });
             output.on('error', function (err) {
-                if ((backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
                     console.log('Output error: ' + err);
                     if (func) { func('Output error: ' + err); };
-                    backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 };
             });
@@ -3609,18 +3609,18 @@ module.exports.CreateDB = function (parent, func) {
                 //if files added to the archiver object aren't reachable anymore (e.g. sqlite-journal files)
                 //an ENOENT warning is given, but the archiver module has no option to/does not skip/resume
                 //so the backup needs te be aborted as it otherwise leaves an incomplete zip and never 'ends'
-                if ((backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
                     console.log('Zip warning: ' + err); 
                     if (func) { func('Zip warning: ' + err); };
-                    backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 };
             });
             archive.on('error', function (err) {
-                if ((backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
                     console.log('Zip error: ' + err);
                     if (func) { func('Zip error: ' + err); };
-                    backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 }
                 });
@@ -3648,15 +3648,15 @@ module.exports.CreateDB = function (parent, func) {
                 archive.directory(parent.recordpath, 'meshcentral-recordings');
             };
             //add dbdump to the root of the zip
-            archive.file(newDBDumpFile, { name: path.basename(newDBDumpFile) });
+            if (obj.newDBDumpFile != null) archive.file(obj.newDBDumpFile, { name: path.basename(obj.newDBDumpFile) });
             archive.finalize();
         } else {
             //failed somewhere before zipping
-            console.log('Backup failed ('+ (+backupStatus).toString(16).slice(-4) + ')');
-            if (func) { func('Backup failed ('+ (+backupStatus).toString(16).slice(-4) + ')') };
+            console.log('Backup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + ')');
+            if (func) { func('Backup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + ')') };
             //Just in case something's there
-            try { parent.fs.unlink(newDBDumpFile, function () { }); } catch (ex) { };
-            backupStatus = 0x0;
+            try { parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) { };
+            obj.backupStatus = 0x0;
             obj.performingBackup = false;
         };
     };
