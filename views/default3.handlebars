@@ -2369,6 +2369,19 @@
                 mainUpdate(512);
             }, 200);
 
+            // open notes markdown links in new tab
+            if (DOMPurify) {
+                DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+                    if ('target' in node) {
+                        node.setAttribute('target', '_blank');
+                        node.setAttribute('rel', 'noopener noreferrer');
+                    }
+                    if (!node.hasAttribute('target') && (node.hasAttribute('xlink:href') || node.hasAttribute('href'))) {
+                        node.setAttribute('xlink:show', 'new');
+                    }
+                });
+            }
+
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);
             meshserver.onStateChanged = onStateChanged;
