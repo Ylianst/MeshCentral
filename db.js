@@ -3202,7 +3202,7 @@ module.exports.CreateDB = function (parent, func) {
 
         var mysqldumpPath = 'mysqldump';
         if (parent.config.settings.autobackup && parent.config.settings.autobackup.mysqldumppath) { 
-            mysqldumpPath = parent.config.settings.autobackup.mysqldumppath;
+            mysqldumpPath = path.normalize(parent.config.settings.autobackup.mysqldumppath);
         }
 
         var cmd = '\"' + mysqldumpPath + '\" --user=\'' + props.user + '\'';
@@ -3246,7 +3246,7 @@ module.exports.CreateDB = function (parent, func) {
 
         var mongoDumpPath = 'mongodump';
         if (parent.config.settings.autobackup && parent.config.settings.autobackup.mongodumppath) {
-            mongoDumpPath = parent.config.settings.autobackup.mongodumppath;
+            mongoDumpPath = path.normalize(parent.config.settings.autobackup.mongodumppath);
         }
 
         var cmd = '"' + mongoDumpPath + '"';
@@ -3451,7 +3451,7 @@ module.exports.CreateDB = function (parent, func) {
                 const dburl = parent.args.mongodb;
     
                 //const newDBDumpFile = 'mongodump-' + fileSuffix;
-                newDBDumpFile = path.join(dataPath, (dbname + '-mongodump-' + fileSuffix + '.archive'));
+                newDBDumpFile = path.join(backupPath, (dbname + '-mongodump-' + fileSuffix + '.archive'));
 
                 var cmd = buildMongoDumpCommand();
                 cmd += (dburl) ? ' --archive=\"' + newDBDumpFile + '\"' :
@@ -3471,7 +3471,7 @@ module.exports.CreateDB = function (parent, func) {
             } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                 // Perform a MySqlDump backup
                 const newBackupFile = 'mysqldump-' + fileSuffix;
-                newDBDumpFile = path.join(dataPath, newBackupFile + '.sql');
+                newDBDumpFile = path.join(backupPath, newBackupFile + '.sql');
            
                 var cmd = buildSqlDumpCommand();
                 cmd += ' --result-file=\"' + newDBDumpFile + '\"';
@@ -3489,7 +3489,7 @@ module.exports.CreateDB = function (parent, func) {
 
             } else if (obj.databaseType == DB_SQLITE) {
                 //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
-                newDBDumpFile = path.join(dataPath, databaseName + '-sqlitedump-' + fileSuffix + '.db3');
+                newDBDumpFile = path.join(backupPath, databaseName + '-sqlitedump-' + fileSuffix + '.db3');
                 /*undocumented in node-sqlite3 API, check https://github.com/TryGhost/node-sqlite3/blob/593c9d498be2510d286349134537e3bf89401c4a/test/backup.test.js
                 var backup = obj.file.backup(newDBDumpFile);
                 backup.step(-1, function (err) {
@@ -3509,7 +3509,7 @@ module.exports.CreateDB = function (parent, func) {
             } else if (obj.databaseType == DB_POSTGRESQL) {
                 // Perform a PostgresDump backup
                 const newBackupFile = databaseName + '-pgdump-' + fileSuffix + '.sql';
-                newDBDumpFile = path.join(dataPath, newBackupFile);
+                newDBDumpFile = path.join(backupPath, newBackupFile);
                 let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
                     + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
                     + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
@@ -3647,7 +3647,8 @@ module.exports.CreateDB = function (parent, func) {
                 archive.directory(parent.filespath, 'meshcentral-files');
                 archive.directory(parent.recordpath, 'meshcentral-recordings');
             };
-
+            //add dbdump to the root of the zip
+            archive.file(newDBDumpFile, { name: path.basename(newDBDumpFile) });
             archive.finalize();
         } else {
             //failed somewhere before zipping
