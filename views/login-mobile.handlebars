@@ -63,11 +63,11 @@
                                     <table>
                                         <tr>
                                             <td id=loginusername align=right width=100>Username:</td>
-                                            <td><input id=username type=text autocomplete="username" maxlength=64 name=username required /></td>
+                                            <td><input id=username type=text autocomplete="username" maxlength=64 name=username required onchange=validateLogin(1) onkeyup=validateLogin(1,event)  /></td>
                                         </tr>
                                         <tr>
                                             <td align=right>Password:</td>
-                                            <td><input id=password type=password autocomplete="current-password" maxlength=256 name=password autocomplete=off required /></td>
+                                            <td><input id=password type=password autocomplete="current-password" maxlength=256 name=password autocomplete=off required onchange=validateLogin(2) onkeyup=validateLogin(2,event)  /></td>
                                         </tr>
                                         <tr>
                                             <td><div id=showPassHintLink style=display:none><a onclick=showPassHint() style="cursor:pointer">Show Hint</a></div></td>
@@ -571,6 +571,15 @@
                 QH('checkEmailVal', passhint);
             }
         }
+
+        function validateLogin(box, e) {
+            setTimeout(function(){
+                setDialogMode(0);
+                if ((e != null) && (e.keyCode == 13)) { if (box == 1) { Q('password').focus(); } else if (box == 2) { Q('loginButton').click(); } }
+                if (e != null) { haltEvent(e); }
+            }, 100);
+        }
+
 
         function validateCreate(box,e) {
             setDialogMode(0);
