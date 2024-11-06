@@ -1630,7 +1630,7 @@ function serverConnect() {
                 if (args.limitedevents) { meshrights |= 8192; }
                 if (args.chatnotify) { meshrights |= 16384; }
                 if (args.uninstall) { meshrights |= 32768; }
-                var op = { action: 'addmeshuser', usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                var op = { action: 'addmeshuser', userids: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
                 if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
