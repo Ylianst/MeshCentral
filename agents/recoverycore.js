@@ -870,7 +870,7 @@ function onTunnelControlData(data, ws) {
                     if (process.platform == 'win32') {
                         MeshServerLog("Locking remote user out of desktop", ws.httprequest);
                         var child = require('child_process');
-                        child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
+                        child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd', '/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
                     }
                 } catch (e) { }
                 break;

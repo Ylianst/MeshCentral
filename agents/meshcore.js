@@ -249,7 +249,7 @@ function lockDesktop(uid) {
         case 'win32':
             {
                 var options = { type: 1, uid: uid };
-                var child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], options);
+                var child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd', '/c', 'RunDll32.exe user32.dll,LockWorkStation'], options);
                 child.waitExit();
             }
             break;
