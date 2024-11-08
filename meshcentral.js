@@ -2089,7 +2089,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.updateServerState('state', "running");
 
                     // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { delete obj.config.settings.autobackup; }
+                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: 0}; } //no schedule, but able to console autobackup
                     else {
                         if (obj.config.settings.autobackup === true) {obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
@@ -2104,7 +2104,7 @@ function CreateMeshCentralServer(config, args) {
                     // Check that autobackup path is not within the "meshcentral-data" folder.
                     if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
                         addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
-                        delete obj.config.settings.autobackup;
+                        obj.config.settings.autobackup = {backupintervalhours: -1};  //block console autobackup
                     }
 
                     // Load Intel AMT passwords from the "amtactivation.log" file
@@ -2267,7 +2267,7 @@ function CreateMeshCentralServer(config, args) {
 
     // Check if we need to perform an automatic backup
     function checkAutobackup() {
-        if (obj.config.settings.autobackup && (typeof obj.config.settings.autobackup.backupintervalhours == 'number')) {
+        if (obj.config.settings.autobackup.backupintervalhours >= 1) {
             obj.db.Get('LastAutoBackupTime', function (err, docs) {
                 if (err != null) return;
                 var lastBackup = 0;

@@ -3434,7 +3434,8 @@ module.exports.CreateDB = function (parent, func) {
     obj.performBackup = function (func) {
         parent.debug('db','Entering performBackup');
         try {
-            if (obj.performingBackup) return 1;
+            if (obj.performingBackup) return 'Backup alreay in progress.';
+            if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Unable to create backup if backuppath is set to the data folder.'); return 'Backup aborted.' }};
             obj.performingBackup = true;
             let backupPath = parent.backuppath;
             let dataPath = parent.datapath;
@@ -3446,11 +3447,10 @@ module.exports.CreateDB = function (parent, func) {
             obj.newAutoBackupFile = path.join(backupPath, ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix + '.zip');
 
             if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
-                // Perform a MongoDump in the datadir
+                // Perform a MongoDump
                 const dbname = (parent.args.mongodbname) ? (parent.args.mongodbname) : 'meshcentral';
                 const dburl = parent.args.mongodb;
     
-                //const obj.newDBDumpFile = 'mongodump-' + fileSuffix;
                 obj.newDBDumpFile = path.join(backupPath, (dbname + '-mongodump-' + fileSuffix + '.archive'));
 
                 var cmd = buildMongoDumpCommand();
@@ -3490,16 +3490,6 @@ module.exports.CreateDB = function (parent, func) {
             } else if (obj.databaseType == DB_SQLITE) {
                 //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
                 obj.newDBDumpFile = path.join(backupPath, databaseName + '-sqlitedump-' + fileSuffix + '.db3');
-                /*undocumented in node-sqlite3 API, check https://github.com/TryGhost/node-sqlite3/blob/593c9d498be2510d286349134537e3bf89401c4a/test/backup.test.js
-                var backup = obj.file.backup(obj.newDBDumpFile);
-                backup.step(-1, function (err) {
-                    if (err) { console.log('SQLite start-backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP; obj.createBackupfile(func); };
-                    backup.finish(function (err) {
-                        if (err) { console.log('SQLite backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP;};
-                        obj.createBackupfile(func);
-                    });
-                });
-                */
                 // do a VACUUM INTO in favor of the backup API to compress the export, see https://www.sqlite.org/backup.html
                 obj.file.exec('VACUUM INTO \'' + obj.newDBDumpFile + '\'', function (err) {
                     if (err) { console.log('SQLite start-backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP;};
@@ -3529,7 +3519,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.createBackupfile(func);
             }
         } catch (ex) { console.log(ex); };
-        return(0);
+        return 'Starting auto-backup...';
     };
 
     obj.createBackupfile = function(func) {
@@ -3541,7 +3531,7 @@ module.exports.CreateDB = function (parent, func) {
             try {
                 //Only register format once, otherwise it triggers an error
                 if (archiver.isRegisteredFormat('zip-encrypted') == false) { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); }
-                archive = archiver.create('zip-encrypted', { zlib: { level: 9 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                archive = archiver.create('zip-encrypted', { zlib: { level: 5 }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
                 if (func) { func('Creating encrypted ZIP'); }
             } catch (ex) { // registering encryption failed, do not fall back to non-encrypted, fail backup and skip old backup removal as a precaution to not lose any backups
                 obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
@@ -3550,7 +3540,7 @@ module.exports.CreateDB = function (parent, func) {
             }
         } else {
             if (func) { func('Creating a NON-ENCRYPTED ZIP'); }
-            archive = archiver('zip', { zlib: { level: 9 } });
+            archive = archiver('zip', { zlib: { level: 5 } });
         }
 
         //original behavior, just a filebackup if dbdump fails : (obj.backupStatus == 0 || obj.backupStatus == BACKUPFAIL_DBDUMP)
@@ -3628,14 +3618,14 @@ module.exports.CreateDB = function (parent, func) {
 
             let globIgnoreFiles;
             //slice in case exclusion gets pushed
-            globIgnoreFiles = parent.config.settings.autobackup.backupignorefilesglob.slice();
+            globIgnoreFiles = parent.config.settings.autobackup.backupignorefilesglob ? parent.config.settings.autobackup.backupignorefilesglob.slice() : [];
             if (parent.config.settings.sqlite3) { globIgnoreFiles.push (datapathFoldername + '/' + databaseName + '.sqlite*'); }; //skip sqlite database file, and temp files with ext -journal, -wal & -shm
             //archiver.glob doesn't seem to use the third param, archivesubdir. Bug?
             //workaround: go up a dir and add data dir explicitly to keep the zip tidy
             archive.glob((datapathFoldername + '/**'), {
                 cwd: datapathParentPath,
                 ignore: globIgnoreFiles,
-                skip: parent.config.settings.autobackup.backupskipfoldersglob
+                skip: (parent.config.settings.autobackup.backupskipfoldersglob ? parent.config.settings.autobackup.backupskipfoldersglob : [])
             });
 
             if (parent.config.settings.autobackup.backupwebfolders) {
