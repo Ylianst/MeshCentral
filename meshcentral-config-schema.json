@@ -94,9 +94,41 @@
           }
         },
         "sqlite3": {
-          "type": [ "boolean", "string" ],
+          "type": [ "boolean", "string", "object" ],
           "default": false,
-          "description": "Set boolean true to use SQLite3 as a local MeshCentral database with default db filename 'meshcentral' or enter a string for a different db filename. Extension .sqlite is appended"
+          "description": "Set boolean true to use SQLite3 as a local MeshCentral database with default db filename 'meshcentral' or enter a string for a different db filename. Extension .sqlite is appended",
+          "properties":{
+            "name": {
+              "type": "string",
+              "default": "meshcentral",
+              "description": "Database filename. '.sqlite' is appended"
+            },
+            "journalMode": {
+              "type": "string",
+              "default": "delete",
+              "description": "DELETE, TRUNCATE, PERSIST, MEMORY, WAL. NONE not allowed. See: https://www.sqlite.org/pragma.html#pragma_journal_mode"
+            },
+            "journalSize": {
+              "type": "integer",
+              "default": 4096000,
+              "description": "Maximum size of the journal file in bytes. Can grow larger if needed, but will shrink to this size. -1 is unlimited growth. See: https://www.sqlite.org/pragma.html#pragma_journal_size_limit"
+            },
+            "autoVacuum": {
+              "type": "string",
+              "default": "incremental",
+              "description": "none, full, incremental. Removes unused pages and shrinks databasefile during maintenance. See: https://www.sqlite.org/pragma.html#pragma_auto_vacuum"
+            },
+            "incrementalVacuum": {
+              "type": "integer",
+              "default": 100,
+              "description": "Maximum amount of pages to free during maintenance. Default page size is 4k, so default frees up to 400k from the databasefile. See: https://www.sqlite.org/pragma.html#pragma_incremental_vacuum"
+            },
+            "startupVacuum": {
+              "type": "boolean",
+              "default": false,
+              "description": "Do a full VACUUM at startup. Shrinks the db file and optimizes it. This can take some time with a large database and can temporarily take up to double the database size on disk. See: https://www.sqlite.org/lang_vacuum.html"
+            }
+          }
         },
         "mySQL": {
           "type": "object",
