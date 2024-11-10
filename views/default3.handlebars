@@ -10036,12 +10036,11 @@
         var showEditNodeValueDialog_modes4 = [64, 64, 64, 4096];
         function showEditNodeValueDialog(mode) {
             if (xxdialogMode) return;
-            var x = '<select id=dp10devicevalue multiple class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' class=form-control>';
+            var x = '';
             var y = '';
-            var v = currentNode[showEditNodeValueDialog_modes2[mode]];
-            if (v == null) v = '';
             if (mode == 3) {
                 // Get a list of all possible device tags
+                x = '<select id=dp10devicevalue multiple class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' class=form-control>';
                 var allTags = [];
                 for (var i in nodes) { if (nodes[i].tags) { for (var j in nodes[i].tags) { if (allTags.indexOf(nodes[i].tags[j]) == -1) { allTags.push(nodes[i].tags[j]); } } } }
                 if (allTags.length > 0) {
@@ -10051,18 +10050,29 @@
                         y += Array.isArray(v) && v.indexOf(allTags[i]) !== -1 ? '<option selected=selected>' + EscapeHtml(allTags[i]) + '</option>' : '<option>' + EscapeHtml(allTags[i]) + '</option>';
                     }
                 }
+                x += y + '</select>'
+                setModalContent('xxAddAgent', "Edit Tags", x);
+                $('#dp10devicevalue').select2({
+                    theme: "bootstrap-5",
+                    width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+                    placeholder: showEditNodeValueDialog_modes3[mode],
+                    closeOnSelect: false,
+                    allowClear: true,
+                    tokenSeparators: [','],
+                    tags: true
+                });
+            } else {
+                x = addHtmlFormFloating(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) class=form-control/>');
+                setModalContent('xxAddAgent', 'Edit Device', x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                    showEditNodeValueDialogEx(3, mode);
+                });
             }
-            x += y + '</select>'
-            setModalContent('xxAddAgent', "Edit Tags", x);
-            $('#dp10devicevalue').select2({
-                theme: "bootstrap-5",
-                width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
-                placeholder: showEditNodeValueDialog_modes3[mode],
-                closeOnSelect: false,
-                allowClear: true,
-                tokenSeparators: [','],
-                tags: true
-            });
+            var v = currentNode[showEditNodeValueDialog_modes2[mode]];
+            if (v == null) v = '';
+            if (Array.isArray(v)) { v = v.join(', '); }
+            Q('dp10devicevalue').value = v;
+            p10editdevicevalueValidate();
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { showEditNodeValueDialogEx(3, mode); });
             Q('dp10devicevalue').focus();
         }
@@ -10077,10 +10087,15 @@
         }
 
         function showEditNodeValueDialogEx(button, mode) {
-            var tt = $('#dp10devicevalue').select2('data'), tags = "";
-            for (var i in tt) { tags += tt[i]['text'].trim() + ', '; }
+            var tags = '';
             var x = { action: 'changedevice', nodeid: currentNode._id };
-            x[showEditNodeValueDialog_modes2[mode]] = decodeURIComponent(tags.slice(0,-2));
+            if (mode == 3) {
+                var tt = $('#dp10devicevalue').select2('data');
+                for (var i in tt) { tags += tt[i]['text'].trim() + ', '; }
+                x[showEditNodeValueDialog_modes2[mode]] = decodeURIComponent(tags.slice(0,-2));
+            } else {
+                x[showEditNodeValueDialog_modes2[mode]] = Q('dp10devicevalue').value;
+            }
             meshserver.send(x);
         }
 
@@ -13152,35 +13167,23 @@
             var x = '';
             if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
             if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
-            if ((hardware.windows && hardware.windows.osinfo) || node.osdesc) {
-                if (hardware.windows && hardware.windows.osinfo) {
-                    var m = hardware.windows.osinfo;
-                    if (m.OSArchitecture) {
-                        if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
-                        else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
-                        else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
-                    }
-                    if (m.LastBootUpTime) {
-                        var thedate = {
-                            year: parseInt(m.LastBootUpTime.substring(0, 4)),
-                            month: parseInt(m.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
-                            day: parseInt(m.LastBootUpTime.substring(6, 8)),
-                            hours: parseInt(m.LastBootUpTime.substring(8, 10)),
-                            minutes: parseInt(m.LastBootUpTime.substring(10, 12)),
-                            seconds: parseInt(m.LastBootUpTime.substring(12, 14)),
-                        };
-                        const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
-                        x += addDetailItem("Last Boot Up Time", date);
-                    }
+            if (hardware.windows && hardware.windows.osinfo) {
+                var m = hardware.windows.osinfo;
+                if (m.OSArchitecture) {
+                    if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
+                    else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
+                    else { x += addDetailItem("Architecture", EscapeHtml(m.OSArchitecture), s); }
                 }
-                if (hardware.linux && hardware.linux.LastBootUpTime) {
-                    var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
-                    const date = printDateTime(lastBootUpTime);
-                    x += addDetailItem("Last Boot Up Time", date);
-                }
-                if (hardware.darwin && hardware.darwin.LastBootUpTime) {
-                    var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
-                    const date = printDateTime(lastBootUpTime);
+                if (m.LastBootUpTime) {
+                    var thedate = {
+                        year: parseInt(m.LastBootUpTime.substring(0, 4)),
+                        month: parseInt(m.LastBootUpTime.substring(4, 6)) - 1, // Months are 0-based in JavaScript (0 - January, 11 - December)
+                        day: parseInt(m.LastBootUpTime.substring(6, 8)),
+                        hours: parseInt(m.LastBootUpTime.substring(8, 10)),
+                        minutes: parseInt(m.LastBootUpTime.substring(10, 12)),
+                        seconds: parseInt(m.LastBootUpTime.substring(12, 14)),
+                    };
+                    const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
             }
