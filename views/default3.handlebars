@@ -9517,6 +9517,7 @@
             if (op == 100) {
                 // Device wake
                 meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] });
+                return true;
             } else if (op == 103) {
                 // Send MQTT Message
                 p10showSendMqttMsgDialog([currentNode._id]);
@@ -9569,10 +9570,13 @@
             } else if ((op == 400) || (op == 401)) {
                 // Flash / vibrate
                 meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
+                return true;
             } else {
                 // Power operation
                 meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) });
+                return true;
             }
+            return false;
         }
 
         function deviceActionOneClickRecovery() {
@@ -18664,9 +18668,9 @@
                         dateHeader = printDate(time);
                         x += '<table class="table table-hover p3eventsTable" cellpadding=0 cellspacing=0><tr><td colspan=4 class=DevSt>' + dateHeader + '</td></tr>';
                     }
-                    var icon = 'si3';
-                    if (event.etype == 'user') icon = 'm2';
-                    if (event.etype == 'server') icon = 'si3';
+                    var icon = 'fa-mobile-screen';
+                    if (event.etype == 'user') icon = 'fa-user';
+                    if (event.etype == 'server') icon = 'fa-server';
 
                     var msg;
                     if ((event.msgid == null) || (eventsMessageId[event.msgid] == null)) {
@@ -18699,8 +18703,8 @@
                     } else if (event.guestname) {
                         msg = '<span title="' + "This is a guest sharing session" + '">' + EscapeHtml(event.guestname) + '</span> &rarr; ' + msg;
                     }
-                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
-                    x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
+                    if (event.etype == 'relay' || event.action == 'relaylog') icon = 'fa-arrow-right-arrow-left';
+                    x += '<tr onclick=showEventDetails(' + event.h + ',3)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><i class="fa-solid ' + icon + '"></i></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
             }
             if (dateHeader != null) x += '</table>';
