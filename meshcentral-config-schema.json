@@ -851,6 +851,11 @@
               "default": 10,
               "description": "How many days of backups should the autobackup keep? Default is 10 Days worth"
             },
+            "zipCompression" : {
+              "type": "integer",
+              "default": "5",
+              "description": "Set the zip compression level, 1=fast/less small file to 9=slow/smallest file."
+            },
             "zipPassword": {
               "type": "string",
               "default": "",
