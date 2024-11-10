@@ -1566,7 +1566,11 @@ function createAuthenticodeHandler(path) {
         options.protocol = timeServerUrl.protocol;
         options.hostname = timeServerUrl.hostname;
         options.path = timeServerUrl.pathname;
-        options.port = ((timeServerUrl.port == '') ? 80 : parseInt(timeServerUrl.port));
+        let http = require("http")
+        if (options.protocol === "https:"){
+            http = require("https")
+        }
+        options.port = ((timeServerUrl.port == '') ? (options.protocol === "https:" ? 443 : 80) : parseInt(timeServerUrl.port));
 
         if (options.proxy == null) {
             // No proxy needed
@@ -1584,7 +1588,7 @@ function createAuthenticodeHandler(path) {
 
             // Set up the request
             var responseAccumulator = '';
-            var req = require('http').request(options, function (res) {
+            var req = http.request(options, function (res) {
                 res.setEncoding('utf8');
                 res.on('data', function (chunk) { responseAccumulator += chunk; });
                 res.on('end', function () { func(null, responseAccumulator); });
@@ -1605,12 +1609,12 @@ function createAuthenticodeHandler(path) {
                 proxyOptions.protocol = proxyUrl.protocol;
                 proxyOptions.hostname = proxyUrl.hostname;
                 proxyOptions.path = options.hostname + ':' + options.port;
-                proxyOptions.port = ((proxyUrl.port == '') ? 80 : parseInt(proxyUrl.port));
+                proxyOptions.port = ((proxyUrl.port == '') ? (options.protocol === "https:" ? 443 : 80) : parseInt(proxyUrl.port));
             }
 
             // Set up the proxy request
             var responseAccumulator = '';
-            var req = require('http').request(proxyOptions);
+            var req = http.request(proxyOptions);
             req.on('error', function (err) { func('' + err); });
             req.on('connect', function (res, socket, head) {
                 // Make a request over the HTTP tunnel
