@@ -7627,10 +7627,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverUserCommandAutoBackup(cmdData) {
-        var backupResult = parent.db.performBackup(function (msg) {
+        cmdData.result = parent.db.performBackup(function (msg) {
             try { ws.send(JSON.stringify({ action: 'serverconsole', value: msg, tag: cmdData.command.tag })); } catch (ex) { }
         });
-        if (backupResult == 0) { cmdData.result = 'Starting auto-backup...'; } else { cmdData.result = 'Backup alreay in progress.'; }
     }
 
     function serverUserCommandBackupConfig(cmdData) {
