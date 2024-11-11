@@ -2418,7 +2418,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     try {
-                        if (common.validateString(command.userid, 8, 1024) == false) { err = "Invalid userid"; } // Check userid
+                        if (common.validateString(command.userid, 1, 1024) == false) { err = "Invalid userid"; } // Check userid
                         if (common.validateString(command.meshid, 8, 134) == false) { err = "Invalid groupid"; } // Check meshid
                         if (command.userid.indexOf('/') == -1) { command.userid = 'user/' + domain.id + '/' + command.userid; }
                         if (command.userid == obj.user._id) { err = "Can't remove self"; } // Can't add of modify self
