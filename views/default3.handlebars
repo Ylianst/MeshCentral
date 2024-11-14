@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -3852,13 +3852,10 @@
                         }
                         meshserver.send({ action: 'fileoperation', fileop: 'set', path: tag.path, file: tag.file, data: btoa(data) });
                     }
-                    setModalContent('xxAddAgent', EscapeHtml(message.file), null);
+                    setModalContent('xxAddAgent', EscapeHtml(message.file), 4, 'extra-large');
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p5editSaveBack(3, message));
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
-                    QS('dialog').width = 'auto';
-                    QS('dialog').bottom = '80px';
-                    QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
                     if (d4EditEncodingVal == 1) {
                         Q('d4editorarea').value = decode_utf8(atob(message.data)); // UTF8 Encoding
                     } else {
@@ -12725,13 +12722,11 @@
             if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
-                    setModalContent('xxAddAgent', EscapeHtml(gdownloadFile.file), '');
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13editSaveBack(3, gdownloadFile.file));
+                    setModalContent('xxAddAgent', EscapeHtml(gdownloadFile.file), 4, 'extra-large');
+                    var file = gdownloadFile.file;
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13editSaveBack(3, file));
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
-                    QS('dialog').width = 'auto';
-                    QS('dialog').bottom = '80px';
-                    QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
                     if (d4EditEncodingVal == 1) {
                         Q('d4editorarea').value = decode_utf8(gdownloadFile.data); // UTF8 Encoding
                     } else {
