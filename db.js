@@ -4089,12 +4089,13 @@ module.exports.CreateDB = function (parent, func) {
         }
 
         // Send the mesh update
-        if (mesh.deleted) { mesh.action = 'deletemesh'; } else { mesh.action = (added ? 'createmesh' : 'meshchange'); }
-        mesh.meshid = mesh._id;
-        mesh.nolog = 1;
-        delete mesh.type;
-        delete mesh._id;
-        parent.DispatchEvent(['*', mesh.meshid], obj, parent.webserver.CloneSafeMesh(mesh));
+        var mesh2 = Object.assign({}, mesh); // Shallow clone
+        if (mesh2.deleted) { mesh2.action = 'deletemesh'; } else { mesh2.action = (added ? 'createmesh' : 'meshchange'); }
+        mesh2.meshid = mesh2._id;
+        mesh2.nolog = 1;
+        delete mesh2.type;
+        delete mesh2._id;
+        parent.DispatchEvent(['*', mesh2.meshid], obj, parent.webserver.CloneSafeMesh(mesh2));
     }
 
     // Called when a user account has changed
@@ -4138,12 +4139,13 @@ module.exports.CreateDB = function (parent, func) {
         }
 
         // Send the user group update
-        usergroup.action = (added ? 'createusergroup' : 'usergroupchange');
-        usergroup.ugrpid = usergroup._id;
-        usergroup.nolog = 1;
-        delete usergroup.type;
-        delete usergroup._id;
-        parent.DispatchEvent(['*', usergroup.ugrpid], obj, usergroup);
+        var usergroup2 = Object.assign({}, usergroup); // Shallow clone
+        usergroup2.action = (added ? 'createusergroup' : 'usergroupchange');
+        usergroup2.ugrpid = usergroup2._id;
+        usergroup2.nolog = 1;
+        delete usergroup2.type;
+        delete usergroup2._id;
+        parent.DispatchEvent(['*', usergroup2.ugrpid], obj, usergroup2);
     }
 
     function dbMergeSqlArray(arr) {
