@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -487,7 +487,10 @@
                         <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                         <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                         <span id=KvmSearchInputClearButton style="display:none;position:relative">
-                            <img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x" />
+                            <span class="fa-layers fa-fw" role="button" onclick="clearDeviceSearch()" style="position:absolute;left:-25px;top:-15px">
+                                <i class="fa-solid fa-circle" style="color:var(--bs-secondary-bg)"></i>
+                                <i class="fa-solid fa-xmark"  style="color:var(--bs-body-color)"></i>
+                            </span>
                         </span>
                     </div>
                     <div id=devMapToolbar class=style14 style="display:none">
@@ -644,7 +647,7 @@
                     </div>
                     <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
-                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm" onclick="return account_createMesh()"> <i class="fa-fw fa-solid fa-plus-circle"></i>New</button></span>
+                    <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm" onclick="return account_createMesh()"><i class="fa-fw fa-solid fa-plus-circle"></i> New</button></span>
                     <br /><br />
                     <div id=p2meshes></div>
                     <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=#
@@ -709,8 +712,8 @@
                             <div style="float:right">
                                 <input type=button class="btn btn-outline-primary btn-sm m-1"
                                     onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
-                                <a href=# onclick=p4downloadUserInfo()><i class="fa-solid fa-download" title="Download user information" style="cursor:pointer"></i></a>
-                                <a href=# onclick=p4batchAccountCreate()><img id=p4UserBatchCreate style="cursor:pointer;display:none" title="Batch create many user accounts" src="images/link6.png" /></a>
+                                <a href=# onclick=p4downloadUserInfo()><i role=button class="fa-solid fa-download" title="Download user information"></i></a>
+                                <a href=# onclick=p4batchAccountCreate()><i role=button id=p4UserBatchCreate style="display:none" title="Batch create many user accounts" class="fa-solid fa-upload"></i></a>
                                 <i style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings class="fa-solid fa-cog" title="Settings" onclick="onUsersViewSettings()"></i>
                             </div>
                             <div>
@@ -1977,10 +1980,10 @@
                             </div>
                         </div>
                         <div id=dialog4 style="">
-                            <input id="d4WrapButton" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
-                            <input id="d4SizeButton" type="button" value="Small" onclick="d4ToggleSize()" />
-                            <input id="d4EncodingButton" type="button" value="Raw" onclick="d4ToggleEncoding()" />
-                            <input id="d4LineBreakButton" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
+                            <input id="d4WrapButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
+                            <input id="d4SizeButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Small" onclick="d4ToggleSize()" />
+                            <input id="d4EncodingButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                            <input id="d4LineBreakButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
                             <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                         </div>
                         <div id=dialog7 style="">
@@ -3581,7 +3584,7 @@
                             showModal('xxAddAgentModal', 'idx_dlgOkButton');
                         } else {
                             var x = '<div class="dialogText dialogTextLog"><pre id=d2ServerErrorsLogPre>' + EscapeHtml(message.data) + '</pre></div>';
-                            x += '<br /><div style=float:right><img src=images/link4.png height=10 width=10 title="' + "Download error log" + '" style=cursor:pointer onclick=d2CopyServerErrorsToClip()></div>';
+                            x += '<br /><div style=float:right><i role=button class="fa-fw fa-solid fa-download fa-sm" title="' + "Download error log" + '" onclick=d2CopyServerErrorsToClip()></i></div>';
                             x += '<div><label><input id=d2clearErrorsCheck type=checkbox class="form-check-input me-2" onclick=server_showErrorsDlgUpdate() /> ' + "Check and click OK to clear error log." + '</label></div>';
                             setModalContent('xxAddAgent', 'MeshCentral Server Errors', x);
                             showModal('xxAddAgentModal', 'idx_dlgOkButton', server_showErrorsDlgEx);
@@ -3595,12 +3598,9 @@
                         if (message.data == null) {
                             setModalContent('xxAddAgent', 'Server Configuration', 'Server has no config file.', 'extra-large');
                         } else {
-                            var x = '<input id="d4WrapButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Wrap: ON" onclick="d4ToggleWrap()">';
-                            x += '<input id="d4SizeButton" type="button" class="btn btn-outline-primary me-2 mb-2" value="Size: 100%" onclick="d4ToggleSize()">';
-                            x += '<input id="d4EncodingButton" type="button" class="btn btn-outline-primary me-2 mb-2" value="Encoding: RAW" onclick="d4ToggleEncoding()" style="display: none;">';
-                            x += '<textarea id="d4editorarea" autocomplete="off" class="form-control" style="height: calc(-286px + 100vh); width: 100%; overflow: auto; resize: none; font-size: 100%;" readonly="readonly"></textarea>';
-                            setModalContent('xxAddAgent', 'Server Configuration', x, 'extra-large');
+                            setModalContent('xxAddAgent', 'Server Configuration', 4, 'extra-large');
                             QV('d4EncodingButton', false);
+                            QV('d4LineBreakButton', false);
                             Q('d4editorarea').value = message.data;
                             Q('d4editorarea').setAttribute('readonly', 'readonly');
                         }
@@ -6494,6 +6494,7 @@
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
                 document.getElementById(modalId).addEventListener('hidden.bs.modal', function (event) {
                     if (xxModal) { xxModal.dispose(); xxModal = null; }
+                    if (xxdialogMode != 0) { xxdialogMode = 0; }
                 });
             }
             xxModal.show();
@@ -10039,6 +10040,8 @@
             if (xxdialogMode) return;
             var x = '';
             var y = '';
+            var v = currentNode[showEditNodeValueDialog_modes2[mode]];
+            if (v == null) v = '';
             if (mode == 3) {
                 // Get a list of all possible device tags
                 x = '<select id=dp10devicevalue multiple class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' class=form-control>';
@@ -10065,14 +10068,12 @@
             } else {
                 x = addHtmlFormFloating(showEditNodeValueDialog_modes[mode], '<input id=dp10devicevalue class="form-control" maxlength=' + showEditNodeValueDialog_modes4[mode] + ' placeholder="' + showEditNodeValueDialog_modes3[mode] + '" onchange=p10editdevicevalueValidate(' + mode + ',event) onkeyup=p10editdevicevalueValidate(' + mode + ',event) class=form-control/>');
                 setModalContent('xxAddAgent', 'Edit Device', x);
+                if (Array.isArray(v)) { v = v.join(', '); }
+                Q('dp10devicevalue').value = v;
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                     showEditNodeValueDialogEx(3, mode);
                 });
             }
-            var v = currentNode[showEditNodeValueDialog_modes2[mode]];
-            if (v == null) v = '';
-            if (Array.isArray(v)) { v = v.join(', '); }
-            Q('dp10devicevalue').value = v;
             p10editdevicevalueValidate();
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { showEditNodeValueDialogEx(3, mode); });
             Q('dp10devicevalue').focus();
@@ -14534,7 +14535,8 @@
         function updateLoginTokens() {
             var x = '', count = 1;
             if ((loginTokens != null) && (loginTokens.length > 0)) {
-                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <a href=# onclick="return account_createLoginToken()" class="newMeshBtn"> ' + "New" + '</a></span></p><div style=margin-left:40px><table class="table table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
+                x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <button class="btn btn-primary btn-sm" onclick="return account_createLoginToken()"><i class="fa-fw fa-solid fa-plus-circle"></i> ' + "New" + '</button></span></p>';
+                x += '<div style=margin-left:40px><table class="table table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
                 for (var i = 0; i < loginTokens.length; i++) {
                     var ltoken = loginTokens[i];
                     var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
@@ -14625,6 +14627,7 @@
             if (xxdialogMode) return false;
             xxdialogMode = 2; xxdialogTag = 'MeshCentralServerUpdate';
             setModalContent('xxAddAgent', 'MeshCentral Version', 'Loading...');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
             meshserver.send({ action: 'serverversion' });
             return false;
         }
@@ -16832,7 +16835,7 @@
         }
 
         function addUserHtml(user, sessions) {
-            var x = '', gray = ' gray', icon = 'm2', msg = '', self = (user._id != userinfo._id), lastAccess = '', permissions = '';
+            var x = '', gray = ' gray', msg = '', self = (user._id != userinfo._id), lastAccess = '', permissions = '';
             if (sessions != null) {
                 gray = '';
                 if (self) {
@@ -16889,11 +16892,11 @@
             if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <i class="fa-solid fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i>'; }
             if (user.phone != null) { username += ' <i class="fa-solid fa-mobile-screen" title="' + "Verified phone number" + '" style="margin-top:2px"></i>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
-            if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <img src="images/messaging12.png" height=12 width=12 title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
+            if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <i class="fa-solid fa-comment fa-xs" title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
             x += '<tr tabindex=0 onkeypress="if (event.key==\'Enter\') gotoUser(\'' + encodeURIComponentEx(user._id) + '\')"><td>';
             x += '<div>';
             x += '<div class=baricon><input class="UserCheckbox form-check-input me-2" value=' + encodeURIComponentEx(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id) ? ' disabled' : '') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponentEx(user._id) + '",false,event)>';
-            x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
+            x += '<div class=baricon><i class="fa-fw fa-solid fa-user ' + gray + '"></i></div>';
             x += '<div>';
             x += '<div><span style=line-height:24px>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
             return x;
@@ -17548,7 +17551,7 @@
             var x = '<tr tabindex=0 onkeypress="if (event.key==\'Enter\') gotoUserGroup(\'' + encodeURIComponentEx(group._id) + '\')"><td style=cursor:pointer>';
             x += '<div style=width:100%>';
             x += '<div class=baricon><input class="form-check-input me-2 UserGroupCheckbox" value=' + encodeURIComponentEx(group._id) + ' onclick=p50updateInfo() type=checkbox></div>';
-            x += '<div class=baricon onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><div class=m4></div></div>';
+            x += '<div class=baricon onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><i class="fa-solid fa-users"></i></div>';
             x += '<div onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div><div onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")></div>';
             x += '<div style=line-height:24px onclick=gotoUserGroup("' + encodeURIComponentEx(group._id) + '")><span style=font-size:16px>' + name + '</span></div></div><td style=text-align:center>' + usercount + '<td style=text-align:center>' + meshcount + '<td style=text-align:center>' + devicecount;
             return x;
@@ -17742,7 +17745,7 @@
                 if (currentUserGroup.membershipType == null) { trash = '<a href=# onclick=\'return p51deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
                 if (users != null) { username = '<a href=# onclick=\'gotoUser("' + encodeURIComponentEx(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
-                x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><div title="' + "User" + '" class=m2></div><div>&nbsp;' + username + '<div></div></div></td><td><div style=float:right>' + trash + '</div></td></tr>';
+                x += '<tr ' + (((count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td><i class="fa-solid fa-user fa-fw" title="' + "User" + '"></i>&nbsp;' + username + '</td><td><div style=float:right>' + trash + '</div></td></tr>';
                 ++count;
             }
 
@@ -18736,8 +18739,8 @@
                 x += '<div style=width:100%;text-align:center;margin-top:20px><i>' + "No recordings." + '</i></div>';
             } else {
                 // Display the users using the sorted list
-                x += '<table class=p3usersTable cellpadding=0 cellspacing=0>';
-                x += '<th>' + "Session" + '<th style=width:110px>' + nobreak("Start Time") + '<th style=width:110px>' + "Duration" + '<th style=width:110px>' + "Size";
+                x += '<table class="table table-hover" cellpadding=0 cellspacing=0><thead class="text-center"><tr>';
+                x += '<th>' + "Session" + '</th><th style=width:110px>' + nobreak("Start Time") + '</th><th style=width:110px>' + "Duration" + '</th><th style=width:110px>' + "Size" + '</th></tr></thead><tbody>';
                 if (p52recordings != null) {
                     var recdate = null;
                     for (var i in p52recordings) {
@@ -18746,7 +18749,7 @@
                         x += addRecordingHtml(i, rec);
                     }
                 }
-                x += '</table>';
+                x += '</tbody></table>';
             }
             QH('p52recordings', x);
 
@@ -18793,17 +18796,17 @@
             if (rec.protocol == 101) { sessionName += ' - ' + "Intel&reg; AMT Redirection"; }
             if (rec.protocol == 200) { sessionName += ' - ' + "Messenger"; }
 
-            var actions = '', icon = 'm0';
+            var actions = '', icon = 'fa-circle-xmark text-danger';
             if (rec.present == 1) {
-                icon = 'm1';
-                actions = '<div style=cursor:pointer;float:right><a onclick=downloadFile("recordings.ashx?file=' + encodeURIComponentEx(rec.filename) + '")><img src=images/link4.png height=10 width=10 title="Download Recording"></a>&nbsp;</div>';
-                actions += '<div style=cursor:pointer;float:right><a href="player.htm?stream=' + encodeURIComponentEx(rec.filename) + '") rel=\"noreferrer noopener\" target=\"mcplay-' + encodeURIComponentEx(rec.filename) + '\"><img src=images/link7.png height=10 width=10 title="Play Recording"></a>&nbsp;</div>';
+                icon = 'fa-circle-check text-success';
+                actions = '<div style=cursor:pointer;float:right><a onclick=downloadFile("recordings.ashx?file=' + encodeURIComponentEx(rec.filename) + '")><i class="fa-fw fa-solid fa-download fa-sm" title="Download Recording"></i></a>&nbsp;</div>';
+                actions += '<div style=cursor:pointer;float:right><a href="player.htm?stream=' + encodeURIComponentEx(rec.filename) + '") rel=\"noreferrer noopener\" target=\"mcplay-' + encodeURIComponentEx(rec.filename) + '\"><i class="fa-fw fa-solid fa-play fa-sm" title="Play Recording"></i></a>&nbsp;</div>';
             }
             var x = '<tr tabindex=0 onmouseover=userMouseHover2(this,1) onmouseout=userMouseHover2(this,0) onkeypress="if (event.key==\'Enter\') showRecordingDialog(event,\'' + i + '\')"><td style=cursor:pointer>';
             x += '<div class=bar style=width:100%>';
             //x += '<div class=baricon><input class=RecordingCheckbox value="' + encodeURIComponentEx(rec.filename) + '" onclick=p52updateInfo() type=checkbox></div>';
             x += '<div></div>';
-            x += '<div class=baricon onclick=showRecordingDialog(event,"' + i + '")><div class=' + icon + '></div></div>';
+            x += '<div class=baricon onclick=showRecordingDialog(event,"' + i + '")><i class="fa-fw fa-solid ' + icon + '"></i></div>';
             x += '<div class=g1 onclick=showRecordingDialog(event,"' + i + '")></div><div class=g2 onclick=showRecordingDialog("' + i + '")></div>';
             x += '<div style=line-height:24px onclick=showRecordingDialog(event,"' + i + '")>' + actions + '<div style=font-size:16px>' + sessionName + '</div></div></div><td style=text-align:center>' + sessionStartStr + '<td style=text-align:center>' + sessionLengthStr + '<td style=text-align:center>' + sessionSize;
             return x;
