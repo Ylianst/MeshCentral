@@ -4150,7 +4150,7 @@ module.exports.CreateDB = function (parent, func) {
 
     function dbMergeSqlArray(arr) {
         var x = '';
-        for (var i in arr) { if (x != '') { x += ','; } x += '"' + arr[i] + '"'; }
+        for (var i in arr) { if (x != '') { x += ','; } x += '\'' + arr[i] + '\''; }
         return x;
     }
 
