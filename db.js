@@ -3290,7 +3290,7 @@ module.exports.CreateDB = function (parent, func) {
             if (props.ssl) {
                 sslOptions = ' --ssl';
                 if (props.ssl.cacertpath) sslOptions = ' --ssl-ca=' + props.ssl.cacertpath;
-                if (props.ssl.dontcheckserveridentity != true) sslOptions += ' --ssl-verify-server-cert';
+                if (props.ssl.dontcheckserveridentity != true) {sslOptions += ' --ssl-verify-server-cert'} else {sslOptions += ' --ssl-verify-server-cert=false'};
                 if (props.ssl.clientcertpath) sslOptions += ' --ssl-cert=' + props.ssl.clientcertpath;
                 if (props.ssl.clientkeypath) sslOptions += ' --ssl-key=' + props.ssl.clientkeypath;
             } 
