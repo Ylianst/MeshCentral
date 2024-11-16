@@ -15,7 +15,8 @@
 "use strict";
 
 const common = require('./common.js');
-
+const [nodeMajor, nodeMinor, nodePatch] = process.versions.node.split('.').map(Number)
+    
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (ex) { } }
 
@@ -4123,7 +4124,7 @@ var childProcess = null;
 var previouslyInstalledModules = {};
 function mainStart() {
     // Check the NodeJS is version 16 or better.
-    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 16) { console.log("MeshCentral requires Node v16 or above, current version is " + process.version + "."); return; }
+    if (nodeMajor < 16) { console.log("MeshCentral requires Node v16 or above, current version is " + process.version + "."); return; }
 
     // If running within the node_modules folder, move working directory to the parent of the node_modules folder.
     if (__dirname.endsWith('\\node_modules\\meshcentral') || __dirname.endsWith('/node_modules/meshcentral')) { process.chdir(require('path').join(__dirname, '..', '..')); }
@@ -4212,7 +4213,13 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.7.4', 'cookie-session@2.1.0', 'express@4.21.1', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@yetzt/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.39', 'ws@8.18.0', 'yauzl@2.10.0'];
+        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.7.4', 'cookie-session@2.1.0', 'express@4.21.1', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', 'node-forge@1.3.1', 'ua-parser-js@1.0.39', 'ws@8.18.0', 'yauzl@2.10.0'];
+
+        //NeDB only supported on v22 and below, check if needed
+        if (!(config.settings?.sqlite3 || config.settings?.acebase || config.settings?.mysql || config.settings?.mariadb || config.settings?.mongodb || config.settings?.postgres || config.settings?.xmongodb)) {
+            if (nodeMajor >=23){ console.log("Using MeshCentral with NeDB requires Node v22 or lower, current version is " + process.version + "."); process.exit(0);  } else { modules.push('@yetzt/nedb'); }
+        };
+
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.16.0'); }
