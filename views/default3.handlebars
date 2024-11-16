@@ -943,54 +943,43 @@
                     <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
                 </div>
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
-                    <div id=deskarea1 class="areaHead">
-                        <div class="toright2">
-                            <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:right">&nbsp;&#x2716;</div>
-                            <span id="p11power"></span>&nbsp;
-                            <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
-                            <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)"><i class="fa-solid fa-rotate-left"></i></div>
-                            <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)"><i class="fa-solid fa-rotate-right"></i></div>
-                            <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
-                            <input id="deskFocusBtn" type="button"
-                                title="Toggle focus mode, when active only the region around the mouse is updated"
-                                onkeypress="return false" onkeydown="return false" value="Focus All"
-                                onclick="deskToggleFocus()" style="margin-right:3px;display:none" />
-                            <input id="deskActionsBtn" type=button class="btn btn-outline-primary btn-sm m-1"
-                                title="Perform power actions on the device" onkeypress="return false"
-                                onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
-                            <input id="deskActionsSettings" type="button" class="btn btn-outline-primary btn-sm m-1"
-                                value="Settings..." title="Edit remote desktop settings" onkeypress="return false"
-                                onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
-                            <input type="button" class="btn btn-outline-primary btn-sm m-1"
-                                title="Change the power state of the remote machine" onkeypress="return false"
-                                onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()"
-                                style="display:none" />
-                            <div id="desktopCustomUpperRight" style="float:left;margin-right:6px"></div>
-                            <div id="desktopCustomUiButtons" style="float:left"></div>
-                        </div>
-                        <div>
-                            <input type="button" class="btn btn-outline-primary btn-sm m-1" id="autoconnectbutton1"
+                    <div id=deskarea1 class="areaHead d-flex flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <input type="button" class="btn btn-outline-primary btn-sm mx-1" id="autoconnectbutton1"
                                 value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false"
                                 onkeydown="return false" style="display:none;margin-right:4px" />
-                            <span id=connectbutton1span><button class="btn btn-primary btn-sm me-2" type=button
+                            <span id=connectbutton1span><button class="btn btn-primary btn-sm mx-1" type=button
                                     id=connectbutton1 cmenu="deskConnectButton"
                                     title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,3)
                                     onkeypress="return false" onkeydown="return false" disabled="disabled"><i
                                         class="fa-solid fa-circle-play"></i> Connect</button></span>
-                            <span id=connectbutton1rspan><button class="btn btn-primary btn-sm me-2" type=button
+                            <span id=connectbutton1rspan><button class="btn btn-primary btn-sm mx-1" type=button
                                     id=connectbutton1r cmenu="altPortContextMenu" title="Connect using RDP"
                                     onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false"
                                     disabled="disabled"><i class="fa-solid fa-circle-play"></i> RDP Connect</button></span>
-                            <span id=connectbutton1hspan><button class="btn btn-primary btn-sm me-2" type=button
+                            <span id=connectbutton1hspan><button class="btn btn-primary btn-sm mx-1" type=button
                                     id=connectbutton1h title="Connect using hardware KVM"
                                     onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false"
                                     disabled="disabled"><i class="fa-solid fa-circle-play"></i> HW Connect</button></span>
-                            <span id=disconnectbutton1span><button class="btn btn-primary btn-sm me-2" type=button
+                            <span id=disconnectbutton1span><button class="btn btn-primary btn-sm mx-1" type=button
                                     id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect"
                                     onclick=connectDesktop(event,0) onkeypress="return false"
                                     onkeydown="return false"><i class="fa-solid fa-power-off"></i> Disconnect</button></span>
-                            <span id="deskstatus" style="line-height:22px">Disconnected</span><span
-                                id="deskmetadata"></span>
+                            <span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
+                        </div>
+                        <div class="d-flex align-items-center ms-auto">
+                            <div id="desktopCustomUiButtons" style="float:left"></div>
+                            <div id="desktopCustomUpperRight" style="float:left;margin-right:6px"></div>
+                            <input type="button" class="btn btn-outline-primary btn-sm" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
+                            <input id="deskActionsBtn" type=button class="btn btn-outline-primary btn-sm mx-1" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
+                            <input id="deskActionsSettings" type="button" class="btn btn-outline-primary btn-sm mx-1" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
+                            <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none" />
+                            <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
+                            <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)"><i class="fa-solid fa-rotate-right"></i></div>
+                            <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)"><i class="fa-solid fa-rotate-left"></i></div>
+                            <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
+                            <span id="p11power"></span>&nbsp;
+                            <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:right">&nbsp;&#x2716;</div>
                         </div>
                     </div>
                     <div id=deskarea3x>
@@ -1036,73 +1025,62 @@
                             style="display:none;position:absolute;left:30px;top:17px;right:30px;bottom:17px;overflow-y:auto">
                         </div>
                     </div>
-                    <div id=deskarea4 class="areaFoot">
-                        <div class="toright2">
-                            <span id="DeskLatency" style="line-height:22px;width:50px" title="Desktop Session Latency"></span>
-                            <span id="DeskTimer" style="line-height:22px" title="Session time"></span>
-                            <input id=DeskToolsButton type=button class="btn btn-outline-primary btn-sm m-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
-                            <span>&nbsp;</span>
-                            <span id=DeskRunButton cmenu="deskPreConfigScriptContextMenu" class="deskarea" title="Run a script on this computer" role="button">
-                                <i class="fa-solid fa-fw fa-play" onclick=runDeviceCmd()></i>
-                            </span>
-                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer" role="button">
-                                <i class="fa-solid fa-fw fa-message" onclick=deviceChat(event)></i>
-                            </span>
-                            <span id=DeskNotifyButton title="Display a notification on the remote computer" role="button">
-                                <i class="fa-solid fa-fw fa-bell" onclick=deviceToastFunction()></i>
-                            </span>
-                            <span id=DeskLockButton title="Lock the remote computer" role="button">
-                                <i class="fa-solid fa-fw fa-lock" onclick=deviceLockFunction()></i>
-                            </span>
-                            <span id=DeskOpenWebButton title="Open a web address on the remote computer" role="button">
-                                <i class="fa-solid fa-fw fa-globe" onclick=deviceUrlFunction()></i>
-                            </span>
-                            <span id=DeskBackgroundButton title="Toggle remote desktop background" role="button">
-                                <i class="fa-solid fa-fw fa-image" onclick=deviceToggleBackground(event) id=DeskBackgroundButtonImage >></i>
-                            </span>
-                            <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop" role="button">
-                                <i class="fa-solid fa-fw fa-camera" onclick=deskSaveImage()></i>
-                            </span>
-                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none" role="button">
-                                <i class="fa-solid fa-fw fa-video" onclick=deskRecordSession() id=DeskRecordButtonImage></i>
-                            </span>
-                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none">
-                                <i class="fa-solid fa-fw fa-down-long" data-fa-transform="shrink-9 down-4" data-fa-mask="fa-solid fa-clipboard" onclick=deskClipboardInFunction()></i>
-                            </span>
-                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device">
-                                <i class="fa-solid fa-fw fa-up-long" data-fa-transform="shrink-9 down-4" data-fa-mask="fa-solid fa-clipboard" onclick=deskClipboardOutFunction()></i>
-                            </span>
-                            <span id=DeskRefreshButton title="Refresh the desktop" role="button">
-                                <i class="fa-solid fa-fw fa-rotate" onclick=deskRefreshFunction()></i>
-                            </span>
-                            <span id=DeskInputLockedButton title="Remote input is locked">
-                                <i class="fa-solid fa-fw fa-keyboard" style=color:red onclick=deskInputLockFunction(0)></i>
+                    <div id=deskarea4 class="areaFoot d-flex flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <select id="deskkeys" class="form-select-sm mx-1" cmenu=deskKeyShortcutContextMenu></select>
+                            <input id="DeskWD" type=button class="btn btn-outline-primary btn-sm mx-1" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
+                            <input id="DeskESC" style="display:none" type="button" class="btn btn-outline-primary btn-sm mx-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
+                            <input id="DeskClip" type="button" class="btn btn-outline-primary btn-sm mx-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
+                            <input id="DeskType" class="btn btn-outline-primary btn-sm mx-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" class="form-check-input" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
+                        </div>
+                        <div class="d-flex ms-auto align-items-center">
+                            <span id=DeskMonitorSelectionSpan></span>
+                            <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
+                            <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
+                            <input id=DeskToolsButton type=button class="btn btn-outline-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <span id=DeskGuestShareButton title="Share the device with a guest" role="button">
+                                <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
                             </span>
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked" role="button">
                                 <i class="fa-solid fa-fw fa-keyboard" onclick=deskInputLockFunction(1)></i>
                             </span>
-                            <span id=DeskGuestShareButton title="Share the device with a guest">
-                                <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
+                            <span id=DeskInputLockedButton title="Remote input is locked" role="button">
+                                <i class="fa-solid fa-fw fa-keyboard" style=color:red onclick=deskInputLockFunction(0)></i>
                             </span>
-                        </div>
-                        <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
-                        <div>
-                            <select id="deskkeys" class="form-select-sm me-2" cmenu=deskKeyShortcutContextMenu></select>
-                            <input id="DeskWD" type=button class="btn btn-outline-primary btn-sm m-1" value="Send"
-                                onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
-                            <input id="DeskESC" style="display:none" type="button"
-                                class="btn btn-outline-primary btn-sm m-1" value="ESC" onkeypress="return false"
-                                onkeydown="return false" onclick="sendDeskEsc()" />
-                            <input id="DeskClip" type="button" class="btn btn-outline-primary btn-sm m-1"
-                                value="Clipboard" onkeypress="return false" onkeydown="return false"
-                                onclick="showDeskClip()" />
-                            <input id="DeskType" class="btn btn-outline-primary btn-sm m-1"
-                                cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type"
-                                onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
-                            <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input
-                                        id="DeskControl" type="checkbox" class="form-check-input me-2"
-                                        onkeypress="return false" onkeydown="return false"
-                                        onclick="toggleKvmControl()" />Input</span></label>&nbsp;
+                            <span id=DeskRefreshButton title="Refresh the desktop" role="button">
+                                <i class="fa-solid fa-fw fa-rotate" onclick=deskRefreshFunction()></i>
+                            </span>
+                            <span id=DeskClipboardOutButton title="Upload local clipboard to remote device" role="button">
+                                <i class="fa-solid fa-fw fa-up-long" data-fa-transform="shrink-9 down-4" data-fa-mask="fa-solid fa-clipboard" onclick=deskClipboardOutFunction()></i>
+                            </span>
+                            <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"  role="button">
+                                <i class="fa-solid fa-fw fa-down-long" data-fa-transform="shrink-9 down-4" data-fa-mask="fa-solid fa-clipboard" onclick=deskClipboardInFunction()></i>
+                            </span>
+                            <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none" role="button">
+                                <i class="fa-solid fa-fw fa-video" onclick=deskRecordSession() id=DeskRecordButtonImage></i>
+                            </span>
+                            <span id=DeskSaveImageButton title="Save a screenshot of the remote desktop" role="button">
+                                <i class="fa-solid fa-fw fa-camera" onclick=deskSaveImage()></i>
+                            </span>
+                            <span id=DeskBackgroundButton title="Toggle remote desktop background" role="button">
+                                <i class="fa-solid fa-fw fa-image" onclick=deviceToggleBackground(event) id=DeskBackgroundButtonImage></i>
+                            </span>
+                            <span id=DeskOpenWebButton title="Open a web address on the remote computer" role="button">
+                                <i class="fa-solid fa-fw fa-globe" onclick=deviceUrlFunction()></i>
+                            </span>
+                            <span id=DeskLockButton title="Lock the remote computer" role="button">
+                                <i class="fa-solid fa-fw fa-lock" onclick=deviceLockFunction()></i>
+                            </span>
+                            <span id=DeskNotifyButton title="Display a notification on the remote computer" role="button">
+                                <i class="fa-solid fa-fw fa-bell" onclick=deviceToastFunction()></i>
+                            </span>
+                            <span id=DeskChatButton class="deskarea" title="Open chat window to this computer" role="button">
+                                <i class="fa-solid fa-fw fa-message" onclick=deviceChat(event)></i>
+                            </span>
+                            <span id=DeskRunButton cmenu="deskPreConfigScriptContextMenu" class="deskarea" title="Run a script on this computer" role="button">
+                                <i class="fa-solid fa-fw fa-play" onclick=runDeviceCmd()></i>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -3495,13 +3473,13 @@
                             var splitip = currentNode.lastaddr.split(':');
                             if (splitip.length > 2) {
                                 // IPv6
-                                x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(currentNode.lastaddr) + '") width=10 height=10>');
+                                x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(currentNode.lastaddr) + '")></i>');
                             } else {
                                 // IPv4
                                 if (isPrivateIP(currentNode.lastaddr)) {
-                                    x += addHtmlValue2("Last agent address", splitip[0] + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
+                                    x += addHtmlValue2("Last agent address", splitip[0] + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '")></i>');
                                 } else {
-                                    x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '") width=10 height=10>');
+                                    x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '")></i>');
                                 }
                             }
                         }
@@ -3514,12 +3492,12 @@
                                 x += '<hr />'
                                 if (net.name) { x += addHtmlValue2("Name", '<b>' + EscapeHtml(net.name) + '</b>'); }
                                 if (net.desc) { x += addHtmlValue2("Description", EscapeHtml(net.desc).replace('(R)', '&reg;').replace('(r)', '&reg;')); }
-                                if (net.dnssuffix) { x += addHtmlValue2("DNS suffix", EscapeHtml(net.dnssuffix) + ' <img src="images/link4.png" title="' + "Copy name to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.dnssuffix) + '") width=10 height=10>'); }
-                                if (net.mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.mac.toLowerCase()) + '") width=10 height=10>'); }
-                                if (net.v4addr) { x += addHtmlValue2("IPv4 address", EscapeHtml(net.v4addr) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4addr) + '") width=10 height=10>'); }
-                                if (net.v4mask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(net.v4mask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4mask) + '") width=10 height=10>'); }
-                                if (net.v4gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(net.v4gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4gateway) + '") width=10 height=10>'); }
-                                if (net.gatewaymac) { x += addHtmlValue2("Gateway MAC", '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net.gatewaymac.toLowerCase()) + '") width=10 height=10>'); }
+                                if (net.dnssuffix) { x += addHtmlValue2("DNS suffix", EscapeHtml(net.dnssuffix) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy name to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net.dnssuffix) + '")></i>'); }
+                                if (net.mac) { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net.mac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.mac.toLowerCase()) + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy MAC address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net.mac.toLowerCase()) + '")></i>'); }
+                                if (net.v4addr) { x += addHtmlValue2("IPv4 address", EscapeHtml(net.v4addr) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4addr) + '")></i>'); }
+                                if (net.v4mask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(net.v4mask) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4mask) + '")></i>'); }
+                                if (net.v4gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(net.v4gateway) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net.v4gateway) + '")></i>'); }
+                                if (net.gatewaymac) { x += addHtmlValue2("Gateway MAC", '<a href="https://dnslytics.com/mac-address-lookup/' + net.gatewaymac.substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net.gatewaymac.toLowerCase()) + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy MAC address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net.gatewaymac.toLowerCase()) + '")></i>'); }
                             }
                         } else if (message.netif2 != null) {
                             // New style
@@ -3528,18 +3506,18 @@
                                 if ((Array.isArray(net) == false) || (net.length < 1) || (net[0] == null) || ((typeof net[0].mac == 'string') && (net[0].mac.startsWith('00:00:00:00')))) continue;
                                 x += '<hr />'
                                 x += addHtmlValue2("Name", '<b>' + EscapeHtml(i) + '</b>');
-                                if (typeof net[0].mac == 'string') { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net[0].mac.split(':').join('').substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net[0].mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net[0].mac.toLowerCase()) + '") width=10 height=10>'); }
+                                if (typeof net[0].mac == 'string') { x += addHtmlValue2("MAC address", '<a href="https://dnslytics.com/mac-address-lookup/' + net[0].mac.split(':').join('').substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net[0].mac.toLowerCase()) + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy MAC address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net[0].mac.toLowerCase()) + '")></i>'); }
                                 if (net[0].fqdn) { x += addHtmlValue2("FQDN", net[0].fqdn); }
                                 for (var j = 0; j < net.length; j++) {
                                     var netif = net[j];
                                     if (netif.family == 'IPv6') {
-                                        if (netif.address) { x += addHtmlValue2("IPv6 address", EscapeHtml(netif.address) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.address) + '") width=10 height=10>'); }
-                                        if (netif.netmask) { x += addHtmlValue2("IPv6 mask", EscapeHtml(netif.netmask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.netmask) + '") width=10 height=10>'); }
-                                        if (netif.gateway) { x += addHtmlValue2("IPv6 gateway", EscapeHtml(netif.gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.gateway) + '") width=10 height=10>'); }
+                                        if (netif.address) { x += addHtmlValue2("IPv6 address", EscapeHtml(netif.address) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.address) + '")></i>'); }
+                                        if (netif.netmask) { x += addHtmlValue2("IPv6 mask", EscapeHtml(netif.netmask) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.netmask) + '")></i>'); }
+                                        if (netif.gateway) { x += addHtmlValue2("IPv6 gateway", EscapeHtml(netif.gateway) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.gateway) + '")></i>'); }
                                     } else if (netif.family == 'IPv4') {
-                                        if (netif.address) { x += addHtmlValue2("IPv4 address", EscapeHtml(netif.address) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.address) + '") width=10 height=10>'); }
-                                        if (netif.netmask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(netif.netmask) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.netmask) + '") width=10 height=10>'); }
-                                        if (netif.gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(netif.gateway) + ' <img src="images/link4.png" title="' + "Copy address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.gateway) + '") width=10 height=10>'); }
+                                        if (netif.address) { x += addHtmlValue2("IPv4 address", EscapeHtml(netif.address) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.address) + '")></i>'); }
+                                        if (netif.netmask) { x += addHtmlValue2("IPv4 mask", EscapeHtml(netif.netmask) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.netmask) + '")></i>'); }
+                                        if (netif.gateway) { x += addHtmlValue2("IPv4 gateway", EscapeHtml(netif.gateway) + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(netif.gateway) + '")></i>'); }
                                     }
                                 }
                             }
@@ -6448,9 +6426,11 @@
                 // Set the modal body content based on the bodyContent Type
                 if (typeof bodyContent == 'number') {
                     for (var i = 1; i < 24; i++) { QV('dialog' + i, i == bodyContent); } // Edit this line when more dialogs are added
+                    xxdialogMode = i;
                 } else if (typeof bodyContent == 'string'){
                     Q('dialog2').innerHTML = bodyContent;
                     for (var i = 1; i < 24; i++) { QV('dialog' + i, i == 2); } // Edit this line when more dialogs are added
+                    xxdialogMode = 2;
                 }
                 // If size is provided, set the modal size class
                 if (size) {
@@ -9858,49 +9838,52 @@
         var d2map = null;
         function p10showNodeLocationDialog() {
             if ((xxdialogMode != null) && (xxdialogTag == '@xxmap')) { setDialogMode(0); } else { if (xxdialogMode) return false; }
-            var markers = [], types = ['iploc', 'wifiloc', 'gpsloc', 'userloc'], boundingBox = null;
+            var showLocation = function (event) {
+                var markers = [], types = ['iploc', 'wifiloc', 'gpsloc', 'userloc'], boundingBox = null;
 
-            for (var loctype in types) {
-                if (currentNode[types[loctype]] != null) {
-                    var loc = currentNode[types[loctype]].split(','), lat = parseFloat(loc[0]), lon = parseFloat(loc[1]);
-                    if ((lat < 90) && (lat > -90) && (lon < 180) && (lon > -180)) { // Check valid lat/lon
-                        var deviceMark = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat])) });
-                        deviceMark.setStyle(markerStyle(currentNode, parseInt(loctype) + 1));
-                        markers.push(deviceMark);
+                for (var loctype in types) {
+                    if (currentNode[types[loctype]] != null) {
+                        var loc = currentNode[types[loctype]].split(','), lat = parseFloat(loc[0]), lon = parseFloat(loc[1]);
+                        if ((lat < 90) && (lat > -90) && (lon < 180) && (lon > -180)) { // Check valid lat/lon
+                            var deviceMark = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat])) });
+                            deviceMark.setStyle(markerStyle(currentNode, parseInt(loctype) + 1));
+                            markers.push(deviceMark);
 
-                        if (boundingBox == null) { boundingBox = [lat, lon, lat, lon, 0]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
+                            if (boundingBox == null) { boundingBox = [lat, lon, lat, lon, 0]; } else { if (lat < boundingBox[0]) { boundingBox[0] = lat; } if (lon < boundingBox[1]) { boundingBox[1] = lon; } if (lat > boundingBox[2]) { boundingBox[2] = lat; } if (lon > boundingBox[3]) { boundingBox[3] = lon; } }
+                        }
                     }
                 }
+
+                // Setup the device mark layer
+                var vectorSource = new ol.source.Vector({ features: markers });
+                var vectorLayer = new ol.layer.Vector({ source: vectorSource });
+
+                var clng = 0, clat = 0, zoom = 8;
+                if (boundingBox != null) {
+                    var clat = (boundingBox[0] + boundingBox[2]) / 2;
+                    var clng = (boundingBox[1] + boundingBox[3]) / 2;
+                    var cscale = Math.max(Math.abs(boundingBox[0] - boundingBox[2]), Math.abs(boundingBox[1] - boundingBox[3]));
+                    var i = 360, zoom = -2;
+                    while (i > cscale) { zoom++; i = i / 2; }
+                }
+
+                if (markers.length == 1) { zoom = 8; }
+
+                // Setup the map
+                d2map = new ol.Map({
+                    target: 'd2map',
+                    interactions: ol.interaction.defaults({ dragPan: false, mouseWheelZoom: false }),
+                    layers: [new ol.layer.Tile({ source: new ol.source.OSM() }), vectorLayer],
+                    view: new ol.View({ center: ol.proj.fromLonLat([clng, clat]), zoom: zoom })
+                });
+                document.getElementById('xxAddAgentModal').removeEventListener('shown.bs.modal', showLocation);
             }
-
-            // Setup the device mark layer
-            var vectorSource = new ol.source.Vector({ features: markers });
-            var vectorLayer = new ol.layer.Vector({ source: vectorSource });
-
+            document.getElementById('xxAddAgentModal').addEventListener('shown.bs.modal', showLocation);
             //var x = '<div><a href="https://www.google.com/maps/preview/@' + lat + ',' + lng + ',12z" rel="noreferrer noopener" target=_blank>Open in Google maps</a></div>';
             var x = '<div id=d2map style=width:100%;height:300px></div>';
             xxdialogTag = '@xxmap';
             setModalContent('xxAddAgent', 'Device Location', x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
-
-            var clng = 0, clat = 0, zoom = 8;
-            if (boundingBox != null) {
-                var clat = (boundingBox[0] + boundingBox[2]) / 2;
-                var clng = (boundingBox[1] + boundingBox[3]) / 2;
-                var cscale = Math.max(Math.abs(boundingBox[0] - boundingBox[2]), Math.abs(boundingBox[1] - boundingBox[3]));
-                var i = 360, zoom = -2;
-                while (i > cscale) { zoom++; i = i / 2; }
-            }
-
-            if (markers.length == 1) { zoom = 8; }
-
-            // Setup the map
-            d2map = new ol.Map({
-                target: 'd2map',
-                interactions: ol.interaction.defaults({ dragPan: false, mouseWheelZoom: false }),
-                layers: [new ol.layer.Tile({ source: new ol.source.OSM() }), vectorLayer],
-                view: new ol.View({ center: ol.proj.fromLonLat([clng, clat]), zoom: zoom })
-            });
             return false;
         }
 
@@ -10482,6 +10465,7 @@
         }
 
         function askRdpCredentialsEx() {
+            xxdialogMode = 0;
             var width = null, height = null;
             if (desktopsettings.rdpsize) {
                 if (desktopsettings.rdpsize == 'browser') {
@@ -11562,7 +11546,12 @@
                 var str = displays[i], allDisplays = 1;
                 if (str == 'All Displays') { str = "All Displays"; allDisplays = 2; } // Language translation
                 if (str.startsWith('Display ')) { str = format("Display {0}", str.substring(8)); } // Language translation
-                displaySelector += '<img id=DeskMonitorSelectionX' + i + ' class="' + ((selDisplay == i) ? '' : ' gray') + '" src=\'images/icon-monitor' + allDisplays + '.png\' title="' + EscapeHtml(str) + '" onclick=deskSetDisplay(' + i + ') height=16 width=16 style=padding-top:2px;margin-left:2px />';
+                var maintext = 'id=DeskMonitorSelectionX' + i + ' title="' + EscapeHtml(str) + '" onclick=deskSetDisplay(' + i + ') role=button'
+                if (allDisplays == 2) {
+                    displaySelector += '<span ' + maintext + ' class="fa-layers fa-fw ' + ((selDisplay == i) ? '' : ' gray') + '"><i class="fa-solid fa-desktop"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 left-3 up-3"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 right-3 up-3"></i></span>';
+                } else {
+                    displaySelector += '<i ' + maintext + ' class="fa-fw fa-solid fa-desktop ' + ((selDisplay == i) ? '' : ' gray') + '"></i>';
+                }
                 if ((deskPreferedStickyDisplay == i) && (selDisplay != deskPreferedStickyDisplay)) { desktop.m.SetDisplay(i); }
                 deskPreferedStickyDisplay = -1;
             }
@@ -14536,13 +14525,13 @@
             var x = '', count = 1;
             if ((loginTokens != null) && (loginTokens.length > 0)) {
                 x += '<p><strong>' + "Active Login Tokens" + '</strong> - <span id="p2createMeshLink1"> <button class="btn btn-primary btn-sm" onclick="return account_createLoginToken()"><i class="fa-fw fa-solid fa-plus-circle"></i> ' + "New" + '</button></span></p>';
-                x += '<div style=margin-left:40px><table class="table table-hover"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
+                x += '<div style=margin-left:40px><table class="table table-hover table-striped"><tbody><tr class="table-active"><th scope=col style=text-align:left;width:430px>' + "Name" + '</th><th scope=col style=text-align:left>' + "Username" + '</th></tr>';
                 for (var i = 0; i < loginTokens.length; i++) {
                     var ltoken = loginTokens[i];
-                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
+                    var trash = '<a href=# onclick=\'return p2removeLoginToken(event,"' + encodeURIComponentEx(ltoken.tokenUser) + '")\' title="' + "Remove login token" + '" role=button><i class="fa-solid fa-trash text-danger fa-xs"></i></a>';
                     var details = '';
                     if (ltoken.expire != 0) { details = EscapeHtml(format("Expires {0}", printDateTime(new Date(ltoken.expire)))) + ' '; }
-                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><div class=m' + 2 + '></div><div>&nbsp;' + EscapeHtml(ltoken.name) + '<div></div></div></td><td style=width:70%><div style=float:right>' + details + trash + '</div><div>' + EscapeHtml(ltoken.tokenUser) + '</div></td></tr>';
+                    x += '<tr ' + (((++count % 2) == 0) ? 'style=background-color:#DDD' : '') + '><td style=width:30%><i class="fa-fw fa-solid fa-user"></i>&nbsp;' + EscapeHtml(ltoken.name) + '<div></div></div></td><td style=width:70%><div style=float:right>' + details + trash + '</div><div>' + EscapeHtml(ltoken.tokenUser) + '</div></td></tr>';
                 }
                 x += '</tbody></table></div><br />';
                 QV('accountCreateLoginTokenSpan', false);
@@ -14675,7 +14664,7 @@
             // Add device group name
             var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
-            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            if ((meshrights & 1) != 0) { mname = '<span role=button tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)">' + mname + ' <i class="fa-solid fa-pencil fa-2xs"></i></span>'; }
             QH('p20meshName', mname);
             QV('MeshSummary', (currentMesh.mtype != 4));
 
@@ -14838,7 +14827,7 @@
                 x += '<button class="btn btn-primary btn-sm me-2 mb-1" title="' + "Switch Intel AMT to Admin Control Mode (ACM)." + '" onclick=\'return showAmtAcmSetup()\'><i class="fa-solid fa-circle-arrow-down"></i> ' + "ACM" + '</button>';
             }
 
-            x += '<table class="table table-hover" cellpadding=2 cellspacing=0><tbody><tr><th scope=col>' + "User Authorizations" + '</th><th scope=col></th></tr>';
+            x += '<table class="table table-hover table-striped" cellpadding=2 cellspacing=0><tbody><tr><th scope=col>' + "User Authorizations" + '</th><th scope=col></th></tr>';
 
             // Sort the users for this mesh
             var count = 1, sortedusers = [];
@@ -14853,18 +14842,18 @@
 
             // Display all users for this device group
             for (var i in sortedusers) {
-                var trash = '', r = sortedusers[i].rights, rights = makeDeviceGroupRightsString(r), icon = 2;
+                var trash = '', r = sortedusers[i].rights, rights = makeDeviceGroupRightsString(r), icon = 'fa-user';
                 if ((sortedusers[i].id != userinfo._id) && (meshrights == 0xFFFFFFFF || (((meshrights & 2) != 0)))) {
                     if ((meshrights == 0xFFFFFFFF) || (currentMesh.links[sortedusers[i].id].rights != 0xFFFFFFFF)) {
-                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><i class="fa-solid fa-trash text-danger hoverButton"></i></a>';
+                        trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '"><i role=button class="fa-solid fa-trash text-danger fa-fw fa-xs"></i></a>';
                     }
-                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <i class="fa-solid fa-pencil hoverButton"></i></span>';
+                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <i class="fa-fw fa-solid fa-pencil fa-xs"></i></span>';
                 }
-                if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
+                if (sortedusers[i].id.startsWith('ugrp/')) { icon = 'fa-users'; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
                 if ((usergroups != null) && sortedusers[i].id.startsWith('ugrp/')) { username = '<a tabindex=0 href=# onclick=\'gotoUserGroup("' + encodeURIComponentEx(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
                 if ((users != null) && sortedusers[i].id.startsWith('user/')) { username = '<a tabindex=0 href=# onclick=\'gotoUser("' + encodeURIComponentEx(sortedusers[i].id) + '");haltEvent(event);\'>' + username + '</a>'; }
-                x += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div title="' + "User" + '" class=m' + icon + '></div><div>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
+                x += '<tr style=' + (((count % 2) == 0) ? ';background-color:#DDD' : '') + '><td style=width:30%><div><i title="' + "User" + '" class="fa-solid fa-fw ' + icon + '"></i>&nbsp;' + username + '<div></div></div></td><td style=width:70%><div style=float:right>' + trash + '</div><div>' + rights + '</div></td></tr>';
                 ++count;
             }
 
@@ -14872,7 +14861,7 @@
 
             // Show device shares
             if ((deviceShares != null) && (deviceSharesNode == currentMesh._id) && (deviceShares.length > 0)) {
-                x += '<p></p><table class="table table-hover" cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Active Device Sharing" + '</th><th scope=col style=text-align:left><th scope=col style=text-align:left></th></tr>';
+                x += '<p></p><table class="table table-hover table-striped" cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:left;width:430px>' + "Active Device Sharing" + '</th><th scope=col style=text-align:left><th scope=col style=text-align:left></th></tr>';
                 count = 1;
                 for (var i = 0; i < deviceShares.length; i++) {
                     var dshare = deviceShares[i], trash = '';
@@ -14924,7 +14913,7 @@
                 if ((features & 1) == 0) { dllist += ' <a onclick=meshImportDeviceList()><img title="' + "Import device list" + '" src="images/link6.png" /></a>'; } // Show import only in LAN or Hybrid mode
             }
 
-            var y = '<table class="table table-hover"><tbody><tr class="class="fw-bold"><th>' + "Devices" + '</th><th scope=col class="text-end">' + dllist + '</th></tr>';
+            var y = '<table class="table table-hover table-striped"><tbody><tr class="class="fw-bold"><th>' + "Devices" + '</th><th scope=col class="text-end">' + dllist + '</th></tr>';
             for (var i in nodes) {
                 var node = nodes[i], gray = ((node.conn > 0) ? '' : ' gray');
                 if (currentMesh._id != node.meshid) continue;
@@ -15940,7 +15929,7 @@
             // Add device group name
             var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
-            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" role=button>' + mname + ' <i class="fa-solid fa-pencil fa-2xs"></i></span>'; }
             QH('p21meshName', mname);
 
             // Update charts
@@ -15998,7 +15987,7 @@
                 var xpowerStates = [];
                 for (var i in powerStates) { xpowerStates.push([powerStatetable[i], powerStates[i]]); }
                 xpowerStates.sort(function (a, b) { return -(a[1] - b[1]) });
-                x += '<table class="table table-hover" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Power States" + '</th></tr>';
+                x += '<table class="table table-hover table-striped" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Power States" + '</th></tr>';
                 for (var i in xpowerStates) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xpowerStates[i][1] + ' <td> ' + xpowerStates[i][0] + '</tr>'; }
                 x += '</tbody></table>';
             }
@@ -16008,7 +15997,7 @@
                 var xagentTypes = [];
                 for (var i in agentTypes) { xagentTypes.push([xagentsStr[i], agentTypes[i]]); }
                 xagentTypes.sort(function (a, b) { return -(a[1] - b[1]) });
-                x += '<table class="table table-hover" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Agent Types" + '</th></tr>';
+                x += '<table class="table table-hover table-striped" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Agent Types" + '</th></tr>';
                 for (var i in xagentTypes) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xagentTypes[i][1] + '<td> ' + xagentTypes[i][0] + '</tr>'; }
                 x += '</tbody></table>';
             }
@@ -16018,7 +16007,7 @@
                 var xconnectivityStates = [];
                 for (var i = 0; i < 4; i++) { xconnectivityStates.push([["Not Connected", "Agent", "Intel&reg; AMT", "Agent + Intel&reg; AMT"][i], connectivityStates[i]]); }
                 xconnectivityStates.sort(function (a, b) { return -(a[1] - b[1]) });
-                x += '<table class="table table-hover" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Connectivity" + '</th></tr>';
+                x += '<table class="table table-hover table-striped" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Connectivity" + '</th></tr>';
                 for (var i = 0; i < 4; i++) { if (xconnectivityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xconnectivityStates[i][1] + '<td> ' + xconnectivityStates[i][0] + '</tr>'; } }
                 x += '</tbody></table>';
             }
@@ -16036,7 +16025,7 @@
                     ][i], securityStates[i]]);
                 }
                 xsecurityStates.sort(function (a, b) { return -(a[1] - b[1]) });
-                x += '<table class="table table-hover" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Security" + '</th></tr>';
+                x += '<table class="table table-hover table-striped" border=0 cellpadding=2 cellspacing=0 width=100%><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col colspan=2 style=text-align:left;width:430px>' + "Security" + '</th></tr>';
                 for (var i = 0; i < 4; i++) { if (xsecurityStates[i][1] > 0) { x += '<tr style=' + (((++count % 2) == 0) ? 'background-color:#DDD' : '') + '><td style=text-align:right;width:60px>' + xsecurityStates[i][1] + '<td> ' + xsecurityStates[i][0] + '</tr>'; } }
                 x += '</tbody></table>';
             }
