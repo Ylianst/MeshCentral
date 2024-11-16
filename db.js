@@ -3388,7 +3388,7 @@ module.exports.CreateDB = function (parent, func) {
                 } catch (ex) { console.log(ex); }
             });        
         } else {
-            func();
+            func(1, "NeDB is deprecated from Node 23 onward, please consider moving to another databasetype using the '--NeDBtoDB' option.");
         }
     }
 
