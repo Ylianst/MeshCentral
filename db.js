@@ -1778,7 +1778,7 @@ module.exports.CreateDB = function (parent, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
                 var dataarray = [nodeid, domain];
                 if (filter != null) {
-                    query = query + "AND action = $3) ORDER BY time DESC LIMIT $4";
+                    query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
                     dataarray.push(filter);
                 } else {
                     query = query + ") ORDER BY time DESC LIMIT $3";
