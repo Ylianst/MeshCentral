@@ -12,7 +12,7 @@ For more information, [visit MeshCentral.com](https://www.meshcentral.com/).
 
 [Reddit](https://www.reddit.com/r/MeshCentral/)
 
-[Twitter](https://twitter.com/MeshCentral)
+[BlueSky](https://bsky.app/profile/meshcentral.bsky.social)
 
 [BlogSpot](https://meshcentral2.blogspot.com/)
 
