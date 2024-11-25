@@ -3737,7 +3737,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             "scope": ".",
             "start_url": "/",
             "display": "fullscreen",
-            "orientation": "portrait",
+            "orientation": "any",
             "theme_color": "#ffffff",
             "background_color": "#ffffff",
             "icons": [{
