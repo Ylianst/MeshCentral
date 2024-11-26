@@ -2948,6 +2948,48 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'webrelay': 
+                {
+                    if (common.validateString(command.nodeid, 8, 128) == false) { err = 'Invalid node id'; } // Check the nodeid
+                    else if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                    else if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = 'Invalid domain'; } // Invalid domain, operation only valid for current domain
+                    else if ((command.port != null) && (common.validateInt(command.port, 1, 65535) == false)) { err = 'Invalid port value'; } // Check the port if present
+                    else {
+                        if (command.nodeid.split('/').length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                        var snode = command.nodeid.split('/');
+                        if ((snode.length != 3) || (snode[0] != 'node') || (snode[1] != domain.id)) { err = 'Invalid node id'; }
+                    }
+                    // Handle any errors
+                    if (err != null) {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'webrelay', responseid: command.responseid, result: err })); } catch (ex) { } }
+                        break;
+                    }
+                    // Get the device rights
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        // If node not found or we don't have remote control, reject.
+                        if (node == null) {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'webrelay', responseid: command.responseid, result: 'Invalid node id' })); } catch (ex) { } }
+                            return;
+                        }
+                        var relayid = null;
+                        var addr = null;
+                        if (node.mtype == 3) { // Setup device relay if needed
+                            var mesh = parent.meshes[node.meshid];
+                            if (mesh && mesh.relayid) { relayid = mesh.relayid; addr = node.host; }
+                        }
+                        var webRelayDns = (args.relaydns != null) ? args.relaydns[0] : obj.getWebServerName(domain, req);
+                        var webRelayPort = ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0));
+                        if (webRelayPort == 0) { try { ws.send(JSON.stringify({ action: 'webrelay',  responseid: command.responseid, result: 'WebRelay Disabled' })); return; } catch (ex) { } }
+                        const authRelayCookie = parent.parent.encodeCookie({ ruserid: user._id, x: req.session.x }, parent.parent.loginCookieEncryptionKey);
+                        var url = 'https://' + webRelayDns + ':' + webRelayPort + '/control-redirect.ashx?n=' + command.nodeid + '&p=' + command.port + '&appid=' + command.appid + '&c=' + authRelayCookie;
+                        if (addr != null) { url += '&addr=' + addr; }
+                        if (relayid != null) { url += '&relayid=' + relayid }
+                        command.url = url;
+                        if (command.responseid != null) { command.result = 'OK'; }
+                        try { ws.send(JSON.stringify(command)); } catch (ex) { }
+                    });
+                    break;
+                }
             case 'runcommands':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's

@@ -8036,6 +8036,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             parent.debug('web', 'Invalid login, asking for email validation');
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, msg2fa: msg2fa, email2fasent: true })); ws.close(); } catch (e) { }
                                         } else {
+                                            req.session.userid = user._id;
+                                            req.session.ip = req.clientIp;
+                                            setSessionRandom(req);
                                             func(ws, req, domain, user, null, authData);
                                         }
                                     }
@@ -8051,6 +8054,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, sms2fa: sms2fa, msg2fa: msg2fa, email2fasent: true })); ws.close(); } catch (e) { }
                             } else {
                                 // We are authenticated
+                                req.session.userid = user._id;
+                                req.session.ip = req.clientIp;
+                                setSessionRandom(req);
                                 func(ws, req, domain, user);
                             }
                         }
@@ -8179,7 +8185,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
                                 parent.debug('web', 'Invalid login, asking for email validation');
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
-                            } else {
+                            } else {                                
+                                req.session.userid = user._id;
+                                req.session.ip = req.clientIp;
+                                setSessionRandom(req);
                                 func(ws, req, domain, user);
                             }
                         }
