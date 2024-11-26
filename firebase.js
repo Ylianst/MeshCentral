@@ -28,6 +28,10 @@ module.exports.CreateFirebase = function (parent, senderid, serverkey) {
         receivedBadArgs: 0
     }
 
+    // In NodeJS v23, add util.isNullOrUndefined() to make node-xcs work correctly.
+    // Remove this when node-xcs moves to support NodeJS v23
+    if (require('util').isNullOrUndefined == null) { require('util').isNullOrUndefined = function (v) { return v == null; } }
+    
     const Sender = require('node-xcs').Sender;
     const Message = require('node-xcs').Message;
     const Notification = require('node-xcs').Notification;

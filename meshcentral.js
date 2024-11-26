@@ -1992,15 +1992,31 @@ function CreateMeshCentralServer(config, args) {
                         if (typeof config.settings.webpush.gcmapi == 'string') { webpush.setGCMAPIKey(config.settings.webpush.gcmapi); }
                     }
 
+                    // Get the current node version
+                    const verSplit = process.version.substring(1).split('.');
+                    var nodeVersion = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
+
                     // Setup Firebase
                     if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                        obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
+                        if (nodeVersion >= 23) {
+                            addServerWarning('Firebase is not supported on this version of NodeJS.', 27);
+                        } else {
+                            obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
+                        }
                     } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
-                        // Setup the push messaging relay
-                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
+                        if (nodeVersion >= 23) {
+                            addServerWarning('Firebase is not supported on this version of NodeJS.', 27);
+                        } else {
+                            // Setup the push messaging relay
+                            obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
+                        }
                     } else if (obj.config.settings.publicpushnotifications === true) {
-                        // Setup the Firebase push messaging relay using https://alt.meshcentral.com, this is the public push notification server.
-                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://alt.meshcentral.com/firebaserelay.aspx');
+                        if (nodeVersion >= 23) {
+                            addServerWarning('Firebase is not supported on this version of NodeJS.', 27);
+                        } else {
+                            // Setup the Firebase push messaging relay using https://alt.meshcentral.com, this is the public push notification server.
+                            obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://alt.meshcentral.com/firebaserelay.aspx');
+                        }
                     }
 
                     // Start periodic maintenance
@@ -4112,7 +4128,8 @@ var ServerWarnings = {
     23: "Unable to load agent icon file: {0}.",
     24: "Unable to load agent logo file: {0}.",
     25: "This NodeJS version does not support OpenID.",
-    26: "This NodeJS version does not support Discord.js."
+    26: "This NodeJS version does not support Discord.js.",
+    27: "Firebase is not supported on this version of NodeJS."
 };
 */
 
@@ -4285,7 +4302,7 @@ function mainStart() {
 
         // Firebase Support
         // Avoid 0.1.8 due to bugs: https://github.com/guness/node-xcs/issues/43
-        if (config.firebase != null) { modules.push('node-xcs@0.1.7'); }
+        if (config.firebase != null) { modules.push('node-xcs@0.1.8'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog@1.2.0'); }
