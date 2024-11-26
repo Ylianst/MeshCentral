@@ -4192,12 +4192,12 @@ function mainStart() {
                 if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20'); }
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
                 if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
-                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client') == -1)) {
+                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client@5.7.1') == -1)) {
                     if ((nodeVersion >= 17)
                         || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13))
                         || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15))
                         || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) {
-                        passport.push('openid-client@5.7.0');
+                        passport.push('openid-client@5.7.1');
                     } else {
                         addServerWarning('This NodeJS version does not support OpenID Connect on MeshCentral.', 25);
                         delete config.domains[i].authstrategies.oidc;
