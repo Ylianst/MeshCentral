@@ -611,7 +611,7 @@ module.exports.CreateDB = function (parent, func) {
                 obj.GetAllType('mesh', function (err, docs) {
                     if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
                     if (obj.databaseType == DB_NEDB) { // If we are using NeDB, compact the database.
-                        obj.file.persistence.compactDatafile();
+                        obj.file.compactDatafile();
                         obj.file.on('compaction.done', function () { func(count); }); // It's important to wait for compaction to finish before exit, otherwise NeDB may corrupt.
                     } else {
                         func(count); // For all other databases, normal exit.
@@ -1239,8 +1239,11 @@ module.exports.CreateDB = function (parent, func) {
     } else {
         // Use NeDB (The default)
         obj.databaseType = DB_NEDB;
-        try { Datastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
-        if (Datastore == null) { Datastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
+        try { Datastore = require('@seald-io/nedb'); } catch (ex) { } // This is the NeDB with Node 23 support.
+        if (Datastore == null) {
+            try { Datastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
+            if (Datastore == null) { Datastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
+        }
         var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
         // If a DB encryption key is provided, perform database encryption
@@ -1267,7 +1270,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Start NeDB main collection and setup indexes
         obj.file = new Datastore(datastoreOptions);
-        obj.file.persistence.setAutocompactionInterval(86400000); // Compact once a day
+        obj.file.setAutocompactionInterval(86400000); // Compact once a day
         obj.file.ensureIndex({ fieldName: 'type' });
         obj.file.ensureIndex({ fieldName: 'domain' });
         obj.file.ensureIndex({ fieldName: 'meshid', sparse: true });
@@ -1276,7 +1279,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Setup the events collection and setup indexes
         obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true, corruptAlertThreshold: 1 });
-        obj.eventsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
+        obj.eventsfile.setAutocompactionInterval(86400000); // Compact once a day
         obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
         obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
         obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireEventsSeconds });
@@ -1284,7 +1287,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Setup the power collection and setup indexes
         obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true, corruptAlertThreshold: 1 });
-        obj.powerfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
+        obj.powerfile.setAutocompactionInterval(86400000); // Compact once a day
         obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
         obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expirePowerEventsSeconds });
         obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
@@ -1295,7 +1298,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Setup the server stats collection and setup indexes
         obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
-        obj.serverstatsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
+        obj.serverstatsfile.setAutocompactionInterval(86400000); // Compact once a day
         obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireServerStatsSeconds });
         obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
         obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
@@ -1303,7 +1306,7 @@ module.exports.CreateDB = function (parent, func) {
         // Setup plugin info collection
         if (obj.pluginsActive) {
             obj.pluginsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-plugins.db'), autoload: true });
-            obj.pluginsfile.persistence.setAutocompactionInterval(86400000); // Compact once a day
+            obj.pluginsfile.setAutocompactionInterval(86400000); // Compact once a day
         }
 
         setupFunctions(func); // Completed setup of NeDB
@@ -3970,8 +3973,11 @@ module.exports.CreateDB = function (parent, func) {
     // Transfer NeDB data into the current database
     obj.nedbtodb = function (func) {
         var nedbDatastore = null;
-        try { nedbDatastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
-        if (nedbDatastore == null) { nedbDatastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
+        try { nedbDatastore = require('@seald-io/nedb'); } catch (ex) { } // This is the NeDB with Node 23 support.
+        if (nedbDatastore == null) {
+            try { nedbDatastore = require('@yetzt/nedb'); } catch (ex) { } // This is the NeDB with fixed security dependencies.
+            if (nedbDatastore == null) { nedbDatastore = require('nedb'); } // So not to break any existing installations, if the old NeDB is present, use it.
+        }
 
         var datastoreOptions = { filename: parent.getConfigFilePath('meshcentral.db'), autoload: true };
 
