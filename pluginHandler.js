@@ -139,7 +139,7 @@ module.exports.pluginHandler = function (parent) {
                 try {
                     obj.plugins[p][hookName](...args);
                 } catch (e) {
-                    console.log("Error ocurred while running plugin hook" + p + ':' + hookName + ' (' + e + ')');
+                    console.log("Error occurred while running plugin hook" + p + ':' + hookName + ' (' + e + ')');
                 }
             }
         }
@@ -205,7 +205,7 @@ module.exports.pluginHandler = function (parent) {
                     panel[p].header = obj.plugins[p].on_device_header();
                     panel[p].content = obj.plugins[p].on_device_page();
                 } catch (e) {
-                    console.log("Error ocurred while getting plugin views " + p + ':' + ' (' + e + ')');
+                    console.log("Error occurred while getting plugin views " + p + ':' + ' (' + e + ')');
                 }
             }
         }
