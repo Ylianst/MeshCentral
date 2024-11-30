@@ -10631,6 +10631,7 @@
                 QH('DeskLatency', latencyStr);
                 // Auto-clipboard
                 if ((((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true))) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
+                    if (Mstsc.browser() == 'firefox') return; // this is needed because firefox pops up a PASTE option every second which is annoying
                     try {
                         navigator.clipboard.readText().then(function (text) {
                             if (desktop == null) return;
