@@ -251,8 +251,12 @@ function defender(){
     ret.child.stdin.write('exit\r\n');
     ret.child.on('exit', function (c) { 
         if (this.stdout.str == '') { this.promise._resolve({}); return; }
-        var abc = JSON.parse(this.stdout.str.trim())
-        this.promise._resolve({ RealTimeProtection: abc.RealTimeProtectionEnabled, TamperProtected: abc.IsTamperProtected });
+        try {
+            var abc = JSON.parse(this.stdout.str.trim());
+            this.promise._resolve({ RealTimeProtection: abc.RealTimeProtectionEnabled, TamperProtected: abc.IsTamperProtected });
+        } catch (ex) { 
+            this.promise._resolve({}); return;
+        }
     });
     return (ret);
 }

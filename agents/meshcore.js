@@ -4047,7 +4047,6 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (require('computer-identifiers').volumes_promise != null) {
                         var p = require('computer-identifiers').volumes_promise();
                         p.then(function (res) { sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(res), null, 1), this.session); });
-                        response = "Please wait...";
                     } else if (require('computer-identifiers').volumes != null) {
                         sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(require('computer-identifiers').volumes()), null, 1), this.session);
                     }
