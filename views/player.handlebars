@@ -448,7 +448,7 @@
                 agentDesktop.onPreDrawImage = preCanvasDraw;
                 agentDesktop.State = 3;
                 deskAdjust();
-                QV('ConvertAsWebM', browser == 'chrome'); // Only show the "Convert to WebM button when in Chrome
+                QV('ConvertAsWebM', true);
             }
             else if (recFileMetadata.protocol == 101) {
                 // Intel AMT Redirection
@@ -488,7 +488,7 @@
                 if (recFileMetadata.lowcolor) { amtDesktop.lowcolor = recFileMetadata.lowcolor; }
                 amtDesktop.state = 3;
                 deskAdjust();
-                QV('ConvertAsWebM', browser == 'chrome'); // Only show the "Convert to WebM button when in Chrome
+                QV('ConvertAsWebM', true);
             }
             QV('metadatadiv', true);
             QH('metadatadiv', x);

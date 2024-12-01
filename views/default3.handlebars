@@ -3546,6 +3546,7 @@
                             showModal('xxAddAgentModal', 'idx_dlgOkButton');
                         } else {
                             x += '<hr />' + "Check and click OK to start server self-update.";
+                            xxdialogTag = message.tags;
                             setModalContent('xxAddAgent', 'MeshCentral Version', x);
                             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                                 server_showVersionDlgEx(2, message.tags);
