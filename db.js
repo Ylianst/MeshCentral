@@ -909,7 +909,7 @@ module.exports.CreateDB = function (parent, func) {
     } else if (parent.args.postgres) {
         // Postgres SQL
         let connectinArgs = parent.args.postgres;
-        connectinArgs.Database = (databaseName = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral');
+        connectinArgs.database = (databaseName = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral');
 
         let DatastoreTest;
         obj.databaseType = DB_POSTGRESQL;
