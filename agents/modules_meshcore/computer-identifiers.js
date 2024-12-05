@@ -458,7 +458,7 @@ function windows_volumes()
                 ret[drive].protectionStatus = (values[i].ProtectionStatus == 0 ? 'Off' : (values[i].ProtectionStatus == 1 ? 'On' : 'Unknown'));
                 try {
                     var foundIDMarkedLine = false, foundMarkedLine = false, identifier = '', password = '';
-                    var keychild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ', drive, ' -Type recoverypassword'], {});
+                    var keychild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ' + drive + ': -Type recoverypassword'], {});
                     keychild.stdout.str = ''; keychild.stdout.on('data', function (c) { this.str += c.toString(); });
                     keychild.waitExit();
                     var lines = keychild.stdout.str.trim().split('\r\n');
