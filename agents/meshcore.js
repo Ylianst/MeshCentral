@@ -1936,21 +1936,15 @@ function getSystemInformation(func) {
         if (process.platform == 'win32')
         {
             results.pendingReboot = require('win-info').pendingReboot(); // Pending reboot
-            if (require('computer-identifiers').volumes_promise != null)
+            if (require('win-volumes').volumes_promise != null)
             {
-                var p = require('computer-identifiers').volumes_promise();
+                var p = require('win-volumes').volumes_promise();
                 p.then(function (res)
                 {
                     results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res);
                     results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
-            }
-            else if (require('computer-identifiers').volumes != null)
-            {
-                results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(require('computer-identifiers').volumes());
-                results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-                func(results);
             }
             else
             {
@@ -4044,11 +4038,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'bitlocker':
                 if (process.platform == 'win32') {
-                    if (require('computer-identifiers').volumes_promise != null) {
-                        var p = require('computer-identifiers').volumes_promise();
+                    if (require('win-volumes').volumes_promise != null) {
+                        var p = require('win-volumes').volumes_promise();
                         p.then(function (res) { sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(res), null, 1), this.session); });
-                    } else if (require('computer-identifiers').volumes != null) {
-                        sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(require('computer-identifiers').volumes()), null, 1), this.session);
                     }
                 }
                 break;
