@@ -39,17 +39,90 @@ function getVolumes()
     {
         ret[v[i].DeviceID] = trimObject(v[i]);
     }
-
-    v = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume');
-    for (i in v)
-    {
-        var tmp = trimObject(v[i]);
-        for (var k in tmp)
+    try {
+        v = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume');
+        for (i in v)
         {
-            ret[tmp.DeviceID][k] = tmp[k];
+            var tmp = trimObject(v[i]);
+            for (var k in tmp)
+            {
+                ret[tmp.DeviceID][k] = tmp[k];
+            }
         }
-    }
+    } catch (ex) { }
     return (ret);
 }
 
-module.exports = { getVolumes: function () { try { return (getVolumes()); } catch (x) { return ({}); } } };
+function windows_volumes()
+{
+    var promise = require('promise');
+    var p1 = new promise(function (res, rej) { this._res = res; this._rej = rej; });
+    var ret = {};
+    var values = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType']);
+    if(values[0]){
+        for (var i = 0; i < values.length; ++i) {
+            var drive = values[i]['DeviceID'].slice(0,-1);
+            ret[drive] = {
+                name: (values[i]['VolumeName'] ? values[i]['VolumeName'] : ""),
+                type: (values[i]['FileSystem'] ? values[i]['FileSystem'] : "Unknown"),
+                size: (values[i]['Size'] ? values[i]['Size'] : 0),
+                sizeremaining: (values[i]['FreeSpace'] ? values[i]['FreeSpace'] : 0),
+                removable: (values[i]['DriveType'] == 2),
+                cdrom: (values[i]['DriveType'] == 5)
+            };
+        }
+    }
+    try {
+        values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume', ['DriveLetter','ConversionStatus','ProtectionStatus']);
+        if(values[0]){
+            for (var i = 0; i < values.length; ++i) {
+                var drive = values[i]['DriveLetter'].slice(0,-1);
+                var statuses = {
+                    0: 'FullyDecrypted',
+                    1: 'FullyEncrypted',
+                    2: 'EncryptionInProgress',
+                    3: 'DecryptionInProgress',
+                    4: 'EncryptionPaused',
+                    5: 'DecryptionPaused'
+                };
+                ret[drive].volumeStatus = statuses.hasOwnProperty(values[i].ConversionStatus) ? statuses[values[i].ConversionStatus] : 'FullyDecrypted';
+                ret[drive].protectionStatus = (values[i].ProtectionStatus == 0 ? 'Off' : (values[i].ProtectionStatus == 1 ? 'On' : 'Unknown'));
+                try {
+                    var foundIDMarkedLine = false, foundMarkedLine = false, identifier = '', password = '';
+                    var keychild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ' + drive + ': -Type recoverypassword'], {});
+                    keychild.stdout.str = ''; keychild.stdout.on('data', function (c) { this.str += c.toString(); });
+                    keychild.waitExit();
+                    var lines = keychild.stdout.str.trim().split('\r\n');
+                    for (var x = 0; x < lines.length; x++) { // Loop each line
+                        var abc = lines[x].trim();
+                        var englishidpass = (abc !== '' && abc.includes('Numerical Password:')); // English ID
+                        var germanidpass = (abc !== '' && abc.includes('Numerisches Kennwort:')); // German ID
+                        var frenchidpass = (abc !== '' && abc.includes('Mot de passe num')); // French ID
+                        var englishpass = (abc !== '' && abc.includes('Password:') && !abc.includes('Numerical Password:')); // English Password
+                        var germanpass = (abc !== '' && abc.includes('Kennwort:') && !abc.includes('Numerisches Kennwort:')); // German Password
+                        var frenchpass = (abc !== '' && abc.includes('Mot de passe :') && !abc.includes('Mot de passe num')); // French Password
+                        if (englishidpass || germanidpass || frenchidpass|| englishpass || germanpass || frenchpass) {
+                            var nextline = lines[x + 1].trim();
+                            if (x + 1 < lines.length && (nextline !== '' && (nextline.startsWith('ID:') || nextline.startsWith('ID :')) )) {
+                                identifier = nextline.replace('ID:','').replace('ID :', '').trim();
+                                foundIDMarkedLine = true;
+                            }else if (x + 1 < lines.length && nextline !== '') {
+                                password = nextline;
+                                foundMarkedLine = true;
+                            }
+                        }
+                    }
+                    ret[drive].identifier = (foundIDMarkedLine ? identifier : ''); // Set Bitlocker Identifier
+                    ret[drive].recoveryPassword = (foundMarkedLine ? password : ''); // Set Bitlocker Password
+                } catch(ex) { } // just carry on as we cant get bitlocker key
+            }
+        }
+        p1._res(ret);
+    } catch (ex) { p1._res(ret); } // just return volumes as cant get encryption/bitlocker
+    return (p1);
+}
+
+module.exports = { 
+    getVolumes: function () { try { return (getVolumes()); } catch (x) { return ({}); } },
+    volumes_promise: windows_volumes
+};
