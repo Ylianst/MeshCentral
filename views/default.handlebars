@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -12056,6 +12056,7 @@
             // Operating System
             var x = '';
             if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
+            if (hardware.windows && hardware.windows.osinfo && hardware.windows.osinfo.Description) { x += addDetailItem("Description", EscapeHtml(hardware.windows.osinfo.Description), s); }
             if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
             if (hardware.windows && hardware.windows.osinfo) {
                 var m = hardware.windows.osinfo;
