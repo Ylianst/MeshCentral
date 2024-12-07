@@ -588,7 +588,7 @@ function run(argv) {
                     }
                     amtMei.getProvisioningState(function (result) { if (result) { mestate.ProvisioningState = result; } });
                     amtMei.getProvisioningMode(function (result) { if (result) { mestate.ProvisioningMode = result; } });
-                    amtMei.getEHBCState(function (result) { mestate.ehbc = ((result === true) || (typeof result == 'object') && (result.EHBC === true)); });
+                    amtMei.getEHBCState(function (result) { if (result) { mestate.ehbc = ((result === true) || (typeof result == 'object') && (result.EHBC === true)); } });
                     amtMei.getControlMode(function (result) { if (result) { mestate.controlmode = result; } });
                     amtMei.getMACAddresses(function (result) { if (result) { mestate.mac = result; } });
                     amtMei.getLanInterfaceSettings(0, function (result) { if (result) { mestate.net0 = result; } });
