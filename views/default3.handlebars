@@ -16899,7 +16899,7 @@
                 if (userdomain != '') { username += ', <span style=color:#26F>' + userdomain + '</span>'; }
             }
 
-            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || (user.otpduo == 1) || ((user.phone != null) && (features & 0x04000000))) { username += ' <img src="images/key12.png" height=12 width=11 title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" />'; }
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || (user.otpduo == 1) || ((user.phone != null) && (features & 0x04000000))) { username += ' <i class="fa-solid fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px" /></i>'; }
             if (user.phone != null) { username += ' <i class="fa-solid fa-mobile-screen" title="' + "Verified phone number" + '" style="margin-top:2px"></i>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
             if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <i class="fa-solid fa-comment fa-xs" title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
