@@ -4042,10 +4042,14 @@ function InstallModules(modules, args, func) {
                 // Does the module need a specific version?
                 if (moduleVersion) {
                     var versionMatch = false;
-                    try { versionMatch = (require(`${moduleName}/package.json`).version == moduleVersion) } catch (ex) { }
-                    if (versionMatch == false) {
-                        const packageJson = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'node_modules', moduleName, 'package.json'), 'utf8'));
-                        if (packageJson.version != moduleVersion) { throw new Error(); }
+                    var modulePath = null;
+                    // This is the first way to test if a module is already installed.
+                    try { versionMatch = (require(`${moduleName}/package.json`).version == moduleVersion) } catch (ex) {
+                        if (ex.code == "ERR_PACKAGE_PATH_NOT_EXPORTED") { modulePath = ("" + ex).split(' ').at(-1); } else { throw new Error(); }
+                    }
+                    // If the module is not installed, but we get the ERR_PACKAGE_PATH_NOT_EXPORTED error, try a second way.
+                    if ((versionMatch == false) && (modulePath != null)) {
+                        if (JSON.parse(require('fs').readFileSync(modulePath, 'utf8')).version != moduleVersion) { throw new Error(); }
                     }
                 } else {
                     // For all other modules, do the check here.
