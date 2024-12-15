@@ -1998,25 +1998,17 @@ function CreateMeshCentralServer(config, args) {
 
                     // Setup Firebase
                     if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                        if (nodeVersion >= 23) {
-                            addServerWarning('Firebase is not supported on this version of NodeJS.', 27);
-                        } else {
-                            obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
-                        }
+                        addServerWarning('Firebase now requires a service account JSON file, Firebase disabled.', 27);
+                    } else if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) {
+                        var serviceAccount;
+                        try { serviceAccount = JSON.parse(obj.fs.readFileSync(obj.path.join(obj.datapath, config.firebase.serviceaccountfile)).toString()); } catch (ex) { console.log(ex); }
+                        if (serviceAccount != null) { obj.firebase = require('./firebase').CreateFirebase(obj, serviceAccount); }
                     } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
-                        if (nodeVersion >= 23) {
-                            addServerWarning('Firebase is not supported on this version of NodeJS.', 27);
-                        } else {
-                            // Setup the push messaging relay
-                            obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
-                        }
+                        // Setup the push messaging relay
+                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
                     } else if (obj.config.settings.publicpushnotifications === true) {
-                        if (nodeVersion >= 23) {
-                            addServerWarning('Firebase is not supported on this version of NodeJS.', 27);
-                        } else {
-                            // Setup the Firebase push messaging relay using https://alt.meshcentral.com, this is the public push notification server.
-                            obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://alt.meshcentral.com/firebaserelay.aspx');
-                        }
+                        // Setup the Firebase push messaging relay using https://alt.meshcentral.com, this is the public push notification server.
+                        obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://alt.meshcentral.com/firebaserelay.aspx');
                     }
 
                     // Start periodic maintenance
@@ -4049,7 +4041,12 @@ function InstallModules(modules, args, func) {
             try {
                 // Does the module need a specific version?
                 if (moduleVersion) {
-                    if (require(`${moduleName}/package.json`).version != moduleVersion) { throw new Error(); }
+                    var versionMatch = false;
+                    try { versionMatch = (require(`${moduleName}/package.json`).version == moduleVersion) } catch (ex) { }
+                    if (versionMatch == false) {
+                        const packageJson = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'node_modules', moduleName, 'package.json'), 'utf8'));
+                        if (packageJson.version != moduleVersion) { throw new Error(); }
+                    }
                 } else {
                     // For all other modules, do the check here.
                     // Is the module in package.json? Install exact version.
@@ -4129,7 +4126,7 @@ var ServerWarnings = {
     24: "Unable to load agent logo file: {0}.",
     25: "This NodeJS version does not support OpenID.",
     26: "This NodeJS version does not support Discord.js.",
-    27: "Firebase is not supported on this version of NodeJS."
+    27: "Firebase now requires a service account JSON file, Firebase disabled."
 };
 */
 
@@ -4301,8 +4298,7 @@ function mainStart() {
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.6'); }
 
         // Firebase Support
-        // Avoid 0.1.8 due to bugs: https://github.com/guness/node-xcs/issues/43
-        if (config.firebase != null) { modules.push('node-xcs@0.1.8'); }
+        if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) { modules.push('firebase-admin@12.7.0'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog@1.2.0'); }
