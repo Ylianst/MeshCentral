@@ -4225,7 +4225,7 @@ function mainStart() {
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
             if ((config.domains[i].newaccountscaptcha != null) && (config.domains[i].newaccountscaptcha !== false)) { captcha = true; }
-            if ((config.domains[i].passwordrequirements != null) && (typeof config.domains[i].passwordrequirements.duo2factor == 'object')) { passport.push('@duosecurity/duo_universal'); }
+            if ((config.domains[i].passwordrequirements != null) && (typeof config.domains[i].passwordrequirements.duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal'); }
         }
 
         // Build the list of required modules
