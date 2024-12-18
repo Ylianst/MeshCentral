@@ -3628,6 +3628,36 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     parent.parent.DispatchEvent(targets, obj, event);
                     break;
                 }
+            case 'otpduo':
+                {
+                    // Do not allow this command if 2FA's are locked
+                    if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
+
+                    // Do not allow this command when logged in using a login token
+                    if (req.session.loginToken != null) break;
+
+                    if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
+
+                    // Check input
+                    if (typeof command.enabled != 'boolean') return;
+
+                    // See if we really need to change the state
+                    if ((command.enabled === true) && (user.otpduo != null)) return;
+                    if ((command.enabled === false) && (user.otpduo == null)) return;
+
+                    // Change the duo 2FA of this user
+                    if (command.enabled === true) { user.otpduo = {}; } else { delete user.otpduo; }
+                    parent.db.SetUser(user);
+                    ws.send(JSON.stringify({ action: 'otpduo', success: true, enabled: command.enabled })); // Report success
+
+                    // Notify change
+                    var targets = ['*', 'server-users', user._id];
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: command.enabled ? 160 : 161, msg: command.enabled ? "Enabled duo two-factor authentication." : "Disabled duo two-factor authentication.", domain: domain.id };
+                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                    parent.parent.DispatchEvent(targets, obj, event);
+                    break;
+                }
             case 'otpauth-request':
                 {
                     // Do not allow this command if 2FA's are locked
@@ -8224,11 +8254,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null));
         var sms2fa = ((parent.parent.smsserver != null) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)));
         var msg2fa = ((parent.parent.msgserver != null) && (parent.parent.msgserver.providers != 0) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)));
+        var duo2fa = ((typeof domain.passwordrequirements != 'object') || (typeof domain.passwordrequirements.duo2factor == 'object'));
         var authFactorCount = 0;
         if (typeof user.otpsecret == 'string') { authFactorCount++; } // Authenticator time factor
         if (email2fa && (user.otpekey != null)) { authFactorCount++; } // EMail factor
         if (sms2fa && (user.phone != null)) { authFactorCount++; } // SMS factor
         if (msg2fa && (user.msghandle != null)) { authFactorCount++; } // Messaging factor
+        if (duo2fa && (user.otpduo != null)) { authFactorCount++; } // Duo authentication factor
         if (user.otphkeys != null) { authFactorCount += user.otphkeys.length; } // FIDO hardware factor
         if ((authFactorCount > 0) && (user.otpkeys != null)) { authFactorCount++; } // Backup keys
         return authFactorCount;

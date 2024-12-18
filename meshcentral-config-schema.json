@@ -1664,6 +1664,26 @@
                 "default": true,
                 "description": "Set to false to disable SMS 2FA."
               },
+              "duo2factor": {
+                "type": "object",
+                "properties": {
+                  "integrationkey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Integration key from Duo"
+                  },
+                  "secretkey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Secret key from Duo"
+                  },
+                  "apihostname": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API Hostname from Duo"
+                  }
+                }
+              },
               "push2factor": {
                 "type": "boolean",
                 "default": true,

@@ -918,7 +918,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var msg2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)) && (parent.msgserver != null) && (parent.msgserver.providers != 0) && (user.msghandle != null));
 
         // Check if a 2nd factor is present
-        return ((parent.config.settings.no2factorauth !== true) && (msg2fa || sms2fa || (user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
+        return ((parent.config.settings.no2factorauth !== true) && (msg2fa || sms2fa || (user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) || (user.otpduo != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
     }
 
     // Check the 2-step auth token
@@ -1162,6 +1162,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
                 var msg2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)) && (parent.msgserver != null) && (parent.msgserver.providers != 0) && (user.msghandle != null));
                 var push2fa = ((parent.firebase != null) && (user.otpdev != null));
+                var duo2fa = (((typeof domain.passwordrequirements != 'object') || (typeof domain.passwordrequirements.duo2factor == 'object')) && (user.otpduo != null));
 
                 // Check if two factor can be skipped
                 const twoFactorSkip = checkUserOneTimePasswordSkip(domain, user, req, loginOptions);
@@ -1208,6 +1209,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         req.session.messageid = 6; // "Message sent" message
                         req.session.loginmode = 4;
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                        return;
+                    }
+
+                    if ((req.body.hwtoken == '**duo**') && duo2fa) {
+                        // Redirect to duo here
+                        const duo = require('@duosecurity/duo_universal');
+                        const client = new duo.Client({
+                            clientId: domain.passwordrequirements.duo2factor.integrationkey,
+                            clientSecret: domain.passwordrequirements.duo2factor.secretkey,
+                            apiHost: domain.passwordrequirements.duo2factor.apihostname,
+                            redirectUrl: obj.generateBaseURL(domain, req) + 'auth-duo' + (domain.loginkey != null ? ('?key=' + domain.loginkey) : '')
+                        });
+                        // Decrypt any session data
+                        const sec = parent.decryptSessionData(req.session.e);
+                        sec.duostate = client.generateState();
+                        req.session.e = parent.encryptSessionData(sec);
+                        parent.debug('web', 'Redirecting user ' + user._id + ' to Duo');
+                        res.redirect(client.createAuthUrl(user._id, sec.duostate));
                         return;
                     }
 
@@ -1274,6 +1293,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; }
                                 if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; }
                                 if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; }
+                                if ((user.otpduo != null)) { req.session.tduo = 1; }
                                 req.session.e = parent.encryptSessionData({ tuserid: userid, tuser: xusername, tpass: xpassword });
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             }, randomWaitTime);
@@ -3320,6 +3340,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Check if we can use OTP tokens with email. We can't use email for 2FA password recovery (loginmode 5).
         var otpemail = (loginmode != 5) && (domain.mailserver != null) && (req.session != null) && ((req.session.temail === 1) || (typeof req.session.temail == 'string'));
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
+        var otpduo = (req.session != null) && (req.session.tduo === 1);
+        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.duo2factor == false)) { otpduo = false; }
         var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tsms === 1);
         if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
         var otpmsg = (parent.msgserver != null) && (req.session != null) && (req.session.tmsg === 1);
@@ -3402,6 +3424,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 welcomePictureFullScreen: ((typeof domain.welcomepicturefullscreen == 'boolean') ? domain.welcomepicturefullscreen : false),
                 hwstate: hwstate,
                 otpemail: otpemail,
+                otpduo: otpduo,
                 otpsms: otpsms,
                 otpmsg: otpmsg,
                 otppush: otppush,
@@ -5851,6 +5874,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     };
 
+    // generate the server url
+    obj.generateBaseURL = function (domain, req) {
+        var serverName = obj.getWebServerName(domain, req);
+        var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
+        var xdomain = (domain.dns == null) ? domain.id : '';
+        if (xdomain != '') xdomain += '/';
+        return ('https://' + serverName + ':' + httpsPort + '/' + xdomain);
+    }
+
     // Get the web server hostname. This may change if using a domain with a DNS name.
     obj.getWebServerName = function (domain, req) {
         if (domain.dns != null) return domain.dns;
@@ -6916,6 +6948,55 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         }, handleStrategyLogin);
                     }
+                }
+
+                // // Setup Duo callback if needed
+                if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.duo2factor == 'object')) {
+                    obj.app.get(url + 'auth-duo', function (req, res){
+                        var domain = getDomain(req);
+                        const sec = parent.decryptSessionData(req.session.e);
+                        if (req.query.state !== sec.duostate) {
+                            // the state returned from Duo IS NOT the same as what was in the session, so must fail!
+                            parent.debug('web', 'handleRootRequest: duo 2fa state failed!');
+                            req.session.loginmode = 1;
+                            req.session.messageid = 117; // Invalid security check
+                            res.redirect(domain.url + getQueryPortion(req)); // redirect back to main page
+                            return;
+                        } else {
+                            // User credentials are stored in session, just check again and get userid
+                            obj.authenticate(sec.tuser, sec.tpass, domain, function (err, userid, passhint, loginOptions) {
+                                if ((userid != null) && (err == null)) {
+                                    // Login data correct, now exchange authorization code for 2fa
+                                    const duo = require('@duosecurity/duo_universal');
+                                    const client = new duo.Client({
+                                        clientId: domain.passwordrequirements.duo2factor.integrationkey,
+                                        clientSecret: domain.passwordrequirements.duo2factor.secretkey,
+                                        apiHost: domain.passwordrequirements.duo2factor.apihostname,
+                                        redirectUrl: obj.generateBaseURL(domain, req) + 'auth-duo' + (domain.loginkey != null ? ('?key=' + domain.loginkey) : '')
+                                    });
+                                    client.exchangeAuthorizationCodeFor2FAResult(req.query.duo_code, userid).then(function (data) {
+                                        parent.debug('web', 'handleRootRequest: duo 2fa auth ok.');
+                                        req.session.userid = userid;
+                                        delete req.session.currentNode;
+                                        req.session.ip = req.clientIp; // Bind this session to the IP address of the request
+                                        setSessionRandom(req);
+                                        obj.parent.authLog('https', 'Accepted duo authentication for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
+                                        res.redirect(domain.url + getQueryPortion(req));
+                                    }).catch(function (err) {
+                                        // Duo 2FA exchange failed, so must fail!
+                                        console.log('err',err);
+                                        parent.debug('web', 'handleRootRequest: duo 2fa exchange authorization code failed!.');
+                                        req.session.loginmode = 1;
+                                        req.session.messageid = 117; // Invalid security check
+                                        res.redirect(domain.url + getQueryPortion(req));
+                                    });
+                                } else {
+                                    // Login failed
+                                    handleRootRequestEx(req, res, domain, direct);
+                                }
+                            });
+                        }
+                    });
                 }
 
                 // Server redirects
@@ -8787,6 +8868,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         delete user2.otpsms;
         delete user2.otpmsg;
         if ((typeof user2.otpekey == 'object') && (user2.otpekey != null)) { user2.otpekey = 1; } // Indicates that email 2FA is enabled.
+        if ((typeof user2.otpduo == 'object') && (user2.otpduo != null)) { user2.otpduo = 1; } // Indicates that duo 2FA is enabled.
         if ((typeof user2.otpsecret == 'string') && (user2.otpsecret != null)) { user2.otpsecret = 1; } // Indicates a time secret is present.
         if ((typeof user2.otpkeys == 'object') && (user2.otpkeys != null)) { user2.otpkeys = 0; if (user.otpkeys != null) { for (var i = 0; i < user.otpkeys.keys.length; i++) { if (user.otpkeys.keys[i].u == true) { user2.otpkeys = 1; } } } } // Indicates the number of one time backup codes that are active.
         if ((typeof user2.otphkeys == 'object') && (user2.otphkeys != null)) { user2.otphkeys = user2.otphkeys.length; } // Indicates the number of hardware keys setup
@@ -9290,8 +9372,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } catch (ex) { return { browserStr: browser, osStr: os } }
     }
 
-    // Return the query string portion of the URL, the ? and anything after.
-    function getQueryPortion(req) { var s = req.url.indexOf('?'); if (s == -1) { if (req.body && req.body.urlargs) { return req.body.urlargs; } return ''; } return req.url.substring(s); }
+    // Return the query string portion of the URL, the ? and anything after BUT remove secret keys from authentication providers    
+    function getQueryPortion(req) {
+        var removeKeys = ['duo_code', 'state']; // Keys to remove 
+        var s = req.url.indexOf('?');
+        if (s == -1) {
+            if (req.body && req.body.urlargs) {
+                return req.body.urlargs;
+            }
+            return '';
+        }
+        var queryString = req.url.substring(s + 1);
+        var params = queryString.split('&');
+        var filteredParams = [];
+        for (var i = 0; i < params.length; i++) {
+            var key = params[i].split('=')[0];
+            if (removeKeys.indexOf(key) === -1) {
+                filteredParams.push(params[i]);
+            }
+        }
+        return (filteredParams.length > 0 ? ('?' + filteredParams.join('&')) : '');
+      }
 
     // Generate a random Intel AMT password
     function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
