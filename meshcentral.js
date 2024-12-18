@@ -2404,6 +2404,10 @@ function CreateMeshCentralServer(config, args) {
                 storeEvent.links = Object.assign({}, storeEvent.links);
                 for (var i in storeEvent.links) { var ue = obj.common.escapeFieldName(i); if (ue !== i) { storeEvent.links[ue] = storeEvent.links[i]; delete storeEvent.links[i]; } }
             }
+            if (storeEvent.mesh) {
+                // Escape "mesh" names that may have "." and/or "$"
+                storeEvent.mesh = obj.common.escapeLinksFieldNameEx(storeEvent.mesh);
+            }
             storeEvent.ids = ids;
             obj.db.StoreEvent(storeEvent);
         }
