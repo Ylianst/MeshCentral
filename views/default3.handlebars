@@ -591,6 +591,12 @@
                                         onclick="return account_manageAuthApp()">Manage authenticator
                                         app</a><br /></span>
                             </div>
+                             <div id="manageDuoApp">
+                                <div class="p2AccountActions"><span
+                                        id="authDuoSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
+                                        onclick="return account_manageAuthDuo()">Manage Duo
+                                        authentication</a><br /></span>
+                            </div>
                             <div id="manageHardwareOtp">
                                 <div class="p2AccountActions"><span
                                         id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
@@ -3018,6 +3024,7 @@
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authMessagingCheck', (userinfo.msghandle != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
+            QV('authDuoSetupCheck', (userinfo.otpduo == 1));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0)));
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
@@ -13994,6 +14001,15 @@
             });
         }
 
+        function account_manageAuthDuo() {
+            if (xxdialogMode || ((features & 0x00800000) == 0)) return;
+            var duoU2Fenabled = ((userinfo.otpduo == 1));
+            setModalContent('xxAddAgent', 'Duo Authentication', "When enabled, on each login, you will be given the option to login using Duo for added security." + '<br /><br /><label><input id=duo2facheck type=checkbox class="form-check-input me-2" ' + (duoU2Fenabled ? 'checked' : '') + '/>' + "Enable Duo two-factor authentication." + '</label>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                if (duoU2Fenabled != Q('duo2facheck').checked) { meshserver.send({ action: 'otpduo', enabled: Q('duo2facheck').checked }); }
+            });
+        }
+
         function account_manageAuthApp() {
             if (xxdialogMode || ((features & 4096) == 0)) return;
             if (userinfo.otpsecret == 1) { account_removeOtp(); } else { account_addOtp(); }
@@ -16578,7 +16594,9 @@
             156: "Verified messaging account of user {0}",
             157: "Removed messaging account of user {0}",
             158: "Displaying alert box, title=\"{0}\", message=\"{1}\"",
-            159: "Device Powered On"
+            159: "Device Powered On",
+            160: "Enabled Duo two-factor authentication",
+            161: "Disabled Duo two-factor authentication"
         };
 
         var eventsShortMessageId = {
@@ -16881,7 +16899,7 @@
                 if (userdomain != '') { username += ', <span style=color:#26F>' + userdomain + '</span>'; }
             }
 
-            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || ((user.phone != null) && (features & 0x04000000))) { username += ' <i class="fa-solid fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i>'; }
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || ((user.otpekey == 1) && (features & 0x00800000)) || (user.otpduo == 1) || ((user.phone != null) && (features & 0x04000000))) { username += ' <i class="fa-solid fa-key" title="' + "2nd factor authentication enabled" + '" style="margin-top:2px"></i>'; }
             if (user.phone != null) { username += ' <i class="fa-solid fa-mobile-screen" title="' + "Verified phone number" + '" style="margin-top:2px"></i>'; }
             if ((user.siteadmin != null) && ((user.siteadmin & 32) != 0) && (user.siteadmin != 0xFFFFFFFF)) { username += ' <img src="images/padlock12.png" height=12 width=8 title="' + "Account is locked" + '" style="margin-top:2px" />'; }
             if ((user.msghandle != null) && (features2 & 0x02000000)) { username += ' <i class="fa-solid fa-comment fa-xs" title="' + "Verified messaging account" + '" style="margin-top:2px" />'; }
@@ -18129,12 +18147,13 @@
             }
 
             var multiFactor = 0;
-            if ((user.otpsecret > 0) || (user.otphkeys > 0) || (user.otpekey > 0)) {
+            if ((user.otpsecret > 0) || (user.otphkeys > 0) || (user.otpekey > 0) || (user.otpduo > 0)) {
                 multiFactor = 1;
                 var factors = [];
                 if (user.otpsecret > 0) { factors.push("Authentication App"); }
                 if (user.otphkeys > 0) { factors.push("Security Key"); }
                 if (user.otpekey > 0) { factors.push("Email"); }
+                if (user.otpduo > 0) { factors.push("Duo"); }
                 if (user.otpkeys > 0) { factors.push("Backup Codes"); }
                 if (user.otpdev > 0) { factors.push("Device Push"); }
                 if ((user.phone != null) && (features & 0x04000000)) { factors.push("SMS"); }
