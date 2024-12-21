@@ -15228,7 +15228,7 @@
             var flags = (currentMesh.flags) ? currentMesh.flags : 0, x = '', expire = 0;
             if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { expire = currentMesh.expireDevs; if (expire > 2000) { expire = 2000; } }
             if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.mtype != 4)) {
-                x += '<div><label><input type=checkbox id=d20flag4 onchange=p20editmeshfeaturesValidate() ' + ((flags & 4) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
+                x += '<div class="form-check"><label><input type=checkbox id=d20flag4 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 4) ? 'checked' : '') + '>' + "Record sessions" + '</label><br></div>';
             }
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
                 x += '<div class="form-check"><label><input type=checkbox id=d20flag2 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4) ? "Sync server device name to port name" : "Sync server device name to hostname") + '</label><br></div>';
