@@ -2689,10 +2689,6 @@ nav .lbbuttonsel2 {
     -ms-grid-row: 4;
 }
 
-#DeskClip, #DeskControlSpan, #specialkeylist {
-    padding-left: 6px;
-}
-
 .serverStateTableCell {
     width: 300px;
     height: 24px;
@@ -2816,11 +2812,6 @@ nav .lbbuttonsel2 {
     color: black;
 }
 
-#p15statetext {
-    padding: 4px;
-    height: 15px;
-}
-
 #p15agentConsole {
     background: black;
     margin: 0;
@@ -2835,11 +2826,6 @@ nav .lbbuttonsel2 {
 .menu_stack.fullscreen #p15agentConsole {
     height: calc(100vh - 305px);
     max-height: calc(100vh - 305px);
-}
-
-#p15coreName {
-    padding: 4px;
-    display: inline-block;
 }
 
 #p15agentConsoleText {
