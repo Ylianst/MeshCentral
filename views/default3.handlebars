@@ -94,25 +94,6 @@
     <div id="filesShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmconnectfilesaction()">Ask Consent</div>
     </div>
-    <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(6,0,event)">Admin PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(8,0,event)">User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(9,0,event)">User PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(1,0x10,event)">Ask Admin Shell</div>
-        <div class="cmtext" onclick="cmtermaction(6,0x10,event)">Ask Admin PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(8,0x10,event)">Ask User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(9,0x10,event)">Ask User PowerShell</div>
-    </div>
-    <div id="termShellContextMenu2" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(8,0,event)"><b>User Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(9,0,event)">User PowerShell</div>
-    </div>
-    <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(8,0,event)">User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(100,0,event)">Login Shell</div>
-    </div>
     <div id="deskConnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmdeskaction(1,event)">Ask Consent + Bar</div>
         <div class="cmtext" onclick="cmdeskaction(2,event)">Ask Consent</div>
@@ -582,32 +563,27 @@
                             <div id="manageEmail2FA">
                                 <div class="p2AccountActions"><span
                                         id="authEmailSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
-                                        onclick="return account_manageAuthEmail()">Manage email
-                                        authentication</a><br /></span>
+                                        onclick="return account_manageAuthEmail()">Manage email authentication</a><br /></span>
                             </div>
                             <div id="manageAuthApp">
                                 <div class="p2AccountActions"><span
                                         id="authAppSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
-                                        onclick="return account_manageAuthApp()">Manage authenticator
-                                        app</a><br /></span>
+                                        onclick="return account_manageAuthApp()">Manage authenticator app</a><br /></span>
                             </div>
                              <div id="manageDuoApp">
                                 <div class="p2AccountActions"><span
                                         id="authDuoSetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
-                                        onclick="return account_manageAuthDuo()">Manage Duo
-                                        authentication</a><br /></span>
+                                        onclick="return account_manageAuthDuo()">Manage Duo authentication</a><br /></span>
                             </div>
                             <div id="manageHardwareOtp">
                                 <div class="p2AccountActions"><span
                                         id="authKeySetupCheck"><strong>&#x2713;</strong></span></div><span><a href=#
-                                        onclick="return account_manageHardwareOtp(0)">Manage security
-                                        keys</a><br /></span>
+                                        onclick="return account_manageHardwareOtp(0)">Manage security keys</a><br /></span>
                             </div>
                             <div id="managePushAuthDev">
                                 <div class="p2AccountActions"><span
                                         id="authPushAuthDevCheck"><strong>&#x2713;</strong></span></div><span><a href=#
-                                        onclick="return account_managePushAuthDev()">Manage push
-                                        authentication</a><br /></span>
+                                        onclick="return account_managePushAuthDev()">Manage push authentication</a><br /></span>
                             </div>
                             <div id="manageMessaging1">
                                 <div class="p2AccountActions"><span
@@ -633,12 +609,9 @@
                             <span id="verifyEmailId" style="display:none"><a href=#
                                     onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
                             <span id="accountEnableNotificationsSpan" style="display:none"><a href=#
-                                    onclick="return account_enableNotifications()">Enable web
-                                    notifications</a><br /></span>
-                            <a href=# onclick="return account_showLocalizationSettings()">Localization
-                                Settings</a><br />
-                            <a href=# onclick="return account_showAccountNotifySettings()">Notification
-                                Settings</a><br />
+                                    onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
+                            <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
+                            <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
                             <span id="p2AccountPassActions">
                                 <span id="accountChangeEmailAddressSpan" style="display:none"><a href=#
                                         onclick="return account_showChangeEmail()">Change email address</a><br /></span>
@@ -824,8 +797,7 @@
                             <div id="p2ServerActionsBackup">
                                 <div class="p2AccountActions"><span
                                         style="display:none"><strong>&#x2713;</strong></span></div><a id="p6backuplink"
-                                    href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download
-                                    server backup</a>
+                                    href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a>
                             </div>
                             <div id="p2ServerActionsRestore">
                                 <div class="p2AccountActions"><span
@@ -835,8 +807,7 @@
                             <div id="p2ServerActionsGoogleBackup" style="display:none">
                                 <div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck"
                                         style="display:none"><strong>&#x2713;</strong></span></div><span><a href=#
-                                        onclick="return server_setupGoogleDriveBackup()">Google Drive
-                                        backup</a><br /></span>
+                                        onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span>
                             </div>
                             <div id="p2ServerActionsVersion">
                                 <div class="p2AccountActions"><span
@@ -951,40 +922,48 @@
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
                     <div id=deskarea1 class="areaHead d-flex flex-wrap">
                         <div class="d-flex align-items-center">
-                            <input type="button" class="btn btn-outline-primary btn-sm mx-1" id="autoconnectbutton1"
+                            <input type="button" class="btn btn-outline-primary btn-sm me-1" id="autoconnectbutton1"
                                 value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false"
                                 onkeydown="return false" style="display:none;margin-right:4px" />
-                            <span id=connectbutton1span><button class="btn btn-primary btn-sm mx-1" type=button
-                                    id=connectbutton1 cmenu="deskConnectButton"
-                                    title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,3)
-                                    onkeypress="return false" onkeydown="return false" disabled="disabled"><i
-                                        class="fa-solid fa-circle-play"></i> Connect</button></span>
-                            <span id=connectbutton1rspan><button class="btn btn-primary btn-sm mx-1" type=button
-                                    id=connectbutton1r cmenu="altPortContextMenu" title="Connect using RDP"
-                                    onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false"
-                                    disabled="disabled"><i class="fa-solid fa-circle-play"></i> RDP Connect</button></span>
-                            <span id=connectbutton1hspan><button class="btn btn-primary btn-sm mx-1" type=button
+                            <div class="btn-group dropdown-center me-1" id=connectbutton1span>
+                                <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton1 title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
+                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton1d data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" onclick="cmdeskaction(1,event)">Ask Consent + Bar</a></li>
+                                    <li><a class="dropdown-item" onclick="cmdeskaction(2,event)">Ask Consent</a></li>
+                                    <li><a class="dropdown-item" onclick="cmdeskaction(3,event)">Privacy Bar</a></li>
+                                </ul>
+                            </div>
+                            <div class="btn-group dropdown-center me-1" id=connectbutton1rspan>
+                                <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton1r title="Connect using RDP" onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false" disabled="disabled">RDP Connect</button>
+                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton1rd data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" onclick="cmaltportaction(1,event)">Alternate Port</a></li>
+                                </ul>
+                            </div>
+                            <span id=connectbutton1hspan><button class="btn btn-primary btn-sm me-1" type=button
                                     id=connectbutton1h title="Connect using hardware KVM"
                                     onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false"
-                                    disabled="disabled"><i class="fa-solid fa-circle-play"></i> HW Connect</button></span>
-                            <span id=disconnectbutton1span><button class="btn btn-primary btn-sm mx-1" type=button
+                                    disabled="disabled">HW Connect</button></span>
+                            <span id=disconnectbutton1span><button class="btn btn-primary btn-sm me-1" type=button
                                     id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect"
                                     onclick=connectDesktop(event,0) onkeypress="return false"
-                                    onkeydown="return false"><i class="fa-solid fa-power-off"></i> Disconnect</button></span>
+                                    onkeydown="return false">Disconnect</button></span>
                             <span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
                         </div>
                         <div class="d-flex align-items-center ms-auto">
                             <div id="desktopCustomUiButtons" style="float:left"></div>
                             <div id="desktopCustomUpperRight" style="float:left;margin-right:6px"></div>
                             <input type="button" class="btn btn-outline-primary btn-sm" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
-                            <input id="deskActionsBtn" type=button class="btn btn-outline-primary btn-sm mx-1" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
-                            <input id="deskActionsSettings" type="button" class="btn btn-outline-primary btn-sm mx-1" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
+                            <input id="deskActionsBtn" type=button class="btn btn-outline-primary btn-sm me-1" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
+                            <input id="deskActionsSettings" type="button" class="btn btn-outline-primary btn-sm me-1" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
                             <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none" />
                             <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                             <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)"><i class="fa-solid fa-rotate-right"></i></div>
                             <div class='deskareaicon' title="Rotate Left" onclick="drotate(-1)"><i class="fa-solid fa-rotate-left"></i></div>
                             <div class='deskareaicon' title="Toggle View Mode" onclick="toggleAspectRatio(1)">&#8690;</div>
-                            <span id="p11power"></span>&nbsp;
                             <div id="idx_deskFullBtn2" onclick=deskToggleFull(event) style="float:right">&nbsp;&#x2716;</div>
                         </div>
                     </div>
@@ -1033,12 +1012,12 @@
                     </div>
                     <div id=deskarea4 class="areaFoot d-flex flex-wrap">
                         <div class="d-flex align-items-center">
-                            <select id="deskkeys" class="form-select-sm mx-1" cmenu=deskKeyShortcutContextMenu></select>
-                            <input id="DeskWD" type=button class="btn btn-outline-primary btn-sm mx-1" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
-                            <input id="DeskESC" style="display:none" type="button" class="btn btn-outline-primary btn-sm mx-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
-                            <input id="DeskClip" type="button" class="btn btn-outline-primary btn-sm mx-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
-                            <input id="DeskType" class="btn btn-outline-primary btn-sm mx-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
-                            <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" class="form-check-input" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
+                            <select id="deskkeys" class="form-select-sm me-1" cmenu=deskKeyShortcutContextMenu></select>
+                            <input id="DeskWD" type=button class="btn btn-outline-primary btn-sm me-1" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
+                            <input id="DeskESC" style="display:none" type="button" class="btn btn-outline-primary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
+                            <input id="DeskClip" type="button" class="btn btn-outline-primary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
+                            <input id="DeskType" class="btn btn-outline-primary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <div id="DeskControlSpan" title="Toggle mouse and keyboard input" class="form-check"><input id="DeskControl" type="checkbox" class="form-check-input" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()"><label class="form-check-label" for="DeskControl">Input</label></div>&nbsp;
                         </div>
                         <div class="d-flex ms-auto align-items-center">
                             <span id=DeskMonitorSelectionSpan></span>
@@ -1114,8 +1093,50 @@
                 <div id=termTable style="position:relative">
                     <table style="width:100%" cellpadding=0 cellspacing=0>
                         <tr>
-                            <td class="areaHead" style="line-height:22px">
-                                <div class="toright2">
+                            <td class="areaHead d-flex flex-wrap">
+                                <div class="d-flex align-items-center">
+                                    <button type="button" id="autoconnectbutton2" class="btn btn-primary btn-sm me-1"
+                                        onclick=autoConnectTerminal(event) onkeypress="return false"
+                                        onkeydown="return false" style="display:none"><i class="fa-solid fa-play"></i>
+                                        AutoConnect</button>
+                                    <div class="btn-group dropdown-center me-1" id=connectbutton2span>
+                                        <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton2 title="Connect using MeshAgent remote desktop" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
+                                        <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton2d data-bs-toggle="dropdown" aria-expanded="false" onclick=newContextMenu(event,1)><span class="visually-hidden">Toggle Dropdown</span></button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></a></li>
+                                            <li><a class="dropdown-item" onclick="cmtermaction(6,0,event)">Admin PowerShell</a></li>
+                                            <li><a class="dropdown-item" onclick="cmtermaction(8,0,event)">User Shell</a></li>
+                                            <li><a class="dropdown-item" onclick="cmtermaction(9,0,event)">User PowerShell</a></li>
+                                            <li><a class="dropdown-item" onclick="cmtermaction(1,0x10,event)">Ask Admin Shell</a></li>
+                                            <li><a class="dropdown-item" onclick="cmtermaction(6,0x10,event)">Ask Admin PowerShell</a></li>
+                                            <li><a class="dropdown-item" onclick="cmtermaction(8,0x10,event)">Ask User Shell</a></li>
+                                            <li><a class="dropdown-item" onclick="cmtermaction(9,0x10,event)">Ask User PowerShell</a></li>
+                                            <li class="ass"><a class="dropdown-item" onclick="cmtermaction(8,0,event)"><b>User Shell</b></a></li>
+                                            <li class="ass"><a class="dropdown-item" onclick="cmtermaction(9,0,event)">User PowerShell</a></li>
+                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></a></li>
+                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(8,0,event)">User Shell</a></li>
+                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(100,0,event)">Login Shell</a></li>                                          
+                                        </ul>
+                                    </div>
+                                    <div class="btn-group dropdown-center me-1" id=connectbutton2sspan>
+                                        <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton2s title="Connect using MeshAgent remote desktop" onclick=connectTerminal(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled">SSH Connect</button>
+                                        <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton2sd data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" onclick="cmsshportaction(1,event)">Alternate Port</a></li>
+                                        </ul>
+                                    </div>
+                                    <span id="connectbutton2hspan"><button type="button"
+                                            class="btn btn-primary btn-sm me-1" id="connectbutton2h"
+                                            title="Connect using Intel&reg; AMT hardware KVM"
+                                            onclick=connectTerminal(event,2) onkeypress="return false"
+                                            onkeydown="return false" disabled="disabled">HW Connect</button></span>
+                                    <span id="disconnectbutton2span"><button type="button"
+                                            class="btn btn-primary btn-sm me-1" id="disconnectbutton2"
+                                            onclick=connectTerminal(event,0) onkeypress="return false"
+                                            onkeydown="return false">Disconnect</button></span>
+                                    <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
+                                </div>
+                                <div class="d-flex align-items-center ms-auto">
                                     <div id="idx_termFullBtn2" onclick=deskToggleFull(event) style="float:right">
                                         &nbsp;&#x2716;</div>
                                     <div id="termRecordIcon" class='deskareaicon'
@@ -1124,38 +1145,9 @@
                                     </div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device"
                                         onkeypress="return false" onkeydown="return false" value=Actions
-                                        class="btn btn-outline-primary me-2 btn-sm" onclick=deviceActionFunction() />
+                                        class="btn btn-outline-primary me-1 btn-sm" onclick=deviceActionFunction() />
                                     <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     <div id="terminalCustomUiButtons" style="float:left"></div>
-                                </div>
-                                <div>
-                                    <button type="button" id="autoconnectbutton2" class="btn btn-primary btn-sm me-2"
-                                        onclick=autoConnectTerminal(event) onkeypress="return false"
-                                        onkeydown="return false" style="display:none"><i class="fa-solid fa-play"></i>
-                                        AutoConnect</button><span id="connectbutton2span"
-                                        style="margin-right:4px"><button type="button" id="connectbutton2"
-                                            class="btn btn-primary btn-sm me-2" cmenu="termConnectButton"
-                                            onclick=connectTerminal(event,1) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled"><i class="fa-solid fa-play"></i>
-                                            Connect</button></span><span id="connectbutton2sspan"
-                                        style="margin-right:4px"><button type="button" id="connectbutton2s"
-                                            cmenu=sshPortContextMenu class="btn btn-primary btn-sm me-2"
-                                            onclick=connectTerminal(event,3) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled"><i class="fa-solid fa-play"></i> SSH
-                                            Connect</button></span><span id="connectbutton2hspan"
-                                        style="margin-right:4px"><button type="button"
-                                            class="btn btn-primary btn-sm me-2" id="connectbutton2h"
-                                            title="Connect using Intel&reg; AMT hardware KVM"
-                                            onclick=connectTerminal(event,2) onkeypress="return false"
-                                            onkeydown="return false" disabled="disabled"><i class="fa-solid fa-play"></i> HW
-                                            Connect</button></span><span id="disconnectbutton2span"
-                                        style="margin-right:4px"><button type="button"
-                                            class="btn btn-primary btn-sm me-2" id="disconnectbutton2"
-                                            onclick=connectTerminal(event,0) onkeypress="return false"
-                                            onkeydown="return false"><i class="fa-solid fa-play"></i>
-                                            Disconnect</button></span>
-                                    <span id="termstatus" style="line-height:22px">Disconnected</span><span
-                                        id="termtitle"></span>
                                 </div>
                             </td>
                         </tr>
@@ -1166,56 +1158,48 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="areaFoot">
-                                <div class="toright2">
+                            <td class="areaFoot d-flex flex-wrap">
+                                <div class="d-flex align-items-center">
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="btn btn-outline-primary btn-sm me-1" id="ctrlcbutton" 
+                                        value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="btn btn-outline-primary btn-sm me-1" id="ctrlxbutton"
+                                        value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="btn btn-outline-primary me-1 btn-sm" id="escbutton"
+                                        value="ESC" onclick="termSendKey(27,'escbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="btn btn-outline-primary me-1 btn-sm" id="bsbutton"
+                                        value="Backspace" onclick="termSendKey(8,'bsbutton')" style="display:none" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="btn btn-outline-primary me-1 btn-sm" id="pastebutton" value="Paste"
+                                        title="Paste text into the terminal" onclick="showTermPasteDialog()"
+                                        style="display:none" />
+                                </div>
+                                <div class="d-flex align-items-center ms-auto">
                                     <span id="TermTimer" title="Session time"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false"
-                                            onkeydown="return false" class="bottombutton" value="CR+LF"
+                                            onkeydown="return false" class="btn btn-outline-primary me-1 btn-sm" value="CR+LF"
                                             title="Toggle what the return key will send" onclick="termToggleCr()" />
                                         <input id="id_tfxkeysbutton" type="button" onkeypress="return false"
-                                            onkeydown="return false" class="bottombutton" value="Intel (F10 = ESC+[OM)"
+                                            onkeydown="return false" class="btn btn-outline-primary me-1 btn-sm" value="Intel (F10 = ESC+[OM)"
                                             title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()" />
                                         <input id="id_ttypebutton" type="button" onkeypress="return false"
-                                            onkeydown="return false" class="bottombutton" value="Extended Ascii"
+                                            onkeydown="return false" class="btn btn-outline-primary me-1 btn-sm" value="Extended Ascii"
                                             title="Toggle terminal emulation type" onclick="termToggleType()" />
                                     </span>
                                     <span id="terminalSizeDropDown" style="display:none">
-                                        <select id="termSizeList" onkeypress="return false">
+                                        <select id="termSizeList" onkeypress="return false" class="form-select-sm me-1">
                                             <option value="1">80x25</option>
                                             <option value="2">100x30</option>
                                         </select>
                                     </span>
-                                    <span id="specialKeyDropDown">
-                                        <select id="specialkeylist" class="form-select-sm me-2"
-                                            onkeypress="return false"></select>
-                                        <input id="specialkeylistinput" type="button" onkeypress="return false"
-                                            class="btn btn-primary btn-sm me-2 bottombutton" value="Send"
-                                            title="Send the selected special key" onclick="sendSpecialKey()" />
-                                    </span>
-                                </div>
-                                <div>
-                                    &nbsp;
-                                    <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="bottombutton" id="ctrlcbutton" class="btn btn-primary btn-sm me-2"
-                                        value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="ctrlxbutton"
-                                        class="btn btn-primary btn-sm me-2" value="Ctl-X"
-                                        onclick="termSendKey(24,'ctrlxbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="escbutton"
-                                        class="btn btn-primary btn-sm me-2" value="ESC"
-                                        onclick="termSendKey(27,'escbutton')" />
-                                    <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="bsbutton"
-                                        class="btn btn-primary btn-sm me-2" value="Backspace"
-                                        onclick="termSendKey(8,'bsbutton')" style="display:none" />
-                                    <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary me-2 btn-sm bottombutton" id="pastebutton"
-                                        class="btn btn-primary btn-sm me-2" value="Paste"
-                                        title="Paste text into the terminal" onclick="showTermPasteDialog()"
-                                        style="display:none" />
+                                    <select id="specialkeylist" class="form-select-sm me-1" onkeypress="return false"></select>
+                                    <input id="specialkeylistinput" type="button" onkeypress="return false"
+                                        class="btn btn-outline-primary btn-sm me-1" value="Send" 
+                                        title="Send the selected special key" onclick="sendSpecialKey()" />
                                 </div>
                             </td>
                         </tr>
@@ -1234,9 +1218,30 @@
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
                     <tr>
-                        <td class="areaHead" style="line-height:22px">
-                            <div class="toright2">
-                                <input id="filesActionsBtn" class="btn btn-outline-primary me-2 btn-sm" type=button
+                        <td class="areaHead d-flex flex-wrap">
+                            <div class="d-flex align-items-center">
+                                <button id=p13AutoConnect onclick=autoConnectFiles(event)
+                                    class="btn btn-primary btn-sm me-1" type="button" style="display:none"><i
+                                        class="fa-solid fa-play"></i> AutoConnect</button>
+                                <div class="btn-group dropdown-center me-1" id=p13Connectspan>
+                                    <button type="button" class="btn btn btn-primary btn-sm" id=p13Connect title="Connect using MeshAgent remote desktop" onclick=connectFiles(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
+                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=p13Connectdrop data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" onclick="cmconnectfilesaction()">Ask Consent</a></li>
+                                    </ul>
+                                </div>
+                                <button id=p13Disconnect class="btn btn-primary btn-sm me-1" onclick=connectFiles(event) type="button">Disconnect</button>
+                                <div class="btn-group dropdown-center me-1" id=p13Connectsspan>
+                                    <button type="button" class="btn btn btn-primary btn-sm" id=p13Connects title="Connect using MeshAgent remote desktop" onclick=connectFiles(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled">SFTP Connect</button>
+                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=p13Connectsdrop data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" onclick="cmsshportaction(1,event)">Alternate Port</a></li>
+                                    </ul>
+                                </div>
+                                <span id=p13Status>Disconnected</span>
+                            </div>
+                            <div class="d-flex align-items-center ms-auto">
+                                <input id="filesActionsBtn" class="btn btn-outline-primary me-1 btn-sm" type=button
                                     title="Perform power actions on the device" value=Actions
                                     onclick=deviceActionFunction() />
                                 <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session"
@@ -1244,20 +1249,6 @@
                                 </div>
                                 <div id="filesCustomUpperRight" style="float:left;margin-right:6px"></div>
                                 <div id="filesCustomUiButtons" style="float:left"></div>
-                            </div>
-                            <div>
-                                <button id=p13AutoConnect onclick=autoConnectFiles(event)
-                                    class="btn btn-primary btn-sm me-2" type="button" style="display:none"><i
-                                        class="fa-solid fa-play"></i> AutoConnect</button>
-                                <button id=p13Connect cmenu="filesConnectButton" class="btn btn-primary btn-sm me-2"
-                                    onclick=connectFiles(event,1) type="button"><i class="fa-solid fa-play"></i>
-                                    Connect</button>
-                                <button id=p13Disconnect class="btn btn-primary btn-sm me-2" onclick=connectFiles(event)
-                                    type="button"><i class="fa-solid fa-play"></i> Disconnect</button>
-                                <button id=p13Connects class="btn btn-primary btn-sm me-2" cmenu=sshPortContextMenu
-                                    onclick=connectFiles(event,2) type="button"><i class="fa-solid fa-play"></i> SFTP
-                                    Connect</button>
-                                <span id=p13Status>Disconnected</span>
                             </div>
                         </td>
                     </tr>
@@ -1371,13 +1362,13 @@
                 </div>
                 <table id="consoleTable" cellpadding=0 cellspacing=0>
                     <tr>
-                        <td class="areaHead">
-                            <div class="toright2">
-                                <div id=p15coreName title="Information about current core running on this agent"></div>
-                                <input type=button id=p15uploadCore class="btn btn-outline-primary me-2 btn-sm" value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
-                                <i onclick=p15downloadConsoleText() style="margin-top:6px" title="Download console text" class="fa-solid fa-download"></i>
+                        <td class="areaHead d-flex flex-wrap">
+                            <div id="p15statetext" class="d-flex align-items-center"></div>
+                            <div class="d-flex align-items-center ms-auto">
+                                <div id=p15coreName class="me-1" title="Information about current core running on this agent"></div>
+                                <input type=button id=p15uploadCore class="btn btn-outline-primary me-1 btn-sm" value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
+                                <i onclick=p15downloadConsoleText() title="Download console text" class="fa-solid fa-download me-1"></i>
                             </div>
-                            <div id="p15statetext"></div>
                         </td>
                     </tr>
                     <tr>
@@ -7318,6 +7309,29 @@
             if (devFilter == 8) { for (var d in nodes) { var n = nodes[d]; if ((n.tags != null) && (n.tags.length > 0)) { n.v = false; } } } // Untagged
         }
 
+        function newContextMenu(event, cmenu) {
+            switch (cmenu) {
+                case 1: { // Terminal connect button context menu
+                    if ((currentNode == null) || (currentNode.agent == null) || (currentNode.mtype == 3)) return true;
+                    // If the server has a specific terminal shell mode, don't show connection options
+                    if (serverinfo.linuxshell && (currentNode.agent.id > 4)) return;
+                    var nextElement = event.target.nextElementSibling;
+                    if (nextElement) {
+                        var children = nextElement.children;  // This will get only element nodes
+                        var displayClass = (currentNode.agent.id > 4 && !isWindowsNode(currentNode)) ? 'lin' : (currentNode.agent.id == 34) ? 'add' : null;
+                        for (var i = 0; i < children.length; i++) {
+                            if (displayClass) {
+                                children[i].style.display = children[i].classList.contains(displayClass) ? 'block' : 'none';
+                            } else {
+                                children[i].style.display = (children[i].classList.contains('lin') || children[i].classList.contains('ass')) ? 'none' : 'block';
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
         var contextelement = null;
         function handleContextMenu(event) {
             // When called, we look for elements with "cmenu=xxx" and show the right context menu for that element.
@@ -7336,20 +7350,6 @@
                     if ((currentNode == null) || (currentNode.agent == null)) return true;
                     contextelement = elem;
                     showContextMenuDiv(document.getElementById('filesShellContextMenu'), event.pageX, event.pageY);
-                    break;
-                }
-                case 'termConnectButton': {
-                    // Terminal connect button context menu
-                    if ((currentNode == null) || (currentNode.agent == null) || (currentNode.mtype == 3)) return true;
-
-                    // If the server has a specific terminal shell mode, don't show connection options
-                    if (serverinfo.linuxshell && (currentNode.agent.id > 4)) return;
-
-                    contextelement = elem;
-                    var contextmenudiv = document.getElementById('termShellContextMenu'); // Windows options (Power Shell)
-                    if (currentNode.agent.id > 4 && !isWindowsNode(currentNode)) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
-                    if (currentNode.agent.id == 34) { contextmenudiv = document.getElementById('termShellContextMenu2'); } // Windows MeshCentral Assistant
-                    showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
                     break;
                 }
                 case 'deskConnectButton': {
@@ -7677,9 +7677,6 @@
             QV('contextMenu', false);
             QV('meshContextMenu', false);
             QV('filesShellContextMenu', false);
-            QV('termShellContextMenu', false);
-            QV('termShellContextMenu2', false);
-            QV('termShellContextMenuLinux', false);
             QV('deskConnectContextMenu', false);
             QV('deskDisconnectContextMenu', false);
             QV('altPortContextMenu', false);
@@ -10199,8 +10196,8 @@
             // Enable buttons
             var inputAllowed = ((features2 & 0x2000) == 0) && ((currentNode.agent == null) || (currentNode.agent.id != 14)) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
-            QE('connectbutton1', online);
-            QE('connectbutton1r', online || (currentNode.mtype == 3));
+            QE('connectbutton1', online); QE('connectbutton1d', online); // Desktop Connect button and dropdown
+            QE('connectbutton1r', online || (currentNode.mtype == 3));  QE('connectbutton1rd', online || (currentNode.mtype == 3)); // Desktop RDP Connect button and dropdown
             if (currentNode.rdpport && currentNode.rdpport != 3389) {
                 QH('desktopCustomUpperRight', '<a style="cursor:pointer;line-height:22px" onclick="cmaltportaction(1,event)">' + format("RDP Port {0}", (currentNode.rdpport ? currentNode.rdpport : 3389)) + '</a>');
             } else {
@@ -11587,7 +11584,7 @@
 
         function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
         function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
-        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } }
+        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) {
@@ -11642,8 +11639,8 @@
 
             // Enable buttons
             var online = ((terminalNode.conn & 1) != 0) || (terminalNode.mtype == 3); // If Agent (1) connected, enable Terminal
-            QE('connectbutton2', online);
-            QE('connectbutton2s', online);
+            QE('connectbutton2', online); QE('connectbutton2d', online); // Terminal Connect and dropdown
+            QE('connectbutton2s', online); QE('connectbutton2sd', online); // Terminal SSH Connect and dropdown
             var hwonline = ((terminalNode.conn & 6) != 0); // If CIRA (2) or AMT (4) connected, enable hardware terminal
             QE('connectbutton2h', hwonline);
 
@@ -12071,18 +12068,19 @@
             var samenode = (filesNode == currentNode);
             filesNode = currentNode;
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
-            QE('p13Connect', online);
-            QE('p13Connects', online);
-            QV('p13Connect', (files == null) && (filesNode.mtype == 2));
-            QV('p13Connects', ((features2 & 0x200) != 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
+            QE('p13Connect', online); QE('p13Connectdrop', online); // Files Connect button and dropdown
+            QE('p13Connects', online); QE('p13Connectsdrop', online); // Files SFTP Connect button and dropdown
+            QV('p13Connectspan', (files == null) && (filesNode.mtype == 2));
+            QV('p13Connectsspan', ((features2 & 0x200) != 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', files != null);
             p13setActions();
         }
 
         function onFilesStateChange(xfiles, state) {
             setSessionActivity();
-            QV('p13Connect', (state == 0) && (filesNode.mtype == 2));
+            QV('p13Connect', (state == 0) && (filesNode.mtype == 2)); QV('p13Connectdrop', (state == 0) && (filesNode.mtype == 2));
             QV('p13Connects', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
+            QV('p13Connectsdrop', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', state != 0);
             var str = StatusStrs[state];
             if (state == 3) {
