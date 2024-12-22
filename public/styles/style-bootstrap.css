@@ -295,8 +295,8 @@ body {
 #MainSubMenuSpan, #MeshSubMenuSpan, #EventsSubMenuSpan, #UserSubMenuSpan, #UsersSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
     width: 100%;
     height: 24px;
-    color: var(--sub-menu-color);
-    background: var(--sub-menu-bg);
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
 }
 
 .menu_stack #UserDummyMenu {
@@ -730,25 +730,21 @@ body {
 
 #devListToolbarSpan {
     width: 100%;
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
     vertical-align: middle;
     border-spacing: 0;
 }
 
-.night #devListToolbarSpan {
-    color: black;
-    background-color: #d3d9d6;
-}
-
-#SearchInput {
+#SearchInput, #KvmSearchInput {
     width: 120px;
 }
 
-#SearchInput.search {
+#SearchInput.search, #KvmSearchInput.search {
     background-color: #FDFFBE;
 }
 
-.night #SearchInput.search {
+.night #SearchInput.search, .night #KvmSearchInput.search {
     background-color: grey;
 }
 
@@ -1078,11 +1074,6 @@ NoMeshesPanel img {
 
 .pTable {
     width: 100%;
-    height: 24px;
-    background: var(--sub-menu-bg) !important;
-    margin-bottom: 4px;
-    vertical-align: middle;
-    border-spacing: 0;
 }
 
 #p50groups {
@@ -1126,22 +1117,13 @@ NoMeshesPanel img {
 
 #p5filehead {
     width: 100%;
-    background: var(--sub-menu-bg);
-    text-align: left;
-    padding: 4px;
-}
-
-.night #p5filehead {
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
+    padding: 4px 0px;
 }
 
 #p5filesubhead {
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
     height: 28px;
-}
-
-.night #p5filesubhead {
-    background-color: #222;
 }
 
 #p5rightOfButtons {
@@ -1744,14 +1726,14 @@ nav .lbbuttonsel2 {
 .style3 {
     text-align: center;
     color: white;
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
     font-weight: bold;
 }
 
 .style3x {
     text-align: center;
-    color: var(--sub-menu-color);
-    background: var(--sub-menu-bg);
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
     font-weight: bold;
 }
 
@@ -1832,32 +1814,19 @@ nav .lbbuttonsel2 {
 .style14 {
     height: 100%;
     text-align: left;
-    /* background-color: #D3D9D6; */
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
 }
 
 .night .style14 {
-    background-color: #333;
     color: #CCC;
 }
 
 .auto-style1 {
-    background: var(--sub-menu-bg);
-    text-align: right;
-}
-
-#pTable .auto-style1 {
-    height: 100%;
-    float: right;
+    background: var(--bs-secondary-bg);
 }
 
 .night .auto-style1 {
-    background: var(--sub-menu-bg);
     color: #CCC;
-}
-
-.night #pTable {
-    color: black;
 }
 
 .icon2 {
@@ -2746,23 +2715,16 @@ nav .lbbuttonsel2 {
 
     #p13toolbar .areaHead2 {
         width: 100%;
-        background: var(--sub-menu-bg);
-        text-align: left;
-        padding: 4px;
+        background: var(--bs-secondary-bg);
+        padding: 4px 0px;
     }
 
-    .night #p13toolbar .areaHead2 {
-        background: var(--sub-menu-bg);
-    }
 
     #p13toolbar .areaHead3 {
-        background: var(--sub-menu-bg);
+        background: var(--bs-secondary-bg);
         height: 28px;
     }
 
-    .night #p13toolbar .areaHead3 {
-        background-color: #333;
-    }
 
 #p13filetable {
     width: 100%;

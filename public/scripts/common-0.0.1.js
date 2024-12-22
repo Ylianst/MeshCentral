@@ -17,6 +17,7 @@ function QV(x, y) { try { QS(x).display = (y ? '' : 'none'); } catch (x) { } }  
 function QA(x, y) { Q(x).innerHTML += y; }                                      // "Q" append
 function QH(x, y) { Q(x).innerHTML = y; }                                       // "Q" html
 function QC(x) { try { return Q(x).classList; } catch (x) { } }                 // "Q" class
+function QVH(x, y) { try { y ? Q(x).classList.remove('visually-hidden') : Q(x).classList.add('visually-hidden'); } catch (x) { } } // "Q" visibility
 
 // Move cursor to end of input box
 function inputBoxFocus(x) { Q(x).focus(); var v = Q(x).value; Q(x).value = ''; Q(x).value = v; }
