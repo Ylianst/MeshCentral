@@ -91,18 +91,6 @@
         <div id="cxmmdesktop" class="cmtext" style="display:none" onclick="cmmeshaction(3,event)">Multi-Desktop</div>
         -->
     </div>
-    <div id="filesShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmconnectfilesaction()">Ask Consent</div>
-    </div>
-    <div id="deskConnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmdeskaction(1,event)">Ask Consent + Bar</div>
-        <div class="cmtext" onclick="cmdeskaction(2,event)">Ask Consent</div>
-        <div class="cmtext" onclick="cmdeskaction(3,event)">Privacy Bar</div>
-    </div>
-    <div id="deskDisconnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmdeskaction(10,event)">Disconnect and Lock</div>
-        <div class="cmtext" onclick="cmdeskaction(11,event)">Disconnect</div>
-    </div>
     <div id="altPortContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmaltportaction(1,event)">Alternate Port</div>
     </div>
@@ -365,8 +353,7 @@
                         <h1>My Devices</h1>
                     </div>
                     <div style="display:none" id="devListToolbarViewIcons">
-                        <div id=devViewPageState
-                            style="float:left;line-height:32px;height:32px;font-size:16px;display:none"></div>
+                        <div id=devViewPageState style="float:left;line-height:32px;height:32px;font-size:16px;display:none"></div>
                         <div tabindex=0 id=devViewPageButton1 class=viewSelector onclick=onDeviceViewPageChange(1)
                             onkeypress="if (event.key == 'Enter') { onDeviceViewPageChange(1); }"
                             title="Go to first page" style="display:none">
@@ -415,58 +402,56 @@
                         </span>
                     </div>
                 </div>
-                <div id="devListToolbarSpan" class="noselect d-flex align-items-center">
-                    <div id=devListToolbar class=me-auto style="display:none"></td>
-                        <div>
-                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)">
-                                <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
-                                <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
-                            </span>
-                            <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)">
-                                <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
-                                <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
-                            </span>
-                            <input type=button class="btn btn-outline-primary me-2 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
-                            <input type=button class="btn btn-outline-primary me-2 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
-                            <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" class="btn btn-outline-primary me-2 mb-1 btn-sm" value="Scroll To Top" />
-                            <input type="text" id=SearchInput class="form-control-sm me-2 btn-sm" style="width: auto;" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any">
-                            <span id=SearchInputClearButton style="display:none;position:relative">
-                                <span class="fa-layers fa-fw" role="button" onclick="clearDeviceSearch()" style="position:absolute;left:-25px;top:-15px">
-                                    <i class="fa-solid fa-circle" style="color:var(--bs-secondary-bg)"></i>
-                                    <i class="fa-solid fa-xmark"  style="color:var(--bs-body-color)"></i>
-                                </span>
-                            </span>
-                            <select class="form-select-sm me-2" style="width: auto;" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
-                                <option value=0 selected>All</option>
-                                <option value=1>Online</option>
-                                <option value=5>Offline</option>
-                                <option value=2>Sessions</option>
-                                <option value=3>Starred</option>
-                                <option value=4>Intel&reg; AMT</option>
-                                <option value=6>Help</option>
-                                <option value=7>Tagged</option>
-                                <option value=8>Untagged</option>
-                            </select>
-                            <label><input class="form-check-input me-2" type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /> &nbsp; <span title="Show devices operating system name">OS Name</span></label>
-                            <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2" onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
-                            <span id="devsCustomUIBar"></span>
-                        </div>
-                    </div>
-                    <div id=kvmListToolbar class=style14 style="display:none">
-                        <span class="fa-layers fa-fw" role="button" style="display:none" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)">
+                <div id="devListToolbarSpan" class="noselect d-flex align-items-center p-1">
+                    <div id=devListToolbar class="d-flex align-items-center visually-hidden"></td>
+                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)">
                             <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
                         </span>
-                        <span class="fa-layers fa-fw" role="button" style="display:none" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)">
+                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)">
                             <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
                         </span>
-                        <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
-                        <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
-                        <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
-                        <label><input type="checkbox" id="autoConnectDesktopCheckbox" class="form-check-input me-2" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
-                        <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
-                        <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                        <input type=button class="btn btn-primary me-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
+                        <input type=button class="btn btn-primary me-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
+                        <input type=button class="btn btn-primary me-1 btn-sm" id=ScrollToTopButton onclick="onDevicesScroll(true);" value="Scroll To Top" />
+                        <input type="text" id=SearchInput class="form-control-sm me-1 btn-sm" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any">
+                        <span id=SearchInputClearButton style="display:none;position:relative">
+                            <span class="fa-layers fa-fw" role="button" onclick="clearDeviceSearch()" style="position:absolute;left:-25px;top:-15px">
+                                <i class="fa-solid fa-circle" style="color:var(--bs-secondary-bg)"></i>
+                                <i class="fa-solid fa-xmark"  style="color:var(--bs-body-color)"></i>
+                            </span>
+                        </span>
+                        <select class="form-select-sm me-1" id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
+                            <option value=0 selected>All</option>
+                            <option value=1>Online</option>
+                            <option value=5>Offline</option>
+                            <option value=2>Sessions</option>
+                            <option value=3>Starred</option>
+                            <option value=4>Intel&reg; AMT</option>
+                            <option value=6>Help</option>
+                            <option value=7>Tagged</option>
+                            <option value=8>Untagged</option>
+                        </select>
+                        <div class="form-check" title="Show devices operating system name"><input class="form-check-input me-1" type=checkbox id=RealNameCheckBox onclick=onRealNameCheckBox() /><label class="form-check-label" for="RealNameCheckBox">OS Name</label></div>
+                        <label style="display:none"><input type=checkbox id=OnlineCheckBox class="form-check-input me-2" onclick=onOnlineCheckBox(event) /><span title="Only show devices that are online">Online</span></label>
+                        <span id="devsCustomUIBar"></span>
+                    </div>
+                    <div id=kvmListToolbar class="d-flex align-items-center style14 visually-hidden">
+                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)">
+                            <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
+                            <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
+                        </span>
+                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)">
+                            <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
+                            <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
+                        </span>
+                        <input type="button" class="btn btn-primary me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
+                        <input type="button" class="btn btn-primary me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
+                        <input type="button" class="btn btn-primary me-1 btn-sm" onclick="onDevicesScroll(true);" value="Scroll To Top" />
+                        <div class="form-check me-1" title="Automatic connect"><input class="form-check-input me-1" type=checkbox id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" /><label class="form-check-label" for="autoConnectDesktopCheckbox">Auto</label></div>
+                        <input type="button" class="btn btn-primary me-1 btn-sm" onclick="showMultiDesktopSettings()" value="Settings" />
+                        <input type="text" id=KvmSearchInput class="form-control-sm me-1" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any">
                         <span id=KvmSearchInputClearButton style="display:none;position:relative">
                             <span class="fa-layers fa-fw" role="button" onclick="clearDeviceSearch()" style="position:absolute;left:-25px;top:-15px">
                                 <i class="fa-solid fa-circle" style="color:var(--bs-secondary-bg)"></i>
@@ -474,12 +459,12 @@
                             </span>
                         </span>
                     </div>
-                    <div id=devMapToolbar class=style14 style="display:none">
-                        &nbsp;&nbsp;<input type=search id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
-                        <input type=button value=Search title="Search for location" onclick=getSearchLocation() />
-                        <input type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
+                    <div id=devMapToolbar class="d-flex align-items-center style14 visually-hidden">
+                        <input class="form-control-sm me-1" type=search id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
+                        <input class="btn btn-primary me-1 btn-sm" type=button value=Search title="Search for location" onclick=getSearchLocation() />
+                        <input class="btn btn-primary me-1 btn-sm" type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
                     </div>
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center ms-auto">
                         <div style="display:none" id=devListToolbarView>
                             View
                             <select id=viewselect onchange=onDeviceViewChange()>
@@ -521,9 +506,7 @@
                                 <img src="images/info.png" loading="lazy" width="47" height="48" />
                             </td>
                             <td>
-                                <div id="getStarted1">To get started, <a href=#
-                                        onclick="return account_createMesh()"><strong>click here to create a device
-                                            group</strong></a>.</div>
+                                <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
                                 <div id="getStarted2">No device groups.</div>
                             </td>
                         </tr>
@@ -602,25 +585,18 @@
                     <div id="p2AccountActions">
                         <p><strong>Account actions</strong></p>
                         <p class="mL">
-                            <span id="managePhoneNumber2" style="display:none"><a href=#
-                                    onclick="return account_managePhone()">Manage phone number</a><br /></span>
-                            <span id="manageMessaging2" style="display:none"><a href=#
-                                    onclick="return account_manageMessaging()">Manage messaging</a><br /></span>
-                            <span id="verifyEmailId" style="display:none"><a href=#
-                                    onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
-                            <span id="accountEnableNotificationsSpan" style="display:none"><a href=#
-                                    onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
+                            <span id="managePhoneNumber2" style="display:none"><a href=# onclick="return account_managePhone()">Manage phone number</a><br /></span>
+                            <span id="manageMessaging2" style="display:none"><a href=# onclick="return account_manageMessaging()">Manage messaging</a><br /></span>
+                            <span id="verifyEmailId" style="display:none"><a href=# onclick="return account_showVerifyEmail()">Verify email</a><br /></span>
+                            <span id="accountEnableNotificationsSpan" style="display:none"><a href=# onclick="return account_enableNotifications()">Enable web notifications</a><br /></span>
                             <a href=# onclick="return account_showLocalizationSettings()">Localization Settings</a><br />
                             <a href=# onclick="return account_showAccountNotifySettings()">Notification Settings</a><br />
                             <span id="p2AccountPassActions">
-                                <span id="accountChangeEmailAddressSpan" style="display:none"><a href=#
-                                        onclick="return account_showChangeEmail()">Change email address</a><br /></span>
-                                <a href=# onclick="return account_showChangePassword()">Change password</a><span
-                                    id="p2nextPasswordUpdateTime"></span><br />
+                                <span id="accountChangeEmailAddressSpan" style="display:none"><a href=# onclick="return account_showChangeEmail()">Change email address</a><br /></span>
+                                <a href=# onclick="return account_showChangePassword()">Change password</a><span id="p2nextPasswordUpdateTime"></span><br />
                                 <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
                             </span>
-                            <span id="accountCreateLoginTokenSpan" style="display:none"><a href=#
-                                    onclick="return account_createLoginToken()">Create login token</a><br /></span>
+                            <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                         </p>
                         <br style=clear:both />
                     </div>
@@ -629,8 +605,7 @@
                     <span id="p2createMeshLink1"> - <button class="btn btn-primary btn-sm" onclick="return account_createMesh()"><i class="fa-fw fa-solid fa-plus-circle"></i> New</button></span>
                     <br /><br />
                     <div id=p2meshes></div>
-                    <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=#
-                                onclick="return account_createMesh()"><strong>Get started here!</strong></a></span>
+                    <div id=p2noMeshFound style="display:none">No device groups.<span id="p2createMeshLink2"> <a href=# onclick="return account_createMesh()"><strong>Get started here!</strong></a></span>
                     </div>
                     <br style=clear:both />
                 </div>
@@ -639,18 +614,12 @@
                 <div id="p3title">
                     <h1>My Events</h1>
                 </div>
-
                 <table class="pTable">
                     <tr>
-                        {{!-- <td class="h1"></td> --}}
-                        <td class="auto-style1">
-                            <input type="button" style="display:none" value="Download Report"
-                                onclick=p3showReportDialog() />
-                        </td>
-                        <td class="auto-style1">
-                            <div class="d-inline-flex align-items-center m-1">
-                                <label for="p3filterevents" class="form-label me-2">Filter</label>
-                                <select id=p3filterevents class="form-select-sm" onchange=refreshEvents()>
+                        <td class="auto-style1 d-flex justify-content-end p-1">
+                            <div class="d-flex align-items-center">
+                                <label for="p3filterevents" class="me-1">Filter</label>
+                                <select id=p3filterevents class="form-select-sm me-2" onchange=refreshEvents()>
                                     <option value="">All Logs</option>
                                     <option value=agentlog>Agent Logs</option>
                                     <option value=relaylog>Relay Logs</option>
@@ -660,22 +629,18 @@
                                     <option value=changenode>Change Node Logs</option>
                                     <option value=removenode>Remove Node Logs</option>
                                 </select>
-                            </div>
-
-                            <div class="d-inline-flex align-items-center">
-                                <label for="p3limitdropdown" class="form-label me-2">Show</label>
-                                <select id=p3limitdropdown class="form-select-sm" onchange=refreshEvents()>
+                                <label for="p3limitdropdown" class="me-1">Show</label>
+                                <select id=p3limitdropdown class="form-select-sm me-2" onchange=refreshEvents()>
                                     <option value=60>Last 60</option>
                                     <option value=120>Last 120</option>
                                     <option value=250>Last 250</option>
                                     <option value=500>Last 500</option>
                                     <option value=1000>Last 1000</option>
                                     <option value="">No limit</option>
-                                </select>&nbsp;
+                                </select>
+                                <a href=# onclick=p3showDownloadEventsDialog(2)><i class="fa-solid fa-download" title="Download Events"></i></a>
                             </div>
-                            <a href=# onclick=p3showDownloadEventsDialog(2)><i class="fa-solid fa-download" title="Download Events"></i></a>&nbsp;
                         </td>
-                        {{!-- <td class="h2"></td> --}}
                     </tr>
                 </table>
                 <div id=p3events></div>
@@ -686,30 +651,22 @@
                 </div>
                 <table class="pTable">
                     <tr>
-                        {{!-- <td class="h1"></td> --}}
-                        <td class="style14">
-                            <div style="float:right">
-                                <input type=button class="btn btn-outline-primary btn-sm m-1"
-                                    onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
-                                <a href=# onclick=p4downloadUserInfo()><i role=button class="fa-solid fa-download" title="Download user information"></i></a>
-                                <a href=# onclick=p4batchAccountCreate()><i role=button id=p4UserBatchCreate style="display:none" title="Batch create many user accounts" class="fa-solid fa-upload"></i></a>
-                                <i style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings class="fa-solid fa-cog" title="Settings" onclick="onUsersViewSettings()"></i>
-                            </div>
-                            <div>
-                                <input type=button id=UsersSelectAllButton class="btn btn-outline-primary btn-sm m-1"
-                                    onclick="p3usersSelectallButtonFunction()" value="Select All" />
-                                <input type=button id=UsersGroupActionButton class="btn btn-outline-primary btn-sm m-1"
-                                    disabled="disabled" value="Group Action" onclick=p3usersGroupActionFunction() />
-                                <input id=UserNewAccountButton class="btn btn-outline-primary btn-sm m-1" type=button
-                                    onclick=showCreateNewAccountDialog() value="New Account..." />
+                        <td class="style14 d-flex align-items-center flex-wrap p-1">
+                            <div  class="d-flex align-items-center">
+                                <input type=button id=UsersSelectAllButton class="btn btn-primary btn-sm me-1" onclick="p3usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersGroupActionButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Group Action" onclick=p3usersGroupActionFunction() />
+                                <input id=UserNewAccountButton class="btn btn-primary btn-sm me-1" type=button onclick=showCreateNewAccountDialog() value="New Account..." />
                                 <div class="d-inline-flex align-items-center">
-                                    <input id=UserSearchInput type=search class="form-control-sm m-1" placeholder=Filter
-                                        onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged()
-                                        autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
+                                    <input id=UserSearchInput type=search class="form-control-sm me-1" placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
                                 </div>
                             </div>
+                            <div class="d-flex align-items-center ms-auto">
+                                <input type=button class="btn btn-primary btn-sm me-2"onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
+                                <a href=# onclick=p4downloadUserInfo()><i role=button class="fa-solid fa-download me-2" title="Download user information"></i></a>
+                                <a href=# onclick=p4batchAccountCreate()><i role=button id=p4UserBatchCreate style="display:none" title="Batch create many user accounts" class="fa-solid fa-upload me-1"></i></a>
+                                <i style="cursor:pointer;margin-top:3px;margin-left:6px" id=usersListToolbarSettings class="fa-solid fa-cog" title="Settings" onclick="onUsersViewSettings()"></i>
+                            </div>
                         </td>
-                        {{!-- <td class="h2"></td> --}}
                     </tr>
                 </table>
                 <div id="p3users"></div>
@@ -720,38 +677,27 @@
                 </div>
                 <table id="p5toolbar" class="table" cellpadding="0" cellspacing="0">
                     <tr>
-                        <td id="p5filehead" valign=bottom>
-                            <div id="p5rightOfButtons"></div>
-                            <div class="m-1">
-                                <input type=button id=p5FolderUp class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" onclick="return p5folderup();" value="Up" />&nbsp;
-                                <input type=button id=p5SelectAllButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" onclick="p5selectallfile();" value="Select All" />&nbsp;
-                                <input type=button id=p5RenameFileButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Rename" onclick="p5renamefile();" />&nbsp;
-                                <input type=button id=p5DeleteFileButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Delete" onclick="p5deletefile();" />&nbsp;
-                                <input type=button id=p5ViewFileButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Edit" onclick="p5viewfile()" />&nbsp;
-                                <input type=button id=p5NewFolderButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="New Folder" onclick="p5createfolder();" />&nbsp;
-                                <input type=button id=p5UploadButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Upload" onclick="p5uploadFile()" />&nbsp;
-                                <input type=button id=p5DownloadButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Download" onclick="p5downloadButton()" />&nbsp;
-                                <input type=button id=p5CutButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Cut" onclick="p5copyFile(1)" />&nbsp;
-                                <input type=button id=p5CopyButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Copy" onclick="p5copyFile(0)" />&nbsp;
-                                <input type=button id=p5PasteButton class="btn btn-outline-primary btn-sm mb-1"
-                                    disabled="disabled" value="Paste" onclick="p5pasteFile()" />&nbsp;
-                            </div>
+                        <td id="p5filehead" valign=bottom class="d-flex align-items-center">
+                            <div id="p5rightOfButtons" class="d-flex align-items-center"></div>
+                            <div class="m-1 d-flex align-items-center">
+                                <input type=button id=p5FolderUp class="btn btn-primary btn-sm me-1" disabled="disabled" onclick="return p5folderup();" value="Up" />
+                                <input type=button id=p5SelectAllButton class="btn btn-primary btn-sm me-1" disabled="disabled" onclick="p5selectallfile();" value="Select All" />
+                                <input type=button id=p5RenameFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Rename" onclick="p5renamefile();" />
+                                <input type=button id=p5DeleteFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Delete" onclick="p5deletefile();" />
+                                <input type=button id=p5ViewFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Edit" onclick="p5viewfile()" />
+                                <input type=button id=p5NewFolderButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="New Folder" onclick="p5createfolder();" />
+                                <input type=button id=p5UploadButton class="btn btn-primary btn-sm me-1"  disabled="disabled" value="Upload" onclick="p5uploadFile()" />
+                                <input type=button id=p5DownloadButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Download" onclick="p5downloadButton()" />
+                                <input type=button id=p5CutButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Cut" onclick="p5copyFile(1)" />
+                                <input type=button id=p5CopyButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Copy" onclick="p5copyFile(0)" />
+                                <input type=button id=p5PasteButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Paste" onclick="p5pasteFile()" />
                         </td>
                     </tr>
                     <tr>
-                        <td id="p5filesubhead">
-                            <div style=float:right>
-                                <select id=p5sortdropdown class="form-select-sm m-1 mb-1" onchange=updateFiles()>
+                        <td id="p5filesubhead" class="d-flex align-items-center">
+                            <div class="d-flex align-items-center">&nbsp;&nbsp;<span id="p5currentpath"></span></div>
+                            <div style=float:right class="d-flex align-items-center ms-auto">
+                                <select id=p5sortdropdown class="form-select-sm me-1" onchange=updateFiles()>
                                     <option value="1" selected="selected">Sort by name</option>
                                     <option value="2">Sort by size</option>
                                     <option value="3">Sort by date</option>
@@ -760,7 +706,6 @@
                                     <option value="6">Descend by date</option>
                                 </select>
                             </div>
-                            <div>&nbsp;&nbsp;<span id="p5currentpath"></span></div>
                         </td>
                     </tr>
                 </table>
@@ -922,7 +867,7 @@
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
                     <div id=deskarea1 class="areaHead d-flex flex-wrap">
                         <div class="d-flex align-items-center">
-                            <input type="button" class="btn btn-outline-primary btn-sm me-1" id="autoconnectbutton1"
+                            <input type="button" class="btn btn-primary btn-sm me-1" id="autoconnectbutton1"
                                 value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false"
                                 onkeydown="return false" style="display:none;margin-right:4px" />
                             <div class="btn-group dropdown-center me-1" id=connectbutton1span>
@@ -947,18 +892,24 @@
                                     id=connectbutton1h title="Connect using hardware KVM"
                                     onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false"
                                     disabled="disabled">HW Connect</button></span>
-                            <span id=disconnectbutton1span><button class="btn btn-primary btn-sm me-1" type=button
-                                    id=disconnectbutton1 cmenu="deskDisconnectButton" value="Disconnect"
-                                    onclick=connectDesktop(event,0) onkeypress="return false"
-                                    onkeydown="return false">Disconnect</button></span>
+                            <div class="btn-group dropdown-center me-1" id=disconnectbutton1span>
+                                <button type="button" class="btn btn btn-primary btn-sm" id=disconnectbutton1 title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false">Disconnect</button>
+                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=diconnectbutton1d data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" onclick="cmdeskaction(10,event)">Disconnect and Lock</a></li>
+                                    <li><a class="dropdown-item" onclick="cmdeskaction(11,event)">Disconnect</a></li>
+                                </ul>
+                            </div>
                             <span id="deskstatus" style="line-height:22px">Disconnected</span><span id="deskmetadata"></span>
                         </div>
                         <div class="d-flex align-items-center ms-auto">
                             <div id="desktopCustomUiButtons" style="float:left"></div>
                             <div id="desktopCustomUpperRight" style="float:left;margin-right:6px"></div>
-                            <input type="button" class="btn btn-outline-primary btn-sm" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
-                            <input id="deskActionsBtn" type=button class="btn btn-outline-primary btn-sm me-1" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
-                            <input id="deskActionsSettings" type="button" class="btn btn-outline-primary btn-sm me-1" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
+                            <input type="button" class="btn btn-primary btn-sm" title="Change the power state of the remote machine" onkeypress="return false" onkeydown="return false" value="Power Actions..." onclick="showPowerActionDlg()" style="display:none" />
+                            <input id="deskActionsBtn" type=button class="btn btn-primary btn-sm me-1" title="Perform power actions on the device" onkeypress="return false" onkeydown="return false" value=Actions onclick=deviceActionFunction() class="mR" />
+                            <input id="deskActionsSettings" type="button" class="btn btn-primary btn-sm me-1" value="Settings" title="Edit remote desktop settings" onkeypress="return false" onkeydown="return false" onclick="showDesktopSettings()" class="mR" />
                             <input id="deskFocusBtn" type="button" title="Toggle focus mode, when active only the region around the mouse is updated" onkeypress="return false" onkeydown="return false" value="Focus All" onclick="deskToggleFocus()" style="margin-right:3px;display:none" />
                             <div id="deskRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px"></div>
                             <div class='deskareaicon' title="Rotate Right" onclick="drotate(1)"><i class="fa-solid fa-rotate-right"></i></div>
@@ -1013,17 +964,17 @@
                     <div id=deskarea4 class="areaFoot d-flex flex-wrap">
                         <div class="d-flex align-items-center">
                             <select id="deskkeys" class="form-select-sm me-1" cmenu=deskKeyShortcutContextMenu></select>
-                            <input id="DeskWD" type=button class="btn btn-outline-primary btn-sm me-1" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
-                            <input id="DeskESC" style="display:none" type="button" class="btn btn-outline-primary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
-                            <input id="DeskClip" type="button" class="btn btn-outline-primary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
-                            <input id="DeskType" class="btn btn-outline-primary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <input id="DeskWD" type=button class="btn btn-primary btn-sm me-1" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
+                            <input id="DeskESC" style="display:none" type="button" class="btn btn-primary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
+                            <input id="DeskClip" type="button" class="btn btn-primary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
+                            <input id="DeskType" class="btn btn-primary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
                             <div id="DeskControlSpan" title="Toggle mouse and keyboard input" class="form-check"><input id="DeskControl" type="checkbox" class="form-check-input" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()"><label class="form-check-label" for="DeskControl">Input</label></div>&nbsp;
                         </div>
                         <div class="d-flex ms-auto align-items-center">
                             <span id=DeskMonitorSelectionSpan></span>
                             <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
-                            <input id=DeskToolsButton type=button class="btn btn-outline-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <input id=DeskToolsButton type=button class="btn btn-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span id=DeskGuestShareButton title="Share the device with a guest" role="button">
                                 <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
                             </span>
@@ -1082,13 +1033,12 @@
                 </div>
                 <div id="p12warning" onclick=showFeaturesDlg()>
                     <div class="icon2"></div>
-                    <div class="warningbox">Redirection port or KVM feature is disabled<span id="p12warninga">, click
-                            here to enable it.</span></div>
+                    <div class="warningbox">Redirection port or KVM feature is disabled<span id="p12warninga">, click here to enable it.</span></div>
                 </div>
                 <div id="p12warning2" onclick=showPowerActionDlg()>
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.
-                    </div>
+                </div>
                 </div>
                 <div id=termTable style="position:relative">
                     <table style="width:100%" cellpadding=0 cellspacing=0>
@@ -1145,7 +1095,7 @@
                                     </div>
                                     <input id="termActionsBtn" type=button title="Perform power actions on the device"
                                         onkeypress="return false" onkeydown="return false" value=Actions
-                                        class="btn btn-outline-primary me-1 btn-sm" onclick=deviceActionFunction() />
+                                        class="btn btn-primary me-1 btn-sm" onclick=deviceActionFunction() />
                                     <div id="terminalCustomUpperRight" style="float:left;margin-right:6px"></div>
                                     <div id="terminalCustomUiButtons" style="float:left"></div>
                                 </div>
@@ -1161,19 +1111,19 @@
                             <td class="areaFoot d-flex flex-wrap">
                                 <div class="d-flex align-items-center">
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary btn-sm me-1" id="ctrlcbutton" 
+                                        class="btn btn-primary btn-sm me-1" id="ctrlcbutton" 
                                         value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary btn-sm me-1" id="ctrlxbutton"
+                                        class="btn btn-primary btn-sm me-1" id="ctrlxbutton"
                                         value="Ctl-X" onclick="termSendKey(24,'ctrlxbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary me-1 btn-sm" id="escbutton"
+                                        class="btn btn-primary me-1 btn-sm" id="escbutton"
                                         value="ESC" onclick="termSendKey(27,'escbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary me-1 btn-sm" id="bsbutton"
+                                        class="btn btn-primary me-1 btn-sm" id="bsbutton"
                                         value="Backspace" onclick="termSendKey(8,'bsbutton')" style="display:none" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-outline-primary me-1 btn-sm" id="pastebutton" value="Paste"
+                                        class="btn btn-primary me-1 btn-sm" id="pastebutton" value="Paste"
                                         title="Paste text into the terminal" onclick="showTermPasteDialog()"
                                         style="display:none" />
                                 </div>
@@ -1181,13 +1131,13 @@
                                     <span id="TermTimer" title="Session time"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false"
-                                            onkeydown="return false" class="btn btn-outline-primary me-1 btn-sm" value="CR+LF"
+                                            onkeydown="return false" class="btn btn-primary me-1 btn-sm" value="CR+LF"
                                             title="Toggle what the return key will send" onclick="termToggleCr()" />
                                         <input id="id_tfxkeysbutton" type="button" onkeypress="return false"
-                                            onkeydown="return false" class="btn btn-outline-primary me-1 btn-sm" value="Intel (F10 = ESC+[OM)"
+                                            onkeydown="return false" class="btn btn-primary me-1 btn-sm" value="Intel (F10 = ESC+[OM)"
                                             title="Toggle F1 to F10 keys emulation type" onclick="termToggleFx()" />
                                         <input id="id_ttypebutton" type="button" onkeypress="return false"
-                                            onkeydown="return false" class="btn btn-outline-primary me-1 btn-sm" value="Extended Ascii"
+                                            onkeydown="return false" class="btn btn-primary me-1 btn-sm" value="Extended Ascii"
                                             title="Toggle terminal emulation type" onclick="termToggleType()" />
                                     </span>
                                     <span id="terminalSizeDropDown" style="display:none">
@@ -1198,7 +1148,7 @@
                                     </span>
                                     <select id="specialkeylist" class="form-select-sm me-1" onkeypress="return false"></select>
                                     <input id="specialkeylistinput" type="button" onkeypress="return false"
-                                        class="btn btn-outline-primary btn-sm me-1" value="Send" 
+                                        class="btn btn-primary btn-sm me-1" value="Send" 
                                         title="Send the selected special key" onclick="sendSpecialKey()" />
                                 </div>
                             </td>
@@ -1241,7 +1191,7 @@
                                 <span id=p13Status>Disconnected</span>
                             </div>
                             <div class="d-flex align-items-center ms-auto">
-                                <input id="filesActionsBtn" class="btn btn-outline-primary me-1 btn-sm" type=button
+                                <input id="filesActionsBtn" class="btn btn-primary me-1 btn-sm" type=button
                                     title="Perform power actions on the device" value=Actions
                                     onclick=deviceActionFunction() />
                                 <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session"
@@ -1253,54 +1203,26 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="areaHead2" valign=bottom>
-                            <div id="p13rightOfButtons" class="toright2"></div>
-                            <div>
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FolderUp
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Up" onclick="p13folderup()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13SelectAllButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Select All"
-                                    onclick="p13selectallfile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RenameFileButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Rename"
-                                    onclick="p13renamefile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DeleteFileButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Delete"
-                                    onclick="p13deletefile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Edit" onclick="p13viewfile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="New Folder"
-                                    onclick="p13createfolder()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Upload"
-                                    onclick="p13uploadFile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Download"
-                                    onclick="p13downloadButton()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Cut" onclick="p13copyFile(1)" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13CopyButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Copy" onclick="p13copyFile(0)" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13PasteButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Paste"
-                                    onclick="p13pasteFile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13ZipButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Zip" onclick="p13zipFiles()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13UnzipButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Unzip"
-                                    onclick="p13unzipFile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13RefreshButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Refresh"
-                                    onclick="p13folderup(9999)" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13FindButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Find" onclick="p13findfile()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13GoToFolderButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="GoTo"
-                                    onclick="p13gotofolder()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p13OpenButton
-                                    class="btn btn-outline-primary me-2 btn-sm" value="Open"
-                                    onclick="p13openfilefolder()" />
+                        <td class="areaHead2 d-flex align-items-center flex-wrap" valign=bottom>
+                            <div id="p13rightOfButtons" class="toright2 d-flex align-items-center"></div>
+                            <div class="d-flex align-items-center">
+                                <input type=button disabled="disabled" id=p13FolderUp class="btn btn-primary me-1 btn-sm" value="Up" onclick="p13folderup()" />
+                                <input type=button disabled="disabled" id=p13SelectAllButton class="btn btn-primary me-1 btn-sm" value="Select All" onclick="p13selectallfile()" />
+                                <input type=button disabled="disabled" id=p13RenameFileButton class="btn btn-primary me-1 btn-sm" value="Rename" onclick="p13renamefile()" />
+                                <input type=button disabled="disabled" id=p13DeleteFileButton class="btn btn-primary me-1 btn-sm" value="Delete" onclick="p13deletefile()" />
+                                <input type=button disabled="disabled" id=p13ViewFileButton class="btn btn-primary me-1 btn-sm" value="Edit" onclick="p13viewfile()" />
+                                <input type=button disabled="disabled" id=p13NewFolderButton class="btn btn-primary me-1 btn-sm" value="New Folder" onclick="p13createfolder()" />
+                                <input type=button disabled="disabled" id=p13UploadButton class="btn btn-primary me-1 btn-sm" value="Upload" onclick="p13uploadFile()" />
+                                <input type=button disabled="disabled" id=p13DownloadButton class="btn btn-primary me-1 btn-sm" value="Download" onclick="p13downloadButton()" />
+                                <input type=button disabled="disabled" id=p13CutButton class="btn btn-primary me-1 btn-sm" value="Cut" onclick="p13copyFile(1)" />
+                                <input type=button disabled="disabled" id=p13CopyButton class="btn btn-primary me-1 btn-sm" value="Copy" onclick="p13copyFile(0)" />
+                                <input type=button disabled="disabled" id=p13PasteButton class="btn btn-primary me-1 btn-sm" value="Paste" onclick="p13pasteFile()" />
+                                <input type=button disabled="disabled" id=p13ZipButton class="btn btn-primary me-1 btn-sm" value="Zip" onclick="p13zipFiles()" />
+                                <input type=button disabled="disabled" id=p13UnzipButton class="btn btn-primary me-1 btn-sm" value="Unzip" onclick="p13unzipFile()" />
+                                <input type=button disabled="disabled" id=p13RefreshButton class="btn btn-primary me-1 btn-sm" value="Refresh" onclick="p13folderup(9999)" />
+                                <input type=button disabled="disabled" id=p13FindButton class="btn btn-primary me-1 btn-sm" value="Find" onclick="p13findfile()" />
+                                <input type=button disabled="disabled" id=p13GoToFolderButton class="btn btn-primary me-1 btn-sm" value="GoTo" onclick="p13gotofolder()" />
+                                <input type=button disabled="disabled" id=p13OpenButton class="btn btn-primary me-1 btn-sm" value="Open" onclick="p13openfilefolder()" />
                             </div>
                         </td>
                     </tr>
@@ -1366,7 +1288,7 @@
                             <div id="p15statetext" class="d-flex align-items-center"></div>
                             <div class="d-flex align-items-center ms-auto">
                                 <div id=p15coreName class="me-1" title="Information about current core running on this agent"></div>
-                                <input type=button id=p15uploadCore class="btn btn-outline-primary me-1 btn-sm" value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
+                                <input type=button id=p15uploadCore class="btn btn-primary me-1 btn-sm" value="Agent Action" onclick=p15uploadCore(event) title="Change the agent Java Script code module" />
                                 <i onclick=p15downloadConsoleText() title="Download console text" class="fa-solid fa-download me-1"></i>
                             </div>
                         </td>
@@ -1388,8 +1310,7 @@
                             <table style="width:100%">
                                 <tr>
                                     <td style="width:99%">
-                                        <input id=p15consoleText class="form-control" onkeyup=p15consoleSend(event)
-                                            onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
+                                        <input id=p15consoleText class="form-control" onkeyup=p15consoleSend(event) onfocus=onConsoleFocus(1) onblur=onConsoleFocus(0) />
                                     </td>
                                     <td>&nbsp;</td>
                                     <td id="p15outputselecttd">
@@ -1400,7 +1321,7 @@
                                         </select>
                                     </td>
                                     <td style="width:1%"><input id="id_p15consoleClear" type="button"
-                                            class="btn btn-secondary bottombutton" value="Clear"
+                                            class="btn btn-primary bottombutton" value="Clear"
                                             onclick="p15consoleClear()" /></td>
                                 </tr>
                             </table>
@@ -1417,33 +1338,30 @@
                 </div>
                 <table class="pTable">
                     <tr>
-                        {{!-- <td class="h1"></td> --}}
-                        <!--<td>&nbsp;<input type=button onclick=refreshDeviceEvents() value="Refresh" /></td>-->
-                        <td class="auto-style1">
-                            Filter
-                            <select id=p16filterevents class="form-control-sm me-2 btn-sm"
-                                onchange=refreshDeviceEvents()>
-                                <option value="">All Logs</option>
-                                <option value=agentlog>Agent Logs</option>
-                                <option value=relaylog>Relay Logs</option>
-                                <option value=manual>Manual Logs</option>
-                                <option value=runcommands>Run Command Logs</option>
-                                <option value=batchupload>Batch Upload Logs</option>
-                                <option value=changenode>Change Node Logs</option>
-                                <option value=removenode>Remove Node Logs</option>
-                            </select>
-                            Show
-                            <select id=p16limitdropdown class="form-control-sm me-2 btn-sm"
-                                onchange=refreshDeviceEvents()>
-                                <option value=60>Last 60</option>
-                                <option value=120>Last 120</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
-                            </select>
-                            <i onclick=p3showDownloadEventsDialog(1) class="fa-solid fa-download" title="Download Events" style=cursor:pointer></i>
+                        <td class="auto-style1 d-flex justify-content-end p-1">
+                            <div class="d-flex align-items-center">
+                                <label class="me-1" for="p16filterevents">Filter</label>
+                                <select id=p16filterevents class="form-control-sm me-2" onchange=refreshDeviceEvents()>
+                                    <option value="">All Logs</option>
+                                    <option value=agentlog>Agent Logs</option>
+                                    <option value=relaylog>Relay Logs</option>
+                                    <option value=manual>Manual Logs</option>
+                                    <option value=runcommands>Run Command Logs</option>
+                                    <option value=batchupload>Batch Upload Logs</option>
+                                    <option value=changenode>Change Node Logs</option>
+                                    <option value=removenode>Remove Node Logs</option>
+                                </select>
+                                <label class="me-1" for="p16limitdropdown">Show</label>
+                                <select id=p16limitdropdown class="form-control-sm me-2" onchange=refreshDeviceEvents()>
+                                    <option value=60>Last 60</option>
+                                    <option value=120>Last 120</option>
+                                    <option value=250>Last 250</option>
+                                    <option value=500>Last 500</option>
+                                    <option value=1000>Last 1000</option>
+                                </select>
+                                <i onclick=p3showDownloadEventsDialog(1) class="fa-solid fa-download" title="Download Events" style=cursor:pointer></i>
+                            </div>
                         </td>
-                        {{!-- <td class="h2"></td> --}}
                     </tr>
                 </table>
                 <div id=p16events></div>
@@ -1469,8 +1387,7 @@
                                     <div class=DevSt style=margin-bottom:3px;margin-left:16px><b>Live Graph</b></div>
                                     <div
                                         style="margin-bottom:10px;margin-left:16px;height:240px;width:calc(100% - 16px);position:relative">
-                                        <canvas id=deviceDetailsStats
-                                            style="position:absolute;top:0;left:0;right:0;bottom:0"></canvas>
+                                        <canvas id=deviceDetailsStats style="position:absolute;top:0;left:0;right:0;bottom:0"></canvas>
                                     </div>
                                     <div id="extraGraphValues" style="display:none;margin-left:30px;margin-bottom:15px">
                                     </div>
@@ -1484,8 +1401,7 @@
             <div id=p19 style="display:none">
                 <div id="p19title">
                     <div id="p19BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back"
-                            onkeypress="if (event.key == 'Enter') goBack()">
+                        <div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()">
                             <div class="backButtonEx"></div>
                         </div>
                     </div>
@@ -1520,23 +1436,19 @@
                 <div id=p21main style="overflow-y:auto">
                     <div style="width:100%">
                         <div style="display:table;width:93%">
-                            <div id="meshPowerChartDiv"
-                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                            <div id="meshPowerChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
                                 <div style="margin:10px;font-size:16px">Power States</div>
                                 <canvas id="meshPowerChart" style="width:250px;height:250px"></canvas>
                             </div>
-                            <div id="meshOsChartDiv"
-                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                            <div id="meshOsChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
                                 <div style="margin:10px;font-size:16px">Agent Types</div>
                                 <canvas id="meshOsChart" style="width:250px;height:250px"></canvas>
                             </div>
-                            <div id="meshConnChartDiv"
-                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                            <div id="meshConnChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
                                 <div style="margin:10px;font-size:16px">Connectivity</div>
                                 <canvas id="meshConnChart" style="width:250px;height:250px"></canvas>
                             </div>
-                            <div id="meshSecurityChartDiv"
-                                style="width:23%;display:inline-block;text-align:center;max-width:250px">
+                            <div id="meshSecurityChartDiv" style="width:23%;display:inline-block;text-align:center;max-width:250px">
                                 <div style="margin:10px;font-size:16px">Security</div>
                                 <canvas id="meshSecurityChart" style="width:250px;height:250px"></canvas>
                             </div>
@@ -1586,8 +1498,7 @@
 
                         <!-- Second column: User image and state -->
                         <div class="col-auto" style="width: 200px; position: relative;">
-                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none"
-                                class="userAuthStrategyLogo" width="64" height="64">
+                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
 
                             <picture id="MainUserImage"
                                 style="display:none; border-width:0px; height:200px; width:200px; float:right"
@@ -1596,8 +1507,7 @@
                                 <img alt="" width="200" height="200" src="images/user-256.png" />
                             </picture>
 
-                            <img id="MainUserImageEx" alt="" width="200" height="200" src="images/user-256.png"
-                                onclick="account_manageImage(1)" />
+                            <img id="MainUserImageEx" alt="" width="200" height="200" src="images/user-256.png" onclick="account_manageImage(1)" />
 
                             <div style="width:100%;text-align:center;">
                                 <strong><span id="MainUserState"></span></strong>
@@ -1658,36 +1568,28 @@
                 <div id="p40title">
                     <h1>My Server Stats</h1>
                 </div>
-                <div class="areaHead">
-                    <div class="toright2">
-                        <select id=p40server style="display:none" onchange=updateServerTimelineStats()>
-                        </select>&nbsp;
-                        <div class="d-inline-flex align-items-center">
-                            <select id=p40type class="form-select-sm m-1" onchange=updateServerTimelineStats()>
-                                <option value=0>Connections</option>
-                                <option value=1>Memory</option>
-                                <option value=5>CPU</option>
-                                <option value=3>Inbound Traffic</option>
-                                <option value=4>Outbound Traffic</option>
-                            </select>&nbsp;
-                        </div>
-                        <div class="d-inline-flex align-items-center">
-                            <select id=p40time class="form-select-sm m-1" onchange=updateServerTimelineHours()>
-                                <option value=3>Last 3 hours</option>
-                                <option value=8>Last 8 hours</option>
-                                <option value=24>Last day</option>
-                                <option value=168>Last week</option>
-                                <option value=720>Last 30 days</option>
-                            </select>&nbsp;
-                        </div>
-                        <i class="fa-solid fa-download" title="Download data points (.csv)" style=cursor:pointer
-                            onclick=p40downloadEvents()></i>&nbsp;
+                <div class="areaHead d-flex align-items-center flex-wrap p-1">
+                    <div class="d-flex align-items-center">
+                        <input value="Refresh" type="button" class="btn btn-primary btn-sm me-2" onclick="refreshServerTimelineStats()" />
+                        <div class="form-check"><input class="form-check-input me-1" type=checkbox id=p40log onclick="updateServerTimelineHours()" / /><label class="form-check-label" for="p40log">Log-X</label></div>
                     </div>
-                    <div>
-                        <input value="Refresh" type="button" class="btn btn-outline-primary btn-sm m-1"
-                            onclick="refreshServerTimelineStats()" />
-                        &nbsp;<label><input id=p40log type="checkbox" class="form-check-input me-2"
-                                onclick="updateServerTimelineHours()" />Log-X</label>
+                    <div class="toright2 d-flex align-items-center ms-auto">
+                        <select id=p40server style="display:none" onchange=updateServerTimelineStats()></select>
+                        <select id=p40type class="form-select-sm me-1" onchange=updateServerTimelineStats()>
+                            <option value=0>Connections</option>
+                            <option value=1>Memory</option>
+                            <option value=5>CPU</option>
+                            <option value=3>Inbound Traffic</option>
+                            <option value=4>Outbound Traffic</option>
+                        </select>
+                        <select id=p40time class="form-select-sm me-1" onchange=updateServerTimelineHours()>
+                            <option value=3>Last 3 hours</option>
+                            <option value=8>Last 8 hours</option>
+                            <option value=24>Last day</option>
+                            <option value=168>Last week</option>
+                            <option value=720>Last 30 days</option>
+                        </select>
+                        <i class="fa-solid fa-download" title="Download data points (.csv)" style=cursor:pointer onclick=p40downloadEvents()></i>
                     </div>
                 </div>
                 <canvas id=serverMainStats style=""></canvas>
@@ -1696,26 +1598,21 @@
                 <div id="p41title">
                     <h1>My Server Tracing</h1>
                 </div>
-                <div class="areaHead">
-                    <div class="toright2">
-                        <div class="d-inline-flex align-items-center">
-                            <label for="p41limitdropdown" class="form-label me-2">Show</label>
-                            <select id=p41limitdropdown class="form-select-sm m-1" onchange=displayServerTrace()>
-                                <option value=100>Last 100</option>
-                                <option value=250>Last 250</option>
-                                <option value=500>Last 500</option>
-                                <option value=1000>Last 1000</option>
-                            </select>
-                        </div>
-                        <input value="Clear" type="button" class="btn btn-secondary btn-sm m-1"
-                            onclick="clearServerTracing()" />
-                        <i class="fa-solid fa-download" title="Download trace (.csv)" style=cursor:pointer
-                            onclick=p41downloadServerTrace()></i>&nbsp;
-                    </div>
-                    <div>
-                        <input value="Tracing" type="button" class="btn btn-outline-primary btn-sm m-1"
-                            onclick="setServerTracing()" />
+                <div class="areaHead d-flex align-items-center flex-wrap p-1">
+                    <div class="d-flex align-items-center">
+                        <input value="Tracing" type="button" class="btn btn-primary btn-sm me-1" onclick="setServerTracing()" />
                         <span id="p41traceStatus">None</span>
+                    </div>
+                    <div class="toright2 d-flex align-items-center ms-auto">
+                        <label for="p41limitdropdown" class="me-1">Show</label>
+                        <select id=p41limitdropdown class="form-select-sm me-1" onchange=displayServerTrace()>
+                            <option value=100>Last 100</option>
+                            <option value=250>Last 250</option>
+                            <option value=500>Last 500</option>
+                            <option value=1000>Last 1000</option>
+                        </select>
+                        <input value="Clear" type="button" class="btn btn-primary btn-sm me-1" onclick="clearServerTracing()" />
+                        <i class="fa-solid fa-download" title="Download trace (.csv)" style=cursor:pointer onclick=p41downloadServerTrace()></i>
                     </div>
                 </div>
                 <div id=p41events style=""></div>
@@ -1734,8 +1631,7 @@
                         <input value="Refresh Agent Cores" type="button" onclick="distributeCore();return false" />
                     </div>
                     <div style="padding:2px">
-                        <div style="padding:2px"><b>Notice:</b> Plugins have been altered, this may require agent core
-                            update.</div>
+                        <div style="padding:2px"><b>Notice:</b> Plugins have been altered, this may require agent core update.</div>
                     </div>
                 </div>
                 <table id="p42tbl">
@@ -1752,8 +1648,7 @@
                         <th style="width:10px"></th>
                     </tr>
                 </table>
-                <div id="pluginNoneNotice" style="width:100%;text-align:center;padding-top:10px;display:none"><i>No
-                        plugins on server.</i></div>
+                <div id="pluginNoneNotice" style="width:100%;text-align:center;padding-top:10px;display:none"><i>No plugins on server.</i></div>
             </div>
             <div id=p43 style="display:none">
                 <div id="p43BackButton">
@@ -1772,25 +1667,14 @@
                 </div>
                 <table class="pTable">
                     <tr>
-                        {{!-- <td class="h1"></td> --}}
-                        <td class="style14">
-                            <div style="float:right">
-                            </div>
-                            <div id="p50userGroupOps">
-                                <input type=button id=UsersGroupsSelectAllButton
-                                    class="btn btn-outline-primary btn-sm m-1"
-                                    onclick="p50usersSelectallButtonFunction()" value="Select All" />
-                                <input type=button id=UsersGroupsGroupActionButton
-                                    class="btn btn-outline-primary btn-sm m-1" disabled="disabled" value="Group Action"
-                                    onclick=p50usersGroupActionFunction() />
-                                <input id=NewUserGroupButton type=button class="btn btn-outline-primary btn-sm m-1"
-                                    onclick=showCreateUserGroupDialog(1) value="New Group..." />
-                                <input id=DuplicateUserGroupButton type=button
-                                    class="btn btn-outline-primary btn-sm m-1" style=display:none
-                                    onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
+                        <td class="style14 d-flex align-items-center flex-wrap p-1">
+                            <div id="p50userGroupOps" class="d-flex align-items-center">
+                                <input type=button id=UsersGroupsSelectAllButton class="btn btn-primary btn-sm me-1" onclick="p50usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersGroupsGroupActionButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Group Action" onclick=p50usersGroupActionFunction() />
+                                <input id=NewUserGroupButton type=button class="btn btn-primary btn-sm me-1" onclick=showCreateUserGroupDialog(1) value="New Group..." />
+                                <input id=DuplicateUserGroupButton type=button class="btn btn-primary btn-sm me-1" style=display:none onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
                             </div>
                         </td>
-                        {{!-- <td class="h2"></td> --}}
                     </tr>
                 </table>
                 <div id="p50groups"></div>
@@ -1852,16 +1736,14 @@
                 </div>
                 <table class="pTable">
                     <tr>
-                        {{!-- <td class="h1"></td> --}}
-                        <td class="style14">
-                            <div style="float:right">
-                                <input type=button onclick=openRecodringPlayer() value="Open Player..." />
+                        <td class="style14 d-flex align-items-center flex-wrap p-1">
+                            <div class="d-flex align-items-center">
+                                <input type=button class="btn btn-primary btn-sm" onclick=refreshRecodings() value="Refresh" />
                             </div>
-                            <div>
-                                <input type=button onclick=refreshRecodings() value="Refresh" />
+                            <div class="d-flex align-items-center ms-auto">
+                                <input type=button class="btn btn-primary btn-sm" onclick=openRecodringPlayer() value="Open Player..." />
                             </div>
                         </td>
-                        {{!-- <td class="h2"></td> --}}
                     </tr>
                 </table>
                 <div id=p52recordings style="overflow-y:auto"></div>
@@ -1875,12 +1757,10 @@
                         {{!-- <td class="h1"></td> --}}
                         <td class="style14">
                             <div style="float:right;line-height:22px">
-                                <a id="p60downloadReportDiv" style="display:none" href=# onclick=p60downloadReport()><i
-                                        class="fa-solid fa-download" title="Download Report"></i></a>&nbsp;
+                                <a id="p60downloadReportDiv" style="display:none" href=# onclick=p60downloadReport()><i class="fa-solid fa-download" title="Download Report"></i></a>&nbsp;
                             </div>
                             <div>
-                                <button class="btn btn-primary btn-sm me-2 m-1" onclick=generateReportDialog()><i
-                                        class="fa-regular fa-file-alt"></i> Generate Report...</button>
+                                <button class="btn btn-primary btn-sm me-2 m-1" onclick=generateReportDialog()><i class="fa-regular fa-file-alt"></i> Generate Report...</button>
                             </div>
                         </td>
                         {{!-- <td class="h2"></td> --}}
@@ -1904,8 +1784,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify
-                            Email</a>
+                        <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify Email</a>
                         &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
                     </div>
                 </div>
@@ -1916,8 +1795,7 @@
                 <div class="modal-content">
                     <div class="modal-header" id="dialogHeader">
                         <h5 class="modal-title text-white" id="xxAddAgentTitle"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                            onclick="setDialogMode()" onkeypress="if (event.key == 'Enter') setDialogMode()"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" id="xxAddAgentBody">
                         <!-- The default dialog is 2 but possible to specify others -->
@@ -1948,17 +1826,16 @@
                             </div>
                             <div id=d3servermode>
                                 <div id=d3serveraction valign=bottom>
-                                    <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup()
-                                        value="Up" />&nbsp;<span id=p3CurrentFolder></span>
+                                    <input type=button id=p3FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p3CurrentFolder></span>
                                 </div>
                                 <div id=d3serverfiles></div>
                             </div>
                         </div>
                         <div id=dialog4 style="">
-                            <input id="d4WrapButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
-                            <input id="d4SizeButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Small" onclick="d4ToggleSize()" />
-                            <input id="d4EncodingButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Raw" onclick="d4ToggleEncoding()" />
-                            <input id="d4LineBreakButton" class="btn btn-outline-primary me-2 mb-2" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
+                            <input id="d4WrapButton" class="btn btn-primary me-2 mb-2" type="button" value="Wrap On" onclick="d4ToggleWrap()" />
+                            <input id="d4SizeButton" class="btn btn-primary me-2 mb-2" type="button" value="Small" onclick="d4ToggleSize()" />
+                            <input id="d4EncodingButton" class="btn btn-primary me-2 mb-2" type="button" value="Raw" onclick="d4ToggleEncoding()" />
+                            <input id="d4LineBreakButton" class="btn btn-primary me-2 mb-2" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
                             <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                         </div>
                         <div id=dialog7 style="">
@@ -2007,18 +1884,11 @@
                                 <div id="d7desktopOtherSettings">
                                     <div>Other Settings</div>
                                     <div id="d7otherset2" style="display:block">
-                                        <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap
-                                            Mouse Buttons</label>
-                                        <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse
-                                            Mouse Wheel</label>
-                                        <label style="display:block"><input type="checkbox"
-                                                id="d7deskRemoteKeyMap" />Use Remote Keyboard
-                                            Map</label>
-                                        <label style="display:block" id="d7deskAutoClipboardLabel"><input
-                                                type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
-                                        <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox"
-                                                id="d7deskAutoLock" />Lock
-                                            on Disconnect</label>
+                                        <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse Buttons</label>
+                                        <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse Mouse Wheel</label>
+                                        <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
+                                        <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
+                                        <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
                                     </div>
                                 </div>
                             </div>
@@ -2036,14 +1906,10 @@
                                 <div>
                                     <div>Other Settings</div>
                                     <div id="d7otherset" style="display:block">
-                                        <label style="display:block"><input type="checkbox" id="d7showfocus" />Show
-                                            Focus Tool</label>
-                                        <label style="display:block"><input type="checkbox" id="d7showcursor" />Show
-                                            Local Mouse Cursor</label>
-                                        <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local
-                                            Keyboard Map</label>
-                                        <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse
-                                            Mouse Wheel</label>
+                                        <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus Tool</label>
+                                        <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse Cursor</label>
+                                        <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard Map</label>
+                                        <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse Mouse Wheel</label>
                                     </div>
                                 </div>
                             </div>
@@ -2055,56 +1921,42 @@
                                         <option value="canvas">Canvas Size</option>
                                         <option value="browser">Browser Size</option>
                                         <option value="screen">Screen Size</option>
-                                        <option value="640x480">640×480</option>
-                                        <option value="1024x768">1024×768</option>
-                                        <option value="1280x800">1280×800</option>
-                                        <option value="1440x900">1440×900</option>
-                                        <option value="1600x900">1600×900</option>
-                                        <option value="1680x1050">1680×1050</option>
-                                        <option value="1920x1080">1920×1080</option>
+                                        <option value="640x480">640x480</option>
+                                        <option value="1024x768">1024x768</option>
+                                        <option value="1280x800">1280x800</option>
+                                        <option value="1440x900">1440x900</option>
+                                        <option value="1600x900">1600x900</option>
+                                        <option value="1680x1050">1680x1050</option>
+                                        <option value="1920x1080">1920x1080</option>
                                     </select>
                                 </div>
                                 <div>
                                     <div>Options</div>
                                     <div id="d7rdpflags" style="display:block">
-                                        <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable
-                                            Wallpaper</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full
-                                            Window Drag</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu
-                                            Animations</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable
-                                            Theming</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor
-                                            Shadow</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor
-                                            Settings</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font
-                                            Smooting</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop
-                                            Composision</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic
-                                            Clipboard</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse
-                                            Buttons</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse
-                                            Mouse Wheel</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable Wallpaper</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window Drag</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu Animations</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable Theming</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor Shadow</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor Settings</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smooting</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic Clipboard</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse Buttons</label>
+                                        <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse Mouse Wheel</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal"
-                            id="idx_dlgCancelButton" onclick="dialogclose(0)">Cancel</button>
-                        <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton"
-                            onclick="dialogclose(1)">OK</button>
-                        <button type="button" class="btn btn-outline-danger" id="idx_dlgDeleteButton"
-                            onclick="dialogclose(2)" style="display:none">Delete</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="idx_dlgCancelButton">Cancel</button>
+                        <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton" >OK</button>
+                        <button type="button" class="btn btn-outline-danger" id="idx_dlgDeleteButton" style="display:none">Delete</button>
                         {{!-- <div id="idx_dlgMoreButtons">
-                            <a href="#" id="idx_dlgMoreButtons1" class="btn btn-secondary"
+                            <a href="#" id="idx_dlgMoreButtons1" class="btn btn-primary"
                                 title="Toggle advanced options" onclick="MoreToggle(true)">&#x25BC;</a>
-                            <a href="#" id="idx_dlgMoreButtons2" class="btn btn-secondary"
+                            <a href="#" id="idx_dlgMoreButtons2" class="btn btn-primary"
                                 title="Toggle advanced options" onclick="MoreToggle(false)">&#x25B2;</a>
                         </div> --}}
                     </div>
@@ -5015,9 +4867,9 @@
             var r = '', c = 0, current = null, count = 0, scount = 0, displayedMeshes = {}, view = Q('viewselect').value, groups = {}, groupCount = {};
             QV('xdevices', view != 4);
             QV('xdevicesmap', view == 4);
-            QV('devListToolbar', view < 3);
-            QV('kvmListToolbar', (view == 3) || (view == 5));
-            QV('devMapToolbar', view == 4);
+            QVH('devListToolbar', view < 3);
+            QVH('kvmListToolbar', (view == 3) || (view == 5));
+            QVH('devMapToolbar', view == 4);
             QV('devListToolbarSize', (view == 3) || (view == 5));
             QV('devListToolbarSettings', view == 2);
             QV('NoMeshesPanel', (nodes.length == 0) && (meshcount == 0));
@@ -5868,7 +5720,15 @@
                 }
                 if (count > 8) {
                     setModalContent('xxAddAgent', 'Connect All', format("Are you sure you want to connect to {0} devices?", count));
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { connectAllKvmFunction(true); });
+                    var closeFunc = function(event,a) {
+                        document.getElementById('xxAddAgentModal').removeEventListener('hide.bs.modal', closeFunc);
+                        Q('autoConnectDesktopCheckbox').checked = false;
+                    }
+                    document.getElementById('xxAddAgentModal').addEventListener('hide.bs.modal', closeFunc);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => {
+                        document.getElementById('xxAddAgentModal').removeEventListener('hide.bs.modal', closeFunc);
+                        connectAllKvmFunction(true);
+                    });
                     return;
                 }
             }
@@ -6471,10 +6331,12 @@
             if (xxModal == null) {
                 QE(okButtonId, true);
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
-                document.getElementById(modalId).addEventListener('hidden.bs.modal', function (event) {
+                var hiddenModal = function (event) {
                     if (xxModal) { xxModal.dispose(); xxModal = null; }
                     if (xxdialogMode != 0) { xxdialogMode = 0; }
-                });
+                    document.getElementById(modalId).removeEventListener('hidden.bs.modal', hiddenModal);
+                }
+                document.getElementById(modalId).addEventListener('hidden.bs.modal', hiddenModal);
             }
             xxModal.show();
             document.getElementById(okButtonId).onclick = function () {
@@ -6486,7 +6348,6 @@
                     if (xxModal) { xxModal.hide(); }
                 }
             };
-
         }
 
         function account_createMesh() {
@@ -7345,27 +7206,6 @@
             var cmenu = elem.attributes.cmenu.value;
 
             switch (cmenu) {
-                case 'filesConnectButton': {
-                    // Files connect button context menu
-                    if ((currentNode == null) || (currentNode.agent == null)) return true;
-                    contextelement = elem;
-                    showContextMenuDiv(document.getElementById('filesShellContextMenu'), event.pageX, event.pageY);
-                    break;
-                }
-                case 'deskConnectButton': {
-                    // Desktop connect button context menu
-                    if ((currentNode == null) || (currentNode.agent == null)) return true;
-                    contextelement = elem;
-                    showContextMenuDiv(document.getElementById('deskConnectContextMenu'), event.pageX, event.pageY);
-                    break;
-                }
-                case 'deskDisconnectButton': {
-                    // Desktop disconnect button context menu
-                    if ((currentNode == null) || (currentNode.agent == null)) return true;
-                    contextelement = elem;
-                    showContextMenuDiv(document.getElementById('deskDisconnectContextMenu'), event.pageX, event.pageY);
-                    break;
-                }
                 case 'devsContentMenu': {
                     // Device content menu
                     contextelement = elem;
@@ -7676,9 +7516,6 @@
         function hideContextMenu() {
             QV('contextMenu', false);
             QV('meshContextMenu', false);
-            QV('filesShellContextMenu', false);
-            QV('deskConnectContextMenu', false);
-            QV('deskDisconnectContextMenu', false);
             QV('altPortContextMenu', false);
             QV('rfbPortContextMenu', false);
             QV('sshPortContextMenu', false);
@@ -11763,7 +11600,15 @@
                 x += '</div>';
             }
             setModalContent('xxAddAgent', 'Authentication', x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => func(11, 'ssh'));
+            var closeFunc = function(event,a) {
+                document.getElementById('xxAddAgentModal').removeEventListener('hide.bs.modal', closeFunc);
+                connectTerminal();
+            }
+            document.getElementById('xxAddAgentModal').addEventListener('hide.bs.modal', closeFunc);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => {
+                document.getElementById('xxAddAgentModal').removeEventListener('hide.bs.modal', closeFunc);
+                func(11, 'ssh');
+            });
             Q('dp2user').focus();
             sshAuthUpdate();
             setTimeout(sshAuthUpdate, 50);
@@ -12078,9 +11923,8 @@
 
         function onFilesStateChange(xfiles, state) {
             setSessionActivity();
-            QV('p13Connect', (state == 0) && (filesNode.mtype == 2)); QV('p13Connectdrop', (state == 0) && (filesNode.mtype == 2));
-            QV('p13Connects', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
-            QV('p13Connectsdrop', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
+            QV('p13Connectspan', (state == 0) && (filesNode.mtype == 2)); // Files Connect button and dropdown
+            QV('p13Connectsspan', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));  // Files SFTP Connect button and dropdown
             QV('p13Disconnect', state != 0);
             var str = StatusStrs[state];
             if (state == 3) {
@@ -14806,7 +14650,7 @@
             }
 
             // Display device group note support
-            if (meshrights & 1) { x += '<br><input type=button class="btn btn-outline-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
+            if (meshrights & 1) { x += '<br><input type=button class="btn btn-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
             x += '<br style=clear:both><br>';
             if (meshrights & 2) {
                 x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog()"><i class="fa-solid fa-plus-circle"></i> ' + "Add Users" + '</button>';
@@ -17724,7 +17568,7 @@
             x += '</table></div><br />';
 
             if ((userinfo.siteadmin & 256) != 0) {
-                x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponentEx(group._id) + '") />';
+                x += '<input type=button class="btn btn-primary btn-sm" value="' + "Broadcast" + '" title="' + "Send a notice to all users in this group." + '" onclick=showUserBroadcastDialog("' + encodeURIComponentEx(group._id) + '") />';
             }
 
             // Setup the panel
@@ -18162,18 +18006,18 @@
             x += '</table></div><br />';
 
             // Add action buttons
-            x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
-            if (user.phone && (features & 0x02000000)) { x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
-            if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
-            if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
+            x += '<input type=button class="btn btn-primary btn-sm" value="' + "Notes" + '" title="' + "View notes about this user" + '" onclick=showNotes(false,"' + encodeURIComponentEx(user._id) + '") />';
+            if (user.phone && (features & 0x02000000)) { x += '<input type=button class="btn btn-primary btn-sm" value="' + "SMS" + '" title="' + "Send a SMS message to this user" + '" onclick=showSendSMS("' + encodeURIComponentEx(user._id) + '") />'; }
+            if (user.msghandle && (features2 & 0x02000000)) { x += '<input type=button class="btn btn-primary btn-sm" value="' + "Message" + '" title="' + "Send a message to this user" + '" onclick=showSendMessage("' + encodeURIComponentEx(user._id) + '") />'; }
+            if ((typeof user.email == 'string') && (user.emailVerified === true) && (features & 0x00000040)) { x += '<input type=button class="btn btn-primary btn-sm" value="' + "Email" + '" title="' + "Send a email message to this user" + '" onclick=showSendEmail("' + encodeURIComponentEx(user._id) + '") />'; }
             if (!self && ((activeSessions > 0) || ((features2 & 8) && (user.webpush)))) {
-                x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
-                x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + "Chat" + '" title="' + "Chat" + '" onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />';
+                x += '<input type=button class="btn btn-primary btn-sm" value="' + "Notify" + '" title="' + "Send user notification" + '" onclick=showUserAlertDialog(event,"' + encodeURIComponentEx(user._id) + '") />';
+                x += '<input type=button class="btn btn-primary btn-sm" value="' + "Chat" + '" title="' + "Chat" + '" onclick=userChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '") />';
                 if ((activeSessions > 0) && (serverinfo != null) && (serverinfo.altmessenging != null)) {
                     for (var i in serverinfo.altmessenging) {
                         var am = serverinfo.altmessenging[i];
                         if ((am.type == null) || (am.type == 'user')) {
-                            x += '<input type=button class="btn btn-outline-primary btn-sm" value="' + EscapeHtml(am.name) + '" onclick=altUserChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '",' + i + ') />';
+                            x += '<input type=button class="btn btn-primary btn-sm" value="' + EscapeHtml(am.name) + '" onclick=altUserChat(event,"' + encodeURIComponentEx(user._id) + '","' + encodeURIComponentEx(user.name) + '",' + i + ') />';
                         }
                     }
                 }
