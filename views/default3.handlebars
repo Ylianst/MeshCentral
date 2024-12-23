@@ -2867,9 +2867,10 @@
             QV('authPhoneNumberCheck', (userinfo.phone != null));
             QV('authMessagingCheck', (userinfo.msghandle != null));
             QV('authEmailSetupCheck', (userinfo.otpekey == 1) && (userinfo.email != null) && (userinfo.emailVerified == true));
-            QV('authDuoSetupCheck', (userinfo.otpduo == 1));
+            QV('authDuoSetupCheck', (userinfo.otpduo == 1) && ((features2 & 0x20000000) != 0));
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0)));
+            QV('manageDuoApp', (serverinfo.lock2factor != true) && ((features2 & 0x20000000) != 0));
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 0x40) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
@@ -13844,9 +13845,9 @@
         }
 
         function account_manageAuthDuo() {
-            if (xxdialogMode || ((features & 0x00800000) == 0)) return;
+            if (xxdialogMode || ((features2 & 0x20000000) == 0)) return;
             var duoU2Fenabled = ((userinfo.otpduo == 1));
-            setModalContent('xxAddAgent', 'Duo Authentication', "When enabled, on each login, you will be given the option to login using Duo for added security." + '<br /><br /><label><input id=duo2facheck type=checkbox class="form-check-input me-2" ' + (duoU2Fenabled ? 'checked' : '') + '/>' + "Enable Duo two-factor authentication." + '</label>');
+            setModalContent('xxAddAgent', 'Duo Authentication', "When enabled, on each login, you will be given the option to use Duo for added security." + '<br /><br /><label><input id=duo2facheck type=checkbox class="form-check-input me-2" ' + (duoU2Fenabled ? 'checked' : '') + '/>' + "Enable Duo two-factor authentication." + '</label>');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 if (duoU2Fenabled != Q('duo2facheck').checked) { meshserver.send({ action: 'otpduo', enabled: Q('duo2facheck').checked }); }
             });
@@ -19790,7 +19791,8 @@
             showModal('xxAddAgentModal', 'idx_dlgOkButton', setServerTracingEx);
         }
 
-        function setServerTracingEx(b) {
+        function setServerTracingEx() {
+            var b = 1;
             var sources = [], allsources = ['cookie', 'dispatch', 'main', 'peer', 'web', 'webrequest', 'relay', 'webrelaydata', 'webrelay', 'mps', 'mpscmd', 'swarm', 'swarmcmd', 'agentupdate', 'agent', 'cert', 'db', 'email', 'amt', 'httpheaders', 'authlog'];
             if (b == 1) { for (var i = 1; i < 22; i++) { try { if (Q('p41c' + i).checked) { sources.push(allsources[i - 1]); } } catch (ex) { } } }
             meshserver.send({ action: 'traceinfo', traceSources: sources });
