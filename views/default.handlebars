@@ -2362,7 +2362,6 @@
             QV('authAppSetupCheck', userinfo.otpsecret == 1);
             QV('manageAuthApp', (serverinfo.lock2factor != true) && ((userinfo.otpsecret == 1) || ((features2 & 0x00020000) == 0))); 
             QV('manageDuoApp', (serverinfo.lock2factor != true) && ((features2 & 0x20000000) != 0));
-            console.log('duo', (serverinfo.lock2factor != true) && ((features2 & 0x20000000) != 0));
             QV('authKeySetupCheck', userinfo.otphkeys > 0);
             QV('authPushAuthDevCheck', (userinfo.otpdev > 0) && ((features2 & 0x40) != 0));
             QV('authCodesSetupCheck', userinfo.otpkeys > 0);
