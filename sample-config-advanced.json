@@ -454,6 +454,11 @@
       "_redirects": {
         "meshcommander": "https://www.meshcommander.com/"
       },
+      "_duo2factor": {
+        "integrationkey": "mykey",
+        "secretkey": "mysecret",
+        "apihostname": "api-xxxxxxxxxxx.duosecurity.com"
+      },
       "_yubikey": {
         "id": "0000",
         "secret": "xxxxxxxxxxxxxxxxxxxxx",

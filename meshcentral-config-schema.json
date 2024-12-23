@@ -1665,24 +1665,9 @@
                 "description": "Set to false to disable SMS 2FA."
               },
               "duo2factor": {
-                "type": "object",
-                "properties": {
-                  "integrationkey": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Integration key from Duo"
-                  },
-                  "secretkey": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Secret key from Duo"
-                  },
-                  "apihostname": {
-                    "type": "string",
-                    "default": "",
-                    "description": "API Hostname from Duo"
-                  }
-                }
+                "type": "boolean",
+                "default": true,
+                "description": "Set to false to disable Duo 2FA."
               },
               "push2factor": {
                 "type": "boolean",
@@ -2703,6 +2688,26 @@
               "type": "string"
             },
             "description": "This is used to create HTTP redirections. For example setting \"redirects\": { \"example\":\"https://example.com\" } will make it so that anyone accessing /example on the server will get redirected to the specified URL."
+          },
+          "duo2factor": {
+            "type": "object",
+            "properties": {
+              "integrationkey": {
+                "type": "string",
+                "default": "",
+                "description": "Integration key from Duo"
+              },
+              "secretkey": {
+                "type": "string",
+                "default": "",
+                "description": "Secret key from Duo"
+              },
+              "apihostname": {
+                "type": "string",
+                "default": "",
+                "description": "API Hostname from Duo"
+              }
+            }
           },
           "yubikey": {
             "type": "object",

@@ -3633,6 +3633,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Do not allow this command if 2FA's are locked
                     if ((domain.passwordrequirements) && (domain.passwordrequirements.lock2factor == true)) return;
 
+                    // Do not allow if Duo is not supported
+                    if ((typeof domain.duo2factor != 'object') || (typeof domain.duo2factor.integrationkey != 'string') || (typeof domain.duo2factor.secretkey != 'string') || (typeof domain.duo2factor.apihostname != 'string')) return;
+
+                    // Do not allow if Duo is disabled
+                    if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.duo2factor == false)) return;
+
                     // Do not allow this command when logged in using a login token
                     if (req.session.loginToken != null) break;
 
