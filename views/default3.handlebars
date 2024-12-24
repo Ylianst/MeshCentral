@@ -1776,16 +1776,9 @@
             <div class="footer2" style="display:none;">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
-                        <span>Themes: </span>
-                        <select id="theme-switcher" class="form-select form-select-xs">
-                            {{!-- <option value="default">Default</option> --}}
-                            <option value="cerulean">Cerulean</option>
-                            <option value="cosmo">Cosmo</option>
-                            <option value="cyborg">Cyborg</option>
-                        </select>
                     </div>
                     <div class="col-md-6">
-                        <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify Email</a>
+                        <a id="verifyEmailId2" href=# onclick="account_showVerifyEmail()">Verify Email</a>
                         &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
                     </div>
                 </div>
@@ -14211,25 +14204,30 @@
                 { value: "yeti", label: "Yeti" },
                 { value: "zephyr", label: "Zephyr" }
             ];
+
             var currentTheme = getstore('theme') || 'default';
             var lastThemes = JSON.parse(getstore('lastThemes') || '[]');
 
+            // Create a set of themes already in "Recent Themes" to avoid duplicates
+            var recentThemesSet = new Set(lastThemes);
             var x = '<div class="form-group"><label for="theme-switcher">Select a theme:</label>';
             x += '<select id="theme-switcher" class="form-select" onchange="account_switchThemeEx()">';
-            // Add last 4 themes to the top of the select box
+            // Add "Recent Themes" optgroup
             if (lastThemes.length > 0) {
                 x += '<optgroup label="Recent Themes">';
                 lastThemes.forEach(function (theme) {
                     var selected = theme === currentTheme ? ' selected' : '';
-                    x += '<option value="' + theme + '"' + selected + '>' + theme.charAt(0).toUpperCase() + theme.slice(1) + '</option>';
+                    x += `<option value="${theme}"${selected}>${theme.charAt(0).toUpperCase() + theme.slice(1)}</option>`;
                 });
                 x += '</optgroup>';
             }
-            // Add all themes
+            // Add "All Themes" optgroup, excluding duplicates
             x += '<optgroup label="All Themes">';
             themes.forEach(function (theme) {
-                var selected = theme.value === currentTheme ? ' selected' : '';
-                x += '<option value="' + theme.value + '"' + selected + '>' + theme.label + '</option>';
+                if (!recentThemesSet.has(theme.value)) {
+                    var selected = theme.value === currentTheme ? ' selected' : '';
+                    x += `<option value="${theme.value}"${selected}>${theme.label}</option>`;
+                }
             });
             x += '</optgroup>';
             x += '</select></div>';
@@ -14246,10 +14244,8 @@
             var themeStylesheet = document.getElementById("theme-stylesheet");
             var newThemeStylesheet = `styles/themes/${safeTheme}/bootstrap.min.css`;
             themeStylesheet.href = newThemeStylesheet;
-
             // Save selected theme
             putstore('theme', selectedTheme);
-
             // Update last 4 themes selected
             var lastThemes = JSON.parse(getstore('lastThemes') || '[]');
             if (!lastThemes.includes(selectedTheme)) {
