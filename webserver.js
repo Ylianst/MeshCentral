@@ -1162,7 +1162,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
                 var msg2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)) && (parent.msgserver != null) && (parent.msgserver.providers != 0) && (user.msghandle != null));
                 var push2fa = ((parent.firebase != null) && (user.otpdev != null));
-                var duo2fa = ((((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) || ((typeof domain.passwordrequirements != 'object') && (typeof domain.passwordrequirements.duo2factor != false))) && (user.otpduo != null));
+                var duo2fa = ((((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) || ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.duo2factor != false))) && (user.otpduo != null));
 
                 // Check if two factor can be skipped
                 const twoFactorSkip = checkUserOneTimePasswordSkip(domain, user, req, loginOptions);
@@ -8925,7 +8925,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Filter the user web site and only output state that we need to keep
-    const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar','loctag'];
+    const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar','loctag','theme','lastThemes'];
     const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling', 'agentencoding']
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
