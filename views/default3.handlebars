@@ -597,6 +597,7 @@
                                 <a href=# onclick="return account_showDeleteAccount()">Delete account</a><br />
                             </span>
                             <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
+                            <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
                         </p>
                         <br style=clear:both />
                     </div>
@@ -1065,7 +1066,7 @@
                                             <li class="ass"><a class="dropdown-item" onclick="cmtermaction(9,0,event)">User PowerShell</a></li>
                                             <li class="lin"><a class="dropdown-item" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></a></li>
                                             <li class="lin"><a class="dropdown-item" onclick="cmtermaction(8,0,event)">User Shell</a></li>
-                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(100,0,event)">Login Shell</a></li>                                          
+                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(100,0,event)">Login Shell</a></li>
                                         </ul>
                                     </div>
                                     <div class="btn-group dropdown-center me-1" id=connectbutton2sspan>
@@ -1111,7 +1112,7 @@
                             <td class="areaFoot d-flex flex-wrap">
                                 <div class="d-flex align-items-center">
                                     <input type=button onkeypress="return false" onkeydown="return false"
-                                        class="btn btn-primary btn-sm me-1" id="ctrlcbutton" 
+                                        class="btn btn-primary btn-sm me-1" id="ctrlcbutton"
                                         value="Ctl-C" onclick="termSendKey(3,'ctrlcbutton')" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
                                         class="btn btn-primary btn-sm me-1" id="ctrlxbutton"
@@ -1148,7 +1149,7 @@
                                     </span>
                                     <select id="specialkeylist" class="form-select-sm me-1" onkeypress="return false"></select>
                                     <input id="specialkeylistinput" type="button" onkeypress="return false"
-                                        class="btn btn-primary btn-sm me-1" value="Send" 
+                                        class="btn btn-primary btn-sm me-1" value="Send"
                                         title="Send the selected special key" onclick="sendSpecialKey()" />
                                 </div>
                             </td>
@@ -1775,16 +1776,9 @@
             <div class="footer2" style="display:none;">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
-                        <span>Themes: </span>
-                        <select id="theme-switcher" class="form-select form-select-xs">
-                            {{!-- <option value="default">Default</option> --}}
-                            <option value="cerulean">Cerulean</option>
-                            <option value="cosmo">Cosmo</option>
-                            <option value="cyborg">Cyborg</option>
-                        </select>
                     </div>
                     <div class="col-md-6">
-                        <a id="verifyEmailId2" style="display:none" href=# onclick="account_showVerifyEmail()">Verify Email</a>
+                        <a id="verifyEmailId2" href=# onclick="account_showVerifyEmail()">Verify Email</a>
                         &nbsp;<a id="termsLinkFooter" href=terms>Terms &amp; Privacy</a>
                     </div>
                 </div>
@@ -14181,6 +14175,89 @@
                 if (features & 0x00010000) { r.hint = Q('apasswordhint').value; }
                 meshserver.send(r);
             }
+        }
+
+        function account_showThemesSwitcher() {
+            if (xxdialogMode) return false;
+            var themes = [
+                { value: "default", label: "Default" },
+                { value: "cerulean", label: "Cerulean" },
+                { value: "cosmo", label: "Cosmo" },
+                { value: "cyborg", label: "Cyborg" },
+                { value: "darkly", label: "Darkly" },
+                { value: "flatly", label: "Flatly" },
+                { value: "journal", label: "Journal" },
+                { value: "litera", label: "Litera" },
+                { value: "lumen", label: "Lumen" },
+                { value: "lux", label: "Lux" },
+                { value: "materia", label: "Materia" },
+                { value: "minty", label: "Minty" },
+                { value: "morph", label: "Morph" },
+                { value: "pulse", label: "Pulse" },
+                { value: "sandstone", label: "Sandstone" },
+                { value: "simplex", label: "Simplex" },
+                { value: "sketchy", label: "Sketchy" },
+                { value: "solar", label: "Solar" },
+                { value: "spacelab", label: "Spacelab" },
+                { value: "united", label: "United" },
+                { value: "vapor", label: "Vapor" },
+                { value: "yeti", label: "Yeti" },
+                { value: "zephyr", label: "Zephyr" }
+            ];
+
+            var currentTheme = getstore('theme') || 'default';
+            var lastThemes = JSON.parse(getstore('lastThemes') || '[]');
+
+            // Create a set of themes already in "Recent Themes" to avoid duplicates
+            var recentThemesSet = new Set(lastThemes);
+            var x = '<div class="form-group"><label for="theme-switcher">Select a theme:</label>';
+            x += '<select id="theme-switcher" class="form-select" onchange="account_switchThemeEx()">';
+            // Add "Recent Themes" optgroup
+            if (lastThemes.length > 0) {
+                x += '<optgroup label="Recent Themes">';
+                lastThemes.forEach(function (theme) {
+                    var selected = theme === currentTheme ? ' selected' : '';
+                    x += `<option value="${theme}"${selected}>${theme.charAt(0).toUpperCase() + theme.slice(1)}</option>`;
+                });
+                x += '</optgroup>';
+            }
+            // Add "All Themes" optgroup, excluding duplicates
+            x += '<optgroup label="All Themes">';
+            themes.forEach(function (theme) {
+                if (!recentThemesSet.has(theme.value)) {
+                    var selected = theme.value === currentTheme ? ' selected' : '';
+                    x += `<option value="${theme.value}"${selected}>${theme.label}</option>`;
+                }
+            });
+            x += '</optgroup>';
+            x += '</select></div>';
+
+            setModalContent('xxAddAgent', 'Switch Theme', x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            return false;
+        }
+
+        function account_switchThemeEx() {
+            var themeSwitcher = document.getElementById("theme-switcher");
+            const selectedTheme = themeSwitcher.value;
+            const safeTheme = encodeURIComponent(selectedTheme);
+            var themeStylesheet = document.getElementById("theme-stylesheet");
+            var newThemeStylesheet = `styles/themes/${safeTheme}/bootstrap.min.css`;
+            themeStylesheet.href = newThemeStylesheet;
+            // Save selected theme
+            putstore('theme', selectedTheme);
+            // Update last 4 themes selected
+            var lastThemes = JSON.parse(getstore('lastThemes') || '[]');
+            if (!lastThemes.includes(selectedTheme)) {
+                if (lastThemes.length >= 4) {
+                    lastThemes.pop();
+                }
+                lastThemes.unshift(selectedTheme);
+            } else {
+                lastThemes = lastThemes.filter(theme => theme !== selectedTheme);
+                lastThemes.unshift(selectedTheme);
+            }
+            putstore('lastThemes', JSON.stringify(lastThemes));
         }
 
         function account_createMesh() {
