@@ -12894,7 +12894,7 @@
             } else {
                 setDialogMode(2, "Duo Authentication", 3, function () {
                     meshserver.send({ action: 'otpduo', enabled: false });
-                }, '<p><label><input id=duo2facheck type=checkbox onclick=account_manageAuthDuoConfirm() />' + "Confirm disabling 2FA Duo login security." + '</label></p>');
+                }, '<p><label><input id=duo2facheck type=checkbox onclick=account_manageAuthDuoConfirm() />' + "Confirm disabling 2FA Duo login security." + '</label></p>' + '<p style="text-align: center"><img src="images/duo-2fa-250-disable.png"></p>');
                 QE('idx_dlgOkButton', false);
             }
         }
