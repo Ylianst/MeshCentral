@@ -13847,6 +13847,27 @@
             });
         }
 
+        function account_manageAuthDuo() {
+            if (xxdialogMode || ((features2 & 0x20000000) == 0)) return;
+            var duoU2Fenabled = ((userinfo.otpduo == 1));
+            if (duoU2Fenabled == false) {
+                setModalContent('xxAddAgent', 'Duo Authentication', "Confirm enabling of Duo 2FA login security. Once enabled you will be given the option to use Duo at login for added security. Click ok to go thru the steps to enable Duo." + '<p style="text-align:center;margin-top:10px"><img src="images/duo-2fa-250.png"></p>');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                    window.location.href = '/add-duo?rurl=' + encodeURIComponentEx(window.location.href) + ((urlargs.key)?('&key=' + urlargs.key):'');
+                });
+            } else {
+                setModalContent('xxAddAgent', 'Duo Authentication', '<p><label><input id=duo2facheck type=checkbox onclick=account_manageAuthDuoConfirm() />' + ' ' + "Confirm disabling 2FA Duo login security." + '</label></p>' + '<p style="text-align: center"><img src="images/duo-2fa-250-disable.png"></p>');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                    meshserver.send({ action: 'otpduo', enabled: false });
+                });
+                QE('idx_dlgOkButton', false);
+            }
+        }
+
+        function account_manageAuthDuoConfirm() {
+            QE('idx_dlgOkButton', Q('duo2facheck').checked);
+        }
+
         function account_manageAuthApp() {
             if (xxdialogMode || ((features & 4096) == 0)) return;
             if (userinfo.otpsecret == 1) { account_removeOtp(); } else { account_addOtp(); }
