@@ -3645,14 +3645,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Check input
-                    if (typeof command.enabled != 'boolean') return;
+                    if ((typeof command.enabled != 'boolean') || (command.enabled != false)) return;
 
                     // See if we really need to change the state
-                    if ((command.enabled === true) && (user.otpduo != null)) return;
                     if ((command.enabled === false) && (user.otpduo == null)) return;
 
                     // Change the duo 2FA of this user
-                    if (command.enabled === true) { user.otpduo = {}; } else { delete user.otpduo; }
+                    delete user.otpduo;
                     parent.db.SetUser(user);
                     ws.send(JSON.stringify({ action: 'otpduo', success: true, enabled: command.enabled })); // Report success
 

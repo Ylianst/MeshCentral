@@ -12887,9 +12887,15 @@
         function account_manageAuthDuo() {
             if (xxdialogMode || ((features2 & 0x20000000) == 0)) return;
             var duoU2Fenabled = ((userinfo.otpduo == 1));
-            setDialogMode(2, "Duo Authentication", 1, function () {
-                if (duoU2Fenabled != Q('duo2facheck').checked) { meshserver.send({ action: 'otpduo', enabled: Q('duo2facheck').checked }); }
-            }, "When enabled, on each login, you will be given the option to use Duo for added security." + '<br /><br /><label><input id=duo2facheck type=checkbox ' + (duoU2Fenabled?'checked':'') + '/>' + "Enable Duo two-factor authentication." + '</label>');
+            if (duoU2Fenabled == false) {
+                setDialogMode(2, "Duo Authentication", 3, function () {
+                    window.location.href = '/add-duo?rurl=' + encodeURIComponentEx(window.location.href) + ((urlargs.key)?('&key=' + urlargs.key):'');
+                }, "Confirm enabling of Duo 2FA security. Once enabled you will be given the option to use Due security at login. Click ok to go thru the steps to enable Duo.");
+            } else {
+                setDialogMode(2, "Duo Authentication", 3, function () {
+                    meshserver.send({ action: 'otpduo', enabled: false });
+                }, "Confirm disabling Duo security.");
+            }
         }
 
         function account_manageAuthApp() {
