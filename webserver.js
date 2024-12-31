@@ -7078,7 +7078,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             sec.duostate = client.generateState();
                             sec.duoconfig = 1;
                             req.session.e = parent.encryptSessionData(sec);
-                            parent.debug('web', 'Redirecting user ' + req.session.userid + ' to Duo');
+                            parent.debug('web', 'Redirecting user ' + req.session.userid + ' to Duo for configuration');
                             res.redirect(client.createAuthUrl(req.session.userid.split('/')[2], sec.duostate));
                         }
                     });
