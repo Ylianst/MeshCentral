@@ -1049,6 +1049,7 @@ module.exports.CertificateOperations = function (parent) {
                             config.domains[i].certs = r.dns[i];
                         } else {
                             console.log("WARNING: File \"webserver-" + i + "-cert-public.crt\" missing, domain \"" + i + "\" will not work correctly.");
+                            rcountmax++;
                         }
                     } else {
                         // If the web certificate already exist, load it. Load both certificate and private key
