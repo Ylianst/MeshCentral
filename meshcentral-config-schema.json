@@ -767,6 +767,14 @@
           "default": false,
           "description": "When set to true, the MPS server will only accept TLS 1.2 and 1.3 connections. Older Intel AMT devices will not be able to connect."
         },
+        "prometheus": {
+          "type": [
+            "boolean",
+            "number"
+          ],
+          "default": false,
+          "description": "When set to true, a prometheus metrics endpoint will be available \"0.0.0.0:9464/metrics\". If you specify a number instead, the prometheus metrics will listen on this port instead of the default 9464."
+        },
         "no2FactorAuth": {
           "type": "boolean",
           "default": false
