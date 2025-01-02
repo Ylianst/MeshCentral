@@ -1278,6 +1278,8 @@ And taking authentication to the next step is removing the login page entirely. 
   <iframe width="320" height="180" src="https://www.youtube.com/embed/-WKY8Wy0Huk" frameborder="0" allowfullscreen></iframe>
 </div>
 
+You can also setup [Duo 2FA](https://github.com/Ylianst/MeshCentral/blob/master/docs/docs/meshcentral/security.md#duo-2fa-setup) which is a commertial offering.
+
 ## Server Backup & Restore
 
 It’s very important that the server be backed up regularly and that a backup be kept offsite. Luckily, performing a full backup of the MeshCentral server is generally easy to do. For all installations make sure to back up the following two folders and all sub-folders.
