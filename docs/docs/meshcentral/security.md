@@ -38,7 +38,7 @@ MeshCentral supports Duo as a way for users to add two-factor authentication and
 
 Copy these three values in a safe place and do not share these values with anyone. Then, in your MeshCentral config.json file, add the following in the domains section:
 
-```
+```json
 {
   "domains": {
     "": {
