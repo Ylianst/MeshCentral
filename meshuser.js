@@ -5089,7 +5089,29 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Merge any last connection information
                             const lc = lastConnects['lc' + results[i].node._id];
-                            if (lc != null) { delete lc._id; delete lc.type;; delete lc.meshid; delete lc.domain; results[i].lastConnect = lc; }
+                            if (lc != null) { delete lc._id; delete lc.type; delete lc.meshid; delete lc.domain; results[i].lastConnect = lc; }
+
+                            // Remove any connectivity and power state information, that should not be in the database anyway.
+                            // TODO: Find why these are sometimes saved in the db.
+                            if (results[i].node.conn != null) { delete results[i].node.conn; }
+                            if (results[i].node.pwr != null) { delete results[i].node.pwr; }
+                            if (results[i].node.agct != null) { delete results[i].node.agct; }
+                            if (results[i].node.cict != null) { delete results[i].node.cict; }
+
+                            // Add the connection state
+                            var state = parent.parent.GetConnectivityState(results[i].node._id);
+                            if (state) {
+                                results[i].node.conn = state.connectivity;
+                                results[i].node.pwr = state.powerState;
+                                if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[results[i].node._id]; if (agent != null) { results[i].node.agct = agent.connectTime; } }
+
+                                // Use the connection time of the CIRA/Relay connection
+                                if ((state.connectivity & 2) != 0) {
+                                    var ciraConnection = parent.parent.mpsserver.GetConnectionToNode(results[i].node._id, null, true);
+                                    if ((ciraConnection != null) && (ciraConnection.tag != null)) { results[i].node.cict = ciraConnection.tag.connectTime; }
+                                }
+                            }
+                            
                         }
 
                         var output = null;
