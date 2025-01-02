@@ -1,6 +1,6 @@
-# Meshcentral2 Guide
+# MeshCentral Guide
 
-[MeshCentral2 Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
+[MeshCentral Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
 
 MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
 
