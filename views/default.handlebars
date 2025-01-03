@@ -3179,9 +3179,11 @@
                         if (currentNode && (message.event.nodeid == currentNode._id) && (currentDeviceEvents != null)) {
                             // If this event has a nodeid and we are looking at this node, update the log in real time.
                             if ((message.event.action == p16filterevents.value) || (p16filterevents.value == "")) {
-                                currentDeviceEvents.unshift(message.event);
-                                var eventLimit = parseInt(p16limitdropdown.value);
-                                while (currentDeviceEvents.length > eventLimit) { currentDeviceEvents.pop(); } // Remove element(s) at the end
+                                if(currentDeviceEvents != null) {
+                                    currentDeviceEvents.unshift(message.event);
+                                    var eventLimit = parseInt(p16limitdropdown.value);
+                                    while (currentDeviceEvents.length > eventLimit) { currentDeviceEvents.pop(); } // Remove element(s) at the end
+                                }
                                 mainUpdate(1024);
                             }
                         }
@@ -3189,18 +3191,22 @@
                         if (currentUser && (message.event.userid == currentUser._id)) {
                             // If this event has a userid and we are looking at this user, update the log in real time.
                             if ((message.event.action == p31filterevents.value) || (p31filterevents.value == "")) {
-                                currentUserEvents.unshift(message.event);
-                                var eventLimit = parseInt(p31limitdropdown.value);
-                                while (currentUserEvents.length > eventLimit) { currentUserEvents.pop(); } // Remove element(s) at the end
+                                if(currentUserEvents != null) {
+                                    currentUserEvents.unshift(message.event);
+                                    var eventLimit = parseInt(p31limitdropdown.value);
+                                    while (currentUserEvents.length > eventLimit) { currentUserEvents.pop(); } // Remove element(s) at the end
+                                }
                                 mainUpdate(2048);
                             }
                         }
 
                         // Add this event to the main events log.
                         if ((message.event.action == p3filterevents.value) || (p3filterevents.value == "")) {
-                            events.unshift(message.event);
-                            var eventLimit = parseInt(p3limitdropdown.value);
-                            while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
+                            if(events != null) {
+                                events.unshift(message.event);
+                                var eventLimit = parseInt(p3limitdropdown.value);
+                                while (events.length > eventLimit) { events.pop(); } // Remove element(s) at the end
+                            }
                             mainUpdate(32);
                         }
                     }
