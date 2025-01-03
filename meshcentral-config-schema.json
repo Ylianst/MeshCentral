@@ -864,7 +864,7 @@
             "boolean",
             "object"
           ],
-          "description": "If set to \"true\", automatic backups of your MeshCentral data will be enabled. Alternatively, you can provide an object with additional values such as \"webdav\", \"backupPath\", \"backupIntervalHours\", and more.",
+          "description": "Enabled by default or if set to true. Disabled if set to false. An object can be provided with additional properties to set autobackup options.",
           "properties": {
             "mongoDumpPath": {
               "type": "string",
