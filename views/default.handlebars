@@ -2186,6 +2186,7 @@
         function reload() {
             var x = window.location.href;
             if (x.endsWith('/#')) { x = x.substring(0, x.length - 2); }
+            if (x.endsWith('#')) { x = x.substring(0, x.length - 1); }
             window.location.href = x;
         }
 
