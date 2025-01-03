@@ -8049,42 +8049,46 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.common.unEscapeAllLinksFieldName(docs);
 
                 var results = [], resultPendingCount = 0;
-                for (i in docs) {
-                    // Check device links, if a link points to an unknown user, remove it.
-                    parent.cleanDevice(docs[i]);
+                if (docs.length == 0) { // no results return blank array
+                    func(docs, type);
+                } else {
+                    for (i in docs) {
+                        // Check device links, if a link points to an unknown user, remove it.
+                        parent.cleanDevice(docs[i]);
 
-                    // Fetch the node from the database
-                    resultPendingCount++;
-                    const getNodeFunc = function (node, rights, visible) {
-                        if ((node != null) && (visible == true)) {
-                            const getNodeSysInfoFunc = function (err, docs) {
-                                const getNodeNetInfoFunc = function (err, docs) {
-                                    var netinfo = null;
-                                    if ((err == null) && (docs != null) && (docs.length == 1)) { netinfo = docs[0]; }
-                                    resultPendingCount--;
-                                    getNodeNetInfoFunc.results.push({ node: parent.CloneSafeNode(getNodeNetInfoFunc.node), sys: getNodeNetInfoFunc.sysinfo, net: netinfo });
-                                    if (resultPendingCount == 0) { func(getNodeFunc.results, type); }
+                        // Fetch the node from the database
+                        resultPendingCount++;
+                        const getNodeFunc = function (node, rights, visible) {
+                            if ((node != null) && (visible == true)) {
+                                const getNodeSysInfoFunc = function (err, docs) {
+                                    const getNodeNetInfoFunc = function (err, docs) {
+                                        var netinfo = null;
+                                        if ((err == null) && (docs != null) && (docs.length == 1)) { netinfo = docs[0]; }
+                                        resultPendingCount--;
+                                        getNodeNetInfoFunc.results.push({ node: parent.CloneSafeNode(getNodeNetInfoFunc.node), sys: getNodeNetInfoFunc.sysinfo, net: netinfo });
+                                        if (resultPendingCount == 0) { func(getNodeFunc.results, type); }
+                                    }
+                                    getNodeNetInfoFunc.results = getNodeSysInfoFunc.results;
+                                    getNodeNetInfoFunc.nodeid = getNodeSysInfoFunc.nodeid;
+                                    getNodeNetInfoFunc.node = getNodeSysInfoFunc.node;
+                                    if ((err == null) && (docs != null) && (docs.length == 1)) { getNodeNetInfoFunc.sysinfo = docs[0]; }
+
+                                    // Query the database for network information
+                                    db.Get('if' + getNodeSysInfoFunc.nodeid, getNodeNetInfoFunc);
                                 }
-                                getNodeNetInfoFunc.results = getNodeSysInfoFunc.results;
-                                getNodeNetInfoFunc.nodeid = getNodeSysInfoFunc.nodeid;
-                                getNodeNetInfoFunc.node = getNodeSysInfoFunc.node;
-                                if ((err == null) && (docs != null) && (docs.length == 1)) { getNodeNetInfoFunc.sysinfo = docs[0]; }
+                                getNodeSysInfoFunc.results = getNodeFunc.results;
+                                getNodeSysInfoFunc.nodeid = getNodeFunc.nodeid;
+                                getNodeSysInfoFunc.node = node;
 
-                                // Query the database for network information
-                                db.Get('if' + getNodeSysInfoFunc.nodeid, getNodeNetInfoFunc);
-                            }
-                            getNodeSysInfoFunc.results = getNodeFunc.results;
-                            getNodeSysInfoFunc.nodeid = getNodeFunc.nodeid;
-                            getNodeSysInfoFunc.node = node;
-
-                            // Query the database for system information
-                            db.Get('si' + getNodeFunc.nodeid, getNodeSysInfoFunc);
-                        } else { resultPendingCount--; }
-                        if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
+                                // Query the database for system information
+                                db.Get('si' + getNodeFunc.nodeid, getNodeSysInfoFunc);
+                            } else { resultPendingCount--; }
+                            if (resultPendingCount == 0) { func(getNodeFunc.results.join('\r\n'), type); }
+                        }
+                        getNodeFunc.results = results;
+                        getNodeFunc.nodeid = docs[i]._id;
+                        parent.GetNodeWithRights(domain, user, docs[i]._id, getNodeFunc);
                     }
-                    getNodeFunc.results = results;
-                    getNodeFunc.nodeid = docs[i]._id;
-                    parent.GetNodeWithRights(domain, user, docs[i]._id, getNodeFunc);
                 }
             });
         } else {
