@@ -1743,7 +1743,7 @@
                             var secret = message.secret;
                             if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                             else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                            QH('d2optinfo', format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret="' + message.secret + '" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                            QH('d2optinfo', format("Install" + ' <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" rel="noreferrer noopener" target=_blank>' + "Google Authenticator" + '</a> ' + "or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret="' + message.secret + '" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
                             QV('idx_dlgOkButton', true);
                             QE('idx_dlgOkButton', false);
                             Q('d2otpauthinput').focus();
@@ -1753,12 +1753,12 @@
                 }
                 case 'otpauth-setup': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? ('<b style=color:green>' + "Authenticator app activation successful." + '</b> ' + "You will now need a valid token to login again.") : ('<b style=color:red>' + "2-step login activation failed." + '</b> ' + "Clear the secret from the application and try again. You only have a few minutes to enter the proper code."));
                     break;
                 }
                 case 'otpauth-clear': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? ('<b>' + "Authenticator application removed." + '</b> ' + "You can reactivate this feature at any time.") : ('<b style=color:red>' + "2-step login activation removal failed." + '</b> ' + "Try again."));
                     break;
                 }
                 case 'otpauth-getpasswords': {
@@ -6351,7 +6351,7 @@
                 }
                 if (hardware.network && hardware.network.dns) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += addDetailItem("<b>DNS Servers</b>", hardware.network.dns.join(", "));
+                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', hardware.network.dns.join(", "));
                     x += '</div></td></tr>';
                 }
                 x += '</table>';
