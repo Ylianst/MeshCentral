@@ -3011,7 +3011,7 @@
                             var secret = message.secret;
                             if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                             else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                            QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + 'Secret <img src=images/link4.png height=10 width=10 title="' + "Copy Secret to clipboard" + '" style=cursor:pointer onclick=d2CopySecretToClip()>' + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                            QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install" + ' <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" rel="noreferrer noopener" target=_blank>' + "Google Authenticator" + '</a> ' + "or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + 'Secret <img src=images/link4.png height=10 width=10 title="' + "Copy Secret to clipboard" + '" style=cursor:pointer onclick=d2CopySecretToClip()>' + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
                             new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
                             QV('idx_dlgOkButton', true);
                             QE('idx_dlgOkButton', false);
@@ -3066,7 +3066,7 @@
                     if (xxdialogMode && (xxdialogTag != 'otpauth-hardware-manage')) return;
                     var start = '<div style="border-radius:6px;border:2px solid #CCC;background-color:#BBB;width:100%;box-sizing:border-box;margin-bottom:6px"><div style="margin:3px;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:bold"><table style=width:100%;text-align:left>';
                     var end =  '</table></div></div>';
-                    var x = "<a href=\"https://www.yubico.com/\" rel=\"noreferrer noopener\" target=\"_blank\">Hardware keys</a> are used as secondary login authentication.";
+                    var x = '<a href="https://www.yubico.com/" rel="noreferrer noopener" target="_blank">' + "Hardware keys" + '</a> ' + "are used as secondary login authentication.";
                     x += '<div style="max-height:150px;overflow-y:auto;overflow-x:hidden;margin-top:6px;margin-bottom:6px">';
                     if (message.keys && message.keys.length > 0) {
                         for (var i in message.keys) {
@@ -4898,13 +4898,13 @@
                     r += '<span style=line-height:20px>' + groupingTags + '</span>';
                 }
                 if (deviceViewSettings.devsCols.indexOf('windowsav') >= 0) { // Windows AV
-                    r += '<td style=text-align:center>' + ((node.wsc && node.wsc.antiVirus != null) ? (node.wsc.antiVirus == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>BAD</span>") : "");
+                    r += '<td style=text-align:center>' + ((node.wsc && node.wsc.antiVirus != null) ? (node.wsc.antiVirus == 'OK' ? '<span style=color:green>' + "OK" + '</span>' : '<span style=color:red>' + "BAD" + '</span>') : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) {// Windows Update
-                    r += '<td style=text-align:center>' + ((node.wsc && node.wsc.autoUpdate != null) ? (node.wsc.autoUpdate == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>BAD</span>") : "");
+                    r += '<td style=text-align:center>' + ((node.wsc && node.wsc.autoUpdate != null) ? (node.wsc.autoUpdate == 'OK' ? '<span style=color:green>' + "OK" + '</span>' : '<span style=color:red>' + "BAD" + '</span>') : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { // Windows Firewall
-                    r += '<td style=text-align:center>' + ((node.wsc && node.wsc.firewall != null) ? (node.wsc.firewall == 'OK' ? "<span style=color:green>OK</span>" : "<span style=color:red>BAD</span>") : "");
+                    r += '<td style=text-align:center>' + ((node.wsc && node.wsc.firewall != null) ? (node.wsc.firewall == 'OK' ? '<span style=color:green>' + "OK" + '</span>' : '<span style=color:red>' + "BAD" + '</span>') : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { // Last Boot Up Time
                     r += '<td style=text-align:center;font-size:x-small>' + ((node.lastbootuptime != null) ? printDateTime(new Date(node.lastbootuptime)) : "");
@@ -5614,10 +5614,10 @@
 
             // QR code agent install
             x += '<div id=agins_qrcode style=display:none;min-height:180px><a id=agins_qrimage_a rel=\"noreferrer noopener\" target=_blank><div id=agins_qrimage style=float:right;margin-left:10px;width:180px;height:180px;cursor:pointer></div></a><div>' + format("To add a mobile device to group \"{0}\", download the MeshAgent application and scan this QR code.", EscapeHtml(mesh.name)) + '</div>';
-            x += "<table style=width:180px>";
-            x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://play.google.com/store/apps/details?id=com.meshcentral.agent2\"><img style=cursor:pointer src=\"images/google-play-140.png\" width=140 srcset=\"images/google-play-280.png 2x\" /></a></td></tr>";
-            x += "<tr><td style=text-align:center><a rel=\"noreferrer noopener\" target=_blank href=\"https://www.amazon.co.uk/gp/product/B097Z4Q7SK/\"><img style=cursor:pointer src=\"images/amazon-appstore-140.png\"  width=140 srcset=\"images/amazon-appstore-280.png 2x\" /></a></td></tr>";
-            x += "</table>";
+            x += '<table style=width:180px>';
+            x += '<tr><td style=text-align:center><a title="' + "Google Play Store" + '"rel="noreferrer noopener" target=_blank href="https://play.google.com/store/apps/details?id=com.meshcentral.agent2"><img style=cursor:pointer src="images/google-play-140.png" width=140 srcset="images/google-play-280.png 2x" /></a></td></tr>';
+            x += '<tr><td style=text-align:center><a title="' + "Amazon App Store" + '" rel="noreferrer noopener" target=_blank href="https://www.amazon.co.uk/gp/product/B097Z4Q7SK/"><img style=cursor:pointer src="images/amazon-appstore-140.png"  width=140 srcset="images/amazon-appstore-280.png 2x" /></a></td></tr>';
+            x += '</table>';
             x += addHtmlValue("Android APK", '<a onclick=downloadFile("meshagents?id=14' + (urlargs.key?('&key=' + urlargs.key):'') + '",null,true) title="' + "APK version of the MeshAgent" + '">' + "APK" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=14&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '")>');
             x += '</div>'
 
@@ -5942,7 +5942,7 @@
                 setDialogMode(2, "Edit Device Tags", 3, d2groupActionFunctionTagsExec, x);
             } else if (op == 108) {
                 // Device notification
-                var x = "<div style=margin-bottom:4px>Perform batch device notification</div>";
+                var x = '<div style=margin-bottom:4px>'+ "Perform batch device notification" + '</div>';
                 x += '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
                 x += '<input id=dp2notifyTitle maxlength=256 placeholder="' + "Title" + '" style=width:100%;box-sizing:border-box;margin-bottom:4px />';
                 x += '<textarea id=d2notifyMsg style=background-color:#fcf3cf;width:100%;height:140px;resize:none;overflow-y:scroll;box-sizing:border-box;margin-bottom:4px></textarea>';
@@ -12231,7 +12231,7 @@
                 }
                 if (hardware.network && hardware.network.dns) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += addDetailItem("<b>DNS Servers</b>", hardware.network.dns.join(", "));
+                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', hardware.network.dns.join(", "));
                     x += '</div></td></tr>';
                 }
                 x += '</table>';
@@ -13407,7 +13407,7 @@
 
         function server_showRestoreDlg() {
             if (xxdialogMode) return false;
-            var x = "Restore the server using a backup, <span style=color:red>this will delete the existing server data</span>. Only do this if you know what you are doing." + '<br /><br />';
+            var x = "Restore the server using a backup," + ' <span style=color:red>' + "this will delete the existing server data." + '</span> ' + "Only do this if you know what you are doing." + '<br /><br />';
             x += '<form action="/restoreserver.ashx' + ((urlargs.key)?('?key=' + urlargs.key):'') + '" enctype="multipart/form-data" method="post"><div>';
             x += '<input type=hidden name=auth value=' + authCookie + '>';
             x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()><br /><br />';

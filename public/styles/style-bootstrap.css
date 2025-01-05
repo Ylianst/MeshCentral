@@ -247,7 +247,6 @@ body {
 }
 
 .nonenglish .topbar_td {
-    width: 10px;
     height: 24px;
     cursor: pointer;
     padding-left:16px;
@@ -2070,7 +2069,11 @@ nav .lbbuttonsel2 {
 #d2devNotes,
 #d2devEvent,
 #d2runcmd, 
-#d2devMessage {
+#d2devMessage,
+#d2smsText,
+#d2emailSubject,
+#d2emailText,
+#broadcastMessage {
     background-color: #FFF9D3;
 }
 
@@ -2080,7 +2083,11 @@ nav .lbbuttonsel2 {
 .night #d2devNotes,
 .night #d2devEvent,
 .night #d2runcmd,
-.night #d2devMessage {
+.night #d2devMessage,
+.night #d2smsText,
+.night #d2emailSubject,
+.night #d2emailText,
+.night #broadcastMessage {
     background-color: black;
 }
 
