@@ -21,7 +21,7 @@
     "": {
       "_title": "MyServer",
       "_title2": "Servername",
-      "_minify": false,
+      "minify": false,
       "NewAccounts": true,
       "localSessionRecording": true,
       "_userNameIsEmail": true,
