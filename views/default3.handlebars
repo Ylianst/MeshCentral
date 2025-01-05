@@ -9493,7 +9493,7 @@
             var x = format("Are you sure you want to delete node {0}?", EscapeHtml(currentNode.name)) + '<br /><br /><label><input id=p10check type=checkbox class="form-check-input me-2" onchange=p10validateDeleteNodeDialog() />' + "Confirm" + '</label>';
             xxdialogButtons = 3; xxdialogTag = nodeid;
             setModalContent('xxAddAgent', "Delete Node", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p10showDeleteNodeDialogEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p10showDeleteNodeDialogEx(0, nodeid));
             p10validateDeleteNodeDialog();
             return false;
         }
