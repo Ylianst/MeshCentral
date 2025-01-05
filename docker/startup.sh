@@ -18,7 +18,7 @@ else
     sed -i "s/\"NewAccounts\": true/\"NewAccounts\": $ALLOW_NEW_ACCOUNTS/" meshcentral-data/"${CONFIG_FILE}"
     sed -i "s/\"enabled\": false/\"enabled\": $ALLOWPLUGINS/" meshcentral-data/"${CONFIG_FILE}"
     sed -i "s/\"localSessionRecording\": false/\"localSessionRecording\": $LOCALSESSIONRECORDING/" meshcentral-data/"${CONFIG_FILE}"
-    sed -i "s/\"minify\": true/\"minify\": $MINIFY/" meshcentral-data/"${CONFIG_FILE}"
+    sed -i "s/\"minify\": false/\"minify\": $MINIFY/" meshcentral-data/"${CONFIG_FILE}"
     sed -i "s/\"WebRTC\": false/\"WebRTC\": $WEBRTC/" meshcentral-data/"${CONFIG_FILE}"
     sed -i "s/\"AllowFraming\": false/\"AllowFraming\": $IFRAME/" meshcentral-data/"${CONFIG_FILE}"
     if [ -z "$SESSION_KEY" ]; then
