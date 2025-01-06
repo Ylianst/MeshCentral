@@ -263,6 +263,12 @@ body {
     right: 3px;
 }
 
+.textnewui {
+    color: white;
+    font-weight: bold;
+    padding: 2px;
+}
+
 .LogoffLinkColor {
     color:white;
 }
@@ -2896,7 +2902,7 @@ a {
     width: 28px;
 }
 
-.viewSelector3 {
+.viewSelector3, .uiSelector7 {
     margin-left: 2px;
     margin-top: 2px;
     background: url(../images/views.png) -56px 0px;
@@ -2995,6 +3001,13 @@ a {
         opacity: 0.5;
         background-color: #AAA;
     }
+
+.uiSelector_end {
+    width: 32px;
+    height: 32px;
+    float: left;
+    margin: 3px;
+}
 
 .uiSelectorSel {
     background-color: #BBB;
