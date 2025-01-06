@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Load saved theme from local storage
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme) {
-    const safeTheme = encodeURIComponent(savedTheme);
-    themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap.min.css`;
+    const safeTheme = ((savedTheme != 'default') ? encodeURIComponent(savedTheme) : encodeURIComponent('..'));
+    themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap-min.css`;
   }
 
   // Initialize Select2 on all select elements with the 'select2' class

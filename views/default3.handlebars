@@ -14138,10 +14138,9 @@
         function account_switchThemeEx() {
             var themeSwitcher = document.getElementById('theme-switcher');
             const selectedTheme = themeSwitcher.value;
-            const safeTheme = encodeURIComponent(selectedTheme);
+            const safeTheme = ((selectedTheme != 'default') ? encodeURIComponent(selectedTheme) : encodeURIComponent('..'));
             var themeStylesheet = document.getElementById('theme-stylesheet');
-            var newThemeStylesheet = `styles/themes/${safeTheme}/bootstrap.min.css`;
-            themeStylesheet.href = newThemeStylesheet;
+            themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap-min.css`;
             // Save selected theme
             putstore('theme', selectedTheme);
             // Update last 4 themes selected
