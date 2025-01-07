@@ -6280,6 +6280,7 @@
             xxModal.show();
             document.getElementById(okButtonId).onclick = function () {
                 if (typeof okCallback === 'function' && okCallback) {
+                    xxdialogMode = 0; // reset xxdialogMode back to 0 because we might be opening up another dialog and it checks if one is already open
                     var callbackResult = okCallback(b, tag);
                     // Close the modal by default unless `false` is explicitly returned from the callback function
                     if (callbackResult !== false) { xxModal.hide(); }
@@ -9211,7 +9212,6 @@
         }
 
         function deviceActionFunctionEx() {
-            xxdialogMode = 0; // reset xxdialogMode back to 0
             var op = Q('d2deviceop').value;
             if (op == 100) {
                 // Device wake
@@ -10186,7 +10186,6 @@
         }
 
         function askRdpCredentialsEx() {
-            xxdialogMode = 0;
             var width = null, height = null;
             if (desktopsettings.rdpsize) {
                 if (desktopsettings.rdpsize == 'browser') {
