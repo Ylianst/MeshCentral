@@ -1304,6 +1304,7 @@
         delete urlargs.viewmode;
         delete urlargs.gotonode;
         delete urlargs.gotodevicename;
+        delete urlargs.gotodeviceip;
         delete urlargs.gotomesh;
         delete urlargs.panel;
 
@@ -2228,6 +2229,10 @@
             } else if (args.gotodevicename != null) {
                 var foundNode = null;
                 if (nodes != null) { for (var i in nodes) { if (nodes[i].name == args.gotodevicename) { foundNode = nodes[i]._id; } } }
+                if (foundNode) { gotoDevice(foundNode, xviewmode); go(xviewmode); }
+            } else if (args.gotodeviceip != null) {
+                var foundNode = null;
+                if (nodes != null) { for (var i in nodes) { if (nodes[i].ip == args.gotodeviceip) { foundNode = nodes[i]._id; } } }
                 if (foundNode) { gotoDevice(foundNode, xviewmode); go(xviewmode); }
             } else if (args.gotomesh != null) {
                 if (meshes['mesh/' + domain + '/' + args.gotomesh] == null) return; // This device group is not loaded yet
