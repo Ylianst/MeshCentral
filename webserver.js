@@ -2837,6 +2837,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         res.set('Content-Type', 'text/html');
         let url = domain.url;
         if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
+        
+        // check for relaystate is set, test against configured server name and accepted query params
+        if(req.body.RelayState !== undefined){
+                var relayState = decodeURIComponent(req.body.RelayState)
+                var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.')
+                var regex = new RegExp('(?<=(https:\\\/\\\/(.+?\\.)?'+ serverName + ')\\\/?.*((?<=[\\?&])gotodevicename=|gotonode=|gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|viewmode=(\\d+)(?=[\\&]|\\b)))')
+                if(regex.test(relayState)){
+                        url = relayState
+                }
+        }
+        
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
     }
 
