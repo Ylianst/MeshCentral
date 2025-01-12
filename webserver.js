@@ -2840,11 +2840,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         
         // check for relaystate is set, test against configured server name and accepted query params
         if(req.body.RelayState !== undefined){
-                var relayState = decodeURIComponent(req.body.RelayState)
-                var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.')
-                var regex = new RegExp('(?<=(https:\\\/\\\/(.+?\\.)?'+ serverName + ')\\\/?.*((?<=[\\?&])gotodevicename=|gotonode=|gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|viewmode=(\\d+)(?=[\\&]|\\b)))')
+                var relayState = decodeURIComponent(req.body.RelayState);
+                var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
+            
+                var regexstr = `(?<=(https:\\\/\\\/(.+?\\.)?'+ serverName + ')\\\/?
+                .*((?<=[\\?&])gotodevicename=(.{64})|
+                gotonode=(.{64})|
+                gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|
+                viewmode=(\\d+)(?=[\\&]|\\b)))`;
+            
+                var regex = new RegExp(regexstr);
                 if(regex.test(relayState)){
-                        url = relayState
+                        url = relayState;
                 }
         }
         
