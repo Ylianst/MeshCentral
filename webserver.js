@@ -2843,24 +2843,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var relayState = decodeURIComponent(req.body.RelayState);
                 var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
             
-                var regexstr = `(?<=(https:\\\/\\\/(.+?\\.)?'+ serverName + ')\\\/?
-                .*((?<=[\\?&])gotodevicename=(.{64})|
-                gotonode=(.{64})|
-                gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|
-                lang=(.{5})|
-                sitestyle=(\\d+)|
-                user=(.{64})|
-                pass=(.{256})|
-                key=|
-                locale=|
-                gotomesh=(.{64})|
-                gotouser=(.{0,64})|
-                gotougrp=(.{64})|
-                debug=|
-                filter=|
-                webrtc=|
-                hide=|
-                viewmode=(\\d+)(?=[\\&]|\\b)))`;
+                var regexstr = `(?<=https:\\/\\/(?:.+?\\.)?${serverName}\\/?)` +
+                `.*((?<=([\\?&])gotodevicename=(.{64})|` +
+                `gotonode=(.{64})|` +
+                `gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|` +
+                `lang=(.{5})|` +
+                `sitestyle=(\\d+)|` +
+                `user=(.{64})|` +
+                `pass=(.{256})|` +
+                `key=|` +
+                `locale=|` +
+                `gotomesh=(.{64})|` +
+                `gotouser=(.{0,64})|` +
+                `gotougrp=(.{64})|` +
+                `debug=|` +
+                `filter=|` +
+                `webrtc=|` +
+                `hide=|` +
+                `viewmode=(\\d+)(?=[\\&]|\\b)))`;
             
                 var regex = new RegExp(regexstr);
                 if(regex.test(relayState)){
