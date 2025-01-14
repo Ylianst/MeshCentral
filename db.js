@@ -3207,6 +3207,11 @@ module.exports.CreateDB = function (parent, func) {
         if (parent.config.settings.autobackup == null) {
             r += 'No Settings/AutoBackup\r\n';
         } else {
+            if (parent.config.settings.autobackup.backuphour != null && parent.config.settings.autobackup.backuphour != -1) {
+                r += 'Backup between: ';
+                if (typeof parent.config.settings.autobackup.backuphour != 'number') { r += 'Bad backupintervalhours type\r\n'; }
+                else { r += parent.config.settings.autobackup.backuphour + 'H-' + (parent.config.settings.autobackup.backuphour + 1)  + 'H\r\n'; }
+            }
             if (parent.config.settings.autobackup.backupintervalhours != null) {
                 r += 'Backup Interval (Hours): ';
                 if (typeof parent.config.settings.autobackup.backupintervalhours != 'number') { r += 'Bad backupintervalhours type\r\n'; }
@@ -3506,7 +3511,7 @@ module.exports.CreateDB = function (parent, func) {
 
     // Perform a server backup
     obj.performBackup = function (func) {
-        parent.debug('db','Entering performBackup');
+        parent.debug('backup','Entering performBackup');
         try {
             if (obj.performingBackup) return 'Backup alreay in progress.';
             if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Unable to create backup if backuppath is set to the data folder.'); return 'Backup aborted.' }};
@@ -3597,7 +3602,7 @@ module.exports.CreateDB = function (parent, func) {
     };
 
     obj.createBackupfile = function(func) {
-        parent.debug('db', 'Entering createFileBackup');
+        parent.debug('backup', 'Entering createFileBackup');
         let archiver = require('archiver');
         let archive = null;
         let zipLevel = Math.min(Math.max(Number(parent.config.settings.autobackup.zipcompression ? parent.config.settings.autobackup.zipcompression : 5),1),9);
@@ -3634,28 +3639,29 @@ module.exports.CreateDB = function (parent, func) {
                     if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
                         let cutoffDate = new Date();
                         cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
-                        parent.debug('main', parent.common.format("@{0} Remove old backups start > cutoffDate: {1}; keeplastdays: {2}", new Date().toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), cutoffDate.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), parent.config.settings.autobackup.keeplastdaysbackup));
+                        console.log (parent.common.format("@{0} Remove old backups (ROB) start > cutoffDate: {1}; keeplastdays: {2}", new Date().toLocaleString('default', { dateStyle: 'short', timeStyle: 'short' }), cutoffDate.toLocaleString('default', { dateStyle: 'short', timeStyle: 'short' }), parent.config.settings.autobackup.keeplastdaysbackup));
                         parent.fs.readdir(parent.backuppath, function (err, dir) {
                             try {
                                 if ((err == null) && (dir.length > 0)) {
                                     let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
                                     for (var i in dir) {
                                         var name = dir[i];
-                                        parent.debug('main', parent.common.format("Remove old backup > checking file: {0}", name));
+                                        parent.debug('backup', parent.common.format("ROB checking file: {0}", parent.path.join(parent.backuppath, name)));
                                         if (name.startsWith(fileName) && name.endsWith('.zip')) {
                                             var timex = name.substring(fileName.length, name.length - 4).split('-');
-                                            parent.debug('main', "Remove old backup > timex: ", timex);
                                             if (timex.length == 5) {
                                                 var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
+                                                parent.debug('backup', "ROB filedate: ", fileDate);
                                                 if (fileDate && (cutoffDate > fileDate)) {
                                                     try {
                                                         console.log("Removing old backup file: ", name);
                                                         parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { });
                                                     } catch (ex) { console.log(ex) } }
+                                                
                                             }
-                                            else {parent.debug('main', parent.common.format("Remove old backup > file: {0}, timestamp failure: {1}", name, timex));}
+                                            else {parent.debug('backup', parent.common.format("ROB file: {0}, timestamp failure: {1}", name, timex));}
                                         }
-                                        else {parent.debug('main', "Remove old backup > name match failure, file: ", name);}
+                                        else {parent.debug('backup', "ROB name match failure, file: ", name);}
                                     }
                                 }
                             } catch (ex) { console.log(ex); }

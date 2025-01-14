@@ -2016,7 +2016,6 @@ function CreateMeshCentralServer(config, args) {
 
                     // Start periodic maintenance
                     obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
-                    obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 5); // DEBUG: Run this after 1 sec
 
                     // Dispatch an event that the server is now running
                     obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
@@ -2251,8 +2250,6 @@ function CreateMeshCentralServer(config, args) {
     // Perform maintenance operations (called every hour)
     obj.maintenanceActions = function () {
         // Perform database maintenance
-        clearInterval(obj.maintenanceTimer);
-        obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 20 ) //DEBUG: reset 10s timer to 30s
         obj.db.maintenance();
 
         // Clean up any temporary files
@@ -2283,18 +2280,18 @@ function CreateMeshCentralServer(config, args) {
 
     // Check if we need to perform an automatic backup
     function checkAutobackup() {
-        if (obj.config.settings.autobackup.backupintervalhours >= 1 || obj.config.settings.autobackup.backuphour >= 0 ) {
+        if (obj.config.settings.autobackup.backupintervalhours >= 1 ) {
             obj.db.Get('LastAutoBackupTime', function (err, docs) {
-                if (err != null) { console.log("checkAutobackup: No LastBackupTime in db, first run?"); return}
+                if (err != null) { console.log("checkAutobackup: Error getting LastBackupTime from DB"); return}
                 var lastBackup = 0;
                 const currentdate = new Date();
                 let currentHour = currentdate.getHours();
                 let now = currentdate.getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
                 const delta = now - lastBackup;
-                obj.debug('main', obj.common.format("@{0} checkAutobackup > lastbackuptime: {1}; delta in hours {2}; backupIntervalHours: {3}; current/backupHour: {4}/{5}", currentdate.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), new Date(lastBackup).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), delta/3600000, obj.config.settings.autobackup.backupintervalhours, currentHour, obj.config.settings.autobackup.backuphour));
-                if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 1 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 24 * 60 * 60 * 1000))) { //DEBUG, freq on 1 minute
-                //if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 24 * 60 * 60 * 1000))) {
+                obj.debug('backup', obj.common.format("@{0}: checkAutobackup > lastbackuptime: {1}; delta in hours {2}; backupIntervalHours: {3}; current/backupHour: {4}/{5}", currentdate.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' }), new Date(lastBackup).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' }), (delta/3600000).toPrecision(2), obj.config.settings.autobackup.backupintervalhours, currentHour, obj.config.settings.autobackup.backuphour));
+                //start autobackup if interval has passed or at configured hour, whichever comes first. When an hour schedule is missed, it will make a backup immediately.
+                if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 20 * 60 * 60 * 1000))) {
                     // A new auto-backup is required.
                     obj.db.Set({ _id: 'LastAutoBackupTime', value: now }); // Save the current time in the database
                     obj.db.performBackup(); // Perform the backup
