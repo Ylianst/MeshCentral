@@ -3634,19 +3634,28 @@ module.exports.CreateDB = function (parent, func) {
                     if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
                         let cutoffDate = new Date();
                         cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
+                        parent.debug('main', parent.common.format("@{0} Remove old backups start > cutoffDate: {1}; keeplastdays: {2}", new Date().toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), cutoffDate.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), parent.config.settings.autobackup.keeplastdaysbackup));
                         parent.fs.readdir(parent.backuppath, function (err, dir) {
                             try {
                                 if ((err == null) && (dir.length > 0)) {
                                     let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
                                     for (var i in dir) {
                                         var name = dir[i];
+                                        parent.debug('main', parent.common.format("Remove old backup > checking file: {0}", name));
                                         if (name.startsWith(fileName) && name.endsWith('.zip')) {
-                                            var timex = name.substring(23, name.length - 4).split('-');
+                                            var timex = name.substring(fileName.length, name.length - 4).split('-');
+                                            parent.debug('main', "Remove old backup > timex: ", timex);
                                             if (timex.length == 5) {
                                                 var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
-                                                if (fileDate && (cutoffDate > fileDate)) { try { parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { }); } catch (ex) { } }
+                                                if (fileDate && (cutoffDate > fileDate)) {
+                                                    try {
+                                                        console.log("Removing old backup file: ", name);
+                                                        parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { });
+                                                    } catch (ex) { console.log(ex) } }
                                             }
+                                            else {parent.debug('main', parent.common.format("Remove old backup > file: {0}, timestamp failure: {1}", name, timex));}
                                         }
+                                        else {parent.debug('main', "Remove old backup > name match failure, file: ", name);}
                                     }
                                 }
                             } catch (ex) { console.log(ex); }

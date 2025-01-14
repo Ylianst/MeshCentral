@@ -2016,6 +2016,7 @@ function CreateMeshCentralServer(config, args) {
 
                     // Start periodic maintenance
                     obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+                    obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 5); // DEBUG: Run this after 1 sec
 
                     // Dispatch an event that the server is now running
                     obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
@@ -2105,6 +2106,8 @@ function CreateMeshCentralServer(config, args) {
                         if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
+                        if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
+                        else {obj.config.settings.autobackup.backuphour = -1 };
                         //arrayfi in case of string and remove possible ', ' space. !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !!
                         if (!obj.config.settings.autobackup.backupignorefilesglob) {obj.config.settings.autobackup.backupignorefilesglob = []}
                         else if (typeof obj.config.settings.autobackup.backupignorefilesglob == 'string') { obj.config.settings.autobackup.backupignorefilesglob = obj.config.settings.autobackup.backupignorefilesglob.replaceAll(', ', ',').split(','); };
@@ -2248,6 +2251,8 @@ function CreateMeshCentralServer(config, args) {
     // Perform maintenance operations (called every hour)
     obj.maintenanceActions = function () {
         // Perform database maintenance
+        clearInterval(obj.maintenanceTimer);
+        obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 20 ) //DEBUG: reset 10s timer to 30s
         obj.db.maintenance();
 
         // Clean up any temporary files
@@ -2278,14 +2283,18 @@ function CreateMeshCentralServer(config, args) {
 
     // Check if we need to perform an automatic backup
     function checkAutobackup() {
-        if (obj.config.settings.autobackup.backupintervalhours >= 1) {
+        if (obj.config.settings.autobackup.backupintervalhours >= 1 || obj.config.settings.autobackup.backuphour >= 0 ) {
             obj.db.Get('LastAutoBackupTime', function (err, docs) {
-                if (err != null) return;
+                if (err != null) { console.log("checkAutobackup: No LastBackupTime in db, first run?"); return}
                 var lastBackup = 0;
-                const now = new Date().getTime();
+                const currentdate = new Date();
+                let currentHour = currentdate.getHours();
+                let now = currentdate.getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
                 const delta = now - lastBackup;
-                if (delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) {
+                obj.debug('main', obj.common.format("@{0} checkAutobackup > lastbackuptime: {1}; delta in hours {2}; backupIntervalHours: {3}; current/backupHour: {4}/{5}", currentdate.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), new Date(lastBackup).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }), delta/3600000, obj.config.settings.autobackup.backupintervalhours, currentHour, obj.config.settings.autobackup.backuphour));
+                if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 1 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 24 * 60 * 60 * 1000))) { //DEBUG, freq on 1 minute
+                //if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 24 * 60 * 60 * 1000))) {
                     // A new auto-backup is required.
                     obj.db.Set({ _id: 'LastAutoBackupTime', value: now }); // Save the current time in the database
                     obj.db.performBackup(); // Perform the backup
