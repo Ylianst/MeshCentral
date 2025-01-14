@@ -3654,7 +3654,7 @@ module.exports.CreateDB = function (parent, func) {
                                                 parent.debug('backup', "ROB filedate: ", fileDate);
                                                 if (fileDate && (cutoffDate > fileDate)) {
                                                     try {
-                                                        console.log("Removing old backup file: ", name);
+                                                        console.log("Removing old backup file: ", parent.path.join(parent.backuppath, name));
                                                         parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { });
                                                     } catch (ex) { console.log(ex) } }
                                                 
