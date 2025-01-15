@@ -3187,7 +3187,6 @@ module.exports.CreateDB = function (parent, func) {
     // Return a human readable string with current backup configuration
     obj.getBackupConfig = function () {
         var r = '', backupPath = parent.backuppath;
-        if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
 
         let dbname = 'meshcentral';
         if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
@@ -3197,7 +3196,7 @@ module.exports.CreateDB = function (parent, func) {
 
         const currentDate = new Date();
         const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-        obj.newAutoBackupFile = ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix;
+        obj.newAutoBackupFile = parent.config.settings.autobackup.backupname + fileSuffix;
 
         r += 'DB Name: ' + dbname + '\r\n';
         r += 'DB Type: ' + DB_LIST[obj.databaseType] + '\r\n';
@@ -3208,19 +3207,13 @@ module.exports.CreateDB = function (parent, func) {
             r += 'No Settings/AutoBackup\r\n';
         } else {
             if (parent.config.settings.autobackup.backuphour != null && parent.config.settings.autobackup.backuphour != -1) {
-                r += 'Backup between: ';
-                if (typeof parent.config.settings.autobackup.backuphour != 'number') { r += 'Bad backupintervalhours type\r\n'; }
-                else { r += parent.config.settings.autobackup.backuphour + 'H-' + (parent.config.settings.autobackup.backuphour + 1)  + 'H\r\n'; }
+                r += 'Backup between: ' + parent.config.settings.autobackup.backuphour + 'H-' + (parent.config.settings.autobackup.backuphour + 1)  + 'H\r\n';
             }
             if (parent.config.settings.autobackup.backupintervalhours != null) {
-                r += 'Backup Interval (Hours): ';
-                if (typeof parent.config.settings.autobackup.backupintervalhours != 'number') { r += 'Bad backupintervalhours type\r\n'; }
-                else { r += parent.config.settings.autobackup.backupintervalhours + '\r\n'; }
+                r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n';
             }
             if (parent.config.settings.autobackup.keeplastdaysbackup != null) {
-                r += 'Keep Last Backups (Days): ';
-                if (typeof parent.config.settings.autobackup.keeplastdaysbackup != 'number') { r += 'Bad keeplastdaysbackup type\r\n'; }
-                else { r += parent.config.settings.autobackup.keeplastdaysbackup + '\r\n'; }
+                r += 'Keep Last Backups (Days): ' + parent.config.settings.autobackup.keeplastdaysbackup + '\r\n';
             }
             if (parent.config.settings.autobackup.zippassword != null) {
                 r += 'ZIP Password: ';
@@ -3335,13 +3328,54 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Check that the server is capable of performing a backup
+    //Runs before config check in meshcentral.js
     obj.checkBackupCapability = function (func) {
-        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); return; };
-        let backupPath = parent.backuppath;
-        if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
-        try { parent.fs.mkdirSync(backupPath); } catch (e) { }
-        if (parent.fs.existsSync(backupPath) == false) { func(1, "Backup folder \"" + backupPath + "\" does not exist, auto-backup will not be performed."); return; }
+        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { return; };
+        // Check that autobackup path is not within the "meshcentral-data" folder.
+        let backupInterval = parent.config.settings.autobackup.backupintervalhours;
+        parent.config.settings.autobackup.backupintervalhours = -1;  //block backup until validated
+        if (parent.backuppath.startsWith(parent.datapath)) {
+            // addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
+            func(1, "Backup path can't be set within meshcentral-data folder, backup settings ignored.");
+            return;
+        }
+        // Check create/write backupdir
+        try { fs.mkdirSync(parent.backuppath); }
+        catch (e) {
+            if (e.code != 'EEXIST' ) {
+                //Unable to create backuppath, try default path as fallback
+                console.error(e);
+                try { fs.mkdirSync(parent.backuppathdefault); }
+                catch (e) {
+                    if (e.code != 'EEXIST' ) {
+                        //Unable to create default path, rights issue with the service?
+                        console.error (e);
+                        func(1, "Fallback backuppath (" + parent.backuppathdefault + ") can't be written to, check service rights. No backups will be made.");
+                        return;
+                    }
+                }
+                func(1, "Unable to create " + parent.backuppath + ", falling back to default path: " + parent.backuppathdefault);
+                parent.backuppath = parent.backuppathdefault;
+            }
+        }
+        const testFile = path.normalize(parent.backuppath + "/" + parent.config.settings.autobackup.backupname + ".test");
 
+        try { fs.writeFileSync( testFile, "DeleteMe"); }
+        catch (e) {
+            //Unable to create file
+            console.error (e);
+            func(1, "Backuppath (" + parent.backuppath + ") can't be written to. No backups will be made.");
+            return;            
+        }
+        try { fs.unlinkSync(testFile); }
+        catch (e) {
+            console.error (e);
+            func(1, "Backuppathtestfile (" + testFile + ") can't be deleted, check filerights. No backups will be made.");
+            return;
+        }
+        parent.config.settings.autobackup.backupintervalhours = backupInterval;
+
+        let backupPath = parent.backuppath;
         if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
             // Check that we have access to MongoDump
             var cmd = buildMongoDumpCommand();
@@ -3514,16 +3548,14 @@ module.exports.CreateDB = function (parent, func) {
         parent.debug('backup','Entering performBackup');
         try {
             if (obj.performingBackup) return 'Backup alreay in progress.';
-            if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Unable to create backup if backuppath is set to the data folder.'); return 'Backup aborted.' }};
+            if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Backup disabled.'); return 'Backup disabled.' }};
             obj.performingBackup = true;
             let backupPath = parent.backuppath;
             let dataPath = parent.datapath;
 
-            if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
-            try { parent.fs.mkdirSync(backupPath); } catch (e) { }
             const currentDate = new Date();
             const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-            obj.newAutoBackupFile = path.join(backupPath, ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix + '.zip');
+            obj.newAutoBackupFile = path.join(backupPath, parent.config.settings.autobackup.backupname + fileSuffix + '.zip');
 
             if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
                 // Perform a MongoDump
@@ -3643,7 +3675,7 @@ module.exports.CreateDB = function (parent, func) {
                         parent.fs.readdir(parent.backuppath, function (err, dir) {
                             try {
                                 if ((err == null) && (dir.length > 0)) {
-                                    let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
+                                    let fileName = parent.config.settings.autobackup.backupname;
                                     for (var i in dir) {
                                         var name = dir[i];
                                         parent.debug('backup', parent.common.format("ROB checking file: {0}", parent.path.join(parent.backuppath, name)));
@@ -3670,9 +3702,9 @@ module.exports.CreateDB = function (parent, func) {
                     console.log('Auto-backup completed.');
                     if (func) { func('Auto-backup completed.'); };
                 } else {
-                    console.log('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile );
-                    if (func) { func('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile) };
-                    try { parent.fs.unlink(obj.newAutoBackupFile, function () { }); parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to delete incomplete backup files')};
+                    if (func) { func('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile) }
+                    else { parent.addServerWarning('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile ) };
+                    try { parent.fs.unlink(obj.newAutoBackupFile, function () { }); parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) {console.error('Failed to delete incomplete backup files: ' + ex )};
                 };
                 obj.performingBackup = false;
                 obj.backupStatus = 0x0;
@@ -3756,7 +3788,7 @@ module.exports.CreateDB = function (parent, func) {
             // Clean up our WebDAV folder
             function performWebDavCleanup(client) {
                 if ((typeof parent.config.settings.autobackup.webdav.maxfiles == 'number') && (parent.config.settings.autobackup.webdav.maxfiles > 1)) {
-                    let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
+                    let fileName = parent.config.settings.autobackup.backupname;
                     //only files matching our backupfilename
                     let directoryItems = client.getDirectoryContents(webdavfolderName, { deep: false, glob: "/**/" + fileName + "*.zip" });
                     directoryItems.then(

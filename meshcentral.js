@@ -107,6 +107,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicOverridePath = obj.path.join(__dirname, '../meshcentral-web/public'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/emails'))) { obj.webEmailsOverridePath = obj.path.join(__dirname, '../meshcentral-web/emails'); }
     }
+    obj.backuppathdefault = obj.backuppath;
 
     // Clean up any temporary files
     const removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
@@ -1348,7 +1349,7 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     // Check if the database is capable of performing a backup
-                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
+                    // Moved behind autobackup config init in startex4: obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
 
                     // Load configuration for database if needed
                     if (obj.args.loadconfigfromdb) {
@@ -2015,7 +2016,7 @@ function CreateMeshCentralServer(config, args) {
                     obj.monitoring = require('./monitoring.js').CreateMonitoring(obj, obj.args);
 
                     // Start periodic maintenance
-                    obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+                    obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 10 * 1); // Run this every hour
 
                     // Dispatch an event that the server is now running
                     obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
@@ -2112,13 +2113,12 @@ function CreateMeshCentralServer(config, args) {
                         else if (typeof obj.config.settings.autobackup.backupignorefilesglob == 'string') { obj.config.settings.autobackup.backupignorefilesglob = obj.config.settings.autobackup.backupignorefilesglob.replaceAll(', ', ',').split(','); };
                         if (!obj.config.settings.autobackup.backupskipfoldersglob) {obj.config.settings.autobackup.backupskipfoldersglob = []}
                         else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
+                        if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.normalize(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
+                        if (typeof obj.config.settings.autobackup.backupname != 'string') { obj.config.settings.autobackup.backupname = 'meshcentral-autobackup-'};
                     }
 
-                    // Check that autobackup path is not within the "meshcentral-data" folder.
-                    if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
-                        addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
-                        obj.config.settings.autobackup = {backupintervalhours: -1};  //block console autobackup
-                    }
+                    // Check if the database is capable of performing a backup
+                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
 
                     // Load Intel AMT passwords from the "amtactivation.log" file
                     obj.loadAmtActivationLogPasswords(function (amtPasswords) {
@@ -2288,10 +2288,11 @@ function CreateMeshCentralServer(config, args) {
                 let currentHour = currentdate.getHours();
                 let now = currentdate.getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
-                const delta = now - lastBackup;
+                //const delta = now - lastBackup;
+                let delta = 99999999;
                 obj.debug('backup', obj.common.format("@{0}: checkAutobackup > lastbackuptime: {1}; delta in hours {2}; backupIntervalHours: {3}; current/backupHour: {4}/{5}", currentdate.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' }), new Date(lastBackup).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' }), (delta/3600000).toPrecision(2), obj.config.settings.autobackup.backupintervalhours, currentHour, obj.config.settings.autobackup.backuphour));
                 //start autobackup if interval has passed or at configured hour, whichever comes first. When an hour schedule is missed, it will make a backup immediately.
-                if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 20 * 60 * 60 * 1000))) {
+                if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 2 * 60 * 60 * 1000))) {
                     // A new auto-backup is required.
                     obj.db.Set({ _id: 'LastAutoBackupTime', value: now }); // Save the current time in the database
                     obj.db.performBackup(); // Perform the backup
