@@ -6944,6 +6944,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-saml', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
+                            //set RelayState when queries are passed
+                            if (Object.keys(req.query).length != 0){
+                                req.query.RelayState = encodeURIComponent(`${req.protocol}://${req.hostname}${req.originalUrl}`.replace('auth-saml/',''))
+                            }
                             domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
