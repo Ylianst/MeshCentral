@@ -2016,7 +2016,8 @@ function CreateMeshCentralServer(config, args) {
                     obj.monitoring = require('./monitoring.js').CreateMonitoring(obj, obj.args);
 
                     // Start periodic maintenance
-                    obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 10 * 1); // Run this every hour
+                    obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+                    //obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 10 * 1); // DEBUG: Run this every 10s
 
                     // Dispatch an event that the server is now running
                     obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
@@ -2288,9 +2289,9 @@ function CreateMeshCentralServer(config, args) {
                 let currentHour = currentdate.getHours();
                 let now = currentdate.getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
-                //const delta = now - lastBackup;
-                let delta = 99999999;
-                obj.debug('backup', obj.common.format("@{0}: checkAutobackup > lastbackuptime: {1}; delta in hours {2}; backupIntervalHours: {3}; current/backupHour: {4}/{5}", currentdate.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' }), new Date(lastBackup).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' }), (delta/3600000).toPrecision(2), obj.config.settings.autobackup.backupintervalhours, currentHour, obj.config.settings.autobackup.backuphour));
+                const delta = now - lastBackup;
+                //const delta = 99999999; // DEBUG: backup always
+
                 //start autobackup if interval has passed or at configured hour, whichever comes first. When an hour schedule is missed, it will make a backup immediately.
                 if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 2 * 60 * 60 * 1000))) {
                     // A new auto-backup is required.
@@ -3943,6 +3944,7 @@ function CreateMeshCentralServer(config, args) {
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
     obj.getServerWarnings = function () { return serverWarnings; }
+    // TODO: migrate from other addServerWarning function and add timestamp
     obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // auth.log functions
@@ -4113,6 +4115,7 @@ function InstallModuleEx(modulenames, args, func) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Add a server warning, warnings will be shown to the administrator on the web application
+// TODO: migrate to obj.addServerWarning?
 const serverWarnings = [];
 function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
