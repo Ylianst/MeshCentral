@@ -3341,20 +3341,22 @@ module.exports.CreateDB = function (parent, func) {
             return;
         }
         // Check create/write backupdir
-        let fail = false;
+        // Removed faillback to default backuppath within the appdir
+        //let fail = false;
         try { fs.mkdirSync(parent.backuppath); }
         catch (e) {
             if (e.code != 'EEXIST' ) {
                 //Unable to create backuppath
                 console.error(e.message);
-                if (parent.backuppath == parent.backuppathdefault) {
+                // if (parent.backuppath == parent.backuppathdefault) {
                     func(1, 'Unable to create ' + parent.backuppath + '. No backups will be made.');
                     return;
-                }
+                // }
                 console.error('Unable to create ' + parent.backuppath);
-                fail = true;
+                //fail = true;
             }
         }
+        /*
         if (fail) {
             //Unable to create custom backuppath, try default path as fallback
             try { fs.mkdirSync(parent.backuppathdefault); }
@@ -3370,7 +3372,7 @@ module.exports.CreateDB = function (parent, func) {
             console.error('Unable to create ' + parent.backuppath + ', falling back to default path: ' + parent.backuppathdefault);
             parent.backuppath = parent.backuppathdefault;
         }
-
+        */
         const testFile = path.join(parent.backuppath + (parent.config.settings.autobackup.backupname + ".test"));
 
         try { fs.writeFileSync( testFile, "DeleteMe"); }
@@ -3386,6 +3388,7 @@ module.exports.CreateDB = function (parent, func) {
             func(1, "Backuppathtestfile (" + testFile + ") can't be deleted, check filerights. No backups will be made.");
             return;
         }
+        parent.debug('backup', 'Backuppath accesscheck successful');
 
         // Check database dumptools
         let backupPath = parent.backuppath;
