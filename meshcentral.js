@@ -107,7 +107,6 @@ function CreateMeshCentralServer(config, args) {
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicOverridePath = obj.path.join(__dirname, '../meshcentral-web/public'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/emails'))) { obj.webEmailsOverridePath = obj.path.join(__dirname, '../meshcentral-web/emails'); }
     }
-    obj.backuppathdefault = obj.backuppath;
 
     // Clean up any temporary files
     const removeTime = new Date(Date.now()).getTime() - (30 * 60 * 1000); // 30 minutes
@@ -2017,7 +2016,7 @@ function CreateMeshCentralServer(config, args) {
 
                     // Start periodic maintenance
                     obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
-                    //obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 10 * 1); // DEBUG: Run this every 10s
+                    //obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 10 * 1); // DEBUG: Run this more often
 
                     // Dispatch an event that the server is now running
                     obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
@@ -2114,7 +2113,7 @@ function CreateMeshCentralServer(config, args) {
                         else if (typeof obj.config.settings.autobackup.backupignorefilesglob == 'string') { obj.config.settings.autobackup.backupignorefilesglob = obj.config.settings.autobackup.backupignorefilesglob.replaceAll(', ', ',').split(','); };
                         if (!obj.config.settings.autobackup.backupskipfoldersglob) {obj.config.settings.autobackup.backupskipfoldersglob = []}
                         else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
-                        if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.normalize(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
+                        if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.resolve(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
                         if (typeof obj.config.settings.autobackup.backupname != 'string') { obj.config.settings.autobackup.backupname = 'meshcentral-autobackup-'};
                     }
 
@@ -2283,15 +2282,15 @@ function CreateMeshCentralServer(config, args) {
     function checkAutobackup() {
         if (obj.config.settings.autobackup.backupintervalhours >= 1 ) {
             obj.db.Get('LastAutoBackupTime', function (err, docs) {
-                if (err != null) { console.log("checkAutobackup: Error getting LastBackupTime from DB"); return}
+                if (err != null) { console.error("checkAutobackup: Error getting LastBackupTime from DB"); return}
                 var lastBackup = 0;
                 const currentdate = new Date();
                 let currentHour = currentdate.getHours();
                 let now = currentdate.getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
                 const delta = now - lastBackup;
-                //const delta = 99999999; // DEBUG: backup always
-
+                //const delta = 9999999999; // DEBUG: backup always
+                obj.debug ('backup', 'Entering checkAutobackup, lastAutoBackupTime: ' + new Date(lastBackup).toLocaleString('default', { dateStyle: 'medium', timeStyle: 'short' }) + ', delta: ' + (delta/(1000*60*60)).toFixed(2) + ' hours');
                 //start autobackup if interval has passed or at configured hour, whichever comes first. When an hour schedule is missed, it will make a backup immediately.
                 if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 2 * 60 * 60 * 1000))) {
                     // A new auto-backup is required.

@@ -3334,64 +3334,42 @@ module.exports.CreateDB = function (parent, func) {
         if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { return; };
         //block backup until validated. Gets put back if all checks are ok.
         let backupInterval = parent.config.settings.autobackup.backupintervalhours;
-        parent.config.settings.autobackup.backupintervalhours = -1;  
+        parent.config.settings.autobackup.backupintervalhours = -1;
+        let backupPath = parent.backuppath;
 
-        if (parent.backuppath.startsWith(parent.datapath)) {
+        if (backupPath.startsWith(parent.datapath)) {
             func(1, "Backup path can't be set within meshcentral-data folder. No backups will be made.");
             return;
         }
         // Check create/write backupdir
-        // Removed faillback to default backuppath within the appdir
-        //let fail = false;
-        try { fs.mkdirSync(parent.backuppath); }
+        try { fs.mkdirSync(backupPath); }
         catch (e) {
+            // EEXIST error = dir already exists
             if (e.code != 'EEXIST' ) {
                 //Unable to create backuppath
                 console.error(e.message);
-                // if (parent.backuppath == parent.backuppathdefault) {
-                    func(1, 'Unable to create ' + parent.backuppath + '. No backups will be made.');
-                    return;
-                // }
-                console.error('Unable to create ' + parent.backuppath);
-                //fail = true;
+                func(1, 'Unable to create ' + backupPath + '. No backups will be made. Error: ' + e.message);
+                return;
             }
         }
-        /*
-        if (fail) {
-            //Unable to create custom backuppath, try default path as fallback
-            try { fs.mkdirSync(parent.backuppathdefault); }
-            catch (e) {
-                if (e.code != 'EEXIST' ) {
-                    //Unable to create default backuppath
-                    console.error (e.message);
-                    func(1, 'Tried fallback to default backuppath ' + parent.backuppathdefault + ' after ' + parent.backuppath + ' failed, but it also failed. No backups will be made.');
-                    return;
-                }
-            }
-            //Fallback succeeded
-            console.error('Unable to create ' + parent.backuppath + ', falling back to default path: ' + parent.backuppathdefault);
-            parent.backuppath = parent.backuppathdefault;
-        }
-        */
-        const testFile = path.join(parent.backuppath + (parent.config.settings.autobackup.backupname + ".test"));
+        const testFile = path.join(backupPath, (parent.config.settings.autobackup.backupname + ".test"));
 
         try { fs.writeFileSync( testFile, "DeleteMe"); }
         catch (e) {
             //Unable to create file
-            console.error (e);
-            func(1, "Backuppath (" + parent.backuppath + ") can't be written to. No backups will be made.");
+            console.error (e.message);
+            func(1, "Backuppath (" + backupPath + ") can't be written to. No backups will be made. Error: " + e.message);
             return;            
         }
-        try { fs.unlinkSync(testFile); }
+        try { fs.unlinkSync(testFile); parent.debug('backup', 'Backuppath ' + backupPath + ' accesscheck successful');}
         catch (e) {
-            console.error (e);
-            func(1, "Backuppathtestfile (" + testFile + ") can't be deleted, check filerights. No backups will be made.");
-            return;
+            console.error (e.message);
+            func(1, "Backuppathtestfile (" + testFile + ") can't be deleted, check filerights. Error: " + e.message);
+            // Assume write rights, no delete rights. Continue with warning.
+            //return;
         }
-        parent.debug('backup', 'Backuppath accesscheck successful');
 
         // Check database dumptools
-        let backupPath = parent.backuppath;
         if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
             // Check that we have access to MongoDump
             var cmd = buildMongoDumpCommand();
@@ -3797,9 +3775,9 @@ module.exports.CreateDB = function (parent, func) {
 
     // Perform cloud backup
     obj.performCloudBackup = function (filename, func) {
-        parent.debug( 'backup', 'Entering performCloudBackup');
         // WebDAV Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.webdav == 'object')) {
+            parent.debug( 'backup', 'Entering WebDAV backup');
             const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
 
             // Fetch the folder name
@@ -3868,6 +3846,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Google Drive Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.googledrive == 'object')) {
+            parent.debug( 'backup', 'Entering Google Drive backup');
             obj.Get('GoogleDriveBackup', function (err, docs) {
                 if ((err != null) || (docs.length != 1) || (docs[0].state != 3)) return;
                 if (func) { func('Attempting Google Drive upload...'); }
@@ -3946,6 +3925,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // S3 Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.s3 == 'object')) {
+            parent.debug( 'backup', 'Entering S3 backup');
             var s3folderName = 'MeshCentral-Backups';
             if (typeof parent.config.settings.autobackup.s3.foldername == 'string') { s3folderName = parent.config.settings.autobackup.s3.foldername; }
             // Construct the config object
