@@ -3647,11 +3647,12 @@ module.exports.CreateDB = function (parent, func) {
             // Archive finalized and closed
             output.on('close', function () { 
                 if (obj.backupStatus == 0) {
-                    obj.performCloudBackup(obj.newAutoBackupFile, func);
-                    obj.removeExpiredBackupfiles(func);
-                    let mesg = 'Auto-backup completed, backup-size: ' + ((archive.pointer() / 1048576).toFixed(2)) + "Mb";
+                    let mesg = 'Auto-backup completed: ' + obj.newAutoBackupFile + ', backup-size: ' + ((archive.pointer() / 1048576).toFixed(2)) + "Mb";
                     console.log(mesg);
                     if (func) { func(mesg); };
+                    obj.performCloudBackup(obj.newAutoBackupFile, func);
+                    obj.removeExpiredBackupfiles(func);
+
                 } else {
                     let mesg = 'Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile;
                     if (func) { func(mesg) }
@@ -3763,7 +3764,9 @@ module.exports.CreateDB = function (parent, func) {
                                     else { parent.debug('backup', "file: " + name + " timestamp failure: ", timex); }
                                 }
                             }
-                            console.log ('Checked ' + checked + ' candidates in ' + parent.backuppath + '. Removed ' + removed + ' expired backupfiles using cutoffDate: ', cutoffDate.toLocaleString('default', { dateStyle: 'short', timeStyle: 'short' }));
+                            let mesg= 'Checked ' + checked + ' candidates in ' + parent.backuppath + '. Removed ' + removed + ' expired backupfiles using cutoffDate: '+ cutoffDate.toLocaleString('default', { dateStyle: 'short', timeStyle: 'short' });
+                            parent.debug (mesg);
+                            if (func) { func(mesg); }
                         } else { console.error('No files found in ' + parent.backuppath + '. There should be at least one.')}
                     }
                     else
@@ -3778,8 +3781,9 @@ module.exports.CreateDB = function (parent, func) {
         // WebDAV Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.webdav == 'object')) {
             parent.debug( 'backup', 'Entering WebDAV backup');
-            const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
+            if (func) { func('Entering WebDAV backup.'); }
 
+            const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
             // Fetch the folder name
             var webdavfolderName = 'MeshCentral-Backups';
             if (typeof parent.config.settings.autobackup.webdav.foldername == 'string') { webdavfolderName = parent.config.settings.autobackup.webdav.foldername; }
@@ -3794,16 +3798,21 @@ module.exports.CreateDB = function (parent, func) {
                         function (files) {
                             for (var i in files) { files[i].xdate = new Date(files[i].lastmod); }
                             files.sort(xdateTimeSort);
+                            parent.debug('backup','WebDAV filtered directory contents: ' + JSON.stringify(files, null, 4));
                             while (files.length >= parent.config.settings.autobackup.webdav.maxfiles) {
-                                client.deleteFile(files.shift().filename).then(function (state) {
-                                    if (func) { func('WebDAV file deleted.'); }
+                                let delFile = files.shift().filename;
+                                client.deleteFile(delFile).then(function (state) {
+                                    parent.debug('backup','WebDAV file deleted: ' + delFile);
+                                    if (func) { func('WebDAV file deleted: ' + delFile); }
                                 }).catch(function (err) {
-                                    if (func) { func('WebDAV (deleteFile) error: ' + err); }
+                                    console.error(err);
+                                    if (func) { func('WebDAV (deleteFile) error: ' + err.message); }
                                 });
                             }
                         }
                     ).catch(function (err) {
-                        if (func) { func('WebDAV (getDirectoryContents) error: ' + err); }
+                        console.error(err);
+                        if (func) { func('WebDAV (getDirectoryContents) error: ' + err.message); }
                     });
                 }
             }
@@ -3812,14 +3821,14 @@ module.exports.CreateDB = function (parent, func) {
             function performWebDavUpload(client, filepath) {
                 require('fs').stat(filepath, function(err,stat){
                     var fileStream = require('fs').createReadStream(filepath);
-                    fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
-                    fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
+                    fileStream.on('close', function () { console.log('WebDAV upload completed: ' + webdavfolderName + '/' + require('path').basename(filepath)); if (func) { func('WebDAV upload completed: ' + webdavfolderName + '/' + require('path').basename(filepath)); } })
+                    fileStream.on('error', function (err) { console.error(err); if (func) { func('WebDAV (fileUpload) error: ' + err.message); } })
                     fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath), { headers: { "Content-Length": stat.size } }));
-                    if (func) { func('Uploading using WebDAV...'); }
+                    parent.debug('backup', 'Uploading using WebDAV to: ' + parent.config.settings.autobackup.webdav.url);
+                    if (func) { func('Uploading using WebDAV to: ' + parent.config.settings.autobackup.webdav.url); }
                 });
             }
 
-            if (func) { func('Attempting WebDAV upload...'); }
             const { createClient } = require('webdav');
             const client = createClient(parent.config.settings.autobackup.webdav.url, {
                 username: parent.config.settings.autobackup.webdav.username,
@@ -3833,14 +3842,17 @@ module.exports.CreateDB = function (parent, func) {
                     performWebDavUpload(client, filename);
                 }else{
                     client.createDirectory(webdavfolderName, {recursive: true}).then(function (a) {
-                        if (func) { func('WebDAV folder created'); }
+                        console.log('backup','WebDAV folder created: ' + webdavfolderName);
+                        if (func) { func('WebDAV folder created: ' + webdavfolderName); }
                         performWebDavUpload(client, filename);
                     }).catch(function (err) {
-                        if (func) { func('WebDAV (createDirectory) error: ' + err); }
+                        console.error(err);
+                        if (func) { func('WebDAV (createDirectory) error: ' + err.message); }
                     });
                 }
             }).catch(function (err) {
-                if (func) { func('WebDAV (exists) error: ' + err); }
+                console.error(err);
+                if (func) { func('WebDAV (exists) error: ' + err.message); }
             });
         }
 
