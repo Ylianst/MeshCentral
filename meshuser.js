@@ -5599,7 +5599,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'heapdump': [serverUserCommandHeapDump, ""],
         'heapdump2': [serverUserCommandHeapDump2, ""],
         'help': [serverUserCommandHelp, ""],
-        'info': [serverUserCommandInfo, "Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug."],
+        'info': [serverUserCommandInfo, "Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug. Optionally use info h for human readable form."],
         'le': [serverUserCommandLe, ""],
         'lecheck': [serverUserCommandLeCheck, ""],
         'leevents': [serverUserCommandLeEvents, ""],
