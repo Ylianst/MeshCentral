@@ -13,11 +13,12 @@
 /*jshint esversion: 6 */
 "use strict";
 
+const common = require('./common.js');
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, user) {
     const fs = require('fs');
     const path = require('path');
-    const common = parent.common;
     // Cross domain messages, for cross-domain administrators only.
     const allowedCrossDomainMessages = ['accountcreate', 'accountremove', 'accountchange', 'createusergroup', 'deleteusergroup', 'usergroupchange'];
 
@@ -638,7 +639,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
 
                 // Send any server warnings if any
-                var serverWarnings = parent.parent.getServerWarnings();
+                var serverWarnings = common.getServerWarnings();
                 if (serverWarnings.length > 0) { try { ws.send(JSON.stringify({ action: 'serverwarnings', warnings: serverWarnings })); } catch (ex) { } }
             }
 
@@ -7560,7 +7561,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { info.uptime = process.uptime(); } catch (ex) { }
         try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
         try { info.memoryUsage = process.memoryUsage(); } catch (ex) { }
-        try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { console.log(ex); }
+        try { info.warnings = common.getServerWarnings(); } catch (ex) { console.log(ex); }
         try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
         try { if (process.traceDeprecation == true) { info.traceDeprecation = true; } } catch (ex) { }
         cmdData.result = JSON.stringify(info, null, 4);

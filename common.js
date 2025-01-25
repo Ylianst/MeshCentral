@@ -420,3 +420,42 @@ module.exports.uniqueArray = function (a) {
     }
     return out;
 }
+
+// Add a server warning, warnings will be shown to the administrator on the web application
+/* for reference from one of the old functions
+var ServerWarnings = {
+    1: "",
+    2: "Missing WebDAV parameters.",
+    3: "Unrecognized configuration option \"{0}\".",
+    4: "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
+    5: "Unable to load Intel AMT TLS root certificate for default domain.",
+    6: "Unable to load Intel AMT TLS root certificate for domain {0}.",
+    7: "CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.",
+    8: "Can't have more than 4 CIRA local FQDN's. Ignoring value.",
+    9: "Agent hash checking is being skipped, this is unsafe.",
+    10: "Missing Let's Encrypt email address.",
+    11: "Invalid Let's Encrypt host names.",
+    12: "Invalid Let's Encrypt names, can't contain a *.",
+    13: "Unable to setup Let's Encrypt module.",
+    14: "Invalid Let's Encrypt names, unable to resolve: {0}",
+    15: "Invalid Let's Encrypt email address, unable to resolve: {0}",
+    16: "Unable to load CloudFlare trusted proxy IPv6 address list.",
+    17: "SendGrid server has limited use in LAN mode.",
+    18: "SMTP server has limited use in LAN mode.",
+    19: "SMS gateway has limited use in LAN mode.",
+    20: "Invalid \"LoginCookieEncryptionKey\" in config.json.",
+    21: "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
+    22: "Failed to sign agent {0}: {1}",
+    23: "Unable to load agent icon file: {0}.",
+    24: "Unable to load agent logo file: {0}.",
+    25: "This NodeJS version does not support OpenID.",
+    26: "This NodeJS version does not support Discord.js.",
+    27: "Firebase now requires a service account JSON file, Firebase disabled."
+};
+*/
+const serverWarnings = [];
+module.exports.addServerWarning = function (msg, id, args, print) {
+    serverWarnings.push({ msg, id, args, print });
+    if (print !== false) { console.log("WARNING: " + msg); }
+}
+module.exports.getServerWarnings = function () { return serverWarnings; }

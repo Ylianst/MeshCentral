@@ -14,6 +14,8 @@
 /*jshint esversion: 6 */
 "use strict";
 
+const common = require('./common.js');
+
 //
 // Construct Meshcentral database object
 //
@@ -31,7 +33,6 @@ module.exports.CreateDB = function (parent, func) {
     var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days (1728000). (Seconds * Minutes * Hours * Days)
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire server stats after 30 days (2592000). (Seconds * Minutes * Hours * Days)
-    const common = require('./common.js');
     const path = require('path');
     const fs = require('fs');
     const DB_NEDB = 1, DB_MONGOJS = 2, DB_MONGODB = 3,DB_MARIADB = 4, DB_MYSQL = 5, DB_POSTGRESQL = 6, DB_ACEBASE = 7, DB_SQLITE = 8;
@@ -975,7 +976,7 @@ module.exports.CreateDB = function (parent, func) {
                 } else {
                     if ((info.versionArray[0] < 3) || ((info.versionArray[0] == 3) && (info.versionArray[1] < 6))) {
                         // We are running with mongoDB older than 3.6, this is not good.
-                        parent.addServerWarning("Current version of MongoDB (" + info.version + ") is too old, please upgrade to MongoDB 3.6 or better.");
+                        common.addServerWarning("Current version of MongoDB (" + info.version + ") is too old, please upgrade to MongoDB 3.6 or better.");
                     }
                 }
             });

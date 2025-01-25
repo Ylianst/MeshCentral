@@ -14,6 +14,8 @@
 /*jshint esversion: 6 */
 'use strict';
 
+const common = require('./common.js');
+
 // ACME-Client Implementation
 var globalLetsEncrypt = null;
 module.exports.CreateLetsEncrypt = function (parent) {
@@ -61,12 +63,12 @@ module.exports.CreateLetsEncrypt = function (parent) {
         obj.runAsProduction = (obj.parent.config.letsencrypt.production === true);
         obj.zerossl = ((typeof obj.parent.config.letsencrypt.zerossl == 'object') ? obj.parent.config.letsencrypt.zerossl : false);
         obj.log("Getting certs from local store (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
-        if (certs.CommonName.indexOf('.') == -1) { obj.configErr = "Add \"cert\" value to settings in config.json before using Let's Encrypt."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
-        if (obj.parent.config.letsencrypt == null) { obj.configErr = "No Let's Encrypt configuration"; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
-        if (obj.parent.config.letsencrypt.email == null) { obj.configErr = "Let's Encrypt email address not specified."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
-        if ((obj.parent.redirserver == null) || ((typeof obj.parent.config.settings.rediraliasport === 'number') && (obj.parent.config.settings.rediraliasport !== 80)) || ((obj.parent.config.settings.rediraliasport == null) && (obj.parent.redirserver.port !== 80))) { obj.configErr = "Redirection web server must be active on port 80 for Let's Encrypt to work."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
-        if (obj.redirWebServerHooked !== true) { obj.configErr = "Redirection web server not setup for Let's Encrypt to work."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
-        if ((obj.parent.config.letsencrypt.rsakeysize != null) && (obj.parent.config.letsencrypt.rsakeysize !== 2048) && (obj.parent.config.letsencrypt.rsakeysize !== 3072)) { obj.configErr = "Invalid Let's Encrypt certificate key size, must be 2048 or 3072."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
+        if (certs.CommonName.indexOf('.') == -1) { obj.configErr = "Add \"cert\" value to settings in config.json before using Let's Encrypt.";  common.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
+        if (obj.parent.config.letsencrypt == null) { obj.configErr = "No Let's Encrypt configuration";  common.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
+        if (obj.parent.config.letsencrypt.email == null) { obj.configErr = "Let's Encrypt email address not specified.";  common.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
+        if ((obj.parent.redirserver == null) || ((typeof obj.parent.config.settings.rediraliasport === 'number') && (obj.parent.config.settings.rediraliasport !== 80)) || ((obj.parent.config.settings.rediraliasport == null) && (obj.parent.redirserver.port !== 80))) { obj.configErr = "Redirection web server must be active on port 80 for Let's Encrypt to work.";  common.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
+        if (obj.redirWebServerHooked !== true) { obj.configErr = "Redirection web server not setup for Let's Encrypt to work.";  common.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
+        if ((obj.parent.config.letsencrypt.rsakeysize != null) && (obj.parent.config.letsencrypt.rsakeysize !== 2048) && (obj.parent.config.letsencrypt.rsakeysize !== 3072)) { obj.configErr = "Invalid Let's Encrypt certificate key size, must be 2048 or 3072.";  common.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
         if (obj.checkInterval == null) { obj.checkInterval = setInterval(obj.checkRenewCertificate, 86400000); } // Call certificate check every 24 hours.
         obj.configOk = true;
 

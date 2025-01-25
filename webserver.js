@@ -13,6 +13,8 @@
 /*jshint esversion: 6 */
 'use strict';
 
+const common = require('./common.js');
+
 // SerialTunnel object is used to embed TLS within another connection.
 function SerialTunnel(options) {
     var obj = new require('stream').Duplex(options);
@@ -33,7 +35,6 @@ if (!String.prototype.endsWith) { String.prototype.endsWith = function (searchSt
 // Construct a HTTP server object
 module.exports.CreateWebServer = function (parent, db, args, certificates, doneFunc) {
     var obj = {}, i = 0;
-
     // Modules
     obj.fs = require('fs');
     obj.net = require('net');
@@ -8441,7 +8442,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 console.log('         Use setcap to grant access to lower ports, or read installation guide.');
                 console.log('');
                 console.log('   sudo setcap \'cap_net_bind_service=+ep\' `which node` \r\n');
-                obj.parent.addServerWarning('Server running without permissions to use ports below 1025.', false);
+                common.addServerWarning('Server running without permissions to use ports below 1025.', false);
             }
         }
     }
