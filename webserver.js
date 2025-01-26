@@ -2837,6 +2837,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         res.set('Content-Type', 'text/html');
         let url = domain.url;
         if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
+        
+        // check for relaystate is set, test against configured server name and accepted query params
+        if(req.body.RelayState !== undefined){
+                var relayState = decodeURIComponent(req.body.RelayState);
+                var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
+            
+                var regexstr = `(?<=https:\\/\\/(?:.+?\\.)?${serverName}\\/?)` +
+                `.*((?<=([\\?&])gotodevicename=(.{64})|` +
+                `gotonode=(.{64})|` +
+                `gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|` +
+                `gotodeviceip=(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:)` +
+                `lang=(.{5})|` +
+                `sitestyle=(\\d+)|` +
+                `user=(.{64})|` +
+                `pass=(.{256})|` +
+                `key=|` +
+                `locale=|` +
+                `gotomesh=(.{64})|` +
+                `gotouser=(.{0,64})|` +
+                `gotougrp=(.{64})|` +
+                `debug=|` +
+                `filter=|` +
+                `webrtc=|` +
+                `hide=|` +
+                `viewmode=(\\d+)(?=[\\&]|\\b)))`;
+            
+                var regex = new RegExp(regexstr);
+                if(regex.test(relayState)){
+                        url = relayState;
+                }
+        }
+        
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
     }
 
@@ -6913,6 +6945,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-saml', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
+                            //set RelayState when queries are passed
+                            if (Object.keys(req.query).length != 0){
+                                req.query.RelayState = encodeURIComponent(`${req.protocol}://${req.hostname}${req.originalUrl}`.replace('auth-saml/',''))
+                            }
                             domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
                         obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
