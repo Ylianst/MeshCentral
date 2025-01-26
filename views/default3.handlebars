@@ -5926,7 +5926,7 @@
             x += addHtmlFormFloating("New Password*", '<input id=dp1password1 type=password class="form-control" autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlFormFloating("New Password*", '<input id=dp1password2 type=password class="form-control" autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             if ((features2 & 0x00000020) && (currentMesh.mtype == 1) && (serverinfo.amtProvServerMeshId == currentMesh._id)) { x += '<label><input id=dp1lanprov type=checkbox class="form-check-input me-2" /> ' + "Use for bare-metal LAN activation." + '</label>'; } // Intel AMT LAN provisioning server is active.
-            x += '<div><span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span></div>';
+            x += '<div><span id=dp10passNotify style="font-size:10px"> ' + "* 8-16 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span></div>';
             setModalContent('xxAddAgent', "Intel&reg; AMT ACM", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', showAmtAcmSetupEx);
             Q('dp1password0').focus();
