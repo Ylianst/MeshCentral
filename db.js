@@ -781,10 +781,10 @@ module.exports.CreateDB = function (parent, func) {
         parent.debug('db', 'SQlite config options: ' + JSON.stringify(obj.sqliteConfig, null, 4));
         if (obj.sqliteConfig.journalMode == 'memory') { console.log('[WARNING] journal_mode=memory: this can lead to database corruption if there is a crash during a transaction. See https://www.sqlite.org/pragma.html#pragma_journal_mode') };
         //.cached not usefull
-        obj.file = new sqlite3.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
+        obj.file = new sqlite3.Database(path.join(parent.datapath, databaseName + '.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
                 // Database needs to be created
-                obj.file = new sqlite3.Database(parent.path.join(parent.datapath, databaseName + '.sqlite'), function (err) {
+                obj.file = new sqlite3.Database(path.join(parent.datapath, databaseName + '.sqlite'), function (err) {
                     if (err) { console.log("SQLite Error: " + err); process.exit(1); }
                     obj.file.exec(`
                         CREATE TABLE main (id VARCHAR(256) PRIMARY KEY NOT NULL, type CHAR(32), domain CHAR(64), extra CHAR(255), extraex CHAR(255), doc JSON);
@@ -975,7 +975,7 @@ module.exports.CreateDB = function (parent, func) {
                 } else {
                     if ((info.versionArray[0] < 3) || ((info.versionArray[0] == 3) && (info.versionArray[1] < 6))) {
                         // We are running with mongoDB older than 3.6, this is not good.
-                        parent.addServerWarning("Current version of MongoDB (" + info.version + ") is too old, please upgrade to MongoDB 3.6 or better.");
+                        parent.addServerWarning("Current version of MongoDB (" + info.version + ") is too old, please upgrade to MongoDB 3.6 or better.", true);
                     }
                 }
             });
@@ -1294,7 +1294,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Setup the SMBIOS collection, for NeDB we don't setup SMBIOS since NeDB will corrupt the database. Remove any existing ones.
         //obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true, corruptAlertThreshold: 1 });
-        parent.fs.unlink(parent.getConfigFilePath('meshcentral-smbios.db'), function () { });
+        fs.unlink(parent.getConfigFilePath('meshcentral-smbios.db'), function () { });
 
         // Setup the server stats collection and setup indexes
         obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
@@ -3187,7 +3187,6 @@ module.exports.CreateDB = function (parent, func) {
     // Return a human readable string with current backup configuration
     obj.getBackupConfig = function () {
         var r = '', backupPath = parent.backuppath;
-        if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
 
         let dbname = 'meshcentral';
         if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
@@ -3197,7 +3196,7 @@ module.exports.CreateDB = function (parent, func) {
 
         const currentDate = new Date();
         const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-        obj.newAutoBackupFile = ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix;
+        obj.newAutoBackupFile = parent.config.settings.autobackup.backupname + fileSuffix;
 
         r += 'DB Name: ' + dbname + '\r\n';
         r += 'DB Type: ' + DB_LIST[obj.databaseType] + '\r\n';
@@ -3207,15 +3206,14 @@ module.exports.CreateDB = function (parent, func) {
         if (parent.config.settings.autobackup == null) {
             r += 'No Settings/AutoBackup\r\n';
         } else {
+            if (parent.config.settings.autobackup.backuphour != null && parent.config.settings.autobackup.backuphour != -1) {
+                r += 'Backup between: ' + parent.config.settings.autobackup.backuphour + 'H-' + (parent.config.settings.autobackup.backuphour + 1)  + 'H\r\n';
+            }
             if (parent.config.settings.autobackup.backupintervalhours != null) {
-                r += 'Backup Interval (Hours): ';
-                if (typeof parent.config.settings.autobackup.backupintervalhours != 'number') { r += 'Bad backupintervalhours type\r\n'; }
-                else { r += parent.config.settings.autobackup.backupintervalhours + '\r\n'; }
+                r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n';
             }
             if (parent.config.settings.autobackup.keeplastdaysbackup != null) {
-                r += 'Keep Last Backups (Days): ';
-                if (typeof parent.config.settings.autobackup.keeplastdaysbackup != 'number') { r += 'Bad keeplastdaysbackup type\r\n'; }
-                else { r += parent.config.settings.autobackup.keeplastdaysbackup + '\r\n'; }
+                r += 'Keep Last Backups (Days): ' + parent.config.settings.autobackup.keeplastdaysbackup + '\r\n';
             }
             if (parent.config.settings.autobackup.zippassword != null) {
                 r += 'ZIP Password: ';
@@ -3330,48 +3328,70 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // Check that the server is capable of performing a backup
+    // Tries configured custom location with fallback to default location
+    // Now runs after autobackup config init in meshcentral.js so config options are checked
     obj.checkBackupCapability = function (func) {
-        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { func(); return; };
+        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { return; };
+        //block backup until validated. Gets put back if all checks are ok.
+        let backupInterval = parent.config.settings.autobackup.backupintervalhours;
+        parent.config.settings.autobackup.backupintervalhours = -1;
         let backupPath = parent.backuppath;
-        if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
-        try { parent.fs.mkdirSync(backupPath); } catch (e) { }
-        if (parent.fs.existsSync(backupPath) == false) { func(1, "Backup folder \"" + backupPath + "\" does not exist, auto-backup will not be performed."); return; }
 
+        if (backupPath.startsWith(parent.datapath)) {
+            func(1, "Backup path can't be set within meshcentral-data folder. No backups will be made.");
+            return;
+        }
+        // Check create/write backupdir
+        try { fs.mkdirSync(backupPath); }
+        catch (e) {
+            // EEXIST error = dir already exists
+            if (e.code != 'EEXIST' ) {
+                //Unable to create backuppath
+                console.error(e.message);
+                func(1, 'Unable to create ' + backupPath + '. No backups will be made. Error: ' + e.message);
+                return;
+            }
+        }
+        const testFile = path.join(backupPath, (parent.config.settings.autobackup.backupname + ".test"));
+
+        try { fs.writeFileSync( testFile, "DeleteMe"); }
+        catch (e) {
+            //Unable to create file
+            console.error (e.message);
+            func(1, "Backuppath (" + backupPath + ") can't be written to. No backups will be made. Error: " + e.message);
+            return;            
+        }
+        try { fs.unlinkSync(testFile); parent.debug('backup', 'Backuppath ' + backupPath + ' accesscheck successful');}
+        catch (e) {
+            console.error (e.message);
+            func(1, "Backuppathtestfile (" + testFile + ") can't be deleted, check filerights. Error: " + e.message);
+            // Assume write rights, no delete rights. Continue with warning.
+            //return;
+        }
+
+        // Check database dumptools
         if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
             // Check that we have access to MongoDump
             var cmd = buildMongoDumpCommand();
             cmd += (parent.platform == 'win32') ? ' --archive=\"nul\"' : ' --archive=\"/dev/null\"';
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
-                try {
-                    if ((error != null) && (error != '')) {
-                        if (parent.platform == 'win32') {
-                            func(1, "Unable to find mongodump.exe, MongoDB database auto-backup will not be performed.");
-                        } else {
-                            func(1, "Unable to find mongodump, MongoDB database auto-backup will not be performed.");
-                        }
-                    } else {
-                        func();
-                    }
-                } catch (ex) { console.log(ex); }
+                if ((error != null) && (error != '')) {
+                        func(1, "Unable to find mongodump tool, backup will not be performed. Command tried: " + cmd);
+                        return;
+                } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
         } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
             // Check that we have access to mysqldump
             var cmd = buildSqlDumpCommand();
             cmd += ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
-            child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
-                try {
-                    if ((error != null) && (error != '')) {
-                        if (parent.platform == 'win32') {
-                            func(1, "Unable to find mysqldump.exe, MySQL/MariaDB database auto-backup will not be performed.");
-                        } else {
-                            func(1, "Unable to find mysqldump, MySQL/MariaDB database auto-backup will not be performed.");
-                        }
-                    } else {
-                        func();
-                    }
-                } catch (ex) { console.log(ex); }
+            child_process.exec(cmd, { cwd: backupPath, timeout: 1000*30 }, function(error, stdout, stdin) {
+                if ((error != null) && (error != '')) {
+                        func(1, "Unable to find mysqldump tool, backup will not be performed. Command tried: " + cmd);
+                        return;
+                } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
+
             });
         } else if (obj.databaseType == DB_POSTGRESQL) {
             // Check that we have access to pg_dump
@@ -3382,17 +3402,14 @@ module.exports.CreateDB = function (parent, func) {
                     + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
-                try {
-                    if ((error != null) && (error != '')) {
-                            func(1, "Unable to find pg_dump, PostgreSQL database auto-backup will not be performed.");
-                    } else {
-                        func();
-                    }
-                } catch (ex) { console.log(ex); }
+                if ((error != null) && (error != '')) {
+                        func(1, "Unable to find pg_dump tool, backup will not be performed. Command tried: " + cmd);
+                        return;
+                } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
         } else {
-            func();
-        }
+            //all ok, enable backup
+            parent.config.settings.autobackup.backupintervalhours = backupInterval;}
     }
 
     // MongoDB pending bulk read operation, perform fast bulk document reads.
@@ -3506,19 +3523,18 @@ module.exports.CreateDB = function (parent, func) {
 
     // Perform a server backup
     obj.performBackup = function (func) {
-        parent.debug('db','Entering performBackup');
+        parent.debug('backup','Entering performBackup');
         try {
             if (obj.performingBackup) return 'Backup alreay in progress.';
-            if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Unable to create backup if backuppath is set to the data folder.'); return 'Backup aborted.' }};
+            if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Backup disabled.'); return 'Backup disabled.' }};
             obj.performingBackup = true;
             let backupPath = parent.backuppath;
             let dataPath = parent.datapath;
 
-            if (parent.config.settings.autobackup && parent.config.settings.autobackup.backuppath) { backupPath = parent.config.settings.autobackup.backuppath; }
-            try { parent.fs.mkdirSync(backupPath); } catch (e) { }
             const currentDate = new Date();
             const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
-            obj.newAutoBackupFile = path.join(backupPath, ((typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-') + fileSuffix + '.zip');
+            obj.newAutoBackupFile = path.join(backupPath, parent.config.settings.autobackup.backupname + fileSuffix + '.zip');
+            parent.debug('backup','newAutoBackupFile=' + obj.newAutoBackupFile);
 
             if ((obj.databaseType == DB_MONGOJS) || (obj.databaseType == DB_MONGODB)) {
                 // Perform a MongoDump
@@ -3530,13 +3546,14 @@ module.exports.CreateDB = function (parent, func) {
                 var cmd = buildMongoDumpCommand();
                 cmd += (dburl) ? ' --archive=\"' + obj.newDBDumpFile + '\"' :
                                  ' --db=\"' + dbname + '\" --archive=\"' + obj.newDBDumpFile + '\"';
-
+                parent.debug('backup','Mongodump cmd: ' + cmd);
                 const child_process = require('child_process');
                 const dumpProcess = child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
                 );
+                
                 dumpProcess.on('exit', (code) => {
                     if (code != 0) {console.log(`Mongodump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
                     obj.createBackupfile(func);
@@ -3549,15 +3566,16 @@ module.exports.CreateDB = function (parent, func) {
            
                 var cmd = buildSqlDumpCommand();
                 cmd += ' --result-file=\"' + obj.newDBDumpFile + '\"';
+                parent.debug('backup','Maria/MySQLdump cmd: ' + cmd);
 
                 const child_process = require('child_process');
                 const dumpProcess = child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform MySQL backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MySQL backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
                 );
                 dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`MySQLdump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
+                    if (code != 0) {console.error(`MySQLdump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
                     obj.createBackupfile(func);
                   });
 
@@ -3565,8 +3583,9 @@ module.exports.CreateDB = function (parent, func) {
                 //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
                 obj.newDBDumpFile = path.join(backupPath, databaseName + '-sqlitedump-' + fileSuffix + '.db3');
                 // do a VACUUM INTO in favor of the backup API to compress the export, see https://www.sqlite.org/backup.html
+                parent.debug('backup','SQLitedump: VACUUM INTO ' + obj.newDBDumpFile);
                 obj.file.exec('VACUUM INTO \'' + obj.newDBDumpFile + '\'', function (err) {
-                    if (err) { console.log('SQLite start-backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP;};
+                    if (err) { console.error('SQLite backup error: ' + err); obj.backupStatus |=BACKUPFAIL_DBDUMP;};
                     //always finish/clean up
                     obj.createBackupfile(func);
                 });
@@ -3578,6 +3597,7 @@ module.exports.CreateDB = function (parent, func) {
                     + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
                     + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
                     + " --file=" + obj.newDBDumpFile;
+                parent.debug('backup','Postgresqldump cmd: ' + cmd);
                 const child_process = require('child_process');
                 const dumpProcess = child_process.exec(
                     cmd,
@@ -3589,15 +3609,15 @@ module.exports.CreateDB = function (parent, func) {
                     obj.createBackupfile(func);
                 });
             } else {
-                //NeDB backup, no db dump needed, just make a file backup
+                // NeDB/Acebase backup, no db dump needed, just make a file backup
                 obj.createBackupfile(func);
             }
-        } catch (ex) { console.log(ex); };
+        } catch (ex) { console.error(ex); parent.addServerWarning( 'Something went wrong during performBackup, check errorlog: ' +ex.message, true);  };
         return 'Starting auto-backup...';
     };
 
     obj.createBackupfile = function(func) {
-        parent.debug('db', 'Entering createFileBackup');
+        parent.debug('backup', 'Entering createBackupfile');
         let archiver = require('archiver');
         let archive = null;
         let zipLevel = Math.min(Math.max(Number(parent.config.settings.autobackup.zipcompression ? parent.config.settings.autobackup.zipcompression : 5),1),9);
@@ -3611,8 +3631,8 @@ module.exports.CreateDB = function (parent, func) {
                 if (func) { func('Creating encrypted ZIP'); }
             } catch (ex) { // registering encryption failed, do not fall back to non-encrypted, fail backup and skip old backup removal as a precaution to not lose any backups
                 obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
-                if (func) { func('Zipencryptionmodule failed, aborting'); }
-                console.log('Zipencryptionmodule failed, aborting');
+                if (func) { func('Zipencryptionmodule failed, aborting');}
+                console.error('Zipencryptionmodule failed, aborting');
             }
         } else {
             if (func) { func('Creating a NON-ENCRYPTED ZIP'); }
@@ -3622,51 +3642,36 @@ module.exports.CreateDB = function (parent, func) {
         //original behavior, just a filebackup if dbdump fails : (obj.backupStatus == 0 || obj.backupStatus == BACKUPFAIL_DBDUMP)
         if (obj.backupStatus == 0) {
             // Zip the data directory with the dbdump|NeDB files
-            let output = parent.fs.createWriteStream(obj.newAutoBackupFile);
+            let output = fs.createWriteStream(obj.newAutoBackupFile);
+
+            // Archive finalized and closed
             output.on('close', function () { 
                 if (obj.backupStatus == 0) {
-                    //remove dump archive file, because zipped and otherwise fills up
-                    if (obj.databaseType != DB_NEDB) {
-                        try { parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to clean up dbdump file')};
-                    };
+                    let mesg = 'Auto-backup completed: ' + obj.newAutoBackupFile + ', backup-size: ' + ((archive.pointer() / 1048576).toFixed(2)) + "Mb";
+                    console.log(mesg);
+                    if (func) { func(mesg); };
                     obj.performCloudBackup(obj.newAutoBackupFile, func);
-                    // Remove old backups
-                    if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
-                        let cutoffDate = new Date();
-                        cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
-                        parent.fs.readdir(parent.backuppath, function (err, dir) {
-                            try {
-                                if ((err == null) && (dir.length > 0)) {
-                                    let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
-                                    for (var i in dir) {
-                                        var name = dir[i];
-                                        if (name.startsWith(fileName) && name.endsWith('.zip')) {
-                                            var timex = name.substring(23, name.length - 4).split('-');
-                                            if (timex.length == 5) {
-                                                var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
-                                                if (fileDate && (cutoffDate > fileDate)) { try { parent.fs.unlink(parent.path.join(parent.backuppath, name), function () { }); } catch (ex) { } }
-                                            }
-                                        }
-                                    }
-                                }
-                            } catch (ex) { console.log(ex); }
-                        });
-                    }
-                    console.log('Auto-backup completed.');
-                    if (func) { func('Auto-backup completed.'); };
+                    obj.removeExpiredBackupfiles(func);
+
                 } else {
-                    console.log('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile );
-                    if (func) { func('Zipbackup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + '), deleting incomplete backup: ' + obj.newAutoBackupFile) };
-                    try { parent.fs.unlink(obj.newAutoBackupFile, function () { }); parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) {console.log('Failed to delete incomplete backup files')};
+                    let mesg = 'Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile;
+                    if (func) { func(mesg) }
+                    else { parent.addServerWarning(mesg, true ) };
+                    if (fs.existsSync(obj.newAutoBackupFile)) { fs.unlink(obj.newAutoBackupFile, function (err) { console.error('Failed to clean up backupfile: ' + err.message) }) };
+                };
+                if (obj.databaseType != DB_NEDB) {
+                    //remove dump archive file, because zipped and otherwise fills up
+                    if (fs.existsSync(obj.newDBDumpFile)) { fs.unlink(obj.newDBDumpFile, function (err) { if (err) {console.error('Failed to clean up dbdump file: ' + err.message) } }) };
                 };
                 obj.performingBackup = false;
                 obj.backupStatus = 0x0;
-            });
+                }
+            );
             output.on('end', function () { });
             output.on('error', function (err) {
                 if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
-                    console.log('Output error: ' + err);
-                    if (func) { func('Output error: ' + err); };
+                    console.error('Output error: ' + err.message);
+                    if (func) { func('Output error: ' + err.message); };
                     obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 };
@@ -3676,16 +3681,16 @@ module.exports.CreateDB = function (parent, func) {
                 //an ENOENT warning is given, but the archiver module has no option to/does not skip/resume
                 //so the backup needs te be aborted as it otherwise leaves an incomplete zip and never 'ends'
                 if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
-                    console.log('Zip warning: ' + err); 
-                    if (func) { func('Zip warning: ' + err); };
+                    console.log('Zip warning: ' + err.message); 
+                    if (func) { func('Zip warning: ' + err.message); };
                     obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 };
             });
             archive.on('error', function (err) {
                 if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
-                    console.log('Zip error: ' + err);
-                    if (func) { func('Zip error: ' + err); };
+                    console.error('Zip error: ' + err.message);
+                    if (func) { func('Zip error: ' + err.message); };
                     obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 }
@@ -3718,22 +3723,67 @@ module.exports.CreateDB = function (parent, func) {
             archive.finalize();
         } else {
             //failed somewhere before zipping
-            console.log('Backup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + ')');
-            if (func) { func('Backup failed ('+ (+obj.backupStatus).toString(16).slice(-4) + ')') };
+            console.error('Backup failed ('+ obj.backupStatus.toString(2).slice(-8) + ')');
+            if (func) { func('Backup failed ('+ obj.backupStatus.toString(2).slice(-8) + ')') }
+            else {
+                parent.addServerWarning('Backup failed ('+ obj.backupStatus.toString(2).slice(-8) + ')', true);
+            }
             //Just in case something's there
-            try { parent.fs.unlink(obj.newDBDumpFile, function () { }); } catch (ex) { };
+            if (fs.existsSync(obj.newDBDumpFile)) { fs.unlink(obj.newDBDumpFile, function (err) { if (err) {console.error('Failed to clean up dbdump file: ' + err.message) } }); };
             obj.backupStatus = 0x0;
             obj.performingBackup = false;
         };
     };
 
+    // Remove expired backupfiles by filenamedate
+    obj.removeExpiredBackupfiles = function (func) {
+        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
+            let cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
+            fs.readdir(parent.backuppath, function (err, dir) {
+                try {
+                    if (err == null) {
+                        if (dir.length > 0) {
+                            let fileName = parent.config.settings.autobackup.backupname;
+                            let checked = 0;
+                            let removed = 0;
+                            for (var i in dir) {
+                                var name = dir[i];
+                                parent.debug('backup', "checking file: ", path.join(parent.backuppath, name));
+                                if (name.startsWith(fileName) && name.endsWith('.zip')) {
+                                    var timex = name.substring(fileName.length, name.length - 4).split('-');
+                                    if (timex.length == 5) {
+                                        checked++;
+                                        var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
+                                        if (fileDate && (cutoffDate > fileDate)) {
+                                            console.log("Removing expired backup file: ", path.join(parent.backuppath, name));
+                                            fs.unlink(path.join(parent.backuppath, name), function (err) { if (err) { console.error(err.message); if (func) {func('Error removing: ' + err.message); } } });
+                                            removed++;
+                                        }
+                                    }
+                                    else { parent.debug('backup', "file: " + name + " timestamp failure: ", timex); }
+                                }
+                            }
+                            let mesg= 'Checked ' + checked + ' candidates in ' + parent.backuppath + '. Removed ' + removed + ' expired backupfiles using cutoffDate: '+ cutoffDate.toLocaleString('default', { dateStyle: 'short', timeStyle: 'short' });
+                            parent.debug (mesg);
+                            if (func) { func(mesg); }
+                        } else { console.error('No files found in ' + parent.backuppath + '. There should be at least one.')}
+                    }
+                    else
+                    { console.error(err); parent.addServerWarning( 'Reading files in backup directory ' + parent.backuppath + ' failed, check errorlog: ' + err.message, true); }
+                } catch (ex) { console.error(ex); parent.addServerWarning( 'Something went wrong during removeExpiredBackupfiles, check errorlog: ' +ex.message, true); }
+            });
+        }
+    }
+
     // Perform cloud backup
     obj.performCloudBackup = function (filename, func) {
-
         // WebDAV Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.webdav == 'object')) {
-            const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
+            parent.debug( 'backup', 'Entering WebDAV backup');
+            if (func) { func('Entering WebDAV backup.'); }
 
+            const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
             // Fetch the folder name
             var webdavfolderName = 'MeshCentral-Backups';
             if (typeof parent.config.settings.autobackup.webdav.foldername == 'string') { webdavfolderName = parent.config.settings.autobackup.webdav.foldername; }
@@ -3741,23 +3791,28 @@ module.exports.CreateDB = function (parent, func) {
             // Clean up our WebDAV folder
             function performWebDavCleanup(client) {
                 if ((typeof parent.config.settings.autobackup.webdav.maxfiles == 'number') && (parent.config.settings.autobackup.webdav.maxfiles > 1)) {
-                    let fileName = (typeof parent.config.settings.autobackup.backupname == 'string') ? parent.config.settings.autobackup.backupname : 'meshcentral-autobackup-';
+                    let fileName = parent.config.settings.autobackup.backupname;
                     //only files matching our backupfilename
                     let directoryItems = client.getDirectoryContents(webdavfolderName, { deep: false, glob: "/**/" + fileName + "*.zip" });
                     directoryItems.then(
                         function (files) {
                             for (var i in files) { files[i].xdate = new Date(files[i].lastmod); }
                             files.sort(xdateTimeSort);
+                            parent.debug('backup','WebDAV filtered directory contents: ' + JSON.stringify(files, null, 4));
                             while (files.length >= parent.config.settings.autobackup.webdav.maxfiles) {
-                                client.deleteFile(files.shift().filename).then(function (state) {
-                                    if (func) { func('WebDAV file deleted.'); }
+                                let delFile = files.shift().filename;
+                                client.deleteFile(delFile).then(function (state) {
+                                    parent.debug('backup','WebDAV file deleted: ' + delFile);
+                                    if (func) { func('WebDAV file deleted: ' + delFile); }
                                 }).catch(function (err) {
-                                    if (func) { func('WebDAV (deleteFile) error: ' + err); }
+                                    console.error(err);
+                                    if (func) { func('WebDAV (deleteFile) error: ' + err.message); }
                                 });
                             }
                         }
                     ).catch(function (err) {
-                        if (func) { func('WebDAV (getDirectoryContents) error: ' + err); }
+                        console.error(err);
+                        if (func) { func('WebDAV (getDirectoryContents) error: ' + err.message); }
                     });
                 }
             }
@@ -3766,14 +3821,14 @@ module.exports.CreateDB = function (parent, func) {
             function performWebDavUpload(client, filepath) {
                 require('fs').stat(filepath, function(err,stat){
                     var fileStream = require('fs').createReadStream(filepath);
-                    fileStream.on('close', function () { if (func) { func('WebDAV upload completed'); } })
-                    fileStream.on('error', function (err) { if (func) { func('WebDAV (fileUpload) error: ' + err); } })
+                    fileStream.on('close', function () { console.log('WebDAV upload completed: ' + webdavfolderName + '/' + require('path').basename(filepath)); if (func) { func('WebDAV upload completed: ' + webdavfolderName + '/' + require('path').basename(filepath)); } })
+                    fileStream.on('error', function (err) { console.error(err); if (func) { func('WebDAV (fileUpload) error: ' + err.message); } })
                     fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath), { headers: { "Content-Length": stat.size } }));
-                    if (func) { func('Uploading using WebDAV...'); }
+                    parent.debug('backup', 'Uploading using WebDAV to: ' + parent.config.settings.autobackup.webdav.url);
+                    if (func) { func('Uploading using WebDAV to: ' + parent.config.settings.autobackup.webdav.url); }
                 });
             }
 
-            if (func) { func('Attempting WebDAV upload...'); }
             const { createClient } = require('webdav');
             const client = createClient(parent.config.settings.autobackup.webdav.url, {
                 username: parent.config.settings.autobackup.webdav.username,
@@ -3787,19 +3842,23 @@ module.exports.CreateDB = function (parent, func) {
                     performWebDavUpload(client, filename);
                 }else{
                     client.createDirectory(webdavfolderName, {recursive: true}).then(function (a) {
-                        if (func) { func('WebDAV folder created'); }
+                        console.log('backup','WebDAV folder created: ' + webdavfolderName);
+                        if (func) { func('WebDAV folder created: ' + webdavfolderName); }
                         performWebDavUpload(client, filename);
                     }).catch(function (err) {
-                        if (func) { func('WebDAV (createDirectory) error: ' + err); }
+                        console.error(err);
+                        if (func) { func('WebDAV (createDirectory) error: ' + err.message); }
                     });
                 }
             }).catch(function (err) {
-                if (func) { func('WebDAV (exists) error: ' + err); }
+                console.error(err);
+                if (func) { func('WebDAV (exists) error: ' + err.message); }
             });
         }
 
         // Google Drive Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.googledrive == 'object')) {
+            parent.debug( 'backup', 'Entering Google Drive backup');
             obj.Get('GoogleDriveBackup', function (err, docs) {
                 if ((err != null) || (docs.length != 1) || (docs[0].state != 3)) return;
                 if (func) { func('Attempting Google Drive upload...'); }
@@ -3878,6 +3937,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // S3 Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.s3 == 'object')) {
+            parent.debug( 'backup', 'Entering S3 backup');
             var s3folderName = 'MeshCentral-Backups';
             if (typeof parent.config.settings.autobackup.s3.foldername == 'string') { s3folderName = parent.config.settings.autobackup.s3.foldername; }
             // Construct the config object

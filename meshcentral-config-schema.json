@@ -886,6 +886,11 @@
               "default": 24,
               "description": "How often should the autobackup run in hours from the second meshcentral starts up? Default is every 24 hours"
             },
+            "backupHour": {
+              "type": "integer",
+              "default": 0,
+              "description": "At which hour the autobackup should run. This forces a daily backup, overrules a custom 'backupIntervalHours'."
+            },
             "keepLastDaysBackup": {
               "type": "integer",
               "default": 10,
