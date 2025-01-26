@@ -5600,7 +5600,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'heapdump': [serverUserCommandHeapDump, ""],
         'heapdump2': [serverUserCommandHeapDump2, ""],
         'help': [serverUserCommandHelp, ""],
-        'info': [serverUserCommandInfo, "Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug."],
+        'info': [serverUserCommandInfo, "Returns the most immidiatly useful information about this server, including MeshCentral and NodeJS versions. This is often information required to file a bug. Optionally use info h for human readable form."],
         'le': [serverUserCommandLe, ""],
         'lecheck': [serverUserCommandLeCheck, ""],
         'leevents': [serverUserCommandLeEvents, ""],
@@ -7546,7 +7546,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverUserCommandInfo(cmdData) {
-        var info = {};
+        function convertSeconds (s, form) {
+            if (!['long', 'shortprecise'].includes(form)) {
+                form = 'shortprecise';
+            }
+            let t = {}, r = '';
+            t.d = Math.floor(s / (24 * 3600));
+            s %= 24 * 3600;
+            t.h= Math.floor(s / 3600);
+            s %= 3600;
+            t.m = Math.floor(s / 60);
+            t.s =(s%60).toFixed(0);
+            if ( form == 'long') {
+                r = t.d + ((t.d == 1) ? ' day, ' : ' days, ') + t.h + ((t.h == 1) ? ' hour, ' : ' hours, ') + t.m + ((t.m == 1) ? ' minute, ' : ' minutes, ') + t.s+ ((t.s == 1) ? ' second' : ' seconds');
+            } else  if (form == 'shortprecise') {
+                r = String(t.d).padStart(2, '0') + ':' + String(t.h).padStart(2, '0') + ':' + String(t.m).padStart(2, '0') + ':' + String((s%60).toFixed(2)).padStart(5, '0') + 's';
+            }
+            return r;
+        }
+        var info = {}, arg = null, t = {}, r = '';
+        if ((cmdData.cmdargs['_'] != null) && (cmdData.cmdargs['_'][0] != null)) { arg = cmdData.cmdargs['_'][0].toLowerCase(); }
         try { info.meshVersion = 'v' + parent.parent.currentVer; } catch (ex) { }
         try { info.nodeVersion = process.version; } catch (ex) { }
         try { info.runMode = (["Hybrid (LAN + WAN) mode", "WAN mode", "LAN mode"][(args.lanonly ? 2 : (args.wanonly ? 1 : 0))]); } catch (ex) { }
@@ -7558,9 +7577,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try { info.platform = process.platform; } catch (ex) { }
         try { info.arch = process.arch; } catch (ex) { }
         try { info.pid = process.pid; } catch (ex) { }
-        try { info.uptime = process.uptime(); } catch (ex) { }
-        try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
-        try { info.memoryUsage = process.memoryUsage(); } catch (ex) { }
+        if (arg == 'h') {
+            try {
+                info.uptime = convertSeconds(process.uptime(), 'long');
+                info.cpuUsage = {
+                    system: (convertSeconds(process.cpuUsage().system /1000000)),
+                    user: (convertSeconds(process.cpuUsage().user /1000000))
+                }
+                info.memoryUsage = {};
+                for (const [key,value] of Object.entries(process.memoryUsage())){
+                    info.memoryUsage[key] = ([value]/1048576).toFixed(2) + 'Mb';
+                }
+            } catch (ex) {  }
+        }
+        else {
+            try { info.uptime = process.uptime(); } catch (ex) { }
+            try { info.cpuUsage = process.cpuUsage(); } catch (ex) { }
+            try { info.memoryUsage = process.memoryUsage(); } catch (ex) { }
+        }
         try { info.warnings = parent.parent.getServerWarnings(); } catch (ex) { console.log(ex); }
         try { info.allDevGroupManagers = parent.parent.config.settings.managealldevicegroups; } catch (ex) { }
         try { if (process.traceDeprecation == true) { info.traceDeprecation = true; } } catch (ex) { }
