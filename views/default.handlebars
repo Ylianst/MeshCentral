@@ -6061,7 +6061,7 @@
                 meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), type: 'csv' }); // With details
             } else {
                 // Without details
-                var csv = "id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,bitlocker,avdetails,tags" + '\r\n', r = [];
+                var csv = "id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,bitlocker,avdetails,tags,lastbootuptime" + '\r\n', r = [];
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
                     csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"';
@@ -6087,6 +6087,7 @@
                     else {
                         csv += ',';
                     }
+                    if (typeof n.lastbootuptime == 'number') { csv += ',"' + n.lastbootuptime + '"'; }
                     csv += '\r\n';
                 }
                 saveAs(stringToUtf8Blob(csv), "devicelist.csv");
@@ -15872,7 +15873,7 @@
         }
 
         function p4downloadUserInfoCSV() {
-            var csv = "id, name, email, creation, lastlogin, groups, authfactors, siteadmin, useradmin, locked" + '\r\n';
+            var csv = "id,name,email,creation,lastlogin,groups,authfactors,siteadmin,useradmin,locked" + '\r\n';
             for (var i in users) {
                 var multiFactor = false, factors = [];
                 if ((users[i].otpsecret > 0) || (users[i].otphkeys > 0)) {
