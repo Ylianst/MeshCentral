@@ -894,7 +894,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Check top level configuration for any unrecognized values
-        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [i]); } } }
+        if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { common.addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [i]); } } }
 
         // Read IP lists from files if applicable
         config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
@@ -926,7 +926,7 @@ function CreateMeshCentralServer(config, args) {
         const verSplit = process.version.substring(1).split('.');
         const ver = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
         if (((ver >= 11.11) && (ver <= 12.15)) || (ver == 13.2)) {
-            if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2', 4); }
+            if ((obj.args.wscompression === true) || (obj.args.agentwscompression === true)) { common.addServerWarning('WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2', 4); }
             obj.args.wscompression = obj.args.agentwscompression = false;
             obj.config.settings.wscompression = obj.config.settings.agentwscompression = false;
         }
@@ -1348,7 +1348,7 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     // Check if the database is capable of performing a backup
-                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
+                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { common.addServerWarning(msg, true) } });
 
                     // Load configuration for database if needed
                     if (obj.args.loadconfigfromdb) {
@@ -1401,7 +1401,7 @@ function CreateMeshCentralServer(config, args) {
         var i;
 
         // Add NodeJS version warning if needed
-        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 16) { addServerWarning("MeshCentral will require Node v16 or above in the future, your current version is " + process.version + "."); }
+        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 16) { common.addServerWarning("MeshCentral will require Node v16 or above in the future, your current version is " + process.version + "."); }
 
         // Setup certificate operations
         obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
@@ -1542,9 +1542,9 @@ function CreateMeshCentralServer(config, args) {
                     obj.config.domains[i].amtmanager.tlsrootcert2 = obj.certificateOperations.loadGenericCertAndKey(obj.config.domains[i].amtmanager.tlsrootcert);
                     if (obj.config.domains[i].amtmanager.tlsrootcert2 == null) { // Show an error message if needed
                         if (i == '') {
-                            addServerWarning("Unable to load Intel AMT TLS root certificate for default domain.", 5);
+                            common.addServerWarning("Unable to load Intel AMT TLS root certificate for default domain.", 5);
                         } else {
-                            addServerWarning("Unable to load Intel AMT TLS root certificate for domain " + i + ".", 6, [i]);
+                            common.addServerWarning("Unable to load Intel AMT TLS root certificate for domain " + i + ".", 6, [i]);
                         }
                     }
                 }
@@ -1564,7 +1564,7 @@ function CreateMeshCentralServer(config, args) {
                         obj.config.domains[i].agentfileinfo.icon = icon;
                     } else {
                         // Failed to load the icon file, display a server warning
-                        addServerWarning("Unable to load agent icon file: " + obj.config.domains[i].agentfileinfo.icon + ".", 23, [obj.config.domains[i].agentfileinfo.icon]);
+                        common.addServerWarning("Unable to load agent icon file: " + obj.config.domains[i].agentfileinfo.icon + ".", 23, [obj.config.domains[i].agentfileinfo.icon]);
                         delete obj.config.domains[i].agentfileinfo.icon;
                     }
                 } else {
@@ -1580,7 +1580,7 @@ function CreateMeshCentralServer(config, args) {
                         obj.config.domains[i].agentfileinfo.logo = logo;
                     } else {
                         // Failed to load the icon file, display a server warning
-                        addServerWarning("Unable to load agent logo file: " + obj.config.domains[i].agentfileinfo.logo + ".", 24, [obj.config.domains[i].agentfileinfo.logo]);
+                        common.addServerWarning("Unable to load agent logo file: " + obj.config.domains[i].agentfileinfo.logo + ".", 24, [obj.config.domains[i].agentfileinfo.logo]);
                         delete obj.config.domains[i].agentfileinfo.logo;
                     }
                 } else {
@@ -1595,9 +1595,9 @@ function CreateMeshCentralServer(config, args) {
 
         // Look at passed in arguments
         if ((obj.args.user != null) && (typeof obj.args.user != 'string')) { delete obj.args.user; }
-        if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { addServerWarning("CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.", 7); }
-        if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { addServerWarning("Can't have more than 4 CIRA local FQDN's. Ignoring value.", 8); obj.args.ciralocalfqdn = null; }
-        if (obj.args.ignoreagenthashcheck === true) { addServerWarning("Agent hash checking is being skipped, this is unsafe.", 9); }
+        if ((obj.args.ciralocalfqdn != null) && ((obj.args.lanonly == true) || (obj.args.wanonly == true))) { common.addServerWarning("CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.", 7); }
+        if ((obj.args.ciralocalfqdn != null) && (obj.args.ciralocalfqdn.split(',').length > 4)) { common.addServerWarning("Can't have more than 4 CIRA local FQDN's. Ignoring value.", 8); obj.args.ciralocalfqdn = null; }
+        if (obj.args.ignoreagenthashcheck === true) { common.addServerWarning("Agent hash checking is being skipped, this is unsafe.", 9); }
         if (obj.args.port == null || typeof obj.args.port != 'number') { obj.args.port = 443; }
         if (obj.args.aliasport != null && (typeof obj.args.aliasport != 'number')) obj.args.aliasport = null;
         if (obj.args.mpsport == null || typeof obj.args.mpsport != 'number') obj.args.mpsport = 4433;
@@ -1730,15 +1730,15 @@ function CreateMeshCentralServer(config, args) {
                 // Check Let's Encrypt settings
                 var leok = true;
                 if ((typeof obj.config.letsencrypt.names != 'string') && (typeof obj.config.settings.cert == 'string')) { obj.config.letsencrypt.names = obj.config.settings.cert; }
-                if (typeof obj.config.letsencrypt.email != 'string') { leok = false; addServerWarning("Missing Let's Encrypt email address.", 10); }
-                else if (typeof obj.config.letsencrypt.names != 'string') { leok = false; addServerWarning("Invalid Let's Encrypt host names.", 11); }
-                else if (obj.config.letsencrypt.names.indexOf('*') >= 0) { leok = false; addServerWarning("Invalid Let's Encrypt names, can't contain a *.", 12); }
-                else if (obj.config.letsencrypt.email.split('@').length != 2) { leok = false; addServerWarning("Invalid Let's Encrypt email address.", 10); }
-                else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; addServerWarning("Invalid Let's Encrypt email address.", 10); }
+                if (typeof obj.config.letsencrypt.email != 'string') { leok = false; common.addServerWarning("Missing Let's Encrypt email address.", 10); }
+                else if (typeof obj.config.letsencrypt.names != 'string') { leok = false; common.addServerWarning("Invalid Let's Encrypt host names.", 11); }
+                else if (obj.config.letsencrypt.names.indexOf('*') >= 0) { leok = false; common.addServerWarning("Invalid Let's Encrypt names, can't contain a *.", 12); }
+                else if (obj.config.letsencrypt.email.split('@').length != 2) { leok = false; common.addServerWarning("Invalid Let's Encrypt email address.", 10); }
+                else if (obj.config.letsencrypt.email.trim() !== obj.config.letsencrypt.email) { leok = false; common.addServerWarning("Invalid Let's Encrypt email address.", 10); }
                 else {
                     const le = require('./letsencrypt.js');
                     try { obj.letsencrypt = le.CreateLetsEncrypt(obj); } catch (ex) { console.log(ex); }
-                    if (obj.letsencrypt == null) { addServerWarning("Unable to setup Let's Encrypt module.", 13); leok = false; }
+                    if (obj.letsencrypt == null) { common.addServerWarning("Unable to setup Let's Encrypt module.", 13); leok = false; }
                 }
                 if (leok == true) {
                     // Check that the email address domain MX resolves.
@@ -1749,12 +1749,12 @@ function CreateMeshCentralServer(config, args) {
                                 if (err == null) {
                                     obj.letsencrypt.getCertificate(certs, obj.StartEx3); // Use Let's Encrypt
                                 } else {
-                                    for (var i in err) { addServerWarning("Invalid Let's Encrypt names, unable to resolve: " + err[i], 14, [err[i]]); }
+                                    for (var i in err) { common.addServerWarning("Invalid Let's Encrypt names, unable to resolve: " + err[i], 14, [err[i]]); }
                                     obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
                                 }
                             });
                         } else {
-                            addServerWarning("Invalid Let's Encrypt email address, unable to resolve: " + obj.config.letsencrypt.email.split('@')[1], 15, [obj.config.letsencrypt.email.split('@')[1]]);
+                            common.addServerWarning("Invalid Let's Encrypt email address, unable to resolve: " + obj.config.letsencrypt.email.split('@')[1], 15, [obj.config.letsencrypt.email.split('@')[1]]);
                             obj.StartEx3(certs); // Let's Encrypt did not load, just use the configured certificates
                         }
                     });
@@ -1799,12 +1799,12 @@ function CreateMeshCentralServer(config, args) {
                             for (var i in ipranges) { if (ipranges[i] != '') { obj.args.trustedproxy.push(ipranges[i]); } }
                             obj.config.settings.trustedproxy = obj.args.trustedproxy;
                         } else {
-                            addServerWarning("Unable to load CloudFlare trusted proxy IPv6 address list.", 16);
+                            common.addServerWarning("Unable to load CloudFlare trusted proxy IPv6 address list.", 16);
                         }
                         obj.StartEx4(); // Keep going
                     });
                 } else {
-                    addServerWarning("Unable to load CloudFlare trusted proxy IPv4 address list.", 16);
+                    common.addServerWarning("Unable to load CloudFlare trusted proxy IPv4 address list.", 16);
                     obj.StartEx4(); // Keep going
                 }
             });
@@ -1929,17 +1929,17 @@ function CreateMeshCentralServer(config, args) {
                         // Sendgrid server
                         obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                         obj.mailserver.verify();
-                        if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
+                        if (obj.args.lanonly == true) { common.addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
                     } else if (obj.config.smtp != null) {
                         // SMTP server
                         obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                         obj.mailserver.verify();
-                        if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
+                        if (obj.args.lanonly == true) { common.addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                     } else if (obj.config.sendmail != null) {
                         // Sendmail server
                         obj.mailserver = require('./meshmail.js').CreateMeshMail(obj);
                         obj.mailserver.verify();
-                        if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
+                        if (obj.args.lanonly == true) { common.addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                     }
 
                     // Setup the email server for each domain
@@ -1948,17 +1948,17 @@ function CreateMeshCentralServer(config, args) {
                             // Sendgrid server
                             obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
                             obj.config.domains[i].mailserver.verify();
-                            if (obj.args.lanonly == true) { addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
+                            if (obj.args.lanonly == true) { common.addServerWarning("SendGrid server has limited use in LAN mode.", 17); }
                         } else if ((obj.config.domains[i].smtp != null) && (obj.config.domains[i].smtp.host != null) && (obj.config.domains[i].smtp.from != null)) {
                             // SMTP server
                             obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
                             obj.config.domains[i].mailserver.verify();
-                            if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
+                            if (obj.args.lanonly == true) { common.addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                         } else if (obj.config.domains[i].sendmail != null) {
                             // Sendmail server
                             obj.config.domains[i].mailserver = require('./meshmail.js').CreateMeshMail(obj, obj.config.domains[i]);
                             obj.config.domains[i].mailserver.verify();
-                            if (obj.args.lanonly == true) { addServerWarning("SMTP server has limited use in LAN mode.", 18); }
+                            if (obj.args.lanonly == true) { common.addServerWarning("SMTP server has limited use in LAN mode.", 18); }
                         } else {
                             // Setup the parent mail server for this domain
                             if (obj.mailserver != null) { obj.config.domains[i].mailserver = obj.mailserver; }
@@ -1968,7 +1968,7 @@ function CreateMeshCentralServer(config, args) {
                     // Setup SMS gateway
                     if (config.sms != null) {
                         obj.smsserver = require('./meshsms.js').CreateMeshSMS(obj);
-                        if ((obj.smsserver != null) && (obj.args.lanonly == true)) { addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
+                        if ((obj.smsserver != null) && (obj.args.lanonly == true)) { common.addServerWarning("SMS gateway has limited use in LAN mode.", 19); }
                     }
 
                     // Setup user messaging
@@ -1998,7 +1998,7 @@ function CreateMeshCentralServer(config, args) {
 
                     // Setup Firebase
                     if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                        addServerWarning('Firebase now requires a service account JSON file, Firebase disabled.', 27);
+                        common.addServerWarning('Firebase now requires a service account JSON file, Firebase disabled.', 27);
                     } else if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) {
                         var serviceAccount;
                         try { serviceAccount = JSON.parse(obj.fs.readFileSync(obj.path.join(obj.datapath, config.firebase.serviceaccountfile)).toString()); } catch (ex) { console.log(ex); }
@@ -2027,7 +2027,7 @@ function CreateMeshCentralServer(config, args) {
                     if ((obj.config) && (obj.config.settings) && (typeof obj.config.settings.logincookieencryptionkey == 'string')) {
                         // We have a string, hash it and use that as a key
                         try { obj.loginCookieEncryptionKey = Buffer.from(obj.config.settings.logincookieencryptionkey, 'hex'); } catch (ex) { }
-                        if ((obj.loginCookieEncryptionKey == null) || (obj.loginCookieEncryptionKey.length != 80)) { addServerWarning("Invalid \"LoginCookieEncryptionKey\" in config.json.", 20); obj.loginCookieEncryptionKey = null; }
+                        if ((obj.loginCookieEncryptionKey == null) || (obj.loginCookieEncryptionKey.length != 80)) { common.addServerWarning("Invalid \"LoginCookieEncryptionKey\" in config.json.", 20); obj.loginCookieEncryptionKey = null; }
                     }
 
                     // Login cookie encryption key not set, use one from the database
@@ -2114,7 +2114,7 @@ function CreateMeshCentralServer(config, args) {
 
                     // Check that autobackup path is not within the "meshcentral-data" folder.
                     if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
-                        addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
+                        common.addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
                         obj.config.settings.autobackup = {backupintervalhours: -1};  //block console autobackup
                     }
 
@@ -3397,7 +3397,7 @@ function CreateMeshCentralServer(config, args) {
                             console.log(obj.common.format('Code signed {0}.', agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
                         } else {
                             // Failed to sign agent
-                            addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
+                            common.addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
                         if (--pendingOperations === 0) { agentSignedFunc.func(); }
                     }
@@ -3935,8 +3935,6 @@ function CreateMeshCentralServer(config, args) {
     function logInfoEvent(msg) { if (obj.servicelog != null) { obj.servicelog.info(msg); } console.log(msg); }
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
-    obj.getServerWarnings = function () { return serverWarnings; }
-    obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // auth.log functions
     obj.authLog = function (server, msg, args) {
@@ -4105,41 +4103,6 @@ function InstallModuleEx(modulenames, args, func) {
 // Detect CTRL-C on Linux and stop nicely
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
-// Add a server warning, warnings will be shown to the administrator on the web application
-const serverWarnings = [];
-function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
-
-/*
-var ServerWarnings = {
-    1: "",
-    2: "Missing WebDAV parameters.",
-    3: "Unrecognized configuration option \"{0}\".",
-    4: "WebSocket compression is disabled, this feature is broken in NodeJS v11.11 to v12.15 and v13.2",
-    5: "Unable to load Intel AMT TLS root certificate for default domain.",
-    6: "Unable to load Intel AMT TLS root certificate for domain {0}.",
-    7: "CIRA local FQDN's ignored when server in LAN-only or WAN-only mode.",
-    8: "Can't have more than 4 CIRA local FQDN's. Ignoring value.",
-    9: "Agent hash checking is being skipped, this is unsafe.",
-    10: "Missing Let's Encrypt email address.",
-    11: "Invalid Let's Encrypt host names.",
-    12: "Invalid Let's Encrypt names, can't contain a *.",
-    13: "Unable to setup Let's Encrypt module.",
-    14: "Invalid Let's Encrypt names, unable to resolve: {0}",
-    15: "Invalid Let's Encrypt email address, unable to resolve: {0}",
-    16: "Unable to load CloudFlare trusted proxy IPv6 address list.",
-    17: "SendGrid server has limited use in LAN mode.",
-    18: "SMTP server has limited use in LAN mode.",
-    19: "SMS gateway has limited use in LAN mode.",
-    20: "Invalid \"LoginCookieEncryptionKey\" in config.json.",
-    21: "Backup path can't be set within meshcentral-data folder, backup settings ignored.",
-    22: "Failed to sign agent {0}: {1}",
-    23: "Unable to load agent icon file: {0}.",
-    24: "Unable to load agent logo file: {0}.",
-    25: "This NodeJS version does not support OpenID.",
-    26: "This NodeJS version does not support Discord.js.",
-    27: "Firebase now requires a service account JSON file, Firebase disabled."
-};
-*/
 
 // Load the really basic modules
 var npmpath = 'npm';
@@ -4224,7 +4187,7 @@ function mainStart() {
                         || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) {
                         passport.push('openid-client@5.7.1');
                     } else {
-                        addServerWarning('This NodeJS version does not support OpenID Connect on MeshCentral.', 25);
+                        common.addServerWarning('This NodeJS version does not support OpenID Connect on MeshCentral.', 25);
                         delete config.domains[i].authstrategies.oidc;
                     }
                 }
@@ -4272,7 +4235,7 @@ function mainStart() {
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
-                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.4'); }
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { common.addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.4'); }
             }
             // Enable S3 Support
             if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.2'); }
@@ -4301,7 +4264,7 @@ function mainStart() {
         // Messaging support
         if (config.messaging != null) {
             if (config.messaging.telegram != null) { modules.push('telegram@2.19.8'); modules.push('input@1.0.1'); }
-            if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
+            if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; common.addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
             if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.1'); }
             if (config.messaging.pushover != null) { modules.push('node-pushover@1.0.0'); }
             if (config.messaging.zulip != null) { modules.push('zulip@0.1.0'); }
