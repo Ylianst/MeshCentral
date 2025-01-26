@@ -460,7 +460,7 @@
             // Show Language Select Box if needed
             if (showLanguageSelect === 'top' || showLanguageSelect === 'bottom') {
                 var x = '<select id=d2langselect style="box-sizing:border-box;width:280px;border:0;border-radius:4px;padding:8px" onChange="changeLanguage()">';
-                x += '<option value="*">Use Browser Language</option>';
+                x += '<option value="*">' + "Use Browser Language" + '</option>';
                 for (var i in serverLangs) {
                     var lang = serverLangs[i];
                     x += '<option value="' + lang + '"' + ((urlargs.lang == lang)?' selected':'') + '>' + lang + ' - ' + (loclist[lang]?loclist[lang]:loclistex[lang]) + '</option>';

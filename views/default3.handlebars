@@ -14891,7 +14891,7 @@
                 x += addHtmlFormFloating("Unknown password", '<select id=dp20amtbadpass class="form-select"><option value=0>' + "Do nothing" + '</option><option value=1>' + "If in CCM, reactivate Intel&reg; AMT" + '</option></select>');
                 x += '</div>';
                 if ((features & 0x400) == 0) { x += addHtmlFormFloating("CIRA setup", '<select id=dp20amtcira class="form-select" title="' + "Client Initiated Remote Access" + '"><option value=0>' + "Do nothing" + '</option><option value=1>' + "Don't connect to server" + '</option><option value=2>' + "Connect to server" + '</option></select>'); }
-                x += '<span id=dp10passNotify style="font-size:10px"> ' + "* 8 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span>';
+                x += '<span id=dp10passNotify style="font-size:10px"> ' + "* 8-16 characters, 1 upper, 1 lower, 1 numeric, 1 non-alpha numeric." + '</span>';
                 if ((currentMesh.mtype == 2) && (ptype == 2)) { x += '<span style="font-size:10px"> ' + "This policy will not impact devices with Intel&reg; AMT in ACM mode." + '</span>'; }
             }
             if (ptype == 0) { x = '<div class="row"><div class="col-2"><i class="fa-solid fa-times-circle text-danger" style="padding-right:8px; font-size:60px;"></i></div><div class="col-10">' + "When this policy is selected, Intel&reg; AMT is not managed by this server. Intel AMT can still be used by manually activating and configuring it." + '</div></div>'; }
