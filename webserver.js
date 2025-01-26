@@ -4990,7 +4990,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
                     ws.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
-                        parent.debug('webrelay', 'TLS connected to ' + node.host + ':' + port + '.');
+                        parent.debug('webrelay', user.name + ' - TLS connected to ' + node.host + ':' + port + '.');
                         ws.forwardclient.xstate = 1;
                         ws._socket.resume();
                     });
@@ -5003,7 +5003,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 ws.forwardclient.on('data', function (data) {
                     if (typeof data == 'string') { data = Buffer.from(data, 'binary'); }
                     if (obj.parent.debugLevel >= 1) { // DEBUG
-                        parent.debug('webrelaydata', 'TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
+                        parent.debug('webrelaydata', user.name + ' - TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
                         //if (obj.parent.debugLevel >= 4) { Debug(4, '  ' + Buffer.from(data, 'binary').toString('hex')); }
                     }
                     if (ws.interceptor) { data = ws.interceptor.processAmtData(data); } // Run data thru interceptor
@@ -5018,13 +5018,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // If the TCP connection closes, disconnect the associated web socket.
                 ws.forwardclient.on('close', function () {
-                    parent.debug('webrelay', 'TCP relay disconnected from ' + node.host + ':' + port + '.');
+                    parent.debug('webrelay', user.name + ' - TCP relay disconnected from ' + node.host + ':' + port + '.');
                     try { ws.close(); } catch (e) { }
                 });
 
                 // If the TCP connection causes an error, disconnect the associated web socket.
                 ws.forwardclient.on('error', function (err) {
-                    parent.debug('webrelay', 'TCP relay error from ' + node.host + ':' + port + ': ' + err);
+                    parent.debug('webrelay', user.name + ' - TCP relay error from ' + node.host + ':' + port + ': ' + err);
                     try { ws.close(); } catch (e) { }
                 });
 
@@ -5035,7 +5035,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (node.intelamt.tls == 0) {
                     // A TCP connection to Intel AMT just connected, start forwarding.
                     ws.forwardclient.connect(port, node.host, function () {
-                        parent.debug('webrelay', 'TCP relay connected to ' + node.host + ':' + port + '.');
+                        parent.debug('webrelay', user.name + ' - TCP relay connected to ' + node.host + ':' + port + '.');
                         ws.forwardclient.xstate = 1;
                         ws._socket.resume();
                     });
