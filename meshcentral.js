@@ -1348,7 +1348,7 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     // Check if the database is capable of performing a backup
-                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
+                    // Moved behind autobackup config init in startex4: obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
 
                     // Load configuration for database if needed
                     if (obj.args.loadconfigfromdb) {
@@ -2016,6 +2016,7 @@ function CreateMeshCentralServer(config, args) {
 
                     // Start periodic maintenance
                     obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+                    //obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 10 * 1); // DEBUG: Run this more often
 
                     // Dispatch an event that the server is now running
                     obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
@@ -2105,18 +2106,19 @@ function CreateMeshCentralServer(config, args) {
                         if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
+                        if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
+                        else {obj.config.settings.autobackup.backuphour = -1 };
                         //arrayfi in case of string and remove possible ', ' space. !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !!
                         if (!obj.config.settings.autobackup.backupignorefilesglob) {obj.config.settings.autobackup.backupignorefilesglob = []}
                         else if (typeof obj.config.settings.autobackup.backupignorefilesglob == 'string') { obj.config.settings.autobackup.backupignorefilesglob = obj.config.settings.autobackup.backupignorefilesglob.replaceAll(', ', ',').split(','); };
                         if (!obj.config.settings.autobackup.backupskipfoldersglob) {obj.config.settings.autobackup.backupskipfoldersglob = []}
                         else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
+                        if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.resolve(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
+                        if (typeof obj.config.settings.autobackup.backupname != 'string') { obj.config.settings.autobackup.backupname = 'meshcentral-autobackup-'};
                     }
 
-                    // Check that autobackup path is not within the "meshcentral-data" folder.
-                    if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
-                        addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
-                        obj.config.settings.autobackup = {backupintervalhours: -1};  //block console autobackup
-                    }
+                    // Check if the database is capable of performing a backup
+                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
 
                     // Load Intel AMT passwords from the "amtactivation.log" file
                     obj.loadAmtActivationLogPasswords(function (amtPasswords) {
@@ -2278,14 +2280,19 @@ function CreateMeshCentralServer(config, args) {
 
     // Check if we need to perform an automatic backup
     function checkAutobackup() {
-        if (obj.config.settings.autobackup.backupintervalhours >= 1) {
+        if (obj.config.settings.autobackup.backupintervalhours >= 1 ) {
             obj.db.Get('LastAutoBackupTime', function (err, docs) {
-                if (err != null) return;
+                if (err != null) { console.error("checkAutobackup: Error getting LastBackupTime from DB"); return}
                 var lastBackup = 0;
-                const now = new Date().getTime();
+                const currentdate = new Date();
+                let currentHour = currentdate.getHours();
+                let now = currentdate.getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
                 const delta = now - lastBackup;
-                if (delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) {
+                //const delta = 9999999999; // DEBUG: backup always
+                obj.debug ('backup', 'Entering checkAutobackup, lastAutoBackupTime: ' + new Date(lastBackup).toLocaleString('default', { dateStyle: 'medium', timeStyle: 'short' }) + ', delta: ' + (delta/(1000*60*60)).toFixed(2) + ' hours');
+                //start autobackup if interval has passed or at configured hour, whichever comes first. When an hour schedule is missed, it will make a backup immediately.
+                if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 2 * 60 * 60 * 1000))) {
                     // A new auto-backup is required.
                     obj.db.Set({ _id: 'LastAutoBackupTime', value: now }); // Save the current time in the database
                     obj.db.performBackup(); // Perform the backup
@@ -3936,6 +3943,7 @@ function CreateMeshCentralServer(config, args) {
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
     obj.getServerWarnings = function () { return serverWarnings; }
+    // TODO: migrate from other addServerWarning function and add timestamp
     obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // auth.log functions
@@ -4106,6 +4114,7 @@ function InstallModuleEx(modulenames, args, func) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Add a server warning, warnings will be shown to the administrator on the web application
+// TODO: migrate to obj.addServerWarning?
 const serverWarnings = [];
 function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
