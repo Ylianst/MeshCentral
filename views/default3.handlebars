@@ -6273,7 +6273,11 @@
         */
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
             if (xxModal == null) {
-                QE(okButtonId, true);
+                ['idx_dlgOkButton', 'idx_dlgCancelButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
+                    Q(id).onclick = null;
+                    QE(id, true);
+                    QV(id, true);
+                });
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
                 var hiddenModal = function (event) {
                     if (xxModal) { xxModal.dispose(); xxModal = null; }
@@ -12284,11 +12288,11 @@
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() {
             setModalContent('xxAddAgent', "Upload File", '<input type=file name=files id=p13uploadinput class="form-control" multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13uploadFileEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13uploadFileEx());
             updateUploadDialogOk('p13uploadinput');
         }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q('p13uploadinput').files.length > 0); }
-        function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); }
+        function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); return false; }
         function p13viewfile() {
             var checkboxes = document.getElementsByName('fd');
             for (var i = 0; i < checkboxes.length; i++) {
@@ -12347,7 +12351,7 @@
                 }
             }
             setModalContent('xxAddAgent', "Paste", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13pasteFileEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13pasteFileEx());
         }
         function p13pasteFileEx() { files.sendText({ action: (p13clipboardCut == 0 ? 'copy' : 'move'), reqid: 1, scpath: p13clipboardFolder, dspath: p13targetpath, names: p13clipboard }); p13folderup(999); if (p13clipboardCut == 1) { p13clipboard = null, p13clipboardFolder = null, p13clipboardCut = 0; p13updateClipview(); } }
         function p13updateClipview() {
@@ -12418,7 +12422,7 @@
             //console.log('p13downloadFileCancel', gdownloadFile);
             files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
             setModalContent('xxAddAgent', "Download File", '<div>' + gdownloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13downloadFileCancel);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13downloadFileCancel());
         }
 
         // Called by the html page to cancel the download
@@ -12559,7 +12563,7 @@
                 p13uploadFileContinue(1, files);
             } else {
                 // Otherwise, prompt for confirmation
-                setModalContent('xxAddAgent', "Upload File", p13uploadFileContinue, format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount));
+                setModalContent('xxAddAgent', "Upload File", format((overWriteCount == 1) ? "Upload will overwrite 1 file. Continue?" : "Upload will overwrite {0} files. Continue?", overWriteCount));
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13uploadFileContinue(3, files));
             }
         }
@@ -12570,8 +12574,10 @@
             uploadFile.xfiles = files;
             uploadFile.xfilePtr = -1;
             setModalContent('xxAddAgent', "Upload File", '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13uploadFileCancel(10));
+            showModal('xxAddAgentModal', 'idx_dlgCancelButton', () => p13uploadFileCancel(10));
+            document.getElementById('idx_dlgOkButton').style.display = 'none'; // hide OK button
             p13uploadNextFile();
+            if (b == 3) return false; // if overwritten, dont close the dialog
         }
 
         // Perform SHA-384 hashing
@@ -13557,7 +13563,7 @@
             Q('d3filter').value = '.js';
             Q('d3attrib').value = currentNode._id;
             setModalContent('xxAddAgent', "Upload Mesh Agent Core", '');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p15uploadCoreEx2);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p15uploadCoreEx2());
             d3init();
         }
 
@@ -13638,7 +13644,7 @@
                 x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.phone) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox class="form-check-input me-2" onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
                 setModalContent('xxAddAgent', "Phone Notifications", x);
-                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_managePhoneRemove);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_managePhoneRemove());
                 account_managePhoneRemoveValidate();
             } else {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
@@ -13646,7 +13652,7 @@
                 x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=account_managePhoneValidate() onkeypress="if (event.key==\'Enter\') account_managePhoneValidate(1)"></div></table>';
                 xxdialogTag = 'verifyPhone';
                 setModalContent('xxAddAgent', "Phone Notifications", x);
-                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_managePhoneAdd);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_managePhoneAdd());
                 Q('d2phoneinput').focus();
                 account_managePhoneValidate();
             }
@@ -13668,7 +13674,7 @@
                 x += '<td style=text-align:center><div style=padding:6px>' + "Verified handle" + '</div><div style=font-weight:bold>' + EscapeHtml(userinfo.msghandle) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox class="form-check-input me-2" onclick=account_managePhoneRemoveValidate() />' + "Remove messaging" + '</label></div>';
                 setModalContent('xxAddAgent', "Messaging Notifications", x);
-                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageMessagingRemove);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageMessagingRemove());
                 account_managePhoneRemoveValidate();
             } else {
                 x = '<table style=width:100%><tr><td style=width:56px;vertical-align:top><img src="images/messaging40.png" style=padding:8px>';
@@ -13966,7 +13972,7 @@
             if (xxdialogMode || (userinfo.emailVerified == true) || (serverinfo.emailcheck != true)) return false;
             var x = "Click ok to send a verification mail to:" + '<br /><div style=padding:8px><b>' + EscapeHtml(userinfo.email) + '</b></div>' + "Please wait a few minute to receive the verification.";
             setModalContent('xxAddAgent', "Email Verification", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_showVerifyEmailEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_showVerifyEmailEx());
             return false;
         }
 
@@ -19843,6 +19849,7 @@
             for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
             QV('dialog', x);
             if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
+            if (x == 0) { if (xxModal) xxModal.hide(); }
             MoreToggle(false);
         }
 
