@@ -783,10 +783,12 @@ function getStringsHtml(name, node) {
 
         // Check if the "value" attribute exists and needs to be translated
         var subnodeignore = false;
+        var subnodevalueignore = false;
         if ((subnode.attributes != null) && (subnode.attributes.length > 0)) {
             var subnodevalue = null, subnodeplaceholder = null, subnodetitle = null;
             for (var j in subnode.attributes) {
                 if ((subnode.attributes[j].name == 'notrans') && (subnode.attributes[j].value == '1')) { subnodeignore = true; }
+                if ((subnode.attributes[j].name == 'notransval') && (subnode.attributes[j].value == '1')) { subnodevalueignore = true; }
                 if ((subnode.attributes[j].name == 'type') && (subnode.attributes[j].value == 'hidden')) { subnodeignore = true; }
                 if (subnode.attributes[j].name == 'value') { subnodevalue = subnode.attributes[j].value; }
                 if (subnode.attributes[j].name == 'placeholder') { subnodeplaceholder = subnode.attributes[j].value; }
@@ -795,7 +797,7 @@ function getStringsHtml(name, node) {
             if ((subnodevalue != null) && isNumber(subnodevalue) == true) { subnodevalue = null; }
             if ((subnodeplaceholder != null) && isNumber(subnodeplaceholder) == true) { subnodeplaceholder = null; }
             if ((subnodetitle != null) && isNumber(subnodetitle) == true) { subnodetitle = null; }
-            if ((subnodeignore == false) && (subnodevalue != null)) {
+            if ((subnodeignore == false) && (subnodevalueignore == false) && (subnodevalue != null)) {
                 // Add a new string to the list (value)
                 if (sourceStrings[subnodevalue] == null) { sourceStrings[subnodevalue] = { en: subnodevalue, xloc: [name] }; } else { if (sourceStrings[subnodevalue].xloc == null) { sourceStrings[subnodevalue].xloc = []; } sourceStrings[subnodevalue].xloc.push(name); }
             }
