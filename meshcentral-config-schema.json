@@ -2900,12 +2900,10 @@
               },
               "user": {
                 "type": "string",
-                "format": "string",
                 "description": "SMTP username."
               },
               "pass": {
                 "type": "string",
-                "format": "string",
                 "description": "SMTP password."
               },
               "tls": {
@@ -3258,7 +3256,6 @@
                     ]
                   }
                 ],
-                "additionalProperties": false,
                 "properties": {
                   "newAccounts": {
                     "type": "boolean",
@@ -3466,8 +3463,7 @@
                     "required": [
                       "client_id",
                       "client_secret"
-                    ],
-                    "additionalProperties": false
+                    ]
                   },
                   "issuer": {
                     "type": [
@@ -3557,8 +3553,7 @@
                           }
                         }
                       }
-                    },
-                    "additionalProperties": false
+                    }
                   },
                   "custom": {
                     "type": "object",
@@ -3609,8 +3604,7 @@
                         "type": "string",
                         "description": "REQUIRED IF USING GROUPS: Customer ID from Google Workspace Admin Console (https://admin.google.com/ac/accountsettings/profile)"
                       }
-                    },
-                    "additionalProperties": false
+                    }
                   },
                   "groups": {
                     "type": "object",
@@ -3662,8 +3656,7 @@
                         "default": "groups",
                         "description": "Custom claim to use."
                       }
-                    },
-                    "additionalProperties": false
+                    }
                   }
                 }
               }
@@ -3728,8 +3721,7 @@
               "description": "EAB HMAC KEY",
               "default": ""
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -3824,12 +3816,10 @@
         },
         "user": {
           "type": "string",
-          "format": "string",
           "description": "SMTP username."
         },
         "pass": {
           "type": "string",
-          "format": "string",
           "description": "SMTP password."
         },
         "tls": {
