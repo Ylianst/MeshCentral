@@ -2836,6 +2836,66 @@ function kvm_consentpromise_resolved(always)
     this.ws = null;
 }
 
+function files_consent_ok(ws){
+    // User Consent Prompt is not required
+    if (ws.httprequest.consent && (ws.httprequest.consent & 4)) {
+        // User Notifications is required
+        MeshServerLogEx(42, null, "Started remote files with toast notification (" + ws.httprequest.remoteaddr + ")", ws.httprequest);
+        var notifyMessage = currentTranslation['fileNotify'].replace('{0}', ws.httprequest.realname);
+        var notifyTitle = "MeshCentral";
+        if (ws.httprequest.soptions != null) {
+            if (ws.httprequest.soptions.notifyTitle != null) { notifyTitle = ws.httprequest.soptions.notifyTitle; }
+            if (ws.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = ws.httprequest.soptions.notifyMsgFiles.replace('{0}', ws.httprequest.realname).replace('{1}', ws.httprequest.username); }
+        }
+        try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
+    } else {
+        MeshServerLogEx(43, null, "Started remote files without notification (" + ws.httprequest.remoteaddr + ")", ws.httprequest);
+    }
+    ws.resume();
+}
+
+function files_consent_ask(ws){
+    // Send a console message back using the console channel, "\n" is supported.
+    ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
+    var consentMessage = currentTranslation['fileConsent'].replace('{0}', ws.httprequest.realname).replace('{1}', ws.httprequest.username);
+    var consentTitle = 'MeshCentral';
+
+    if (ws.httprequest.soptions != null) {
+        if (ws.httprequest.soptions.consentTitle != null) { consentTitle = ws.httprequest.soptions.consentTitle; }
+        if (ws.httprequest.soptions.consentMsgFiles != null) { consentMessage = ws.httprequest.soptions.consentMsgFiles.replace('{0}', ws.httprequest.realname).replace('{1}', ws.httprequest.username); }
+    }
+    var pr;
+    if (process.platform == 'win32') {
+        var enhanced = false;
+        if (ws.httprequest.oldStyle === false) {
+            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+        }
+        if (enhanced) {
+            var ipr = server_getUserImage(ws.httprequest.userid);
+            ipr.consentTitle = consentTitle;
+            ipr.consentMessage = consentMessage;
+            ipr.consentTimeout = ws.httprequest.consentTimeout;
+            ipr.consentAutoAccept = ws.httprequest.consentAutoAccept;
+            ipr.username = ws.httprequest.realname;
+            ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
+            pr = ipr.then(function (img) {
+                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                this.__childPromise.close = this.consent.close.bind(this.consent);
+                return (this.consent);
+            });
+        } else {
+            pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null);
+        }
+    } else {
+        pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null);
+    }
+    pr.ws = ws;
+    ws.pause();
+    ws._consentpromise = pr;
+    ws.prependOnceListener('end', files_tunnel_endhandler);
+    pr.then(files_consentpromise_resolved, files_consentpromise_rejected);
+}
+
 function files_consentpromise_resolved(always)
 {
     if (always && process.platform == 'win32') { server_set_consentTimer(this.ws.httprequest.userid); }
@@ -2977,7 +3037,6 @@ function onTunnelData(data)
                                 if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
                             }
                             if (v.length == 0) { // No user is present, auto accept
-                                // kvm_consent_ok(this.ws);
                                 this.ws.httprequest.tpromise._res();
                             } else { 
                                 // User is present so we still need consent
@@ -3156,71 +3215,31 @@ function onTunnelData(data)
                 // Perform notification if needed. Toast messages may not be supported on all platforms.
                 if (this.httprequest.consent && (this.httprequest.consent & 32))
                 {
-                    // User Consent Prompt is required
-                    // Send a console message back using the console channel, "\n" is supported.
-                    this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                    var consentMessage = currentTranslation['fileConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
-                    var consentTitle = 'MeshCentral';
-
-                    if (this.httprequest.soptions != null)
-                    {
-                        if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
-                        if (this.httprequest.soptions.consentMsgFiles != null) { consentMessage = this.httprequest.soptions.consentMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
-                    }
-                    var pr;
-                    if (process.platform == 'win32')
-                    {
-                        var enhanced = false;
-                        if (this.httprequest.oldStyle === false) {
-                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
-                        }
-                        if (enhanced)
-                        {
-                            var ipr = server_getUserImage(this.httprequest.userid);
-                            ipr.consentTitle = consentTitle;
-                            ipr.consentMessage = consentMessage;
-                            ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept;
-                            ipr.username = this.httprequest.realname;
-                            ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
-                            pr = ipr.then(function (img)
-                            {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
-                                this.__childPromise.close = this.consent.close.bind(this.consent);
-                                return (this.consent);
-                            });
-                        } else
-                        {
-                            pr = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout, null);
-                        }
-                    }
-                    else
-                    {
-                        pr = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout, null);
-                    }
-                    pr.ws = this;
-                    this.pause();
-                    this._consentpromise = pr;
-                    this.prependOnceListener('end', files_tunnel_endhandler);
-                    pr.then(files_consentpromise_resolved, files_consentpromise_rejected);
-                }
-                else
-                {
-                    // User Consent Prompt is not required
-                    if (this.httprequest.consent && (this.httprequest.consent & 4)) {
-                        // User Notifications is required
-                        MeshServerLogEx(42, null, "Started remote files with toast notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
-                        var notifyMessage = currentTranslation['fileNotify'].replace('{0}', this.httprequest.realname);
-                        var notifyTitle = "MeshCentral";
-                        if (this.httprequest.soptions != null) {
-                            if (this.httprequest.soptions.notifyTitle != null) { notifyTitle = this.httprequest.soptions.notifyTitle; }
-                            if (this.httprequest.soptions.notifyMsgFiles != null) { notifyMessage = this.httprequest.soptions.notifyMsgFiles.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
-                        }
-                        try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
+                    // User asked for consent so now we check if we can auto accept if no user is present/loggedin
+                    if (this.httprequest.consentAutoAcceptIfNoUser) {
+                        var p = require('user-sessions').enumerateUsers();
+                        p.sessionid = this.httprequest.sessionid;
+                        p.ws = this;
+                        p.then(function (u) {
+                            var v = [];
+                            for (var i in u) {
+                                if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
+                            }
+                            if (v.length == 0) { // No user is present, auto accept
+                                // User Consent Prompt is not required
+                                files_consent_ok(this.ws);
+                            } else { 
+                                // User is present so we still need consent
+                                files_consent_ask(this.ws);
+                            }
+                        });
                     } else {
-                        MeshServerLogEx(43, null, "Started remote files without notification (" + this.httprequest.remoteaddr + ")", this.httprequest);
+                        // User Consent Prompt is required
+                        files_consent_ask(this);
                     }
-                    this.resume();
+                } else {
+                    // User Consent Prompt is not required
+                    files_consent_ok(this);
                 }
 
                 // Setup files
