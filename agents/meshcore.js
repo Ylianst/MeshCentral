@@ -2298,6 +2298,58 @@ function terminal_end()
 
 }
 
+function terminal_consent_ask(ws) {
+    ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
+    var consentMessage = currentTranslation['terminalConsent'].replace('{0}', ws.httprequest.realname).replace('{1}', ws.httprequest.username);
+    var consentTitle = 'MeshCentral';
+    if (ws.httprequest.soptions != null) {
+        if (ws.httprequest.soptions.consentTitle != null) { consentTitle = ws.httprequest.soptions.consentTitle; }
+        if (ws.httprequest.soptions.consentMsgTerminal != null) { consentMessage = ws.httprequest.soptions.consentMsgTerminal.replace('{0}', ws.httprequest.realname).replace('{1}', ws.httprequest.username); }
+    }
+    if (process.platform == 'win32') {
+        var enhanced = false;
+        if (ws.httprequest.oldStyle === false) {
+            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
+        }
+        if (enhanced) {
+            var ipr = server_getUserImage(ws.httprequest.userid);
+            ipr.consentTitle = consentTitle;
+            ipr.consentMessage = consentMessage;
+            ipr.consentTimeout = ws.httprequest.consentTimeout;
+            ipr.consentAutoAccept = ws.httprequest.consentAutoAccept;
+            ipr.username = ws.httprequest.realname;
+            ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
+            ws.httprequest.tpromise._consent = ipr.then(function (img) {
+                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                this.__childPromise.close = this.consent.close.bind(this.consent);
+                return (this.consent);
+            });
+        } else {
+            ws.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout);
+        }
+    } else {
+        ws.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout);
+    }
+    ws.httprequest.tpromise._consent.retPromise = ws.httprequest.tpromise;
+    ws.httprequest.tpromise._consent.then(function (always) {
+        if (always && process.platform == 'win32') { server_set_consentTimer(this.retPromise.httprequest.userid); }
+        // Success
+        MeshServerLogEx(27, null, "Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+        this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
+        this.retPromise._consent = null;
+        this.retPromise._res();
+    }, function (e) {
+        if (this.retPromise.that) {
+            if(this.retPromise.that.httprequest){ // User Consent Denied
+                MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
+            } else { } // Connection was closed server side, maybe log some messages somewhere?
+            this.retPromise._consent = null;
+            this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+        } else { } // no websocket, maybe log some messages somewhere?
+        this.retPromise._rej(e.toString());
+    });
+}
+
 function terminal_promise_connection_rejected(e)
 {
     // FAILED to connect terminal
@@ -2621,7 +2673,7 @@ function kvm_consent_ok(ws) {
             if (ws.httprequest.soptions.notifyTitle != null) { notifyTitle = ws.httprequest.soptions.notifyTitle; }
             if (ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = ws.httprequest.soptions.notifyMsgDesktop.replace('{0}', ws.httprequest.realname).replace('{1}', ws.httprequest.username); }
         }
-        try { require('toaster').Toast(notifyTitle, notifyMessage, this.tsid); } catch (ex) { }
+        try { require('toaster').Toast(notifyTitle, notifyMessage, ws.tsid); } catch (ex) { }
     } else {
         MeshServerLogEx(36, null, "Started remote desktop without notification (" + ws.httprequest.remoteaddr + ")", ws.httprequest);
     }
@@ -2664,6 +2716,7 @@ function kvm_consent_ok(ws) {
 }
 
 function kvm_consent_ask(ws){
+    // Send a console message back using the console channel, "\n" is supported.
     ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
     var consentMessage = currentTranslation['desktopConsent'].replace('{0}', ws.httprequest.realname).replace('{1}', ws.httprequest.username);
     var consentTitle = 'MeshCentral';
@@ -2912,76 +2965,32 @@ function onTunnelData(data)
                 this.end = terminal_end;
 
                 // Perform User-Consent if needed. 
-                if (this.httprequest.consent && (this.httprequest.consent & 16))
-                {
-                    this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
-                    var consentMessage = currentTranslation['terminalConsent'].replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username);
-                    var consentTitle = 'MeshCentral';
-
-                    if (this.httprequest.soptions != null)
-                    {
-                        if (this.httprequest.soptions.consentTitle != null) { consentTitle = this.httprequest.soptions.consentTitle; }
-                        if (this.httprequest.soptions.consentMsgTerminal != null) { consentMessage = this.httprequest.soptions.consentMsgTerminal.replace('{0}', this.httprequest.realname).replace('{1}', this.httprequest.username); }
-                    }
-                    if (process.platform == 'win32')
-                    {
-                        var enhanced = false;
-                        if (this.httprequest.oldStyle === false) {
-                            try { require('win-userconsent'); enhanced = true; } catch (ex) { }
-                        }
-                        if (enhanced)
-                        {
-                            var ipr = server_getUserImage(this.httprequest.userid);
-                            ipr.consentTitle = consentTitle;
-                            ipr.consentMessage = consentMessage;
-                            ipr.consentTimeout = this.httprequest.consentTimeout;
-                            ipr.consentAutoAccept = this.httprequest.consentAutoAccept;
-                            ipr.username = this.httprequest.realname;
-                            ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
-                            this.httprequest.tpromise._consent = ipr.then(function (img)
-                            {
-                                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
-                                this.__childPromise.close = this.consent.close.bind(this.consent);
-                                return (this.consent);
-                            });
-                        } else
-                        {
-                            this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout);
-                        }
-                    } else
-                    {
-                        this.httprequest.tpromise._consent = require('message-box').create(consentTitle, consentMessage, this.httprequest.consentTimeout);
-                    }
-                    this.httprequest.tpromise._consent.retPromise = this.httprequest.tpromise;
-                    this.httprequest.tpromise._consent.then(
-                        function (always)
-                        {
-                            if (always && process.platform == 'win32') { server_set_consentTimer(this.retPromise.httprequest.userid); }
-
-                            // Success
-                            MeshServerLogEx(27, null, "Local user accepted remote terminal request (" + this.retPromise.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
-                            this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 }));
-                            this.retPromise._consent = null;
-                            this.retPromise._res();
-                        },
-                        function (e) {
-                            if (this.retPromise.that) {
-                                if(this.retPromise.that.httprequest){ // User Consent Denied
-                                    MeshServerLogEx(28, null, "Local user rejected remote terminal request (" + this.retPromise.that.httprequest.remoteaddr + ")", this.retPromise.that.httprequest);
-                                } else { } // Connection was closed server side, maybe log some messages somewhere?
-                                this.retPromise._consent = null;
-                                this.retPromise.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-                            } else { } // no websocket, maybe log some messages somewhere?
-                            this.retPromise._rej(e.toString());
+                if (this.httprequest.consent && (this.httprequest.consent & 16)) {
+                    // User asked for consent so now we check if we can auto accept if no user is present/loggedin
+                    if (this.httprequest.consentAutoAcceptIfNoUser) {
+                        var p = require('user-sessions').enumerateUsers();
+                        p.sessionid = this.httprequest.sessionid;
+                        p.ws = this;
+                        p.then(function (u) {
+                            var v = [];
+                            for (var i in u) {
+                                if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
+                            }
+                            if (v.length == 0) { // No user is present, auto accept
+                                // kvm_consent_ok(this.ws);
+                                this.ws.httprequest.tpromise._res();
+                            } else { 
+                                // User is present so we still need consent
+                                terminal_consent_ask(this.ws);
+                            }
                         });
-                }
-                else
-                {
+                    } else {
+                        terminal_consent_ask(this);
+                    }
+                } else {
                     // User-Consent is not required, so just resolve this promise
                     this.httprequest.tpromise._res();
                 }
-
-
                 this.httprequest.tpromise.then(terminal_promise_consent_resolved, terminal_promise_consent_rejected);
             }
             else if (this.httprequest.protocol == 2)
@@ -3099,7 +3108,6 @@ function onTunnelData(data)
                         });
                     } else {
                         // User Consent Prompt is required
-                        // Send a console message back using the console channel, "\n" is supported.
                         kvm_consent_ask(this);
                     }
                 } else {
