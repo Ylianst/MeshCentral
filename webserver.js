@@ -7840,7 +7840,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 async function getGroups(preset, tokenset) {
                     let url = '';
-                    if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf' : 'https://graph.microsoft.com/v1.0/me/memberOf'; }
+                    if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf?$top=999' : 'https://graph.microsoft.com/v1.0/me/memberOf?$top=999'; }
                     if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null; }
                     return new Promise((resolve, reject) => {
                         const options = {
