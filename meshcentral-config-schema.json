@@ -1967,6 +1967,11 @@
                 "default": false,
                 "description": "If true, user consent is accepted after the timeout."
               },
+              "autoAcceptIfNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent is accepted if no user is logged in."
+              },
               "oldStyle": {
                 "type": "boolean",
                 "default": false,

@@ -342,6 +342,7 @@
         "files": "{0} requesting remote files access. Grant access?",
         "consentTimeout": 30,
         "autoAcceptOnTimeout": false,
+        "autoAcceptIfNoUser": false,
         "oldStyle": true
       },
       "_notificationMessages": {
