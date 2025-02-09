@@ -266,7 +266,11 @@ body {
 .textnewui {
     color: white;
     font-weight: bold;
-    padding: 2px;
+    padding-top: 5px;
+    cursor: pointer;
+    position: absolute;
+    right: 0; 
+    margin-right: 10px;
 }
 
 .LogoffLinkColor {

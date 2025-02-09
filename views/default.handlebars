@@ -164,15 +164,8 @@
                 <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;" title="Click to view current notifications">0</div>
             </div>
             <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify style="color:yellow"></span></p>
-            <div style="position:absolute;right:0;margin-right:8px;cursor:pointer;">
-                <table>
-                    <tr>
-                        <td class="textnewui"><label class="form-check-label text-white" for="inputUiViewMode">Try the new MeshCentral UI &ensp;</label></td>
-                        <td class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="inputUiViewMode" onchange="toggleBootstrapUIMode()">
-                        </td>
-                    </tr>
-                </table>
+            <div class=textnewui id=textnewui onmouseup=toggleBootstrapUIMode() onkeypress="if (event.key=='Enter') { toggleBootstrapUIMode(); }">
+                <b>Try the new MeshCentral UI</b>
             </div>
         </div>
         <div id="page_leftbar">
@@ -1584,7 +1577,6 @@
         var deskAspectRatio = 0;
         try { deskAspectRatio = parseInt(getstore('deskAspectRatio', '0')); } catch (ex) { }
         var uiMode = parseInt(getstore('uiMode', 1));
-        // var uiViewMode = parseInt(getstore('uiViewMode', 0));
         var webPageStackMenu = false;
         var webPageFullScreen = true;
         var nightMode = setNightMode();
@@ -1734,6 +1726,9 @@
                     }
                 });
             }
+
+            // Show the modern ui switcher
+            QV('textnewui', ((features2 & 0x40000000) == 0) ? false : true);
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);
@@ -2196,16 +2191,19 @@
         }
 
         function saveUserInterfaceMode() {
-            var nUiViewMode = 0;
-            if (Q('ui1').checked) { nUiViewMode = 1; }
-            putstore('uiViewMode', nUiViewMode);
+            var nUiViewMode = 2;
+            if (Q('ui1').checked) { nUiViewMode = 3; }
+            if (getstore('uiViewMode', 2) != nUiViewMode) {
+                putstore('uiViewMode', nUiViewMode);
+                reload();
+            }
         }
 
         function toggleBootstrapUIMode() {
             if (xxdialogMode) return;
-            var uiViewMode = getstore('uiViewMode', '0');
-            var x = '<input type=radio id=ui0 name=uiradio value=0 ' + ((uiViewMode == 0)?'checked':'') + '><label for=ui0>' + "Classic" + '</label><br>';
-            x += '<input type=radio id=ui1 name=uiradio value=1 ' + ((uiViewMode == 1)?'checked':'') + '><label for=ui1>' + "Modern" + '</label><br>';
+            var uiViewMode = getstore('uiViewMode', 2);
+            var x = '<input type=radio id=ui0 name=uiradio value=2 ' + ((uiViewMode == 2)?'checked':'') + '><label for=ui0>' + "Classic" + '</label><br>';
+            x += '<input type=radio id=ui1 name=uiradio value=3 ' + ((uiViewMode == 3)?'checked':'') + '><label for=ui1>' + "Modern" + '</label><br>';
             setDialogMode(2, "User Interface", 3, saveUserInterfaceMode, x);
             QV('uiMenu', false);
         }

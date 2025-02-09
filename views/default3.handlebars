@@ -153,17 +153,9 @@
             <img id="topMenuIcon" class=noselect
                 style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none"
                 onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
-
-            <div style="position:absolute;right:0;margin-right:8px;cursor:pointer;">
-                <table>
-                    <tr>
-                        <td class="text-white fw-bold"><label class="form-check-label" for="inputUiViewMode">Try the new MeshCentral UI &ensp;</label></td>
-                        <td class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="inputUiViewMode" onchange="toggleBootstrapUIMode()" checked="">
-                        </td>
-                    </tr>
-                </table>
-            </div> 
+            <div class=textnewui id=textnewui onmouseup=toggleBootstrapUIMode() onkeypress="if (event.key=='Enter') { toggleBootstrapUIMode(); }">
+                <b>Try the new MeshCentral UI</b>
+            </div>
         </div>
         <div class="sidebar flex-column" id="page_leftbar">
             <div style="height:24px"></div>
@@ -202,7 +194,7 @@
                                             <div class="uiSelector3"></div>
                                         </div>
                                         <div tabindex=0 id=uiViewButton7 class=uiSelector
-                                            onclick=toggleBootstrapUIMode() title="Toggle Bootstrap UI"
+                                            onclick=toggleBootstrapUIMode() title="Toggle Modern UI"
                                             onkeypress="if (event.key == 'Enter') toggleBootstrapUIMode()">
                                             <div class="uiSelector7"></div>
                                         </div>
@@ -2229,6 +2221,9 @@
                 });
             }
 
+            // Show the modern ui switcher
+            QV('textnewui', ((features2 & 0x40000000) == 0) ? false : true);
+
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);
             meshserver.onStateChanged = onStateChanged;
@@ -2703,17 +2698,26 @@
         }
 
         function saveUserInterfaceMode() {
-            var nUiViewMode = 0;
-            if (Q('ui1').checked) { nUiViewMode = 1; }
-            putstore('uiViewMode', nUiViewMode);
+            var nUiViewMode = 3;
+            if (Q('ui0').checked) { nUiViewMode = 2; }
+            if (getstore('uiViewMode', 3) != nUiViewMode) {
+                putstore('uiViewMode', nUiViewMode);
+                // Check if the URL includes 'sitestyle=' and remove it
+                var url = new URL(window.location.href);
+                if (url.searchParams.has('sitestyle')) {
+                    url.searchParams.delete('sitestyle');
+                    window.history.replaceState({}, document.title, url.toString());
+                }
+                reload();
+            }
         }
 
         function toggleBootstrapUIMode() {
             if (xxdialogMode) return;
-            var uiViewMode = getstore('uiViewMode', '0');
-            var x = '<input type=radio id=ui0 name=uiradio value=0 ' + ((uiViewMode == 0)?'checked':'') + '><label for=ui0>' + "Classic" + '</label><br>';
-            x += '<input type=radio id=ui1 name=uiradio value=1 ' + ((uiViewMode == 1)?'checked':'') + '><label for=ui1>' + "Modern" + '</label><br>';
-            setModalContent('xxAddAgent', 'User Interface', x);
+            var uiViewMode = getstore('uiViewMode', 3);
+            var x = '<div class=form-check><input type=radio class=form-check-input id=ui0 name=uiradio value=2 ' + ((uiViewMode == 2)?'checked':'') + '><label class=form-check-label for=ui0>' + "Classic" + '</label></div>';
+            x += '<div class=form-check><input type=radio class=form-check-input id=ui1 name=uiradio value=3 ' + ((uiViewMode == 3)?'checked':'') + '><label class=form-check-label for=ui1>' + "Modern" + '</label></div>';
+            setModalContent('xxAddAgent', "User Interface", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', saveUserInterfaceMode);
             QV('uiMenu', false);
         }

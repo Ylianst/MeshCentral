@@ -267,6 +267,16 @@ body {
     right: 3px;
 }
 
+.textnewui {
+    color: white;
+    font-weight: bold;
+    padding-top: 5px;
+    cursor: pointer;
+    position: absolute;
+    right: 0; 
+    margin-right: 10px;
+}
+
 .LogoffLinkColor {
     color:white;
 }
