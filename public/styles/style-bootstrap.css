@@ -266,6 +266,16 @@ body {
     right: 3px;
 }
 
+.textnewui {
+    color: white;
+    font-weight: bold;
+    padding-top: 5px;
+    cursor: pointer;
+    position: absolute;
+    right: 0; 
+    margin-right: 10px;
+}
+
 .LogoffLinkColor {
     color:white;
 }
@@ -2877,7 +2887,7 @@ nav .lbbuttonsel2 {
     width: 28px;
 }
 
-.viewSelector3 {
+.viewSelector3, .uiSelector7 {
     margin-left: 2px;
     margin-top: 2px;
     background: url(../images/views.png) -56px 0px;
@@ -2976,6 +2986,13 @@ nav .lbbuttonsel2 {
         opacity: 0.5;
         background-color: #AAA;
     }
+
+.uiSelector_end {
+    width: 32px;
+    height: 32px;
+    float: left;
+    margin: 3px;
+}
 
 .uiSelectorSel {
     background-color: #BBB;
