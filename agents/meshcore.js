@@ -2318,9 +2318,10 @@ function terminal_consent_ask(ws) {
             ipr.consentTimeout = ws.httprequest.consentTimeout;
             ipr.consentAutoAccept = ws.httprequest.consentAutoAccept;
             ipr.username = ws.httprequest.realname;
+            ipr.tsid = ws.tsid;
             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
             ws.httprequest.tpromise._consent = ipr.then(function (img) {
-                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                 this.__childPromise.close = this.consent.close.bind(this.consent);
                 return (this.consent);
             });
@@ -2736,7 +2737,7 @@ function kvm_consent_ask(ws){
             ipr.consentMessage = consentMessage;
             ipr.consentTimeout = ws.httprequest.consentTimeout;
             ipr.consentAutoAccept = ws.httprequest.consentAutoAccept;
-            ipr.tsid = this.tsid;
+            ipr.tsid = ws.tsid;
             ipr.username = ws.httprequest.realname;
             ipr.translation = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
             pr = ipr.then(function (img) {
@@ -2877,9 +2878,10 @@ function files_consent_ask(ws){
             ipr.consentTimeout = ws.httprequest.consentTimeout;
             ipr.consentAutoAccept = ws.httprequest.consentAutoAccept;
             ipr.username = ws.httprequest.realname;
+            ipr.tsid = ws.tsid;
             ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
             pr = ipr.then(function (img) {
-                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
                 this.__childPromise.close = this.consent.close.bind(this.consent);
                 return (this.consent);
             });
@@ -3008,6 +3010,12 @@ function onTunnelData(data)
                 }
 
                 this.descriptorMetadata = "Remote Terminal";
+
+                // Look for a TSID
+                var tsid = null;
+                if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
+                require('MeshAgent')._tsid = tsid;
+                this.tsid = tsid;
 
                 if (process.platform == 'win32')
                 {
@@ -3192,6 +3200,12 @@ function onTunnelData(data)
                 }
 
                 this.descriptorMetadata = "Remote Files";
+
+                // Look for a TSID
+                var tsid = null;
+                if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
+                require('MeshAgent')._tsid = tsid;
+                this.tsid = tsid;
 
                 // Add the files session to the count to update the server
                 if (this.httprequest.userid != null) {
