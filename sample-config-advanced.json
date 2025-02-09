@@ -186,6 +186,7 @@
   "domains": {
     "": {
       "_siteStyle": 2,
+      "_showModernUIToggle": true,
       "title": "MyServer",
       "title2": "Servername",
       "_titlePicture": "title-sample.png",
