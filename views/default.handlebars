@@ -2447,7 +2447,9 @@
                     files.Stop();
                     files = null;
                 }
-                window.location.href = 'logout';
+                if (serverinfo.logoutOnIdleSessionTimeout) {
+                    window.location.href = 'logout';
+                }
             } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
                 if (ds <= 60) {

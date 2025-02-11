@@ -600,7 +600,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             }
             if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }
-            if ((typeof domain.usersessionidletimeout == 'number') && (domain.usersessionidletimeout > 0)) { serverinfo.timeout = (domain.usersessionidletimeout * 60 * 1000); }
+            if ((typeof domain.usersessionidletimeout == 'number') && (domain.usersessionidletimeout > 0)) {serverinfo.timeout = (domain.usersessionidletimeout * 60 * 1000); }
+            if (typeof domain.logoutOnIdleSessionTimeout == 'boolean') {
+                serverinfo.logoutOnIdleSessionTimeout = domain.logoutOnIdleSessionTimeout;
+            } else {
+                // Default
+                serverinfo.logoutOnIdleSessionTimeout = true;
+            }
             if (user.siteadmin === SITERIGHT_ADMIN) {
                 if (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) { serverinfo.manageAllDeviceGroups = true; }
                 if (obj.crossDomain === true) { serverinfo.crossDomain = []; for (var i in parent.parent.config.domains) { serverinfo.crossDomain.push(i); } }
