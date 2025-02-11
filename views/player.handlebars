@@ -1097,7 +1097,6 @@
             if (term != null) { term.dispose(); }
             term = new Terminal();
             term.open(Q('XTermParent'));
-            term.onData(function (data) { if (tunnel != null) { tunnel.sendText(data); } })
             term.resize(80, 25);
             //term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
         }
