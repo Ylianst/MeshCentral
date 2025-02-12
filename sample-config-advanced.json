@@ -386,6 +386,8 @@
       "_agentBlockedIP": "127.0.0.1,::1",
       "___userSessionIdleTimeout__": "Number of user idle minutes before auto-disconnect",
       "_userSessionIdleTimeout": 30,
+      "___logoutOnIdleSessionTimeout": "Determines whether MeshCentral should logout after the session idle timeout elapsed or should just disconnect remote desktop, terminal and files.",
+      "_logoutOnIdleSessionTimeout": false,
       "userConsentFlags": {
         "desktopnotify": true,
         "terminalnotify": true,

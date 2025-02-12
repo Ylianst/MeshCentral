@@ -2180,6 +2180,11 @@
             "default": null,
             "description": "When set, idle users will be disconnected after a set amounts of minutes."
           },
+          "logoutOnIdleSessionTimeout": {
+            "type": "boolean",
+            "default": true,
+            "description": "Determines whether MeshCentral should logout after the session idle timeout elapsed or should just disconnect remote desktop, terminal and files."
+          },
           "userConsentFlags": {
             "type": "object",
             "description": "Use this section to require user consent for this domain.",
