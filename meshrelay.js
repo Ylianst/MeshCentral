@@ -452,8 +452,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                         userid: sessionUser._id,
                                         username: sessionUser.name,
                                         sessionid: obj.id,
-                                        ipaddr1: (obj.req == null) ? null : obj.req.clientIp,
-                                        ipaddr2: ((obj.peer == null) || (obj.peer.req == null)) ? null : obj.peer.req.clientIp,
+                                        ipaddr1: ((obj.peer == null) || (obj.peer.req == null)) ? null : obj.peer.req.clientIp,
+                                        ipaddr2: (obj.req == null) ? null : obj.req.clientIp,
                                         time: new Date().toLocaleString(),
                                         protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p),
                                         nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid)
