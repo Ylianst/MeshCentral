@@ -655,33 +655,39 @@ var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? 
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
+function onUserSessionChanged(user, locked) {
+    userSession.enumerateUsers().then(function (users) {
+        if (process.platform == 'linux') {
+            if (userSession._startTime == null) {
+                userSession._startTime = Date.now();
+                userSession._count = users.length;
+            }
+            else if (Date.now() - userSession._startTime < 10000 && users.length == userSession._count) {
+                userSession.removeAllListeners('changed');
+                return;
+            }
+        }
+
+        var u = [], a = users.Active;
+        if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
+        for (var i = 0; i < a.length; i++) {
+            var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
+            if (user && locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); } }
+            else if (user && !locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { meshCoreObj.lusers.splice(meshCoreObj.lusers.indexOf(un), 1); }
+            if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
+        }
+        meshCoreObj.lusers = meshCoreObj.lusers;
+        meshCoreObj.users = u;
+        meshCoreObjChanged();
+    });
+}
+
 try {
     var userSession = require('user-sessions');
-    userSession.on('changed', function onUserSessionChanged() {
-        userSession.enumerateUsers().then(function (users) {
-            if (process.platform == 'linux') {
-                if (userSession._startTime == null) {
-                    userSession._startTime = Date.now();
-                    userSession._count = users.length;
-                }
-                else if (Date.now() - userSession._startTime < 10000 && users.length == userSession._count) {
-                    userSession.removeAllListeners('changed');
-                    return;
-                }
-            }
-
-            var u = [], a = users.Active;
-            for (var i = 0; i < a.length; i++) {
-                var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
-                if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
-            }
-            meshCoreObj.users = u;
-            meshCoreObjChanged();
-        });
-    });
+    userSession.on('changed', function () { onUserSessionChanged(null, false); });
     userSession.emit('changed');
-    //userSession.on('locked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has LOCKED the desktop'); });
-    //userSession.on('unlocked', function (user) { sendConsoleText('[' + (user.Domain ? user.Domain + '\\' : '') + user.Username + '] has UNLOCKED the desktop'); });
+    userSession.on('locked', function (user) { if(user != undefined && user != null) { onUserSessionChanged(user, true); } });
+    userSession.on('unlocked', function (user) { if(user != undefined && user != null) { onUserSessionChanged(user, false); } });
 } catch (ex) { }
 
 var meshServerConnectionState = 0;

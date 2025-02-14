@@ -3531,6 +3531,7 @@
                                 // Change the node
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
+                                node.lusers = message.event.node.lusers;
                                 node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
@@ -7650,7 +7651,12 @@
                 }
 
                 // Active Users
-                if (node.users && (node.users.length > 0)) { x += addDeviceAttribute(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
+                if (node.users && node.users.length > 0) {
+                    var u = node.users.map(function(user) {
+                        return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                    }).join(', ');
+                    x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
+                }
 
                 // Display device user consent
                 if ((node.agent != null) && (node.agent.id != 14) && (node.mtype != 3)) {
@@ -19195,7 +19201,7 @@
         function addLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=\'' + f + '\' onkeypress="if (event.key==\'Enter\') {' + f + '} ">' + x + ' <img class=hoverButton src=images/link5.png></span>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function addKeyLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <img class=hoverButton src=images/key16.png></span>'; }
-        function addKeyLinkConditional(x, f, c) { if (c) return addKeyLink(x, f); return x; }
+        function addKeyLinkConditional(x, t, c) { if (c) return '<span title=\'' + t + '\'>' + x + ' <img class=hoverButton src=images/key16.png></span>'; return x }
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function addOption(q, t, i) { var option = document.createElement('option'); option.text = t; option.value = i; Q(q).add(option); }
         function passwordcheck(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }

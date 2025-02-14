@@ -2031,6 +2031,8 @@
                                 // Change the node
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
+                                node.lusers = message.event.node.lusers;
+                                node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
                                 node.publicip = message.event.node.publicip;
@@ -6272,7 +6274,12 @@
             }
 
             // Active Users
-            if (node.users && (node.users.length > 0)) { x += addDetailItem(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
+           if (node.users && node.users.length > 0) {
+                var u = node.users.map(function(user) {
+                    return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                }).join(', ');
+                x += addDetailItem((node.users.length > 1 ? "Active Users" : "Active User"), u);
+            }
 
             if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
 
@@ -7584,7 +7591,7 @@
         function addLink(x, f) { return '<a style=cursor:pointer;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function addKeyLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <img class=hoverButton src=images/key16.png></span>'; }
-        function addKeyLinkConditional(x, f, c) { if (c) return addKeyLink(x, f); return x; }
+        function addKeyLinkConditional(x, t, c) { if (c) return '<span title=\'' + t + '\'>' + x + ' <img class=hoverButton src=images/key16.png></span>'; return x }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
         function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format('{0} bytes', size); }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
