@@ -103,8 +103,8 @@ module.exports.CreateMonitoring = function (parent, args) {
                         blockedAgents: parent.webserver.blockedAgents
                     };
                     for (const key in counters) { obj.counterMetrics[key].prometheus.reset(); obj.counterMetrics[key].prometheus.inc(counters[key]); }
-                    await Promise.all(obj.collectors.map((collector) => (collector())));
                     res.set('Content-Type', obj.prometheus.register.contentType);
+                    await Promise.all(obj.collectors.map((collector) => (collector(req, res))));
                     res.end(await obj.prometheus.register.metrics());
                 } catch (ex) {
                     console.log(ex);
