@@ -4281,7 +4281,7 @@ function mainStart() {
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
-                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.4'); }
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@5.8.0'); }
             }
             // Enable S3 Support
             if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.2'); }
