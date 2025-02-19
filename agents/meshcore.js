@@ -3747,7 +3747,14 @@ function onTunnelControlData(data, ws) {
             { // Desktop
                 // Switch the user input from websocket to webrtc at this point.
                 ws.unpipe(ws.httprequest.desktop.kvm);
-                try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); } catch (ex) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
+                if ((ws.httprequest.desktopviewonly != true) && ((ws.httprequest.rights == 0xFFFFFFFF) || (((ws.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((ws.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0)))) {
+                    // If we have remote control rights, pipe the KVM input
+                    try { ws.webrtc.rtcchannel.pipe(ws.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); } catch (ex) { sendConsoleText('EX2'); } // 0 = Binary, 1 = Text.
+                } else {
+                    // We need to only pipe non-mouse & non-keyboard inputs.
+                    // sendConsoleText('Warning: No Remote Desktop Input Rights.');
+                    // TODO!!!
+                }
                 ws.resume(); // Resume the websocket to keep receiving control data
             }
             ws.write('{\"ctrlChannel\":\"102938\",\"type\":\"webrtc2\"}'); // Indicates we will no longer get any data on websocket, switching to WebRTC at this point.
