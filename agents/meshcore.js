@@ -1579,7 +1579,7 @@ function handleServerCommand(data) {
                     mesh.cmdchild = require('child_process').execFile('/bin/sh', ['sh'], options);
                     mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
                     mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
-                    mesh.cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
+                    mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
                     mesh.cmdchild.stdin.write(data.cmds.split('\r').join('') + '\nexit\n');
                     mesh.cmdchild.on('exit', function () {
                         if (data.reply) {
