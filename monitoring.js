@@ -42,6 +42,7 @@ module.exports.CreateMonitoring = function (parent, args) {
         RelaySessions: { description: "Relay Sessions" }, // parent.webserver.relaySessionCount
         RelayCount: { description: "Relay Count" } // Object.keys(parent.webserver.wsrelays).length30bb4fb74dfb758d36be52a7
     }
+    obj.collectors = [];
     if (parent.config.settings.prometheus != null) { // Create Prometheus Monitoring Endpoint
         if ((typeof parent.config.settings.prometheus == 'number') && ((parent.config.settings.prometheus < 1) || (parent.config.settings.prometheus > 65535))) {
            console.log('Promethus port number is invalid, Prometheus metrics endpoint has be disabled');
@@ -103,6 +104,7 @@ module.exports.CreateMonitoring = function (parent, args) {
                     };
                     for (const key in counters) { obj.counterMetrics[key].prometheus.reset(); obj.counterMetrics[key].prometheus.inc(counters[key]); }
                     res.set('Content-Type', obj.prometheus.register.contentType);
+                    await Promise.all(obj.collectors.map((collector) => (collector(req, res))));
                     res.end(await obj.prometheus.register.metrics());
                 } catch (ex) {
                     console.log(ex);
@@ -111,4 +113,5 @@ module.exports.CreateMonitoring = function (parent, args) {
             });
         }
     }
+    return obj;
 }
