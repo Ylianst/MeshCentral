@@ -32,7 +32,7 @@ module.exports.CreateMonitoring = function (parent, args) {
         blockedUsers: { description: "Blocked Users" }, // blockedUsers
         blockedAgents: { description: "Blocked Agents" }, // blockedAgents
     };
-    obj.guageMetrics = { // Guage Metrics always start at 0 and can increase and decrease
+    obj.gaugeMetrics = { // Gauge Metrics always start at 0 and can increase and decrease
         ConnectedIntelAMT: { description: "Connected Intel AMT" }, // parent.mpsserver.ciraConnections[i].length
         UserAccounts: { description: "User Accounts" }, // Object.keys(parent.webserver.users).length
         DeviceGroups: { description: "Device Groups" }, // parent.webserver.meshes (ONLY WHERE deleted=null)
@@ -51,8 +51,8 @@ module.exports.CreateMonitoring = function (parent, args) {
             obj.prometheus = require('prom-client');
             const collectDefaultMetrics = obj.prometheus.collectDefaultMetrics;
             collectDefaultMetrics();
-            for (const key in obj.guageMetrics) {
-                obj.guageMetrics[key].prometheus = new obj.prometheus.Gauge({ name: 'meshcentral_' + String(key).toLowerCase(), help: obj.guageMetrics[key].description });
+            for (const key in obj.gaugeMetrics) {
+                obj.gaugeMetrics[key].prometheus = new obj.prometheus.Gauge({ name: 'meshcentral_' + String(key).toLowerCase(), help: obj.gaugeMetrics[key].description });
             }
             for (const key in obj.counterMetrics) {
                 obj.counterMetrics[key].prometheus = new obj.prometheus.Counter({ name: 'meshcentral_' + String(key).toLowerCase(), help: obj.counterMetrics[key].description });
@@ -67,7 +67,7 @@ module.exports.CreateMonitoring = function (parent, args) {
                     // Count the number of device groups that are not deleted
                     var activeDeviceGroups = 0;
                     for (var i in parent.webserver.meshes) { if (parent.webserver.meshes[i].deleted == null) { activeDeviceGroups++; } } // This is not ideal for performance, we want to dome something better.
-                    var guages = {
+                    var gauges = {
                         UserAccounts: Object.keys(parent.webserver.users).length,
                         DeviceGroups: activeDeviceGroups,
                         AgentSessions: Object.keys(parent.webserver.wsagents).length,
@@ -79,10 +79,10 @@ module.exports.CreateMonitoring = function (parent, args) {
                     };
                     if (parent.mpsserver != null) {
                         for (var i in parent.mpsserver.ciraConnections) { 
-                            guages.ConnectedIntelAMT += parent.mpsserver.ciraConnections[i].length;
+                            gauges.ConnectedIntelAMT += parent.mpsserver.ciraConnections[i].length;
                         }
                     }
-                    for (const key in guages) { obj.guageMetrics[key].prometheus.set(guages[key]); }
+                    for (const key in gauges) { obj.gaugeMetrics[key].prometheus.set(gauges[key]); }
                     // Take a look at agent errors
                     var agentstats = parent.webserver.getAgentStats();
                     const counters = {
