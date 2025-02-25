@@ -1153,7 +1153,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             Promise.all(warmupDbPromises)
             .then(() => Promise.all(warmupActionPromises))
             .then(() => {
-                console.log(('' + (Date.now() - agentCreateTime)).padStart(8), 'AGENT CORE IS ATABLE');
+                console.log(('' + (Date.now() - agentCreateTime)).padStart(8), 'AGENT CORE IS STABLE');
                 parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent)
             });
         }
