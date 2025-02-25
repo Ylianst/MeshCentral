@@ -4355,7 +4355,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'agentmsg': {
                 if (args['_'].length == 0) {
-                    response = "Proper usage:\r\n  agentmsg add \"[message]\" [iconIndex]\r\n  agentmsg remove [index]\r\n  agentmsg list"; // Display usage
+                    response = "Proper usage:\r\n  agentmsg add \"[message]\" [iconIndex]\r\n  agentmsg remove [id]\r\n  agentmsg list"; // Display usage
                 } else {
                     if ((args['_'][0] == 'add') && (args['_'].length > 1)) {
                         var msgID, iconIndex = 0;
