@@ -3778,7 +3778,7 @@ module.exports.CreateDB = function (parent, func) {
 
     async function webDAVBackup(filename, func) {
         try {
-            const webDAV = require('webdav');
+            const webDAV = await import ('webdav');
             const wdConfig = parent.config.settings.autobackup.webdav;
             const client = webDAV.createClient(wdConfig.url, {
                 username: wdConfig.username,
