@@ -1656,7 +1656,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Setup agent error log
-        if ((obj.config) && (obj.config.settings) && (obj.config.settings.agentlogdump != null)) {
+        if ((obj.config) && (obj.config.settings) && (obj.config.settings.agentlogdump)) {
             obj.fs.open(obj.path.join(obj.datapath, 'agenterrorlogs.txt'), 'a', function (err, fd) { obj.agentErrorLog = fd; })
         }
 
