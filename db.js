@@ -3809,12 +3809,9 @@ module.exports.CreateDB = function (parent, func) {
                 }
             }
             // Upload to the WebDAV folder
-            const { stat } = await import ('fs/promises');
-            const stats = await stat(filename);
-            let fileStream = fs.createReadStream(filename);
-            fileStream.on('close', function () { console.log('WebDAV upload completed: ' + webdavfolderName + '/' + path.basename(filename)); if (func) { func('WebDAV upload completed: ' + webdavfolderName + '/' + path.basename(filename)); } })
-            fileStream.on('error', function (err) { console.error(err); if (func) { func('WebDAV upload error: ' + err.message); } })
-            fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + path.basename(filename), { headers: { "Content-Length": stats.size } }));
+            const { pipeline } = require('stream/promises');
+            await pipeline(fs.createReadStream(filename), client.createWriteStream('/' + webdavfolderName + '/' + path.basename(filename)));
+            console.log('WebDAV upload completed: ' + webdavfolderName + '/' + path.basename(filename)); if (func) { func('WebDAV upload completed: ' + webdavfolderName + '/' + path.basename(filename)); }
         }
         catch(err) {
             console.error('WebDAV error: ' + err.message); if (func) { func('WebDAV error: ' + err.message);}
