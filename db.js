@@ -699,9 +699,15 @@ module.exports.CreateDB = function (parent, func) {
         return r;
     }
 
-    // Clone an object (TODO: Make this more efficient)
-    function Clone(v) { return JSON.parse(JSON.stringify(v)); }
-
+    // Clone an object (TODO: Make this more efficient) >> Use StructuredClone from v17 onward
+    let Clone;
+    if (process.versions.node.split('.')[0] >= '17'){
+        Clone = function (v) { return structuredClone(v); }
+    }
+    else {
+        Clone = function (v) { return JSON.parse(JSON.stringify(v)); }
+    }
+    
     // Read expiration time from configuration file
     if (typeof parent.args.dbexpire == 'object') {
         if (typeof parent.args.dbexpire.events == 'number') { expireEventsSeconds = parent.args.dbexpire.events; }
