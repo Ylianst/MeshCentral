@@ -998,19 +998,24 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
 
+    const agentCreateTime = Date.now();
+    console.log(('' + 0).padStart(8), 'CREATE MeshArgent');
     const WarmupPromisesMixin = {
         resolvedCount: 0,
         create: function create(key) {
+            console.log(('' + (Date.now() - agentCreateTime)).padStart(8), 'CREATE Promise', key);
             let resolvePromise, promise = new Promise((resolve) => { resolvePromise = resolve; });
             this[key] = resolvePromise;
             this.push(promise);
         },
         resolve: function resolve(key) {
             if (this.hasOwnProperty(key)) {
+                console.log(('' + (Date.now() - agentCreateTime)).padStart(8), 'RESOLVE Promise', key);
                 this[key]();
                 delete this[key];
                 if (++this.resolvedCount == this.length) {
                     this.length = 0;
+                    console.log(('' + (Date.now() - agentCreateTime)).padStart(8), 'ALL PROMISES RESOLVED');
                 }
             }
         },
@@ -1147,7 +1152,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (parent.parent.pluginHandler != null) {
             Promise.all(warmupDbPromises)
             .then(() => Promise.all(warmupActionPromises))
-            .then(() => parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent));
+            .then(() => {
+                console.log(('' + (Date.now() - agentCreateTime)).padStart(8), 'AGENT CORE IS ATABLE');
+                parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent)
+            });
         }
     }
 
