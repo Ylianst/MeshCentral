@@ -64,6 +64,7 @@ var minifyMeshCentralSourceFiles = [
     "../views/agentinvite.handlebars",
     "../views/invite.handlebars",
     "../views/default.handlebars",
+    "../views/default3.handlebars",
     "../views/default-mobile.handlebars",
     "../views/download.handlebars",
     "../views/download2.handlebars",
@@ -452,7 +453,8 @@ function startEx(argv) {
                         removeScriptTypeAttributes: true,
                         removeTagWhitespace: true,
                         preserveLineBreaks: false,
-                        useShortDoctype: true
+                        useShortDoctype: true,
+                        log: function(a) { if (typeof a !== 'string') { console.log(a); } } // Log errors from UglifyJS to console output
                     });
                 } catch (ex) {
                     console.log(ex);
