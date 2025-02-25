@@ -1325,7 +1325,7 @@
         var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
-        var hidePowerTimeline = {{{hidePowerTimeline}}};
+        var hidePowerTimeline = '{{{hidePowerTimeline}}}';
         var webRelayDns = '{{{webRelayDns}}}';
         var meshserver = null;
         var xdr = null;
@@ -4267,7 +4267,7 @@
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if (currentNode.mtype == 3 || hidePowerTimeline) { QH('p10html2', '<br />'); return; }
+            if (currentNode.mtype == 3 || hidePowerTimeline === 'true') { QH('p10html2', '<br />'); return; }
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
