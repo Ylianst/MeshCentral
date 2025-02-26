@@ -2752,10 +2752,10 @@ function kvm_consent_ask(ws){
                 return (this.consent);
             });
         } else {
-            pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null, this.tsid);
+            pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null, ws.tsid);
         }
     } else {
-        pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null, this.tsid);
+        pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null, ws.tsid);
     }
     pr.ws = ws;
     ws.pause();
