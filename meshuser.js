@@ -928,7 +928,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Get a short file and send it back on the web socket
                             if (common.validateString(command.file, 1, 4096) == false) return;
                             const scpath = meshPathToRealPath(command.path, user); // This will also check access rights
-                            if (scpath == null) break;
+                            if ((scpath == null) || (command.file !== parent.path.basename(command.file))) break;
                             const filePath = parent.path.join(scpath, command.file);
                             fs.stat(filePath, function (err, stat) {
                                 if ((err != null) || (stat == null) || (stat.size >= 204800)) return;
@@ -943,7 +943,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (common.validateString(command.file, 1, 4096) == false) return;
                             if (typeof command.data != 'string') return;
                             const scpath = meshPathToRealPath(command.path, user); // This will also check access rights
-                            if (scpath == null) break;
+                            if ((scpath == null) || (command.file !== parent.path.basename(command.file))) break;
                             const filePath = parent.path.join(scpath, command.file);
                             var data = null;
                             try { data = Buffer.from(command.data, 'base64'); } catch (ex) { return; }

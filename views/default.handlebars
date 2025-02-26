@@ -1479,7 +1479,7 @@
                                 <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable Theming</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor Shadow</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor Settings</label>
-                                <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smooting</label>
+                                <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smoothing</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic Clipboard</label>
                                 <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse Buttons</label>
@@ -1553,8 +1553,8 @@
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
-        var hidePowerTimeline = {{{hidePowerTimeline}}};
-        var showNotesPanel = {{{showNotesPanel}}};
+        var hidePowerTimeline = '{{{hidePowerTimeline}}}';
+        var showNotesPanel = '{{{showNotesPanel}}}';
         var sessionRefreshTimer = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
@@ -3027,7 +3027,7 @@
                         }
                     }else{
                         Q('notesPanelArea').innerHTML = (message.notes && marked && DOMPurify) ? DOMPurify.sanitize(marked.parse(decodeURIComponent(message.notes), { breaks: true }), { USE_PROFILES: { html: true } }) : '';
-                        if (showNotesPanel && message.notes) { QV('notesPanel',true); }else{ QV('notesPanel', false); }
+                        if ((showNotesPanel === 'true') && message.notes) { QV('notesPanel',true); }else{ QV('notesPanel', false); }
                     }
                     break;
                 }
@@ -8243,7 +8243,7 @@
             if (noteid == null) { noteid = encodeURIComponentEx('p'+userinfo._id); }
             var x = '<textarea id=d2devNotes ro=' + readonly + ' noteid=' + noteid + ' readonly style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll></textarea>';
             if (noteid.startsWith('node%2F%2F')) { x += ' <span style=font-size:10px>' + "Device group notes can be viewed and changed by other device group administrators." + '</span>'; }
-            if (showNotesPanel) { x += ' <span style=font-size:10px><a target=_blank href=\'https://www.markdownguide.org/cheat-sheet/\'>' + "Markdown syntax supported" + '</a></span>'; }
+            if (showNotesPanel === 'true') { x += ' <span style=font-size:10px><a target=_blank href=\'https://www.markdownguide.org/cheat-sheet/\'>' + "Markdown syntax supported" + '</a></span>'; }
             setDialogMode(2, "Notes", 3, showNotesEx, x, noteid);
             meshserver.send({ action: 'getNotes', id: decodeURIComponent(noteid) });
         }
@@ -8251,7 +8251,7 @@
         function showNotesEx(buttons, tag) {
             Q('notesPanelArea').innerHTML = (marked && DOMPurify) ? DOMPurify.sanitize(marked.parse(Q('d2devNotes').value, { breaks: true }), { USE_PROFILES: { html: true } }) : Q('d2devNotes').value;
             meshserver.send({ action: 'setNotes', id: decodeURIComponent(tag), notes: encodeURIComponentEx(Q('d2devNotes').value) });
-            if (showNotesPanel && Q('d2devNotes').value != '') { QV('notesPanel',true); }else{ QV('notesPanel', false); }
+            if ((showNotesPanel === 'true') && Q('d2devNotes').value != '') { QV('notesPanel',true); }else{ QV('notesPanel', false); }
         }
 
         function openIpKvmRemoteControl(nodeid) {
@@ -8672,7 +8672,7 @@
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if ((currentNode == null) || (xxcurrentView < 10) || (xxcurrentView > 19) || (currentNode.mtype == 3) || (hidePowerTimeline)) return;
+            if ((currentNode == null) || (xxcurrentView < 10) || (xxcurrentView > 19) || (currentNode.mtype == 3) || (hidePowerTimeline === 'true')) return;
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
