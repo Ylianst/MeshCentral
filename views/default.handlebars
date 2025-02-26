@@ -13561,8 +13561,8 @@
                 if (currentMesh.flags) {
                     if (currentMesh.flags & 1) { meshFeatures.push("Auto-Remove"); }
                     if (currentMesh.flags & 2) { meshFeatures.push((currentMesh.mtype == 4)?"Port Name Sync":"Hostname Sync"); }
-                    if (currentMesh.flags & 8) { meshFeatures.push("Prefer agentname"); }
-                    if (currentMesh.flags & 16) { meshFeatures.push("Allow override"); }
+                    if (currentMesh.flags & 8) { meshFeatures.push("prefer --agentname"); }
+                    if (currentMesh.flags & 16) { meshFeatures.push("allow override"); }
                     if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.flags & 4)) { meshFeatures.push("Record Sessions"); }
                 }
                 if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { meshFeatures.push("Remove inactive"); }
@@ -14045,8 +14045,8 @@
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
                 x += '<div><label><input type=checkbox id=d20flag2 onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4)?"Sync server device name to port name":"Sync server device name to hostname") + '</label><br></div>';
                 if (currentMesh.mtype == 2) {
-                    x += '<div style="margin-left:8px"><label><input type=checkbox id=d20flag8 onchange=p20editmeshfeaturesValidate() ' + ((flags & 8) ? 'checked' : '') + '>' + "Prefer name reportet by agent (--agentName)" + '</label><br></div>';
-                    x += '<div style="margin-left:8px"><label><input type=checkbox id=d20flag16 onchange=p20editmeshfeaturesValidate() ' + ((flags & 16) ? 'checked' : '') + '>' + "Allow to override until next connection" + '</label><br></div>';
+                    x += '<div style="margin-left:8px"><label><input type=checkbox id=d20flag8 onchange=p20editmeshfeaturesValidate() ' + ((flags & 8) ? 'checked' : '') + '>' + "Prefer value of --agentName" + '</label><br></div>';
+                    x += '<div style="margin-left:8px"><label><input type=checkbox id=d20flag16 onchange=p20editmeshfeaturesValidate() ' + ((flags & 16) ? 'checked' : '') + '>' + "Allow to override server device name until next connection" + '</label><br></div>';
                 }
                 x += '<div><label><input type=checkbox id=d20flag1 onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
             }
