@@ -2839,7 +2839,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
         
         // check for relaystate is set, test against configured server name and accepted query params
-        if(req.body.RelayState !== undefined){
+        if(req.body && req.body.RelayState !== undefined){
                 var relayState = decodeURIComponent(req.body.RelayState);
                 var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
             
