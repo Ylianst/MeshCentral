@@ -585,6 +585,7 @@ function CreateMeshCentralServer(config, args) {
         const child_process = require('child_process');
         try { if (process.traceDeprecation === true) { startArgs.unshift('--trace-deprecation'); } } catch (ex) { }
         try { if (process.traceProcessWarnings === true) { startArgs.unshift('--trace-warnings'); } } catch (ex) { }
+        if (startArgs[0] != "--disable-proto=delete") startArgs.unshift("--disable-proto=delete")
         childProcess = child_process.execFile(process.argv[0], startArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (childProcess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startArgs); }, 500); // This is an expected restart.
