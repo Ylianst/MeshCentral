@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -14069,11 +14069,13 @@
             var flags = 0, ok = true;
             if (((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) && (Q('d20flag1').checked)) { flags += 1; }
             if (currentMesh.mtype == 2) {
-                if (Q('d20flag2').checked) { flags += 2; }
+                if (Q('d20flag2').checked) {
+                    flags += 2;
+                    if (event.currentTarget.id == 'd20flag2') { Q('d20flag8').checked = true; Q('d20flag16').checked = true; }
+                }
                 for (const flag of [8, 16]) {
                     const element = Q('d20flag' + flag);
-                    element.disabled = !(flags & 2);
-                    element.checked = (!element.disabled) && (element.checked);
+                    if ((element.checked = element.checked && !(element.disabled = !(flags & 2)))) { flags += flag; }
                 }
             }
             QE('d20expireDevice', (flags & 1) == 0);
