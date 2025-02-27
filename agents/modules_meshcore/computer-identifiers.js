@@ -422,106 +422,6 @@ function windows_wmic_results(str)
     return (result);
 }
 
-function windows_volumes()
-{
-    var promise = require('promise');
-    var p1 = new promise(function (res, rej) { this._res = res; this._rej = rej; });
-    var p2 = new promise(function (res, rej) { this._res = res; this._rej = rej; });
-
-    p1._p2 = p2;
-    p2._p1 = p1;
-
-    var cmd = '"Get-Volume | Select-Object -Property DriveLetter,FileSystemLabel,FileSystemType,Size,SizeRemaining,DriveType | ConvertTo-Csv -NoTypeInformation"';
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', cmd]);
-    p1.child = child;
-    child.promise = p1;
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.on('exit', function (c)
-    {
-        var a, i, tokens, key;
-        var ret = {};
-
-        a = this.stdout.str.trim().split('\r\n');
-        for (i = 1; i < a.length; ++i)
-        {
-            tokens = a[i].split(',');
-            if (tokens[0] != '' && tokens[1] != undefined)
-            {
-                ret[tokens[0].split('"')[1]] =
-                    {
-                        name: tokens[1].split('"')[1],
-                        type: tokens[2].split('"')[1],
-                        size: tokens[3].split('"')[1],
-                        sizeremaining: tokens[4].split('"')[1],
-                        removable: tokens[5].split('"')[1] == 'Removable',
-                        cdrom: tokens[5].split('"')[1] == 'CD-ROM'
-                    };
-            }
-        }
-        this.promise._res({ r: ret, t: tokens });
-    });
-
-    p1.then(function (j)
-    {
-        var ret = j.r;
-        var tokens = j.t;
-
-        var cmd = '"Get-BitLockerVolume | Select-Object -Property MountPoint,VolumeStatus,ProtectionStatus | ConvertTo-Csv -NoTypeInformation"';
-        var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', cmd]);
-        p2.child = child;
-        child.promise = p2;
-        child.tokens = tokens;
-        child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-        child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-        child.on('exit', function ()
-        {
-            var i;
-            var a = this.stdout.str.trim().split('\r\n');
-            for (i = 1; i < a.length; ++i)
-            {
-                tokens = a[i].split(',');
-                key = tokens[0].split(':').shift().split('"').pop();
-                if (ret[key] != null)
-                {
-                    ret[key].volumeStatus = tokens[1].split('"')[1];
-                    ret[key].protectionStatus = tokens[2].split('"')[1];
-                    try {
-                        var foundIDMarkedLine = false, foundMarkedLine = false, identifier = '', password = '';
-                        var keychild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd', '/c', 'manage-bde -protectors -get ', tokens[0].split('"')[1], ' -Type recoverypassword'], {});
-                        keychild.stdout.str = ''; keychild.stdout.on('data', function (c) { this.str += c.toString(); });
-                        keychild.waitExit();
-                        var lines = keychild.stdout.str.trim().split('\r\n');
-                        for (var x = 0; x < lines.length; x++) { // Loop each line
-                            var abc = lines[x].trim();
-                            var englishidpass = (abc !== '' && abc.includes('Numerical Password:')); // English ID
-                            var germanidpass = (abc !== '' && abc.includes('Numerisches Kennwort:')); // German ID
-                            var frenchidpass = (abc !== '' && abc.includes('Mot de passe num')); // French ID
-                            var englishpass = (abc !== '' && abc.includes('Password:') && !abc.includes('Numerical Password:')); // English Password
-                            var germanpass = (abc !== '' && abc.includes('Kennwort:') && !abc.includes('Numerisches Kennwort:')); // German Password
-                            var frenchpass = (abc !== '' && abc.includes('Mot de passe :') && !abc.includes('Mot de passe num')); // French Password
-                            if (englishidpass || germanidpass || frenchidpass|| englishpass || germanpass || frenchpass) {
-                                var nextline = lines[x + 1].trim();
-                                if (x + 1 < lines.length && (nextline !== '' && (nextline.startsWith('ID:') || nextline.startsWith('ID :')) )) {
-                                    identifier = nextline.replace('ID:','').replace('ID :', '').trim();
-                                    foundIDMarkedLine = true;
-                                }else if (x + 1 < lines.length && nextline !== '') {
-                                    password = nextline;
-                                    foundMarkedLine = true;
-                                }
-                            }
-                        }
-                        ret[key].identifier = (foundIDMarkedLine ? identifier : ''); // Set Bitlocker Identifier
-                        ret[key].recoveryPassword = (foundMarkedLine ? password : ''); // Set Bitlocker Password
-                    } catch(ex) { }
-                }
-            }
-            this.promise._res(ret);
-        });
-    });
-    return (p2);
-}
-
 function windows_identifiers()
 {
     var ret = { windows: {} };
@@ -803,12 +703,13 @@ function hexToAscii(hexString) {
 function win_chassisType()
 {
     // needs to be replaced with win-wmi but due to bug in win-wmi it doesnt handle arrays correctly
-    var cmd = '"Get-CimInstance Win32_SystemEnclosure | Select-Object -ExpandProperty ChassisTypes"';
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', cmd], {});
+    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
     if (child == null) { return ([]); }
     child.descriptorMetadata = 'process-manager';
     child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
+    child.stdin.write('Get-WmiObject Win32_SystemEnclosure | Select-Object -ExpandProperty ChassisTypes\r\n');
+    child.stdin.write('exit\r\n');
     child.waitExit();
     try {
         return (parseInt(child.stdout.str));
@@ -991,11 +892,6 @@ module.exports.isVM = function isVM()
     if (!ret) { ret = this.isDocker(); }
     return (ret);
 };
-
-if (process.platform == 'win32')
-{
-    module.exports.volumes_promise = windows_volumes;
-}
 
 // bios_date = BIOS->ReleaseDate
 // bios_vendor = BIOS->Manufacturer

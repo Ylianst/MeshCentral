@@ -767,6 +767,14 @@
           "default": false,
           "description": "When set to true, the MPS server will only accept TLS 1.2 and 1.3 connections. Older Intel AMT devices will not be able to connect."
         },
+        "prometheus": {
+          "type": [
+            "boolean",
+            "number"
+          ],
+          "default": false,
+          "description": "When set to true, a prometheus metrics endpoint will be available \"0.0.0.0:9464/metrics\". If you specify a number instead, the prometheus metrics will listen on this port instead of the default 9464."
+        },
         "no2FactorAuth": {
           "type": "boolean",
           "default": false
@@ -856,7 +864,7 @@
             "boolean",
             "object"
           ],
-          "description": "If set to \"true\", automatic backups of your MeshCentral data will be enabled. Alternatively, you can provide an object with additional values such as \"webdav\", \"backupPath\", \"backupIntervalHours\", and more.",
+          "description": "Enabled by default or if set to true. Disabled if set to false. An object can be provided with additional properties to set autobackup options.",
           "properties": {
             "mongoDumpPath": {
               "type": "string",
@@ -877,6 +885,11 @@
               "type": "integer",
               "default": 24,
               "description": "How often should the autobackup run in hours from the second meshcentral starts up? Default is every 24 hours"
+            },
+            "backupHour": {
+              "type": "integer",
+              "default": 0,
+              "description": "At which hour the autobackup should run. This forces a daily backup, overrules a custom 'backupIntervalHours'."
             },
             "keepLastDaysBackup": {
               "type": "integer",
@@ -1159,6 +1172,11 @@
             "type": "integer",
             "default": 2,
             "description": "Valid numbers are 1 and 2, changes the style of the login page and some secondary pages."
+          },
+          "showModernUIToggle": {
+            "type": "boolean",
+            "default": false,
+            "description": "When set to true, the user will be able to toggle between the modern and classic UI."
           },
           "title": {
             "type": "string",
@@ -1664,6 +1682,11 @@
                 "default": true,
                 "description": "Set to false to disable SMS 2FA."
               },
+              "duo2factor": {
+                "type": "boolean",
+                "default": true,
+                "description": "Set to false to disable Duo 2FA."
+              },
               "push2factor": {
                 "type": "boolean",
                 "default": true,
@@ -1949,6 +1972,11 @@
                 "default": false,
                 "description": "If true, user consent is accepted after the timeout."
               },
+              "autoAcceptIfNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent is accepted if no user is logged in."
+              },
               "oldStyle": {
                 "type": "boolean",
                 "default": false,
@@ -2151,6 +2179,11 @@
             "type": "integer",
             "default": null,
             "description": "When set, idle users will be disconnected after a set amounts of minutes."
+          },
+          "logoutOnIdleSessionTimeout": {
+            "type": "boolean",
+            "default": true,
+            "description": "Determines whether MeshCentral should logout after the session idle timeout elapsed or should just disconnect remote desktop, terminal and files."
           },
           "userConsentFlags": {
             "type": "object",
@@ -2684,6 +2717,26 @@
             },
             "description": "This is used to create HTTP redirections. For example setting \"redirects\": { \"example\":\"https://example.com\" } will make it so that anyone accessing /example on the server will get redirected to the specified URL."
           },
+          "duo2factor": {
+            "type": "object",
+            "properties": {
+              "integrationkey": {
+                "type": "string",
+                "default": "",
+                "description": "Integration key from Duo"
+              },
+              "secretkey": {
+                "type": "string",
+                "default": "",
+                "description": "Secret key from Duo"
+              },
+              "apihostname": {
+                "type": "string",
+                "default": "",
+                "description": "API Hostname from Duo"
+              }
+            }
+          },
           "yubikey": {
             "type": "object",
             "properties": {
@@ -2862,12 +2915,10 @@
               },
               "user": {
                 "type": "string",
-                "format": "string",
                 "description": "SMTP username."
               },
               "pass": {
                 "type": "string",
-                "format": "string",
                 "description": "SMTP password."
               },
               "tls": {
@@ -3220,7 +3271,6 @@
                     ]
                   }
                 ],
-                "additionalProperties": false,
                 "properties": {
                   "newAccounts": {
                     "type": "boolean",
@@ -3428,8 +3478,7 @@
                     "required": [
                       "client_id",
                       "client_secret"
-                    ],
-                    "additionalProperties": false
+                    ]
                   },
                   "issuer": {
                     "type": [
@@ -3519,8 +3568,7 @@
                           }
                         }
                       }
-                    },
-                    "additionalProperties": false
+                    }
                   },
                   "custom": {
                     "type": "object",
@@ -3571,8 +3619,7 @@
                         "type": "string",
                         "description": "REQUIRED IF USING GROUPS: Customer ID from Google Workspace Admin Console (https://admin.google.com/ac/accountsettings/profile)"
                       }
-                    },
-                    "additionalProperties": false
+                    }
                   },
                   "groups": {
                     "type": "object",
@@ -3624,8 +3671,7 @@
                         "default": "groups",
                         "description": "Custom claim to use."
                       }
-                    },
-                    "additionalProperties": false
+                    }
                   }
                 }
               }
@@ -3690,8 +3736,7 @@
               "description": "EAB HMAC KEY",
               "default": ""
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -3786,12 +3831,10 @@
         },
         "user": {
           "type": "string",
-          "format": "string",
           "description": "SMTP username."
         },
         "pass": {
           "type": "string",
-          "format": "string",
           "description": "SMTP password."
         },
         "tls": {

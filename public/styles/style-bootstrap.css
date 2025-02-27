@@ -168,7 +168,6 @@ body {
     height: 66px;
     color: #c8c8c8;
     padding-left: 14px;
-    padding-top: 7px;
     font-size: 46px;
     font-family: Arial,Helvetica,sans-serif;
     font-weight: bold;
@@ -180,7 +179,7 @@ body {
     height: 66px;
     color: #c8c8c8;
     padding-left: 5px;
-    padding-top: 14px;
+    padding-top: 12px;
     font-size: 14px;
     font-family: Arial,Helvetica,sans-serif;
     font-weight: bold;
@@ -248,7 +247,6 @@ body {
 }
 
 .nonenglish .topbar_td {
-    width: 10px;
     height: 24px;
     cursor: pointer;
     padding-left:16px;
@@ -266,6 +264,16 @@ body {
     position: absolute;
     padding: 3px;
     right: 3px;
+}
+
+.textnewui {
+    color: white;
+    font-weight: bold;
+    padding-top: 5px;
+    cursor: pointer;
+    position: absolute;
+    right: 0; 
+    margin-right: 10px;
 }
 
 .LogoffLinkColor {
@@ -295,8 +303,8 @@ body {
 #MainSubMenuSpan, #MeshSubMenuSpan, #EventsSubMenuSpan, #UserSubMenuSpan, #UsersSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
     width: 100%;
     height: 24px;
-    color: var(--sub-menu-color);
-    background: var(--sub-menu-bg);
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
 }
 
 .menu_stack #UserDummyMenu {
@@ -636,7 +644,6 @@ body {
     width: 230px;
     height: 100px;
     overflow-y: scroll;
-    background-color: white;
 }
 
 #idx_dlgButtonBar {
@@ -731,25 +738,21 @@ body {
 
 #devListToolbarSpan {
     width: 100%;
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
     vertical-align: middle;
     border-spacing: 0;
 }
 
-.night #devListToolbarSpan {
-    color: black;
-    background-color: #d3d9d6;
-}
-
-#SearchInput {
+#SearchInput, #KvmSearchInput {
     width: 120px;
 }
 
-#SearchInput.search {
+#SearchInput.search, #KvmSearchInput.search {
     background-color: #FDFFBE;
 }
 
-.night #SearchInput.search {
+.night #SearchInput.search, .night #KvmSearchInput.search {
     background-color: grey;
 }
 
@@ -1079,11 +1082,6 @@ NoMeshesPanel img {
 
 .pTable {
     width: 100%;
-    height: 24px;
-    background: var(--sub-menu-bg) !important;
-    margin-bottom: 4px;
-    vertical-align: middle;
-    border-spacing: 0;
 }
 
 #p50groups {
@@ -1127,22 +1125,13 @@ NoMeshesPanel img {
 
 #p5filehead {
     width: 100%;
-    background: var(--sub-menu-bg);
-    text-align: left;
-    padding: 4px;
-}
-
-.night #p5filehead {
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
+    padding: 4px 0px;
 }
 
 #p5filesubhead {
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
     height: 28px;
-}
-
-.night #p5filesubhead {
-    background-color: #222;
 }
 
 #p5rightOfButtons {
@@ -1265,7 +1254,7 @@ NoMeshesPanel img {
 }
 
 .pwsBlack {
-    background-color: black;
+    background-color: var(--bs-body-color);
 }
 
 .pwsBlue {
@@ -1745,14 +1734,14 @@ nav .lbbuttonsel2 {
 .style3 {
     text-align: center;
     color: white;
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
     font-weight: bold;
 }
 
 .style3x {
     text-align: center;
-    color: var(--sub-menu-color);
-    background: var(--sub-menu-bg);
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
     font-weight: bold;
 }
 
@@ -1833,32 +1822,19 @@ nav .lbbuttonsel2 {
 .style14 {
     height: 100%;
     text-align: left;
-    /* background-color: #D3D9D6; */
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
 }
 
 .night .style14 {
-    background-color: #333;
     color: #CCC;
 }
 
 .auto-style1 {
-    background: var(--sub-menu-bg);
-    text-align: right;
-}
-
-#pTable .auto-style1 {
-    height: 100%;
-    float: right;
+    background: var(--bs-secondary-bg);
 }
 
 .night .auto-style1 {
-    background: var(--sub-menu-bg);
     color: #CCC;
-}
-
-.night #pTable {
-    color: black;
 }
 
 .icon2 {
@@ -2103,7 +2079,11 @@ nav .lbbuttonsel2 {
 #d2devNotes,
 #d2devEvent,
 #d2runcmd, 
-#d2devMessage {
+#d2devMessage,
+#d2smsText,
+#d2emailSubject,
+#d2emailText,
+#broadcastMessage {
     background-color: #FFF9D3;
 }
 
@@ -2113,7 +2093,11 @@ nav .lbbuttonsel2 {
 .night #d2devNotes,
 .night #d2devEvent,
 .night #d2runcmd,
-.night #d2devMessage {
+.night #d2devMessage,
+.night #d2smsText,
+.night #d2emailSubject,
+.night #d2emailText,
+.night #broadcastMessage {
     background-color: black;
 }
 
@@ -2463,7 +2447,6 @@ nav .lbbuttonsel2 {
     padding-top: 2px;
     padding-bottom: 2px;
     background: var(--sub-menu-bg);
-    height: 22px;
 }
 
 .night .areaFoot {
@@ -2691,39 +2674,20 @@ nav .lbbuttonsel2 {
     -ms-grid-row: 4;
 }
 
-#DeskRunButton, #DeskChatButton, #DeskNotifyButton, #DeskOpenWebButton, #DeskBackgroundButton, #DeskSaveImageButton, #DeskRecordButton, #DeskClipboardInButton, #DeskClipboardOutButton, #DeskRefreshButton, #DeskLockButton, #DeskInputLockedButton, #DeskInputUnLockedButton, #DeskGuestShareButton, #DeskMonitorSelectionSpan {
-    float: right;
-    margin-top: 1px;
-    margin-right: 4px;
-    cursor: pointer;
-}
-
-#DeskClip, #DeskControlSpan, #specialkeylist {
-    padding-left: 6px;
-}
-
 .serverStateTableCell {
     width: 300px;
     height: 24px;
-    background: var(--sub-menu-bg);
+    background: var(--bs-secondary-bg);
     margin-bottom: 4px;
     vertical-align: middle;
     border-spacing: 0;
-}
-
-.night .serverStateTableCell {
-    background-color: #333;
-    color: #CCC;
+    color: var(--bs-secondary-color);
 }
 
 .userTableHeader {
     border-bottom: 1pt solid lightgray;
     padding-top: 4px;
     padding-bottom: 4px;
-}
-
-#deskkeys {
-    margin-left: 6px;
 }
 
 #p12BackButton {
@@ -2767,23 +2731,16 @@ nav .lbbuttonsel2 {
 
     #p13toolbar .areaHead2 {
         width: 100%;
-        background: var(--sub-menu-bg);
-        text-align: left;
-        padding: 4px;
+        background: var(--bs-secondary-bg);
+        padding: 4px 0px;
     }
 
-    .night #p13toolbar .areaHead2 {
-        background: var(--sub-menu-bg);
-    }
 
     #p13toolbar .areaHead3 {
-        background: var(--sub-menu-bg);
+        background: var(--bs-secondary-bg);
         height: 28px;
     }
 
-    .night #p13toolbar .areaHead3 {
-        background-color: #333;
-    }
 
 #p13filetable {
     width: 100%;
@@ -2833,11 +2790,6 @@ nav .lbbuttonsel2 {
     color: black;
 }
 
-#p15statetext {
-    padding: 4px;
-    height: 15px;
-}
-
 #p15agentConsole {
     background: black;
     margin: 0;
@@ -2852,11 +2804,6 @@ nav .lbbuttonsel2 {
 .menu_stack.fullscreen #p15agentConsole {
     height: calc(100vh - 305px);
     max-height: calc(100vh - 305px);
-}
-
-#p15coreName {
-    padding: 4px;
-    display: inline-block;
 }
 
 #p15agentConsoleText {
@@ -2940,7 +2887,7 @@ nav .lbbuttonsel2 {
     width: 28px;
 }
 
-.viewSelector3 {
+.viewSelector3, .uiSelector7 {
     margin-left: 2px;
     margin-top: 2px;
     background: url(../images/views.png) -56px 0px;
@@ -3039,6 +2986,13 @@ nav .lbbuttonsel2 {
         opacity: 0.5;
         background-color: #AAA;
     }
+
+.uiSelector_end {
+    width: 32px;
+    height: 32px;
+    float: left;
+    margin: 3px;
+}
 
 .uiSelectorSel {
     background-color: #BBB;
@@ -3289,7 +3243,6 @@ nav .lbbuttonsel2 {
 .dtab {
     overflow: hidden;
     border-bottom: 1px solid #ccc;
-    background-color: #f1f1f1;
 }
 
 .dtab button {

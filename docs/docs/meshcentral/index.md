@@ -1,6 +1,6 @@
-# Meshcentral2 Guide
+# MeshCentral Guide
 
-[MeshCentral2 Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
+[MeshCentral Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
 
 MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
 
@@ -1277,6 +1277,8 @@ And taking authentication to the next step is removing the login page entirely. 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/-WKY8Wy0Huk" frameborder="0" allowfullscreen></iframe>
 </div>
+
+You can also setup [Duo 2FA](https://github.com/Ylianst/MeshCentral/blob/master/docs/docs/meshcentral/security.md#duo-2fa-setup) which is a commertial offering.
 
 ## Server Backup & Restore
 

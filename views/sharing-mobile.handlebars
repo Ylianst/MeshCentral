@@ -820,7 +820,12 @@
         }
 
         function setSessionActivity() { sessionActivity = Date.now(); }
-        function checkIdleSessionTimeout() { var delta = (Date.now() - sessionActivity); if (delta > serverinfo.timeout) { window.location.href = 'logout'; } }
+        function checkIdleSessionTimeout() {
+            var delta = (Date.now() - sessionActivity);
+            if (delta > serverinfo.timeout && serverinfo.logoutOnIdleSessionTimeout) {
+                window.location.href = 'logout';
+            }
+        }
 
         //
         // Menu System

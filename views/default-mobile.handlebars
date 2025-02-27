@@ -1304,6 +1304,7 @@
         delete urlargs.viewmode;
         delete urlargs.gotonode;
         delete urlargs.gotodevicename;
+        delete urlargs.gotodeviceip;
         delete urlargs.gotomesh;
         delete urlargs.panel;
 
@@ -1324,7 +1325,7 @@
         var logoutControls = JSON.parse(decodeURIComponent('{{{logoutControls}}}'));
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
-        var hidePowerTimeline = {{{hidePowerTimeline}}};
+        var hidePowerTimeline = '{{{hidePowerTimeline}}}';
         var webRelayDns = '{{{webRelayDns}}}';
         var meshserver = null;
         var xdr = null;
@@ -1521,7 +1522,12 @@
         }
 
         function setSessionActivity() { sessionActivity = Date.now(); }
-        function checkIdleSessionTimeout() { var delta = (Date.now() - sessionActivity); if (delta > serverinfo.timeout) { window.location.href = 'logout'; } }
+        function checkIdleSessionTimeout() {
+            var delta = (Date.now() - sessionActivity);
+            if (delta > serverinfo.timeout && serverinfo.logoutOnIdleSessionTimeout) {
+                window.location.href = 'logout';
+            }
+        }
 
         function onMessage(server, message) {
             switch (message.action) {
@@ -1743,7 +1749,7 @@
                             var secret = message.secret;
                             if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                             else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                            QH('d2optinfo', format("Install <a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2\" rel=\"noreferrer noopener\" target=_blank>Google Authenticator</a> or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret="' + message.secret + '" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
+                            QH('d2optinfo', format("Install" + ' <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" rel="noreferrer noopener" target=_blank>' + "Google Authenticator" + '</a> ' + "or a compatible application, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank> this link</a> or enter the secret below. Then, enter the current 6 digit token to activate 2-Step login.", message.url) + '<br /><br /><div style=width:100%;text-align:center><tt id=d2optsecret secret="' + message.secret + '" style=font-size:15px>' + secret + '</tt><br /><br />Token: <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress=\"return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)\" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></div>');
                             QV('idx_dlgOkButton', true);
                             QE('idx_dlgOkButton', false);
                             Q('d2otpauthinput').focus();
@@ -1753,12 +1759,12 @@
                 }
                 case 'otpauth-setup': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation successful</b>. You will now need a valid token to login again." : "<b style=color:red>2-step login activation failed</b>. Clear the secret from the application and try again. You only have a few minutes to enter the proper code.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? ('<b style=color:green>' + "Authenticator app activation successful." + '</b> ' + "You will now need a valid token to login again.") : ('<b style=color:red>' + "2-step login activation failed." + '</b> ' + "Clear the secret from the application and try again. You only have a few minutes to enter the proper code."));
                     break;
                 }
                 case 'otpauth-clear': {
                     if (xxdialogMode) return;
-                    setDialogMode(2, "Authenticator App", 1, null, message.success ? "<b style=color:green>2-step login activation removed</b>. You can reactivate this feature at any time." : "<b style=color:red>2-step login activation removal failed</b>. Try again.");
+                    setDialogMode(2, "Authenticator App", 1, null, message.success ? ('<b>' + "Authenticator application removed." + '</b> ' + "You can reactivate this feature at any time.") : ('<b style=color:red>' + "2-step login activation removal failed." + '</b> ' + "Try again."));
                     break;
                 }
                 case 'otpauth-getpasswords': {
@@ -2025,6 +2031,8 @@
                                 // Change the node
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
+                                node.lusers = message.event.node.lusers;
+                                node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
                                 node.publicip = message.event.node.publicip;
@@ -2228,6 +2236,10 @@
             } else if (args.gotodevicename != null) {
                 var foundNode = null;
                 if (nodes != null) { for (var i in nodes) { if (nodes[i].name == args.gotodevicename) { foundNode = nodes[i]._id; } } }
+                if (foundNode) { gotoDevice(foundNode, xviewmode); go(xviewmode); }
+            } else if (args.gotodeviceip != null) {
+                var foundNode = null;
+                if (nodes != null) { for (var i in nodes) { if (nodes[i].ip == args.gotodeviceip) { foundNode = nodes[i]._id; } } }
                 if (foundNode) { gotoDevice(foundNode, xviewmode); go(xviewmode); }
             } else if (args.gotomesh != null) {
                 if (meshes['mesh/' + domain + '/' + args.gotomesh] == null) return; // This device group is not loaded yet
@@ -4255,7 +4267,7 @@
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if (currentNode.mtype == 3 || hidePowerTimeline) { QH('p10html2', '<br />'); return; }
+            if (currentNode.mtype == 3 || hidePowerTimeline === 'true') { QH('p10html2', '<br />'); return; }
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
@@ -5895,7 +5907,7 @@
             downloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random() }
             //console.log('p13downloadFileCancel', downloadFile);
             files.sendText({ action: 'download', sub: 'start', id: downloadFile.id, path: downloadFile.path });
-            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + HtmlEscape(downloadFile.file) + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + EscapeHtml(downloadFile.file) + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
         }
 
         // Called by the html page to cancel the download
@@ -6043,7 +6055,7 @@
             if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
                 uploadFile.xptr = 0;
                 var file = uploadFile.xfiles[uploadFile.xfilePtr];
-                QH('p13dfileName', HtmlEscape(file.name));
+                QH('p13dfileName', EscapeHtml(file.name));
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
                 if (file.xdata == null) {
@@ -6180,6 +6192,7 @@
             // Operating System
             var x = '';
             if (node.rname) { x += addDetailItem("Name", EscapeHtml(node.rname), s); }
+            if (hardware.windows && hardware.windows.osinfo && hardware.windows.osinfo.Description) { x += addDetailItem("Description", EscapeHtml(hardware.windows.osinfo.Description), s); }
             if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
             if (hardware.windows && hardware.windows.osinfo) {
                 var m = hardware.windows.osinfo;
@@ -6238,11 +6251,11 @@
             }
 
             // Defender for Windows Server
-            if(node.defender && !node.wsc) {
+            if(node.defender) {
                 var y = [];
                 if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                 if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
-                x += addDetailItem("Windows Defender", y.join(', '));
+                if (y.length > 0) x += addDetailItem("Windows Defender", y.join(', '));
             }
 
             // Antivirus
@@ -6261,7 +6274,12 @@
             }
 
             // Active Users
-            if (node.users && (node.users.length > 0)) { x += addDetailItem(((node.users.length > 1)?"Active Users":"Active User"), EscapeHtml(node.users.join(', '))); }
+           if (node.users && node.users.length > 0) {
+                var u = node.users.map(function(user) {
+                    return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                }).join(', ');
+                x += addDetailItem((node.users.length > 1 ? "Active Users" : "Active User"), u);
+            }
 
             if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
 
@@ -6350,7 +6368,7 @@
                 }
                 if (hardware.network && hardware.network.dns) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += addDetailItem("<b>DNS Servers</b>", hardware.network.dns.join(", "));
+                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', hardware.network.dns.join(", "));
                     x += '</div></td></tr>';
                 }
                 x += '</table>';
@@ -7573,7 +7591,7 @@
         function addLink(x, f) { return '<a style=cursor:pointer;text-decoration:none onclick=\'' + f + '\'>&diams; ' + x + '</a>'; }
         function addLinkConditional(x, f, c) { if (c) return addLink(x, f); return x; }
         function addKeyLink(x, f) { return '<span tabindex=0 style=cursor:pointer;text-decoration:none onclick=' + f + ' onkeypress="if (event.key==\'Enter\') { ' + f + ' } ">' + x + ' <img class=hoverButton src=images/key16.png></span>'; }
-        function addKeyLinkConditional(x, f, c) { if (c) return addKeyLink(x, f); return x; }
+        function addKeyLinkConditional(x, t, c) { if (c) return '<span title=\'' + t + '\'>' + x + ' <img class=hoverButton src=images/key16.png></span>'; return x }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
         function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format('{0} bytes', size); }
         function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }

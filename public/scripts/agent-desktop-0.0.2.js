@@ -155,7 +155,6 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (Msg[1] == 1) { obj.ProcessCopyRectMsg(Msg[2]); }
                 else if (Msg[1] == 2) { obj.Canvas.drawImage(Msg[2], obj.rotX(Msg[3], Msg[4]), obj.rotY(Msg[3], Msg[4])); delete Msg[2]; }
                 obj.PendingOperations.splice(i, 1);
-                delete Msg;
                 obj.TilesDrawn++;
                 if ((obj.TilesDrawn == obj.tilesReceived) && (obj.KillDraw < obj.TilesDrawn)) { obj.KillDraw = obj.TilesDrawn = obj.tilesReceived = 0; }
                 return true;
@@ -221,12 +220,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
         if (obj.debugmode > 2) { console.log('CMD', cmd, cmdsize, X, Y); }
 
+        // Fix for view being too large for String.fromCharCode.apply()
+        var chunkSize = 10000;
+        let result = '';
+        for (let i = 0; i < view.length; i += chunkSize) { result += String.fromCharCode.apply(null, view.slice(i, i + chunkSize)); }
         // Record the command if needed
         if (obj.recordedData != null) {
             if (cmdsize > 65000) {
-                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + obj.shortToStr(cmd) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + String.fromCharCode.apply(null, view)));
+                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + obj.shortToStr(cmd) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + result));
             } else {
-                obj.recordedData.push(recordingEntry(2, 1, String.fromCharCode.apply(null, view)));
+                obj.recordedData.push(recordingEntry(2, 1, result));
             }
         }
 

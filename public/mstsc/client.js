@@ -180,6 +180,7 @@
                 self.prevClipboardText = null;
                 self.clipboardReadTimer = setInterval(function(){
                     if(navigator.clipboard.readText != null){
+                        if (Mstsc.browser() == 'firefox') return; // this is needed because firefox pops up a PASTE option every second which is annoying
                         navigator.clipboard.readText()
                         .then(function(data){
                             if(data != self.prevClipboard){

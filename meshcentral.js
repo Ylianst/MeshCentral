@@ -585,6 +585,7 @@ function CreateMeshCentralServer(config, args) {
         const child_process = require('child_process');
         try { if (process.traceDeprecation === true) { startArgs.unshift('--trace-deprecation'); } } catch (ex) { }
         try { if (process.traceProcessWarnings === true) { startArgs.unshift('--trace-warnings'); } } catch (ex) { }
+        if (startArgs[0] != "--disable-proto=delete") startArgs.unshift("--disable-proto=delete")
         childProcess = child_process.execFile(process.argv[0], startArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (childProcess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startArgs); }, 500); // This is an expected restart.
@@ -1348,7 +1349,7 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     // Check if the database is capable of performing a backup
-                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
+                    // Moved behind autobackup config init in startex4: obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
 
                     // Load configuration for database if needed
                     if (obj.args.loadconfigfromdb) {
@@ -1656,7 +1657,7 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Setup agent error log
-        if ((obj.config) && (obj.config.settings) && (obj.config.settings.agentlogdump != null)) {
+        if ((obj.config) && (obj.config.settings) && (obj.config.settings.agentlogdump)) {
             obj.fs.open(obj.path.join(obj.datapath, 'agenterrorlogs.txt'), 'a', function (err, fd) { obj.agentErrorLog = fd; })
         }
 
@@ -1992,9 +1993,17 @@ function CreateMeshCentralServer(config, args) {
                         if (typeof config.settings.webpush.gcmapi == 'string') { webpush.setGCMAPIKey(config.settings.webpush.gcmapi); }
                     }
 
+                    // Get the current node version
+                    const verSplit = process.version.substring(1).split('.');
+                    var nodeVersion = parseInt(verSplit[0]) + (parseInt(verSplit[1]) / 100);
+
                     // Setup Firebase
                     if ((config.firebase != null) && (typeof config.firebase.senderid == 'string') && (typeof config.firebase.serverkey == 'string')) {
-                        obj.firebase = require('./firebase').CreateFirebase(obj, config.firebase.senderid, config.firebase.serverkey);
+                        addServerWarning('Firebase now requires a service account JSON file, Firebase disabled.', 27);
+                    } else if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) {
+                        var serviceAccount;
+                        try { serviceAccount = JSON.parse(obj.fs.readFileSync(obj.path.join(obj.datapath, config.firebase.serviceaccountfile)).toString()); } catch (ex) { console.log(ex); }
+                        if (serviceAccount != null) { obj.firebase = require('./firebase').CreateFirebase(obj, serviceAccount); }
                     } else if ((typeof config.firebaserelay == 'object') && (typeof config.firebaserelay.url == 'string')) {
                         // Setup the push messaging relay
                         obj.firebase = require('./firebase').CreateFirebaseRelay(obj, config.firebaserelay.url, config.firebaserelay.key);
@@ -2003,8 +2012,12 @@ function CreateMeshCentralServer(config, args) {
                         obj.firebase = require('./firebase').CreateFirebaseRelay(obj, 'https://alt.meshcentral.com/firebaserelay.aspx');
                     }
 
+                    // Setup monitoring
+                    obj.monitoring = require('./monitoring.js').CreateMonitoring(obj, obj.args);
+
                     // Start periodic maintenance
                     obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
+                    //obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 10 * 1); // DEBUG: Run this more often
 
                     // Dispatch an event that the server is now running
                     obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'started', msg: 'Server started' });
@@ -2089,23 +2102,24 @@ function CreateMeshCentralServer(config, args) {
                     obj.updateServerState('state', "running");
 
                     // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == null || obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: 0}; } //no schedule, but able to console autobackup
+                    if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: 0}; } //no schedule, but able to console autobackup
                     else {
-                        if (obj.config.settings.autobackup === true) {obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
+                        if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
+                        if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
+                        else {obj.config.settings.autobackup.backuphour = -1 };
                         //arrayfi in case of string and remove possible ', ' space. !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !!
                         if (!obj.config.settings.autobackup.backupignorefilesglob) {obj.config.settings.autobackup.backupignorefilesglob = []}
                         else if (typeof obj.config.settings.autobackup.backupignorefilesglob == 'string') { obj.config.settings.autobackup.backupignorefilesglob = obj.config.settings.autobackup.backupignorefilesglob.replaceAll(', ', ',').split(','); };
                         if (!obj.config.settings.autobackup.backupskipfoldersglob) {obj.config.settings.autobackup.backupskipfoldersglob = []}
                         else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
+                        if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.resolve(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
+                        if (typeof obj.config.settings.autobackup.backupname != 'string') { obj.config.settings.autobackup.backupname = 'meshcentral-autobackup-'};
                     }
 
-                    // Check that autobackup path is not within the "meshcentral-data" folder.
-                    if ((typeof obj.config.settings.autobackup == 'object') && (typeof obj.config.settings.autobackup.backuppath == 'string') && (obj.path.normalize(obj.config.settings.autobackup.backuppath).startsWith(obj.path.normalize(obj.datapath)))) {
-                        addServerWarning("Backup path can't be set within meshcentral-data folder, backup settings ignored.", 21);
-                        obj.config.settings.autobackup = {backupintervalhours: -1};  //block console autobackup
-                    }
+                    // Check if the database is capable of performing a backup
+                    obj.db.checkBackupCapability(function (err, msg) { if (msg != null) { obj.addServerWarning(msg, true) } });
 
                     // Load Intel AMT passwords from the "amtactivation.log" file
                     obj.loadAmtActivationLogPasswords(function (amtPasswords) {
@@ -2267,14 +2281,19 @@ function CreateMeshCentralServer(config, args) {
 
     // Check if we need to perform an automatic backup
     function checkAutobackup() {
-        if (obj.config.settings.autobackup.backupintervalhours >= 1) {
+        if (obj.config.settings.autobackup.backupintervalhours >= 1 ) {
             obj.db.Get('LastAutoBackupTime', function (err, docs) {
-                if (err != null) return;
+                if (err != null) { console.error("checkAutobackup: Error getting LastBackupTime from DB"); return}
                 var lastBackup = 0;
-                const now = new Date().getTime();
+                const currentdate = new Date();
+                let currentHour = currentdate.getHours();
+                let now = currentdate.getTime();
                 if (docs.length == 1) { lastBackup = docs[0].value; }
                 const delta = now - lastBackup;
-                if (delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) {
+                //const delta = 9999999999; // DEBUG: backup always
+                obj.debug ('backup', 'Entering checkAutobackup, lastAutoBackupTime: ' + new Date(lastBackup).toLocaleString('default', { dateStyle: 'medium', timeStyle: 'short' }) + ', delta: ' + (delta/(1000*60*60)).toFixed(2) + ' hours');
+                //start autobackup if interval has passed or at configured hour, whichever comes first. When an hour schedule is missed, it will make a backup immediately.
+                if ((delta > (obj.config.settings.autobackup.backupintervalhours * 60 * 60 * 1000)) || ((currentHour == obj.config.settings.autobackup.backuphour) && (delta >= 2 * 60 * 60 * 1000))) {
                     // A new auto-backup is required.
                     obj.db.Set({ _id: 'LastAutoBackupTime', value: now }); // Save the current time in the database
                     obj.db.performBackup(); // Perform the backup
@@ -2395,6 +2414,10 @@ function CreateMeshCentralServer(config, args) {
                 // Escape "links" names that may have "." and/or "$"
                 storeEvent.links = Object.assign({}, storeEvent.links);
                 for (var i in storeEvent.links) { var ue = obj.common.escapeFieldName(i); if (ue !== i) { storeEvent.links[ue] = storeEvent.links[i]; delete storeEvent.links[i]; } }
+            }
+            if (storeEvent.mesh) {
+                // Escape "mesh" names that may have "." and/or "$"
+                storeEvent.mesh = obj.common.escapeLinksFieldNameEx(storeEvent.mesh);
             }
             storeEvent.ids = ids;
             obj.db.StoreEvent(storeEvent);
@@ -3921,6 +3944,7 @@ function CreateMeshCentralServer(config, args) {
     function logWarnEvent(msg) { if (obj.servicelog != null) { obj.servicelog.warn(msg); } console.log(msg); }
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
     obj.getServerWarnings = function () { return serverWarnings; }
+    // TODO: migrate from other addServerWarning function and add timestamp
     obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
     // auth.log functions
@@ -4033,7 +4057,16 @@ function InstallModules(modules, args, func) {
             try {
                 // Does the module need a specific version?
                 if (moduleVersion) {
-                    if (require(`${moduleName}/package.json`).version != moduleVersion) { throw new Error(); }
+                    var versionMatch = false;
+                    var modulePath = null;
+                    // This is the first way to test if a module is already installed.
+                    try { versionMatch = (require(`${moduleName}/package.json`).version == moduleVersion) } catch (ex) {
+                        if (ex.code == "ERR_PACKAGE_PATH_NOT_EXPORTED") { modulePath = ("" + ex).split(' ').at(-1); } else { throw new Error(); }
+                    }
+                    // If the module is not installed, but we get the ERR_PACKAGE_PATH_NOT_EXPORTED error, try a second way.
+                    if ((versionMatch == false) && (modulePath != null)) {
+                        if (JSON.parse(require('fs').readFileSync(modulePath, 'utf8')).version != moduleVersion) { throw new Error(); }
+                    }
                 } else {
                     // For all other modules, do the check here.
                     // Is the module in package.json? Install exact version.
@@ -4082,6 +4115,7 @@ function InstallModuleEx(modulenames, args, func) {
 process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); meshserver = null; } console.log('Server Ctrl-C exit...'); process.exit(); });
 
 // Add a server warning, warnings will be shown to the administrator on the web application
+// TODO: migrate to obj.addServerWarning?
 const serverWarnings = [];
 function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
 
@@ -4112,7 +4146,8 @@ var ServerWarnings = {
     23: "Unable to load agent icon file: {0}.",
     24: "Unable to load agent logo file: {0}.",
     25: "This NodeJS version does not support OpenID.",
-    26: "This NodeJS version does not support Discord.js."
+    26: "This NodeJS version does not support Discord.js.",
+    27: "Firebase now requires a service account JSON file, Firebase disabled."
 };
 */
 
@@ -4166,7 +4201,7 @@ function mainStart() {
         // Check if Windows SSPI, LDAP, Passport and YubiKey OTP will be used
         var sspi = false;
         var ldap = false;
-        var passport = null;
+        var passport = [];
         var allsspi = true;
         var yubikey = false;
         var ssh = false;
@@ -4187,17 +4222,17 @@ function mainStart() {
             if (mstsc == false) { config.domains[i].mstsc = false; }
             if (config.domains[i].ssh == true) { ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
-                if (passport == null) { passport = ['passport','connect-flash']; } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904 and include connect-flash here to display errors
+                if (passport.indexOf('passport') == -1) { passport.push('passport','connect-flash'); } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904 and include connect-flash here to display errors
                 if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
                 if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20'); }
                 if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
                 if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
-                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client') == -1)) {
+                if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client@5.7.1') == -1)) {
                     if ((nodeVersion >= 17)
                         || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13))
                         || ((Math.floor(nodeVersion) == 14) && (nodeVersion >= 14.15))
                         || ((Math.floor(nodeVersion) == 12) && (nodeVersion >= 12.19))) {
-                        passport.push('openid-client@5.7.0');
+                        passport.push('openid-client@5.7.1');
                     } else {
                         addServerWarning('This NodeJS version does not support OpenID Connect on MeshCentral.', 25);
                         delete config.domains[i].authstrategies.oidc;
@@ -4208,11 +4243,12 @@ function mainStart() {
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
             if ((config.domains[i].newaccountscaptcha != null) && (config.domains[i].newaccountscaptcha !== false)) { captcha = true; }
+            if ((typeof config.domains[i].duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal'); }
         }
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.7.4', 'cookie-session@2.1.0', 'express@4.21.1', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@yetzt/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.39', 'ws@8.18.0', 'yauzl@2.10.0'];
+        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.7.5', 'cookie-session@2.1.0', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.39', 'ws@8.18.0', 'yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.16.0'); }
@@ -4222,21 +4258,22 @@ function mainStart() {
         if (sessionRecording == true) { modules.push('image-size@1.1.1'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
         if (config.letsencrypt != null) { modules.push('acme-client@4.2.5'); } // Add acme-client module. We need to force v4.2.4 or higher since olver versions using SHA-1 which is no longer supported by Let's Encrypt.
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
-        if (config.settings.mysql != null) { modules.push('mysql2@3.6.2'); } // Add MySQL.
+        if (config.settings.mysql != null) { modules.push('mysql2@3.11.4'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
         if (config.settings.mongodb != null) { modules.push('mongodb@4.13.0'); modules.push('saslprep@1.0.3'); } // Add MongoDB, official driver.
         if (config.settings.postgres != null) { modules.push('pg@8.13.1') } // Add Postgres, official driver.
-        if (config.settings.mariadb != null) { modules.push('mariadb@3.2.2'); } // Add MariaDB, official driver.
+        if (config.settings.mariadb != null) { modules.push('mariadb@3.4.0'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.
         if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.7'); } // Add sqlite3, official driver.
         if (config.settings.vault != null) { modules.push('node-vault@0.10.2'); } // Add official HashiCorp's Vault module.
         if (config.settings.plugins != null) { modules.push('semver@7.5.4'); } // Required for version compat testing and update checks
         if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent@7.0.2'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs@3.1.0'); } // Add MongoJS, old driver.
-        if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.9.15'); } // Add SMTP support
+        if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.9.16'); } // Add SMTP support
         if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('html-minifier@4.0.0'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer@0.1.0'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
+        if (config.settings.prometheus != null) { modules.push('prom-client'); } // Add Prometheus Metrics support
 
         if (typeof config.settings.autobackup == 'object') {
             // Setup encrypted zip support if needed
@@ -4248,7 +4285,7 @@ function mainStart() {
                 if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.4'); }
             }
             // Enable S3 Support
-            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.1'); }
+            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.2'); }
         }
 
         // Setup common password blocking
@@ -4284,8 +4321,7 @@ function mainStart() {
         if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.6'); }
 
         // Firebase Support
-        // Avoid 0.1.8 due to bugs: https://github.com/guness/node-xcs/issues/43
-        if (config.firebase != null) { modules.push('node-xcs@0.1.7'); }
+        if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) { modules.push('firebase-admin@12.7.0'); }
 
         // Syslog support
         if ((require('os').platform() != 'win32') && (config.settings.syslog || config.settings.syslogjson)) { modules.push('modern-syslog@1.2.0'); }

@@ -186,6 +186,7 @@
   "domains": {
     "": {
       "_siteStyle": 2,
+      "_showModernUIToggle": true,
       "title": "MyServer",
       "title2": "Servername",
       "_titlePicture": "title-sample.png",
@@ -322,7 +323,8 @@
         "skip2factor": "127.0.0.1,192.168.2.0/24",
         "oldPasswordBan": 5,
         "banCommonPasswords": false,
-        "twoFactorTimeout": 300
+        "twoFactorTimeout": 300,
+        "duo2factor": true
       },
       "_twoFactorCookieDurationDays": 30,
       "_agentInviteCodes": true,
@@ -341,6 +343,7 @@
         "files": "{0} requesting remote files access. Grant access?",
         "consentTimeout": 30,
         "autoAcceptOnTimeout": false,
+        "autoAcceptIfNoUser": false,
         "oldStyle": true
       },
       "_notificationMessages": {
@@ -383,6 +386,8 @@
       "_agentBlockedIP": "127.0.0.1,::1",
       "___userSessionIdleTimeout__": "Number of user idle minutes before auto-disconnect",
       "_userSessionIdleTimeout": 30,
+      "___logoutOnIdleSessionTimeout": "Determines whether MeshCentral should logout after the session idle timeout elapsed or should just disconnect remote desktop, terminal and files.",
+      "_logoutOnIdleSessionTimeout": false,
       "userConsentFlags": {
         "desktopnotify": true,
         "terminalnotify": true,
@@ -453,6 +458,11 @@
       },
       "_redirects": {
         "meshcommander": "https://www.meshcommander.com/"
+      },
+      "_duo2factor": {
+        "integrationkey": "mykey",
+        "secretkey": "mysecret",
+        "apihostname": "api-xxxxxxxxxxx.duosecurity.com"
       },
       "_yubikey": {
         "id": "0000",
