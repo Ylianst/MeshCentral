@@ -8155,7 +8155,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name), nnameEx;
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
-                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class="fa-solid fa-pencil fa-2xs"/></i></span>'; }
+                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0 || (mesh.flags & 16)))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class="fa-solid fa-pencil fa-2xs"/></i></span>'; }
                 nnameEx = nname;
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
@@ -14603,6 +14603,8 @@
                 if (currentMesh.flags) {
                     if (currentMesh.flags & 1) { meshFeatures.push("Auto-Remove"); }
                     if (currentMesh.flags & 2) { meshFeatures.push((currentMesh.mtype == 4) ? "Port Name Sync" : "Hostname Sync"); }
+                    if (currentMesh.flags & 8) { meshFeatures.push("prefer --agentname"); }
+                    if (currentMesh.flags & 16) { meshFeatures.push("allow override"); }
                     if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.flags & 4)) { meshFeatures.push("Record Sessions"); }
                 }
                 if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { meshFeatures.push("Remove inactive"); }
@@ -15119,6 +15121,10 @@
             }
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
                 x += '<div class="form-check"><label><input type=checkbox id=d20flag2 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4) ? "Sync server device name to port name" : "Sync server device name to hostname") + '</label><br></div>';
+                if (currentMesh.mtype == 2) {
+                    x += '<div style="margin-left:12px"><label><input type=checkbox id=d20flag8 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 8) ? 'checked' : '') + '>' + "Prefer value of --agentName" + '</label><br></div>';
+                    x += '<div style="margin-left:12px"><label><input type=checkbox id=d20flag16 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 16) ? 'checked' : '') + '>' + "Allow to override server device name until next connection" + '</label><br></div>';
+                }
                 x += '<div class="form-check"><label><input type=checkbox id=d20flag1 class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
             }
             x += '<div class="form-check"><label><input type=checkbox id=d20expireDevice class="form-check-input me-2" onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
@@ -15140,6 +15146,16 @@
         function p20editmeshfeaturesValidate() {
             var flags = 0, ok = true;
             if (((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) && (Q('d20flag1').checked)) { flags += 1; }
+            if (currentMesh.mtype == 2) {
+                if (Q('d20flag2').checked) {
+                    flags += 2;
+                    if (event.currentTarget.id == 'd20flag2') { Q('d20flag8').checked = true; Q('d20flag16').checked = true; }
+                }
+                for (const flag of [8, 16]) {
+                    const element = Q('d20flag' + flag);
+                    if ((element.checked = element.checked && !(element.disabled = !(flags & 2)))) { flags += flag; }
+                }
+            }
             QE('d20expireDevice', (flags & 1) == 0);
             var x = ((flags & 1) == 0) && Q('d20expireDevice').checked;
             QV('d20expireDeviceDev', x);
@@ -15152,6 +15168,8 @@
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
                 if (Q('d20flag1').checked) { flags += 1; }
                 if (Q('d20flag2').checked) { flags += 2; }
+                if (Q('d20flag8').checked) { flags += 8; }
+                if (Q('d20flag16').checked) { flags += 16; }
             }
             if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.mtype != 4)) { if (Q('d20flag4').checked) { flags += 4; } }
             var expireDevs = 0;
