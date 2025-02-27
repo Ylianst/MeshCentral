@@ -583,6 +583,8 @@ function CreateMeshCentralServer(config, args) {
     // Launch MeshCentral as a child server and monitor it.
     obj.launchChildServer = function (startArgs) {
         const child_process = require('child_process');
+        const isInspectorAttached = (()=> { try { return require('node:inspector').url() !== undefined; } catch (_) { return false; } }).call();
+        const logFromChildProcess = isInspectorAttached ? () => {} : console.log.bind(console);
         try { if (process.traceDeprecation === true) { startArgs.unshift('--trace-deprecation'); } } catch (ex) { }
         try { if (process.traceProcessWarnings === true) { startArgs.unshift('--trace-warnings'); } } catch (ex) { }
         if (startArgs[0] != "--disable-proto=delete") startArgs.unshift("--disable-proto=delete")
@@ -657,12 +659,12 @@ function CreateMeshCentralServer(config, args) {
             else if (data.indexOf('Starting self upgrade to: ') >= 0) { obj.args.specificupdate = data.substring(26).split('\r')[0].split('\n')[0]; childProcess.xrestart = 3; }
             var datastr = data;
             while (datastr.endsWith('\r') || datastr.endsWith('\n')) { datastr = datastr.substring(0, datastr.length - 1); }
-            console.log(datastr);
+            logFromChildProcess(datastr);
         });
         childProcess.stderr.on('data', function (data) {
             var datastr = data;
             while (datastr.endsWith('\r') || datastr.endsWith('\n')) { datastr = datastr.substring(0, datastr.length - 1); }
-            console.log('ERR: ' + datastr);
+            logFromChildProcess('ERR: ' + datastr);
             if (data.startsWith('le.challenges[tls-sni-01].loopback')) { return; } // Ignore this error output from GreenLock
             if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
             obj.logError(data);
