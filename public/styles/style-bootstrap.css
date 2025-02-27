@@ -703,6 +703,10 @@ body {
     text-align: center;
 }
 
+.DeviceCheckbox {
+    margin-top: 2px !important;
+}
+
 .deviceBarCheckbox {
     width:22px;
     float:left;
@@ -823,15 +827,15 @@ NoMeshesPanel img {
 .deviceNotifySmallDot {
     position:absolute;
     right:10px;
-    top:0px;
+    top:4px;
     height:10px;
 }
 
 .deviceNotifySmallDotSub {
     text-align:center;
     color:#FFF;
-    height:10px;
-    width:10px;
+    height:14px;
+    width:14px;
     padding:2px;
     background-color:#00F;
     border-radius:10px;
