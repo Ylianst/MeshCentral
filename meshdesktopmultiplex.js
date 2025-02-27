@@ -847,7 +847,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 return;
             }
             // Write the recording file header
-            parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
+            parent.parent.debug('relay', 'Relay: Started recording to file: ' + recFullFilename);
             var metadata = { magic: 'MeshCentralRelaySession', ver: 1, nodeid: obj.nodeid, meshid: obj.meshid, time: new Date().toLocaleString(), protocol: 2, devicename: obj.name, devicegroup: obj.meshname };
             var firstBlock = JSON.stringify(metadata);
             recordingEntry(fd, 1, 0, firstBlock, function () {
