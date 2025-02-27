@@ -321,7 +321,7 @@ function setup() { InstallModules(['image-size'], start); }
 function start() { startEx(process.argv); }
 function startEx(argv) {
     if (argv.length > 2) { indexFile(argv[2]); } else {
-        log("MeshCentral Session Recodings Processor");
+        log("MeshCentral Session Recordings Processor");
         log("This tool will index a .mcrec file so that the player can seek thru the file.");
         log("");
         log("  Usage: node mcrec [file]");
