@@ -445,15 +445,15 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                     relayinfo.peer1.sendPeerImage();
                                 } else {
                                     // Write the recording file header
-                                    parent.parent.debug('relay', 'Relay: Started recoding to file: ' + recFullFilename);
+                                    parent.parent.debug('relay', 'Relay: Started recording to file: ' + recFullFilename);
                                     var metadata = {
                                         magic: 'MeshCentralRelaySession',
                                         ver: 1,
                                         userid: sessionUser._id,
                                         username: sessionUser.name,
                                         sessionid: obj.id,
-                                        ipaddr1: (obj.req == null) ? null : obj.req.clientIp,
-                                        ipaddr2: ((obj.peer == null) || (obj.peer.req == null)) ? null : obj.peer.req.clientIp,
+                                        ipaddr1: ((obj.peer == null) || (obj.peer.req == null)) ? null : obj.peer.req.clientIp,
+                                        ipaddr2: (obj.req == null) ? null : obj.req.clientIp,
                                         time: new Date().toLocaleString(),
                                         protocol: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.p),
                                         nodeid: (((obj.req == null) || (obj.req.query == null)) ? null : obj.req.query.nodeid)
@@ -512,7 +512,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (obj.req.query.p == 1) { msg = 'Started terminal session'; msgid = 14; }
                         else if (obj.req.query.p == 2) { msg = 'Started desktop session'; msgid = 15; }
                         else if (obj.req.query.p == 5) { msg = 'Started file management session'; msgid = 16; }
-                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msgid: msgid, msgArgs: [obj.id, req.clientIp, obj.peer.req.clientIp], msg: msg + ' \"' + obj.id + '\" from ' + req.clientIp + ' to ' + obj.peer.req.clientIp, protocol: req.query.p, nodeid: req.query.nodeid };
+                        var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msgid: msgid, msgArgs: [obj.id, obj.peer.req.clientIp, req.clientIp], msg: msg + ' \"' + obj.id + '\" from ' + obj.peer.req.clientIp + ' to ' + req.clientIp, protocol: req.query.p, nodeid: req.query.nodeid };
                         if (obj.guestname) { event.guestname = obj.guestname; } else if (relayinfo.peer1.guestname) { event.guestname = relayinfo.peer1.guestname; } // If this is a sharing session, set the guest name here.
                         parent.parent.DispatchEvent(['*', sessionUser._id], obj, event);
 

@@ -5381,7 +5381,7 @@
                     }
                 }
 
-                if (node.desc && (deviceViewSettings.devsCols.indexOf('desc') >= 0)) { name = '<div style=float:right' + (stars[node._id] == 1 ? ';padding-right:15px' : '') + '>' + EscapeHtml(node.desc) + '</div><div>' + name + '</div>'; }
+                if (node.desc && (deviceViewSettings.devsCols.indexOf('desc') >= 0)) { name = '<div class="flex-grow-1">' + name + '</div><div style=float:right' + (stars[node._id] == 1 ? ';padding-right:15px' : '') + '>' + EscapeHtml(node.desc) + '</div>'; }
 
                 var collapseName = node.meshid;
                 if (sort == 1) { collapseName = ('pwr:' + (node.pwr ? node.pwr : 0)); }
@@ -5391,7 +5391,7 @@
                 r += '<div class=deviceBarCheckbox><input class="' + node.meshid + ' DeviceCheckbox form-check-input me-2" value=devid_' + node._id + ' type=checkbox onchange=p1devcheck(event) ' + (checkedNodeids[node._id] ? ' checked' : '') + '></div>';
                 r += '<div class=deviceBarIcon onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)><div class="j' + icon + '" style=width:16px;margin-top:1px;margin-left:2px;height:16px></div></div>';
                 r += '<div class=g1 style=height:18px;float:left></div><div class=g2 style=height:18px;float:right></div>';
-                r += '<div class=style10 style=cursor:pointer;font-size:14px;max-height:18px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap title="' + title + '" onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)>' + name + '</div></div>' + devNotify + '</td>';
+                r += '<div class="style10 d-flex align-items-center" style=cursor:pointer;font-size:14px;max-height:18px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap title="' + title + '" onmouseup=gotoDevice(\'' + node._id + '\',null,null,event)>' + name + '</div></div>' + devNotify + '</td>';
 
                 // Use defaults if needed
                 if (deviceViewSettings == null) { deviceViewSettings = {}; }
