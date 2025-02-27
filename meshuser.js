@@ -3079,7 +3079,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
                                     if (commandsOk == true) {
                                         var theCommand = { action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser, reply: command.reply, responseid: command.responseid };
-                                        if (parent.parent.multiServer != null) { // peering setup
+                                        var agent = parent.wsagents[node._id];
+                                        if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
+                                            // Send the commands to the agent
+                                            try { agent.send(JSON.stringify(theCommand)); } catch (ex) { }
+                                            if (command.responseid != null && command.reply == false) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                                            // Send out an event that these commands where run on this device
+                                            var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                                            var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                            parent.parent.DispatchEvent(targets, obj, event);
+                                        } else if (parent.parent.multiServer != null) { // peering setup
                                             // Send the commands to the agent
                                             parent.parent.multiServer.DispatchMessage({ action: 'agentCommand', nodeid: node._id, command: theCommand});
                                             if (command.responseid != null && command.reply == false) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
@@ -3087,20 +3096,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
                                             parent.parent.multiServer.DispatchEvent(targets, obj, event);
-                                        } else { // normal setup
-                                            // Get the agent and run the commands
-                                            var agent = parent.wsagents[node._id];
-                                            if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
-                                                // Send the commands to the agent
-                                                try { agent.send(JSON.stringify(theCommand)); } catch (ex) { }
-                                                if (command.responseid != null && command.reply == false) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
-                                                // Send out an event that these commands where run on this device
-                                                var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
-                                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
-                                                parent.parent.DispatchEvent(targets, obj, event);
-                                            } else {
-                                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
-                                            }
+                                        } else {
+                                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
                                         }
                                     } else {
                                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Invalid command type' })); } catch (ex) { } }
