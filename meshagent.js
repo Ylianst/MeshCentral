@@ -807,7 +807,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if (device.agent.ver != obj.agentInfo.agentVersion) { device.agent.ver = obj.agentInfo.agentVersion; change = 1; changes.push('agent version'); }
                 if (device.agent.id != obj.agentInfo.agentId) { device.agent.id = obj.agentInfo.agentId; change = 1; changes.push('agent type'); }
                 if ((device.agent.caps & 24) != (obj.agentInfo.capabilities & 24)) { device.agent.caps = obj.agentInfo.capabilities; change = 1; changes.push('agent capabilities'); } // If agent console or javascript support changes, update capabilities
-                if (mesh.flags && (mesh.flags & 2) && (device.name != obj.agentInfo.computerName)) { device.name = obj.agentInfo.computerName; change = 1; } // We want the server name to be sync'ed to the hostname
+                // We want the server name to be sync'ed to the hostname or the --agentName
+                // (flag 16 allows to override the name until next connection)
+                if (mesh.flags && (mesh.flags & 2)) {
+                    var preferredName = (mesh.flags & 8) && obj.agentName || obj.agentInfo.computerName;
+                    if (device.name != preferredName) {device.name = preferredName; change = 1; }
+                }
                 if (device.ip != obj.remoteaddr) { device.ip = obj.remoteaddr; change = 1; }
 
                 if (change == 1) {
