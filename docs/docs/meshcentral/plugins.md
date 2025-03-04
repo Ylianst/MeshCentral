@@ -123,6 +123,10 @@ Use of the optional file `plugin_name.js` in the optional folder `modules_meshco
 Much of MeshCentral revolves around returning objects for your structures, and plugins are no different. Within your plugin you can traverse all the way up to the web server and MeshCentral Server classes to access all the functionality those layers provide. This is done by passing the current object to newly created objects, and assigning that reference to a `parent` variable within that object.
 
 
+## Ping-Pong
+
+If you build a plugin which makes use of `meshrelay.ashx`, keep in mind to either handle ping-pong messages (`serverPing`, `serverPong`) on the control channel or to request MeshCentral to not send such messages through sending the `noping=1` parameter in the connection URL. For a deeper sight search for "PING/PONG" in `meshrelay.js`.
+
 ## Versioning
 
 Versioning your plugin correctly and consistently is essential to ensure users of your plugin are prompted to upgrade when it is available. Semantic versioning is recommended.
