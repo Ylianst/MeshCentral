@@ -7092,7 +7092,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     });
                                 } else {
                                     // Login failed
-                                    handleRootRequestEx(req, res, domain, direct);
+                                    parent.debug('web', 'handleRootRequest: login authorization failed when returning from Duo 2FA.');
+                                    req.session.loginmode = 1;
+                                    res.redirect(domain.url + getQueryPortion(req)); // redirect back to main page
+                                    return;
                                 }
                             });
                         }
