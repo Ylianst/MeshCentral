@@ -2449,6 +2449,8 @@
                 }
                 if (serverinfo.logoutOnIdleSessionTimeout) {
                     window.location.href = 'logout';
+                } else {
+                    setSessionActivity();
                 }
             } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);

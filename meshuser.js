@@ -601,8 +601,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             if (typeof domain.userconsentflags == 'number') { serverinfo.consent = domain.userconsentflags; }
             if ((typeof domain.usersessionidletimeout == 'number') && (domain.usersessionidletimeout > 0)) {serverinfo.timeout = (domain.usersessionidletimeout * 60 * 1000); }
-            if (typeof domain.logoutOnIdleSessionTimeout == 'boolean') {
-                serverinfo.logoutOnIdleSessionTimeout = domain.logoutOnIdleSessionTimeout;
+            if (typeof domain.logoutonidlesessiontimeout == 'boolean') {
+                serverinfo.logoutOnIdleSessionTimeout = domain.logoutonidlesessiontimeout;
             } else {
                 // Default
                 serverinfo.logoutOnIdleSessionTimeout = true;

@@ -1524,8 +1524,12 @@
         function setSessionActivity() { sessionActivity = Date.now(); }
         function checkIdleSessionTimeout() {
             var delta = (Date.now() - sessionActivity);
-            if (delta > serverinfo.timeout && serverinfo.logoutOnIdleSessionTimeout) {
-                window.location.href = 'logout';
+            if (delta > serverinfo.timeout) {
+                if (serverinfo.logoutOnIdleSessionTimeout) {
+                    window.location.href = 'logout';
+                } else {
+                    setSessionActivity();
+                }
             }
         }
 
