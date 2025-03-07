@@ -295,8 +295,9 @@ if (process.platform == 'win32' && require('user-sessions').isRoot()) {
     // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
     try {
         var writtenSize = 0, actualSize = Math.floor(require('fs').statSync(process.execPath).size / 1024);
-        try { writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize'); } catch (ex) { }
-        if (writtenSize != actualSize) { try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize); } catch (ex) { } }
+        var serviceName =  (_MSH().serviceName ?  _MSH().serviceName : (require('_agentNodeId').serviceName() ? require('_agentNodeId').serviceName() : 'Mesh Agent'));
+        try { writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + serviceName, 'EstimatedSize'); } catch (ex) { }
+        if (writtenSize != actualSize) { try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + serviceName, 'EstimatedSize', actualSize); } catch (ex) { } }
     } catch (ex) { }
 
     // Check to see if we are the Installed Mesh Agent Service, if we are, make sure we can run in Safe Mode
@@ -310,6 +311,16 @@ if (process.platform == 'win32' && require('user-sessions').isRoot()) {
         try { meshCheck = require('service-manager').manager.getService(svcname).isMe(); } catch (ex) { }
         if (meshCheck && require('win-bcd').isSafeModeService && !require('win-bcd').isSafeModeService(svcname)) { require('win-bcd').enableSafeModeService(svcname); }
     } catch (ex) { }
+
+    // Check the Agent Uninstall MetaData for DisplayVersion and update if not the same and only on windows
+    if (process.platform == 'win32') {
+        try {
+            var writtenDisplayVersion = 0, actualDisplayVersion = process.versions.commitDate.toString();
+            var serviceName =  (_MSH().serviceName ?  _MSH().serviceName : (require('_agentNodeId').serviceName() ? require('_agentNodeId').serviceName() : 'Mesh Agent'));
+            try { writtenDisplayVersion = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + serviceName, 'DisplayVersion'); } catch (ex) { }
+            if (writtenDisplayVersion != actualDisplayVersion) { try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + serviceName, 'DisplayVersion', actualDisplayVersion); } catch (ex) { } }
+        } catch (ex) { }
+    }
 }
 
 if (process.platform != 'win32') {
@@ -4573,10 +4584,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform == 'win32') {
                     // Check the Agent Uninstall MetaData for correctness, as the installer may have written an incorrect value
                     var writtenSize = 0;
-                    try { writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize'); } catch (ex) { response = ex; }
+                    var serviceName =  (_MSH().serviceName ?  _MSH().serviceName : (require('_agentNodeId').serviceName() ? require('_agentNodeId').serviceName() : 'Mesh Agent'));
+                    try { writtenSize = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + serviceName, 'EstimatedSize'); } catch (ex) { response = ex; }
                     if (writtenSize != actualSize) {
                         response = "Size updated from: " + writtenSize + " to: " + actualSize;
-                        try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MeshCentralAgent', 'EstimatedSize', actualSize); } catch (ex) { response = ex; }
+                        try { require('win-registry').WriteKey(require('win-registry').HKEY.LocalMachine, 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + serviceName, 'EstimatedSize', actualSize); } catch (ex) { response = ex; }
                     } else
                     { response = "Agent Size: " + actualSize + " kb"; }
                 } else
@@ -5656,7 +5668,7 @@ function windows_execve(name, agentfilename, sessionid) {
         sendAgentMessage('Self Update failed because msvcrt.dll is missing', 3);
         return;
     }
-
+    
     var cmd = require('_GenericMarshal').CreateVariable(process.env['windir'] + '\\system32\\cmd.exe', { wide: true });
     var args = require('_GenericMarshal').CreateVariable(3 * require('_GenericMarshal').PointerSize);
     var arg1 = require('_GenericMarshal').CreateVariable('cmd.exe', { wide: true });
