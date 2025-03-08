@@ -1524,8 +1524,22 @@
         function setSessionActivity() { sessionActivity = Date.now(); }
         function checkIdleSessionTimeout() {
             var delta = (Date.now() - sessionActivity);
-            if (delta > serverinfo.timeout && serverinfo.logoutOnIdleSessionTimeout) {
-                window.location.href = 'logout';
+            if (delta > serverinfo.timeout) {
+                if (desktop != null) { // Disconnect remote desktop
+                    desktop.Stop();
+                    desktopNode = desktop = null;
+                }
+                if (terminal != null) { // Disconnect terminal
+                    terminal.Stop();
+                    terminal = null;
+                }
+                if (files != null) { // Disconnect files
+                    files.Stop();
+                    files = null;
+                }
+                if (serverinfo.logoutonidlesessiontimeout) {
+                    window.location.href = 'logout';
+                }
             }
         }
 
