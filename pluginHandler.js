@@ -139,7 +139,7 @@ module.exports.pluginHandler = function (parent) {
                 try {
                     obj.plugins[p][hookName](...args);
                 } catch (e) {
-                    console.log("Error occurred while running plugin hook" + p + ':' + hookName + ' (' + e + ')');
+                    console.log("Error occurred while running plugin hook " + p + ':' + hookName, e);
                 }
             }
         }
