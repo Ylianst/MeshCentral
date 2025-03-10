@@ -2447,17 +2447,28 @@
                     files.Stop();
                     files = null;
                 }
-                if (serverinfo.logoutOnIdleSessionTimeout) {
+                if (serverinfo.logoutonidlesessiontimeout) {
                     window.location.href = 'logout';
                 }
             } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
+                var sessionInProgress = desktop != null || terminal != null || files != null;
+                var show = serverinfo.logoutonidlesessiontimeout || sessionInProgress;
+                var isLogout = serverinfo.logoutonidlesessiontimeout;
+                var theText = ''; // Initialize theText
                 if (ds <= 60) {
-                    QH('idleTimeoutNotify', '<br />' + format((ds == 1)?"1 second until disconnect":"{0} seconds until disconnect", ds));
+                    theText = isLogout
+                        ? (ds == 1 ? "1 second until logout" : "{0} seconds until logout")
+                        : (ds == 1 ? "1 second until disconnect" : "{0} seconds until disconnect");
                 } else {
                     ds = Math.round(ds / 60);
-                    if (ds <= 5) { QH('idleTimeoutNotify', '<br />' + format((ds == 1)?"1 minute until disconnect":"{0} minutes until disconnect", ds)); }
+                    if (ds <= 5) {
+                        theText = isLogout
+                            ? (ds == 1 ? "1 minute until logout" : "{0} minutes until logout")
+                            : (ds == 1 ? "1 minute until disconnect" : "{0} minutes until disconnect");
+                    }
                 }
+                QH('idleTimeoutNotify', show && theText ? '<br />' + format(theText, ds) : '');
             }
         }
 
@@ -11356,7 +11367,7 @@
         }
 
         function p13openfilefolder() { 
-            setDialogMode(2, "Open File/Folder", 3, p13openfilefolderEx, "Are you sure you want to open this file/folder on the remote devices desktop ?");
+            setDialogMode(2, "Open File/Folder", 3, p13openfilefolderEx, "Are you sure you want to open this file/folder on the remote devices desktop?");
         }
         function p13openfilefolderEx() {
             var openfilefolder = "", checkboxes = document.getElementsByName('fd');
@@ -12733,7 +12744,19 @@
             if (e.shiftKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type: 'default' }); } // Upload default core
             else if (e.altKey == true) { meshserver.send({ action: 'uploadagentcore', nodeids: [ consoleNode._id ], type: 'clear' }); } // Clear the core
             else if (e.ctrlKey == true) { p15uploadCore2(); } // Upload the core from a file
-            else { setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", '<select id=d3coreMode style=width:230px><option value=1>' + "Upload default server core" + '</option><option value=2>' + "Clear the core" + '</option><option value=6>' + "Upload recovery core" + '</option><option value=7>' + "Upload tiny core" + '</option><option value=3>' + "Upload a core file" + '</option><option value=4>' + "Soft disconnect agent" + '</option><option value=5>' + "Hard disconnect agent" + '</option><option value=8>' + "Restart agent service" + '</select>')); }
+            else { 
+                var htmlValue = '<select id=d3coreMode style=width:230px>' +
+                    '<option value=1>' + "Upload default server core" + '</option>' +
+                    '<option value=2>' + "Clear the core" + '</option>' +
+                    '<option value=3>' + "Upload a core file" + '</option>' +
+                    '<option value=4>' + "Soft disconnect agent" + '</option>' +
+                    '<option value=5>' + "Hard disconnect agent" + '</option>' +
+                    '<option value=6>' + "Upload recovery core" + '</option>' +
+                    '<option value=7>' + "Upload tiny core" + '</option>' +
+                    '<option value=8>' + "Restart agent service" + '</option>' +
+                    '<option value=9>' + "Force agent update" + '</option></select>';
+                setDialogMode(2, "Perform Agent Action", 3, p15uploadCoreEx, addHtmlValue("Action", htmlValue));
+            }
         }
 
         function p15uploadCoreEx() {
@@ -12761,6 +12784,9 @@
             } else if (Q('d3coreMode').value == 8) {
                 // Restart MeshAgent service
                 meshserver.send({ action: 'msg', type: 'console', nodeid: consoleNode._id, value:'service restart' });
+            } else if (Q('d3coreMode').value == 9) {
+                // Update mesh agent
+                meshserver.send({ action: 'updateAgents', nodeids: [ consoleNode._id ] });
             }
         }
 

@@ -746,7 +746,7 @@
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
         var authRelayCookie = '{{{authRelayCookie}}}';
-        var viewOnly = (parseInt('{{{viewOnly}}}') == 1);
+        var viewOnly = parseInt('{{{viewOnly}}}');
         var authCookieRenewTimer = null;
         var serverPublicNamePort = '{{{serverDnsName}}}:{{{serverPublicPort}}}';
         var debugmode = false;
@@ -822,8 +822,22 @@
         function setSessionActivity() { sessionActivity = Date.now(); }
         function checkIdleSessionTimeout() {
             var delta = (Date.now() - sessionActivity);
-            if (delta > serverinfo.timeout && serverinfo.logoutOnIdleSessionTimeout) {
-                window.location.href = 'logout';
+            if (delta > serverinfo.timeout) {
+                if (desktop != null) { // Disconnect remote desktop
+                    desktop.Stop();
+                    desktopNode = desktop = null;
+                }
+                if (terminal != null) { // Disconnect terminal
+                    terminal.Stop();
+                    terminal = null;
+                }
+                if (files != null) { // Disconnect files
+                    files.Stop();
+                    files = null;
+                }
+                if (serverinfo.logoutonidlesessiontimeout) {
+                    window.location.href = 'logout';
+                }
             }
         }
 
@@ -850,7 +864,7 @@
                 gotKeyPressEvent = true;
                 Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                if (viewOnly) return false;
+                if (viewOnly == 1) return false;
                 return desktop.m.handleKeys(e);
             }
             if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (t !== 1)) {
@@ -878,7 +892,7 @@
                 gotKeyPressEvent = false;
                 Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                if (viewOnly) return false;
+                if (viewOnly == 1) return false;
                 return desktop.m.handleKeyDown(e);
             }
             if (terminal && !xxdialogMode && (xxcurrentView == 10) && (currentDevicePanel == 5) && (t !== 1)) {
@@ -907,7 +921,7 @@
                 var inputStr = Q('softKeyboard').value;
                 Q('softKeyboard').value = '';
                 // Check what keys we are allows to send
-                if (viewOnly) return;
+                if (viewOnly == 1) return;
                 if ((gotKeyPressEvent == false) && (inputStr.length > 0) && desktop.m.SendKeyUnicode) {
                     // This is a mobile keyboard, we need to send that is in the input control.
                     var inputchar = inputStr[inputStr.length - 1].charCodeAt(0);
@@ -1067,6 +1081,7 @@
                     desktop = CreateAmtRedirect(CreateAmtRemoteDesktop('Desk'), authCookie);
                     desktop.debugmode = debugmode;
                     desktop.onStateChanged = onDesktopStateChange;
+                    desktop.m.stopInput = (viewOnly == 1);
                     desktop.m.bpp = (desktopsettings.encoding == 1 || desktopsettings.encoding == 3) ? 1 : 2;
                     desktop.m.useZRLE = (desktopsettings.encoding < 3);
                     desktop.m.showmouse = true;
@@ -1076,6 +1091,8 @@
                 } else if ((contype == null) || (contype == 1) || ((contype == 3))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(null, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
+                    desktop.m.stopInput = (viewOnly == 1);
+                    desktop.m.mouseCursorActive(true);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
                     desktop.attemptWebRTC = attemptWebRTC;
@@ -1447,7 +1464,7 @@
             QV('deskarea4', !fullscreen);
             QV('termarea1', !fullscreen);
             QV('termarea4', !fullscreen);
-            var inputAllowed = !viewOnly;
+            var inputAllowed = (viewOnly == 0);
 
             // Show full screen buttons if needed
             QV('deskkeybutton1', fullscreen);
