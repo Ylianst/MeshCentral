@@ -1433,6 +1433,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         delete req.session.temail;
         delete req.session.tsms;
         delete req.session.tmsg;
+        delete req.session.tduo;
         delete req.session.tpush;
         delete req.session.messageid;
         delete req.session.passhint;
@@ -7008,104 +7009,96 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             res.redirect(domain.url + getQueryPortion(req)); // redirect back to main page
                             return;
                         } else {
-                            // User credentials are stored in session, just check again and get userid
-                            obj.authenticate(sec.tuser, sec.tpass, domain, function (err, userid, passhint, loginOptions) {
-                                if ((userid != null) && (err == null)) {
-                                    // Login data correct, now exchange authorization code for 2FA
-                                    const duo = require('@duosecurity/duo_universal');
-                                    const client = new duo.Client({
-                                        clientId: domain.duo2factor.integrationkey,
-                                        clientSecret: domain.duo2factor.secretkey,
-                                        apiHost: domain.duo2factor.apihostname,
-                                        redirectUrl: obj.generateBaseURL(domain, req) + 'auth-duo' + (domain.loginkey != null ? ('?key=' + domain.loginkey) : '')
-                                    });
-                                    client.exchangeAuthorizationCodeFor2FAResult(req.query.duo_code, userid.split('/')[2]).then(function (data) {
-                                        const sec = parent.decryptSessionData(req.session.e);
-                                        if ((sec != null) && (sec.duoconfig == 1)) {
-                                            // Duo 2FA exchange success
-                                            parent.debug('web', 'handleRootRequest: Duo 2FA configuration success.');
-
-                                            // Enable Duo for this user
-                                            var user = obj.users[userid];
-                                            if (user.otpduo == null) {
-                                                user.otpduo = {};
-                                                db.SetUser(user);
-
-                                                // Notify change
-                                                var targets = ['*', 'server-users', user._id];
-                                                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
-                                                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 160, msg: "Enabled duo two-factor authentication.", domain: domain.id };
-                                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                                parent.DispatchEvent(targets, obj, event);
-                                            }
-
-                                            // Clear the Duo state
-                                            delete sec.duostate;
-                                            delete sec.duoconfig;
-                                            req.session.e = parent.encryptSessionData(sec);
-
-                                            var url = req.session.duorurl;
-                                            delete req.session.duorurl;
-                                            res.redirect(url ? url : domain.url); // Redirect back to the user's original page
-                                        } else {
+                            const duo = require('@duosecurity/duo_universal');
+                            const client = new duo.Client({
+                                clientId: domain.duo2factor.integrationkey,
+                                clientSecret: domain.duo2factor.secretkey,
+                                apiHost: domain.duo2factor.apihostname,
+                                redirectUrl: obj.generateBaseURL(domain, req) + 'auth-duo' + (domain.loginkey != null ? ('?key=' + domain.loginkey) : '')
+                            });
+                            if (sec.duoconfig == 1) {
+                                // Login data correct, now exchange authorization code for 2FA
+                                var userid = req.session.userid;
+                                client.exchangeAuthorizationCodeFor2FAResult(req.query.duo_code, userid.split('/')[2]).then(function (data) {
+                                    // Duo 2FA exchange success
+                                    parent.debug('web', 'handleRootRequest: Duo 2FA configuration success.');
+                                    // Enable Duo for this user
+                                    var user = obj.users[userid];
+                                    if (user.otpduo == null) {
+                                        user.otpduo = {};
+                                        db.SetUser(user);
+                                        // Notify change
+                                        var targets = ['*', 'server-users', user._id];
+                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 160, msg: "Enabled duo two-factor authentication.", domain: domain.id };
+                                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                        parent.DispatchEvent(targets, obj, event);
+                                    }
+                                    // Clear the Duo state
+                                    delete sec.duostate;
+                                    delete sec.duoconfig;
+                                    req.session.e = parent.encryptSessionData(sec);
+                                    var url = req.session.duorurl;
+                                    delete req.session.duorurl;
+                                    res.redirect(url ? url : domain.url); // Redirect back to the user's original page
+                                }).catch(function (err) {
+                                    const sec = parent.decryptSessionData(req.session.e);
+                                    // Duo 2FA exchange success
+                                    parent.debug('web', 'handleRootRequest: Duo 2FA configuration failed.');
+                                    // Clear the Duo state
+                                    delete sec.duostate;
+                                    delete sec.duoconfig;
+                                    req.session.e = parent.encryptSessionData(sec);
+                                    var url = req.session.duorurl;
+                                    delete req.session.duorurl;
+                                    res.redirect(url ? url : domain.url); // Redirect back to the user's original page
+                                });
+                            } else {
+                                // User credentials are stored in session, just check again and get userid
+                                obj.authenticate(sec.tuser, sec.tpass, domain, function (err, userid, passhint, loginOptions) {
+                                    if ((userid != null) && (err == null)) {
+                                        // Login data correct, now exchange authorization code for 2FA
+                                        client.exchangeAuthorizationCodeFor2FAResult(req.query.duo_code, userid.split('/')[2]).then(function (data) {
+                                            const sec = parent.decryptSessionData(req.session.e);
                                             // Duo 2FA exchange success
                                             parent.debug('web', 'handleRootRequest: Duo 2FA authorization success.');
                                             req.session.userid = userid;
                                             delete req.session.currentNode;
                                             req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                                             setSessionRandom(req);
-
-                                            // Clear the Duo state
+                                            // Clear the Duo state and user/pass
                                             delete sec.duostate;
+                                            delete sec.tuser;
+                                            delete sec.tpass;
                                             req.session.e = parent.encryptSessionData(sec);
-
                                             obj.parent.authLog('https', 'Accepted Duo authentication for ' + userid + ' from ' + req.clientIp + ':' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
                                             res.redirect(domain.url + getQueryPortion(req));
-                                        }
-                                    }).catch(function (err) {
-                                        console.log('err', err);
-                                        const sec = parent.decryptSessionData(req.session.e);
-                                        if ((sec != null) && (sec.duoconfig == 1)) {
-                                            // Duo 2FA exchange success
-                                            parent.debug('web', 'handleRootRequest: Duo 2FA configuration failed.');
-
-                                            // Clear the Duo state
-                                            delete sec.duostate;
-                                            delete sec.duoconfig;
-                                            req.session.e = parent.encryptSessionData(sec);
-
-                                            var url = req.session.duorurl;
-                                            delete req.session.duorurl;
-                                            res.redirect(url ? url : domain.url); // Redirect back to the user's original page
-                                        } else {
+                                        }).catch(function (err) {
+                                            const sec = parent.decryptSessionData(req.session.e);
                                             // Duo 2FA exchange failed
                                             parent.debug('web', 'handleRootRequest: Duo 2FA authorization failed.');
-
                                             // Clear the Duo state
                                             delete sec.duostate;
                                             req.session.e = parent.encryptSessionData(sec);
-
                                             req.session.loginmode = 1;
                                             req.session.messageid = 117; // Invalid security check
                                             res.redirect(domain.url + getQueryPortion(req));
-                                        }
-                                    });
-                                } else {
-                                    // Login failed
-                                    parent.debug('web', 'handleRootRequest: login authorization failed when returning from Duo 2FA.');
-                                    req.session.loginmode = 1;
-                                    res.redirect(domain.url + getQueryPortion(req)); // redirect back to main page
-                                    return;
-                                }
-                            });
+                                        });
+                                    } else {
+                                        // Login failed
+                                        parent.debug('web', 'handleRootRequest: login authorization failed when returning from Duo 2FA.');
+                                        req.session.loginmode = 1;
+                                        res.redirect(domain.url + getQueryPortion(req)); // redirect back to main page
+                                        return;
+                                    }
+                                });
+                            }
                         }
                     });
 
                     // Configure Duo handler
                     obj.app.get(url + 'add-duo', function (req, res) {
                         var domain = getDomain(req);
-                        const sec = parent.decryptSessionData(req.session.e);
-
                         if (req.session.userid == null) {
                             res.sendStatus(404);
                         } else {
