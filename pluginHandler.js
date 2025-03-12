@@ -315,6 +315,11 @@ module.exports.pluginHandler = function (parent) {
                                 'changelogUrl': curconf.changelogUrl,
                                 'status': curconf.status
                             });
+                            if (curconf.version != newconf.version && curconf._latest?.version != newconf.version && !obj.fs.existsSync(obj.pluginPath + '/' + curconf.shortName + '/config.json')) {
+                                curconf._latest = newconf;
+                                parent.db.updatePlugin(curconf._id, curconf).then(function () { resolve(latestRet); });
+                                return;
+                            }
                             resolve(latestRet);
                         });
                     }
@@ -324,29 +329,69 @@ module.exports.pluginHandler = function (parent) {
     };
 
     obj.addPlugin = function (pluginConfig) {
+
         return new Promise(function (resolve, reject) {
-            parent.db.addPlugin({
-                'name': pluginConfig.name,
-                'shortName': pluginConfig.shortName,
-                'version': pluginConfig.version,
-                'description': pluginConfig.description,
-                'hasAdminPanel': pluginConfig.hasAdminPanel,
-                'homepage': pluginConfig.homepage,
-                'changelogUrl': pluginConfig.changelogUrl,
-                'configUrl': pluginConfig.configUrl,
-                'downloadUrl': pluginConfig.downloadUrl,
-                'repository': {
-                    'type': pluginConfig.repository.type,
-                    'url': pluginConfig.repository.url
-                },
-                'meshCentralCompat': pluginConfig.meshCentralCompat,
-                'versionHistoryUrl': pluginConfig.versionHistoryUrl,
-                'status': 0  // 0: disabled, 1: enabled
-            }, function () {
-                parent.db.getPlugins(function (err, docs) {
-                    if (err) reject(err);
-                    else resolve(docs);
-                });
+            parent.db.getPlugins(function foobar(err, docs) {
+                if (err) { return void reject(err); }
+                const newPlugins = [pluginConfig];
+                let depUrls = new Set(Object.values(pluginConfig.dependencies ?? {}));
+                const checkedUrls = new Set();
+                for (const doc of docs) { checkedUrls.add(doc.configUrl); }
+                const installedUrls = new Set(checkedUrls);
+
+                function finalize() {
+                    const proms = [];
+                    for (const pluginConfig of newPlugins) {
+                        proms.push(new Promise(function (resolve, reject) {
+                            parent.db.addPlugin({
+                                'name': pluginConfig.name,
+                                'shortName': pluginConfig.shortName,
+                                'version': pluginConfig.version,
+                                'description': pluginConfig.description,
+                                'hasAdminPanel': pluginConfig.hasAdminPanel,
+                                'homepage': pluginConfig.homepage,
+                                'changelogUrl': pluginConfig.changelogUrl,
+                                'configUrl': pluginConfig.configUrl,
+                                'downloadUrl': pluginConfig.downloadUrl,
+                                'repository': {
+                                    'type': pluginConfig.repository.type,
+                                    'url': pluginConfig.repository.url
+                                },
+                                'meshCentralCompat': pluginConfig.meshCentralCompat,
+                                'versionHistoryUrl': pluginConfig.versionHistoryUrl,
+                                'dependencies': pluginConfig.dependencies,
+                                'status': 0  // 0: disabled, 1: enabled
+                            }, resolve);
+                        }));
+                    }
+                    Promise.all(proms).then(function () {
+                        parent.db.getPlugins(function (err, docs) {
+                            if (err) reject(err);
+                            else resolve(docs);
+                        });
+                    });
+                }
+
+                function resolveDependencies() {
+                    const proms = [];
+                    for (const dep of depUrls) {
+                        if (checkedUrls.has(dep)) { continue; }
+                        proms.push(obj.getPluginConfig(dep));
+                    }
+                    if (proms.length == 0) { return void finalize(); }
+                    Promise.all(proms).then(function (docs) {
+                        depUrls.clear();
+                        for (const doc of docs) {
+                            checkedUrls.add(doc.configUrl);
+                            newPlugins.push(doc);
+                            for (const dep of Object.values(doc.dependencies ?? {})) {
+                                depUrls.add(dep);
+                            }
+                        }
+                        resolveDependencies();
+                    });
+                }
+                resolveDependencies();
             });
         });
     };
@@ -439,7 +484,14 @@ module.exports.pluginHandler = function (parent) {
                                             var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
                                             plugin_config = JSON.parse(plugin_config);
                                             parent.db.updatePlugin(plugin._id, plugin_config);
-                                        } catch (e) { console.log('Error reading plugin config upon install'); }
+                                        } catch (e) {
+                                            console.log('Error reading plugin config upon install');
+                                            if (plugin._latest) {
+                                                Object.assign(plugin, plugin._latest);
+                                                delete plugin._latest;
+                                                parent.db.updatePlugin(plugin._id, plugin);
+                                            }
+                                        }
                                         parent.updateMeshCore();
                                     });
                                 });
