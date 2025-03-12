@@ -315,6 +315,11 @@ module.exports.pluginHandler = function (parent) {
                                 'changelogUrl': curconf.changelogUrl,
                                 'status': curconf.status
                             });
+                            if (curconf.version != newconf.version && curconf._latest?.version != newconf.version && !obj.fs.existsSync(obj.pluginPath + '/' + curconf.shortName + '/config.json')) {
+                                curconf._latest = newconf;
+                                parent.db.updatePlugin(curconf._id, curconf).then(function () { resolve(latestRet); });
+                                return;
+                            }
                             resolve(latestRet);
                         });
                     }
@@ -476,7 +481,14 @@ module.exports.pluginHandler = function (parent) {
                                             var plugin_config = obj.fs.readFileSync(obj.pluginPath + '/' + plugin.shortName + '/config.json');
                                             plugin_config = JSON.parse(plugin_config);
                                             parent.db.updatePlugin(plugin._id, plugin_config);
-                                        } catch (e) { console.log('Error reading plugin config upon install'); }
+                                        } catch (e) {
+                                            console.log('Error reading plugin config upon install');
+                                            if (plugin._latest) {
+                                                Object.assign(plugin, plugin._latest);
+                                                delete plugin._latest;
+                                                parent.db.updatePlugin(plugin._id, plugin);
+                                            }
+                                        }
                                         parent.updateMeshCore();
                                     });
                                 });
