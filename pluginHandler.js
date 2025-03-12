@@ -324,7 +324,20 @@ module.exports.pluginHandler = function (parent) {
     };
 
     obj.addPlugin = function (pluginConfig) {
+
         return new Promise(function (resolve, reject) {
+            parent.db.getPlugins(function foobar(err, docs) {
+                if (err) { return void reject(err); }
+                const newPlugins = [pluginConfig];
+                let depUrls = new Set(Object.values(pluginConfig.dependencies ?? {}));
+                const checkedUrls = new Set();
+                for (const doc of docs) { checkedUrls.add(doc.configUrl); }
+                const installedUrls = new Set(checkedUrls);
+
+                function finalize() {
+                    const proms = [];
+                    for (const pluginConfig of newPlugins) {
+                        proms.push(new Promise(function (resolve, reject) {
             parent.db.addPlugin({
                 'name': pluginConfig.name,
                 'shortName': pluginConfig.shortName,
@@ -341,12 +354,39 @@ module.exports.pluginHandler = function (parent) {
                 },
                 'meshCentralCompat': pluginConfig.meshCentralCompat,
                 'versionHistoryUrl': pluginConfig.versionHistoryUrl,
+                                'dependencies': pluginConfig.dependencies,
                 'status': 0  // 0: disabled, 1: enabled
-            }, function () {
+                            }, resolve);
+                        }));
+                    }
+                    Promise.all(proms).then(function () {
                 parent.db.getPlugins(function (err, docs) {
                     if (err) reject(err);
                     else resolve(docs);
                 });
+                    });
+                }
+
+                function resolveDependencies() {
+                    const proms = [];
+                    for (const dep of depUrls) {
+                        if (checkedUrls.has(dep)) { continue; }
+                        proms.push(obj.getPluginConfig(dep));
+                    }
+                    if (proms.length == 0) { return void finalize(); }
+                    Promise.all(proms).then(function (docs) {
+                        depUrls.clear();
+                        for (const doc of docs) {
+                            checkedUrls.add(doc.configUrl);
+                            newPlugins.push(doc);
+                            for (const dep of Object.values(doc.dependencies ?? {})) {
+                                depUrls.add(dep);
+                            }
+                        }
+                        resolveDependencies();
+                    });
+                }
+                resolveDependencies();
             });
         });
     };
