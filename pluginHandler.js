@@ -343,32 +343,32 @@ module.exports.pluginHandler = function (parent) {
                     const proms = [];
                     for (const pluginConfig of newPlugins) {
                         proms.push(new Promise(function (resolve, reject) {
-            parent.db.addPlugin({
-                'name': pluginConfig.name,
-                'shortName': pluginConfig.shortName,
-                'version': pluginConfig.version,
-                'description': pluginConfig.description,
-                'hasAdminPanel': pluginConfig.hasAdminPanel,
-                'homepage': pluginConfig.homepage,
-                'changelogUrl': pluginConfig.changelogUrl,
-                'configUrl': pluginConfig.configUrl,
-                'downloadUrl': pluginConfig.downloadUrl,
-                'repository': {
-                    'type': pluginConfig.repository.type,
-                    'url': pluginConfig.repository.url
-                },
-                'meshCentralCompat': pluginConfig.meshCentralCompat,
-                'versionHistoryUrl': pluginConfig.versionHistoryUrl,
+                            parent.db.addPlugin({
+                                'name': pluginConfig.name,
+                                'shortName': pluginConfig.shortName,
+                                'version': pluginConfig.version,
+                                'description': pluginConfig.description,
+                                'hasAdminPanel': pluginConfig.hasAdminPanel,
+                                'homepage': pluginConfig.homepage,
+                                'changelogUrl': pluginConfig.changelogUrl,
+                                'configUrl': pluginConfig.configUrl,
+                                'downloadUrl': pluginConfig.downloadUrl,
+                                'repository': {
+                                    'type': pluginConfig.repository.type,
+                                    'url': pluginConfig.repository.url
+                                },
+                                'meshCentralCompat': pluginConfig.meshCentralCompat,
+                                'versionHistoryUrl': pluginConfig.versionHistoryUrl,
                                 'dependencies': pluginConfig.dependencies,
-                'status': 0  // 0: disabled, 1: enabled
+                                'status': 0  // 0: disabled, 1: enabled
                             }, resolve);
                         }));
                     }
                     Promise.all(proms).then(function () {
-                parent.db.getPlugins(function (err, docs) {
-                    if (err) reject(err);
-                    else resolve(docs);
-                });
+                        parent.db.getPlugins(function (err, docs) {
+                            if (err) reject(err);
+                            else resolve(docs);
+                        });
                     });
                 }
 
