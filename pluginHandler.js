@@ -381,7 +381,10 @@ module.exports.pluginHandler = function (parent) {
                 }
                 var request = http.get(opts, function (response) {
                     // handle redirections with grace
-                    if (response.headers.location) return obj.installPlugin(id, version_only, response.headers.location, func);
+                    if (response.headers.location) {
+                        file.close(function () { obj.fs.unlink(file.path, function(err) { void err; }); });
+                        return obj.installPlugin(id, version_only, response.headers.location, func);
+                    }
                     response.pipe(file);
                     file.on('finish', function () {
                         file.close(function () {
