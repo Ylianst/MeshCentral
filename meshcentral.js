@@ -3216,6 +3216,8 @@ function CreateMeshCentralServer(config, args) {
 
     // Sign windows agents
     obj.signMeshAgents = function (domain, func) {
+        // Skip signing to speed up debugging
+        if ('MESHCENTRAL_DEV_NO_AGENT_SIGNING' in process.env && (()=> { try { return require('node:inspector').url() !== undefined; } catch (_) { return false; } }).call()) { return void func(); }
         // Setup the domain is specified
         var objx = domain, suffix = '';
         if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
