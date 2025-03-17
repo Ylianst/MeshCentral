@@ -581,6 +581,17 @@
       "_footer": "Test",
       "_certUrl": "https://192.168.2.106:443/"
     },
+    "_domain_with_novncViewOnlyPort": {
+      "_novnc": true,
+      "_1_novncViewOnlyPort": 5901,
+      "_2_novncViewOnlyPort": [
+        ["#_node//Oqj4ExG@mcz9ZmXMuy7YncqEKuVA1rD5o8ZUWQ8F$mA$33zwfXz$XQ5mrUYdJbss", 5901],
+        ["#_node//my-dev-box", 5902],
+        ["#_mesh//KbvW2V18kiZSNQ5zkT8Qk2s7aADf0MwS1cXUlc$WzqwbwEVYMTopJFR1uxxZzE79", 5903],
+        ["#_mesh//playground--connect", 5904],
+        ["*", 5905]
+      ]
+    },
     "_info": {
       "_share": "C:\\ExtraWebSite"
     }

@@ -1522,6 +1522,11 @@
               ]
             }
           },
+          "applyFeaturePermissionsToRouterAndWebTools": {
+            "type": "boolean",
+            "default": true,
+            "description": "Hides RDP, SSH or SCP links if access to Desktop, Terminal or Files is denied."
+          },
           "deviceMeshRouterLinks": {
             "type": "object",
             "properties": {
@@ -1928,6 +1933,15 @@
             "type": "boolean",
             "default": true,
             "description": "When enabled, activates the built-in web-based VNC client."
+          },
+          "novncargs": {
+            "type": "string",
+            "default": "show_dot=1",
+            "description": "Additional arguments for nVNC. URL-encoded and sparated by ampersand (&)."
+          },
+          "novncViewOnlyPort": {
+            "type": ["number", "array"],
+            "description": "TCP port where a VNC server is listening in view-only mode. Single number or array in Object.fromEntries()-compatible format."
           },
           "mstsc": {
             "type": "boolean",
