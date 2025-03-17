@@ -8185,7 +8185,8 @@
                 if (rights & 512) str1.push("No Terminal");
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 2048) str1.push("No AMT");
-                if (rights & 4096) str1.push("Limited Input");
+                if (rights & 4194304) str1.push("Limited Input");
+                if (rights & 4096) str1.push("Hide RDP");
                 if (rights & 65536) str1.push("No Desktop");
                 if ((rights & 524288) && (serverinfo.guestdevicesharing !== false)) str1.push("Guest Share");
                 if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
@@ -8219,6 +8220,7 @@
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
+                if (rights & 4194304) str1.push("Hide RDP");
                 if (rights & 65536) str1.push("No Desktop");
                 if ((rights & 524288) && (serverinfo.guestdevicesharing !== false)) str1.push("Guest Share");
                 if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
@@ -14197,6 +14199,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20hiderdpsessions style=margin-left:12px>' + "Hide RDP Sessionss" + '</label><br>';
             if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
@@ -14278,6 +14281,7 @@
                     if (urights & 1024) { Q('p20nofiles').checked = true; }
                     if (urights & 2048) { Q('p20noamt').checked = true; }
                     if (urights & 4096) { Q('p20remotelimitedinput').checked = true; }
+                    if (urights & 4194304) { Q('p20hiderdpsessions').checked = true; }
                 }
                 if (urights & 16) { Q('p20meshagentconsole').checked = true; }
                 if (urights & 32) { Q('p20meshserverfiles').checked = true; }
@@ -14331,6 +14335,7 @@
                 Q('p20nofiles').checked = ((devrights & 1024) != 0);
                 Q('p20noamt').checked = ((devrights & 2048) != 0);
                 Q('p20remotelimitedinput').checked = ((devrights & 4096) != 0);
+                Q('p20hiderdpsessions').checked = ((devrights & 4194304) != 0);
                 Q('p20limitevents').checked = ((devrights & 8192) != 0);
                 Q('p20chatnotify').checked = ((devrights & 16384) != 0);
                 Q('p20uninstall').checked = ((devrights & 32768) != 0);
@@ -14412,6 +14417,7 @@
             QE('p20remoteview', nc && Q('p20remotecontrol').checked);
             if (serverinfo.guestdevicesharing !== false) { QE('p20guestshare', nc && Q('p20remotecontrol').checked && (Q('p20remoteview').checked || !Q('p20remotelimitedinput').checked)); }
             QE('p20remotelimitedinput', nc && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
+            QE('p20hiderdpsessions', nc && Q('p20remotecontrol').checked);
             QE('p20nodesktop', nc && Q('p20remotecontrol').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
@@ -14444,6 +14450,7 @@
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if ((Q('p20remotelimitedinput').checked == true) && (!Q('p20remoteview').checked)) meshadmin += 4096;
+                if ((Q('p20hiderdpsessions').checked == true)) meshadmin += 4194304;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
                 if (Q('p20chatnotify').checked == true) meshadmin += 16384;
                 if (Q('p20uninstall').checked == true) meshadmin += 32768;
@@ -14456,13 +14463,14 @@
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
             if ((meshadmin & 8) == 0) {
-                // Remove 256, 512, 1024, 2048, 4096, 65536
+                // Remove 256, 512, 1024, 2048, 4096, 65536, 4194304
                 if (meshadmin & 256) { meshadmin -= 256; }
                 if (meshadmin & 512) { meshadmin -= 512; }
                 if (meshadmin & 1024) { meshadmin -= 1024; }
                 if (meshadmin & 2048) { meshadmin -= 2048; }
                 if (meshadmin & 4096) { meshadmin -= 4096; }
                 if (meshadmin & 65536) { meshadmin -= 65536; }
+                if (meshadmin & 4194304) { meshadmin -= 4194304; }
             }
 
             // Send the action to the server
@@ -14525,11 +14533,13 @@
                     if ((meshrights & 64) != 0) r.push("Wake Devices");
                     if ((meshrights & 128) != 0) r.push("Edit Notes");
                     if (((meshrights & 8) != 0) && (meshrights & 256) != 0) r.push("Remote View Only");
+                    if (((meshrights & 8) != 0) && (meshrights & 4194304) != 0) r.push("Hide RDP Sessionss");
                     if (((meshrights & 8) != 0) && (meshrights & 65536) != 0) r.push("No Desktop");
                     if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r.push("No Terminal");
                     if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r.push("No Files");
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
+                    if (((meshrights & 8) != 0) && ((meshrights & 4194304) != 0) && ((meshrights & 256) == 0)) r.push("Hide RDP");
                     if ((meshrights & 8192) != 0) r.push("Self Events Only");
                     if ((meshrights & 16384) != 0) r.push("Chat & Notify");
                     if ((meshrights & 32768) != 0) r.push("Uninstall");
@@ -16987,6 +16997,8 @@
             x += '<div><label><input type=checkbox id=d20flag7 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000008) ? 'checked' : '') + '>' + "No Remote Control" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
             x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag3 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
+            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag12 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00004000) ? 'checked' : '') + '>' + "Limited Input Only" + '</label><br></div>';
+            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag13 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00400000) ? 'checked' : '') + '>' + "Hide RDP Sessions" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag6 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
@@ -17003,6 +17015,8 @@
             QE('d20flag3', !Q('d20flag7').checked && !Q('d20flag2').checked);
             QE('d20flag4', !Q('d20flag7').checked);
             QE('d20flag5', !Q('d20flag7').checked);
+            QE('d20flag12', !Q('d20flag7').checked && !Q('d20flag2').checked);
+            QE('d20flag13', !Q('d20flag7').checked && !Q('d20flag2').checked);
         }
 
         // Send to the server the new user's real name
@@ -17016,7 +17030,11 @@
             var r = 0;
             if (Q('d20flag7').checked) { r += 0x00000008; } else {
                 if (Q('d20flag2').checked) { r += 0x00010000; }
-                else if (Q('d20flag3').checked) { r += 0x00000100; }
+                else {
+                    if (Q('d20flag3').checked) { r += 0x00000100; }
+                    if (Q('d20flag12').checked) { r += 0x00004000; }
+                    if (Q('d20flag13').checked) { r += 0x00400000; }
+                }
                 if (Q('d20flag4').checked) { r += 0x00000200; }
                 if (Q('d20flag5').checked) { r += 0x00000400; }
             }
