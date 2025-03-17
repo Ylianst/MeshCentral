@@ -3007,18 +3007,18 @@
                         //console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
-                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay ? 'local' : 'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '&l={{{lang}}}';
+                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay ? 'local' : 'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}' + (message.qsappend ? '&' + message.qsappend : '');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
                         safeNewWindow(vncurl, 'mcnovnc/' + message.nodeid);
                     } else if (message.tag == 'mstsc') {
-                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
+                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '') + (message.qsappend ? '&' + message.qsappend : '');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
                         if (message.localRelay) { rdpurl += '&local=1'; }
                         safeNewWindow(rdpurl, 'mcmstsc/' + message.nodeid);
                     } else if (message.tag == 'ssh') {
-                        var sshurl = window.location.origin + domainUrl + 'ssh.html?ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
+                        var sshurl = window.location.origin + domainUrl + 'ssh.html?ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '') + (message.qsappend ? '&' + message.qsappend : '');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { sshurl += '&name=' + encodeURIComponentEx(node.name); }
                         if (message.localRelay) { sshurl += '&local=1'; }

@@ -6414,6 +6414,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             const applyfeaturepermissions = obj.domain.applyfeaturepermissionstorouterandwebtools !== false;
             switch (command.tag) {
+                case 'novnc': {
+                    let novncargs = domain.novncargs ?? 'show_dot=1';
+                    if (applyfeaturepermissions) { novncargs += '&view_only=' +!!(rights & MESHRIGHT_REMOTEVIEWONLY); }
+                    command.qsappend = novncargs.charAt(0) === '&' ? novncargs.slice(1) : novncargs;
+                    break;
+                }
                 case 'mstsc': { if (applyfeaturepermissions && (rights & MESHRIGHT_REMOTEVIEWONLY)) { return; } break; }
                 case 'ssh': { if (applyfeaturepermissions && (rights & MESHRIGHT_NOTERMINAL)) { return; }; break; }
             }
