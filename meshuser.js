@@ -6412,6 +6412,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
             if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
 
+            const applyfeaturepermissions = obj.domain.applyfeaturepermissionstorouterandwebtools !== false;
+            switch (command.tag) {
+                case 'mstsc': { if (applyfeaturepermissions && (rights & MESHRIGHT_REMOTEVIEWONLY)) { return; } break; }
+                case 'ssh': { if (applyfeaturepermissions && (rights & MESHRIGHT_NOTERMINAL)) { return; }; break; }
+            }
+
             // Add a user authentication cookie to a url
             var cookieContent = { userid: user._id, domainid: user.domain };
             if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
