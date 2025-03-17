@@ -4722,7 +4722,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else {
                     try {
                         parent.parent.pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
-                    } catch (ex) { console.log('Error loading plugin handler (' + ex + ')'); }
+                    } catch (ex) { console.log('Error executing plugin serveraction (' + ex + ')', ex.stack); }
                 }
                 break;
             }
