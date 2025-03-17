@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -16460,7 +16460,7 @@
                     if ((userinfo.links) && (userinfo.links[mesh._id] != null) && (userinfo.links[mesh._id].rights != null)) { cr = userinfo.links[mesh._id].rights; }
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else { }
-                    if ((cr & 2) != 0) {
+                    if ((userinfo.siteadmin == 0xFFFFFFFF) || ((cr & 2) != 0)) {
                         trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
@@ -17158,7 +17158,7 @@
                     if ((userinfo.links) && (userinfo.links[mesh._id] != null) && (userinfo.links[mesh._id].rights != null)) { cr = userinfo.links[mesh._id].rights; }
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; }
-                    if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { // 2 = MESHRIGHT_MANAGEUSERS
+                    if ((userinfo.siteadmin == 0xFFFFFFFF) || ((currentUser._id != userinfo._id) && ((cr & 2) != 0))) { // 2 = MESHRIGHT_MANAGEUSERS
                         trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(1,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
