@@ -2324,7 +2324,7 @@
               "viewonly": {
                 "type": "boolean",
                 "description": "When set to true, the remote desktop feature is view only.",
-                "default": "false"
+                "default": false
               }
             }
           },
