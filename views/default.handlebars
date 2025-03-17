@@ -8187,8 +8187,8 @@
                 if (rights & 512) str1.push("No Terminal");
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 2048) str1.push("No AMT");
-                if (rights & 4194304) str1.push("Limited Input");
-                if (rights & 4096) str1.push("Hide RDP");
+                if (rights & 4194304) str1.push("Hide RDP");
+                if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
                 if ((rights & 524288) && (serverinfo.guestdevicesharing !== false)) str1.push("Guest Share");
                 if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
@@ -16773,8 +16773,11 @@
             if ((serverinfo.usersSessionRecording == 1) && (user.flags) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
             if (user.removeRights) {
                 if ((user.removeRights & 0x00000008) != 0) { userFeatures.push("No Remote Control"); } else {
-                    if ((user.removeRights & 0x00010000) != 0) { userFeatures.push("No Desktop"); }
-                    else if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
+                    if ((user.removeRights & 0x00010000) != 0) { userFeatures.push("No Desktop"); } else {
+                        if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
+                        else if ((user.removeRights & 0x00001000) != 0) { userFeatures.push("Limited Input"); }
+                        if ((user.removeRights & 0x00400000) != 0) { userFeatures.push("Hide RDP"); }
+                    }
                     if ((user.removeRights & 0x00000200) != 0) { userFeatures.push("No Terminal"); }
                     if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
                 }
@@ -16999,7 +17002,7 @@
             x += '<div><label><input type=checkbox id=d20flag7 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000008) ? 'checked' : '') + '>' + "No Remote Control" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
             x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag3 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
-            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag12 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00004000) ? 'checked' : '') + '>' + "Limited Input Only" + '</label><br></div>';
+            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag12 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00001000) ? 'checked' : '') + '>' + "Limited Input Only" + '</label><br></div>';
             x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag13 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00400000) ? 'checked' : '') + '>' + "Hide RDP Sessions" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
@@ -17017,7 +17020,7 @@
             QE('d20flag3', !Q('d20flag7').checked && !Q('d20flag2').checked);
             QE('d20flag4', !Q('d20flag7').checked);
             QE('d20flag5', !Q('d20flag7').checked);
-            QE('d20flag12', !Q('d20flag7').checked && !Q('d20flag2').checked);
+            QE('d20flag12', !Q('d20flag7').checked && !Q('d20flag2').checked && !Q('d20flag3').checked);
             QE('d20flag13', !Q('d20flag7').checked && !Q('d20flag2').checked);
         }
 
@@ -17034,7 +17037,7 @@
                 if (Q('d20flag2').checked) { r += 0x00010000; }
                 else {
                     if (Q('d20flag3').checked) { r += 0x00000100; }
-                    if (Q('d20flag12').checked) { r += 0x00004000; }
+                    else if (Q('d20flag12').checked) { r += 0x00001000; }
                     if (Q('d20flag13').checked) { r += 0x00400000; }
                 }
                 if (Q('d20flag4').checked) { r += 0x00000200; }
