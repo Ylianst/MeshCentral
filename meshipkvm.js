@@ -34,6 +34,8 @@ function CreateIPKVMManager(parent) {
     const MESHRIGHT_RESETOFF = 0x00040000; // 262144
     const MESHRIGHT_GUESTSHARING = 0x00080000; // 524288
     const MESHRIGHT_DEVICEDETAILS = 0x00100000; // ?1048576?
+    const MESHRIGHT_RELAY = 0x00200000; // 2097152
+    const MESHRIGHT_HIDERDPSESSIONS = 0x00400000; // 4194304
     const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Subscribe for mesh creation events

@@ -124,6 +124,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const MESHRIGHT_REMOTECOMMAND = 0x00020000;
     const MESHRIGHT_RESETOFF = 0x00040000;
     const MESHRIGHT_GUESTSHARING = 0x00080000;
+    const MESHRIGHT_DEVICEDETAILS = 0x00100000;
+    const MESHRIGHT_RELAY = 0x00200000;
+    const MESHRIGHT_HIDERDPSESSIONS = 0x00400000;
     const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
@@ -3206,6 +3209,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     serverfeatures: serverFeatures,
                     features: allFeatures.features,
                     features2: allFeatures.features2,
+                    features3: allFeatures.features3,
                     sessiontime: (args.sessiontime) ? args.sessiontime : 60,
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,
@@ -3271,6 +3275,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.getDomainUserFeatures = function (domain, user, req) {
         var features = 0;
         var features2 = 0;
+        var features3 = 0;
         if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
         if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
         if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
@@ -3343,7 +3348,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.devicesearchbargroupname === true) { features2 += 0x10000000; } // Search bar will find by group name too
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
-        return { features: features, features2: features2 };
+        if (domain.applyfeaturepermissionstorouterandwebtools !== false) {features3 += 0x00000001; }
+        return { features: features, features2: features2, features3 };
     }
 
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
@@ -8664,6 +8670,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
         if ((user.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
         if ((user.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+        if ((user.removeRights & 0x00001000) != 0) { add += 0x00001000; } // Limited Input Only
+        if ((user.removeRights & 0x00400000) != 0) { add += 0x00400000; } // Hide RDP Sessions
         if ((user.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
         if ((user.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
         if ((user.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
