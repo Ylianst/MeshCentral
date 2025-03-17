@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -2807,6 +2807,7 @@
                     if (updateNaggleFlags & 16384) { updateUsers(); }
                     if (updateNaggleFlags & 32768) { updateRecordings(); }
                     if (updateNaggleFlags & 65536) { updateLoginTokens(); }
+                    if (currentNode && (updateNaggleFlags & 131072)) { updateDesktopButtons(); }
                     updateNaggleTimer = null;
                     updateNaggleFlags = 0;
                     gotoStartViewPage();
@@ -3926,6 +3927,7 @@
                                     // If we are looking at a node that is no longer visible, move back to "My Devices"
                                     if ((xxcurrentView >= 10) && (xxcurrentView < 20) && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                                 }
+                                mainUpdate(131072);
                             }
                             mainUpdate(4 + 128 + 8192 + 16384);
                             if (currentNode && !IsNodeViewable(currentNode)) { currentNode = null; if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } }
@@ -9948,7 +9950,7 @@
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
-            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && (rights & 8) && (currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)));
+            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && ((rights == 0XFFFFFFFF) || ((rights & (8 | (features3 & 0x00000001 ? 256 : 0))) == 8)) && (currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)));
             if (mtype == 1) {
                 QV('connectbutton1hspan',
                     (deskState == 0) &&
