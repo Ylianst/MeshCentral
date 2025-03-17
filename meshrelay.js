@@ -875,13 +875,30 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
             parent.db.Get(cookie.nodeid, function (err, docs) {
                 if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
                 const node = docs[0];
+                const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
 
                 // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
-                if ((obj.nouser !== true) && ((parent.GetNodeRights(obj.user, node.meshid, node._id) & 0x00200008) == 0)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (ex) { } return; }
+                if ((obj.nouser !== true) && ((rights & 0x00200008) == 0)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (ex) { } return; }
 
                 // Set nodeid and meshid
                 obj.nodeid = node._id;
                 obj.meshid = node.meshid;
+
+                function getNoVncViewOnlyPort(rfbport = 5900) {
+                    let novncvop = domain.novncviewonlyport;
+                    if (typeof novncvop === 'number') { return novncvop; }
+                    if (Array.isArray(novncvop)) { novncvop = domain.novncviewonlyport = Object.fromEntries(novncvop); }
+                    const tokens = [obj.meshid, `mesh/${domain.id}/${parent.meshes[obj.meshid].name}`, obj.nodeid, `node/${domain.id}/${node.name}`, '*'];
+                    tokens.some((val) => ((val = +novncvop[val]) ? ((rfbport = val), true) : false));
+                    return rfbport;
+                }
+                if (domain.applyfeaturepermissionstorouterandwebtools !== false) {
+                    switch (cookie.tcpport) {
+                        // don't know why, but we have to terminate() the websocket to close the connection. or is a feature to avoid DoS?
+                        case node.rdpport ?? 3389: { if ((rights !== 0xFFFFFFFF) && (rights & MESHRIGHT_REMOTEVIEWONLY)) { console.log('ERR: Access denied (1)'); try { obj.close(); /*ws.terminate();*/ } catch (ex) { } return; } break; }
+                        case node.rfbport ?? 5900: { if ((rights !== 0xFFFFFFFF) && (rights & MESHRIGHT_REMOTEVIEWONLY)) { cookie.tcpport = getNoVncViewOnlyPort(node.rfbport); } break; }
+                    }
+                }
 
                 // Send connection request to agent
                 const rcookieData = {};
