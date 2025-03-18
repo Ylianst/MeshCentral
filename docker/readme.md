@@ -47,6 +47,8 @@ LOCALSESSIONRECORDING=false
 MINIFY=true
 # set this value to add extra arguments to meshcentral on startup (e.g --debug ldap)
 ARGS=
+# set to the hostname (or comma-separated list of hostnames) meshcentral will be reachable on
+ALLOWED_ORIGIN=false
 ```
 
 ## docker-compose.yml
