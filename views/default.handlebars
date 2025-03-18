@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -17807,7 +17807,7 @@
             }
             if (f == 'seconds') {
                 var seconds = v % 60;
-                var minutes = Math.floor(v / 60) & 60;
+                var minutes = Math.floor(v / 60) % 60;
                 var hours = Math.floor(v / 3600);
                 return zeroPad(hours, 2) + ':' + zeroPad(minutes, 2) + ':' + zeroPad(seconds, 2);
             }
