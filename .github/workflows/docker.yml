@@ -1,4 +1,4 @@
-name: Docker
+name: Docker-Builder
 on:
   push:
     branches:
@@ -22,7 +22,7 @@ jobs:
           MY_TOKEN: ${{ secrets.MY_TOKEN }}
         if: "${{ env.MY_TOKEN != '' }}"
         run: echo "token_defined=true" >> "$GITHUB_OUTPUT"
-        
+
   build:
     name: Release
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
