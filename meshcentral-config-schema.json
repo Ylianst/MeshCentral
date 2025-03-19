@@ -1171,7 +1171,7 @@
           "siteStyle": {
             "type": "integer",
             "default": 2,
-            "description": "Valid numbers are 1 and 2, changes the style of the login page and some secondary pages."
+            "description": "Valid numbers are 1, 2 or 3. Changes the style of the login page and some secondary pages. 3 is the new Bootstrap style"
           },
           "showModernUIToggle": {
             "type": "boolean",
