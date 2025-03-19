@@ -21,6 +21,11 @@ else
     sed -i "s/\"minify\": false/\"minify\": $MINIFY/" meshcentral-data/"${CONFIG_FILE}"
     sed -i "s/\"WebRTC\": false/\"WebRTC\": $WEBRTC/" meshcentral-data/"${CONFIG_FILE}"
     sed -i "s/\"AllowFraming\": false/\"AllowFraming\": $IFRAME/" meshcentral-data/"${CONFIG_FILE}"
+    if [[ "$ALLOWED_ORIGIN" =~ ^\[.*\]|^true|^false ]]; then
+        sed -i "s/\"allowedOrigin\": false/\"allowedOrigin\": $ALLOWED_ORIGIN/" meshcentral-data/"${CONFIG_FILE}"
+    else
+        sed -i "s/\"allowedOrigin\": false/\"allowedOrigin\": \"$ALLOWED_ORIGIN\"/" meshcentral-data/"${CONFIG_FILE}"
+    fi
     if [ -z "$SESSION_KEY" ]; then
         SESSION_KEY="$(cat /dev/urandom | tr -dc 'A-Z0-9' | fold -w 48 | head -n 1)"
     fi

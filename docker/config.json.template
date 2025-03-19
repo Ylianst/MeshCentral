@@ -25,7 +25,8 @@
       "NewAccounts": true,
       "localSessionRecording": true,
       "_userNameIsEmail": true,
-      "_certUrl": "my.reverse.proxy"
+      "_certUrl": "my.reverse.proxy",
+      "allowedOrigin": false
     }
   },
   "_letsencrypt": {
