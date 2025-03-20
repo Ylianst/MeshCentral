@@ -1982,16 +1982,20 @@
             "description": "This section is used to customize user consent prompts, these show up when asking if a remote session is allowed or not.",
             "properties": {
               "Title": {
-                "type": "string"
+                "type": "string",
+                "description": "Title of the consent message."
               },
               "Desktop": {
-                "type": "string"
+                "type": "string",
+                "description": "Consent message that is shown when a remote desktop session is connected, you can use {0} to represent the realname and {1} to represent the username."
               },
               "Terminal": {
-                "type": "string"
+                "type": "string",
+                "description": "Consent message that is shown when a remote terminal session is connected, you can use {0} to represent the realname and {1} to represent the username."
               },
               "Files": {
-                "type": "string"
+                "type": "string",
+                "description": "Consent message that is shown when a remote file session is connected, you can use {0} to represent the realname and {1} to represent the username."
               },
               "consentTimeout": {
                 "type": "integer",
