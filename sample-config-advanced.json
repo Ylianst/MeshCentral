@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json",
-  "__comment__": "This is a sample configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
+  "__comment__": "This is a sample advanced configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
   "settings": {
-    "_cert": "myserver.mydomain.com",
+    "cert": "myserver.mydomain.com",
     "_SQLite3": true,
     "_acebase": { "_sponsor": true },
     "_mongoDb": "mongodb://127.0.0.1:27017",
@@ -119,15 +119,15 @@
     },
     "_autoBackup": {
       "_mongoDumpPath": "C:\\Program Files\\MongoDB\\Server\\4.2\\bin\\mongodump.exe",
-      "backupIntervalHours": 24,
-      "keepLastDaysBackup": 10,
-      "zipPassword": "MyReallySecretPassword3",
+      "_backupIntervalHours": 24,
+      "_keepLastDaysBackup": 10,
+      "_zipPassword": "MyReallySecretPassword3",
       "_backupPath": "C:\\backups",
       "_googleDrive": {
         "folderName": "MeshCentral-Backups",
         "maxFiles": 10
       },
-      "webdav": {
+      "_webdav": {
         "url": "https://server/remote.php/dav/files/xxxxx@server.com/",
         "username": "user",
         "password": "pass",
@@ -160,7 +160,7 @@
       "count": 10,
       "coolofftime": 10
     },
-    "watchDog": {
+    "_watchDog": {
       "interval": 100,
       "timeout": 400
     },
@@ -179,16 +179,16 @@
   },
   "_domaindefaults": {
     "__comment__": "Any settings in this section is used as default setting for all domains",
-    "title": "MyDefaultTitle",
-    "footer": "Default page footer",
-    "newAccounts": false
+    "_title": "MyDefaultTitle",
+    "_footer": "Default page footer",
+    "_newAccounts": false
   },
   "domains": {
     "": {
       "_siteStyle": 2,
       "_showModernUIToggle": true,
-      "title": "MyServer",
-      "title2": "Servername",
+      "_title": "MyServer",
+      "_title2": "Servername",
       "_titlePicture": "title-sample.png",
       "_loginPicture": "title-sample.png",
       "_pwaLogo": "title-sample.png",
@@ -203,12 +203,13 @@
       "_loginKey": [ "abc", "123" ],
       "_agentKey": [ "abc", "123" ],
       "_ipkvm": false,
-      "minify": true,
+      "_minify": true,
       "_hidePowerTimeline": true,
       "_showNotesPanel": true,
       "_userSessionsSort": "Username",
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+      "_manageAllDeviceGroups": [ "admin" ],
       "_userNameIsEmail": true,
       "_newAccountEmailDomains": [ "sample.com" ],
       "_newAccountsRights": [ "nonewgroups", "notools" ],
@@ -263,7 +264,7 @@
         ]
       },
       "_assistantTypeAgentInvite": 2,
-      "PreconfiguredScripts": [
+      "_PreconfiguredScripts": [
         {
           "name": "Run NotePad as user",
           "file": "scripts/notepad.bat",
@@ -288,7 +289,7 @@
           "type": "agent"
         }
       ],
-      "PreconfiguredRemoteInput": [
+      "_PreconfiguredRemoteInput": [
         {
           "name": "CompanyUrl",
           "value": "https://help.mycompany.com/"
@@ -302,7 +303,7 @@
           "value": "Default welcome text"
         }
       ],
-      "myServer": {
+      "_myServer": {
         "Backup": false,
         "Restore": false,
         "Upgrade": false,
@@ -388,7 +389,7 @@
       "_userSessionIdleTimeout": 30,
       "___logoutOnIdleSessionTimeout": "Determines whether MeshCentral should logout after the session idle timeout elapsed or should just disconnect remote desktop, terminal and files.",
       "_logoutOnIdleSessionTimeout": false,
-      "userConsentFlags": {
+      "_userConsentFlags": {
         "desktopnotify": true,
         "terminalnotify": true,
         "filenotify": true,
@@ -493,6 +494,7 @@
           "_callbackurl": "https://server/auth-twitter-callback",
           "newAccounts": true,
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsRights": [ "nonewgroups", "notools" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
@@ -500,6 +502,7 @@
           "_callbackurl": "https://server/auth-google-callback",
           "newAccounts": true,
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsRights": [ "nonewgroups", "notools" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxx"
         },
@@ -507,6 +510,7 @@
           "_callbackurl": "https://server/auth-github-callback",
           "newAccounts": true,
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsRights": [ "nonewgroups", "notools" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         },
@@ -514,6 +518,7 @@
           "_callbackurl": "https://server/auth-azure-callback",
           "newAccounts": true,
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsRights": [ "nonewgroups", "notools" ],
           "clientid": "00000000-0000-0000-0000-000000000000",
           "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
           "tenantid": "00000000-0000-0000-0000-000000000000"
@@ -522,6 +527,7 @@
           "_callbackurl": "https://server/auth-jumpcloud-callback",
           "newAccounts": true,
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
+          "_newAccountsRights": [ "nonewgroups", "notools" ],
           "entityid": "meshcentral",
           "idpurl": "https://sso.jumpcloud.com/saml2/saml2",
           "cert": "jumpcloud-saml.pem"
@@ -553,7 +559,10 @@
               "filter": [ "groupB", "groupC" ]
             }
           },
-          "newAccounts": true
+          "newAccounts": true,
+          "_newAccountsRights": [ "nonewgroups", "notools" ],
+          "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ]
+
         }
       }
     },
