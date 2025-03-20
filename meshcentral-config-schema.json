@@ -3129,6 +3129,17 @@
                     },
                     "description": "When set, new accounts will be created for users that authenticate with Google and added to the specified groups."
                   },
+                  "newAccountsRights": {
+                    "type": [
+                      "array",
+                      "string"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "When set, new accounts will be added to these siteadmin rights."
+                  },
                   "clientid": {
                     "type": "string",
                     "description": "Google client ID."
@@ -3170,6 +3181,17 @@
                       "type": "string"
                     }
                   },
+                  "newAccountsRights": {
+                    "type": [
+                      "array",
+                      "string"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "When set, new accounts will be added to these siteadmin rights."
+                  },
                   "clientid": {
                     "type": "string",
                     "description": "GitHub client ID."
@@ -3210,6 +3232,17 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "newAccountsRights": {
+                    "type": [
+                      "array",
+                      "string"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "When set, new accounts will be added to these siteadmin rights."
                   },
                   "clientid": {
                     "type": "string",
@@ -3256,6 +3289,17 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "newAccountsRights": {
+                    "type": [
+                      "array",
+                      "string"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "When set, new accounts will be added to these siteadmin rights."
                   },
                   "entityid": {
                     "type": "string",
@@ -3308,6 +3352,17 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "newAccountsRights": {
+                    "type": [
+                      "array",
+                      "string"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "When set, new accounts will be added to these siteadmin rights."
                   },
                   "entityid": {
                     "type": "string",
@@ -3379,6 +3434,17 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "newAccountsRights": {
+                    "type": [
+                      "array",
+                      "string"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "When set, new accounts will be added to these siteadmin rights."
                   },
                   "clientid": {
                     "type": "string",
