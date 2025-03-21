@@ -51,81 +51,81 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     if [[ $REGENSESSIONKEY =~ ^(true|yes)$ ]]; then
         echo "Regenerating Session-Key because REGENSESSIONKEY is 'true' or 'yes'"
         SESSION_KEY=$(tr -dc 'A-Z0-9' < /dev/urandom | fold -w 60 | head -n 1)
-        sed -i "s/sessionKey:/    sessionKey\": \"$SESSION_KEY\"/g" "$CONFIG_FILE"
+        sed -i "s/\"sessionKey\": *\"[^\"]*\"/\"sessionKey\": \"$SESSION_KEY\"/" "$CONFIG_FILE"
     else
         echo "REGENSESSIONKEY is not 'true' or 'yes', therefore it's being kept as is."
     fi
 
     # HOSTNAME
-    if [[ -n $HOSTNAME ]]; then
+    if [[ -n $HOSTNAME ]] && [[ $HOSTNAME =~ ^([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]+$ ]]; then
         echo "Setting hostname (cert)... - $HOSTNAME"
-        sed -i '/cert/ c\    "cert": "'"$HOSTNAME"'"' "$CONFIG_FILE"
+        sed -i "s/\"cert\": *\"[^\"]*\"/\"cert\": \"$HOSTNAME\"/" "$CONFIG_FILE"
     else
-        echo "Hostname environment variable is empty, commenting it out..."
-        sed -i 's/"cert":/    "_cert":/g' "$CONFIG_FILE"
+        echo "Invalid hostname, commenting it out..."
+        sed -i "s/\"cert\": *\"[^\"]*\"/\"cert\": \"localhost\"/" "$CONFIG_FILE"
     fi
 
     # ALLOW_NEW_ACCOUNTS
     if [[ -n $ALLOW_NEW_ACCOUNTS ]] && [[ $ALLOW_NEW_ACCOUNTS =~ ^(true|false)$ ]]; then
         echo "Setting NewAccounts... - $ALLOW_NEW_ACCOUNTS"
-        sed -i '/NewAccounts/ c\    "NewAccounts": "'"$ALLOW_NEW_ACCOUNTS"'"' "$CONFIG_FILE"
+        sed -i "s/\"NewAccounts\": *[a-z]*/\"NewAccounts\": $ALLOW_NEW_ACCOUNTS/" "$CONFIG_FILE"
     else
         echo "Invalid ALLOW_NEW_ACCOUNTS value given, commenting out so default applies..."
-        sed -i 's/"NewAccounts":/    "_NewAccounts":/g' "$CONFIG_FILE"
+        sed -i 's/"NewAccounts":/"_NewAccounts":/g' "$CONFIG_FILE"
     fi
 
     # ALLOWPLUGINS
     if [[ -n $ALLOWPLUGINS ]] && [[ $ALLOWPLUGINS =~ ^(true|false)$ ]]; then
         echo "Setting plugins... - $ALLOWPLUGINS"
-        sed -i '/plugins/ c\    "plugins": {"enabled": '"$ALLOWPLUGINS"'}"' "$CONFIG_FILE"
+        sed -i "s/\"plugins\": *{[^}]*}/\"plugins\": {\"enabled\": $ALLOWPLUGINS}/" "$CONFIG_FILE"
     else
         echo "Invalid ALLOWPLUGINS value given, commenting out so default applies..."
-        sed -i 's/"plugins":/    "_plugins":/g' "$CONFIG_FILE"
+        sed -i 's/"plugins":/"_plugins":/g' "$CONFIG_FILE"
     fi
 
     # LOCALSESSIONRECORDING
     if [[ -n $LOCALSESSIONRECORDING ]] && [[ $LOCALSESSIONRECORDING =~ ^(true|false)$ ]]; then
         echo "Setting localSessionRecording... - $LOCALSESSIONRECORDING"
-        sed -i '/localSessionRecording/ c\    "localSessionRecording": "'"$LOCALSESSIONRECORDING"'"' "$CONFIG_FILE"
+        sed -i "s/\"localSessionRecording\": *[a-z]*/\"localSessionRecording\": $LOCALSESSIONRECORDING/" "$CONFIG_FILE"
     else
         echo "Invalid LOCALSESSIONRECORDING value given, commenting out so default applies..."
-        sed -i 's/"localSessionRecording":/    "_localSessionRecording":/g' "$CONFIG_FILE"
+        sed -i 's/"localSessionRecording":/"_localSessionRecording":/g' "$CONFIG_FILE"
     fi
 
     # MINIFY
     if [[ -n $MINIFY ]] && [[ $MINIFY =~ ^(true|false)$ ]]; then
         echo "Setting minify... - $MINIFY"
-        sed -i '/minify/ c\    "minify": "'"$MINIFY"'"' "$CONFIG_FILE"
+        sed -i "s/\"minify\": *[a-z]*/\"minify\": $MINIFY/" "$CONFIG_FILE"
     else
         echo "Invalid MINIFY value given, commenting out so default applies..."
-        sed -i 's/"minify":/    "_minify":/g' "$CONFIG_FILE"
+        sed -i 's/"minify":/"_minify":/g' "$CONFIG_FILE"
     fi
 
     # WEBRTC
     if [[ -n $WEBRTC ]] && [[ $WEBRTC =~ ^(true|false)$ ]]; then
         echo "Setting WebRTC... - $WEBRTC"
-        sed -i '/WebRTC/ c\    "WebRTC": "'"$WEBRTC"'"' "$CONFIG_FILE"
+        sed -i "s/\"WebRTC\": *[a-z]*/\"WebRTC\": $WEBRTC/" "$CONFIG_FILE"
     else
         echo "Invalid WEBRTC value given, commenting out so default applies..."
-        sed -i 's/"WebRTC":/    "_WebRTC":/g' "$CONFIG_FILE"
+        sed -i 's/"WebRTC":/"_WebRTC":/g' "$CONFIG_FILE"
     fi
 
     # IFRAME
     if [[ -n $IFRAME ]] && [[ $IFRAME =~ ^(true|false)$ ]]; then
         echo "Setting AllowFraming... - $IFRAME"
-        sed -i '/AllowFraming/ c\    "AllowFraming": "'"$IFRAME"'"' "$CONFIG_FILE"
+        sed -i "s/\"AllowFraming\": *[a-z]*/\"AllowFraming\": $IFRAME/" "$CONFIG_FILE"
     else
         echo "Invalid IFRAME value given, commenting out so default applies..."
-        sed -i 's/"AllowFraming":/    "_AllowFraming":/g' "$CONFIG_FILE"
+        sed -i 's/"AllowFraming":/"_AllowFraming":/g' "$CONFIG_FILE"
     fi
 
     # ALLOWED_ORIGIN
     if [[ -n $ALLOWED_ORIGIN ]] && [[ $ALLOWED_ORIGIN =~ ^(true|false)$ ]]; then
         echo "Setting allowedOrigin... - $ALLOWED_ORIGIN"
-        sed -i '/allowedOrigin/ c\    "allowedOrigin": "'"$ALLOWED_ORIGIN"'"' "$CONFIG_FILE"
+        sed -i "s/\"allowedOrigin\": *[a-z]*/\"allowedOrigin\": $ALLOWED_ORIGIN/" "$CONFIG_FILE"
     else
         echo "Invalid ALLOWED_ORIGIN value given, commenting out so default applies..."
-        sed -i 's/"allowedOrigin":/    "_allowedOrigin":/g' "$CONFIG_FILE"
+        sed -i 's/"allowedOrigin":/"_allowedOrigin":/g' "$CONFIG_FILE"
     fi
 
     echo -e "\n$(cat "$CONFIG_FILE")"
