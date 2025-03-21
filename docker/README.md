@@ -1,5 +1,7 @@
 # Create folder-structure and files
 
+# TO BE REWRITTEN - In progress, for questions: dselen@nerthus.nl or @DaanSelen.
+
 ```
 | - meshcentral/        # this folder contains the persistent data
   | - data/             # MeshCentral data-files
