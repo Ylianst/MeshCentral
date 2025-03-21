@@ -2,7 +2,7 @@
 FROM node:lts-alpine AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
-ARG DISABLE_MINIFY=""
+ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
 
 RUN mkdir -p /opt/meshcentral/meshcentral
