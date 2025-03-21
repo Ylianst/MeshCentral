@@ -4299,7 +4299,7 @@ function mainStart() {
         if (config.settings.no2factorauth !== true) {
             // Setup YubiKey OTP if configured
             if (yubikey == true) { modules.push('yubikeyotp@0.2.0'); } // Add YubiKey OTP support
-            if (allsspi == false) { modules.push('otplib@10.2.3'); } // Google Authenticator support (v10 supports older NodeJS versions).
+            if (allsspi == false) { modules.push('otplib@12.0.1'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
         // Desktop multiplexor support
