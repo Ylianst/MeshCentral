@@ -18,47 +18,57 @@
 You can place the `config.json` file directly under `./meshcentral/data/`, or use the following `.env` file instead.
 
 ```ini
-NODE_ENV=production
+NODE_ENV = "production"
+# Leave CONFIG_FILE as per default by using this, or removing it completely from the list. Otherwise if you know what you are doing, you can use this.
+CONFIG_FILE = "/opt/meshcentral/meshcentral-data/config.json"
+# DYNAMIC_CONFIG enables the config to be rechecked on every restart. If disabled then the container runtime will not change the config.json.
+DYNAMIC_CONFIG = "true"
 
-USE_MONGODB=false
-# set already exist mongo connection string url here
-MONGO_URL=
-# or set following init params for new mongodb, use it with docker-compose file with mongodb version
-MONGO_INITDB_ROOT_USERNAME=mongodbadmin
-MONGO_INITDB_ROOT_PASSWORD=mongodbpasswd
+# Environment variables for the MeshCentral Config.json
+ALLOWPLUGINS = "false"
+ALLOW_NEW_ACCOUNTS = "false"
+ALLOWED_ORIGIN = "false"
+ARGS = ""
+HOSTNAME = "localhost"
+IFRAME = "false"
+LOCALSESSIONRECORDING = "true"
+MINIFY = "true"
+REGENSESSIONKEY = "false"
+REVERSE_PROXY = ""
+REVERSE_PROXY_TLS_PORT = ""
+WEBRTC = "false"
 
-# initial meshcentral-variables
-# the following options are only used if no config.json exists in the data-folder
+# MongoDB Variables
+INCLUDE_MONGODB_TOOLS = "false"
+USE_MONGODB = "false"
+MONGO_HOST = ""
+MONGO_PORT = "27017"
+MONGO_USERNAME = ""
+MONGO_PASS = ""
+MONGO_URL = ""
 
-# your hostname
-HOSTNAME=my.domain.com
-# set to your reverse proxy IP if you want to put meshcentral behind a reverse proxy
-REVERSE_PROXY=false
-REVERSE_PROXY_TLS_PORT=
-# set to true if you wish to enable iframe support
-IFRAME=false
-# set to false if you want disable self-service creation of new accounts besides the first (admin)
-ALLOW_NEW_ACCOUNTS=true
-# set to true to enable WebRTC - per documentation it is not officially released with meshcentral and currently experimental. Use with caution
-WEBRTC=false
-# set to true to allow plugins
-ALLOWPLUGINS=false
-# set to true to allow session recording
-LOCALSESSIONRECORDING=false
-# set to enable or disable minification of json, reduces traffic
-MINIFY=true
-# set this value to add extra arguments to meshcentral on startup (e.g --debug ldap)
-ARGS=
-# set to the hostname(s) meshcentral will be reachable on, or true to disable origin checking
-# forms allowed "hostname" or "hostname1,hostname2" or ["hostname1","hostname2"]
-ALLOWED_ORIGIN=false
+# PostgreSQL Variables
+INCLUDE_POSTGRESQL_TOOLS = "false"
+USE_POSTGRESQL = "false"
+PSQL_HOST = ""
+PSQL_PORT = "5432"
+PSQL_USER = ""
+PSQL_PASS = ""
+PSQL_DATABASE = ""
+
+# MariaDB/MySQL Variables (Alpine Linux only provides MariaDB binaries)
+INCLUDE_MARIADB_TOOLS = "false"
+USE_MARIADB = "false"
+MARIADB_HOST = ""
+MARIADB_PORT = "3306"
+MARIADB_USER = ""
+MARIADB_PASS = ""
+MARIADB_DATABASE = ""
 ```
 
 ## docker-compose.yml
 
 ```yaml
-version: '3'
-
 services:
   meshcentral:
     restart: always
@@ -66,7 +76,6 @@ services:
     # use the official meshcentral container
     image: ghcr.io/ylianst/meshcentral:latest
     ports:
-      # MeshCentral will moan and try everything not to use port 80, but you can also use it if you so desire, just change the config.json according to your needs
       - 8086:443
     env_file:
       - .env

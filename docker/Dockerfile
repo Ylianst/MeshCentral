@@ -93,7 +93,7 @@ WORKDIR /opt/meshcentral
 
 RUN apk update \
     && apk add --no-cache --update \
-    bash gcc g++ jq make nodejs npm postgresql-client python3 tzdata \
+    bash gcc g++ jq make nodejs npm python3 tzdata \
     && rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
