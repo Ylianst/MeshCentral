@@ -22,22 +22,29 @@ fi
 if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
 
     if [[ "$USE_MONGODB" =~ ^(true|yes)$ ]]; then
-        if [[ -n  "$MONGO_URL" ]]; then
+        if [[ -n "$MONGO_URL" ]]; then
             echo "MONGO_URL is set, using that..."
         else
-            MONGO_URL="${MONGO_URL:-$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@}$MONGO_HOST:$MONGO_PORT"
+            MONGO_URL="${MONGO_URL:-$MONGO_USERNAME:$MONGO_PASS@}$MONGO_HOST:$MONGO_PORT"
         fi
-        sed -i "s/\"?_mongoDb\": \"\"/\"mongoDb\": \"$MONGO_URL\"/" "$CONFIG_FILE"
+
+        ESCAPED_MONGO_URL=$(echo "$MONGO_URL" | sed 's/[\/&?=:]/\\&/g')
+        sed -i 's/"_mongoDb"/"mongoDb"/' "$CONFIG_FILE"
+        sed -i "s/\"mongoDb\": *\"[^\"]*\"/\"mongoDb\": \"$ESCAPED_MONGO_URL\"/" "$CONFIG_FILE"
     else
-        sed -i 's/"?_mongoDb": ""/"_mongoDb": "null"/' "$CONFIG_FILE"
+        sed -i 's/"mongoDb"/"_mongoDb"/' "$CONFIG_FILE"
     fi
 
     if [[ "$USE_POSTGRESQL" =~ ^(true|yes)$ ]]; then
-        echo "So you wanna postgrsex"
+        echo "So you wanna postgres"
+    else
+        echo "No Postgres"
     fi
 
     if [[ "$USE_MARIADB" =~ ^(true|yes)$ ]]; then
-        echo "So you wanna Maria-Dick-Big"
+        echo "So you wanna MariaDB"
+    else
+        echo "No MariaDB"
     fi
 
     # Doing the bulk with JQ utility. Given the remaining variables an opportunity with Sed.
@@ -50,7 +57,9 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # SESSIONKEY
     if [[ $REGENSESSIONKEY =~ ^(true|yes)$ ]]; then
         echo "Regenerating Session-Key because REGENSESSIONKEY is 'true' or 'yes'"
-        SESSION_KEY=$(tr -dc 'A-Z0-9' < /dev/urandom | fold -w 60 | head -n 1)
+        SESSION_KEY=$(tr -dc 'A-Z0-9' < /dev/urandom | fold -w 96 | head -n 1)
+
+        sed -i 's/"_sessionKey"/"sessionKey"/' "$CONFIG_FILE"
         sed -i "s/\"sessionKey\": *\"[^\"]*\"/\"sessionKey\": \"$SESSION_KEY\"/" "$CONFIG_FILE"
     else
         echo "REGENSESSIONKEY is not 'true' or 'yes', therefore it's being kept as is."
@@ -59,6 +68,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # HOSTNAME
     if [[ -n $HOSTNAME ]] && [[ $HOSTNAME =~ ^([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]+$ ]]; then
         echo "Setting hostname (cert)... - $HOSTNAME"
+        sed -i 's/"_cert"/"cert"/' "$CONFIG_FILE"
         sed -i "s/\"cert\": *\"[^\"]*\"/\"cert\": \"$HOSTNAME\"/" "$CONFIG_FILE"
     else
         echo "Invalid hostname, commenting it out..."
@@ -68,6 +78,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # ALLOW_NEW_ACCOUNTS
     if [[ -n $ALLOW_NEW_ACCOUNTS ]] && [[ $ALLOW_NEW_ACCOUNTS =~ ^(true|false)$ ]]; then
         echo "Setting NewAccounts... - $ALLOW_NEW_ACCOUNTS"
+        sed -i 's/"_NewAccounts"/"NewAccounts"/' "$CONFIG_FILE"
         sed -i "s/\"NewAccounts\": *[a-z]*/\"NewAccounts\": $ALLOW_NEW_ACCOUNTS/" "$CONFIG_FILE"
     else
         echo "Invalid ALLOW_NEW_ACCOUNTS value given, commenting out so default applies..."
@@ -77,6 +88,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # ALLOWPLUGINS
     if [[ -n $ALLOWPLUGINS ]] && [[ $ALLOWPLUGINS =~ ^(true|false)$ ]]; then
         echo "Setting plugins... - $ALLOWPLUGINS"
+        sed -i 's/"_plugins"/"plugins"/' "$CONFIG_FILE"
         sed -i "s/\"plugins\": *{[^}]*}/\"plugins\": {\"enabled\": $ALLOWPLUGINS}/" "$CONFIG_FILE"
     else
         echo "Invalid ALLOWPLUGINS value given, commenting out so default applies..."
@@ -86,6 +98,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # LOCALSESSIONRECORDING
     if [[ -n $LOCALSESSIONRECORDING ]] && [[ $LOCALSESSIONRECORDING =~ ^(true|false)$ ]]; then
         echo "Setting localSessionRecording... - $LOCALSESSIONRECORDING"
+        sed -i 's/"_localSessionRecording"/"localSessionRecording"/' "$CONFIG_FILE"
         sed -i "s/\"localSessionRecording\": *[a-z]*/\"localSessionRecording\": $LOCALSESSIONRECORDING/" "$CONFIG_FILE"
     else
         echo "Invalid LOCALSESSIONRECORDING value given, commenting out so default applies..."
@@ -95,6 +108,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # MINIFY
     if [[ -n $MINIFY ]] && [[ $MINIFY =~ ^(true|false)$ ]]; then
         echo "Setting minify... - $MINIFY"
+        sed -i 's/"_minify"/"minify"/' "$CONFIG_FILE"
         sed -i "s/\"minify\": *[a-z]*/\"minify\": $MINIFY/" "$CONFIG_FILE"
     else
         echo "Invalid MINIFY value given, commenting out so default applies..."
@@ -104,6 +118,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # WEBRTC
     if [[ -n $WEBRTC ]] && [[ $WEBRTC =~ ^(true|false)$ ]]; then
         echo "Setting WebRTC... - $WEBRTC"
+        sed -i 's/"_WebRTC"/"WebRTC"/' "$CONFIG_FILE"
         sed -i "s/\"WebRTC\": *[a-z]*/\"WebRTC\": $WEBRTC/" "$CONFIG_FILE"
     else
         echo "Invalid WEBRTC value given, commenting out so default applies..."
@@ -113,6 +128,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # IFRAME
     if [[ -n $IFRAME ]] && [[ $IFRAME =~ ^(true|false)$ ]]; then
         echo "Setting AllowFraming... - $IFRAME"
+        sed -i 's/"_AllowFraming"/"AllowFraming"/' "$CONFIG_FILE"
         sed -i "s/\"AllowFraming\": *[a-z]*/\"AllowFraming\": $IFRAME/" "$CONFIG_FILE"
     else
         echo "Invalid IFRAME value given, commenting out so default applies..."
@@ -122,6 +138,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     # ALLOWED_ORIGIN
     if [[ -n $ALLOWED_ORIGIN ]] && [[ $ALLOWED_ORIGIN =~ ^(true|false)$ ]]; then
         echo "Setting allowedOrigin... - $ALLOWED_ORIGIN"
+        sed -i 's/"_allowedOrigin"/"allowedOrigin"/' "$CONFIG_FILE"
         sed -i "s/\"allowedOrigin\": *[a-z]*/\"allowedOrigin\": $ALLOWED_ORIGIN/" "$CONFIG_FILE"
     else
         echo "Invalid ALLOWED_ORIGIN value given, commenting out so default applies..."
