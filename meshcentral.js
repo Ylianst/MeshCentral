@@ -2755,7 +2755,7 @@ function CreateMeshCentralServer(config, args) {
     // Clear the connectivity state of a node and setup the server so that messages can be routed correctly.
     // meshId: mesh identifier of format mesh/domain/meshidhex
     // nodeId: node identifier of format node/domain/nodeidhex
-    // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 3 = Intel AMT local.
+    // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local.
     obj.ClearConnectivityState = function (meshid, nodeid, connectType, serverid, extraInfo) {
         //console.log('ClearConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + (serverid == null?(''):(', ServerId: ' + serverid)));
         if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'ClearConnectivityState', meshid: meshid, nodeid: nodeid, connectType: connectType, extraInfo: extraInfo }); }
