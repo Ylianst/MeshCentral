@@ -3695,7 +3695,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else if (domain.dns == null && domain.id != '') {
                             domainName += "/" + domain.id;
                         }
-                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(encodeURIComponent(user.name), domainName, secret) }));
+                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, domainName, secret) }));
                     }
                     break;
                 }
