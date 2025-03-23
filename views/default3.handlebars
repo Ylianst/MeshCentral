@@ -4154,15 +4154,15 @@
                                     if ((node.agent != null) && (node.agent.root === false)) { agentPrivilages = "Agent connected with limited privilages"; }
                                     var abc = { title: node.name, icon: node.icon, nodeid: node._id, id: message.event.id };
                                     if (((node.conn & 1) == 0) && ((message.event.conn & 1) != 0)) { abc.text = agentPrivilages; addNotification(abc); }
-                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { abc.text = "Intel AMT detected"; addNotification(abc); }
-                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { abc.text = "Intel AMT CIRA connected"; addNotification(abc); }
+                                    if (((node.conn & 2) == 0) && ((message.event.conn & 2) != 0)) { abc.text = "Intel AMT CIRA connected"; addNotification(abc); }
+                                    if (((node.conn & 4) == 0) && ((message.event.conn & 4) != 0)) { abc.text = "Intel AMT connected"; addNotification(abc); }
                                     if (((node.conn & 16) == 0) && ((message.event.conn & 16) != 0)) { abc.text = "MQTT connected"; addNotification(abc); }
                                 }
                                 if (n & 4) {
                                     var abc = { title: node.name, icon: node.icon, nodeid: node._id, id: message.event.id };
                                     if (((node.conn & 1) != 0) && ((message.event.conn & 1) == 0)) { abc.text = "Agent disconnected"; addNotification(abc); }
-                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { abc.text = "Intel AMT not detected"; addNotification(abc); }
-                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { abc.text = "Intel AMT CIRA disconnected"; addNotification(abc); }
+                                    if (((node.conn & 2) != 0) && ((message.event.conn & 2) == 0)) { abc.text = "Intel AMT CIRA disconnected"; addNotification(abc); }
+                                    if (((node.conn & 4) != 0) && ((message.event.conn & 4) == 0)) { abc.text = "Intel AMT disconnected"; addNotification(abc); }
                                     if (((node.conn & 16) != 0) && ((message.event.conn & 16) == 0)) { abc.text = "MQTT disconnected"; addNotification(abc); }
                                 }
 
