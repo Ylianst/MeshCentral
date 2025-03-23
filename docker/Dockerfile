@@ -106,6 +106,17 @@ RUN apk update \
         /usr/lib/debug/
 RUN npm install -g npm@latest
 
+RUN case "$PREINSTALL_LIBS" in \
+        true|yes|TRUE|YES) \
+            cd meshcentral && \
+            npm install ssh2@1.16.0 semver@7.7.1 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
+        false|no|FALSE|NO) \
+            echo "Not pre-installing libraries.";; \
+        *) \
+            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes' or 'true'"; \
+            exit 1;; \
+    esac
+
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentraljs mainStart()
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
@@ -148,17 +159,6 @@ COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # install dependencies from package.json
 RUN cd meshcentral && npm install
-
-RUN case "$PREINSTALL_LIBS" in \
-        true|yes|TRUE|YES) \
-            cd meshcentral && \
-            npm install ssh2@1.16.0 semver@7.7.1 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
-        false|no|FALSE|NO) \
-            echo "Not pre-installing libraries.";; \
-        *) \
-            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes' or 'true'"; \
-            exit 1;; \
-    esac
 
 # Expose only 443 by default to reduce attack surface. (Only encrypted ports).
 EXPOSE 443
