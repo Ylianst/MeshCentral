@@ -119,19 +119,6 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     fi
 
-    # ALLOW_NEW_ACCOUNTS
-    if [[ -n $ALLOW_NEW_ACCOUNTS ]] && [[ $ALLOW_NEW_ACCOUNTS =~ ^(true|false)$ ]]; then
-        echo "Setting NewAccounts... $ALLOW_NEW_ACCOUNTS"
-
-        sed -i 's/"_NewAccounts"/"NewAccounts"/' "$CONFIG_FILE"
-        jq --argjson new_accounts "$ALLOW_NEW_ACCOUNTS" \
-            '.domains[""].NewAccounts = $new_accounts' \
-            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
-    else
-        echo "Invalid or no ALLOW_NEW_ACCOUNTS value given, commenting out so default applies... Value given: $ALLOW_NEW_ACCOUNTS"
-        sed -i 's/"NewAccounts":/"_NewAccounts":/g' "$CONFIG_FILE"
-    fi
-
     # ALLOWPLUGINS
     if [[ -n $ALLOWPLUGINS ]] && [[ $ALLOWPLUGINS =~ ^(true|false)$ ]]; then
         echo "Setting plugins... $ALLOWPLUGINS"
@@ -143,33 +130,6 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     else
         echo "Invalid or no ALLOWPLUGINS value given, commenting out so default applies... Value given: $ALLOWPLUGINS"
         sed -i 's/"plugins":/"_plugins":/g' "$CONFIG_FILE"
-    fi
-
-    # LOCALSESSIONRECORDING
-    if [[ -n $LOCALSESSIONRECORDING ]] && [[ $LOCALSESSIONRECORDING =~ ^(true|false)$ ]]; then
-        echo "Setting localSessionRecording... $LOCALSESSIONRECORDING"
-
-        sed -i 's/"_localSessionRecording"/"localSessionRecording"/' "$CONFIG_FILE"
-        jq --argjson session_recording "$LOCALSESSIONRECORDING" \
-            '.domains[""].localSessionRecording = $session_recording' \
-            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
-    else
-        echo "Invalid or no LOCALSESSIONRECORDING value given, commenting out so default applies... Value given: $LOCALSESSIONRECORDING"
-        sed -i 's/"localSessionRecording":/"_localSessionRecording":/g' "$CONFIG_FILE"
-    fi
-
-    # MINIFY
-    if [[ -n $MINIFY ]] && [[ $MINIFY =~ ^(true|false)$ ]]; then
-        echo "Setting minify... $MINIFY"
-
-        sed -i 's/"_minify"/"minify"/' "$CONFIG_FILE"
-        jq --arg minify "$MINIFY" \
-            '.domains[""].minify = $minify' \
-            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
-        #sed -i "s/\"minify\": *[a-z]*/\"minify\": $MINIFY/" "$CONFIG_FILE"
-    else
-        echo "Invalid or no MINIFY value given, commenting out so default applies... Value given: $MINIFY"
-        sed -i 's/"minify":/"_minify":/g' "$CONFIG_FILE"
     fi
 
     # WEBRTC
@@ -197,6 +157,46 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     else
         echo "Invalid or no IFRAME value given, commenting out so default applies... Value given: $IFRAME"
         sed -i 's/"AllowFraming":/"_AllowFraming":/g' "$CONFIG_FILE"
+    fi
+
+    # ALLOW_NEW_ACCOUNTS
+    if [[ -n $ALLOW_NEW_ACCOUNTS ]] && [[ $ALLOW_NEW_ACCOUNTS =~ ^(true|false)$ ]]; then
+        echo "Setting NewAccounts... $ALLOW_NEW_ACCOUNTS"
+
+        sed -i 's/"_NewAccounts"/"NewAccounts"/' "$CONFIG_FILE"
+        jq --argjson new_accounts "$ALLOW_NEW_ACCOUNTS" \
+            '.domains[""].NewAccounts = $new_accounts' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+    else
+        echo "Invalid or no ALLOW_NEW_ACCOUNTS value given, commenting out so default applies... Value given: $ALLOW_NEW_ACCOUNTS"
+        sed -i 's/"NewAccounts":/"_NewAccounts":/g' "$CONFIG_FILE"
+    fi
+
+    # LOCALSESSIONRECORDING
+    if [[ -n $LOCALSESSIONRECORDING ]] && [[ $LOCALSESSIONRECORDING =~ ^(true|false)$ ]]; then
+        echo "Setting localSessionRecording... $LOCALSESSIONRECORDING"
+
+        sed -i 's/"_localSessionRecording"/"localSessionRecording"/' "$CONFIG_FILE"
+        jq --argjson session_recording "$LOCALSESSIONRECORDING" \
+            '.domains[""].localSessionRecording = $session_recording' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+    else
+        echo "Invalid or no LOCALSESSIONRECORDING value given, commenting out so default applies... Value given: $LOCALSESSIONRECORDING"
+        sed -i 's/"localSessionRecording":/"_localSessionRecording":/g' "$CONFIG_FILE"
+    fi
+
+    # MINIFY
+    if [[ -n $MINIFY ]] && [[ $MINIFY =~ ^(true|false)$ ]]; then
+        echo "Setting minify... $MINIFY"
+
+        sed -i 's/"_minify"/"minify"/' "$CONFIG_FILE"
+        jq --arg minify "$MINIFY" \
+            '.domains[""].minify = $minify' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+        #sed -i "s/\"minify\": *[a-z]*/\"minify\": $MINIFY/" "$CONFIG_FILE"
+    else
+        echo "Invalid or no MINIFY value given, commenting out so default applies... Value given: $MINIFY"
+        sed -i 's/"minify":/"_minify":/g' "$CONFIG_FILE"
     fi
 
     # ALLOWED_ORIGIN
