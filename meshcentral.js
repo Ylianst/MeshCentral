@@ -2755,7 +2755,7 @@ function CreateMeshCentralServer(config, args) {
     // Clear the connectivity state of a node and setup the server so that messages can be routed correctly.
     // meshId: mesh identifier of format mesh/domain/meshidhex
     // nodeId: node identifier of format node/domain/nodeidhex
-    // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 3 = Intel AMT local.
+    // connectType: Bitmask, 1 = MeshAgent, 2 = Intel AMT CIRA, 4 = Intel AMT local.
     obj.ClearConnectivityState = function (meshid, nodeid, connectType, serverid, extraInfo) {
         //console.log('ClearConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + (serverid == null?(''):(', ServerId: ' + serverid)));
         if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'ClearConnectivityState', meshid: meshid, nodeid: nodeid, connectType: connectType, extraInfo: extraInfo }); }
@@ -4252,7 +4252,7 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.7.5', 'cookie-session@2.1.0', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.39', 'ws@8.18.0', 'yauzl@2.10.0'];
+        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.7.5', 'cookie-session@2.1.0', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.0', 'yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.16.0'); }
@@ -4265,7 +4265,7 @@ function mainStart() {
         if (config.settings.mysql != null) { modules.push('mysql2@3.11.4'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
         if (config.settings.mongodb != null) { modules.push('mongodb@4.13.0'); modules.push('saslprep@1.0.3'); } // Add MongoDB, official driver.
-        if (config.settings.postgres != null) { modules.push('pg@8.13.1') } // Add Postgres, official driver.
+        if (config.settings.postgres != null) { modules.push('pg@8.14.1') } // Add Postgres, official driver.
         if (config.settings.mariadb != null) { modules.push('mariadb@3.4.0'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.
         if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.7'); } // Add sqlite3, official driver.

@@ -2706,10 +2706,7 @@
                   }
                 }
               }
-            },
-            "required": [
-              "certs"
-            ]
+            }
           },
           "amtAcmActivation": {
             "type": "object",

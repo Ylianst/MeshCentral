@@ -52,6 +52,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.meshUserHandler = require('./meshuser.js');
     obj.interceptor = require('./interceptor');
     obj.uaparser = require('ua-parser-js');
+    obj.uaclienthints = require('ua-client-hints-js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Setup WebAuthn / FIDO2
@@ -6402,7 +6403,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     cb()
                 }
             }
-            next()
+            // Special Client Hint Headers for Browser Detection on every request - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers#client_hints
+            // note: only works in a secure context (localhost or https://)
+            const secCH = [
+                'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
+                'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
+                'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
+            ];
+            response.setHeader('Accept-CH', secCH.join(', '));
+            response.setHeader('Critical-CH', secCH.join(', '));
+            next();
         });
 
         // Handle all incoming web sockets, see if some need to be handled as web relays
@@ -9490,8 +9500,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var browser = 'Unknown', os = 'Unknown';
         try {
             const ua = obj.uaparser((typeof req == 'string') ? req : req.headers['user-agent']);
+            // Add client hints if available
+            if((typeof req != 'string')){
+                const ch = new obj.uaclienthints.UAClientHints().setValuesFromHeaders(req.headers);
+                Object.assign(ua, ch);
+            }
             if (ua.browser && ua.browser.name) { ua.browserStr = ua.browser.name; if (ua.browser.version) { ua.browserStr += '/' + ua.browser.version } }
             if (ua.os && ua.os.name) { ua.osStr = ua.os.name; if (ua.os.version) { ua.osStr += '/' + ua.os.version } }
+            // If the platform is set, use that instead of the OS
+            if (ua.platform) { 
+                ua.osStr = ua.platform;
+                // Special case for Windows 11
+                if (ua.platformVersion) {
+                    if (ua.platform == 'Windows' && parseInt(ua.platformVersion) >= 13) {
+                        ua.platformVersion = '11';
+                    }
+                    ua.osStr += '/' + ua.platformVersion
+                }
+            }
             return ua;
         } catch (ex) { return { browserStr: browser, osStr: os } }
     }
