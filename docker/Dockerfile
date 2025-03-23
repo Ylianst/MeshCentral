@@ -13,17 +13,14 @@ COPY ./ /opt/meshcentral/meshcentral/
 RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then \
         cd meshcentral && \
         npm install html-minifier@4.0.0 jsdom@26.0.0 esprima@4.0.1 && \
-\
         cd translate && \
         node translate.js extractall && \
-\
         case "$DISABLE_MINIFY" in \
             false|no|FALSE|NO) \
                 node translate.js minifyall;; \
             *) \
-            echo "Setting MINIFY as disabled.";; \
-        esac \
-\
+                echo "Setting MINIFY as disabled.";; \
+        esac && \
         case "$DISABLE_TRANSLATE" in \
             false|no|FALSE|NO) \
                 node translate.js translateall;; \
