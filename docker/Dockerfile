@@ -17,13 +17,19 @@ RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then \
         cd translate && \
         node translate.js extractall && \
 \
-        if [ -z "$DISABLE_MINIFY" ]; then \
-            node translate.js minifyall; \
-        fi; \
+        case "$DISABLE_MINIFY" in \
+            false|no|FALSE|NO) \
+                node translate.js minifyall;; \
+            *) \
+            echo "Setting MINIFY as disabled.";; \
+        esac \
 \
-        if [ -z "$DISABLE_TRANSLATE" ]; then \
-            node translate.js translateall; \
-        fi \
+        case "$DISABLE_TRANSLATE" in \
+            false|no|FALSE|NO) \
+                node translate.js translateall;; \
+            *) \
+                echo "Setting TRANSLATE as disabled.";; \
+        esac \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
@@ -53,7 +59,7 @@ ENV LOCALSESSIONRECORDING="true"
 ENV MINIFY="true"
 ENV REGENSESSIONKEY="false"
 ENV REVERSE_PROXY=""
-ENV REVERSE_PROXY_TLS_PORT=""
+ENV REVERSE_PROXY_TLS_PORT="443"
 ENV WEBRTC="false"
 
 
@@ -170,4 +176,4 @@ VOLUME /opt/meshcentral/meshcentral-backups
 COPY ./docker/entrypoint.sh ./entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
-CMD ["bash", "/opt/meshcentral/entrypoint.sh"]
+ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
