@@ -35,9 +35,11 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
             MONGO_URL="${MONGO_URL:-$MONGO_USERNAME:$MONGO_PASS@}$MONGO_HOST:$MONGO_PORT"
         fi
 
-        ESCAPED_MONGO_URL=$(echo "$MONGO_URL" | sed 's/[\/&?=:]/\\&/g')
+        #ESCAPED_MONGO_URL=$(echo "$MONGO_URL" | sed 's/[\/&?=:]/\\&/g')
         sed -i 's/"_mongoDb"/"mongoDb"/' "$CONFIG_FILE"
-        sed -i "s/\"mongoDb\": *\"[^\"]*\"/\"mongoDb\": \"$ESCAPED_MONGO_URL\"/" "$CONFIG_FILE"
+        jq --arg mongo_url "$MONGO_URL" \
+            '.settings.mongoDb = $mongo_url' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
         echo "Disabling MongoDB-connector..."
         sed -i 's/"mongoDb"/"_mongoDb"/' "$CONFIG_FILE"
