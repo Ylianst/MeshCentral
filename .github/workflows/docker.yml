@@ -4,7 +4,7 @@ on:
     branches:
       - master
   release:
-    types: [published]
+    types: [ published ]
 
 env:
   REGISTRY: ghcr.io
@@ -64,4 +64,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             INCLUDE_MONGODBTOOLS=true
+            INCLUDE_POSTGRESQL_TOOLS=true
+            INCLUDE_MARIADB_TOOLS=true
             PREINSTALL_LIBS=true
+
+      - name: Docker Scout
+        id: docker-scout
+        uses: docker/scout-action@v1
+        with:
+          command: quickview,cves
+          image: image://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          summary: true
+          only-severities: critical,high,medium,low,unspecified
