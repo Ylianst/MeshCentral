@@ -3,11 +3,11 @@ nav:
   - Home: index.md
 
   - Install:
-    - install/index.md
-    - install/install2.md
+    - install/quickstart.md
+    - install/install.md
 
-  - MeshCentral2: 
-      - 'MeshCentral2 Guide': 'meshcentral/index.md'
+  - MeshCentral:
+      - 'MeshCentral Guide': 'meshcentral/index.md'
       - 'All Configuration Options': 'meshcentral/config.md'
       - 'Agent Information': 'meshcentral/agents.md'
       - 'Assistant': 'meshcentral/assistant.md'
@@ -47,7 +47,7 @@ nav:
     - other/meshcentral_satellite.md
 
 site_description: "A remote monitoring and management tool"
-site_author: "Ylianst"
+site_author: "Ylianst and others"
 site_url: "https://ylianst.github.io/MeshCentral/"
 
 dev_addr: "0.0.0.0:8010"
@@ -61,19 +61,34 @@ theme:
   name: "material"
   logo: "images/favicon.ico"
   favicon: "images/favicon.ico"
-  language: "en"
+  language: en
+  locale: en
+  include_sidebar: false
   palette:
-    primary: "white"
-    accent: "indigo"
+    # Palette toggle for light mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
     - navigation.tabs
-    - navigation.expand
+    #- navigation.expand
     - navigation.top
     - navigation.instant
+    - search.suggest
 extra_css:
-  - stylesheets/extra.css
+  - stylesheets/extra-new.css
 extra:
   generator: false
+plugins:
+  - search
+  - print-site
 
 markdown_extensions:
   - pymdownx.keys
@@ -93,8 +108,8 @@ markdown_extensions:
   - toc:
       permalink: true
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true

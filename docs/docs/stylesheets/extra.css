@@ -2,7 +2,6 @@
 .md-grid {
     max-width: 95%; /* or 100%, if you want to stretch to full-width */
   }
-
 .md-header {
     background-color: #0b3e81 !important;
     color: white !important;
@@ -19,10 +18,10 @@
 .md-footer-meta__inner {
     background-color: #0b3e81;
 }
-.md-grid {
-}
+/*.md-grid {
+}*/
 .md-nav__item .md-nav__link--active {
-    color: white;
+    color: gray;
 }
 .md-nav__link {
     color: white;
@@ -34,8 +33,8 @@
     background-color: #0b3e81;
     color: white;
 }
-.md-tabs__list {
-}
+/*.md-tabs__list {
+}*/
 .md-typeset a {
     color: whitesmoke;
     text-decoration: underline;

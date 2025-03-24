@@ -12,17 +12,19 @@ For more information, [visit MeshCentral.com](https://www.meshcentral.com/).
 
 [Reddit](https://www.reddit.com/r/MeshCentral/)
 
+[Discord](https://discord.gg/wF9UT3Vjdj)
+
 [BlueSky](https://bsky.app/profile/meshcentral.bsky.social)
 
 [BlogSpot](https://meshcentral2.blogspot.com/)
 
 ## Documentation
 
-The [User's Guide](meshcentral) contains information every administrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
+The [User's Guide](meshcentral/index.md) contains information every administrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
 
-The [Installation Guide](install/install2.md) has detailed instructions for installing the MeshCentral Server on Windows 8.1, Windows 10, Windows 2012 R2, Amazon Linux 2, Raspberry Pi, Microsoft Azure, Google Cloud, Ubuntu 18, Ubuntu 16 and OpenBSD.
+The [Installation Guide](install/install.md) has detailed instructions for installing the MeshCentral Server on Windows 8.1, Windows 10, Windows 2012 R2, Amazon Linux 2, Raspberry Pi, Microsoft Azure, Google Cloud, Ubuntu 18, Ubuntu 16 and OpenBSD.
 
-The [Design and Architecture Guide](design) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
+The [Design and Architecture Guide](design/index.md) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
 
 ## Video Tutorials
 
