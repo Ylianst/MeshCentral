@@ -65,20 +65,17 @@ theme:
   locale: en
   include_sidebar: false
   palette:
-    # Palette toggle for light mode
-    - scheme: slate
+    - scheme: slate # Palette toggle for light mode
       toggle:
         icon: material/brightness-7 
         name: Switch to dark mode
-
-    # Palette toggle for dark mode
-    - scheme: default
+    - scheme: default # Palette toggle for dark mode
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   features:
     - navigation.tabs
-    #- navigation.expand
+    - navigation.expand
     - navigation.top
     - navigation.instant
     - search.suggest
