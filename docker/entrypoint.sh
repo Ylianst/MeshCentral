@@ -22,7 +22,7 @@ else
 fi
 
 if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
-    cat $CONFIG_FILE
+    cat "$CONFIG_FILE"
     echo "Using Dynamic Configuration values..."
 
     # BEGIN DATABASE CONFIGURATION FIELDS
