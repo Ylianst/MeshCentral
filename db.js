@@ -3323,9 +3323,9 @@ module.exports.CreateDB = function (parent, func) {
 
         var cmd = '"' + mongoDumpPath + '"';
         if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\"'; }
-        if (parent.config.settings.mongodbdumpargs) {
-            cmd = '\"' + mongoDumpPath + '\" ' + parent.config.settings.mongodbdumpargs;
-            if (!parent.config.settings.mongodbdumpargs.includes("--db=")) {cmd += ' --db=' + (parent.config.settings.mongodbname ? parent.config.settings.mongodbname : 'meshcentral')};
+        if (parent.config.settings.autobackup?.mongodumpargs) {
+            cmd = '\"' + mongoDumpPath + '\" ' + parent.config.settings.autobackup.mongodumpargs;
+            if (!parent.config.settings.autobackup.mongodumpargs.includes("--db=")) {cmd += ' --db=' + (parent.config.settings.mongodbname ? parent.config.settings.mongodbname : 'meshcentral')};
         }
         return cmd;
     }
