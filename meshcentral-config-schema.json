@@ -29,6 +29,10 @@
           "type": "string",
           "description": "Name of the MongoDB database used."
         },
+        "mongoDbDumpArgs": {
+          "type": "string",
+          "description": "Override the default mongodump --uri=<mongoDb>. The --db= option is automatically appended if omitted. (f.e. --host=127.0.0.1 --username=someUser --password=PaSsWORD --authenticationDatabase=admin)"
+        },
         "mongoDbChangeStream": {
           "type": "boolean",
           "default": false

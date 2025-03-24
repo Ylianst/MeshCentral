@@ -3323,7 +3323,10 @@ module.exports.CreateDB = function (parent, func) {
 
         var cmd = '"' + mongoDumpPath + '"';
         if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\"'; }
-
+        if (parent.config.settings.mongodbdumpargs) {
+            cmd = '\"' + mongoDumpPath + '\" ' + parent.config.settings.mongodbdumpargs;
+            if (!parent.config.settings.mongodbdumpargs.includes("--db=")) {cmd += ' --db=' + (parent.config.settings.mongodbname ? parent.config.settings.mongodbname : 'meshcentral')};
+        }
         return cmd;
     }
 
@@ -3377,7 +3380,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Unable to find mongodump tool, backup will not be performed. Command tried: " + cmd);
+                        func(1, "Mongodump error, backup will not be performed. Command tried: " + cmd + ' --> ERROR: ' + stderr);
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
