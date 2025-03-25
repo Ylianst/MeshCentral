@@ -163,7 +163,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     if [[ -n $TRUSTED_PROXY ]]; then
         echo "Setting trustedProxy... - $REVERSE_PROXY_STRING"
 
-        if [[ $TRUSTED_PROXY == "all" ]]; then
+        if [[ $TRUSTED_PROXY == "all" ]] || [[ $TRUSTED_PROXY == "true" ]]; then
             sed -i 's/"_trustedProxy"/"trustedProxy"/' "$CONFIG_FILE"
             jq --argjson trusted_proxy "true" \
                 '.settings.trustedProxy = $trusted_proxy' \
