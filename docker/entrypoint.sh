@@ -161,7 +161,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
 
     # trustedProxy
     if [[ -n $TRUSTED_PROXY ]]; then
-        echo "Setting trustedProxy... - $REVERSE_PROXY_STRING"
+        echo "Setting trustedProxy... - $TRUSTED_PROXY"
 
         if [[ $TRUSTED_PROXY == "all" ]] || [[ $TRUSTED_PROXY == "true" ]]; then
             sed -i 's/"_trustedProxy"/"trustedProxy"/' "$CONFIG_FILE"
