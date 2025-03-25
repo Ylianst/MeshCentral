@@ -22,7 +22,7 @@ else
 fi
 
 if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
-    cat $CONFIG_FILE
+    cat "$CONFIG_FILE"
     echo "Using Dynamic Configuration values..."
 
     # BEGIN DATABASE CONFIGURATION FIELDS
@@ -93,7 +93,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     echo "If defaults are going to get applied, refer to: https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json"
 
     # SESSIONKEY
-    if [[ $REGENSESSIONKEY =~ ^(true|yes)$ ]]; then
+    if [[ $REGEN_SESSIONKEY =~ ^(true|yes)$ ]]; then
         echo "Regenerating Session-Key because REGENSESSIONKEY is 'true' or 'yes'"
         SESSION_KEY=$(tr -dc 'A-Z0-9' < /dev/urandom | fold -w 96 | head -n 1)
 
@@ -106,7 +106,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # HOSTNAME
-    if [[ -n $HOSTNAME ]] && [[ $HOSTNAME =~ ^[a-zA-Z0-9-]+$ ]]; then
+    if [[ -n $HOSTNAME ]]; then
         echo "Setting hostname (cert)... $HOSTNAME"
 
         jq --arg hostname "$HOSTNAME" \
@@ -120,15 +120,15 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # ALLOWPLUGINS
-    if [[ -n $ALLOWPLUGINS ]] && [[ $ALLOWPLUGINS =~ ^(true|false)$ ]]; then
-        echo "Setting plugins... $ALLOWPLUGINS"
+    if [[ -n $ALLOW_PLUGINS ]] && [[ $ALLOW_PLUGINS =~ ^(true|false)$ ]]; then
+        echo "Setting plugins... $ALLOW_PLUGINS"
 
         sed -i 's/"_plugins"/"plugins"/' "$CONFIG_FILE"
-        jq --argjson allow_plugins "$ALLOWPLUGINS" \
+        jq --argjson allow_plugins "$ALLOW_PLUGINS" \
             '.settings.plugins.enabled = $allow_plugins' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
-        echo "Invalid or no ALLOWPLUGINS value given, commenting out so default applies... Value given: $ALLOWPLUGINS"
+        echo "Invalid or no ALLOWPLUGINS value given, commenting out so default applies... Value given: $ALLOW_PLUGINS"
         sed -i 's/"plugins":/"_plugins":/g' "$CONFIG_FILE"
     fi
 
@@ -159,6 +159,26 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
         sed -i 's/"AllowFraming":/"_AllowFraming":/g' "$CONFIG_FILE"
     fi
 
+    # trustedProxy
+    if [[ -n $TRUSTED_PROXY ]]; then
+        echo "Setting trustedProxy... - $REVERSE_PROXY_STRING"
+
+        if [[ $TRUSTED_PROXY == "all" ]]; then
+            sed -i 's/"_trustedProxy"/"trustedProxy"/' "$CONFIG_FILE"
+            jq --argjson trusted_proxy "true" \
+                '.settings.trustedProxy = $trusted_proxy' \
+                "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+        else
+            sed -i 's/"_trustedProxy"/"trustedProxy"/' "$CONFIG_FILE"
+            jq --argjson trusted_proxy "$TRUSTED_PROXY" \
+                '.settings.trustedProxy = $trusted_proxy' \
+                "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+        fi
+    else
+        echo "Invalid or no REVERSE_PROXY and/or REVERSE_PROXY_TLS_PORT value given, commenting out so default applies... Value(s) given: $REVERSE_PROXY_STRING"
+        sed -i 's/"certUrl":/"_certUrl":/g' "$CONFIG_FILE"
+    fi
+
     # ALLOW_NEW_ACCOUNTS
     if [[ -n $ALLOW_NEW_ACCOUNTS ]] && [[ $ALLOW_NEW_ACCOUNTS =~ ^(true|false)$ ]]; then
         echo "Setting NewAccounts... $ALLOW_NEW_ACCOUNTS"
@@ -173,15 +193,15 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # LOCALSESSIONRECORDING
-    if [[ -n $LOCALSESSIONRECORDING ]] && [[ $LOCALSESSIONRECORDING =~ ^(true|false)$ ]]; then
-        echo "Setting localSessionRecording... $LOCALSESSIONRECORDING"
+    if [[ -n $LOCAL_SESSION_RECORDING ]] && [[ $LOCAL_SESSION_RECORDING =~ ^(true|false)$ ]]; then
+        echo "Setting localSessionRecording... $LOCAL_SESSION_RECORDING"
 
         sed -i 's/"_localSessionRecording"/"localSessionRecording"/' "$CONFIG_FILE"
-        jq --argjson session_recording "$LOCALSESSIONRECORDING" \
+        jq --argjson session_recording "$LOCAL_SESSION_RECORDING" \
             '.domains[""].localSessionRecording = $session_recording' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
-        echo "Invalid or no LOCALSESSIONRECORDING value given, commenting out so default applies... Value given: $LOCALSESSIONRECORDING"
+        echo "Invalid or no LOCALSESSIONRECORDING value given, commenting out so default applies... Value given: $LOCAL_SESSION_RECORDING"
         sed -i 's/"localSessionRecording":/"_localSessionRecording":/g' "$CONFIG_FILE"
     fi
 
@@ -190,7 +210,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
         echo "Setting minify... $MINIFY"
 
         sed -i 's/"_minify"/"minify"/' "$CONFIG_FILE"
-        jq --arg minify "$MINIFY" \
+        jq --argjson minify "$MINIFY" \
             '.domains[""].minify = $minify' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
         #sed -i "s/\"minify\": *[a-z]*/\"minify\": $MINIFY/" "$CONFIG_FILE"
@@ -204,7 +224,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
         echo "Setting allowedOrigin... $ALLOWED_ORIGIN"
 
         sed -i 's/"_allowedOrigin"/"allowedOrigin"/' "$CONFIG_FILE"
-        jq --arg allowed_origin "$ALLOWED_ORIGIN" \
+        jq --argjson allowed_origin "$ALLOWED_ORIGIN" \
             '.domains[""].allowedOrigin = $allowed_origin' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else

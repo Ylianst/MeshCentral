@@ -12,15 +12,15 @@ Below is a breakdown of environment variables used in this setup.
 | NODE_ENV | production | Specifies the Node.js environment. |
 | CONFIG_FILE | /opt/meshcentral/meshcentral-data/config.json | Path to the configuration file. |
 | DYNAMIC_CONFIG | true | Enables/disables dynamic configuration. This means config is being rechecked every container restart. |
-| ALLOWPLUGINS | false | Enables/disables plugins. |
+| ALLOW_PLUGINS | false | Enables/disables plugins. |
 | ALLOW_NEW_ACCOUNTS | false | Enables/disables new account creation. |
 | ALLOWED_ORIGIN | false | Enables/disables allowed origin policy. |
 | ARGS | "" | Additional arguments for MeshCentral. |
 | HOSTNAME | localhost | Specifies the hostname. |
 | IFRAME | false | Enables/disables embedding in an iframe. |
-| LOCALSESSIONRECORDING | true | Enables session recording. |
+| LOCAL_SESSION_RECORDING | true | Enables session recording. |
 | MINIFY | true | Minifies the JavaScript and HTML output. |
-| REGENSESSIONKEY | false | Regenerates the session key on each restart of the container. |
+| REGEN_SESSIONKEY | false | Regenerates the session key on each restart of the container. |
 | REVERSE_PROXY | "" | Configures reverse proxy support through `certUrl`. |
 | REVERSE_PROXY_TLS_PORT | "443" | Configures reverse proxy TLS port, will be combined with: `REVERSE_PROXY`. |
 | WEBRTC | false | Enables/disables WebRTC support. |
@@ -104,15 +104,15 @@ CONFIG_FILE=/opt/meshcentral/meshcentral-data/config.json
 DYNAMIC_CONFIG=true
 
 # MeshCentral Configuration
-ALLOWPLUGINS=false
+ALLOW_PLUGINS=false
 ALLOW_NEW_ACCOUNTS=false
 ALLOWED_ORIGIN=false
 ARGS=
 HOSTNAME=localhost
 IFRAME=false
-LOCALSESSIONRECORDING=true
+LOCAL_SESSION_RECORDING=true
 MINIFY=true
-REGENSESSIONKEY=false
+REGEN_SESSIONKEY=false
 REVERSE_PROXY=
 REVERSE_PROXY_TLS_PORT=
 WEBRTC=false
