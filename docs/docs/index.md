@@ -4,19 +4,15 @@
 
 MeshCentral is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create device group and download and install an agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
 
-For more information, [visit MeshCentral.com](https://www.meshcentral.com/).
+For more information, [visit MeshCentral.com](https://meshcentral.com).
 
 ## Social Media
 
-[YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)
-
-[Reddit](https://www.reddit.com/r/MeshCentral/)
-
-[Discord](https://discord.gg/wF9UT3Vjdj)
-
-[BlueSky](https://bsky.app/profile/meshcentral.bsky.social)
-
-[BlogSpot](https://meshcentral2.blogspot.com/)
+[YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)<br>
+[Reddit](https://www.reddit.com/r/MeshCentral/)<br>
+[Discord](https://discord.gg/wF9UT3Vjdj)<br>
+[BlueSky](https://bsky.app/profile/meshcentral.bsky.social)<br>
+[BlogSpot](https://meshcentral2.blogspot.com/)<br>
 
 ## Documentation
 
@@ -50,16 +46,19 @@ Using MeshCentral Router to port map TCP connections.
 
 ## Feedback
 
-If you encounter a problem or have a suggestion to improve the product, you may file an [issue report](https://github.com/Ylianst/MeshCentral/issues/)
-
+If you encounter a problem or have a suggestion to improve the product, you may file an [GitHub Issue](https://github.com/Ylianst/MeshCentral/issues/).<br>
 If you are filing a problem report, you should include:
 
-* The version of the software you are using
-* The Operating System and version
-* The observed output
-* The expected output
-* Any troubleshooting you took to resolve the issue yourself
-* Any other similar reports~~
+* The version of the software you are using.
+> For example: 1.1.43
+* The Operating System and version.
+> For example: Debian 12
+* Any troubleshooting you took to resolve the issue yourself.
+> For example: Reinstalling MeshCentral (including OS)
+* Any other similar reports.
+> For example: other GitHub issues.
+* The observed output.
+* The expected output.
 
 If you are having issues with the following other products, you should file a report on their respective issue pages
 [MeshAgent](https://github.com/Ylianst/MeshAgent/issues)

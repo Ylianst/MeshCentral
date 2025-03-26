@@ -9,13 +9,13 @@ nav:
   - MeshCentral:
       - 'MeshCentral Guide': 'meshcentral/index.md'
       - 'All Configuration Options': 'meshcentral/config.md'
+      - 'SSL/TLS': 'meshcentral/SSLnletsencrypt.md'
       - 'Agent Information': 'meshcentral/agents.md'
       - 'Assistant': 'meshcentral/assistant.md'
       - 'Code Signing': 'meshcentral/codesigning.md'
       - 'Debugging': 'meshcentral/debugging.md'
       - 'Device Tabs': 'meshcentral/devicetabs.md'
       - 'Plugins': 'meshcentral/plugins.md'
-      - 'SSL': 'meshcentral/SSLnletsencrypt.md'
       - 'Security': 'meshcentral/security.md'
       - 'Tokens': 'meshcentral/tokens.md'
       - 'FAQ': 'meshcentral/faq.md'
@@ -27,17 +27,15 @@ nav:
   - Design and Architecture:
     - design/index.md
 
-  - MeshCmd:
-    - meshcmd/index.md
-
-  - MeshCtrl:
-    - meshctrl/index.md
-
-  - Mesh Router:
-    - meshrouter/index.md
-
-  - Intel AMT:
-    - intelamt/index.md
+  - Submodules and Features:
+    - MeshCmd:
+      - meshcmd/index.md
+    - MeshCtrl:
+      - meshctrl/index.md
+    - Mesh Router:
+      - meshrouter/index.md
+    - Intel AMT:
+      - intelamt/index.md
 
   - How to Contribute:
     - how-to-contribute/index.md
@@ -75,12 +73,11 @@ theme:
         name: Switch to light mode
   features:
     - navigation.tabs
-    - navigation.expand
     - navigation.top
     - navigation.instant
     - search.suggest
 extra_css:
-  - stylesheets/extra-new.css
+  - stylesheets/extra.css
 extra:
   generator: false
 plugins:
