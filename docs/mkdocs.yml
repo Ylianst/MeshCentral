@@ -1,6 +1,10 @@
 site_name: "MeshCentral Documentation"
 nav:
-  - Home: index.md
+  - Home:
+    - 'Home': index.md
+    - 'Install':
+      - install/quickstart.md
+      - install/install.md
 
   - Install:
     - install/quickstart.md
@@ -23,9 +27,6 @@ nav:
       - 'Messaging': 'messaging/index.md'
       - 'Customization': 'meshcentral/customization.md'
       - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
-      
-  - Design and Architecture:
-    - design/index.md
 
   - Submodules and Features:
     - MeshCmd:
@@ -39,6 +40,9 @@ nav:
 
   - How to Contribute:
     - how-to-contribute/index.md
+
+  - Design and Architecture:
+    - design/index.md
 
   - Other:
     - other/adfs_sso_guide.md
@@ -63,14 +67,14 @@ theme:
   locale: en
   include_sidebar: false
   palette:
-    - scheme: slate # Palette toggle for light mode
-      toggle:
-        icon: material/brightness-7 
-        name: Switch to dark mode
     - scheme: default # Palette toggle for dark mode
       toggle:
-        icon: material/brightness-4
+        icon: material/brightness-7
         name: Switch to light mode
+    - scheme: slate # Palette toggle for light mode
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
   features:
     - navigation.tabs
     - navigation.top

@@ -1,3 +1,11 @@
 .md-grid {
     max-width: 75%;
 }
+
+img {
+    height: auto;
+    width: auto;
+    border: none;
+    border-radius: 10px;
+    transition: transform ease-in-out 0.3s;
+}
