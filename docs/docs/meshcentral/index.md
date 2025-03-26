@@ -1,9 +1,5 @@
 # MeshCentral Guide
 
-[MeshCentral Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
-
-MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
-
 ## Video Walkthru
 
 <div class="video-wrapper">
@@ -1904,5 +1900,11 @@ This will run bash in interactive mode and work correctly.
 MeshCentral has built-in web-based integration of SSH in the "Terminal" tab and SFTP in the "Files" tab.
 
 <div class="video-wrapper">
-  <iframe width="320" height="180" src="https://www.youtube.com/embed/7qAbl2OuZEU" frameborder="0" allowfullscreen></iframe>
+  <iframe src="https://www.youtube.com/embed/7qAbl2OuZEU" frameborder="0" allowfullscreen></iframe>
 </div>
+
+## PDF and ODT handout(s).
+
+[MeshCentral Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
+
+MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)

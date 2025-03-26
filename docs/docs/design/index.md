@@ -2,11 +2,10 @@
 
 ![](images/2022-05-15-12-57-36.jpg)
 
-Design and Architecture Guide [as .pdf](https://meshcentral.com/docs/MeshCentral2DesignArchitecture.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral Design & Architecture v0.0.4.odt?raw=true)
 ## Video Walkthru
 
 <div class="video-wrapper">
-  <iframe width="320" height="180" src="https://www.youtube.com/embed/MOQ0uCUs7_M" frameborder="0" allowfullscreen></iframe>
+  <iframe src="https://www.youtube.com/embed/MOQ0uCUs7_M" frameborder="0" allowfullscreen></iframe>
 </div>
 
 ## Abstract
@@ -371,3 +370,7 @@ MeshCentral is a free, open source and powerful remote management solution that 
 ## License
 
 MeshCentral and this document are both opens source and licensed using Apache 2.0, the full license can be found at [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+## PDF Handout
+
+Design and Architecture Guide [as .pdf](https://meshcentral.com/docs/MeshCentral2DesignArchitecture.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral Design & Architecture v0.0.4.odt?raw=true)

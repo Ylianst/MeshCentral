@@ -1,10 +1,27 @@
 site_name: "MeshCentral Documentation"
 nav:
-  - Home:
+  - Homepage:
     - 'Home': index.md
     - 'Install':
       - install/quickstart.md
       - install/install.md
+    - 'MeshCentral':
+      - 'MeshCentral Guide': 'meshcentral/index.md'
+      - 'All Configuration Options': 'meshcentral/config.md'
+      - 'SSL/TLS': 'meshcentral/SSLnletsencrypt.md'
+      - 'Agent Information': 'meshcentral/agents.md'
+      - 'Assistant': 'meshcentral/assistant.md'
+      - 'Code Signing': 'meshcentral/codesigning.md'
+      - 'Debugging': 'meshcentral/debugging.md'
+      - 'Device Tabs': 'meshcentral/devicetabs.md'
+      - 'Plugins': 'meshcentral/plugins.md'
+      - 'Security': 'meshcentral/security.md'
+      - 'Tokens': 'meshcentral/tokens.md'
+      - 'FAQ': 'meshcentral/faq.md'
+      - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
+      - 'Messaging': 'messaging/index.md'
+      - 'Customization': 'meshcentral/customization.md'
+      - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
 
   - Install:
     - install/quickstart.md
@@ -29,20 +46,14 @@ nav:
       - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
 
   - Submodules and Features:
-    - MeshCmd:
-      - meshcmd/index.md
-    - MeshCtrl:
-      - meshctrl/index.md
-    - Mesh Router:
-      - meshrouter/index.md
-    - Intel AMT:
-      - intelamt/index.md
+    - MeshCmd: meshcmd/index.md
+    - MeshCtrl: meshctrl/index.md
+    - Mesh Router: meshrouter/index.md
+    - Intel AMT: intelamt/index.md
 
-  - How to Contribute:
-    - how-to-contribute/index.md
+  - How to Contribute: how-to-contribute/index.md
 
-  - Design and Architecture:
-    - design/index.md
+  - Design and Architecture: design/index.md
 
   - Other:
     - other/adfs_sso_guide.md

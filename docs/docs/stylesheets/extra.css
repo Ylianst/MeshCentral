@@ -9,3 +9,12 @@ img {
     border-radius: 10px;
     transition: transform ease-in-out 0.3s;
 }
+img:hover {
+    transform: scale(1.05); /* Slightly enlarges on hover */
+}
+
+.video-wrapper iframe {
+    width: 480px; /* Ratio 16:9 */
+    height: 270px; /* Ratio 16:9 */
+    border-radius: 10px; /* Rounded Corners */
+}
