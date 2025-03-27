@@ -1,63 +1,69 @@
 site_name: "MeshCentral Documentation"
 nav:
   - Homepage:
-    - 'Home': index.md
+    - 'Home': './index.md'
     - 'Install':
-      - install/quickstart.md
-      - install/install.md
+      - 'Quickstart': './install/quickstart.md'
+      - 'Installation Guides':
+        - 'Legacy': './install/complete.md'
+        - 'Container': './install/container.md'
+        - 'AWS': './install/amazon.md'
     - 'MeshCentral':
-      - 'MeshCentral Guide': 'meshcentral/index.md'
-      - 'All Configuration Options': 'meshcentral/config.md'
-      - 'SSL/TLS': 'meshcentral/SSLnletsencrypt.md'
-      - 'Agent Information': 'meshcentral/agents.md'
-      - 'Assistant': 'meshcentral/assistant.md'
-      - 'Code Signing': 'meshcentral/codesigning.md'
-      - 'Debugging': 'meshcentral/debugging.md'
-      - 'Device Tabs': 'meshcentral/devicetabs.md'
-      - 'Plugins': 'meshcentral/plugins.md'
-      - 'Security': 'meshcentral/security.md'
-      - 'Tokens': 'meshcentral/tokens.md'
-      - 'FAQ': 'meshcentral/faq.md'
-      - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
-      - 'Messaging': 'messaging/index.md'
-      - 'Customization': 'meshcentral/customization.md'
-      - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
+      - 'MeshCentral Guide': './meshcentral/index.md'
+      - 'All Configuration Options': './meshcentral/config.md'
+      - 'SSL/TLS': './meshcentral/SSLnletsencrypt.md'
+      - 'Agent Information': './meshcentral/agents.md'
+      - 'Assistant': './meshcentral/assistant.md'
+      - 'Code Signing': './meshcentral/codesigning.md'
+      - 'Debugging': './meshcentral/debugging.md'
+      - 'Device Tabs': './meshcentral/devicetabs.md'
+      - 'Plugins': './meshcentral/plugins.md'
+      - 'Security': './meshcentral/security.md'
+      - 'Tokens': './meshcentral/tokens.md'
+      - 'FAQ': './meshcentral/faq.md'
+      - 'Tips n Tricks': './meshcentral/tipsntricks.md'
+      - 'Messaging': './messaging/index.md'
+      - 'Customization': './meshcentral/customization.md'
+      - 'openidConnectStrategy': './meshcentral/openidConnectStrategy.md'
 
-  - Install:
-    - install/quickstart.md
-    - install/install.md
+  - 'Install':
+    - 'Quickstart': 'install/quickstart.md'
+    - 'Installation Guides':
+        - 'Legacy': './install/complete.md'
+        - 'Container': './install/container.md'
+        - 'AWS': './install/amazon.md'
 
-  - MeshCentral:
-      - 'MeshCentral Guide': 'meshcentral/index.md'
-      - 'All Configuration Options': 'meshcentral/config.md'
-      - 'SSL/TLS': 'meshcentral/SSLnletsencrypt.md'
-      - 'Agent Information': 'meshcentral/agents.md'
-      - 'Assistant': 'meshcentral/assistant.md'
-      - 'Code Signing': 'meshcentral/codesigning.md'
-      - 'Debugging': 'meshcentral/debugging.md'
-      - 'Device Tabs': 'meshcentral/devicetabs.md'
-      - 'Plugins': 'meshcentral/plugins.md'
-      - 'Security': 'meshcentral/security.md'
-      - 'Tokens': 'meshcentral/tokens.md'
-      - 'FAQ': 'meshcentral/faq.md'
-      - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
-      - 'Messaging': 'messaging/index.md'
-      - 'Customization': 'meshcentral/customization.md'
-      - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
+  - 'MeshCentral':
+      - 'MeshCentral Guide': './meshcentral/index.md'
+      - 'All Configuration Options': './meshcentral/config.md'
+      - 'SSL/TLS': './meshcentral/SSLnletsencrypt.md'
+      - 'Agent Information': './meshcentral/agents.md'
+      - 'Assistant': './meshcentral/assistant.md'
+      - 'Code Signing': './meshcentral/codesigning.md'
+      - 'Debugging': './meshcentral/debugging.md'
+      - 'Device Tabs': './meshcentral/devicetabs.md'
+      - 'Plugins': './meshcentral/plugins.md'
+      - 'Security': './meshcentral/security.md'
+      - 'Tokens': './meshcentral/tokens.md'
+      - 'FAQ': './meshcentral/faq.md'
+      - 'Tips n Tricks': './meshcentral/tipsntricks.md'
+      - 'Messaging': './messaging/index.md'
+      - 'Customization': './meshcentral/customization.md'
+      - 'OpenID Connect Strategy (OIDC)': './meshcentral/openidConnectStrategy.md'
 
-  - Submodules and Features:
-    - MeshCmd: meshcmd/index.md
-    - MeshCtrl: meshctrl/index.md
-    - Mesh Router: meshrouter/index.md
-    - Intel AMT: intelamt/index.md
+  - 'Submodules and Features':
+    - 'MeshCmd': ./meshcmd/index.md
+    - 'MeshCtrl': ./meshctrl/index.md
+    - 'Mesh Router': ./meshrouter/index.md
+    - 'Intel AMT': ./intelamt/index.md
 
-  - How to Contribute: how-to-contribute/index.md
+  - 'How to Contribute': './how-to-contribute/index.md'
 
-  - Design and Architecture: design/index.md
+  - 'Design and Architecture': './design/index.md'
 
-  - Other:
-    - other/adfs_sso_guide.md
-    - other/meshcentral_satellite.md
+  - 'Other':
+    - './other/adfs_sso_guide.md' 
+    - './other/meshcentral_satellite.md'
 
 site_description: "A remote monitoring and management tool"
 site_author: "Ylianst and others"
@@ -87,6 +93,8 @@ theme:
         icon: material/brightness-4
         name: Switch to dark mode
   features:
+    - content.code.copy
+    - content.code.select
     - navigation.tabs
     - navigation.top
     - navigation.instant

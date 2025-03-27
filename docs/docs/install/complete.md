@@ -6,66 +6,11 @@ This guide is specifically intended to help users install MeshCentral from start
 
 ## Docker
 
-<https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral>
-
-```
-docker pull ghcr.io/ylianst/meshcentral:master
-```
-
-!!!warning
-    Do not use the built in mesh update function. Update docker the docker way.
-
-### Docker Compose
-
-```
-version: '3'
-services:
-  meshcentral:
-    restart: unless-stopped # always restart the container unless you stop it
-    image: ghcr.io/ylianst/meshcentral:1.1.27 # 1.1.27 is a version number OR use master for the master branch of bug fixes
-    ports:
-      - 80:80 # HTTP
-      - 443:443 # HTTPS
-      - 4433:4433 # AMT (Optional)
-    volumes:
-      - data:/opt/meshcentral/meshcentral-data # config.json and other important files live here
-      - user_files:/opt/meshcentral/meshcentral-files # where file uploads for users live
-      - backup:/opt/meshcentral/meshcentral-backups # location for the meshcentral backups - this should be mounted to an external storage
-      - web:/opt/meshcentral/meshcentral-web # location for site customization files
-volumes:
-  data:
-    driver: local
-  user_files:
-    driver: local
-  backup:
-    driver: local
-  web:
-    driver: local
-```
+For full docker instructions, refer to [this document](./docker-install.md).
 
 ## Quick Start
 
 For some who want to skip this document entirely, there are quick install scripts that will get a MeshCentral2 instance up and running on Linux in a few minutes. These scripts will pretty much do what this document explains very rapidly. Right now, there are two such scripts available:
-
-### Amazon Linux 2
-
-For Amazon EC2 users, that want to manage 100 devices or less. Launch a t3.nano or t3.micro EC2 instance with Amazon Linux 2 with TCP ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 4433 (CIRA) open. Then login as `ec2-user` and enter the following commands:
-
-```
-wget https://meshcentral.com/scripts/mc-aws-linux2.sh
-chmod 755 mc-aws-linux2.sh
-./mc-aws-linux2.sh
-```
-
-This will download the fast install script and once run, will install nodejs, meshcentral, setup systemd and start the server. For a larger instance like a t3.small, t3.medium or larger you can run the following that does the same but also installs MongoDB.
-
-```
-wget https://meshcentral.com/scripts/mc-aws-linux2-mongo.sh
-chmod 755 mc-aws-linux2-mongo.sh
-./mc-aws-linux2-mongo.sh
-```
-
-After these scripts are run, try accessing the server using a browser. MeshCentral will take a minute or two to create certificates after that, the server will be up. The first account to be created will be the site administrator – so don’t delay and create an account right away. Once running, move on to the MeshCentral’s user’s guide to configure your new server.
 
 ### Microsoft Azure
 
@@ -107,7 +52,7 @@ There are two ways to get MeshCentral setup.
 
 The MeshCentral installer tool for Microsoft Windows can be downloaded at <https://www.meshcommander.com/meshcentral2> or by clicking this link. This tool will automatically detect and install NodeJS if needed. NodeJS will be downloaded from <https://nodejs.org> checked and installed. We recommend the installer be run on a modern version of Windows (.e.g. Win8.1, Win10, Win Server 2012* or better)
 
-![](images/2022-05-16-23-45-01.png)
+![](images/2022-05-16-23-45-01.jpg)
 
 During installation, the installation tool will prompt for the following settings:
 
@@ -133,7 +78,7 @@ Once installed MeshCentral will run as a background Windows Service and can be a
 
 The installation tool can be run again to perform server update, re-installation or un-installation. When performing an update check, the tool will look at the currently installed version and compare it to the one present on NPM.
 
-![](images/2022-05-16-23-47-10.png)
+![](images/2022-05-16-23-47-10.jpg)
 
 By default, MeshCentral will use TCP ports 80 (HTTP), 443 (HTTPS) and 4433 (Intel® AMT CIRA). The installer will add Windows Defender Firewall rules to allow incoming connections on these ports. In addition, if the server is in LAN or Hybrid mode, an addition rule on UDP port 16990 is added to allow for server discovery.
 
@@ -141,7 +86,7 @@ By default, MeshCentral will use TCP ports 80 (HTTP), 443 (HTTPS) and 4433 (Inte
 
 For advanced users or administrators, MeshCentral can be installed with NPM, a NodeJS package manager that can be accessed via web browser (https://www.npmjs.com/) or command line tool, `npm`. 
 
-![](images/2022-05-16-23-47-36.png)
+![](images/2022-05-16-23-47-36.jpg)
 
 !!!Note
     As a prerequisite, NodeJS and NPM must be installed on host OS and HTTP/HTTPS proxy settings maybe required if server host resides behind a HTTP proxy server. 
@@ -167,7 +112,7 @@ npm install meshcentral
 node node_modules/meshcentral [arguments]
 ```
     **Warning**: Do not run MeshCentral by going into the `node_modules/meshcentral` folder as this may cause auto-install and self-update features to fail. Instead, go into the directory above `node_modules` and run `node node_modules/meshcentral`.
-![](images/2022-05-16-23-53-08.png)
+![](images/2022-05-16-23-53-08.jpg)
 **Note**: If MeshCentral is started without any arguments, default settings in LAN-only mode will be in effect and user/administrator will only be able to manage computers that reside within the local network.
 5. To manage computers over the internet, the server needs to have static IP settings or a DNS record that resolves back to the right server. The mesh agents will be using the mechanism to call home to MeshCentral server. For WAN or Hybrid mode, run one of the commands below
 ```
@@ -191,7 +136,7 @@ On Windows, the built-in firewall will need to be configured to allow TCP ports 
 
 To get started, we need to go in the control panel, click `System and Security` then `Windows Defender Firewall` and `Advanced Settings` on the left side then click on `Inbound rules`. This will get us on the right place to add or edit firewall rules.
 
-![](images/2022-05-17-00-01-10.png)
+![](images/2022-05-17-00-01-10.jpg)
 
 If the MeshCentral Windows Installer was used, the `MeshCentral Server TCP ports` and optionally `MeshCentral Server UDP ports` rules should already be present.
 
@@ -199,13 +144,13 @@ If the MeshCentral Windows Installer was used, the `MeshCentral Server TCP ports
 
 To edit an existing rule, simply double click on it. To change the allowed inbound ports, go to the `Protocols and Ports` tab and change the local ports.
 
-![](images/2022-05-17-00-01-52.png)
+![](images/2022-05-17-00-01-52.jpg)
 
 #### Add new firewall rules
 
 To add a new firewall rule, click on the `New Rule…` then select `Port` and ok. TCP or UDP and enter the specific local ports needed and ok. Then click ok twice, enter the rule name and ok again.
 
-![](images/2022-05-17-00-02-25.png)
+![](images/2022-05-17-00-02-25.jpg)
 
 Typically, inbound TCP ports 80, 443 and 4433 are used, but the rule can be added with different ports as needed.
 
@@ -217,11 +162,11 @@ In this section, we will look at installing MeshCentral on Amazon AWS with `Amaz
 
 On AWS EC2, you can launch an instance and select `Amazon Linux 2`. In this case, it’s the first option available.
 
-![](images/2022-05-17-00-03-59.png)
+![](images/2022-05-17-00-03-59.jpg)
 
 When launching a new instance, you are asked to use or create a security group with the allowed inbound TCP and UDP ports. The security group should look like this:
 
-![](images/2022-05-17_000542.png)
+![](images/2022-05-17_000542.jpg)
 
 All security group rules should have a source of `0.0.0.0/0` and `::/0`. The last rule for port 8080 is only needed if migrating from a MeshCentral1 server, most people don’t need it and should not be added.
 
@@ -364,7 +309,7 @@ https://ec2-1-2-3-4.us-west-2.compute.amazonaws.com
 
 You will see the server working as expected. You will get a certificate error since the server is used an untrusted certificate for now. Just ignore the error and see the MeshCentral User’s Guide to fix this.
 
-![](images/2022-05-17-00-12-10.png)
+![](images/2022-05-17-00-12-10.jpg)
 At this point, the server is usable but, there are two things that may still need to be done. First, if we opted to use MongoDB, we have to configure MeshCentral to use a MongoDB database. By default, NeDB will be used which should only be used for small deployments managing less than 100 computers. We also need to automatically start the server when the AWS instance starts.
 
 To continue, stop the MeshCentral server with CTRL-C.
@@ -483,7 +428,7 @@ Once the server is launched, you can access it using a web browser as before. Fr
 
 In this section, we will look at installing MeshCentral on the famous Raspberry Pi. This computer’s low price makes it a perfect always-on system for managing computers on a home or small business network. This installation will work on any version of the Raspberry Pi, but version 3 certainly much faster.
 
-![](images/2022-05-17-00-16-40.png)
+![](images/2022-05-17-00-16-40.jpg)
 
 For this installation, we are going to use the Raspbian operating system. You can use the NOOBS version to install this operating system on your Raspberry Pi and install Raspbian. For best performance you can use the `Raspbian Stretch Lite` image which is much smaller and does not have the X desktop interface. To keep things even smaller, we are not going to be installing MongoDB, instead we are just going to be using NeBD as a database that comes by default with MeshCentral.
 
@@ -573,7 +518,7 @@ https://192.168.2.162
 
 You will see the server working as expected. You will get a certificate error since the server is used an untrusted certificate for now. Just ignore the error and see the MeshCentral User’s Guide to fix this.
 
-![](images/2022-05-17-00-19-19.png)
+![](images/2022-05-17-00-19-19.jpg)
 
 ### Configuring for LAN-only mode
 
@@ -793,7 +738,7 @@ If installing on a server that does not have a desktop GUI, use a different comp
 
 You should see the server working as expected. You will get a certificate error since the server is used an untrusted certificate for now. Just ignore the error and see the MeshCentral User’s Guide to fix this.
 
-![](images/2022-05-17-00-29-07.png)
+![](images/2022-05-17-00-29-07.jpg)
 
 At this point, the server is usable but, there are two things that may still need to be done. First, if we opted to use MongoDB, we have to configure MeshCentral to use a MongoDB database. By default, NeDB will be used which should only be used for small deployments managing less than 100 computers. We also need to automatically start the server when the computer starts.
 
@@ -971,25 +916,25 @@ This will allow the server to get and periodically update its Let’s Encrypt ce
 
 In this section, we will look installing MeshCentral on Microsoft Azure. Microsoft Azure offers many operating system options and we will be selecting `Ubuntu Server` as our choice. From the Azure portal, we select `Virtual machines` on the left and `Add`.
 
-![](images/2022-05-17-00-34-12.png)
+![](images/2022-05-17-00-34-12.jpg)
 
 Once you click on Ubuntu Server, you will see a list of available versions. In this example, we selected Ubuntu 18.04 LTS (Long Term Support). We then have to create an instance name and a way to authenticate to the instance.
 
-![](images/2022-05-17-00-34-24.png)
+![](images/2022-05-17-00-34-24.jpg)
 
 Next is the type of instance to launch. Any instance will do including the `B1s` which is the smallest possible instance. Of course, as you manage more computers, using an instance that is a bit more powerful is a good idea.
 
-![](images/2022-05-17-00-34-37.png)
+![](images/2022-05-17-00-34-37.jpg)
 
 After selecting the instance type, you can configure storage. 30 gigabytes is plenty. Then the Network Security Group. This is where it’s important to open at least TCP ports 22, 80 and 443.
 
-![](images/2022-05-17_003521.png)
+![](images/2022-05-17_003521.jpg)
 
 Optionally if you wish to use the instance with Intel AMT, open port 4433. In addition port 8080 must be open if you are migrating from MeshCentral1 (not typical).
 
 Lastly we launch the instance, it will take a few minutes to setup.
 
-![](images/2022-05-17-00-36-30.png)
+![](images/2022-05-17-00-36-30.jpg)
 
 You can then find the public IP address and use a SSH client like PUTTY on Windows to connect to the instance and start getting MeshCentral setup. From this point on, just use the Ubuntu section above to complete the installation.
 
@@ -997,23 +942,23 @@ You can then find the public IP address and use a SSH client like PUTTY on Windo
 
 In this section, we will look installing MeshCentral on Google Cloud. You can sign up easily at https://cloud.google.com/ and you can run a small instance for less than 5$ a month. 
 
-![](images/2022-05-17-00-36-52.png)
+![](images/2022-05-17-00-36-52.jpg)
 
 Once you have create an account, you can go to the main console and on the left side, go to `Compute Engine` and create a new VM instance. For our demonstration, we are going to create the smallest instance possible which is a single shared CPU and only 0.6 gigs of RAM.
 
-![](images/2022-05-17-00-37-05.png)
+![](images/2022-05-17-00-37-05.jpg)
 
 We select the proper settings and select `Ubuntu 18.04 LTS Minimal` as the boot operating system. This is convenient as we already covered how to install MeshCentral on this operating system.
 
-![](images/2022-05-17-00-37-21.png)
+![](images/2022-05-17-00-37-21.jpg)
 
 Make sure to allow HTTP and HTTPS traffic. Setup like this, we will not be able to manage Intel AMT unless we also open TCP port 4433. Once done with all these options, we can launch the VM instance.
 
-![](images/2022-05-17-00-37-35.png)
+![](images/2022-05-17-00-37-35.jpg)
 
 The new instance will take a few minutes to start up. An interesting feature of Google Cloud is that you can access the VM instance shell directly from the web browser. No need for a separate SSH client. This is exactly what we need and we opt to go ahead and option the web console.
 
-![](images/2022-05-17-00-37-46.png)
+![](images/2022-05-17-00-37-46.jpg)
 
 If will log you in automatically, no additional credentials needed. We can then follow the `Ubuntu 18.04 LTS` section above to complete the installation. If you opt for a very small instance, it’s probably a good idea to skip installing MongoDB. Just to get started quickly, we can use the following commands:
 
