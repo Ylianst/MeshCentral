@@ -1,37 +1,26 @@
 site_name: "MeshCentral Documentation"
 nav:
-  - Homepage:
-    - 'Home': './index.md'
-    - 'Install':
-      - 'Quickstart': './install/quickstart.md'
-      - 'Installation Guides':
-        - 'Legacy': './install/complete.md'
-        - 'Container': './install/container.md'
-        - 'AWS': './install/amazon.md'
-    - 'MeshCentral':
-      - 'MeshCentral Guide': './meshcentral/index.md'
-      - 'All Configuration Options': './meshcentral/config.md'
-      - 'SSL/TLS': './meshcentral/SSLnletsencrypt.md'
-      - 'Agent Information': './meshcentral/agents.md'
-      - 'Assistant': './meshcentral/assistant.md'
-      - 'Code Signing': './meshcentral/codesigning.md'
-      - 'Debugging': './meshcentral/debugging.md'
-      - 'Device Tabs': './meshcentral/devicetabs.md'
-      - 'Plugins': './meshcentral/plugins.md'
-      - 'Security': './meshcentral/security.md'
-      - 'Tokens': './meshcentral/tokens.md'
-      - 'FAQ': './meshcentral/faq.md'
-      - 'Tips n Tricks': './meshcentral/tipsntricks.md'
-      - 'Messaging': './messaging/index.md'
-      - 'Customization': './meshcentral/customization.md'
-      - 'openidConnectStrategy': './meshcentral/openidConnectStrategy.md'
+  - Home:
+    - 'Abstract': './index.md'
 
   - 'Install':
+    - 'Abstract': './install/abstract.md'
     - 'Quickstart': 'install/quickstart.md'
     - 'Installation Guides':
-        - 'Legacy': './install/complete.md'
+        - 'Abstract': './install/abstract.md'
+        - 'Advanced': './install/advanced.md'
         - 'Container': './install/container.md'
-        - 'AWS': './install/amazon.md'
+        - 'Debian/Ubuntu': './install/debian.md'
+        - 'OpenBSD': './install/openbsd.md'
+        - 'RedHat': './install/redhat.md'
+        - 'Windows': './install/windows.md'
+    - 'Security':
+      - 'Crowdsec': './install/security/crowdsec.md'
+      - 'Secure Installation': './install/security/secure.md'
+    - 'Databases':
+      - 'MongoDB': './install/database/mongodb.md'
+      - 'PostgreSQL': './install/database/mongodb.md'
+      - 'MariaDB/MySQL': './install/database/mongodb.md'
 
   - 'MeshCentral':
       - 'MeshCentral Guide': './meshcentral/index.md'
@@ -74,7 +63,6 @@ dev_addr: "0.0.0.0:8010"
 # Repository
 repo_name: "Ylianst/MeshCentral"
 repo_url: "https://github.com/Ylianst/MeshCentral"
-edit_uri: ""
 
 theme:
   name: "material"
@@ -97,6 +85,7 @@ theme:
     - content.code.select
     - navigation.tabs
     - navigation.top
+    - navigation.sections
     - navigation.instant
     - search.suggest
 extra_css:
@@ -108,25 +97,11 @@ plugins:
   - print-site
 
 markdown_extensions:
-  - pymdownx.keys
-  - pymdownx.inlinehilite
-  - pymdownx.arithmatex:
-      generic: true
-  - pymdownx.betterem:
-      smart_enable: all
-  - pymdownx.caret
-  - admonition
-  - pymdownx.details
-  - pymdownx.highlight
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - codehilite:
-      guess_lang: true
-  - toc:
-      permalink: true
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+  - admonition
+  - tables

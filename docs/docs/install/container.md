@@ -10,7 +10,7 @@ For reference: [Docker](https://www.docker.com/) and [Podman](https://podman.io/
     Do not use the built-in MeshCentral update functionality.<br>
     Update the container the 'docker way', by updating the image itself.
 
-## Available Tags:
+### Available Tags:
 
 | Tag-name | Explanation |
 |--------|-----|
@@ -20,13 +20,19 @@ For reference: [Docker](https://www.docker.com/) and [Podman](https://podman.io/
 
 Refer to [this page](https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral) for more information on the container status.
 
-## Pulling the image:
+## Docker/Podman
+
+For single-machine setups such as Docker and Podman.
+
+### Pulling the image:
+
+To pull the container image use the following container registry.
 
 ```sh
 docker pull ghcr.io/ylianst/meshcentral:master
 ```
 
-## Docker CLI:
+### Docker CLI:
 
 If you want to run the container from the Terminal, you can use the following command:
 
@@ -43,7 +49,7 @@ docker run -d \
   ghcr.io/ylianst/meshcentral:latest
 ```
 
-## Docker Compose:
+### Docker Compose:
 
 If you want to use a docker compose yaml file, please refer to the example below.
 
@@ -68,4 +74,12 @@ volumes:
   web:
 ```
 
-## Extra sources:
+## Kubernetes
+
+###
+
+Using YAML deployment files.
+
+## Extra sources
+
+[Github Docker Resources](https://github.com/Ylianst/MeshCentral/tree/master/docker)

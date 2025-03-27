@@ -1,18 +1,13 @@
 # MeshCentral Guide
 
-## Video Walkthru
-
-<div class="video-wrapper">
-  <iframe width="320" height="180" src="https://www.youtube.com/embed/D9Q7M7PdTg0" frameborder="0" allowfullscreen></iframe>
-</div>
-
 ## Abstract
+
 This user guide contains all essential information for the user to make full use of MeshCentral, a free open source web-based remote computer management software. The guide provides quick steps to setup administrative groups to remote control and manage computers in local network environments or via the Internet. Latter parts of the document will cover some advanced topics. The reader is expected to already have some of the basic understanding on computer networking, operating system and network security.
 
 ## Introduction
 MeshCentral is a free open source web-based remote computer management software. You could setup your own management server on a local network or on the internet and remote control and manage computers that runs either Windows* or Linux* OS. 
 
-![](images/2022-05-18-22-11-41.png)
+![](images/2022-05-18-22-11-41.jpg)
 
 To begin, a base or management server will be required. A management server could be any computing device (PC or VM) that has sufficient compute, storage and reliable network components to host an environment for MeshCentral and deliver good performance during remote management exercise. Whilst there are many configurations available for advanced users, typical server setup would only take just a few minutes to complete. 
 
@@ -22,6 +17,12 @@ At a high level, there are only four (4) main steps: Setup, Install, Connect and
 2. Log on to MeshCentral portal with a valid account, creates an administrative mesh to collect all end-points (systems to be managed)
 3. Generates an agent and installs it on a target or each end-point that immediately attempts a connection back to MeshCentral server. 
 4. Controls/manages assets or end-points that are available in respective administrative mesh
+
+## Video Walkthru
+
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/D9Q7M7PdTg0" frameborder="0" allowfullscreen></iframe>
+</div>
 
 ## Server Installation
 
