@@ -53,6 +53,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
+    const MESHRIGHT_HIDERDPSESSIONS     = 0x00400000; // 4194304
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -551,7 +552,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Build server information object
             const allFeatures = parent.getDomainUserFeatures(domain, user, req);
-            var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now(), features: allFeatures.features, features2: allFeatures.features2 };
+            var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now(), features: allFeatures.features, features2: allFeatures.features2, features3: allFeatures.features3 };
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
@@ -4726,7 +4727,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 } else {
                     try {
                         parent.parent.pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
-                    } catch (ex) { console.log('Error loading plugin handler (' + ex + ')'); }
+                    } catch (ex) { console.log('Error executing plugin serveraction (' + ex + ')', ex.stack); }
                 }
                 break;
             }
@@ -6414,6 +6415,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (common.validateString(command.nodeid, 1, 1024) == false) return; // Check nodeid
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
             if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
+
+            const applyfeaturepermissions = obj.domain.applyfeaturepermissionstorouterandwebtools !== false;
+            switch (command.tag) {
+                case 'novnc': {
+                    let novncargs = domain.novncargs ?? 'show_dot=1';
+                    if (applyfeaturepermissions) { novncargs += '&view_only=' +!!(rights & MESHRIGHT_REMOTEVIEWONLY); }
+                    command.qsappend = novncargs.charAt(0) === '&' ? novncargs.slice(1) : novncargs;
+                    break;
+                }
+                case 'mstsc': { if (applyfeaturepermissions && (rights & MESHRIGHT_REMOTEVIEWONLY)) { return; } break; }
+                case 'ssh': { if (applyfeaturepermissions && (rights & MESHRIGHT_NOTERMINAL)) { return; }; break; }
+            }
 
             // Add a user authentication cookie to a url
             var cookieContent = { userid: user._id, domainid: user.domain };

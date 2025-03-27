@@ -1214,6 +1214,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 obj.consoleKickValue = command.value;
                             }
                         }
+                        else if (command.type == 'userSessions') {
+                            const rights = parent.GetNodeRights(parent.wssessions2[command.sessionid].userid, obj.dbMeshKey, obj.dbNodeKey);
+                            if ((rights !== 0xFFFFFFFF) && (rights & 0x00400000)) {
+                                command.data = Object.fromEntries(Object.entries(command.data).filter(([k,v]) => (!v.StationName.toUpperCase().startsWith('RDP-'))));
+                                console.log(rights.toString(16).padStart(8,'0'), command);
+                            }
+                        }
 
                         // Route a message
                         parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
