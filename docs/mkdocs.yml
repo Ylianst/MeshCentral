@@ -9,7 +9,7 @@ nav:
     - 'Installation Guides':
         - 'Abstract': './install/abstract.md'
         - 'Advanced': './install/advanced.md'
-        - 'Container': './install/container.md'
+        - 'Container (Docker)': './install/container.md'
         - 'Debian/Ubuntu': './install/debian.md'
         - 'OpenBSD': './install/openbsd.md'
         - 'RedHat': './install/redhat.md'
