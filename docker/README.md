@@ -83,10 +83,9 @@ services:
     image: ghcr.io/ylianst/meshcentral:<tag>
     environment:
       - HOSTNAME=myserver.domain.com
-      - ALLOW_NEW_ACCOUNTS=true
+      - ALLOW_NEW_ACCOUNTS=false
       - USE_MONGODB=true
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
+      - MONGO_URL=mongodb://username:password@mongodb:27017/meshcentral
     volumes:
       - meshcentral-data:/opt/meshcentral/meshcentral-data
     ports:
