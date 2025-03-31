@@ -173,13 +173,8 @@ Here are the shell commands to build the Docker image with different configurati
 
 #### 1. Build with Minify and Translate Disabled
 If you want to disable both HTML/JS minification and translation during the build process, use the following command:
+> While in the root git location.
 
 ```sh
-docker build --build-arg DISABLE_MINIFY=no --build-arg DISABLE_TRANSLATE=no -t meshcentral .
+docker build -f docker/Dockerfile --build-arg DISABLE_MINIFY=no --build-arg DISABLE_TRANSLATE=no -t meshcentral .
 ```
-
-## Security Measures
-- Only exposing port 443 to minimize attack surface.
-- Using environment variables for sensitive credentials.
-- Removing unnecessary files after installation.
-- Enforcing proper permissions on configuration files.
