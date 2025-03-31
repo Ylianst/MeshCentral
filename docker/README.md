@@ -69,8 +69,7 @@ docker run -d \
   -e HOSTNAME=myserver.domain.com \
   -e ALLOW_NEW_ACCOUNTS=true \
   -e USE_MONGODB=true \
-  -e MONGO_HOST=mongodb \
-  -e MONGO_PORT=27017 \
+  -e MONGO_URL=mongodb://username:password@mongodb:27017/meshcentral \
   -v meshcentral-data:/opt/meshcentral/meshcentral-data \
   -p 443:443 \
   ghcr.io/ylianst/meshcentral:<tag>
