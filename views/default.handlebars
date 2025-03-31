@@ -12920,7 +12920,6 @@
                 if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>'; }
                 x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a>, <a href=https://www.callmebot.com/blog/telegram-text-messages/ target="_callmebot">' + "Telegram" + '</a></div>';
                 x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
-                console.log(serverinfo.userMsgNftyUrl);
                 x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
                 x += '<div id=d2slackinfo style=display:none><br /><a href=https://api.slack.com/messaging/webhooks target="_slack">' + "Slack Webhook Setup" + '</a></div>';
                 setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingAdd, x, 'verifyMessaging');
@@ -18174,6 +18173,7 @@
                 InvalidDeviceGroupType: "Invalid Device Group Type",
                 DuplicateAgent: "Duplicate Agent",
                 ConnectedIntelAMT: "Connected Intel&reg; AMT",
+                ConnectedIntelAMTCira: "Connected Intel&reg; AMT CIRA",
                 RelayErrors: "Relay Errors",
                 UserAccounts: "User Accounts",
                 DeviceGroups: "Device Groups",
@@ -18260,7 +18260,8 @@
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.conn.cu });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.conn.us });
                 serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.conn.rs });
-                if (stats.conn.am != null) { serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am }); }
+                serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am });
+                if (stats.conn.amc != null) { serverTimelineConfig.data.datasets[5].data.push({ x: stats.time, y: stats.conn.amc }); }
             } else if (chartType == 1) { // Memory
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.mem.external / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.mem.heapUsed / (1024 * 1024) });
@@ -18307,7 +18308,8 @@
                         { label: "Users", data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
                         { label: "User Sessions", data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
                         { label: "Relay Sessions", data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true },
-                        { label: "Intel AMT", data: [], backgroundColor: 'rgba(134, 16, 158, .1)', borderColor: 'rgb(134, 16, 158)', fill: true }
+                        { label: "Intel AMT", data: [], backgroundColor: 'rgba(134, 16, 158, .1)', borderColor: 'rgb(134, 16, 158)', fill: true },
+                        { label: "Intel AMT CIRA", data: [], backgroundColor: 'rgba(255, 155, 0, .1)', borderColor: 'rgb(255, 155, 0)', fill: true }
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
@@ -18324,13 +18326,15 @@
                         data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[3].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[4].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[5].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                     }
                     if (serverTimelineStats[i].conn) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.ca });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.cu });
                         data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.us });
                         data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.rs });
-                        if (serverTimelineStats[i].conn.am != null) { data.datasets[4].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.am }); }
+                        data.datasets[4].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.am });
+                        if (serverTimelineStats[i].conn.amc != null) { data.datasets[5].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.amc }); }
                     }
                 }
             } else if (chartType == 1) { // Memory
