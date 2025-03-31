@@ -2084,14 +2084,18 @@ function CreateMeshCentralServer(config, args) {
                                 ca: Object.keys(obj.webserver.wsagents).length,
                                 cu: Object.keys(obj.webserver.wssessions).length,
                                 us: Object.keys(obj.webserver.wssessions2).length,
-                                rs: obj.webserver.relaySessionCount
+                                rs: obj.webserver.relaySessionCount,
+                                am: 0
                             },
                             traffic: trafficStats.delta
                         };
                         try { data.cpu = require('os').loadavg(); } catch (ex) { }
                         if (obj.mpsserver != null) {
-                            data.conn.am = 0;
-                            for (var i in obj.mpsserver.ciraConnections) { data.conn.am += obj.mpsserver.ciraConnections[i].length; }
+                            data.conn.amc = 0;
+                            for (var i in obj.mpsserver.ciraConnections) { data.conn.amc += obj.mpsserver.ciraConnections[i].length; }
+                        }
+                        for (var i in obj.connectivityByNode) {
+                            if (obj.connectivityByNode[i].connectivity == 4) { data.conn.am++; }
                         }
                         if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
                         if (obj.multiServer != null) { data.s = obj.multiServer.serverid; }

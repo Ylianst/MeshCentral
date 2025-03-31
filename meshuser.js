@@ -503,12 +503,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     ConnectedUsers: Object.keys(parent.wssessions).length,
                     UsersSessions: Object.keys(parent.wssessions2).length,
                     RelaySessions: parent.relaySessionCount,
-                    RelayCount: Object.keys(parent.wsrelays).length
+                    RelayCount: Object.keys(parent.wsrelays).length,
+                    ConnectedIntelAMT: 0
                 };
                 if (parent.relaySessionErrorCount != 0) { serverStats.RelayErrors = parent.relaySessionErrorCount; }
                 if (parent.parent.mpsserver != null) {
-                    serverStats.ConnectedIntelAMT = 0;
-                    for (var i in parent.parent.mpsserver.ciraConnections) { serverStats.ConnectedIntelAMT += parent.parent.mpsserver.ciraConnections[i].length; }
+                    serverStats.ConnectedIntelAMTCira = 0;
+                    for (var i in parent.parent.mpsserver.ciraConnections) { serverStats.ConnectedIntelAMTCira += parent.parent.mpsserver.ciraConnections[i].length; }
+                }
+                for (var i in parent.parent.connectivityByNode) {
+                    if (parent.parent.connectivityByNode[i].connectivity == 4) { serverStats.ConnectedIntelAMT++; }
                 }
 
                 // Take a look at agent errors

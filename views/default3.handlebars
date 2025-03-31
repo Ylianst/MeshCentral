@@ -3506,7 +3506,7 @@
                             var secret = message.secret;
                             if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                             else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                            QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install" + ' <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" rel="noreferrer noopener" target=_blank>' + "Google Authenticator" + '</a> ' + "or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + 'Secret <img src=images/link4.png height=10 width=10 title="' + "Copy Secret to clipboard" + '" style=cursor:pointer onclick=d2CopySecretToClip()>' + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                            QH('d2optinfo', '<table><tr><td style=vertical-align:top>' + format("Install" + ' <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" rel="noreferrer noopener" target=_blank>' + "Google Authenticator" + '</a> ' + "or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + 'Secret <img src=images/link4.png height=10 width=10 title="' + "Copy Secret to clipboard" + '" style=cursor:pointer onclick=d2CopySecretToClip()>' + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
                             new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
                             QV('idx_dlgOkButton', true);
                             QE('idx_dlgOkButton', false);
@@ -3528,7 +3528,7 @@
                     break;
                 }
                 case 'otpauth-getpasswords': {
-                    if (xxdialogMode) return;
+                    if (xxdialogMode == 2 && (xxdialogTag != 'otpauth-manage')) return;
                     var x = "One time tokens can be used as secondary authentication. Generate a set, print them and keep them in a safe place.";
                     x += '<div style="border-radius:6px;border: 2px dashed #888;width:100%;margin-top:8px"><div style="padding:8px;font-family:Arial, Helvetica, sans-serif;font-size:20px;font-weight:bold"><table class=selecttext style=width:100%;text-align:center>';
                     if (message.passwords) {
@@ -3549,13 +3549,15 @@
                         x += '<tr><td>' + "No Active Tokens";
                     }
                     x += '</table></div></div><br />';
-                    x += '<div>';
-                    x += '<input type=button value="' + "Generate New Tokens" + '" onclick="account_manageOtp(1);"></input>';
+                    x += '<div class="btn-group">';
+                    x += '<button type=button class="btn btn-warning" onclick="account_manageOtp(1);">' + "Generate New Tokens" + '</input>';
                     if (message.passwords != null) {
-                        x += '<input type=button value="' + "Clear Tokens" + '" onclick="account_manageOtp(2);"></input>';
-                        x += '&nbsp;<img src=images/link4.png height=10 width=10 title="' + "Copy valid codes to clipboard" + '" style=cursor:pointer onclick=copyTextToClip2("' + encodeURIComponentEx(clipb) + '")>';
+                        x += '<button type=button class="btn btn-danger" onclick="account_manageOtp(2);">' + "Clear Tokens" + '</button></div>';
+                        x += '&nbsp;<i class="fa-regular fa-clipboard" title="' +  "Copy valid codes to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(clipb) + '")></i>';
+                    } else {
+                        x += '</div>'
                     }
-                    x += '</div><br />';
+                    xxdialogTag = 'otpauth-manage';
                     setModalContent('xxAddAgent', "Manage Backup Codes", x);
                     showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     break;
@@ -3569,7 +3571,7 @@
                     if (message.keys && message.keys.length > 0) {
                         for (var i in message.keys) {
                             var key = message.keys[i], type = (key.type == 2) ? 'OTP' : 'WebAuthn';
-                            x += start + '<tr style=margin:5px><td style=width:30px><img width=24 height=18 src="images/hardware-key-' + type + '-24.png" style=margin-top:4px><td style=width:250px>' + key.name + '<td><input type=button value="' + "Remove" + '" onclick=account_removehkey(' + key.i + ')></input>' + end;
+                            x += start + '<tr style=margin:5px><td style=width:30px><img width=24 height=18 src="images/hardware-key-' + type + '-24.png" style=margin-top:4px><td style=width:250px>' + key.name + '<td style=text-align:right><button type=button class="btn btn-danger" onclick=account_removehkey(' + key.i + ')>' + "Remove" + '</button>' + end;
                         }
                     } else {
                         x += start + '<tr style=text-align:center><td>' + "No Keys Configured" + end;
@@ -3578,12 +3580,13 @@
                     x += '<div>';
                     var hkeycount = (typeof userinfo.otphkeys == 'number') ? userinfo.otphkeys : 0;
                     if ((typeof serverinfo.maxfidokeys != 'number') || (serverinfo.maxfidokeys > hkeycount)) { // Check if we we reached maximum hardware keys
-                        if ((features & 0x00020000) != 0) { x += '<input id=d2addkey3 type=button value="' + "Add Key" + '" onclick="account_addhkey(3);"></input>'; }
-                        if ((features & 0x00004000) != 0) { x += '<input id=d2addkey2 type=button value="' + "Add YubiKey&reg; OTP" + '" onclick="account_addhkey(2);"></input>'; }
+                        if ((features & 0x00020000) != 0) { x += '<button class="btn btn-primary" id=d2addkey3 type=button onclick="account_addhkey(3);">' + "Add Key" + '</input>'; }
+                        if ((features & 0x00004000) != 0) { x += '<button class="btn btn-primary" id=d2addkey2 type=button onclick="account_addhkey(2);">' + "Add YubiKey&reg; OTP" +'</input>'; }
                     } else {
                         x += "Maximum keys reached.";
                     }
                     x += '</div><br />';
+                    xxdialogTag = 'otpauth-hardware-manage';
                     setModalContent('xxAddAgent', "Manage Security Keys", x);
                     showModal('xxAddAgentModal', 'idx_dlgOkButton');
                     if (u2fSupported() == false) { QE('d2addkey1', false); }
@@ -3619,7 +3622,6 @@
                     navigator.credentials.create({ publicKey: publicKey }).then(function (newCredentialInfo) {
                         // Public key credential
                         meshserver.send({ action: 'webauthn-endregister', response: { rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.rawId))), response: { attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.attestationObject))), clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(newCredentialInfo.response.clientDataJSON))) }, type: newCredentialInfo.type } });
-                        setDialogMode(0);
                     }, function (error) {
                         // Error
                         console.log("ERROR: " + error);
@@ -13764,12 +13766,11 @@
                 if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>'; }
                 x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a>, <a href=https://www.callmebot.com/blog/telegram-text-messages/ target="_callmebot">' + "Telegram" + '</a></div>';
                 x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
-                console.log(serverinfo.userMsgNftyUrl);
                 x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
                 x += '<div id=d2slackinfo style=display:none><br /><a href=https://api.slack.com/messaging/webhooks target="_slack">' + "Slack Webhook Setup" + '</a></div>';
                 xxdialogTag = 'VerifyMessaging';
                 setModalContent('xxAddAgent', "Messaging Notifications", x);
-                showModal('xxAddAgentModal', 'idx_dlgOkButton', account_manageMessagingAdd());
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageMessagingAdd());
                 Q('d2handleinput').focus();
                 account_manageMessagingValidate();
             }
@@ -13791,7 +13792,7 @@
             else { Q('d2handleinput')['placeholder'] = "Username"; }
             var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); }
         }
-        function account_manageMessagingAdd() { if (Q('d2handleinput').value.length == 0) return; QE('d2handleinput', false); meshserver.send({ action: 'verifyMessaging', service: Q('d2serviceselect').value, handle: Q('d2handleinput').value }); }
+        function account_manageMessagingAdd() { if (Q('d2handleinput').value.length == 0) return; QE('d2handleinput', false); meshserver.send({ action: 'verifyMessaging', service: Q('d2serviceselect').value, handle: Q('d2handleinput').value }); return false; }
         function account_manageMessagingConfirm(b, tag) { meshserver.send({ action: 'confirmMessaging', code: Q('d2phoneCodeInput').value, cookie: tag }); }
         function account_manageMessagingRemove() { if (Q('d2delPhone').checked) { meshserver.send({ action: 'removeMessaging' }); } }
 
@@ -13835,7 +13836,7 @@
             if (xxdialogMode || (userinfo.otpsecret == 1) || ((features & 4096) == 0)) return;
             xxdialogTag = 'otpauth-request';
             setModalContent('xxAddAgent', "Authenticator App", ('<div id=d2optinfo>' + "Loading..." + '</div>'));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); });
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'otpauth-setup', secret: Q('d2optsecret').attributes.secret.value, token: Q('d2otpauthinput').value }); return false; });
             meshserver.send({ action: 'otpauth-request' });
         }
 
@@ -13852,8 +13853,7 @@
         }
 
         function account_manageOtp(action) {
-            if ((xxdialogMode == 2) && (xxdialogTag == 'otpauth-manage')) { dialogclose(0); }
-            if (xxdialogMode || ((features & 4096) == 0)) return false;
+            if ((features & 4096) == 0) return false;
             if (count2factoraAuths() > 0) { meshserver.send({ action: 'otpauth-getpasswords', subaction: action }); }
             return false;
         }
@@ -13921,6 +13921,7 @@
                 showModal('xxAddAgentModal', 'idx_dlgOkButton');
             } else if (type == 3) {
                 meshserver.send({ action: 'webauthn-startregister', name: name });
+                return false;
             }
         }
 
@@ -19450,6 +19451,7 @@
                 InvalidDeviceGroupType: "Invalid Device Group Type",
                 DuplicateAgent: "Duplicate Agent",
                 ConnectedIntelAMT: "Connected Intel&reg; AMT",
+                ConnectedIntelAMTCira: "Connected Intel&reg; AMT CIRA",
                 RelayErrors: "Relay Errors",
                 UserAccounts: "User Accounts",
                 DeviceGroups: "Device Groups",
@@ -19538,7 +19540,8 @@
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.conn.cu });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.conn.us });
                 serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.conn.rs });
-                if (stats.conn.am != null) { serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am }); }
+                serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am });
+                if (stats.conn.amc != null) { serverTimelineConfig.data.datasets[5].data.push({ x: stats.time, y: stats.conn.amc }); }
             } else if (chartType == 1) { // Memory
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.mem.external / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.mem.heapUsed / (1024 * 1024) });
@@ -19585,7 +19588,8 @@
                         { label: "Users", data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
                         { label: "User Sessions", data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
                         { label: "Relay Sessions", data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true },
-                        { label: "Intel AMT", data: [], backgroundColor: 'rgba(134, 16, 158, .1)', borderColor: 'rgb(134, 16, 158)', fill: true }
+                        { label: "Intel AMT", data: [], backgroundColor: 'rgba(134, 16, 158, .1)', borderColor: 'rgb(134, 16, 158)', fill: true },
+                        { label: "Intel AMT CIRA", data: [], backgroundColor: 'rgba(255, 155, 0, .1)', borderColor: 'rgb(255, 155, 0)', fill: true }
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
@@ -19602,13 +19606,15 @@
                         data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[3].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[4].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[5].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                     }
                     if (serverTimelineStats[i].conn) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.ca });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.cu });
                         data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.us });
                         data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.rs });
-                        if (serverTimelineStats[i].conn.am != null) { data.datasets[4].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.am }); }
+                        data.datasets[4].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.am });
+                        if (serverTimelineStats[i].conn.amc != null) { data.datasets[5].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.amc }); }
                     }
                 }
             } else if (chartType == 1) { // Memory
