@@ -2128,10 +2128,20 @@ nav .lbbuttonsel2 {
     background-color: #d3d9d6;
     background-repeat: repeat;
     background-attachment: scroll;
+    color: var(--title-color, #212529); /* fallback: dark gray */
 }
 
 .night .h1 {
     background-image: linear-gradient(to right, #000 0%, #333 100%);
+    color: #f8f9fa !important; /* very light gray for dark mode */
+}
+
+[data-bs-theme="light"] h1, h1 {
+    color: #adafae !important; /* very dark gray, almost black */
+}
+
+[data-bs-theme="dark"] h1, h1 {
+    color: #f8f9fa !important; /* very light gray */
 }
 
 .h2end {
