@@ -3514,7 +3514,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             const twoFactorCookie = obj.parent.encodeCookie({ userid: cookie.u, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
                             res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: parent.config.settings.sessionsamesite, secure: true });
                         }
-
+                        var user = obj.users[cookie.u];
+                        // Notify account login
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        const ua = obj.getUserAgentInfo(req);
+                        const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'pushlogin' };
+                        obj.parent.DispatchEvent(targets, obj, loginEvent);
                         handleRootRequestEx(req, res, domain);
                         return;
                     }
@@ -7067,6 +7073,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 // User credentials are stored in session, just check again and get userid
                                 obj.authenticate(sec.tuser, sec.tpass, domain, function (err, userid, passhint, loginOptions) {
                                     if ((userid != null) && (err == null)) {
+                                        var user = obj.users[userid]; // Get user object
                                         // Login data correct, now exchange authorization code for 2FA
                                         client.exchangeAuthorizationCodeFor2FAResult(req.query.duo_code, userid.split('/')[2]).then(function (data) {
                                             const sec = parent.decryptSessionData(req.session.e);
@@ -7082,6 +7089,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             delete sec.tpass;
                                             req.session.e = parent.encryptSessionData(sec);
                                             obj.parent.authLog('https', 'Accepted Duo authentication for ' + userid + ' from ' + req.clientIp + ':' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
+                                            // Notify account login
+                                            var targets = ['*', 'server-users', user._id];
+                                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                            const ua = obj.getUserAgentInfo(req);
+                                            const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'duo' };
+                                            obj.parent.DispatchEvent(targets, obj, loginEvent);
                                             res.redirect(domain.url + getQueryPortion(req));
                                         }).catch(function (err) {
                                             const sec = parent.decryptSessionData(req.session.e);
@@ -7092,6 +7105,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             req.session.e = parent.encryptSessionData(sec);
                                             req.session.loginmode = 1;
                                             req.session.messageid = 117; // Invalid security check
+                                            // Notify account 2fa failed login
+                                            const ua = obj.getUserAgentInfo(req);
+                                            obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
+                                            obj.setbad2Fa(req);            
                                             res.redirect(domain.url + getQueryPortion(req));
                                         });
                                     } else {
