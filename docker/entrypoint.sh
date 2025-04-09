@@ -21,12 +21,12 @@ else
     cp /opt/meshcentral/config.json.template "${CONFIG_FILE}"
 fi
 
-if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
+if [[ ${DYNAMIC_CONFIG,,} =~ ^(true|yes)$ ]]; then
     cat "$CONFIG_FILE"
     echo "Using Dynamic Configuration values..."
 
     # BEGIN DATABASE CONFIGURATION FIELDS
-    if [[ "$USE_MONGODB" =~ ^(true|yes)$ ]]; then
+    if [[ ${USE_MONGODB,,} =~ ^(true|yes)$ ]]; then
         echo "Enabling MongoDB-connector..."
 
         if [[ -n "$MONGO_URL" ]]; then
@@ -45,7 +45,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
         sed -i 's/"mongoDb"/"_mongoDb"/' "$CONFIG_FILE"
     fi
 
-    if [[ "$USE_POSTGRESQL" =~ ^(true|yes)$ ]]; then
+    if [[ ${USE_POSTGRESQL,,} =~ ^(true|yes)$ ]]; then
         echo "Enabling PostgreSQL-connector..."
 
         sed -i 's/"_postgres"/"postgres"/' "$CONFIG_FILE"
@@ -65,7 +65,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
         sed -i 's/"postgres"/"_postgres"/' "$CONFIG_FILE"
     fi
 
-    if [[ "$USE_MARIADB" =~ ^(true|yes)$ ]]; then
+    if [[ ${USE_MARIADB,,} =~ ^(true|yes)$ ]]; then
         echo "Enabling MariaDB-connector..."
         sed -i 's/"_mariaDB"/"mariaDB"/' "$CONFIG_FILE"
         jq --arg mariadb_host "$MARIADB_HOST" \
@@ -93,7 +93,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     echo "If defaults are going to get applied, refer to: https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json"
 
     # SESSIONKEY
-    if [[ $REGEN_SESSIONKEY =~ ^(true|yes)$ ]]; then
+    if [[ ${REGEN_SESSIONKEY,,} =~ ^(true|yes)$ ]]; then
         echo "Regenerating Session-Key because REGENSESSIONKEY is 'true' or 'yes'"
         SESSION_KEY=$(tr -dc 'A-Z0-9' < /dev/urandom | fold -w 96 | head -n 1)
 
@@ -120,7 +120,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # ALLOWPLUGINS
-    if [[ -n $ALLOW_PLUGINS ]] && [[ $ALLOW_PLUGINS =~ ^(true|false)$ ]]; then
+    if [[ ${ALLOW_PLUGINS,,} =~ ^(true|false)$ ]]; then
         echo "Setting plugins... $ALLOW_PLUGINS"
 
         sed -i 's/"_plugins"/"plugins"/' "$CONFIG_FILE"
@@ -133,7 +133,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # WEBRTC
-    if [[ -n $WEBRTC ]] && [[ $WEBRTC =~ ^(true|false)$ ]]; then
+    if [[ ${WEBRTC,,} =~ ^(true|false)$ ]]; then
         echo "Setting WebRTC... $WEBRTC"
 
         sed -i 's/"_WebRTC"/"WebRTC"/' "$CONFIG_FILE"
@@ -147,7 +147,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # IFRAME
-    if [[ -n $IFRAME ]] && [[ $IFRAME =~ ^(true|false)$ ]]; then
+    if [[ ${IFRAME,,} =~ ^(true|false)$ ]]; then
         echo "Setting AllowFraming... $IFRAME"
 
         sed -i 's/"_AllowFraming"/"AllowFraming"/' "$CONFIG_FILE"
@@ -180,7 +180,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # ALLOW_NEW_ACCOUNTS
-    if [[ -n $ALLOW_NEW_ACCOUNTS ]] && [[ $ALLOW_NEW_ACCOUNTS =~ ^(true|false)$ ]]; then
+    if [[ ${ALLOW_NEW_ACCOUNTS,,} =~ ^(true|false)$ ]]; then
         echo "Setting NewAccounts... $ALLOW_NEW_ACCOUNTS"
 
         sed -i 's/"_NewAccounts"/"NewAccounts"/' "$CONFIG_FILE"
@@ -193,7 +193,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # LOCALSESSIONRECORDING
-    if [[ -n $LOCAL_SESSION_RECORDING ]] && [[ $LOCAL_SESSION_RECORDING =~ ^(true|false)$ ]]; then
+    if [[ ${LOCAL_SESSION_RECORDING,,} =~ ^(true|false)$ ]]; then
         echo "Setting localSessionRecording... $LOCAL_SESSION_RECORDING"
 
         sed -i 's/"_localSessionRecording"/"localSessionRecording"/' "$CONFIG_FILE"
@@ -206,7 +206,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # MINIFY
-    if [[ -n $MINIFY ]] && [[ $MINIFY =~ ^(true|false)$ ]]; then
+    if [[ ${MINIFY,,} =~ ^(true|false)$ ]]; then
         echo "Setting minify... $MINIFY"
 
         sed -i 's/"_minify"/"minify"/' "$CONFIG_FILE"
@@ -220,7 +220,7 @@ if [[ "$DYNAMIC_CONFIG" =~ ^(true|yes)$ ]]; then
     fi
 
     # ALLOWED_ORIGIN
-    if [[ -n $ALLOWED_ORIGIN ]] && [[ $ALLOWED_ORIGIN =~ ^(true|false)$ ]]; then
+    if [[ ${ALLOWED_ORIGIN,,} =~ ^(true|false)$ ]]; then
         echo "Setting allowedOrigin... $ALLOWED_ORIGIN"
 
         sed -i 's/"_allowedOrigin"/"allowedOrigin"/' "$CONFIG_FILE"
