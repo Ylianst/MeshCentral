@@ -2,8 +2,8 @@
 FROM node:lts-alpine AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
-ARG DISABLE_MINIFY="yes"
-ARG DISABLE_TRANSLATE="yes"
+ARG DISABLE_MINIFY="yes" \
+    DISABLE_TRANSLATE="yes"
 
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
@@ -38,58 +38,59 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 FROM alpine:latest
 
-ARG PREINSTALL_LIBS="false"
-
 # environment variables
-ENV NODE_ENV="production"
-ENV CONFIG_FILE="/opt/meshcentral/meshcentral-data/config.json"
-ENV DYNAMIC_CONFIG="true"
+ENV NODE_ENV="production" \
+    CONFIG_FILE="/opt/meshcentral/meshcentral-data/config.json" \
+    DYNAMIC_CONFIG="true"
 
 # environment variables for the above defined MeshCentral Config.json
-ENV ALLOW_PLUGINS="false"
-ENV ALLOW_NEW_ACCOUNTS="false"
-ENV ALLOWED_ORIGIN="false"
-ENV ARGS=""
-ENV HOSTNAME="localhost"
-ENV IFRAME="false"
-ENV LOCAL_SESSION_RECORDING="true"
-ENV MINIFY="true"
-ENV REGEN_SESSIONKEY="false"
-ENV REVERSE_PROXY=""
-ENV REVERSE_PROXY_TLS_PORT="443"
-ENV WEBRTC="false"
-ENV TRUSTED_PROXY=""
+ENV ALLOW_PLUGINS="false" \
+    ALLOW_NEW_ACCOUNTS="false" \
+    ALLOWED_ORIGIN="false" \
+    IFRAME="false" \
+    REGEN_SESSIONKEY="false" \
+    WEBRTC="false" \
+    LOCAL_SESSION_RECORDING="true" \
+    MINIFY="true" \
+    HOSTNAME="localhost" \
+    REVERSE_PROXY="" \
+    REVERSE_PROXY_TLS_PORT="443" \
+    TRUSTED_PROXY="" \
+    ARGS=""
+
+# Database
+# Multi-variable declaration to reduce layers.
+ENV USE_MONGODB="false" \
+    USE_POSTGRESQL="false" \
+    USE_MARIADB="false"
+
+# Preinstallation args
+ARG PREINSTALL_LIBS="false" \
+    INCLUDE_MONGODB_TOOLS="false" \
+    INCLUDE_POSTGRESQL_TOOLS="false" \
+    INCLUDE_MARIADB_TOOLS="false"
 
 # MongoDB Variables
-ARG INCLUDE_MONGODB_TOOLS="false"
-
-ENV USE_MONGODB="false"
-ENV MONGO_HOST=""
-ENV MONGO_PORT="27017"
-ENV MONGO_USERNAME=""
-ENV MONGO_PASS=""
-# The following Mongo variable overwrites most previously declared variables.
-ENV MONGO_URL=""
+# The following MONGO_URL variable overwrites most other mongoDb related varialbes.
+ENV MONGO_HOST="" \
+    MONGO_PORT="27017" \
+    MONGO_USERNAME="" \
+    MONGO_PASS="" \
+    MONGO_URL=""
 
 # PostgreSQL Variables
-ARG INCLUDE_POSTGRESQL_TOOLS="false"
-
-ENV USE_POSTGRESQL="false"
-ENV PSQL_HOST=""
-ENV PSQL_PORT="5432"
-ENV PSQL_USER=""
-ENV PSQL_PASS=""
-ENV PSQL_DATABASE=""
+ENV PSQL_HOST="" \
+    PSQL_PORT="5432" \
+    PSQL_USER="" \
+    PSQL_PASS="" \
+    PSQL_DATABASE=""
 
 # MariaDB/MySQL Variables, Alpine Linux only provides the actual MariaDB binaries.
-ARG INCLUDE_MARIADB_TOOLS="false"
-
-ENV USE_MARIADB="false"
-ENV MARIADB_HOST=""
-ENV MARIADB_PORT="3306"
-ENV MARIADB_USER=""
-ENV MARIADB_PASS=""
-ENV MARIADB_DATABASE=""
+ENV MARIADB_HOST="" \
+    MARIADB_PORT="3306" \
+    MARIADB_USER="" \
+    MARIADB_PASS="" \
+    MARIADB_DATABASE=""
 
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
