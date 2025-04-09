@@ -87,10 +87,16 @@ services:
       - MONGO_URL=mongodb://username:password@mongodb:27017/meshcentral
     volumes:
       - meshcentral-data:/opt/meshcentral/meshcentral-data
+      - meshcentral-files:/opt/meshcentral/meshcentral-files
+      - meshcentral-web:/opt/meshcentral/meshcentral-web
+      - meshcentral-backups:/opt/meshcentral/meshcentral-backups
     ports:
       - "443:443"
 volumes:
   meshcentral-data:
+  meshcentral-files:
+  meshcentral-web:
+  meshcentral-backups:
 ```
 
 ### Using an `.env` File
