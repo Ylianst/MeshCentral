@@ -14287,7 +14287,7 @@
                 x += '<div id=d2devrelaydiv style=display:none>';
                 relayDevices.sort(nameSort);
                 var relayDevices2 = [];
-                for (var i in relayDevices) { relayDevices2.push('<option value="' + relayDevices[i]._id + '">' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + relayDevices[i]._id + '">' + EscapeHtml(relayDevices[i].name) + ' (' + EscapeHtml(relayDevices[i].meshnamel) + ')' + '</option>'); }
                 x += addHtmlFormFloating("Relay Device", '<select id=d2devrelay onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) class=form-select >' + relayDevices2.join('') + '</select>');
                 x += '</div>';
             }
@@ -14601,7 +14601,7 @@
             if (((currentMesh.mtype == 3) || (currentMesh.mtype == 4)) && (currentMesh.relayid != null)) {
                 var relayName = '<i>' + "Unknown" + '</i>';
                 var relayNode = getNodeFromId(currentMesh.relayid);
-                if (relayNode != null) { relayName = EscapeHtml(relayNode.name); }
+                if (relayNode != null) { relayName = EscapeHtml(relayNode.name) + ' (' + EscapeHtml(relayNode.meshnamel) + ')'; }
                 x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0));
             }
 
@@ -15037,7 +15037,7 @@
                 showModal('xxAddAgentModal', 'idx_dlgOkButton');
             } else {
                 var relayDevices2 = [];
-                for (var i in relayDevices) { relayDevices2.push('<option value="' + (relayDevices[i]._id + '"' + ((currentMesh.relayid == relayDevices[i]._id) ? ' selected' : '')) + '>' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + (relayDevices[i]._id + '"' + ((currentMesh.relayid == relayDevices[i]._id) ? ' selected' : '')) + '>' + EscapeHtml(relayDevices[i].name) + ' (' + EscapeHtml(relayDevices[i].meshnamel) + ')' + '</option>'); }
                 var x = addHtmlFormFloating("Relay Device", '<select id=d2devrelay class="form-select">' + relayDevices2.join('') + '</select>');
                 setModalContent('xxAddAgent', "Edit Device Group", x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', p20editmeshrelayEx);
