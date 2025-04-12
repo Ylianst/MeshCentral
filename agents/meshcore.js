@@ -1556,14 +1556,13 @@ function handleServerCommand(data) {
                         // Windows command shell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['cmd'], options);
                         mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
-                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
-                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
+                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); sendConsoleText(c.toString()); });
+                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); sendConsoleText(c.toString()); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
                         mesh.cmdchild.on('exit', function () {
                             if (data.reply) {
                                 mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
                             } else {
-                                sendConsoleText(replydata);
                                 sendConsoleText("Run commands completed.");
                             }
                             delete mesh.cmdchild;
@@ -1572,14 +1571,13 @@ function handleServerCommand(data) {
                         // Windows Powershell
                         mesh.cmdchild = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], options);
                         mesh.cmdchild.descriptorMetadata = 'UserCommandsPowerShell';
-                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
-                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
+                        mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); sendConsoleText(c.toString()); });
+                        mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); sendConsoleText(c.toString()); });
                         mesh.cmdchild.stdin.write(data.cmds + '\r\nexit\r\n');
                         mesh.cmdchild.on('exit', function () {
                             if (data.reply) {
                                 mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
                             } else {
-                                sendConsoleText(replydata);
                                 sendConsoleText("Run commands completed.");
                             }
                             delete mesh.cmdchild;
@@ -1589,14 +1587,13 @@ function handleServerCommand(data) {
                     // Linux shell
                     mesh.cmdchild = require('child_process').execFile('/bin/sh', ['sh'], options);
                     mesh.cmdchild.descriptorMetadata = 'UserCommandsShell';
-                    mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
-                    mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); });
+                    mesh.cmdchild.stdout.on('data', function (c) { replydata += c.toString(); sendConsoleText(c.toString()); });
+                    mesh.cmdchild.stderr.on('data', function (c) { replydata += c.toString(); sendConsoleText(c.toString()); });
                     mesh.cmdchild.stdin.write(data.cmds.split('\r').join('') + '\nexit\n');
                     mesh.cmdchild.on('exit', function () {
                         if (data.reply) {
                             mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
                         } else {
-                            sendConsoleText(replydata);
                             sendConsoleText("Run commands completed.");
                         }
                         delete mesh.cmdchild;
