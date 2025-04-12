@@ -36,7 +36,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 ### STAGE 2 BUILDING.
 
-FROM alpine:latest
+FROM alpine:3.21
 
 # environment variables
 ENV NODE_ENV="production" \
