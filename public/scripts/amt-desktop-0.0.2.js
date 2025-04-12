@@ -735,7 +735,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     }
 
     /*
-    Intel AMT only recognizes a small subset of keysym characters defined in the keysymdef.h so you don�t need to
+    Intel AMT only recognizes a small subset of keysym characters defined in the keysymdef.h so you dont need to
     implement all the languages (this is taken care by the USB Scancode Extension in RFB4.0 protocol).
     The only subset recognized by the FW is the defined by the following sets : XK_LATIN1 , XK_MISCELLANY, XK_3270, XK_XKB_KEYS, XK_KATAKANA.
     In addition to keysymdef.h symbols there are 6 japanese extra keys that we do support:
