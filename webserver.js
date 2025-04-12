@@ -65,7 +65,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.db = db;
     obj.app = obj.express();
     if (obj.args.agentport) { obj.agentapp = obj.express(); }
-    if (args.compression !== false) { obj.app.use(require('compression')()); }
+    if (args.compression !== false) {
+        obj.app.use(require('compression')({ filter: function (req, res) {
+            if (req.path == '/devicefile.ashx') return false; // Don't compress device file transfers to show file sizes
+            return require('compression').filter(req, res);
+        }}));
+    }
     obj.app.disable('x-powered-by');
     obj.tlsServer = null;
     obj.tcpServer = null;
