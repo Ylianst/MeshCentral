@@ -3352,8 +3352,9 @@ module.exports.CreateDB = function (parent, func) {
                 return;
             }
         }
-        const testFile = path.join(backupPath, (parent.config.settings.autobackup.backupname + ".test"));
-
+        const currentDate = new Date();
+        const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
+        const testFile = path.join(backupPath, parent.config.settings.autobackup.backupname + fileSuffix + '.zip');
         try { fs.writeFileSync( testFile, "DeleteMe"); }
         catch (e) {
             //Unable to create file
