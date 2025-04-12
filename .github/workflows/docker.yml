@@ -65,7 +65,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            INCLUDE_MONGODBTOOLS=true
+            INCLUDE_MONGODB_TOOLS=true
             INCLUDE_POSTGRESQL_TOOLS=true
             INCLUDE_MARIADB_TOOLS=true
             PREINSTALL_LIBS=true
