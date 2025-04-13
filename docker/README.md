@@ -1,5 +1,10 @@
 # MeshCentral Docker Configuration Guide
 
+> [!NOTE]
+> Out of precaution, DYNAMIC_CONFIG has been disabled by default.<br>
+> The reason why is because when its enabled and a working config without corresponding environment variables gives,<br>
+> Then the container will overwrite it to a incorrect, but working state - perhaps non-working for your environment.
+
 ## Overview
 This document provides a comprehensive guide to setting up and configuring MeshCentral in a Docker environment. It includes available options, security measures, and deployment instructions.
 
@@ -11,7 +16,7 @@ Below is a breakdown of environment variables used in this setup.
 |----------|--------------|-------------|
 | NODE_ENV | production | Specifies the Node.js environment. |
 | CONFIG_FILE | /opt/meshcentral/meshcentral-data/config.json | Path to the configuration file. |
-| DYNAMIC_CONFIG | true | Enables/disables dynamic configuration. This means config is being rechecked every container restart. |
+| DYNAMIC_CONFIG | false | Enables/disables dynamic configuration. This means config is being rechecked every container restart. False if you want to use your own `config.json` |
 | ALLOW_PLUGINS | false | Enables/disables plugins. |
 | ALLOW_NEW_ACCOUNTS | false | Enables/disables new account creation. |
 | ALLOWED_ORIGIN | false | Enables/disables allowed origin policy. |
