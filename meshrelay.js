@@ -78,6 +78,72 @@ module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie
     }
 }
 
+// Record a new entry in a recording log
+function recordingEntry (logfile, type, flags, data, func, tag) {
+    try {
+        if (logfile.text) {
+            // Text recording format
+            var out = '';
+            const utcDate = new Date(Date.now());
+            if (type == 1) {
+                // End of start
+                out = data + '\r\n' + utcDate.toUTCString() + ', ' + "<<<START>>>" + '\r\n';
+            } else if (type == 3) {
+                // End of log
+                out = utcDate.toUTCString() + ', ' + "<<<END>>>" + '\r\n';
+            } else if (typeof data == 'string') {
+                // Log message
+                if (logfile.text == 1) {
+                    out = utcDate.toUTCString() + ', ' + data + '\r\n';
+                } else if (logfile.text == 2) {
+                    try {
+                        var x = JSON.parse(data);
+                        if (typeof x.action == 'string') {
+                            if ((x.action == 'chat') && (typeof x.msg == 'string')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + x.msg + '\r\n'); }
+                            else if ((x.action == 'file') && (typeof x.name == 'string') && (typeof x.size == 'number')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + "File Transfer" + ', \"' + x.name + '\" (' + x.size + ' ' + "bytes" + ')\r\n'); }
+                        } else if (x.ctrlChannel == null) { out = utcDate.toUTCString() + ', ' + data + '\r\n'; }
+                    } catch (ex) {
+                        out = utcDate.toUTCString() + ', ' + data + '\r\n';
+                    }
+                }
+            }
+            if (out != null) {
+                // Log this event
+                const block = Buffer.from(out);
+                require('fs').write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                logfile.size += block.length;
+            } else {
+                // Skip logging this.
+                func(logfile, tag);
+            }
+        } else {
+            // Binary recording format
+            if (typeof data == 'string') {
+                // String write
+                var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(blockData.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, blockData]);
+                require('fs').write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                logfile.size += block.length;
+            } else {
+                // Binary write
+                var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
+                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
+                header.writeInt32BE(data.length, 4); // Size
+                header.writeIntBE(new Date(), 10, 6); // Time
+                var block = Buffer.concat([header, data]);
+                require('fs').write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
+                logfile.size += block.length;
+            }
+        }
+    } catch (ex) { console.log(ex); func(logfile, tag); }
+}
+module.exports.recordingEntry = recordingEntry;
+
 function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     const currentTime = Date.now();
     if (cookie) {
@@ -751,6 +817,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
                         recordingEntry(logfile, 3, 0, 'MeshCentralMCREC', function (logfile, tag) {
                             parent.parent.fs.closeSync(logfile.fd);
+                            parent.parent.debug('relay', 'Relay: Finished recording to file: ' + tag.logfile.filename);
 
                             // Now that the recording file is closed, check if we need to index this file.
                             if (domain.sessionrecording.index && domain.sessionrecording.index !== false) { parent.parent.certificateOperations.acceleratorPerformOperation('indexMcRec', tag.logfile.filename); }
@@ -794,71 +861,6 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
         // Unsubscribe
         if (obj.pid != null) { parent.parent.RemoveAllEventDispatch(obj); }
-    }
-
-    // Record a new entry in a recording log
-    function recordingEntry(logfile, type, flags, data, func, tag) {
-        try {
-            if (logfile.text) {
-                // Text recording format
-                var out = '';
-                const utcDate = new Date(Date.now());
-                if (type == 1) {
-                    // End of start
-                    out = data + '\r\n' + utcDate.toUTCString() + ', ' + "<<<START>>>" + '\r\n';
-                } else if (type == 3) {
-                    // End of log
-                    out = utcDate.toUTCString() + ', ' + "<<<END>>>" + '\r\n';
-                } else if (typeof data == 'string') {
-                    // Log message
-                    if (logfile.text == 1) {
-                        out = utcDate.toUTCString() + ', ' + data + '\r\n';
-                    } else if (logfile.text == 2) {
-                        try {
-                            var x = JSON.parse(data);
-                            if (typeof x.action == 'string') {
-                                if ((x.action == 'chat') && (typeof x.msg == 'string')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + x.msg + '\r\n'); }
-                                else if ((x.action == 'file') && (typeof x.name == 'string') && (typeof x.size == 'number')) { out = utcDate.toUTCString() + ', ' + (((flags & 2) ? '--> ' : '<-- ') + "File Transfer" + ', \"' + x.name + '\" (' + x.size + ' ' + "bytes" + ')\r\n'); }
-                            } else if (x.ctrlChannel == null) { out = utcDate.toUTCString() + ', ' + data + '\r\n'; }
-                        } catch (ex) {
-                            out = utcDate.toUTCString() + ', ' + data + '\r\n';
-                        }
-                    }
-                }
-                if (out != null) {
-                    // Log this event
-                    const block = Buffer.from(out);
-                    parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
-                    logfile.size += block.length;
-                } else {
-                    // Skip logging this.
-                    func(logfile, tag);
-                }
-            } else {
-                // Binary recording format
-                if (typeof data == 'string') {
-                    // String write
-                    var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                    header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                    header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
-                    header.writeInt32BE(blockData.length, 4); // Size
-                    header.writeIntBE(new Date(), 10, 6); // Time
-                    var block = Buffer.concat([header, blockData]);
-                    parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
-                    logfile.size += block.length;
-                } else {
-                    // Binary write
-                    var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                    header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                    header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
-                    header.writeInt32BE(data.length, 4); // Size
-                    header.writeIntBE(new Date(), 10, 6); // Time
-                    var block = Buffer.concat([header, data]);
-                    parent.parent.fs.write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
-                    logfile.size += block.length;
-                }
-            }
-        } catch (ex) { console.log(ex); func(logfile, tag); }
     }
 
     // If this session has a expire time, setup the expire timer now.

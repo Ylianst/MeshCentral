@@ -4727,8 +4727,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Fetch information about the target
         obj.db.Get(req.query.host, function (err, docs) {
             if (docs.length == 0) { console.log('ERR: Node not found'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
-            var node = docs[0];
+            var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
+            node = docs[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); ws.id = getRandomPassword(); ws.time = Date.now();
             if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
+            var ciraconn = parent.mpsserver.GetConnectionToNode(req.query.host, null, false);
 
             // Check if this user has permission to manage this computer
             if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (3)'); try { ws.close(); } catch (e) { } return; }
@@ -4782,7 +4784,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 if (record == true) {
                     var now = new Date(Date.now());
-                    var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + obj.common.zeroPad(now.getUTCMonth() + 1, 2) + '-' + obj.common.zeroPad(now.getUTCDate(), 2) + '-' + obj.common.zeroPad(now.getUTCHours(), 2) + '-' + obj.common.zeroPad(now.getUTCMinutes(), 2) + '-' + obj.common.zeroPad(now.getUTCSeconds(), 2) + '-' + getRandomPassword() + '.mcrec'
+                    // Get the username and make it acceptable as a filename
+                    if (user._id) { xusername = '-' + parent.common.makeFilename(user._id.split('/')[2]); }
+                    var xsessionid = ws.id;
+                    var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + obj.common.zeroPad(now.getUTCMonth() + 1, 2) + '-' + obj.common.zeroPad(now.getUTCDate(), 2) + '-' + obj.common.zeroPad(now.getUTCHours(), 2) + '-' + obj.common.zeroPad(now.getUTCMinutes(), 2) + '-' + obj.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + xsessionid + '.mcrec';
                     var recFullFilename = null;
                     if (domain.sessionrecording.filepath) {
                         try { obj.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
@@ -4794,16 +4799,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var fd = obj.fs.openSync(recFullFilename, 'w');
                     if (fd != null) {
                         // Write the recording file header
-                        var firstBlock = JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, userid: user._id, username: user.name, ipaddr: req.clientIp, nodeid: node._id, intelamt: true, protocol: (req.query.p == 2) ? 101 : 100, time: new Date().toLocaleString() })
-                        recordingEntry(fd, 1, 0, firstBlock, function () { });
-                        ws.logfile = { fd: fd, lock: false };
+                        parent.debug('relay', 'Relay: Started recording to file: ' + recFullFilename);
+                        var metadata = {
+                            magic: 'MeshCentralRelaySession',
+                            ver: 1,
+                            userid: user._id,
+                            username: user.name,
+                            sessionid: ws.id,
+                            ipaddr1: req.clientIp,
+                            time: new Date().toLocaleString(),
+                            protocol: (req.query.p == 2) ? 101 : 100,
+                            nodeid: node._id,
+                            intelamt: true
+                        };
+                        if (ciraconn != null) { metadata.ipaddr2 = ciraconn.remoteAddr; }
+                        else if ((conn & 4) != 0) { metadata.ipaddr2 = node.host; }
+                        if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
+                        var firstBlock = JSON.stringify(metadata)
+                        ws.logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0, text: 0, req: req };
+                        obj.meshRelayHandler.recordingEntry(ws.logfile, 1, 0, firstBlock, function () { });
+                        if (node != null) { ws.logfile.nodeid = node._id; ws.logfile.meshid = node.meshid; ws.logfile.name = node.name; ws.logfile.icon = node.icon; }
                         if (req.query.p == 2) { ws.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); } // Intel AMT Redirection: Indicate the session is being recorded
                     }
                 }
             }
 
             // If Intel AMT CIRA connection is available, use it
-            var ciraconn = parent.mpsserver.GetConnectionToNode(req.query.host, null, false);
             if (ciraconn != null) {
                 parent.debug('web', 'Opening relay CIRA channel connection to ' + req.query.host + '.');
 
@@ -4865,7 +4886,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                         try { ws.send(data); } catch (e) { }
                                     } else {
                                         // Log to recording file
-                                        recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
+                                        obj.meshRelayHandler.recordingEntry(ws.logfile, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } }); // TODO: Add TLS support
                                     }
                                 }
                             };
@@ -4897,7 +4918,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 try { ws.send(data); } catch (e) { }
                             } else {
                                 // Log to recording file
-                                recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } });
+                                obj.meshRelayHandler.recordingEntry(ws.logfile, 2, 0, data, function () { try { ws.send(data); } catch (ex) { console.log(ex); } });
                             }
                         }
                     };
@@ -4921,7 +4942,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         try { ws.forwardclient.write(data); } catch (ex) { }
                     } else {
                         // Log to recording file
-                        recordingEntry(ws.logfile.fd, 2, 2, data, function () { try { ws.forwardclient.write(data); } catch (ex) { } });
+                        obj.meshRelayHandler.recordingEntry(ws.logfile, 2, 2, data, function () { try { ws.forwardclient.write(data); } catch (ex) { } });
                     }
                 });
 
@@ -4930,6 +4951,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     console.log('CIRA server websocket error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.');
                     parent.debug('webrelay', 'Websocket relay closed on error.');
 
+                    // Log the disconnection
+                    if (ws.time) {
+                        var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                        var nodeid = node._id;
+                        var meshid = node.meshid;
+                        if (user) {
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
+                            obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
+                        }
+                    }
+
                     // Websocket closed, close the CIRA channel and TLS session.
                     if (ws.forwardclient) {
                         if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
@@ -4939,12 +4971,46 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
 
                     // Close the recording file
-                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); delete ws.logfile; }, ws); }
+                    if (ws.logfile != null) { 
+                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                                obj.fs.close(logfile.fd);
+                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
+                                // Compute session length
+                                var sessionLength = null;
+                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
+                                // Add a event entry about this recording
+                                var basefile = parent.path.basename(ws.logfile.filename);
+                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
+                                if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
+                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
+                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
+                                var mesh = obj.meshes[ws.logfile.meshid];
+                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
+                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
+                                if (ws.logfile.name) { event.name = ws.logfile.name; }
+                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
+                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
+                                delete ws.logfile;
+                            }, ws);
+                        }, 5000);
+                    }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
-                ws.on('close', function (req) {
+                ws.on('close', function () {
                     parent.debug('webrelay', 'Websocket relay closed.');
+
+                    // Log the disconnection
+                    if (ws.time) {
+                        var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                        var nodeid = node._id;
+                        var meshid = node.meshid;
+                        if (user) {
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
+                            obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
+                        }
+                    }
 
                     // Websocket closed, close the CIRA channel and TLS session.
                     if (ws.forwardclient) {
@@ -4955,7 +5021,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
 
                     // Close the recording file
-                    if (ws.logfile != null) { recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd, ws) { obj.fs.close(fd); delete ws.logfile; }, ws); }
+                    if (ws.logfile != null) {
+                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                                obj.fs.close(logfile.fd);
+                                parent.debug('relay', 'Relay1: Finished recording to file: ' + ws.logfile.filename);
+                                // Compute session length
+                                var sessionLength = null;
+                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
+                                // Add a event entry about this recording
+                                var basefile = parent.path.basename(ws.logfile.filename);
+                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
+                                if (user) { event.userids = [user._id]; }
+                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
+                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
+                                var mesh = obj.meshes[ws.logfile.meshid];
+                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
+                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
+                                if (ws.logfile.name) { event.name = ws.logfile.name; }
+                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
+                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
+                                delete ws.logfile;
+                            }, ws);
+                        }, 5000);
+                    }
                 });
 
                 // Note that here, req.query.p: 1 = WSMAN with server auth, 2 = REDIR with server auth, 3 = WSMAN without server auth, 4 = REDIR with server auth
@@ -4970,12 +5059,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     ws.interceptor = obj.interceptor.CreateRedirInterceptor({ user: node.intelamt.user, pass: node.intelamt.pass });
                     ws.interceptor.blockAmtStorage = true;
                 }
-
-                return;
-            }
-
-            // If Intel AMT direct connection is possible, option a direct socket
-            if ((conn & 4) != 0) {   // We got a new web socket connection, initiate a TCP connection to the target Intel AMT host/port.
+            } else if ((conn & 4) != 0) { // If Intel AMT direct connection is possible, option a direct socket
+                // We got a new web socket connection, initiate a TCP connection to the target Intel AMT host/port.
                 parent.debug('webrelay', 'Opening relay TCP socket connection to ' + req.query.host + '.');
 
                 // When data is received from the web socket, forward the data into the associated TCP connection.
@@ -4991,7 +5076,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         try { ws.forwardclient.write(msg); } catch (ex) { }
                     } else {
                         // Log to recording file
-                        recordingEntry(ws.logfile.fd, 2, 2, msg, function () { try { ws.forwardclient.write(msg); } catch (ex) { } });
+                        obj.meshRelayHandler.recordingEntry(ws.logfile, 2, 2, msg, function () { try { ws.forwardclient.write(msg); } catch (ex) { } });
                     }
                 });
 
@@ -4999,28 +5084,84 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 ws.on('error', function (err) {
                     console.log('Error with relay web socket connection from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.');
                     parent.debug('webrelay', 'Error with relay web socket connection from ' + req.clientIp + '.');
+                    // Log the disconnection
+                    if (ws.time) {
+                        var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                        var nodeid = node._id;
+                        var meshid = node.meshid;
+                        if (user) {
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
+                            obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
+                        }
+                    }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     // Close the recording file
                     if (ws.logfile != null) {
-                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd) {
-                            obj.fs.close(fd);
-                            ws.logfile = null;
-                        });
+                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                                obj.fs.close(logfile.fd);
+                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
+                                // Compute session length
+                                var sessionLength = null;
+                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
+                                // Add a event entry about this recording
+                                var basefile = parent.path.basename(ws.logfile.filename);
+                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
+                                if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
+                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
+                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
+                                var mesh = obj.meshes[ws.logfile.meshid];
+                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
+                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
+                                if (ws.logfile.name) { event.name = ws.logfile.name; }
+                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
+                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
+                                delete ws.logfile;
+                            }, ws);
+                        }, 5000);
                     }
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function () {
                     parent.debug('webrelay', 'Closing relay web socket connection to ' + req.query.host + '.');
+                    // Log the disconnection
+                    if (ws.time) {
+                        var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                        var nodeid = node._id;
+                        var meshid = node.meshid;
+                        if (user) {
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
+                            obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
+                        }
+                    }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     // Close the recording file
                     if (ws.logfile != null) {
-                        recordingEntry(ws.logfile.fd, 3, 0, 'MeshCentralMCREC', function (fd) {
-                            obj.fs.close(fd);
-                            ws.logfile = null;
-                        });
+                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                                obj.fs.close(logfile.fd);
+                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
+                                // Compute session length
+                                var sessionLength = null;
+                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
+                                // Add a event entry about this recording
+                                var basefile = parent.path.basename(ws.logfile.filename);
+                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
+                                if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
+                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
+                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
+                                var mesh = obj.meshes[ws.logfile.meshid];
+                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
+                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
+                                if (ws.logfile.name) { event.name = ws.logfile.name; }
+                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
+                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
+                                delete ws.logfile;
+                            }, ws);
+                        }, 5000);
                     }
                 });
 
@@ -5064,7 +5205,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         try { ws.send(data); } catch (e) { }
                     } else {
                         // Log to recording file
-                        recordingEntry(ws.logfile.fd, 2, 0, data, function () { try { ws.send(data); } catch (e) { } });
+                        obj.meshRelayHandler.recordingEntry(ws.logfile, 2, 0, data, function () { try { ws.send(data); } catch (e) { } });
                     }
                 });
 
@@ -5092,9 +5233,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         ws._socket.resume();
                     });
                 }
-                return;
             }
 
+            // Log the connection
+            if (user != null) {
+                var msg = 'Started relay session', msgid = 13, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip], msg: msg + ' \"' + obj.id + '\" from ' + req.clientIp + ' to ' + ip, protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
+                obj.parent.DispatchEvent(['*', user._id], obj, event);
+
+                // Update user last access time
+                if ((user != null)) {
+                    const timeNow = Math.floor(Date.now() / 1000);
+                    if (user.access < (timeNow - 300)) { // Only update user access time if longer than 5 minutes
+                        user.access = timeNow;
+                        obj.parent.db.SetUser(user);
+
+                        // Event the change
+                        var message = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                        if (parent.db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        obj.parent.DispatchEvent(targets, obj, message);
+                    }
+                }
+            }
         });
     }
 
@@ -9569,7 +9731,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Generate a random Intel AMT password
     function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
     function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
-    function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); }
+    function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); }
     function getRandomLowerCase(len) { var r = '', random = obj.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
 
     // Generate a 8 digit integer with even random probability for each value.
@@ -9592,31 +9754,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof size == 'number') { x['Content-Length'] = size; }
             res.set(x);
         }
-    }
-
-    // Record a new entry in a recording log
-    function recordingEntry(fd, type, flags, data, func, tag) {
-        try {
-            if (typeof data == 'string') {
-                // String write
-                var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
-                header.writeInt32BE(blockData.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
-                var block = Buffer.concat([header, blockData]);
-                obj.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
-            } else {
-                // Binary write
-                var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
-                header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
-                header.writeInt32BE(data.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
-                var block = Buffer.concat([header, data]);
-                obj.fs.write(fd, block, 0, block.length, function () { func(fd, tag); });
-            }
-        } catch (ex) { console.log(ex); func(fd, tag); }
     }
 
     // Perform a IP match against a list

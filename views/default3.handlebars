@@ -10506,7 +10506,7 @@
             var rdpflags = 0;
             for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
             desktopsettings.rdpflags = rdpflags;
-            localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
+            putstore('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             updateDesktopButtons();
             if (desktop) {
