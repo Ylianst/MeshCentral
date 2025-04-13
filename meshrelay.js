@@ -123,6 +123,9 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     // Check if protocol is set in the cookie and if so replace req.query.p but only if its not already set or blank
     if ((cookie != null) && (typeof cookie.p == 'number') && (obj.req.query.p === undefined || obj.req.query.p === "")) { obj.req.query.p = cookie.p; }
 
+    // Patch Messenger protocol to 200
+    if ((obj.id != null) && (obj.id.startsWith('meshmessenger/') == true)) { obj.req.query.p = 200; }
+
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
     const MESHRIGHT_MANAGEUSERS = 2;
@@ -512,6 +515,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (obj.req.query.p == 1) { msg = 'Started terminal session'; msgid = 14; }
                         else if (obj.req.query.p == 2) { msg = 'Started desktop session'; msgid = 15; }
                         else if (obj.req.query.p == 5) { msg = 'Started file management session'; msgid = 16; }
+                        else if (obj.req.query.p == 200) { msg = 'Started messenger session'; msgid = 162; }
                         var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: sessionUser._id, username: sessionUser.name, msgid: msgid, msgArgs: [obj.id, obj.peer.req.clientIp, req.clientIp], msg: msg + ' \"' + obj.id + '\" from ' + obj.peer.req.clientIp + ' to ' + req.clientIp, protocol: req.query.p, nodeid: req.query.nodeid };
                         if (obj.guestname) { event.guestname = obj.guestname; } else if (relayinfo.peer1.guestname) { event.guestname = relayinfo.peer1.guestname; } // If this is a sharing session, set the guest name here.
                         parent.parent.DispatchEvent(['*', sessionUser._id], obj, event);
