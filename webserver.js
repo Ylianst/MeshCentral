@@ -4094,7 +4094,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) return;
 
         // Check the query
-        if ((domain.sessionrecording == null) || (req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true) || (req.query.file.endsWith('.mcrec') == false)) { res.sendStatus(401); return; }
+        if ((domain.sessionrecording == null) || (req.query.file == null) || (obj.common.IsFilenameValid(req.query.file) !== true) || (!req.query.file.endsWith('.mcrec') && !req.query.file.endsWith('.txt'))) { res.sendStatus(401); return; }
 
         // Get the recording path
         var recordingsPath = null;
