@@ -41,7 +41,7 @@ FROM alpine:3.21
 # environment variables
 ENV NODE_ENV="production" \
     CONFIG_FILE="/opt/meshcentral/meshcentral-data/config.json" \
-    DYNAMIC_CONFIG="true"
+    DYNAMIC_CONFIG="false"
 
 # environment variables for the above defined MeshCentral Config.json
 ENV ALLOW_PLUGINS="false" \
