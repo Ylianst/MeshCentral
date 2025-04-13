@@ -577,7 +577,7 @@
                     var view = new Uint8Array(data.length);
                     for (var i = 0; i < data.length; i++) { view[i] = data.charCodeAt(i); }
 
-                    if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) {
+                    if ((readState == 0) && (rstr2hex(data).startsWith('4100000000000000'))) {
                         // We are not authenticated, KVM data starts here.
                         readState = 1;
                         if (data.length > 8) { amtDesktop.ProcessBinaryData(view.slice(8).buffer); }
