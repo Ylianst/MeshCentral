@@ -2115,6 +2115,10 @@ function CreateMeshCentralServer(config, args) {
                         else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
                         if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.resolve(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
                         if (typeof obj.config.settings.autobackup.backupname != 'string') { obj.config.settings.autobackup.backupname = 'meshcentral-autobackup-'};
+                        //make webdav compliant: http://www.webdav.org/specs/rfc4918.html#rfc.section.5.2, http://www.webdav.org/specs/rfc2518.html#METHOD_MKCOL
+                        // So with leading and trailing slash in the foldername, and no double and backslashes
+                        if (typeof obj.config.settings.autobackup.webdav?.foldername != 'string') {obj.config.settings.autobackup.webdav.foldername = '/MeshCentral-Backups/'}
+                        else {obj.config.settings.autobackup.webdav.foldername = ('/' + obj.config.settings.autobackup.webdav.foldername + '/').replaceAll("\\", "/").replaceAll("//", "/").replaceAll("//", "/")};
                     }
 
                     // Check if the database is capable of performing a backup

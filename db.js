@@ -3786,18 +3786,14 @@ module.exports.CreateDB = function (parent, func) {
                 maxContentLength: Infinity,
                 maxBodyLength: Infinity
             });
-            // Fetch the folder name
-            let webdavfolderName = 'MeshCentral-Backups';
-            if (typeof wdConfig.foldername == 'string') { webdavfolderName = wdConfig.foldername; }
-
-            if (await client.exists(webdavfolderName) === false) {
-                await client.createDirectory(webdavfolderName, { recursive: true});
+            if (await client.exists(wdConfig.foldername) === false) {
+                await client.createDirectory(wdConfig.foldername, { recursive: true});
             } else {
                 // Clean up our WebDAV folder
                 if ((typeof wdConfig.maxfiles == 'number') && (wdConfig.maxfiles > 1)) {
                     const fileName = parent.config.settings.autobackup.backupname;
                     //only files matching our backupfilename
-                    let files = await client.getDirectoryContents(webdavfolderName, { deep: false, glob: "/**/" + fileName + "*.zip" });
+                    let files = await client.getDirectoryContents(wdConfig.foldername, { deep: false, glob: "/**/" + fileName + "*.zip" });
                     const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
                     for (const i in files) { files[i].xdate = new Date(files[i].lastmod); }
                     files.sort(xdateTimeSort);
@@ -3810,8 +3806,8 @@ module.exports.CreateDB = function (parent, func) {
             }
             // Upload to the WebDAV folder
             const { pipeline } = require('stream/promises');
-            await pipeline(fs.createReadStream(filename), client.createWriteStream('/' + webdavfolderName + '/' + path.basename(filename)));
-            console.log('WebDAV upload completed: ' + webdavfolderName + '/' + path.basename(filename)); if (func) { func('WebDAV upload completed: ' + webdavfolderName + '/' + path.basename(filename)); }
+            await pipeline(fs.createReadStream(filename), client.createWriteStream( wdConfig.foldername + path.basename(filename)));
+            console.log('WebDAV upload completed: ' + wdConfig.foldername + path.basename(filename)); if (func) { func('WebDAV upload completed: ' + wdConfig.foldername + path.basename(filename)); }
         }
         catch(err) {
             console.error('WebDAV error: ' + err.message); if (func) { func('WebDAV error: ' + err.message);}
