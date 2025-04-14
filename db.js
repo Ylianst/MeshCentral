@@ -3661,7 +3661,7 @@ module.exports.CreateDB = function (parent, func) {
                     let mesg = 'Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile;
                     if (func) { func(mesg) }
                     else { parent.addServerWarning(mesg, true ) };
-                    if (fs.existsSync(obj.newAutoBackupFile)) { fs.unlink(obj.newAutoBackupFile, function (err) { console.error('Failed to clean up backupfile: ' + err.message) }) };
+                    if (fs.existsSync(obj.newAutoBackupFile)) { fs.unlink(obj.newAutoBackupFile, function (err) { if (err) {console.error('Failed to clean up backupfile: ' + err.message)} }) };
                 };
                 if (obj.databaseType != DB_NEDB) {
                     //remove dump archive file, because zipped and otherwise fills up
