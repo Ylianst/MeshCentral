@@ -9161,7 +9161,8 @@
             x += '<div id=d2modenow>';
             x += addHtmlFormFloating("Expire Time", '<select id=d2inviteExpire class="form-select">' + y + '</select>');
             x += '</div><div id=d2moderange style=display:none>';
-            x += addHtmlFormFloating("Time Range", '<input id=d2timeRangeSelector class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlFormFloating("Time Range Start", '<input id=d2timeRangeStartSelector class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlFormFloating("Time Range End", '<input id=d2timeRangeEndSelector class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div><div id=d2moderecurring style=display:none>';
             x += addHtmlFormFloating("Start Time", '<input id=d2timeStartSelector class="flatpickr form-select" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlFormFloating("Duration", '<select id=d2inviteDuration class="form-select">' + z + '</select>');
@@ -9172,14 +9173,24 @@
 
             xxdialogButtons = 3;
             setModalContent('xxAddAgent', "Share Device", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', showShareDeviceEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showShareDeviceEx('', xxdialogTag));
 
             showShareDeviceValidate();
             var tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, minDate: new Date(), defaultDate: [new Date(), tomorrow], minuteIncrement: 1 });
-            var startTime = flatpickr('#d2timeStartSelector', { enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1 });
-            xxdialogTag = { range: rangeTime, start: startTime };
+            var rangeStartTime = flatpickr('#d2timeRangeStartSelector', {
+                enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1,
+                plugins: [new confirmDatePlugin({})],
+                onChange: function(selectedDates, dateStr, instance) {
+                    rangeEndTime.set('minDate', dateStr);
+                    if (rangeEndTime.selectedDates[0] && rangeEndTime.selectedDates[0] < selectedDates[0]) {
+                        rangeEndTime.clear();
+                    }
+                }
+            });
+            var rangeEndTime = flatpickr('#d2timeRangeEndSelector', { enableTime: true, minDate: tomorrow, defaultDate: tomorrow, minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            var startTime = flatpickr('#d2timeStartSelector', { enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            xxdialogTag = { rangeStart: rangeStartTime, rangeEnd: rangeEndTime, start: startTime };
         }
 
         function showShareDeviceValidate() {
@@ -9222,7 +9233,7 @@
             if (Q('d2timeRange').value == 0) {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, expire: parseInt(Q('d2inviteExpire').value), consent: consent, viewOnly: viewOnly });
             } else if (Q('d2timeRange').value == 1) {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.range.selectedDates[0].getTime() / 1000), end: Math.floor(tag.range.selectedDates[1].getTime() / 1000), consent: consent, viewOnly: viewOnly });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.rangeStart.selectedDates[0].getTime() / 1000), end: Math.floor(tag.rangeEnd.selectedDates[0].getTime() / 1000), consent: consent, viewOnly: viewOnly });
             } else {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.start.selectedDates[0].getTime() / 1000), expire: parseInt(Q('d2inviteDuration').value), recurring: Q('d2timeRange').value - 1, consent: consent, viewOnly: viewOnly });
             }
@@ -18931,7 +18942,8 @@
             x += '</div>';
 
             x += '<div id=d2timeRangeDiv style=display:none>';
-            x += addHtmlFormFloating("Time Range", '<input id=d2timeRangeSelector class="flatpickr form-control" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlFormFloating("Time Range Start", '<input id=d2timeRangeStartSelector class="flatpickr form-control" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlFormFloating("Time Range End", '<input id=d2timeRangeEndSelector class="flatpickr form-control" type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
 
             x += '<div id=d2showTrafficDiv style=display:none>';
@@ -18939,13 +18951,22 @@
             x += '</div>';
 
             setModalContent('xxAddAgent', "Generate Report", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', generateReportDialogEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => generateReportDialogEx('', xxdialogTag));
             generateReportDialogValidate();
 
             var lastWeek = new Date();
             lastWeek.setDate(lastWeek.getDate() - 7);
-            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, maxDate: new Date(), defaultDate: [lastWeek, new Date()], minuteIncrement: 1 });
-            xxdialogTag = rangeTime;
+            var rangeStartTime = flatpickr('#d2timeRangeStartSelector', {
+                enableTime: true, maxDate: new Date(), defaultDate: lastWeek, minuteIncrement: 1, plugins: [new confirmDatePlugin({})],
+                onChange: function(selectedDates, dateStr, instance) {
+                    rangeEndTime.set('minDate', dateStr);
+                    if (rangeEndTime.selectedDates[0] && rangeEndTime.selectedDates[0] < selectedDates[0]) {
+                        rangeEndTime.clear();
+                    }
+                }
+            });
+            var rangeEndTime = flatpickr('#d2timeRangeEndSelector', { enableTime: true, maxDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            xxdialogTag = { rangeStart: rangeStartTime, rangeEnd: rangeEndTime };
         }
 
         function generateReportDialogValidate() {
@@ -18960,8 +18981,8 @@
         function generateReportDialogEx(b, tag) {
             var start, end;
             if (Q('d2timeRange').value == 0) {
-                end = Math.floor(tag.selectedDates[1].getTime() / 1000);
-                start = Math.floor(tag.selectedDates[0].getTime() / 1000);
+                end = Math.floor(tag.rangeEnd.selectedDates[0].getTime() / 1000);
+                start = Math.floor(tag.rangeStart.selectedDates[0].getTime() / 1000);
             } else {
                 end = Math.floor(new Date() / 1000);
                 start = new Date();
