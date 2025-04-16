@@ -4953,12 +4953,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Log the disconnection
                     if (ws.time) {
-                        var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                        var nodeid = node._id;
-                        var meshid = node.meshid;
-                        if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
-                            obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
+                        if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
+                            var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                            if (user) {
+                                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: 101, nodeid: node._id };
+                                obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
+                            }
                         }
                     }
 
@@ -4978,7 +4978,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
                                 var sessionLength = null;
-                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
+                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000) - 5; }
                                 // Add a event entry about this recording
                                 var basefile = parent.path.basename(ws.logfile.filename);
                                 var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
@@ -5028,7 +5028,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 parent.debug('relay', 'Relay1: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
                                 var sessionLength = null;
-                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
+                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000) - 5; }
                                 // Add a event entry about this recording
                                 var basefile = parent.path.basename(ws.logfile.filename);
                                 var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
@@ -5087,11 +5087,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Log the disconnection
                     if (ws.time) {
                         var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                        var nodeid = node._id;
-                        var meshid = node.meshid;
                         if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
-                            obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
+                            obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
                         }
                     }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
@@ -5129,11 +5127,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Log the disconnection
                     if (ws.time) {
                         var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                        var nodeid = node._id;
-                        var meshid = node.meshid;
                         if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
-                            obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
+                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
+                            obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
                         }
                     }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
@@ -5237,9 +5233,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Log the connection
             if (user != null) {
-                var msg = 'Started relay session', msgid = 13, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip], msg: msg + ' \"' + obj.id + '\" from ' + req.clientIp + ' to ' + ip, protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
-                obj.parent.DispatchEvent(['*', user._id], obj, event);
+                if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
+                    var msg = 'Started relay session', msgid = 13, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                    var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip, protocol: 101, nodeid: node._id };
+                    obj.parent.DispatchEvent(['*', user._id], obj, event);   
+                }
 
                 // Update user last access time
                 if ((user != null)) {
