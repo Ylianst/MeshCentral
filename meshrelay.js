@@ -90,7 +90,7 @@ function recordingEntry (logfile, type, flags, data, func, tag) {
                 out = data + '\r\n' + utcDate.toUTCString() + ', ' + "<<<START>>>" + '\r\n';
             } else if (type == 3) {
                 // End of log
-                out = utcDate.toUTCString() + ', ' + "<<<END>>>" + '\r\n';
+                out = new Date(Date.now() - 5000).toUTCString() + ', ' + "<<<END>>>" + '\r\n';
             } else if (typeof data == 'string') {
                 // Log message
                 if (logfile.text == 1) {
@@ -121,20 +121,20 @@ function recordingEntry (logfile, type, flags, data, func, tag) {
             if (typeof data == 'string') {
                 // String write
                 var blockData = Buffer.from(data), header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(type, 0); // Type (1 = Start, 2 = Network Data, 3 = End)
                 header.writeInt16BE(flags, 2); // Flags (1 = Binary, 2 = User)
                 header.writeInt32BE(blockData.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
+                header.writeIntBE((type == 3 ? new Date(Date.now() - 5000) : new Date()), 10, 6); // Time
                 var block = Buffer.concat([header, blockData]);
                 require('fs').write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
                 logfile.size += block.length;
             } else {
                 // Binary write
                 var header = Buffer.alloc(16); // Header: Type (2) + Flags (2) + Size(4) + Time(8)
-                header.writeInt16BE(type, 0); // Type (1 = Header, 2 = Network Data)
+                header.writeInt16BE(type, 0); // Type (1 = Start, 2 = Network Data)
                 header.writeInt16BE(flags | 1, 2); // Flags (1 = Binary, 2 = User)
                 header.writeInt32BE(data.length, 4); // Size
-                header.writeIntBE(new Date(), 10, 6); // Time
+                header.writeIntBE((type == 3 ? new Date(Date.now() - 5000) : new Date()), 10, 6); // Time
                 var block = Buffer.concat([header, data]);
                 require('fs').write(logfile.fd, block, 0, block.length, function () { func(logfile, tag); });
                 logfile.size += block.length;
@@ -824,7 +824,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
                             // Compute session length
                             var sessionLength = null;
-                            if (tag.logfile.startTime != null) { sessionLength = Math.round((Date.now() - tag.logfile.startTime) / 1000); }
+                            if (tag.logfile.startTime != null) { sessionLength = Math.round((Date.now() - tag.logfile.startTime) / 1000) - 5; }
 
                             // Add a event entry about this recording
                             var basefile = parent.parent.path.basename(tag.logfile.filename);
