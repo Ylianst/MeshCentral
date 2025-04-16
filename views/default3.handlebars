@@ -18681,7 +18681,7 @@
                 if (p52recordings != null) {
                     var recdate = null;
                     for (var i in p52recordings) {
-                        var rec = p52recordings[i], rect = new Date(rec.time), day = printDate(rect);
+                        var rec = p52recordings[i], rect = new Date(rec.startTime), day = printDate(rect);
                         if (day != recdate) { recdate = day; x += '<tr><td class=userTableHeader colspan=4>' + day; }
                         x += addRecordingHtml(i, rec);
                     }
@@ -18699,7 +18699,7 @@
         function addRecordingHtml(i, rec) {
             var sessionLengthStr = '';
             if (rec.lengthTime) { sessionLengthStr = pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60)); }
-            var sessionStartStr = printTime(new Date(rec.time));
+            var sessionStartStr = printTime(new Date(rec.startTime));
             if (rec.sessionStart) { sessionStartStr = printTime(new Date(rec.sessionStart)); }
             var sessionSize = '';
             if (rec.size) { sessionSize = format("{0} Kb", Math.round(rec.size / 1024)); }
