@@ -3411,11 +3411,11 @@ function CreateMeshCentralServer(config, args) {
                         if (err == null) {
                             // Agent was signed succesfuly
                             console.log(obj.common.format('Code signed {0}.', agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
-                            obj.callExternalSignJob(agentSignedFunc.signingArguments);
                         } else {
                             // Failed to sign agent
                             addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
+                        obj.callExternalSignJob(agentSignedFunc.signingArguments); // Call external signing job regardless of success or failure
                         if (--pendingOperations === 0) { agentSignedFunc.func(); }
                     }
                     pendingOperations++;
