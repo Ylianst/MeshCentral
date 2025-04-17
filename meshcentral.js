@@ -3483,6 +3483,11 @@ function CreateMeshCentralServer(config, args) {
                     // Signed agent is already ok, use it.
                     originalAgent.close();
                 }
+
+                // Fire external signing job if it is set
+                if (signingArguments.externalsignjob) {
+                    return callExternalSignJob(obj, agentSignCertInfo, signingArguments, xagentSignedFunc);
+                }
             }
         }
 
