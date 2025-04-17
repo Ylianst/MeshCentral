@@ -3511,6 +3511,7 @@ function CreateMeshCentralServer(config, args) {
         }); 
 
         if (signResult.error || signResult.status !== 0) {
+            obj.debug('main', "External signing failed for file: " + signingArguments.out);
             console.error("External signing failed for file: " + signingArguments.out);
             return;
         }
