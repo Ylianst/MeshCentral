@@ -3500,7 +3500,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.config.settings && !obj.config.settings.externalsignjob) {
             return;
         }
-        console.log('############# EXTERNAL SIGNING JOB CALLED ##############');
+        obj.debug('main', "External signing job called for file: " + signingArguments.out);
         
         const { spawnSync } = require('child_process');
 
