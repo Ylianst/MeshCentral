@@ -3411,6 +3411,7 @@ function CreateMeshCentralServer(config, args) {
                         if (err == null) {
                             // Agent was signed succesfuly
                             console.log(obj.common.format('Code signed {0}.', agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
+                            obj.callExternalSignJob(agentSignedFunc.signingArguments);
                         } else {
                             // Failed to sign agent
                             addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
@@ -3470,7 +3471,10 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     const signingArguments = { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl, proxy: timeStampProxy }; // Shallow clone
+                    signingArguments.resChanges = resChanges;
+
                     obj.debug('main', "Code signing with arguments: " + JSON.stringify(signingArguments));
+                    xagentSignedFunc.signingArguments = signingArguments; // Attach the signing arguments to the callback function
                     if (resChanges == false) {
                         // Sign the agent the simple way, without changing any resources.
                         originalAgent.sign(agentSignCertInfo, signingArguments, xagentSignedFunc);
@@ -3479,71 +3483,38 @@ function CreateMeshCentralServer(config, args) {
                         // NOTE: This is experimental and could corupt the agent.
                         originalAgent.writeExecutable(signingArguments, agentSignCertInfo, xagentSignedFunc);
                     }
+
                 } else {
                     // Signed agent is already ok, use it.
                     originalAgent.close();
                 }
 
-                // Fire external signing job if it is set
-                console.log('############# EXTERNAL SIGNING JOB CHECK ##############');
-                if (obj.config.settings.externalsignjob) {
-                    //return callExternalSignJob(obj, agentSignCertInfo, signingArguments, xagentSignedFunc);
-                    console.log('############# EXTERNAL SIGNING JOB CALLED ##############');
-                    console.log(signingArguments);
-                    console.log(agentSignCertInfo);
-                    console.log(xagentSignedFunc); 
-                    console.log(obj);
-                }
+                
             }
         }
 
         if (--pendingOperations === 0) { func(); }
     }
 
-    // function callExternalSignJob(exe, cert, args, func) {
-    //     // External signing process
-    //     exe.prepareForSigning(args, function (err, tempPath) {
-    //         if (err) {
-    //             console.log(err);
-    //             if (exe != null) { exe.close(); }
-    //             func(err);
-    //             return;
-    //         }
+    obj.callExternalSignJob = function (signingArguments) {
+        if (obj.config.settings && !obj.config.settings.externalsignjob) {
+            return;
+        }
+        console.log('############# EXTERNAL SIGNING JOB CALLED ##############');
+        
+        const { spawnSync } = require('child_process');
 
-    //         // Execute the external signing command
-    //         const { spawnSync } = require('child_process');
-    //         console.log("Running external signing command: " + args.externalsignjob);
-    //         console.log("For file: " + tempPath);
-    //         const signResult = spawnSync('"' + args.externalsignjob + '"', ['"' + tempPath + '"'], {
-    //             shell: true,
-    //             stdio: 'inherit'
-    //         });
+        const signResult = spawnSync('"' + obj.config.settings.externalsignjob + '"', ['"' + signingArguments.out + '"'], {
+            encoding: 'utf-8',
+            shell: true,
+            stdio: 'inherit'
+        }); 
 
-    //         if (signResult.error || signResult.status !== 0) {
-    //             console.log("External signing failed");
-    //             if (exe != null) { exe.close(); }
-    //             // try { fs.unlinkSync(tempPath); } catch (ex) { }
-    //             // func("External signing failed");
-    //             return;
-    //         }
-
-    //         // Finalize the signed file
-    //         console.log("Finalizing signed file...");
-    //         exe.finalizeSignedFile(tempPath, args, function (err) {
-    //             if (err) {
-    //                 console.log(err);
-    //                 func(err);
-    //             } else {
-    //                 console.log("Done.");
-    //                 func(null);
-    //             }
-    //             // Clean up temp file
-    //             try { fs.unlinkSync(tempPath); } catch (ex) { }
-    //             if (exe != null) { exe.close(); }
-    //         });
-    //     });
-    // }
-
+        if (signResult.error || signResult.status !== 0) {
+            console.error("External signing failed for file: " + signingArguments.out);
+            return;
+        }
+    }
 
     // Update the list of available mesh agents
     obj.updateMeshAgentsTable = function (domain, func) {
