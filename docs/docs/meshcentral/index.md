@@ -1095,6 +1095,7 @@ First we will start with the MeshCentral configuration, here is a minimal config
   "domains": {
     "": {
       "certUrl": "https://127.0.0.1:443/"
+      "AgentConfig": [ "webSocketMaskOverride=1" ]
     }
   }
 }
