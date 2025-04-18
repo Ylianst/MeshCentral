@@ -4854,8 +4854,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (state == 0) { try { ws.close(); } catch (e) { } }
                         if (state == 2) {
                             // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
-                            const tlsoptions = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
-                            if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                            const tlsoptions = { minVersion: 'TLSv1', socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                            // if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
                             var tlsock = obj.tls.connect(tlsoptions, function () { parent.debug('webrelay', "CIRA Secure TLS Connection"); ws._socket.resume(); });
                             tlsock.chnl = chnl;
                             tlsock.setEncoding('binary');
@@ -5025,7 +5025,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
                             obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
                                 obj.fs.close(logfile.fd);
-                                parent.debug('relay', 'Relay1: Finished recording to file: ' + ws.logfile.filename);
+                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
                                 var sessionLength = null;
                                 if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000) - 5; }
@@ -5175,8 +5175,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     ws._socket.resume();
                 } else {
                     // If TLS is going to be used, setup a TLS socket
-                    var tlsoptions = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
-                    if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                    var tlsoptions = { minVersion: 'TLSv1', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                    // if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
                     ws.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         parent.debug('webrelay', user.name + ' - TLS connected to ' + node.host + ':' + port + '.');
