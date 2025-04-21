@@ -5696,7 +5696,11 @@
             if (i > 0) { su = u.substring(i + 1); }
             su = EscapeHtml(su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
-            return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
+            if (node.lusers && node.lusers.length > 0) {
+                return addKeyLinkConditional(EscapeHtml(su), EscapeHtml(u) + " " +  "(" + "Locked" + ")", (node.lusers && node.lusers.indexOf(u) >= 0));
+            } else {
+                return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
+            }
         }
 
         function autoConnectDesktops() { if (Q('autoConnectDesktopCheckbox').checked == true) { connectAllKvmFunction(); } }
