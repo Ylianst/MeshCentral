@@ -66,7 +66,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
         if (obj.parent.config.letsencrypt.email == null) { obj.configErr = "Let's Encrypt email address not specified."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
         if ((obj.parent.redirserver == null) || ((typeof obj.parent.config.settings.rediraliasport === 'number') && (obj.parent.config.settings.rediraliasport !== 80)) || ((obj.parent.config.settings.rediraliasport == null) && (obj.parent.redirserver.port !== 80))) { obj.configErr = "Redirection web server must be active on port 80 for Let's Encrypt to work."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
         if (obj.redirWebServerHooked !== true) { obj.configErr = "Redirection web server not setup for Let's Encrypt to work."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
-        if ((obj.parent.config.letsencrypt.rsakeysize != null) && (obj.parent.config.letsencrypt.rsakeysize !== 2048) && (obj.parent.config.letsencrypt.rsakeysize !== 3072)) { obj.configErr = "Invalid Let's Encrypt certificate key size, must be 2048 or 3072."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
+        if ((obj.parent.config.letsencrypt.rsakeysize != null) && (obj.parent.config.letsencrypt.rsakeysize !== 2048) && (obj.parent.config.letsencrypt.rsakeysize !== 3072) && (obj.parent.config.letsencrypt.rsakeysize !== 4096)) { obj.configErr = "Invalid Let's Encrypt certificate key size, must be 2048, 3072 or 4096."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
         if (obj.checkInterval == null) { obj.checkInterval = setInterval(obj.checkRenewCertificate, 86400000); } // Call certificate check every 24 hours.
         obj.configOk = true;
 
@@ -165,7 +165,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
         // Create a private key
         obj.log("Generating private key...");
-        acme.forge.createPrivateKey().then(function (accountKey) {
+        acme.forge.createPrivateKey(obj.parent.config.letsencrypt.rsakeysize != null ? obj.parent.config.letsencrypt.rsakeysize : 2048).then(function (accountKey) {
 
             // Create the ACME client
             obj.log("Setting up ACME client...");
@@ -189,7 +189,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
 
             // Create Certificate Request (CSR)
             obj.log("Creating certificate request...");
-            var certRequest = { commonName: obj.leDomains[0] };
+            var certRequest = { commonName: obj.leDomains[0], keySize: obj.parent.config.letsencrypt.rsakeysize != null ? obj.parent.config.letsencrypt.rsakeysize : 2048 };
             if (obj.leDomains.length > 1) { certRequest.altNames = obj.leDomains; }
             acme.forge.createCsr(certRequest).then(function (r) {
                 obj.csr = r[1];
