@@ -2307,12 +2307,16 @@ nav .lbbuttonsel2 {
     color: #f8f9fa !important; /* very light gray for dark mode */
 }
 
-[data-bs-theme="light"] h1, h1 {
-    color: #adafae !important; /* very dark gray, almost black */
+[data-bs-theme="light"] h1,
+[data-bs-theme="light"] .fs-4 {
+    color: var(--bs-heading-color, #212529) !important;
 }
 
-[data-bs-theme="dark"] h1, h1 {
-    color: #f8f9fa !important; /* very light gray */
+[data-bs-theme="dark"] h1,
+[data-bs-theme="dark"] .fs-4,
+.night h1,
+.night .fs-4 {
+    color: var(--bs-heading-color, #f8f9fa) !important;
 }
 
 .h2end {
