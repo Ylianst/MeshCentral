@@ -272,7 +272,7 @@ body {
     padding-top: 5px;
     cursor: pointer;
     position: absolute;
-    right: 0; 
+    right: 0;
     margin-right: 10px;
 }
 
@@ -348,7 +348,7 @@ body {
     -ms-box-sizing:border-box;
     -moz-box-sizing:border-box;
     box-sizing:border-box;
-    -webkit-box-sizing:border-box; 
+    -webkit-box-sizing:border-box;
 }
 
 .night #column_l {
@@ -562,7 +562,7 @@ body {
     padding: 3px;
     margin-right: 3px;
     cursor: pointer;
-    background-color: white; 
+    background-color: white;
 }
 
 #id_dialogtitle {
@@ -768,7 +768,7 @@ body {
     margin-left: 5px;
 }
 
-/* Example if <table> is relplaced with <div><p> then image can be defined in css 
+/* Example if <table> is relplaced with <div><p> then image can be defined in css
 #NoMeshesPanel {
     background: url(../images/info.png) no-repeat 23px 20px;
     height: 48px;
@@ -2082,7 +2082,7 @@ nav .lbbuttonsel2 {
 #d2notifyMsg,
 #d2devNotes,
 #d2devEvent,
-#d2runcmd, 
+#d2runcmd,
 #d2devMessage,
 #d2smsText,
 #d2emailSubject,
@@ -2136,11 +2136,13 @@ nav .lbbuttonsel2 {
     color: #f8f9fa !important; /* very light gray for dark mode */
 }
 
-[data-bs-theme="light"] h1, h1 {
+[data-bs-theme="light"] h1, h1, [data-bs-theme="light"] .fs-4, .fs-4,
+[data-bs-theme="light"] div, div  {
     color: #adafae !important; /* very dark gray, almost black */
 }
 
-[data-bs-theme="dark"] h1, h1 {
+[data-bs-theme="dark"] h1, h1, [data-bs-theme="dark"] .fs-4, .fs-4,
+[data-bs-theme="dark"] div, div {
     color: #f8f9fa !important; /* very light gray */
 }
 
@@ -2674,7 +2676,7 @@ nav .lbbuttonsel2 {
     .deskToolsBar:hover {
         background-color: #EFE8B6;
     }
- 
+
     .night .deskToolsBar {
         color: #ddd;
     }
@@ -3308,7 +3310,7 @@ nav .lbbuttonsel2 {
 .sidebar .nav-link {
     font-size: xx-large;
 }
-  
+
 .card:hover, #p2AccountImage:hover, #p2canvas:hover {
     background: #f3f5f7 !important;
 }
@@ -3414,11 +3416,11 @@ nav .lbbuttonsel2 {
 /* .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
     display: inline;
 }
-    
+
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
     display: inline-flex;
 }
-    
+
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-search {
     display: inline !important;
 } */
