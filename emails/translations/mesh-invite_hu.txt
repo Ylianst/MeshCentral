@@ -29,7 +29,7 @@ Linux esetén az Agent telepítéséhez vágja ki és illessze be egy terminálb
 ~<area-assistant>
 Windows rendszeren futó MeshCentral Assistant esetén menjen a következő hivatkozásra a folyamat befejezéséhez:
 ~
-~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&ac=[[[ASSISTANTTYPE]]]
 ~
 ~</area-assistant>
 ~<area-link>

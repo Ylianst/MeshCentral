@@ -29,7 +29,7 @@ Schneiden Sie unter Linux Folgendes aus und fügen Sie es in ein Terminal ein, u
 ~<area-assistant>
 Navigieren Sie für MeshCentral Assistant unter Windows zum folgenden Link, um den Vorgang abzuschließen:
 ~
-~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&ac=[[[ASSISTANTTYPE]]]
 ~
 ~</area-assistant>
 ~<area-link>
