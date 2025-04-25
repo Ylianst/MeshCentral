@@ -735,7 +735,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     }
 
     /*
-    Intel AMT only recognizes a small subset of keysym characters defined in the keysymdef.h so you don’t need to
+    Intel AMT only recognizes a small subset of keysym characters defined in the keysymdef.h so you dont need to
     implement all the languages (this is taken care by the USB Scancode Extension in RFB4.0 protocol).
     The only subset recognized by the FW is the defined by the following sets : XK_LATIN1 , XK_MISCELLANY, XK_3270, XK_XKB_KEYS, XK_KATAKANA.
     In addition to keysymdef.h symbols there are 6 japanese extra keys that we do support:
@@ -1018,7 +1018,7 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
         obj.recordedData = [];
         obj.recordedStart = Date.now();
         obj.recordedSize = 0;
-        obj.recordedData.push(recordingEntry(1, 0, JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, time: new Date().toLocaleString(), protocol: 200, bpp: obj.bpp, graymode: obj.graymode, lowcolor: obj.lowcolor, screenSize: [obj.width, obj.height] }))); // Metadata, 200 = Midstream Intel AMT KVM
+        obj.recordedData.push(recordingEntry(1, 0, JSON.stringify({ magic: 'MeshCentralRelaySession', ver: 1, time: new Date().toLocaleString(), protocol: 102, bpp: obj.bpp, graymode: obj.graymode, lowcolor: obj.lowcolor, screenSize: [obj.width, obj.height] }))); // Metadata, 102 = Midstream Intel AMT KVM
         obj.DeskRecordServerInit = String.fromCharCode((obj.width >> 8), (obj.width & 0xFF), (obj.height >> 8), (obj.height & 0xFF)) + obj.DeskRecordServerInit.substring(4);
         obj.recordedData.push(recordingEntry(2, 1, obj.DeskRecordServerInit)); // This is the server init command
         obj.recordedData.push(recordingEntry(3, 0, atob(obj.CanvasId.toDataURL('image/png').split(',')[1]))); // Take a screen shot

@@ -29,7 +29,7 @@ Za Linux, izrežite i zalijepite sljedeće u terminal da biste instalirali agent
 ~<area-assistant>
 Za MeshCentral Assistant na Windows-u, idite na sljedeću vezu da dovršite proces:
 ~
-~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&ac=[[[ASSISTANTTYPE]]]
 ~
 ~</area-assistant>
 ~<area-link>

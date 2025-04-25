@@ -5187,7 +5187,11 @@
             if (i > 0) { su = u.substring(i + 1); }
             su = EscapeHtml(su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
-            return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
+            if (node.lusers && node.lusers.length > 0) {
+                return addKeyLinkConditional(EscapeHtml(su), EscapeHtml(u) + " " +  "(" + "Locked" + ")", (node.lusers && node.lusers.indexOf(u) >= 0));
+            } else {
+                return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
+            }
         }
 
         function autoConnectDesktops() { if (Q('autoConnectDesktopCheckbox').checked == true) { connectAllKvmFunction(); } }
@@ -8468,7 +8472,8 @@
             x += '<div id=d2modenow>';
             x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
             x += '</div><div id=d2moderange style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range Start", '<input id=d2timeRangeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range End", '<input id=d2timeRangeEndSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div><div id=d2moderecurring style=display:none>';
             x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
@@ -8480,9 +8485,18 @@
             showShareDeviceValidate();
             var tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, minDate: new Date(), defaultDate: [ new Date(), tomorrow ], minuteIncrement: 1 });
-            var startTime = flatpickr('#d2timeStartSelector', { enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1  });
-            xxdialogTag = { range: rangeTime, start: startTime };
+            var rangeStartTime = flatpickr('#d2timeRangeStartSelector', { 
+                enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})],
+                onChange: function(selectedDates, dateStr, instance) {
+                    rangeEndTime.set('minDate', dateStr);
+                    if (rangeEndTime.selectedDates[0] && rangeEndTime.selectedDates[0] < selectedDates[0]) {
+                        rangeEndTime.clear();
+                    }
+                }
+            });
+            var rangeEndTime = flatpickr('#d2timeRangeEndSelector', { enableTime: true, minDate: new Date(), defaultDate: tomorrow, minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            var startTime = flatpickr('#d2timeStartSelector', { enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            xxdialogTag = { rangeStart: rangeStartTime, rangeEnd: rangeEndTime, start: startTime };
         }
 
         function showShareDeviceValidate() {
@@ -8525,7 +8539,7 @@
             if (Q('d2timeRange').value == 0) {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, expire: parseInt(Q('d2inviteExpire').value), consent: consent, viewOnly: viewOnly });
             } else if (Q('d2timeRange').value == 1) {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.range.selectedDates[0].getTime() / 1000), end: Math.floor(tag.range.selectedDates[1].getTime() / 1000), consent: consent, viewOnly: viewOnly });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.rangeStart.selectedDates[0].getTime() / 1000), end: Math.floor(tag.rangeEnd.selectedDates[0].getTime() / 1000), consent: consent, viewOnly: viewOnly });
             } else {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.start.selectedDates[0].getTime() / 1000), expire: parseInt(Q('d2inviteDuration').value), recurring: Q('d2timeRange').value - 1, consent: consent, viewOnly: viewOnly });
             }
@@ -9740,7 +9754,7 @@
             var rdpflags = 0;
             for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
             desktopsettings.rdpflags = rdpflags;
-            localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
+            putstore('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             updateDesktopButtons();
             if (desktop) {
@@ -15356,7 +15370,8 @@
             158: "Displaying alert box, title=\"{0}\", message=\"{1}\"",
             159: "Device Powered On",
             160: "Enabled Duo two-factor authentication",
-            161: "Disabled Duo two-factor authentication"
+            161: "Disabled Duo two-factor authentication",
+            162: "Started messenger session \"{0}\" from {1} to {2}"
         };
 
         var eventsShortMessageId = {
@@ -17404,7 +17419,7 @@
                 if (p52recordings != null) {
                     var recdate = null;
                     for (var i in p52recordings) {
-                        var rec = p52recordings[i], rect = new Date(rec.time), day = printDate(rect);
+                        var rec = p52recordings[i], rect = new Date(rec.startTime), day = printDate(rect);
                         if (day != recdate) { recdate = day; x += '<tr><td class=userTableHeader colspan=4>' + day; }
                         x += addRecordingHtml(i, rec);
                     }
@@ -17422,7 +17437,7 @@
         function addRecordingHtml(i, rec) {
             var sessionLengthStr = '';
             if (rec.lengthTime) { sessionLengthStr = pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60)); }
-            var sessionStartStr = printTime(new Date(rec.time));
+            var sessionStartStr = printTime(new Date(rec.startTime));
             if (rec.sessionStart) { sessionStartStr = printTime(new Date(rec.sessionStart)); }
             var sessionSize = '';
             if (rec.size) { sessionSize = format("{0} Kb", Math.round(rec.size / 1024)); }
@@ -17484,6 +17499,7 @@
                 if (rec.protocol == 5) { protocolStr = "Files"; }
                 if (rec.protocol == 100) { protocolStr = "Intel&reg; AMT WSMAN"; }
                 if (rec.protocol == 101) { protocolStr = "Intel&reg; AMT Redirection"; }
+                if (rec.protocol == 200) { protocolStr = "Messenger"; }
                 x += addHtmlValue4("Protocol", protocolStr);
             }
             x += addHtmlValue4("Status", (rec.present == 1)?"Present on server":"Not on server");
@@ -17491,7 +17507,7 @@
             if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
             if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
             if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
-            if (rec.time) { x += addHtmlValue4("End Time", printTime(new Date(rec.time))); }
+            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true)  { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
@@ -17661,7 +17677,8 @@
             x += '</div>';
             
             x += '<div id=d2timeRangeDiv style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range Start", '<input id=d2timeRangeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range End", '<input id=d2timeRangeEndSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
 
             x += '<div id=d2showTrafficDiv style=display:none>';
@@ -17673,8 +17690,17 @@
 
             var lastWeek = new Date();
             lastWeek.setDate(lastWeek.getDate() - 7);
-            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, maxDate: new Date(), defaultDate: [ lastWeek, new Date() ], minuteIncrement: 1 });
-            xxdialogTag = rangeTime;
+            var rangeStartTime = flatpickr('#d2timeRangeStartSelector', { 
+                enableTime: true, maxDate: new Date(), defaultDate: lastWeek, minuteIncrement: 1, plugins: [new confirmDatePlugin({})],
+                onChange: function(selectedDates, dateStr, instance) {
+                    rangeEndTime.set('minDate', dateStr);
+                    if (rangeEndTime.selectedDates[0] && rangeEndTime.selectedDates[0] < selectedDates[0]) {
+                        rangeEndTime.clear();
+                    }
+                }
+            });
+            var rangeEndTime = flatpickr('#d2timeRangeEndSelector', { enableTime: true, maxDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            xxdialogTag = { start: rangeStartTime, end: rangeEndTime };
         }
 
         function generateReportDialogValidate() {
@@ -17689,8 +17715,8 @@
         function generateReportDialogEx(b, tag) {
             var start, end;
             if (Q('d2timeRange').value == 0) {
-                end = Math.floor(tag.selectedDates[1].getTime() / 1000);
-                start = Math.floor(tag.selectedDates[0].getTime() / 1000);
+                end = Math.floor(tag.end.selectedDates[0].getTime() / 1000);
+                start = Math.floor(tag.start.selectedDates[0].getTime() / 1000);
             } else {
                 end = Math.floor(new Date() / 1000);
                 start = new Date();

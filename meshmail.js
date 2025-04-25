@@ -346,7 +346,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
                 }
 
                 // Set all the template replacement options and generate the final email text (both in txt and html formats).
-                var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title ? domain.title : 'MeshCentral' };
+                var options = { username: username, name: name, email: email, installflags: flags, msg: msg, meshid: meshid, meshidhex: meshid.split('/')[2], servername: domain.title ? domain.title : 'MeshCentral', assistanttype: (domain.assistanttypeagentinvite ? domain.assistanttypeagentinvite : 0)};
                 if (loginkey != null) { options.urlargs1 = '?key=' + loginkey; options.urlargs2 = '&key=' + loginkey; } else { options.urlargs1 = ''; options.urlargs2 = ''; }
                 options.windows = ((os == 0) || (os == 1)) ? 1 : 0;
                 options.linux = ((os == 0) || (os == 2)) ? 1 : 0;

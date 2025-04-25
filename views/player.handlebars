@@ -403,7 +403,8 @@
                 else if (p == 2) { p = "MeshCentral Desktop"; }
                 else if (p == 100) { p = "Intel&reg; AMT WSMAN"; }
                 else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
-                else if (p == 200) { p = "Intel&reg; AMT KVM"; }
+                else if ((p == 102) || (p == 200 && recFileMetadata.bpp != null)) { p = "Intel&reg; AMT KVM"; }
+                else if (p == 200) { p = "MeshMessenger"; }
                 x += addInfoNoEsc("Protocol", p);
             }
             var encQualityStr = "2 byte-per-pixel";
@@ -469,9 +470,9 @@
                 amtDesktop.Start();
                 deskAdjust();
             }
-            else if (recFileMetadata.protocol == 200) {
+            else if (recFileMetadata.protocol == 102 || (recFileMetadata.protocol == 200 && recFileMetadata.bpp != null)) {
                 // Intel AMT Midstream KVM
-                recFileProtocol = 200;
+                recFileProtocol = 102;
                 x += '<br /><br /><span style=color:gray>' + "Press [space] to play/pause." + '</span>';
                 QE('PlayButton', true);
                 QE('PauseButton', false);
@@ -576,14 +577,14 @@
                     var view = new Uint8Array(data.length);
                     for (var i = 0; i < data.length; i++) { view[i] = data.charCodeAt(i); }
 
-                    if ((readState == 0) && (rstr2hex(data) == '4100000000000000')) {
+                    if ((readState == 0) && (rstr2hex(data).startsWith('4100000000000000'))) {
                         // We are not authenticated, KVM data starts here.
                         readState = 1;
                         if (data.length > 8) { amtDesktop.ProcessBinaryData(view.slice(8).buffer); }
                     } else if (readState == 1) {
                         amtDesktop.ProcessBinaryData(view.buffer);
                     }
-                } else if (recFileProtocol == 200) {
+                } else if (recFileProtocol == 102) {
                     // Intel AMT midstream KVM
                     var view = new Uint8Array(data.length);
                     for (var i = 0; i < data.length; i++) { view[i] = data.charCodeAt(i); }
@@ -600,7 +601,7 @@
             }
 
             // This is a PNG screenshot of the display, load it and render it.
-            if ((type == 3) && (recFileProtocol == 200)) {
+            if ((type == 3) && (recFileProtocol == 102)) {
                 var tile = new Image();
                 tile.src = "data:image/png;base64," + btoa(data);
                 tile.onload = function () { amtDesktop.canvas.drawImage(tile, 0, 0); }
@@ -836,7 +837,7 @@
                 amtDesktop.onScreenSizeChange = deskAdjust;
                 amtDesktop.State = 3;
                 amtDesktop.Start();
-                if (recFileMetadata.protocol == 200) {
+                if (recFileMetadata.protocol == 102) {
                     if (recFileMetadata.screenSize) { amtDesktop.width = recFileMetadata.screenSize[0]; amtDesktop.height = recFileMetadata.screenSize[1]; }
                     if (recFileMetadata.bpp) { amtDesktop.bpp = recFileMetadata.bpp; }
                     if (recFileMetadata.graymode) { amtDesktop.graymode = recFileMetadata.graymode; }
