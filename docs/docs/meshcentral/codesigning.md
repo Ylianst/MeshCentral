@@ -99,3 +99,50 @@ Now that MeshCentral customizes and signs the agent, you can set that value to a
       }
 }
 ```
+
+## External Signing Job
+
+The externalsignjob feature allows you to perform additional operations on the agent after MeshCentral completes its code signing process. This is particularly useful for:
+
+1. Using hardware security tokens for signing
+2. Performing signing on a separate server or cloud host
+3. Archiving signed agents
+4. Adding additional security measures
+
+The externalsignjob is called after MeshCentral completes its entire code signing process, including:
+- Resource modification
+- Digital signature application
+- Timestamp application (if configured)
+
+To use this feature, add the following to your config.json:
+
+```json
+"settings": {
+    "externalsignjob": "path/to/your/script.bat"
+}
+```
+
+The script will receive the path to the agent as its first argument. Here are example scripts:
+
+### Batch File Example
+```batch
+@echo off
+Echo External Signing Job
+signtool sign /tr http://timestamp.sectigo.com /td SHA256 /fd SHA256 /a /v /f path/to/your/signing.cer /csp "eToken Base Cryptographic Provider" /k "[{{MyPassword}}]=PrivateKeyContainerName" "%~1"
+```
+
+### PowerShell Example
+```powershell
+$file = $args[0]
+signtool sign /tr http://timestamp.sectigo.com /td SHA256 /fd SHA256 /a /v /f path/to/your/signing.cer /csp "eToken Base Cryptographic Provider" /k "[{{MyPassword}}]=PrivateKeyContainerName" $file
+```
+
+The externalsignjob can be used for more than just signing. For example, you could:
+
+1. Archive signed agents to a secure location
+2. Upload signed agents to a distribution server
+3. Perform additional security checks
+4. Add custom metadata or watermarks
+5. Integrate with your organization's build pipeline
+
+Note: The script must return a success exit code (0) for the process to be considered successful. Any non-zero exit code will be treated as a failure and will be logged.

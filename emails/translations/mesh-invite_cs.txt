@@ -29,7 +29,7 @@ V případě systému Linux vyjměte a vložte do terminálu a nainstalujte agen
 ~<area-assistant>
 Pro MeshCentral Assistant v systému Windows přejděte na následující odkaz a dokončete proces:
 ~
-~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&ac=[[[ASSISTANTTYPE]]]
 ~
 ~</area-assistant>
 ~<area-link>

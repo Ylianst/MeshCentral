@@ -29,7 +29,7 @@ Linux의 경우, 다음을 잘라내어 터미널에 붙여 넣어 에이전트�
 ~<area-assistant>
 Windows용 MeshCentral Assistant의 경우 다음 링크로 이동하여 프로세스를 완료하십시오.
 ~
-~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&ac=[[[ASSISTANTTYPE]]]
 ~
 ~</area-assistant>
 ~<area-link>
