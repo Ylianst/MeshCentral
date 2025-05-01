@@ -512,7 +512,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     for (var i in parent.parent.mpsserver.ciraConnections) { serverStats.ConnectedIntelAMTCira += parent.parent.mpsserver.ciraConnections[i].length; }
                 }
                 for (var i in parent.parent.connectivityByNode) {
-                    if (parent.parent.connectivityByNode[i].connectivity == 4) { serverStats.ConnectedIntelAMT++; }
+                    const node = parent.parent.connectivityByNode[i];
+                    if (node && typeof node.connectivity !== 'undefined' && node.connectivity === 4) { serverStats.ConnectedIntelAMT++; }
                 }
 
                 // Take a look at agent errors
