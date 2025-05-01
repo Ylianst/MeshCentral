@@ -5188,7 +5188,7 @@
             su = EscapeHtml(su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
             if (node.lusers && node.lusers.length > 0) {
-                return addKeyLinkConditional(EscapeHtml(su), EscapeHtml(u) + " " +  "(" + "Locked" + ")", (node.lusers && node.lusers.indexOf(u) >= 0));
+                return addKeyLinkConditional(su, EscapeHtml(u) + ' (' + "Locked" + ')', (node.lusers && node.lusers.indexOf(u) >= 0));
             } else {
                 return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
             }
