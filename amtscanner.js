@@ -387,8 +387,12 @@ module.exports.CreateAmtScanner = function (parent) {
             } else {
                 // Connect using TLS, we will switch from default TLS to TLS1-only and back if we get a connection error to support older Intel AMT.
                 if (scaninfo.tlsoption == null) { scaninfo.tlsoption = 0; }
-                const tlsOptions = { minVersion: 'TLSv1', rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION };
-                // if (scaninfo.tlsoption == 1) { tlsOptions.secureProtocol = 'TLSv1_method'; }
+                const tlsOptions = { rejectUnauthorized: false, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION };
+                if (scaninfo.tlsoption == 1) {
+                    tlsOptions.secureProtocol = 'TLSv1_method';
+                } else {
+                    tlsOptions.minVersion = 'TLSv1';
+                }
                 client = obj.tls.connect(port, host, tlsOptions, function () { this.write('GET / HTTP/1.1\r\nhost: ' + host + '\r\n\r\n'); });
             }
             client.scaninfo = scaninfo;
