@@ -2095,7 +2095,7 @@ function CreateMeshCentralServer(config, args) {
                             for (var i in obj.mpsserver.ciraConnections) { data.conn.amc += obj.mpsserver.ciraConnections[i].length; }
                         }
                         for (var i in obj.connectivityByNode) {
-                            const node = parent.parent.connectivityByNode[i];
+                            const node = obj.connectivityByNode[i];
                             if (node && typeof node.connectivity !== 'undefined' && node.connectivity === 4) { data.conn.am++; }
                         }
                         if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
