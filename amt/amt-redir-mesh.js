@@ -170,8 +170,12 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
 
                     // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
                     const TLSSocket = require('tls').TLSSocket;
-                    const tlsoptions = { minVersion: 'TLSv1', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
-                    // if (obj.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                    const tlsoptions = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                    if (obj.tls1only == 1) {
+                        tlsoptions.secureProtocol = 'TLSv1_method';
+                    } else {
+                        tlsoptions.minVersion = 'TLSv1';
+                    }
                     const tlsock = new TLSSocket(ser, tlsoptions);
                     tlsock.on('error', function (err) { Debug(1, "CIRA TLS Connection Error ", err); });
                     tlsock.on('secureConnect', function () { Debug(2, "CIRA Secure TLS Connection"); ws._socket.resume(); });
@@ -228,8 +232,12 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
                     obj.forwardclient.setEncoding('binary');
                 } else {
                     // If TLS is going to be used, setup a TLS socket
-                    var tlsoptions = { minVersion: 'TLSv1', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
-                    // if (obj.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                    var tlsoptions = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                    if (obj.tls1only == 1) {
+                        tlsoptions.secureProtocol = 'TLSv1_method';
+                    } else {
+                        tlsoptions.minVersion = 'TLSv1';
+                    }
                     obj.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         Debug(2, 'TLS Intel AMT transport connected to ' + node.host + ':' + port + '.');

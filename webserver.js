@@ -4854,8 +4854,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (state == 0) { try { ws.close(); } catch (e) { } }
                         if (state == 2) {
                             // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
-                            const tlsoptions = { minVersion: 'TLSv1', socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
-                            // if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                            const tlsoptions = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                            if (req.query.tls1only == 1) {
+                                tlsoptions.secureProtocol = 'TLSv1_method';
+                            } else {
+                                tlsoptions.minVersion = 'TLSv1';
+                            }
                             var tlsock = obj.tls.connect(tlsoptions, function () { parent.debug('webrelay', "CIRA Secure TLS Connection"); ws._socket.resume(); });
                             tlsock.chnl = chnl;
                             tlsock.setEncoding('binary');
@@ -5177,8 +5181,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     ws._socket.resume();
                 } else {
                     // If TLS is going to be used, setup a TLS socket
-                    var tlsoptions = { minVersion: 'TLSv1', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
-                    // if (req.query.tls1only == 1) { tlsoptions.secureProtocol = 'TLSv1_method'; }
+                    var tlsoptions = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                    if (req.query.tls1only == 1) {
+                        tlsoptions.secureProtocol = 'TLSv1_method';
+                    } else {
+                        tlsoptions.minVersion = 'TLSv1';
+                    }
                     ws.forwardclient = obj.tls.connect(port, node.host, tlsoptions, function () {
                         // The TLS connection method is the same as TCP, but located a bit differently.
                         parent.debug('webrelay', user.name + ' - TLS connected to ' + node.host + ':' + port + '.');
