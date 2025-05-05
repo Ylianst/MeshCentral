@@ -36,6 +36,7 @@ var CreateAmtRedirect = function (module, authCookie) {
         obj.port = port;
         obj.user = user;
         obj.pass = pass;
+        obj.tls = tls;
         obj.connectstate = 0;
         obj.inDataCount = 0;
         var url = window.location.protocol.replace('http', 'ws') + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/webrelay.ashx?p=2&host=' + host + '&port=' + port + '&tls=' + tls + ((user == '*') ? '&serverauth=1' : '') + ((typeof pass === 'undefined') ? ('&serverauth=1&user=' + user) : ''); // The 'p=2' indicates to the relay that this is a REDIRECTION session
