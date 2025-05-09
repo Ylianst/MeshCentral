@@ -236,8 +236,12 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                     if (state == 0) { obj.xxOnSocketClosed(); }
                     if (state == 2) {
                         // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
-                        var options = { minVersion: 'TLSv1', socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
-                        // if (obj.xtlsMethod == 1) { options.secureProtocol = 'TLSv1_method'; }
+                        var options = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                        if (obj.xtlsMethod == 1) {
+                            options.secureProtocol = 'TLSv1_method';
+                        } else {
+                            options.minVersion = 'TLSv1';
+                        }
                         if (obj.xtlsoptions) {
                             if (obj.xtlsoptions.ca) { options.ca = obj.xtlsoptions.ca; }
                             if (obj.xtlsoptions.cert) { options.cert = obj.xtlsoptions.cert; }
@@ -274,8 +278,12 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
             } else {
                 // Direct connect with TLS
-                var options = { minVersion: 'TLSv1', ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
-                // if (obj.xtlsMethod != 0) { options.secureProtocol = 'TLSv1_method'; }
+                var options = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                if (obj.xtlsMethod == 1) {
+                    options.secureProtocol = 'TLSv1_method';
+                } else {
+                    options.minVersion = 'TLSv1';
+                }
                 if (obj.xtlsoptions) {
                     if (obj.xtlsoptions.ca) { options.ca = obj.xtlsoptions.ca; }
                     if (obj.xtlsoptions.cert) { options.cert = obj.xtlsoptions.cert; }
@@ -283,7 +291,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 }
                 obj.socket = obj.tls.connect(obj.port, obj.host, options, obj.xxOnSocketConnected);
                 obj.socket.setEncoding('binary');
-                obj.socket.setTimeout(60000); // Set socket idle timeout
+                obj.socket.setTimeout(28000); // Set socket idle timeout of 28 seconds
                 obj.socket.on('data', obj.xxOnSocketData);
                 obj.socket.on('close', obj.xxOnSocketClosed);
                 obj.socket.on('timeout', obj.destroy);
