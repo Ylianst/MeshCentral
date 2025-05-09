@@ -638,7 +638,7 @@ module.exports.CreateAmtManager = function (parent) {
 
                 // Connect now
                 var comm;
-                if ((dev.tlsfail !== true) && (parent.config.domains[dev.domainid].amtmanager.tlsconnections !== false)) {
+                if ((dev.tlsfail !== true) && (parent.config.domains[dev.domainid].amtmanager.tlsconnections !== false) && (dev.intelamt.tls == 1)) {
                     parent.debug('amt', dev.name, (dev.connType == 1) ? 'Relay-Connect' : 'LMS-Connect', "TLS", user);
                     comm = CreateWsmanComm(dev.nodeid, 16993, user, pass, 1, null, ciraconn); // Perform TLS
                     comm.xtlsFingerprint = 0; // Perform no certificate checking
@@ -670,7 +670,7 @@ module.exports.CreateAmtManager = function (parent) {
 
                     // Connect now
                     var comm;
-                    if ((dev.tlsfail !== true) && (parent.config.domains[dev.domainid].amtmanager.tlsconnections !== false)) {
+                    if ((dev.tlsfail !== true) && (parent.config.domains[dev.domainid].amtmanager.tlsconnections !== false) && (dev.intelamt.tls == 1)) {
                         parent.debug('amt', dev.name, 'Direct-Connect', "TLS", dev.host, user);
                         comm = CreateWsmanComm(dev.host, 16993, user, pass, 1); // Always try with TLS first
                         comm.xtlsFingerprint = 0; // Perform no certificate checking

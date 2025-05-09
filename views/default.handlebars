@@ -5188,7 +5188,7 @@
             su = EscapeHtml(su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
             if (node.lusers && node.lusers.length > 0) {
-                return addKeyLinkConditional(EscapeHtml(su), EscapeHtml(u) + " " +  "(" + "Locked" + ")", (node.lusers && node.lusers.indexOf(u) >= 0));
+                return addKeyLinkConditional(su, EscapeHtml(u) + ' (' + "Locked" + ')', (node.lusers && node.lusers.indexOf(u) >= 0));
             } else {
                 return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
             }
@@ -11344,7 +11344,7 @@
                     h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
                     h += '<span><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
-                        h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + " (" + shortname + ")";
+                        h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + ' (' + shortname + ')';
                     } else {
                         h += shortname;
                     }
