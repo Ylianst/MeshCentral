@@ -9478,8 +9478,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var fileOptions = obj.renderPages[domain.id][obj.path.basename(filename)];
             if (fileOptions != null) {
                 for (var i in acceptLanguages) {
-                    if (acceptLanguages[i] == 'zh-tw') { acceptLanguages[i] = 'zh-chs'; } // Change newer "zh-tw" to legacy "zh-chs" for now
-                    if (acceptLanguages[i] == 'zh-cn') { acceptLanguages[i] = 'zh-cht'; } // Change newer "zh-ch" to legacy "zh-cht" for now
+                    if (acceptLanguages[i] == 'zh-tw') { acceptLanguages[i] = 'zh-cht'; } // Change newer "zh-tw" to legacy "zh-cht" Chinese (Traditional) for now
+                    if (acceptLanguages[i] == 'zh-cn') { acceptLanguages[i] = 'zh-chs'; } // Change newer "zh-ch" to legacy "zh-chs" Chinese (Simplified) for now
                     if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) {
                         // English requested
                         args.lang = 'en';
