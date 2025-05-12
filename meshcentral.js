@@ -2084,14 +2084,19 @@ function CreateMeshCentralServer(config, args) {
                                 ca: Object.keys(obj.webserver.wsagents).length,
                                 cu: Object.keys(obj.webserver.wssessions).length,
                                 us: Object.keys(obj.webserver.wssessions2).length,
-                                rs: obj.webserver.relaySessionCount
+                                rs: obj.webserver.relaySessionCount,
+                                am: 0
                             },
                             traffic: trafficStats.delta
                         };
                         try { data.cpu = require('os').loadavg(); } catch (ex) { }
                         if (obj.mpsserver != null) {
-                            data.conn.am = 0;
-                            for (var i in obj.mpsserver.ciraConnections) { data.conn.am += obj.mpsserver.ciraConnections[i].length; }
+                            data.conn.amc = 0;
+                            for (var i in obj.mpsserver.ciraConnections) { data.conn.amc += obj.mpsserver.ciraConnections[i].length; }
+                        }
+                        for (var i in obj.connectivityByNode) {
+                            const node = obj.connectivityByNode[i];
+                            if (node && typeof node.connectivity !== 'undefined' && node.connectivity === 4) { data.conn.am++; }
                         }
                         if (obj.firstStats === true) { delete obj.firstStats; data.first = true; }
                         if (obj.multiServer != null) { data.s = obj.multiServer.serverid; }
@@ -3411,6 +3416,7 @@ function CreateMeshCentralServer(config, args) {
                             // Failed to sign agent
                             addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
+                        obj.callExternalSignJob(agentSignedFunc.signingArguments); // Call external signing job regardless of success or failure
                         if (--pendingOperations === 0) { agentSignedFunc.func(); }
                     }
                     pendingOperations++;
@@ -3466,7 +3472,10 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     const signingArguments = { out: signeedagentpath, desc: signDesc, url: signUrl, time: timeStampUrl, proxy: timeStampProxy }; // Shallow clone
+                    signingArguments.resChanges = resChanges;
+
                     obj.debug('main', "Code signing with arguments: " + JSON.stringify(signingArguments));
+                    xagentSignedFunc.signingArguments = signingArguments; // Attach the signing arguments to the callback function
                     if (resChanges == false) {
                         // Sign the agent the simple way, without changing any resources.
                         originalAgent.sign(agentSignCertInfo, signingArguments, xagentSignedFunc);
@@ -3475,14 +3484,38 @@ function CreateMeshCentralServer(config, args) {
                         // NOTE: This is experimental and could corupt the agent.
                         originalAgent.writeExecutable(signingArguments, agentSignCertInfo, xagentSignedFunc);
                     }
+
                 } else {
                     // Signed agent is already ok, use it.
                     originalAgent.close();
                 }
+
+                
             }
         }
 
         if (--pendingOperations === 0) { func(); }
+    }
+
+    obj.callExternalSignJob = function (signingArguments) {
+        if (obj.config.settings && !obj.config.settings.externalsignjob) {
+            return;
+        }
+        obj.debug('main', "External signing job called for file: " + signingArguments.out);
+        
+        const { spawnSync } = require('child_process');
+
+        const signResult = spawnSync('"' + obj.config.settings.externalsignjob + '"', ['"' + signingArguments.out + '"'], {
+            encoding: 'utf-8',
+            shell: true,
+            stdio: 'inherit'
+        }); 
+
+        if (signResult.error || signResult.status !== 0) {
+            obj.debug('main', "External signing failed for file: " + signingArguments.out);
+            console.error("External signing failed for file: " + signingArguments.out);
+            return;
+        }
     }
 
     // Update the list of available mesh agents

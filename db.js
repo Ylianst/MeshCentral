@@ -3323,7 +3323,10 @@ module.exports.CreateDB = function (parent, func) {
 
         var cmd = '"' + mongoDumpPath + '"';
         if (dburl) { cmd = '\"' + mongoDumpPath + '\" --uri=\"' + dburl + '\"'; }
-
+        if (parent.config.settings.autobackup?.mongodumpargs) {
+            cmd = '\"' + mongoDumpPath + '\" ' + parent.config.settings.autobackup.mongodumpargs;
+            if (!parent.config.settings.autobackup.mongodumpargs.includes("--db=")) {cmd += ' --db=' + (parent.config.settings.mongodbname ? parent.config.settings.mongodbname : 'meshcentral')};
+        }
         return cmd;
     }
 
@@ -3352,8 +3355,9 @@ module.exports.CreateDB = function (parent, func) {
                 return;
             }
         }
-        const testFile = path.join(backupPath, (parent.config.settings.autobackup.backupname + ".test"));
-
+        const currentDate = new Date();
+        const fileSuffix = currentDate.getFullYear() + '-' + padNumber(currentDate.getMonth() + 1, 2) + '-' + padNumber(currentDate.getDate(), 2) + '-' + padNumber(currentDate.getHours(), 2) + '-' + padNumber(currentDate.getMinutes(), 2);
+        const testFile = path.join(backupPath, parent.config.settings.autobackup.backupname + fileSuffix + '.zip');
         try { fs.writeFileSync( testFile, "DeleteMe"); }
         catch (e) {
             //Unable to create file
@@ -3377,7 +3381,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Unable to find mongodump tool, backup will not be performed. Command tried: " + cmd);
+                        func(1, "Mongodump error, backup will not be performed. Command tried: " + cmd + ' --> ERROR: ' + stderr);
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
@@ -3657,7 +3661,7 @@ module.exports.CreateDB = function (parent, func) {
                     let mesg = 'Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile;
                     if (func) { func(mesg) }
                     else { parent.addServerWarning(mesg, true ) };
-                    if (fs.existsSync(obj.newAutoBackupFile)) { fs.unlink(obj.newAutoBackupFile, function (err) { console.error('Failed to clean up backupfile: ' + err.message) }) };
+                    if (fs.existsSync(obj.newAutoBackupFile)) { fs.unlink(obj.newAutoBackupFile, function (err) { if (err) {console.error('Failed to clean up backupfile: ' + err.message)} }) };
                 };
                 if (obj.databaseType != DB_NEDB) {
                     //remove dump archive file, because zipped and otherwise fills up

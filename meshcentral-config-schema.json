@@ -546,7 +546,7 @@
         },
         "agentWsCompression": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Enables agent-side, websocket per-message deflate compression. wscompression must also be true for this to work."
         },
         "noAgentUpdate": {
@@ -886,6 +886,10 @@
               "default": "mongodump",
               "description": "The file path of where \"mongodump\" is located. Default is \"mongodump\""
             },
+            "mongoDumpArgs": {
+              "type": "string",
+              "description": "Override the default mongodump --uri=<mongoDb>. The --db= option is automatically appended if omitted. (f.e. --host=127.0.0.1 --username=someUser --password=PaSsWORD --authenticationDatabase=admin)"
+            },    
             "mysqlDumpPath": {
               "type": "string",
               "default": "mysqldump",
@@ -3887,6 +3891,11 @@
           "type": "boolean",
           "default": false,
           "description": "By default a test certificate will be obtained from Let's Encrypt. Setting \"zerossl\", will ignore this setting. Always start by getting a test certificate and make sure that works before setting this to true and obtaining a production certificate. Making too many bad requests for a production certificate will get you banned for a long period of time."
+        },
+        "rsaKeySize": {
+          "type": "integer",
+          "default": 2048,
+          "description": "The size of the RSA key to generate. The default is 2048 bits."
         },
         "nochecks": {
           "type": "boolean",

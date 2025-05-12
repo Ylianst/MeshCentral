@@ -29,7 +29,7 @@ Linux için, aracıyı yüklemek için aşağıdakileri kesip bir terminale yap�
 ~<area-assistant>
 Windows'ta MeshCentral Assistant için işlemi tamamlamak üzere aşağıdaki bağlantıya gidin:
 ~
-~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]
+~[[[SERVERURL]]]/meshagents?id=10006&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&ac=[[[ASSISTANTTYPE]]]
 ~
 ~</area-assistant>
 ~<area-link>

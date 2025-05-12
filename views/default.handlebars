@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -5187,7 +5187,11 @@
             if (i > 0) { su = u.substring(i + 1); }
             su = EscapeHtml(su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
-            return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
+            if (node.lusers && node.lusers.length > 0) {
+                return addKeyLinkConditional(su, EscapeHtml(u) + ' (' + "Locked" + ')', (node.lusers && node.lusers.indexOf(u) >= 0));
+            } else {
+                return '<span title="' + EscapeHtml(u) + '">' + su + '</span>';
+            }
         }
 
         function autoConnectDesktops() { if (Q('autoConnectDesktopCheckbox').checked == true) { connectAllKvmFunction(); } }
@@ -7497,7 +7501,7 @@
                 // Add node name
                 var nname = EscapeHtml(node.name), nnameEx;
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
-                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
+                if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0 || (mesh.flags & 16)))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
                 nnameEx = nname;
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
@@ -8468,7 +8472,8 @@
             x += '<div id=d2modenow>';
             x += addHtmlValue("Expire Time", '<select id=d2inviteExpire style=float:right;width:250px>' + y + '</select>');
             x += '</div><div id=d2moderange style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range Start", '<input id=d2timeRangeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range End", '<input id=d2timeRangeEndSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div><div id=d2moderecurring style=display:none>';
             x += addHtmlValue("Start Time", '<input id=d2timeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += addHtmlValue("Duration", '<select id=d2inviteDuration style=float:right;width:250px>' + z + '</select>');
@@ -8480,9 +8485,18 @@
             showShareDeviceValidate();
             var tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, minDate: new Date(), defaultDate: [ new Date(), tomorrow ], minuteIncrement: 1 });
-            var startTime = flatpickr('#d2timeStartSelector', { enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1  });
-            xxdialogTag = { range: rangeTime, start: startTime };
+            var rangeStartTime = flatpickr('#d2timeRangeStartSelector', { 
+                enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})],
+                onChange: function(selectedDates, dateStr, instance) {
+                    rangeEndTime.set('minDate', dateStr);
+                    if (rangeEndTime.selectedDates[0] && rangeEndTime.selectedDates[0] < selectedDates[0]) {
+                        rangeEndTime.clear();
+                    }
+                }
+            });
+            var rangeEndTime = flatpickr('#d2timeRangeEndSelector', { enableTime: true, minDate: new Date(), defaultDate: tomorrow, minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            var startTime = flatpickr('#d2timeStartSelector', { enableTime: true, minDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            xxdialogTag = { rangeStart: rangeStartTime, rangeEnd: rangeEndTime, start: startTime };
         }
 
         function showShareDeviceValidate() {
@@ -8525,7 +8539,7 @@
             if (Q('d2timeRange').value == 0) {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, expire: parseInt(Q('d2inviteExpire').value), consent: consent, viewOnly: viewOnly });
             } else if (Q('d2timeRange').value == 1) {
-                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.range.selectedDates[0].getTime() / 1000), end: Math.floor(tag.range.selectedDates[1].getTime() / 1000), consent: consent, viewOnly: viewOnly });
+                meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.rangeStart.selectedDates[0].getTime() / 1000), end: Math.floor(tag.rangeEnd.selectedDates[0].getTime() / 1000), consent: consent, viewOnly: viewOnly });
             } else {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.start.selectedDates[0].getTime() / 1000), expire: parseInt(Q('d2inviteDuration').value), recurring: Q('d2timeRange').value - 1, consent: consent, viewOnly: viewOnly });
             }
@@ -9740,7 +9754,7 @@
             var rdpflags = 0;
             for (var i = 1; i < 10; i++) { if ((i != 5) && (Q('d7rdp' + i).checked)) { rdpflags |= (1 << (i - 1)); } }
             desktopsettings.rdpflags = rdpflags;
-            localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
+            putstore('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             updateDesktopButtons();
             if (desktop) {
@@ -11330,7 +11344,7 @@
                     h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
                     h += '<span><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
-                        h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + " (" + shortname + ")";
+                        h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + ' (' + shortname + ')';
                     } else {
                         h += shortname;
                     }
@@ -12920,7 +12934,6 @@
                 if (serverinfo.discordUrl) { x += '<div id=d2discordurl style=display:none><br /><a href=' + serverinfo.discordUrl + ' target="_discord">' + "Join this Discord server to receive notifications." + '</a></div>'; }
                 x += '<div id=d2callmebotinfo style=display:none><br /><a href=https://www.callmebot.com/blog/free-api-signal-send-messages/ target="_callmebot">' + "Signal" + '</a>, <a href=https://www.callmebot.com/blog/free-api-whatsapp-messages/ target="_callmebot">' + "Whatsapp" + '</a>, <a href=https://www.callmebot.com/blog/free-api-facebook-messenger/ target="_callmebot">' + "Facebook" + '</a>, <a href=https://www.callmebot.com/blog/telegram-text-messages/ target="_callmebot">' + "Telegram" + '</a></div>';
                 x += '<div id=d2pushoverinfo style=display:none><br /><a href=https://pushover.net/ target="_pushover">' + "Information at Pushover.net" + '</a></div>';
-                console.log(serverinfo.userMsgNftyUrl);
                 x += '<div id=d2ntfyinfo style=display:none><br /><a href="' + (serverinfo.userMsgNftyUrl ? serverinfo.userMsgNftyUrl : 'https://ntfy.sh/') + '" target="_ntfy">' + "Free service at ntfy.sh" + '</a></div>';
                 x += '<div id=d2slackinfo style=display:none><br /><a href=https://api.slack.com/messaging/webhooks target="_slack">' + "Slack Webhook Setup" + '</a></div>';
                 setDialogMode(2, "Messaging Notifications", 3, account_manageMessagingAdd, x, 'verifyMessaging');
@@ -13281,7 +13294,7 @@
                 x += '<div id=d2devrelaydiv style=display:none>';
                 relayDevices.sort(nameSort);
                 var relayDevices2 = [];
-                for (var i in relayDevices) { relayDevices2.push('<option value="' + relayDevices[i]._id + '">' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + relayDevices[i]._id + '">' + EscapeHtml(relayDevices[i].name) + ' (' + EscapeHtml(relayDevices[i].meshnamel) + ')' + '</option>'); }
                 x += addHtmlValue("Relay Device", '<div style=width:230px;margin:0;padding:0><select id=d2devrelay style=width:100% onchange=account_validateMeshCreate() onkeyup=account_validateMeshCreate(event,2) >' + relayDevices2.join('') + '</select></div>');
                 x += '</div>';
             }
@@ -13560,7 +13573,7 @@
             if (((currentMesh.mtype == 3) || (currentMesh.mtype == 4)) && (currentMesh.relayid != null)) {
                 var relayName = '<i>' + "Unknown" + '</i>';
                 var relayNode = getNodeFromId(currentMesh.relayid);
-                if (relayNode != null) { relayName = EscapeHtml(relayNode.name); }
+                if (relayNode != null) { relayName = EscapeHtml(relayNode.name) + ' (' + EscapeHtml(relayNode.meshnamel) + ')'; }
                 x += addHtmlValue("Relay Device", addLinkConditional(relayName, 'p20editmeshrelay()', (meshrights & 1) != 0));
             }
 
@@ -13587,6 +13600,8 @@
                 if (currentMesh.flags) {
                     if (currentMesh.flags & 1) { meshFeatures.push("Auto-Remove"); }
                     if (currentMesh.flags & 2) { meshFeatures.push((currentMesh.mtype == 4)?"Port Name Sync":"Hostname Sync"); }
+                    if (currentMesh.flags & 8) { meshFeatures.push("prefer --agentname"); }
+                    if (currentMesh.flags & 16) { meshFeatures.push("allow override"); }
                     if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.flags & 4)) { meshFeatures.push("Record Sessions"); }
                 }
                 if ((typeof currentMesh.expireDevs == 'number') && (currentMesh.expireDevs > 0)) { meshFeatures.push("Remove inactive"); }
@@ -13977,7 +13992,7 @@
                 setDialogMode(2, "Edit Device Group", 1, null, "No relay devices available.");
             } else {
                 var relayDevices2 = [];
-                for (var i in relayDevices) { relayDevices2.push('<option value="' + (relayDevices[i]._id + '"' + ((currentMesh.relayid == relayDevices[i]._id) ? ' selected' : '')) + '>' + EscapeHtml(relayDevices[i].name) + '</option>'); }
+                for (var i in relayDevices) { relayDevices2.push('<option value="' + (relayDevices[i]._id + '"' + ((currentMesh.relayid == relayDevices[i]._id) ? ' selected' : '')) + '>' + EscapeHtml(relayDevices[i].name) + ' (' + EscapeHtml(relayDevices[i].meshnamel) + ')' + '</option>'); }
                 var x = addHtmlValue("Relay Device", '<div style=width:230px;margin:0;padding:0><select id=d2devrelay style=width:100%>' + relayDevices2.join('') + '</select></div>');
                 setDialogMode(2, "Edit Device Group", 3, p20editmeshrelayEx, x);
             }
@@ -14068,6 +14083,10 @@
             }
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
                 x += '<div><label><input type=checkbox id=d20flag2 onchange=p20editmeshfeaturesValidate() ' + ((flags & 2) ? 'checked' : '') + '>' + ((currentMesh.mtype == 4)?"Sync server device name to port name":"Sync server device name to hostname") + '</label><br></div>';
+                if (currentMesh.mtype == 2) {
+                    x += '<div style="margin-left:8px"><label><input type=checkbox id=d20flag8 onchange=p20editmeshfeaturesValidate() ' + ((flags & 8) ? 'checked' : '') + '>' + "Prefer value of --agentName" + '</label><br></div>';
+                    x += '<div style="margin-left:8px"><label><input type=checkbox id=d20flag16 onchange=p20editmeshfeaturesValidate() ' + ((flags & 16) ? 'checked' : '') + '>' + "Allow to override server device name until next connection" + '</label><br></div>';
+                }
                 x += '<div><label><input type=checkbox id=d20flag1 onchange=p20editmeshfeaturesValidate() ' + ((flags & 1) ? 'checked' : '') + '>' + "Remove device on disconnect" + '</label><br></div>';
             }
             x += '<div><label><input type=checkbox id=d20expireDevice onchange=p20editmeshfeaturesValidate() ' + ((expire > 0) ? 'checked' : '') + '>' + "Automatically remove inactive devices" + '</label><br></div>';
@@ -14088,6 +14107,16 @@
         function p20editmeshfeaturesValidate() {
             var flags = 0, ok = true;
             if (((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) && (Q('d20flag1').checked)) { flags += 1; }
+            if (currentMesh.mtype == 2) {
+                if (Q('d20flag2').checked) {
+                    flags += 2;
+                    if (event.currentTarget.id == 'd20flag2') { Q('d20flag8').checked = true; Q('d20flag16').checked = true; }
+                }
+                for (const flag of [8, 16]) {
+                    const element = Q('d20flag' + flag);
+                    if ((element.checked = element.checked && !(element.disabled = !(flags & 2)))) { flags += flag; }
+                }
+            }
             QE('d20expireDevice', (flags & 1) == 0);
             var x = ((flags & 1) == 0) && Q('d20expireDevice').checked;
             QV('d20expireDeviceDev', x);
@@ -14100,6 +14129,8 @@
             if ((currentMesh.mtype == 2) || (currentMesh.mtype == 4)) {
                 if (Q('d20flag1').checked) { flags += 1; }
                 if (Q('d20flag2').checked) { flags += 2; }
+                if (Q('d20flag8').checked) { flags += 8; }
+                if (Q('d20flag16').checked) { flags += 16; }
             }
             if ((serverinfo.devGroupSessionRecording == 1) && (currentMesh.mtype != 4)) { if (Q('d20flag4').checked) { flags += 4; } }
             var expireDevs = 0;
@@ -15339,7 +15370,8 @@
             158: "Displaying alert box, title=\"{0}\", message=\"{1}\"",
             159: "Device Powered On",
             160: "Enabled Duo two-factor authentication",
-            161: "Disabled Duo two-factor authentication"
+            161: "Disabled Duo two-factor authentication",
+            162: "Started messenger session \"{0}\" from {1} to {2}"
         };
 
         var eventsShortMessageId = {
@@ -17387,7 +17419,7 @@
                 if (p52recordings != null) {
                     var recdate = null;
                     for (var i in p52recordings) {
-                        var rec = p52recordings[i], rect = new Date(rec.time), day = printDate(rect);
+                        var rec = p52recordings[i], rect = new Date(rec.startTime), day = printDate(rect);
                         if (day != recdate) { recdate = day; x += '<tr><td class=userTableHeader colspan=4>' + day; }
                         x += addRecordingHtml(i, rec);
                     }
@@ -17405,7 +17437,7 @@
         function addRecordingHtml(i, rec) {
             var sessionLengthStr = '';
             if (rec.lengthTime) { sessionLengthStr = pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60)); }
-            var sessionStartStr = printTime(new Date(rec.time));
+            var sessionStartStr = printTime(new Date(rec.startTime));
             if (rec.sessionStart) { sessionStartStr = printTime(new Date(rec.sessionStart)); }
             var sessionSize = '';
             if (rec.size) { sessionSize = format("{0} Kb", Math.round(rec.size / 1024)); }
@@ -17467,6 +17499,7 @@
                 if (rec.protocol == 5) { protocolStr = "Files"; }
                 if (rec.protocol == 100) { protocolStr = "Intel&reg; AMT WSMAN"; }
                 if (rec.protocol == 101) { protocolStr = "Intel&reg; AMT Redirection"; }
+                if (rec.protocol == 200) { protocolStr = "Messenger"; }
                 x += addHtmlValue4("Protocol", protocolStr);
             }
             x += addHtmlValue4("Status", (rec.present == 1)?"Present on server":"Not on server");
@@ -17474,7 +17507,7 @@
             if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
             if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
             if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
-            if (rec.time) { x += addHtmlValue4("End Time", printTime(new Date(rec.time))); }
+            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true)  { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
@@ -17644,7 +17677,8 @@
             x += '</div>';
             
             x += '<div id=d2timeRangeDiv style=display:none>';
-            x += addHtmlValue("Time Range", '<input id=d2timeRangeSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range Start", '<input id=d2timeRangeStartSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
+            x += addHtmlValue("Time Range End", '<input id=d2timeRangeEndSelector style=float:right;width:250px class=flatpickr type="text" placeholder="' + "Select Date & Time..." + '" data-id="altinput">');
             x += '</div>';
 
             x += '<div id=d2showTrafficDiv style=display:none>';
@@ -17656,8 +17690,17 @@
 
             var lastWeek = new Date();
             lastWeek.setDate(lastWeek.getDate() - 7);
-            var rangeTime = flatpickr('#d2timeRangeSelector', { mode: 'range', enableTime: true, maxDate: new Date(), defaultDate: [ lastWeek, new Date() ], minuteIncrement: 1 });
-            xxdialogTag = rangeTime;
+            var rangeStartTime = flatpickr('#d2timeRangeStartSelector', { 
+                enableTime: true, maxDate: new Date(), defaultDate: lastWeek, minuteIncrement: 1, plugins: [new confirmDatePlugin({})],
+                onChange: function(selectedDates, dateStr, instance) {
+                    rangeEndTime.set('minDate', dateStr);
+                    if (rangeEndTime.selectedDates[0] && rangeEndTime.selectedDates[0] < selectedDates[0]) {
+                        rangeEndTime.clear();
+                    }
+                }
+            });
+            var rangeEndTime = flatpickr('#d2timeRangeEndSelector', { enableTime: true, maxDate: new Date(), defaultDate: new Date(), minuteIncrement: 1, plugins: [new confirmDatePlugin({})] });
+            xxdialogTag = { start: rangeStartTime, end: rangeEndTime };
         }
 
         function generateReportDialogValidate() {
@@ -17672,8 +17715,8 @@
         function generateReportDialogEx(b, tag) {
             var start, end;
             if (Q('d2timeRange').value == 0) {
-                end = Math.floor(tag.selectedDates[1].getTime() / 1000);
-                start = Math.floor(tag.selectedDates[0].getTime() / 1000);
+                end = Math.floor(tag.end.selectedDates[0].getTime() / 1000);
+                start = Math.floor(tag.start.selectedDates[0].getTime() / 1000);
             } else {
                 end = Math.floor(new Date() / 1000);
                 start = new Date();
@@ -18174,6 +18217,7 @@
                 InvalidDeviceGroupType: "Invalid Device Group Type",
                 DuplicateAgent: "Duplicate Agent",
                 ConnectedIntelAMT: "Connected Intel&reg; AMT",
+                ConnectedIntelAMTCira: "Connected Intel&reg; AMT CIRA",
                 RelayErrors: "Relay Errors",
                 UserAccounts: "User Accounts",
                 DeviceGroups: "Device Groups",
@@ -18260,7 +18304,8 @@
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.conn.cu });
                 serverTimelineConfig.data.datasets[2].data.push({ x: stats.time, y: stats.conn.us });
                 serverTimelineConfig.data.datasets[3].data.push({ x: stats.time, y: stats.conn.rs });
-                if (stats.conn.am != null) { serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am }); }
+                serverTimelineConfig.data.datasets[4].data.push({ x: stats.time, y: stats.conn.am });
+                if (stats.conn.amc != null) { serverTimelineConfig.data.datasets[5].data.push({ x: stats.time, y: stats.conn.amc }); }
             } else if (chartType == 1) { // Memory
                 serverTimelineConfig.data.datasets[0].data.push({ x: stats.time, y: stats.mem.external / (1024 * 1024) });
                 serverTimelineConfig.data.datasets[1].data.push({ x: stats.time, y: stats.mem.heapUsed / (1024 * 1024) });
@@ -18307,7 +18352,8 @@
                         { label: "Users", data: [], backgroundColor: 'rgba(16, 84, 158, .1)', borderColor: 'rgb(16, 84, 158)', fill: true },
                         { label: "User Sessions", data: [], backgroundColor: 'rgba(255, 99, 132, .1)', borderColor: 'rgb(255, 99, 132)', fill: true },
                         { label: "Relay Sessions", data: [], backgroundColor: 'rgba(39, 158, 16, .1)', borderColor: 'rgb(39, 158, 16)', fill: true },
-                        { label: "Intel AMT", data: [], backgroundColor: 'rgba(134, 16, 158, .1)', borderColor: 'rgb(134, 16, 158)', fill: true }
+                        { label: "Intel AMT", data: [], backgroundColor: 'rgba(134, 16, 158, .1)', borderColor: 'rgb(134, 16, 158)', fill: true },
+                        { label: "Intel AMT CIRA", data: [], backgroundColor: 'rgba(255, 155, 0, .1)', borderColor: 'rgb(255, 155, 0)', fill: true }
                     ]
                 };
                 for (var i = 0; i < serverTimelineStats.length; i++) {
@@ -18324,13 +18370,15 @@
                         data.datasets[2].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[3].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                         data.datasets[4].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
+                        data.datasets[5].data.push({ x: serverTimelineStats[i].time - 1, y: NaN });
                     }
                     if (serverTimelineStats[i].conn) {
                         data.datasets[0].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.ca });
                         data.datasets[1].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.cu });
                         data.datasets[2].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.us });
                         data.datasets[3].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.rs });
-                        if (serverTimelineStats[i].conn.am != null) { data.datasets[4].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.am }); }
+                        data.datasets[4].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.am });
+                        if (serverTimelineStats[i].conn.amc != null) { data.datasets[5].data.push({ x: serverTimelineStats[i].time, y: serverTimelineStats[i].conn.amc }); }
                     }
                 }
             } else if (chartType == 1) { // Memory
