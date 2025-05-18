@@ -30,6 +30,9 @@ RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
+RUN cd meshcentral \
+    && npm uninstall html-minifier jsdom esprima
+
 # cleanup for inter-container copying.
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
@@ -122,7 +125,7 @@ RUN case "$PREINSTALL_LIBS" in \
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
             apk add --no-cache mongodb-tools && \
-            cd meshcentral && npm install mongodb@6.16.0 saslprep@1.0.3 \
+            cd meshcentral && npm install mongodb@6.16.0 \
             ;; \
         false|no|FALSE|NO) \
             echo "Not including MongoDB Tools.";; \
