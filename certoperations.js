@@ -1087,7 +1087,7 @@ module.exports.CertificateOperations = function (parent) {
             // Check if we have correct certificates.
             if (obj.compareCertificateNames(r.CommonNames, commonName) == false) { console.log("Error: " + commonName + " does not match name in TLS certificate: " + r.CommonNames.join(', ')); forceWebCertGen = 1; } else { r.CommonName = commonName; }
             if (r.AmtMpsName != mpsCommonName) { forceMpsCertGen = 1; }
-            if (r.CodeCertName != commonName) { forceCodeCertGen = 1; }
+            if (r.CodeCertName.startsWith(commonName) === false) { forceCodeCertGen = 1; }
             if (args.keepcerts == true) { forceWebCertGen = 0; forceMpsCertGen = 0; forceCodeCertGen = 0; r.CommonName = commonName; }
 
             // If the certificates matches what we want, use them.
