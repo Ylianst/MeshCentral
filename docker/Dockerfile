@@ -34,6 +34,7 @@ RUN cd meshcentral \
     && npm uninstall html-minifier jsdom esprima
 
 # cleanup for inter-container copying.
+
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
@@ -166,6 +167,7 @@ RUN cd meshcentral && npm install
 
 # Expose only 443 by default to reduce attack surface. (Only encrypted ports).
 EXPOSE 443
+
 
 # These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
 VOLUME /opt/meshcentral/meshcentral-data
