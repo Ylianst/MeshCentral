@@ -2354,7 +2354,8 @@ module.exports.CreateAmtManager = function (parent) {
             const dev = stack.dev;
             if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
             const domain = parent.config.domains[dev.domainid];
-            if ((responses['AMT_PublicKeyCertificate'].status != 200) || (responses['AMT_PublicKeyCertificate'].status != 200)) { func(dev); return; } // We can't get the certificate list, fail and carry on.
+            if ((responses['AMT_PublicKeyCertificate'].status != 200) || (responses['AMT_PublicPrivateKeyPair'].status != 200)) { func(dev); return; } // We can't get the certificate list, fail and carry on.
+            if ((responses['AMT_PublicKeyCertificate'].responses.length == 0) || (responses['AMT_PublicPrivateKeyPair'].responses.length == 0)) { func(dev); return; } // Empty certificate list, fail and carry on.
 
             // Sort out the certificates
             var xxCertificates = responses['AMT_PublicKeyCertificate'].responses;
