@@ -697,7 +697,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
             case 3: // Tile, check dimentions and store
                 if ((data.length < 10) || (obj.lastData == null)) break;
                 var x = data.readUInt16BE(4), y = data.readUInt16BE(6);
-                var dimensions = require('image-size')(data.slice(8));
+                var dimensions = require('image-size').imageSize(data.slice(8));
                 var sx = (x / 16), sy = (y / 16), sw = (dimensions.width / 16), sh = (dimensions.height / 16);
                 obj.counter++;
                 
