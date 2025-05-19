@@ -70,11 +70,11 @@ jobs:
             INCLUDE_MARIADB_TOOLS=true
             PREINSTALL_LIBS=true
 
-      - name: Docker Scout
-        id: docker-scout
-        uses: docker/scout-action@v1
-        with:
-          command: quickview,cves
-          image: image://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          summary: true
-          only-severities: critical,high,medium,low,unspecified
+      #- name: Docker Scout
+      #  id: docker-scout
+      #  uses: docker/scout-action@v1
+      #  with:
+      #    command: quickview,cves
+      #    image: image://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      #    summary: true
+      #    only-severities: critical,high,medium,low,unspecified
