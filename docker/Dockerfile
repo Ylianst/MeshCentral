@@ -150,7 +150,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
             apk add --no-cache mariadb-client && \
-            cd meshcentral && npm install mariadb@3.4.0 \
+            cd meshcentral && npm install mariadb@3.4.0 mysql2@3.11.4-canary.401db79b \
             ;; \
         false|no|FALSE|NO) \
             echo "Not including MariaDB/MySQL Tools.";; \
