@@ -165,8 +165,8 @@ COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 # install dependencies from package.json
 RUN cd meshcentral && npm install
 
-# Expose only 443 by default to reduce attack surface. (Only encrypted ports).
-EXPOSE 443
+# Expose needed ports
+EXPOSE 80 443
 
 
 # These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
