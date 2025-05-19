@@ -75,6 +75,6 @@ jobs:
       #  uses: docker/scout-action@v1
       #  with:
       #    command: quickview,cves
-      #    image: image://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      #    image: image://
       #    summary: true
       #    only-severities: critical,high,medium,low,unspecified
