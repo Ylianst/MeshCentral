@@ -17467,6 +17467,9 @@
             if (rec.protocol == 1) { sessionName += ' - ' + "Terminal Session"; }
             if (rec.protocol == 2) { sessionName += ' - ' + "Desktop Session"; }
             if (rec.protocol == 5) { sessionName += ' - ' + "File Transfer"; }
+            if (rec.protocol == 6) { sessionName += ' - ' + "Admin PowerShell"; }
+            if (rec.protocol == 8) { sessionName += ' - ' + "User Shell"; }
+            if (rec.protocol == 9) { sessionName += ' - ' + "User PowerShell"; }
             if (rec.protocol == 100) { sessionName += ' - ' + "Intel&reg; AMT WSMAN"; }
             if (rec.protocol == 101) { sessionName += ' - ' + "Intel&reg; AMT Redirection"; }
             if (rec.protocol == 200) { sessionName += ' - ' + "Messenger"; }
@@ -17497,6 +17500,9 @@
                 if (rec.protocol == 1) { protocolStr = "Terminal"; }
                 if (rec.protocol == 2) { protocolStr = "Desktop"; }
                 if (rec.protocol == 5) { protocolStr = "Files"; }
+                if (rec.protocol == 6) { protocolStr = "Admin PowerShell"; }
+                if (rec.protocol == 8) { protocolStr = "User Shell"; }
+                if (rec.protocol == 9) { protocolStr = "User PowerShell"; }
                 if (rec.protocol == 100) { protocolStr = "Intel&reg; AMT WSMAN"; }
                 if (rec.protocol == 101) { protocolStr = "Intel&reg; AMT Redirection"; }
                 if (rec.protocol == 200) { protocolStr = "Messenger"; }
@@ -17839,6 +17845,9 @@
                 if (v == 1) return "Terminal";
                 if (v == 2) return "Desktop";
                 if (v == 5) return "Files";
+                if (v == 6) return "Admin PowerShell";
+                if (v == 8) return "User Shell";
+                if (v == 9) return "User PowerShell";
                 if (v == 100) return "AMT-WSMAN";
                 if (v == 101) return "AMT-Redir";
                 if (v == 200) return "Messenger";
@@ -17940,7 +17949,17 @@
                 if (v == 1) return "Terminal";
                 if (v == 2) return "Desktop";
                 if (v == 5) return "Files";
-                return "Unknown";
+                if (v == 6) return "Admin PowerShell";
+                if (v == 8) return "User Shell";
+                if (v == 9) return "User PowerShell";
+                if (v == 100) return "AMT-WSMAN";
+                if (v == 101) return "AMT-Redir";
+                if (v == 200) return "Messenger";
+                if (v == 201) return "Web-RDP";
+                if (v == 202) return "Web-SSH";
+                if (v == 203) return "Web-SFTP";
+                if (v == 204) return "Web-VNC";
+                return "Unknown" + ' (' + v + ')';
             }
             if (f == 'node') {
                 var node = getNodeFromId(v);

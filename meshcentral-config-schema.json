@@ -2890,7 +2890,7 @@
                 "items": {
                   "type": "integer"
                 },
-                "description": "This is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection, 200 = Messenger"
+                "description": "This is an array: 1 = Terminal, 2 = Desktop, 5 = Files, 6 = Admin Powershell, 8 = User Shell, 9 = User Powershell, 100 = Intel AMT WSMAN, 101 = Intel AMT Redirection, 200 = Messenger"
               }
             },
             "required": [
