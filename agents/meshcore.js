@@ -2431,11 +2431,19 @@ function terminal_promise_connection_resolved(term)
 function terminal_promise_consent_rejected(e)
 {
     // DO NOT start terminal
-    this.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
-    this.that.end();
-
-    this.that = null;
-    this.httprequest = null;
+    if (this.that) {
+        if(this.that.httprequest){ // User Consent Denied
+            if ((this.that.httprequest.oldStyle === true) && (this.that.httprequest.consentAutoAccept === true) && (e.toString() != "7")) {
+                terminal_promise_consent_resolved.call(this); // oldStyle prompt timed out and User Consent is not required so connect anyway
+                return;
+            }
+        } else { } // Connection was closed server side, maybe log some messages somewhere?
+        this.that.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+        this.that.end();
+        
+        this.that = null;
+        this.httprequest = null;
+    } else { } // no websocket, maybe log some messages somewhere?
 }
 function promise_init(res, rej) { this._res = res; this._rej = rej; }
 function terminal_userpromise_resolved(u)
@@ -2776,6 +2784,10 @@ function kvm_consentpromise_rejected(e)
 {
     if (this.ws) {
         if(this.ws.httprequest){ // User Consent Denied
+            if ((this.ws.httprequest.oldStyle === true) && (this.ws.httprequest.consentAutoAccept === true) && (e.toString() != "7")) {
+                kvm_consentpromise_resolved.call(this); // oldStyle prompt timed out and User Consent is not required so connect anyway
+                return;
+            }
             MeshServerLogEx(34, null, "Failed to start remote desktop after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
         } else { } // Connection was closed server side, maybe log some messages somewhere?
         this.ws._consentpromise = null;
@@ -2939,6 +2951,10 @@ function files_consentpromise_rejected(e)
 {
     if (this.ws) {
         if(this.ws.httprequest){ // User Consent Denied
+            if ((this.ws.httprequest.oldStyle === true) && (this.ws.httprequest.consentAutoAccept === true) && (e.toString() != "7")) {
+                files_consentpromise_resolved.call(this); // oldStyle prompt timed out and User Consent is not required so connect anyway
+                return;
+            }
             MeshServerLogEx(41, null, "Failed to start remote files after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
         } else { } // Connection was closed server side, maybe log some messages somewhere?
         this.ws._consentpromise = null;
