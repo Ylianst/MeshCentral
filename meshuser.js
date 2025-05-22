@@ -1973,6 +1973,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     delete chguser.otpekey;   // Email 2FA
                                     delete chguser.phone;     // SMS 2FA
                                     delete chguser.otpdev;    // Push notification 2FA
+                                    delete chguser.otpduo;    // Duo 2FA
                                 }
                                 db.SetUser(chguser);
 
