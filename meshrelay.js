@@ -42,6 +42,9 @@ const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 // 1 = Terminal
 // 2 = Desktop
 // 5 = Files
+// 6 = Admin PowerShell
+// 8 = User Shell
+// 9 = User PowerShell
 // 10 = Web-RDP
 // 11 = Web-SSH
 // 12 = Web-VNC
@@ -578,7 +581,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     // Log the connection
                     if (sessionUser != null) {
                         var msg = 'Started relay session', msgid = 13;
-                        if (obj.req.query.p == 1) { msg = 'Started terminal session'; msgid = 14; }
+                        if ([1,6,8,9].indexOf(obj.req.query.p) >= 0) { msg = 'Started terminal session'; msgid = 14; } // admin shell, admin powershell, user shell, user powershell
                         else if (obj.req.query.p == 2) { msg = 'Started desktop session'; msgid = 15; }
                         else if (obj.req.query.p == 5) { msg = 'Started file management session'; msgid = 16; }
                         else if (obj.req.query.p == 200) { msg = 'Started messenger session'; msgid = 162; }
@@ -777,7 +780,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     // Log the disconnection
                     if (ws.time) {
                         var msg = 'Ended relay session', msgid = 9;
-                        if (obj.req.query.p == 1) { msg = 'Ended terminal session', msgid = 10; }
+                        if ([1,6,8,9].indexOf(obj.req.query.p) >= 0) { msg = 'Ended terminal session', msgid = 10; } // admin shell, admin powershell, user shell, user powershell
                         else if (obj.req.query.p == 2) { msg = 'Ended desktop session', msgid = 11; }
                         else if (obj.req.query.p == 5) { msg = 'Ended file management session', msgid = 12; }
                         else if (obj.req.query.p == 200) { msg = 'Ended messenger session', msgid = 112; }

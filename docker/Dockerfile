@@ -30,6 +30,7 @@ RUN if [ -z "$DISABLE_MINIFY" ]; then cd meshcentral/translate && node translate
 RUN if [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral/translate && node translate.js translateall; fi
 
 # cleanup
+RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then cd meshcentral && npm remove html-minifier jsdom esprima; fi
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
@@ -88,8 +89,8 @@ COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 RUN cd meshcentral && npm install
 
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentral.js mainStart()
-RUN if ! [ -z "$INCLUDE_MONGODBTOOLS" ]; then cd meshcentral && npm install mongodb@4.13.0 saslprep@1.0.3; fi
-RUN if ! [ -z "$PREINSTALL_LIBS" ] && [ "$PREINSTALL_LIBS" == "true" ]; then cd meshcentral && npm install ssh2@1.16.0 semver@7.5.4 nodemailer@6.9.15 image-size@1.1.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0; fi
+RUN if ! [ -z "$INCLUDE_MONGODBTOOLS" ]; then cd meshcentral && npm install mongodb@4.17.2; fi
+RUN if ! [ -z "$PREINSTALL_LIBS" ] && [ "$PREINSTALL_LIBS" == "true" ]; then cd meshcentral && npm install ssh2@1.16.0 semver@7.5.4 nodemailer@6.9.15 image-size@1.2.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0; fi
 
 EXPOSE 80 443 4433
 
