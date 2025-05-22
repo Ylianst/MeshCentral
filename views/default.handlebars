@@ -326,7 +326,7 @@
                             <input type=button id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" style="display:none;margin-right:4px" value="Scroll To Top" />
-                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any"/>&nbsp;
+                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx"/>&nbsp;
                             <span id=SearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x"/></span>
                             <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
                                 <option value=0>All</option>
@@ -6326,7 +6326,7 @@
 
         function getDevicesThatMatchFilter(x) {
             var r = [];
-            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null;
+            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
             if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
             else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
             else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
@@ -6339,6 +6339,8 @@
             else if (x.startsWith("os:".toLowerCase())) { osSearch = x.substring("os:".length); }
             else if (x.startsWith("amt:".toLowerCase())) { amtSearch = x.substring("amt:".length); }
             else if (x.startsWith("desc:".toLowerCase())) { descSearch = x.substring("desc:".length); }
+            else if (x.startsWith("connectivity:".toLowerCase())) { connectivitySearch = x.substring("connectivity:".length); }
+            else if (x.startsWith("c:".toLowerCase())) { connectivitySearch = x.substring("c:".length); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -6387,6 +6389,35 @@
                         else if (((wscSearch == 2) || (wscSearch == 5)) && (nodes[d].wsc.antiVirus != 'OK'))  { r.push(d); }
                         else if (((wscSearch == 3) || (wscSearch == 5)) && (nodes[d].wsc.autoUpdate != 'OK'))  { r.push(d); }
                         else if (((wscSearch == 4) || (wscSearch == 5)) && (nodes[d].wsc.firewall != 'OK'))  { r.push(d); }
+                    }
+                }
+            } else if (connectivitySearch != null) {
+                // Connectivity search
+                for (var d in nodes) {
+                    if (nodes[d].conn) {
+                        if ((nodes[d].conn & 1) != 0) {
+                            if (nodes[d].mtype == 4) {
+                                if ((nodes[d].porttype == 'PDU') && (connectivitySearch.toLowerCase() == 'switch')) {
+                                    r.push(d);
+                                } else if (connectivitySearch.toLowerCase() == 'ipkvm') {
+                                    r.push(d);
+                                }
+                            } else if (connectivitySearch.toLowerCase() == 'agent') {
+                                r.push(d);
+                            }
+                        }
+                        if (((nodes[d].conn & 2) != 0) && (connectivitySearch.toLowerCase() == 'cira')) { r.push(d); }
+                        else if (((nodes[d].conn & 4) != 0) && (connectivitySearch.toLowerCase() == 'amt')) { r.push(d); }
+                        if (((nodes[d].conn & 8) != 0) && (connectivitySearch.toLowerCase() == 'relay')) { r.push(d); }
+                        if (((nodes[d].conn & 16) != 0) && (connectivitySearch.toLowerCase() == 'mqtt')) { r.push(d); }
+                    }
+                    if (nodes[d].mtype == 3) {
+                        var mesh = meshes[nodes[d].meshid];
+                        if (mesh && mesh.relayid && (connectivitySearch.toLowerCase() == 'relay')) {
+                            r.push(d);
+                        } else if (mesh && (typeof mesh.relayid == 'undefined') && connectivitySearch.toLowerCase() == 'local') {
+                            r.push(d);
+                        }
                     }
                 }
             } else if (x == '*') {
