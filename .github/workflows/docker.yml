@@ -1,10 +1,10 @@
-name: Docker
+name: Docker-Builder
 on:
   push:
     branches:
       - master
   release:
-    types: [published]
+    types: [ published ]
 
 env:
   REGISTRY: ghcr.io
@@ -22,7 +22,7 @@ jobs:
           MY_TOKEN: ${{ secrets.MY_TOKEN }}
         if: "${{ env.MY_TOKEN != '' }}"
         run: echo "token_defined=true" >> "$GITHUB_OUTPUT"
-        
+
   build:
     name: Release
     runs-on: ubuntu-latest
@@ -36,6 +36,8 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -54,14 +56,25 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            INCLUDE_MONGODBTOOLS=true
+            INCLUDE_MONGODB_TOOLS=true
+            INCLUDE_POSTGRESQL_TOOLS=true
+            INCLUDE_MARIADB_TOOLS=true
             PREINSTALL_LIBS=true
+
+      #- name: Docker Scout
+      #  id: docker-scout
+      #  uses: docker/scout-action@v1
+      #  with:
+      #    command: quickview,cves
+      #    image: image://
+      #    summary: true
+      #    only-severities: critical,high,medium,low,unspecified
