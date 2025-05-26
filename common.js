@@ -424,7 +424,6 @@ module.exports.uniqueArray = function (a) {
 // Replace placeholders in a string with values from an object or a function 
 module.exports.replacePlaceholders = function (template, values) {
   return template.replace(/\{(\w+)\}/g, (match, key) => {
-    console.log('match', match, 'key', key, 'values', values);
     if (typeof values === 'function') {
       return values(key);
     }
