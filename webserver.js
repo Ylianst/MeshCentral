@@ -3217,7 +3217,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     passRequirements: passRequirements,
                     customui: customui,
                     webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
-                    footer: (domain.footer == null) ? '' : domain.footer,
+                    footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, { 
+                        'serverversion': obj.parent.currentVer,
+                        'servername': obj.getWebServerName(domain, req),
+                        'agentsessions': Object.keys(parent.webserver.wsagents).length,
+                        'connectedusers': Object.keys(parent.webserver.wssessions).length,
+                        'userssessions': Object.keys(parent.webserver.wssessions2).length,
+                        'relaysessions': parent.webserver.relaySessionCount,
+                        'relaycount': Object.keys(parent.webserver.wsrelays).length
+                    }),
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
@@ -3462,12 +3470,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
-                footer: (domain.loginfooter == null) ? '' : domain.loginfooter,
+                footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, { 
+                    'serverversion': obj.parent.currentVer,
+                    'servername': obj.getWebServerName(domain, req),
+                    'agentsessions': Object.keys(parent.webserver.wsagents).length,
+                    'connectedusers': Object.keys(parent.webserver.wssessions).length,
+                    'userssessions': Object.keys(parent.webserver.wssessions2).length,
+                    'relaysessions': parent.webserver.relaySessionCount,
+                    'relaycount': Object.keys(parent.webserver.wsrelays).length
+                }),
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
                 messageid: msgid,
                 flashErrors: JSON.stringify(flashErrors),
                 passhint: passhint,
-                welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null,
+                
+                welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, { 
+                    'serverversion': obj.parent.currentVer,
+                    'servername': obj.getWebServerName(domain, req),
+                    'agentsessions': Object.keys(parent.webserver.wsagents).length,
+                    'connectedusers': Object.keys(parent.webserver.wssessions).length,
+                    'userssessions': Object.keys(parent.webserver.wssessions2).length,
+                    'relaysessions': parent.webserver.relaySessionCount,
+                    'relaycount': Object.keys(parent.webserver.wsrelays).length
+                })).split('\'').join('\\\'') : null,
                 welcomePictureFullScreen: ((typeof domain.welcomepicturefullscreen == 'boolean') ? domain.welcomepicturefullscreen : false),
                 hwstate: hwstate,
                 otpemail: otpemail,
@@ -9360,6 +9385,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             xargs.title1 = domain.title1 ? domain.title1 : '';
             xargs.title2 = (domain.title1 && domain.title2) ? domain.title2 : '';
         }
+        xargs.title2 = obj.common.replacePlaceholders(xargs.title2, { 
+            'serverversion': obj.parent.currentVer,
+            'servername': obj.getWebServerName(domain, req),
+            'agentsessions': Object.keys(parent.webserver.wsagents).length,
+            'connectedusers': Object.keys(parent.webserver.wssessions).length,
+            'userssessions': Object.keys(parent.webserver.wssessions2).length,
+            'relaysessions': parent.webserver.relaySessionCount,
+            'relaycount': Object.keys(parent.webserver.wsrelays).length
+        });
         xargs.extitle = encodeURIComponent(xargs.title).split('\'').join('\\\'');
         xargs.domainurl = domain.url;
         xargs.autocomplete = (domain.autocomplete === false) ? 'autocomplete=off x' : 'autocomplete'; // This option allows autocomplete to be turned off on the login page.
