@@ -116,6 +116,27 @@ module.exports.CreateMeshMail = function (parent, domain) {
             }
         }
 
+        // If no email template found, use the default translated email template
+        if (((htmlfile == null) || (txtfile == null)) && (lang != null) && (lang != 'en')) {
+            var translationsPath = obj.parent.path.join(obj.parent.webEmailsPath, 'translations');
+            var translationsPathHtml = obj.parent.path.join(obj.parent.webEmailsPath, 'translations', name + '_' + lang + '.html');
+            var translationsPathTxt = obj.parent.path.join(obj.parent.webEmailsPath, 'translations', name + '_' + lang + '.txt');
+            if (obj.parent.fs.existsSync(translationsPath) && obj.parent.fs.existsSync(translationsPathHtml) && obj.parent.fs.existsSync(translationsPathTxt)) {
+                htmlfile = obj.parent.fs.readFileSync(translationsPathHtml).toString();
+                txtfile = obj.parent.fs.readFileSync(translationsPathTxt).toString();
+            }
+        }
+
+        // If no translated email template found, use the default email template
+        if ((htmlfile == null) || (txtfile == null)) {
+            var pathHtml = obj.parent.path.join(obj.parent.webEmailsPath, name + '.html');
+            var pathTxt = obj.parent.path.join(obj.parent.webEmailsPath, name + '.txt');
+            if (obj.parent.fs.existsSync(pathHtml) && obj.parent.fs.existsSync(pathTxt)) {
+                htmlfile = obj.parent.fs.readFileSync(pathHtml).toString();
+                txtfile = obj.parent.fs.readFileSync(pathTxt).toString();
+            }
+        }
+
         // No email templates
         if ((htmlfile == null) || (txtfile == null)) { return null; }
 
