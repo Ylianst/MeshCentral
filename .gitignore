@@ -311,3 +311,4 @@ __pycache__/
 # When running mkdocs locally as dev
 docs/__pycache__/
 docs/env/
+docker-compose.yaml
