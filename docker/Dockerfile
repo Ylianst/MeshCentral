@@ -168,7 +168,6 @@ RUN cd meshcentral && npm install
 # Expose needed ports
 EXPOSE 80 443
 
-
 # These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
 VOLUME /opt/meshcentral/meshcentral-data
 VOLUME /opt/meshcentral/meshcentral-files
