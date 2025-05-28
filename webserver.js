@@ -4233,7 +4233,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof c.pid != 'string') { res.sendStatus(404); return; }
 
             // Check the expired time, expire message.
-            if ((c.e != null) && (c.e <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if ((c.e != null) && (c.e <= Date.now())) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             obj.db.Get('deviceshare-' + c.pid, function (err, docs) {
                 if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
@@ -4279,17 +4279,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Serve the guest sharing page
     function handleSharingRequestEx(req, res, domain, c) {
         // Check the expired time, expire message.
-        if ((c.expire != null) && (c.expire <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+        if ((c.expire != null) && (c.expire <= Date.now())) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
         // Check the public id
         obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
             // Check if any sharing links are present, expire message.
-            if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if ((err != null) || (docs.length == 0)) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Search for the device share public identifier, expire message.
             var found = false;
             for (var i = 0; i < docs.length; i++) { if ((docs[i].publicid == c.pid) && ((docs[i].extrakey == null) || (docs[i].extrakey === c.k))) { found = true; } }
-            if (found == false) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if (found == false) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Get information about this node
             obj.db.Get(c.nid, function (err, nodes) {
@@ -4297,7 +4297,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var node = nodes[0];
 
                 // Check the start time, not yet valid message.
-                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
                 // If this is a web relay share, check if this feature is active
                 if ((c.p == 8) || (c.p == 16)) {
