@@ -1,6 +1,8 @@
 ### STAGE 1 BUILDING.
 FROM node:lts-alpine3.21 AS builder
 
+LABEL org.opencontainers.image.description "MeshCentral Docker Image"
+
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
