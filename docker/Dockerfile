@@ -1,7 +1,7 @@
 ### STAGE 1 BUILDING.
 FROM node:lts-alpine3.21 AS builder
 
-LABEL org.opencontainers.image.description "MeshCentral Docker Image"
+LABEL org.opencontainers.image.description="MeshCentral Docker Image"
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_MINIFY="yes"
@@ -45,6 +45,9 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 ### STAGE 2 BUILDING.
 
 FROM alpine:3.21
+
+# copy files from builder-image
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -168,11 +171,9 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             exit 1;; \
     esac
 
-# copy files from builder-image
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-
 # install dependencies from package.json
-RUN cd meshcentral && npm install
+RUN cd meshcentral && \
+    npm install
 
 # Expose needed ports
 EXPOSE 80 443
