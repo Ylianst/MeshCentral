@@ -5708,7 +5708,7 @@
 
             // Create the QR code
             new QRCode(Q('agins_qrimage'), { text: serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
-            Q('agins_qrimage_a').setAttribute('href', 'javascript:window.location.href=\'' + serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2] + '\'');
+            Q('agins_qrimage_a').setAttribute('href', serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2]);
 
             if ((features & 0x2000) == 0)
             {
