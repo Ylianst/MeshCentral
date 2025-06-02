@@ -120,7 +120,7 @@ RUN case "$PREINSTALL_LIBS" in \
             echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
             npm install ssh2@1.16.0 semver@7.7.1 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
         false|no|FALSE|NO) \
-            echo "Not pre-installing libraries."; \
+            echo "Not pre-installing libraries.";; \
         *) \
             echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
