@@ -133,7 +133,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
             apk add --no-cache mongodb-tools && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
-            npm install mongodb@6.16.0;; \
+            npm install mongodb@4.17.2;; \
         false|no|FALSE|NO) \
             echo "Not including MongoDB Tools.";; \
         *) \
@@ -159,7 +159,7 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             apk add --no-cache mariadb-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
-            npm install mariadb@3.4.0 mysql2@3.11.4-canary.401db79b;; \
+            npm install mariadb@3.4.0 mysql2@3.11.4;; \
         false|no|FALSE|NO) \
             echo "Not including MariaDB/MySQL Tools.";; \
         *) \
