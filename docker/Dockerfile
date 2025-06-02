@@ -2,38 +2,40 @@
 FROM node:lts-alpine3.21 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
-ARG DISABLE_MINIFY="yes" \
-    DISABLE_TRANSLATE="yes"
+ARG DISABLE_MINIFY="yes"
+ARG DISABLE_TRANSLATE="yes"
+#    NODE_OPTIONS="--max_old_space_size=4096"
+# If your process gets OOM killed, perhaps the above will help.
 
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 # Check the Docker build arguments and if they are empty do the task.
-RUN if [ -z "$DISABLE_MINIFY" ] || [ -z "$DISABLE_TRANSLATE" ]; then \
+RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
+        echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
         npm install html-minifier@4.0.0 jsdom@26.0.0 esprima@4.0.1 && \
         cd translate && \
+        echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
         node translate.js extractall && \
         case "$DISABLE_MINIFY" in \
             false|no|FALSE|NO) \
+                echo -e "----------\nSTARTING THE MINIFYING PROCESS...\n----------"; \
                 node translate.js minifyall;; \
             *) \
                 echo "Setting MINIFY as disabled.";; \
         esac && \
         case "$DISABLE_TRANSLATE" in \
             false|no|FALSE|NO) \
+                echo -e "----------\nSTARTING THE TRANSLATING PROCESS...\n----------"; \
                 node translate.js translateall;; \
             *) \
                 echo "Setting TRANSLATE as disabled.";; \
-        esac \
+        esac; \
+        npm uninstall html-minifier jsdom esprima; \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
-
-RUN cd meshcentral \
-    && npm uninstall html-minifier jsdom esprima
-
-# cleanup for inter-container copying.
 
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
@@ -47,7 +49,7 @@ ENV NODE_ENV="production" \
     CONFIG_FILE="/opt/meshcentral/meshcentral-data/config.json" \
     DYNAMIC_CONFIG="false"
 
-# environment variables for the above defined MeshCentral Config.json
+# environment variables for the above defined MeshCentral Config.json. Can be done like that following: https://docs.docker.com/reference/dockerfile/#env
 ENV ALLOW_PLUGINS="false" \
     ALLOW_NEW_ACCOUNTS="false" \
     ALLOWED_ORIGIN="false" \
@@ -68,11 +70,11 @@ ENV USE_MONGODB="false" \
     USE_POSTGRESQL="false" \
     USE_MARIADB="false"
 
-# Preinstallation args
-ARG PREINSTALL_LIBS="false" \
-    INCLUDE_MONGODB_TOOLS="false" \
-    INCLUDE_POSTGRESQL_TOOLS="false" \
-    INCLUDE_MARIADB_TOOLS="false"
+# Preinstallation args one per line due to: https://docs.docker.com/reference/dockerfile/#arg
+ARG PREINSTALL_LIBS="false"
+ARG INCLUDE_MONGODB_TOOLS="false"
+ARG INCLUDE_POSTGRESQL_TOOLS="false"
+ARG INCLUDE_MARIADB_TOOLS="false"
 
 # MongoDB Variables
 # The following MONGO_URL variable overwrites most other mongoDb related varialbes.
@@ -99,26 +101,29 @@ ENV MARIADB_HOST="" \
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
-RUN apk update \
-    && apk add --no-cache --update \
-    bash gcc g++ jq make nodejs npm python3 tzdata \
-    && rm -rf /var/cache/* \
+RUN apk update && \
+    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    apk add --no-cache --update \
+        bash gcc g++ jq make nodejs npm python3 tzdata && \
+    rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
-        /usr/lib/debug/
-RUN npm install -g npm@latest
+        /usr/lib/debug/ && \
+    npm install -g npm@latest
 
 RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
+            echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
             npm install ssh2@1.16.0 semver@7.7.1 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
         false|no|FALSE|NO) \
-            echo "Not pre-installing libraries.";; \
+            echo "Not pre-installing libraries."; \
+            npm uninstall ssh2@1.16.0 semver@7.7.1 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
         *) \
-            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes' or 'true'"; \
+            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
     esac
 
@@ -126,36 +131,39 @@ RUN case "$PREINSTALL_LIBS" in \
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
             apk add --no-cache mongodb-tools && \
-            cd meshcentral && npm install mongodb@6.16.0 \
-            ;; \
+            cd meshcentral && \
+            echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
+            npm install mongodb@6.16.0;; \
         false|no|FALSE|NO) \
             echo "Not including MongoDB Tools.";; \
         *) \
-            echo "Invalid value for build argument INCLUDE_MONGODB_TOOLS, possible values: 'yes' or 'true'"; \
+            echo "Invalid value for build argument INCLUDE_MONGODB_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
     esac
 
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
             apk add --no-cache postgresql-client && \
-            cd meshcentral && npm install pg@8.14.1 \
-            ;; \
+            cd meshcentral && \
+            echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
+            npm install pg@8.14.1;; \
         false|no|FALSE|NO) \
             echo "Not including PostgreSQL Tools.";; \
         *) \
-            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes' or 'true'"; \
+            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
     esac
 
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
             apk add --no-cache mariadb-client && \
-            cd meshcentral && npm install mariadb@3.4.0 mysql2@3.11.4-canary.401db79b \
-            ;; \
+            cd meshcentral && \
+            echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
+            npm install mariadb@3.4.0 mysql2@3.11.4-canary.401db79b;; \
         false|no|FALSE|NO) \
             echo "Not including MariaDB/MySQL Tools.";; \
         *) \
-            echo -e "Invalid value for build argument INCLUDE_MARIADB_TOOLS, possible values: 'yes' or 'true'"; \
+            echo -e "Invalid value for build argument INCLUDE_MARIADB_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
     esac
 
