@@ -17,7 +17,6 @@ For more information, [visit MeshCentral.com](https://meshcentral.com).
 ## Social Media
 [YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)  
 [Reddit](https://www.reddit.com/r/MeshCentral/)  
-[X](https://x.com/MeshCentral)  
 [BlogSpot](https://meshcentral2.blogspot.com/)  
 [LinkedIn](https://www.linkedin.com/groups/13067101/)  
 
