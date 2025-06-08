@@ -143,8 +143,8 @@ if (directRun && (NodeJSVer >= 12)) {
             // Get things setup
             jsdom = require('jsdom');
             esprima = require('esprima'); // https://www.npmjs.com/package/esprima
-            if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
-            if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
+            if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
+            if (minifyLib == 2) { minify = require('html-minifier-terser').minify; } // https://www.npmjs.com/package/html-minifier
 
             switch (op) {
                 case 'translate': {
@@ -161,8 +161,8 @@ if (directRun) { setup(); }
 
 function setup() {
     var libs = ['jsdom@22.1.0', 'esprima@4.0.1'];
-    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
-    if (minifyLib == 2) { libs.push('html-minifier@4.0.0'); }
+    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
+    if (minifyLib == 2) { libs.push('html-minifier-terser@7.2.0'); }
     InstallModules(libs, start);
 }
 
@@ -172,8 +172,8 @@ function startEx(argv) {
     // Load dependencies
     jsdom = require('jsdom');
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
-    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
-    if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
+    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
+    if (minifyLib == 2) { minify = require('html-minifier-terser').minify; } // https://www.npmjs.com/package/html-minifier-terser
 
     var command = null;
     if (argv.length > 2) { command = argv[2].toLowerCase(); }
@@ -366,7 +366,7 @@ function startEx(argv) {
                         if (sourceFile.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
                         if (sourceFile.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
 
-                        var minifiedOut = minify(inFile, {
+                        minify(inFile, {
                             collapseBooleanAttributes: true,
                             collapseInlineTagWhitespace: false, // This is not good.
                             collapseWhitespace: true,
@@ -381,12 +381,12 @@ function startEx(argv) {
                             removeTagWhitespace: true,
                             preserveLineBreaks: false,
                             useShortDoctype: true
+                        }).then(function (minifiedOut) {
+                            // Perform minification post-processing
+                            if (sourceFile.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+                            if (sourceFile.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                            fs.writeFileSync(destinationFile, minifiedOut, { flag: 'w+' });
                         });
-
-                        // Perform minification post-processing
-                        if (sourceFile.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
-                        if (sourceFile.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
-                        fs.writeFileSync(destinationFile, minifiedOut, { flag: 'w+' });
                     }
                 } else if (sourceFiles[i].endsWith('.json')) {
                     // Minify the file .json file
@@ -440,7 +440,7 @@ function startEx(argv) {
 
                 var minifiedOut = null;
                 try {
-                    minifiedOut = minify(inFile, {
+                    minify(inFile, {
                         collapseBooleanAttributes: true,
                         collapseInlineTagWhitespace: false, // This is not good.
                         collapseWhitespace: true,
@@ -456,16 +456,15 @@ function startEx(argv) {
                         preserveLineBreaks: false,
                         useShortDoctype: true,
                         log: function(a) { if (typeof a !== 'string') { console.log(a); } } // Log errors from UglifyJS to console output
+                    }).then(function (minifiedOut) {
+                        // Perform minification post-processing
+                        if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+                        if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                        fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
                     });
                 } catch (ex) {
                     console.log(ex);
                 }
-
-                // Perform minification post-processing
-                if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
-                if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
-
-                fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
 
                 /*
                 if (outname.endsWith('.js')) {
@@ -509,7 +508,7 @@ function startEx(argv) {
             if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
             if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
 
-            var minifiedOut = minify(inFile, {
+            minify(inFile, {
                 collapseBooleanAttributes: true,
                 collapseInlineTagWhitespace: false, // This is not good.
                 collapseWhitespace: true,
@@ -524,12 +523,12 @@ function startEx(argv) {
                 removeTagWhitespace: true,
                 preserveLineBreaks: false,
                 useShortDoctype: true
+            }).then(function (minifiedOut) {
+                // Perform minification post-processing
+                if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+                if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });       
             });
-
-            // Perform minification post-processing
-            if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
-            if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
-            fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
         }
     }
 }
@@ -656,14 +655,27 @@ function translate(lang, langFile, sources, createSubDir) {
 
         langs = {};
         for (var i in langFileData.strings) { var entry = langFileData.strings[i]; for (var j in entry) { if ((j != 'en') && (j != 'xloc') && (j != '*')) { langs[j.toLowerCase()] = true; } } }
-        for (var i in langs) {
-            const { Worker } = require('worker_threads')
-            const worker = new Worker('./translate.js', { stdout: true, workerData: { op: 'translate', args: [i, langFile, sources, createSubDir] } });
-            worker.stdout.on('data', function (msg) { console.log('wstdio:', msg.toString()); });
-            worker.on('message', function (message) { console.log(message.msg); });
-            worker.on('error', function (error) { console.log('error', error); });
-            worker.on('exit', function (code) { /*console.log('exit', code);*/ })
+        var Worker = require('worker_threads').Worker;
+        var MAX_WORKERS = os.cpus().length; // limit to the number of CPU cores for now
+        var activeWorkers = 0;
+        var taskQueue = [];
+        function processNextTask() {
+            if (activeWorkers < MAX_WORKERS && taskQueue.length > 0) {
+                var nextTask = taskQueue.shift();
+                activeWorkers++;
+                var worker = new Worker('./translate.js', { stdout: true, workerData: { op: 'translate', args: [nextTask.lang, nextTask.langFile, nextTask.sources, nextTask.createSubDir] } });
+                worker.stdout.on('data', function (msg) { console.log('wstdio:', msg.toString()); });
+                worker.on('message', function (message) { console.log(message.msg); });
+                worker.on('error', function (error) { console.log('error', error); activeWorkers--; processNextTask(); });
+                worker.on('exit', function (code) { /*console.log('exit', code);*/ activeWorkers--; processNextTask(); });
+            }
         }
+        for (var lang in langs) {
+            if (langs.hasOwnProperty(lang)) {
+                taskQueue.push({ lang: lang, langFile: langFile, sources: sources, createSubDir: createSubDir});
+            }
+        }
+        for (var i = 0; i < Math.min(MAX_WORKERS, taskQueue.length); i++) { processNextTask(); }
     } else {
         // Single threaded translation
         translateSingleThreaded(lang, langFile, sources, createSubDir);
@@ -976,7 +988,7 @@ function translateFromHtml(lang, file, createSubDir) {
     // Minify the file
     if (minifyLib = 2) {
         if (outnamemin.endsWith('.handlebars') >= 0) { out = out.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
-        var minifiedOut = minify(out, {
+        minify(out, {
             collapseBooleanAttributes: true,
             collapseInlineTagWhitespace: false, // This is not good.
             collapseWhitespace: true,
@@ -991,9 +1003,10 @@ function translateFromHtml(lang, file, createSubDir) {
             removeTagWhitespace: true,
             preserveLineBreaks: false,
             useShortDoctype: true
+        }).then(function (minifiedOut) {
+            if (outnamemin.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+            fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' }); 
         });
-        if (outnamemin.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
-        fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
     }
 }
 

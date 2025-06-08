@@ -15,7 +15,7 @@ COPY ./ /opt/meshcentral/meshcentral/
 RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
         echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
-        npm install html-minifier@4.0.0 jsdom@26.0.0 esprima@4.0.1 && \
+        npm install html-minifier-terser@7.2.0 jsdom@26.0.0 esprima@4.0.1 && \
         cd translate && \
         echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
         node translate.js extractall && \
