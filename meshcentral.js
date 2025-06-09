@@ -2123,6 +2123,12 @@ function CreateMeshCentralServer(config, args) {
                         else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
                         if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.resolve(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
                         if (typeof obj.config.settings.autobackup.backupname != 'string') { obj.config.settings.autobackup.backupname = 'meshcentral-autobackup-'};
+                        if (typeof obj.config.settings.autobackup.webdav == 'object') {
+                            //make webdav compliant: http://www.webdav.org/specs/rfc4918.html#rfc.section.5.2, http://www.webdav.org/specs/rfc2518.html#METHOD_MKCOL
+                            // So with leading and trailing slash in the foldername, and no double and backslashes
+                            if (typeof obj.config.settings.autobackup.webdav.foldername != 'string') {obj.config.settings.autobackup.webdav.foldername = '/MeshCentral-Backups/'}
+                            else {obj.config.settings.autobackup.webdav.foldername = ('/' + obj.config.settings.autobackup.webdav.foldername + '/').replaceAll("\\", "/").replaceAll("//", "/").replaceAll("//", "/")};
+                        }
                     }
 
                     // Check if the database is capable of performing a backup
@@ -4321,7 +4327,7 @@ function mainStart() {
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
-                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.4'); }
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@5.8.0'); }
             }
             // Enable S3 Support
             if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.2'); }
