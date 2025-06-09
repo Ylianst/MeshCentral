@@ -33,7 +33,7 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
             *) \
                 echo "Setting TRANSLATE as disabled.";; \
         esac; \
-        npm uninstall html-minifier jsdom esprima; \
+        npm uninstall html-minifier-terser jsdom esprima; \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
