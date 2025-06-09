@@ -3392,7 +3392,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath, timeout: 1000*30 }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Unable to find mysqldump tool, backup will not be performed. Command tried: " + cmd);
+                        func(1, "mysqldump error, backup will not be performed. Command tried: " + cmd);
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
 
@@ -3407,7 +3407,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Unable to find pg_dump tool, backup will not be performed. Command tried: " + cmd);
+                        func(1, "pg_dump error, backup will not be performed. Command tried: " + cmd);
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
