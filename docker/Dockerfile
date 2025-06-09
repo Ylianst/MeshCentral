@@ -44,6 +44,9 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 FROM alpine:3.21
 
+# copy files from builder-image
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+
 # environment variables
 ENV NODE_ENV="production" \
     CONFIG_FILE="/opt/meshcentral/meshcentral-data/config.json" \
@@ -166,11 +169,9 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             exit 1;; \
     esac
 
-# copy files from builder-image
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-
 # install dependencies from package.json
-RUN cd meshcentral && npm install
+RUN cd meshcentral && \
+    npm install
 
 # Expose needed ports
 EXPOSE 80 443
