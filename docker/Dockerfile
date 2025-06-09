@@ -171,7 +171,9 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
 
 # install dependencies from package.json
 RUN cd meshcentral && \
-    npm install
+    npm install && \
+    npm cache clean --force && \
+    rm -rf /root/ /tmp/
 
 # Expose needed ports
 EXPOSE 80 443
