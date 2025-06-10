@@ -30,4 +30,5 @@ jobs:
         
         # Other configurations
         exempt-draft-pr: true
-        operations-per-run: 100
+        operations-per-run: 1000
+        ascending: true
