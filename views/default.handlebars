@@ -10278,32 +10278,32 @@
             }
         }
 
-// Remote desktop typing mit verdeckter Eingabe-Option
+ // Remote desktop typing with hidden input option
 function showDeskType(text) {
    if (xxdialogMode || desktop == null || desktop.State != 3) return;
     Q('DeskType').blur();
 
-    // Erklärungstext oben im Dialog
+    // Instruction text at the top of the dialog
     var x = '<div>' +
                 "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding." +
             '<div>';
 
-      // Checkbox: Eingabe verdecken
+      // Checkbox: Hide input
       x += '<div style="margin-top:8px;">' +
                '<label style="font-weight: normal;">' +
                  '<input type="checkbox" id="d2typeMask" style="margin-right:5px;">' +
-                 'Eingabe verdecken' +
+                 'Hide Input' +
                '</label>' +
            '</div>';
   
-      // Klartext-Textarea (default sichtbar)
+      // Plaintext textarea (visible by default)
       x += '<div id="d2clearWrapper" style="margin-top:5px;">' +
                '<textarea id="d2typeText" style="width:100%; height:140px; resize:none;" maxlength="2000">' +
                     (text ? EscapeHtml(text) : '') +
                '</textarea>' +
            '</div>';
   
-      // Passwort-Eingabe (initial ausgeblendet)
+      // Password input (initially hidden)
       x += '<div id="d2passWrapper" style="margin-top:5px; display:none;">' +
                '<input type="password" id="d2typePass" style="width:100%; height:28px;" maxlength="2000" value="' +
                     (text ? EscapeHtml(text) : '') +
@@ -10312,21 +10312,21 @@ function showDeskType(text) {
   
       setDialogMode(2, "Remote Keyboard Entry", 3, showDeskTypeEx, x);
   
-      // Direkt Klartext-Textarea fokussieren (solange Maskierung nicht aktiv)
+      // Directly focus plaintext textarea (if masking not active)
       Q('d2typeText').focus();
   
-      // Kurzes Delay, bis die HTML‐Elemente im DOM angelegt wurden, dann Listener anhängen
+      // Brief timeout to ensure HTML elements are in the DOM before attaching listeners
       setTimeout(function() {
-          // Umschalten bei Checkbox-Änderung
+          // Toggle input mode when checkbox changes
           Q('d2typeMask').addEventListener('change', function() {
               if (this.checked) {
-                  // “Eingabe verdecken” aktiviert: Text kopieren, Textarea ausblenden, Passwortfeld anzeigen
+                  // Enable hide
                   Q('d2typePass').value = Q('d2typeText').value;
                   Q('d2clearWrapper').style.display = 'none';
                   Q('d2passWrapper').style.display = 'block';
                   Q('d2typePass').focus();
               } else {
-                  // “Eingabe verdecken” deaktiviert: Text kopieren, Passwortfeld ausblenden, Textarea anzeigen
+                  // Disable hide
                   Q('d2typeText').value = Q('d2typePass').value;
                   Q('d2passWrapper').style.display = 'none';
                   Q('d2clearWrapper').style.display = 'block';
@@ -10334,9 +10334,9 @@ function showDeskType(text) {
               }
           });
   
-          // (Optional) Synchronisation beim Tippen im Passwortfeld – hier nur als Platzhalter
+          // (Optional) Sync on input in password field – placeholder
           Q('d2typePass').addEventListener('input', function() {
-              // Falls später eine Validierung/​Synchronisation notwendig ist, hier ergänzen.
+              // Placeholder for validation if later wanted.
           });
       }, 50);
   }
@@ -10346,22 +10346,22 @@ function showDeskType(text) {
   var DeskTypeTranslate = { 39: 222, 42: 106, 43: 107, 44: 188, 45: 189, 46: 190, 47: 191, 59: 186, 61: 187, 91: 219, 92: 220, 93: 221, 96: 192, 191: 111 };
   var DeskTypeShiftTranslate = { 33: 49, 34: 222, 35: 51, 36: 52, 37: 53, 38: 55, 40: 57, 41: 48, 58: 186, 60: 188, 62: 190, 63: 191, 64: 50, 94: 54, 95: 189, 106: 56, 107: 187, 123: 219, 124: 220, 125: 221, 126: 192 };
   function showDeskTypeEx(v) {
-      if (v != 1) return;    // Nur bei Klick auf “OK” weiter
+      if (v != 1) return;    // Only proceed on “OK” click
       if (Q('d2typeText')) Q('d2typeText').blur();
       if (Q('d2typePass')) Q('d2typePass').blur();
   
-      // Bei aktivierter Checkbox: Passwort-Feld, sonst Textarea auslesen
+      // Read from password field if checkbox is checked; otherwise read from textarea
       var txt;
       if (Q('d2typeMask') && Q('d2typeMask').checked) {
           txt = Q('d2typePass').value;
       } else {
           txt = Q('d2typeText').value;
       }
-      // Mögliche HTML‐Maskierung rückgängig machen
+      // Decode potential HTML escaping
       txt = DecodeHtml(txt);
   
       if (desktop && desktop.State == 3) {
-          // Hierüber wird der Text ans Remote‐System geschickt, genau wie vorher
+          // Send the text to the remote system as before
           desktop.SendType(txt);
       }
   }
