@@ -121,7 +121,7 @@ RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
-            npm install ssh2@1.16.0 semver@7.7.1 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
+            npm install ssh2@1.16.0 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
         false|no|FALSE|NO) \
             echo "Not pre-installing libraries.";; \
         *) \

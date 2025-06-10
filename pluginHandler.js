@@ -286,6 +286,36 @@ module.exports.pluginHandler = function (parent) {
         return true;
     }
 
+    obj.versionGreater = function(a, b) {
+        a = obj.versionToNumber(String(a).replace(/^v/, ''));
+        b = obj.versionToNumber(String(b).replace(/^v/, ''));
+        const partsA = a.split('.').map(Number);
+        const partsB = b.split('.').map(Number);
+        
+        for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            const numA = partsA[i] || 0;
+            const numB = partsB[i] || 0;
+            if (numA > numB) return true;
+            if (numA < numB) return false;
+        }
+        return false;
+    };
+
+    obj.versionLower = function(a, b) {
+        a = obj.versionToNumber(String(a).replace(/^v/, ''));
+        b = obj.versionToNumber(String(b).replace(/^v/, ''));
+        const partsA = a.split('.').map(Number);
+        const partsB = b.split('.').map(Number);
+        
+        for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            const numA = partsA[i] || 0;
+            const numB = partsB[i] || 0;
+            if (numA < numB) return true;
+            if (numA > numB) return false;
+        }
+        return false;
+    };
+
     obj.getPluginLatest = function () {
         return new Promise(function (resolve, reject) {
             parent.db.getPlugins(function (err, plugins) {
@@ -305,12 +335,11 @@ module.exports.pluginHandler = function (parent) {
                                 if (conf.configUrl == newconf.configUrl) curconf = conf;
                             });
                             if (curconf == null) reject("Some plugin configs could not be parsed");
-                            var s = require('semver');
                             latestRet.push({
                                 'id': curconf._id,
                                 'installedVersion': curconf.version,
                                 'version': newconf.version,
-                                'hasUpdate': s.gt(newconf.version, curconf.version),
+                                'hasUpdate': obj.versionGreater(newconf.version, curconf.version),
                                 'meshCentralCompat': obj.versionCompare(parent.currentVer, newconf.meshCentralCompat),
                                 'changelogUrl': curconf.changelogUrl,
                                 'status': curconf.status
@@ -484,9 +513,8 @@ module.exports.pluginHandler = function (parent) {
                             try {
                                 var vers = JSON.parse(versStr);
                                 var vList = [];
-                                var s = require('semver');
                                 vers.forEach((v) => {
-                                    if (s.lt(v.name, plugin.version)) vList.push(v);
+                                    if (obj.versionLower(v.name, plugin.version)) vList.push(v);
                                 });
                                 if (vers.length == 0) reject("No previous versions available.");
                                 resolve({ 'id': plugin._id, 'name': plugin.name, versionList: vList });
