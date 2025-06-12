@@ -19,16 +19,16 @@ jobs:
         # Issues configuration
         stale-issue-message: "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions."
         close-issue-message: "This issue has been automatically closed due to inactivity. If you believe this is still relevant, please feel free to reopen it."
-        close-issue-label: "Stale"
+        close-issue-label: "Closed"
         stale-issue-label: "Stale"
-        exempt-issue-labels: "pinned,important"
+        exempt-issue-labels: "pinned,important,Closed"
         
         # PRs configuration
         stale-pr-message: "This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions."
         close-pr-message: "This pull request has been automatically closed due to inactivity. If you'd like to continue working on it, please reopen it."
-        close-pr-label: "Stale"
+        close-pr-label: "Closed"
         stale-pr-label: "Stale"
-        exempt-pr-labels: "pinned,important"
+        exempt-pr-labels: "pinned,important,Closed"
         exempt-draft-pr: true
       
         # Common configuration
