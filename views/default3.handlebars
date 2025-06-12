@@ -4483,7 +4483,7 @@
                     break;
                 }
                 case 'getDeviceDetails': {
-                    saveAs(new Blob([message.data], { type: 'application/octet-stream' }), "devicelist" + '.' + message.type);
+                    saveAs(new Blob([typeof message.data === 'string' ? message.data : JSON.stringify(message.data)], {type: 'application/octet-stream'}), "devicelist" + '.' + message.type);
                     break;
                 }
                 case 'createLoginToken': { // A new login token was created
