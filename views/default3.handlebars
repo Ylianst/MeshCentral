@@ -6890,6 +6890,7 @@
                     x += '<div id=d2runfile style=display:none><input id=d2runfileex class="form-control" type=file onchange=d2runCommandValidate() id=d2localFile name=files onchange=d2runCommandValidate() /></div>';
                     if (userinfo.siteadmin & 8) { x += '<div id=d2runsfile style=display:none><div id=d2serveraction valign=bottom><input type=button id=p2FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p2CurrentFolder></span></div><div id=d2serverfiles></div></div>'; }
                 }
+                xxdialogTag = options;
                 setModalContent('xxAddAgent', "Run Commands", x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                     d2groupActionFunctionRunCommands(3, options);
