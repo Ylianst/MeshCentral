@@ -107,7 +107,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     // Check if any tunnels need to be cleaned up
     obj.checkTimeout = function () {
-        const limit = Date.now() - (1 * 60 * 1000); // This is is 5 minutes before current time
+        const limit = Date.now() - (5 * 60 * 1000); // This is 5 minutes before current time
 
         // Close any old non-websocket tunnels
         const tunnelToRemove = [];
