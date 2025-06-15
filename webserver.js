@@ -5878,7 +5878,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (c.download == req.query.meshaction) {
                     if (req.query.meshaction == 'winrouter') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralRouter']) { p = obj.meshToolsBinaries['MeshCentralRouter'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralRouter']) { p = obj.parent.meshToolsBinaries['MeshCentralRouter'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
@@ -5887,7 +5887,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return;
                     } else if (req.query.meshaction == 'winassistant') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralAssistant']) { p = obj.meshToolsBinaries['MeshCentralAssistant'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralAssistant']) { p = obj.parent.meshToolsBinaries['MeshCentralAssistant'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
@@ -5896,7 +5896,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return;
                     } else if (req.query.meshaction == 'macrouter') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.parent.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
@@ -6611,13 +6611,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             // Special Client Hint Headers for Browser Detection on every request - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers#client_hints
             // note: only works in a secure context (localhost or https://)
-            const secCH = [
-                'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
-                'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
-                'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
-            ];
-            response.setHeader('Accept-CH', secCH.join(', '));
-            response.setHeader('Critical-CH', secCH.join(', '));
+            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(request.hostname) == -1)) {
+                const secCH = [
+                    'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
+                    'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
+                    'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
+                ];
+                response.setHeader('Accept-CH', secCH.join(', '));
+                response.setHeader('Critical-CH', secCH.join(', '));
+            }
             next();
         });
 
