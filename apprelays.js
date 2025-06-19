@@ -149,7 +149,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         // Check to see if any of the tunnels are free
         var count = 0;
         for (var i in tunnels) {
-            count += ((tunnels[i].isWebSocket || tunnels[i].isStreaming) ? 0 : 1);
+            count += ((tunnels[i].isWebSocket || tunnels[i].isStreaming || (tunnels[i].res != null)) ? 0 : 1);
             if ((tunnels[i].relayActive == true) && (tunnels[i].res == null) && (tunnels[i].isWebSocket == false) && (tunnels[i].isStreaming == false)) {
                 // Found a free tunnel, use it
                 const x = pendingRequests.shift();
