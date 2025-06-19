@@ -5365,7 +5365,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
                                 }
 
-                                output = results;
+                                output = JSON.stringify(results);
                             }
                             try { ws.send(JSON.stringify({ action: 'getDeviceDetails', data: output, type: type })); } catch (ex) { }
                         });
