@@ -2592,7 +2592,11 @@ function serverConnect() {
                 break;
             }
             case 'getDeviceDetails': {
-                console.log(data.data);
+                if (args.json) { 
+                    console.log(JSON.stringify(data.data));
+                } else {
+                    console.log(data.data);
+                }
                 process.exit();
             }
             case 'report': {
