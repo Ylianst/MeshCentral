@@ -65,9 +65,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.db = db;
     obj.app = obj.express();
     if (obj.args.agentport) { obj.agentapp = obj.express(); }
-    if (args.compression !== false) {
+    if (args.compression === true) {
         obj.app.use(require('compression')({ filter: function (req, res) {
             if (req.path == '/devicefile.ashx') return false; // Don't compress device file transfers to show file sizes
+            if ((args.relaydns != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) return false; // Don't compress DNS relay requests
             return require('compression').filter(req, res);
         }}));
     }
