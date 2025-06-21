@@ -855,7 +855,7 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Look for easy command line instructions and do them here.
-    obj.StartEx = function () {
+    obj.StartEx = async function () {
         var i;
         //var wincmd = require('node-windows');
         //wincmd.list(function (svc) { console.log(svc); }, true);
@@ -915,6 +915,13 @@ function CreateMeshCentralServer(config, args) {
         if ((typeof obj.args.agentupdateblocksize == 'number') && (obj.args.agentupdateblocksize >= 1024) && (obj.args.agentupdateblocksize <= 65531)) { obj.agentUpdateBlockSize = obj.args.agentupdateblocksize; }
         if (typeof obj.args.trustedproxy == 'string') { obj.args.trustedproxy = obj.args.trustedproxy.split(' ').join('').split(','); }
         if (typeof obj.args.tlsoffload == 'string') { obj.args.tlsoffload = obj.args.tlsoffload.split(' ').join('').split(','); }
+
+        // Check IP lists and ranges and if DNS return IP addresses
+        config.settings.userallowedip = await resolveDomainsToIps(config.settings.userallowedip);
+        config.settings.userblockedip = await resolveDomainsToIps(config.settings.userblockedip);
+        config.settings.agentallowedip = await resolveDomainsToIps(config.settings.agentallowedip);
+        config.settings.agentblockedip = await resolveDomainsToIps(config.settings.agentblockedip);
+        config.settings.swarmallowedip = await resolveDomainsToIps(config.settings.swarmallowedip);
 
         // Check the "cookieIpCheck" value
         if ((obj.args.cookieipcheck === false) || (obj.args.cookieipcheck == 'none')) { obj.args.cookieipcheck = 'none'; }
@@ -1472,6 +1479,11 @@ function CreateMeshCentralServer(config, args) {
             if (typeof obj.config.domains[i].userblockedip == 'string') { if (obj.config.domains[i].userblockedip == '') { delete obj.config.domains[i].userblockedip; } else { obj.config.domains[i].userblockedip = obj.config.domains[i].userblockedip.split(' ').join('').split(','); } }
             if (typeof obj.config.domains[i].agentallowedip == 'string') { if (obj.config.domains[i].agentallowedip == '') { delete obj.config.domains[i].agentallowedip; } else { obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip.split(' ').join('').split(','); } }
             if (typeof obj.config.domains[i].agentblockedip == 'string') { if (obj.config.domains[i].agentblockedip == '') { delete obj.config.domains[i].agentblockedip; } else { obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip.split(' ').join('').split(','); } }
+            // Check IP lists and ranges and if DNS return IP addresses
+            obj.config.domains[i].userallowedip = await resolveDomainsToIps(obj.config.domains[i].userallowedip);
+            obj.config.domains[i].userblockedip = await resolveDomainsToIps(obj.config.domains[i].userblockedip);
+            obj.config.domains[i].agentallowedip = await resolveDomainsToIps(obj.config.domains[i].agentallowedip);
+            obj.config.domains[i].agentblockedip = await resolveDomainsToIps(obj.config.domains[i].agentblockedip);
             if (typeof obj.config.domains[i].ignoreagenthashcheck == 'string') { if (obj.config.domains[i].ignoreagenthashcheck == '') { delete obj.config.domains[i].ignoreagenthashcheck; } else { obj.config.domains[i].ignoreagenthashcheck = obj.config.domains[i].ignoreagenthashcheck.split(','); } }
             if (typeof obj.config.domains[i].allowedorigin == 'string') { if (obj.config.domains[i].allowedorigin == '') { delete obj.config.domains[i].allowedorigin; } else { obj.config.domains[i].allowedorigin = obj.config.domains[i].allowedorigin.split(','); } }
             if ((obj.config.domains[i].passwordrequirements != null) && (typeof obj.config.domains[i].passwordrequirements == 'object')) {
@@ -4031,6 +4043,25 @@ function checkResolveAll(names, func) {
             if (--this.state.count == 0) { this.state.func(this.state.err); }
         }.bind({ name: names[i], state: state }))
     }
+}
+
+// Resolve a list of domains to IP addresses, return a flat array of IPs.
+async function resolveDomainsToIps(originalArray) {
+    if (!Array.isArray(originalArray)) { return undefined; }
+    const flatResult = [];
+    for (const item of originalArray) {
+        if (new require('ipcheck')(item).valid) {
+            flatResult.push(item);
+            continue;
+        }
+        try {
+            const results = await require('dns').promises.lookup(item, { all: true });
+            flatResult.push(...results.map(r => r.address));
+        } catch (err) {
+            console.log(`Could not resolve ${item}`);
+        }
+    }
+    return flatResult;
 }
 
 // Return the server configuration
