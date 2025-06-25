@@ -420,3 +420,18 @@ module.exports.uniqueArray = function (a) {
     }
     return out;
 }
+
+// Replace placeholders in a string with values from an object or a function 
+module.exports.replacePlaceholders = function (template, values) {
+  return template.replace(/\{(\w+)\}/g, (match, key) => {
+    if (typeof values === 'function') {
+      return values(key);
+    }
+    else if (values && typeof values === 'object') {
+      return values[key] !== undefined ? values[key] : match;
+    }
+    else {
+      return values !== undefined ? values : match;
+    }
+  });
+}

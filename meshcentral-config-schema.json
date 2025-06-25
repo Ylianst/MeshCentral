@@ -536,8 +536,8 @@
         },
         "compression": {
           "type": "boolean",
-          "default": true,
-          "description": "Enables GZIP compression for web requests."
+          "default": false,
+          "description": "Enables GZIP compression for web requests. Disabled by default."
         },
         "wsCompression": {
           "type": "boolean",

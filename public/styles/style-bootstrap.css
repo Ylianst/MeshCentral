@@ -2478,15 +2478,16 @@ nav .lbbuttonsel2 {
     min-width: 100%;
     min-height: 0px;
     height: 100%;
-    position: relative;
+    position: absolute;
+    top: 0px;
     display: -ms-grid;
     display: grid;
     grid-gap: 0px;
     grid-template-areas: "deskarea1" "deskarea2" "deskarea3" "deskarea4";
     /* grid-template-columns: 90px auto; */
-    grid-template-rows: 24px max-content auto max-content;
+    grid-template-rows: max-content max-content auto max-content;
     -ms-grid-columns: 1fr;
-    -ms-grid-rows: 24px max-content 1fr max-content;
+    -ms-grid-rows: max-content max-content 1fr max-content;
 }
 
 #deskarea0 .mR {

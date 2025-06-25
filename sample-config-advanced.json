@@ -65,7 +65,7 @@
     "_agentIdleTimeout": 150,
     "_webPageLengthRandomization": false,
     "_compression": true,
-    "_wsCompression": false,
+    "_wsCompression": true,
     "_agentWsCompression": true,
     "_noAgentUpdate": 1,
     "_agentUpdateSystem": 1,

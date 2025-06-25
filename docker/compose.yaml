@@ -1,0 +1,22 @@
+services:
+  meshcentral:
+    image: ghcr.io/ylianst/meshcentral:latest
+    environment:
+      - DYNAMIC_CONFIG=false # Show the option but disable it by default, for safety.
+      - HOSTNAME=myserver.domain.com # Set the hostname in the config.json
+      - ALLOW_NEW_ACCOUNTS=false # Disable creation of new accounts (except for the first user) in the config.json
+      - USE_MONGODB=true # Enable the Mongo connector in the config.json
+      - MONGO_URL=mongodb://username:password@mongodb:27017/meshcentral # Example MONGO_URL
+    volumes:
+      - meshcentral-data:/opt/meshcentral/meshcentral-data
+      - meshcentral-files:/opt/meshcentral/meshcentral-files
+      - meshcentral-web:/opt/meshcentral/meshcentral-web
+      - meshcentral-backups:/opt/meshcentral/meshcentral-backups
+    ports:
+      - "80:80"
+      - "443:443"
+volumes:
+  meshcentral-data:
+  meshcentral-files:
+  meshcentral-web:
+  meshcentral-backups:

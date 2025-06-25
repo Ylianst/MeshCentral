@@ -5493,7 +5493,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Create a new Intel AMT device
                             const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
                             const device = { type: 'node', _id: nodeid, meshid: mesh._id, mtype: 1, icon: 1, host: importDev.fqdn, domain: domain.id, intelamt: { user: 'admin', state: 2 } };
-                            if (typeof importDev.name == 'string') { device.name = importDev.name; } else { device.name = importDev.host; }
+                            if (typeof importDev.name == 'string') { device.name = importDev.name; } else { device.name = importDev.fqdn; }
 
                             // Add optional fields
                             if (typeof importDev.username == 'string') { device.intelamt.user = importDev.username; }

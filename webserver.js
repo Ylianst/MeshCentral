@@ -65,9 +65,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.db = db;
     obj.app = obj.express();
     if (obj.args.agentport) { obj.agentapp = obj.express(); }
-    if (args.compression !== false) {
+    if (args.compression === true) {
         obj.app.use(require('compression')({ filter: function (req, res) {
             if (req.path == '/devicefile.ashx') return false; // Don't compress device file transfers to show file sizes
+            if ((args.relaydns != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) return false; // Don't compress DNS relay requests
             return require('compression').filter(req, res);
         }}));
     }
@@ -3217,7 +3218,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     passRequirements: passRequirements,
                     customui: customui,
                     webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
-                    footer: (domain.footer == null) ? '' : domain.footer,
+                    footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, { 
+                        'serverversion': obj.parent.currentVer,
+                        'servername': obj.getWebServerName(domain, req),
+                        'agentsessions': Object.keys(parent.webserver.wsagents).length,
+                        'connectedusers': Object.keys(parent.webserver.wssessions).length,
+                        'userssessions': Object.keys(parent.webserver.wssessions2).length,
+                        'relaysessions': parent.webserver.relaySessionCount,
+                        'relaycount': Object.keys(parent.webserver.wsrelays).length
+                    }),
                     webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
                     amtscanoptions: amtscanoptions,
                     pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
@@ -3462,12 +3471,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
-                footer: (domain.loginfooter == null) ? '' : domain.loginfooter,
+                footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, { 
+                    'serverversion': obj.parent.currentVer,
+                    'servername': obj.getWebServerName(domain, req),
+                    'agentsessions': Object.keys(parent.webserver.wsagents).length,
+                    'connectedusers': Object.keys(parent.webserver.wssessions).length,
+                    'userssessions': Object.keys(parent.webserver.wssessions2).length,
+                    'relaysessions': parent.webserver.relaySessionCount,
+                    'relaycount': Object.keys(parent.webserver.wsrelays).length
+                }),
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
                 messageid: msgid,
                 flashErrors: JSON.stringify(flashErrors),
                 passhint: passhint,
-                welcometext: domain.welcometext ? encodeURIComponent(domain.welcometext).split('\'').join('\\\'') : null,
+                
+                welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, { 
+                    'serverversion': obj.parent.currentVer,
+                    'servername': obj.getWebServerName(domain, req),
+                    'agentsessions': Object.keys(parent.webserver.wsagents).length,
+                    'connectedusers': Object.keys(parent.webserver.wssessions).length,
+                    'userssessions': Object.keys(parent.webserver.wssessions2).length,
+                    'relaysessions': parent.webserver.relaySessionCount,
+                    'relaycount': Object.keys(parent.webserver.wsrelays).length
+                })).split('\'').join('\\\'') : null,
                 welcomePictureFullScreen: ((typeof domain.welcomepicturefullscreen == 'boolean') ? domain.welcomepicturefullscreen : false),
                 hwstate: hwstate,
                 otpemail: otpemail,
@@ -4208,7 +4234,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof c.pid != 'string') { res.sendStatus(404); return; }
 
             // Check the expired time, expire message.
-            if ((c.e != null) && (c.e <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if ((c.e != null) && (c.e <= Date.now())) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             obj.db.Get('deviceshare-' + c.pid, function (err, docs) {
                 if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
@@ -4254,17 +4280,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Serve the guest sharing page
     function handleSharingRequestEx(req, res, domain, c) {
         // Check the expired time, expire message.
-        if ((c.expire != null) && (c.expire <= Date.now())) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+        if ((c.expire != null) && (c.expire <= Date.now())) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
         // Check the public id
         obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
             // Check if any sharing links are present, expire message.
-            if ((err != null) || (docs.length == 0)) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if ((err != null) || (docs.length == 0)) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Search for the device share public identifier, expire message.
             var found = false;
             for (var i = 0; i < docs.length; i++) { if ((docs[i].publicid == c.pid) && ((docs[i].extrakey == null) || (docs[i].extrakey === c.k))) { found = true; } }
-            if (found == false) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+            if (found == false) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
             // Get information about this node
             obj.db.Get(c.nid, function (err, nodes) {
@@ -4272,7 +4298,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var node = nodes[0];
 
                 // Check the start time, not yet valid message.
-                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
+                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
 
                 // If this is a web relay share, check if this feature is active
                 if ((c.p == 8) || (c.p == 16)) {
@@ -5853,7 +5879,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (c.download == req.query.meshaction) {
                     if (req.query.meshaction == 'winrouter') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralRouter']) { p = obj.meshToolsBinaries['MeshCentralRouter'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralRouter']) { p = obj.parent.meshToolsBinaries['MeshCentralRouter'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
@@ -5862,7 +5888,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return;
                     } else if (req.query.meshaction == 'winassistant') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralAssistant']) { p = obj.meshToolsBinaries['MeshCentralAssistant'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralAssistant']) { p = obj.parent.meshToolsBinaries['MeshCentralAssistant'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
@@ -5871,7 +5897,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return;
                     } else if (req.query.meshaction == 'macrouter') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.parent.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
@@ -6586,13 +6612,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             // Special Client Hint Headers for Browser Detection on every request - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers#client_hints
             // note: only works in a secure context (localhost or https://)
-            const secCH = [
-                'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
-                'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
-                'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
-            ];
-            response.setHeader('Accept-CH', secCH.join(', '));
-            response.setHeader('Critical-CH', secCH.join(', '));
+            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(request.hostname) == -1)) {
+                const secCH = [
+                    'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
+                    'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
+                    'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
+                ];
+                response.setHeader('Accept-CH', secCH.join(', '));
+                response.setHeader('Critical-CH', secCH.join(', '));
+            }
             next();
         });
 
@@ -9360,6 +9388,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             xargs.title1 = domain.title1 ? domain.title1 : '';
             xargs.title2 = (domain.title1 && domain.title2) ? domain.title2 : '';
         }
+        xargs.title2 = obj.common.replacePlaceholders(xargs.title2, { 
+            'serverversion': obj.parent.currentVer,
+            'servername': obj.getWebServerName(domain, req),
+            'agentsessions': Object.keys(parent.webserver.wsagents).length,
+            'connectedusers': Object.keys(parent.webserver.wssessions).length,
+            'userssessions': Object.keys(parent.webserver.wssessions2).length,
+            'relaysessions': parent.webserver.relaySessionCount,
+            'relaycount': Object.keys(parent.webserver.wsrelays).length
+        });
         xargs.extitle = encodeURIComponent(xargs.title).split('\'').join('\\\'');
         xargs.domainurl = domain.url;
         xargs.autocomplete = (domain.autocomplete === false) ? 'autocomplete=off x' : 'autocomplete'; // This option allows autocomplete to be turned off on the login page.
