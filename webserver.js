@@ -8607,7 +8607,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', msg2fa: msg2fa, msg2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else {
                                             // Ask for a login token
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, msg2fa: msg2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         }
                                     } else {
                                         // We are authenticated with 2nd factor.
