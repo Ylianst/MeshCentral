@@ -635,7 +635,7 @@
             if ((hardwareKeyChallenge != null) && (hardwareKeyChallenge.type == 'webAuthn')) {
                 if (typeof hardwareKeyChallenge.challenge == 'string') { hardwareKeyChallenge.challenge = Uint8Array.from(atob(hardwareKeyChallenge.challenge), function (c) { return c.charCodeAt(0) }).buffer; }
 
-                publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout }
+                publicKeyCredentialRequestOptions = { challenge: hardwareKeyChallenge.challenge, allowCredentials: [], timeout: hardwareKeyChallenge.timeout, userVerification: hardwareKeyChallenge.userVerification ? hardwareKeyChallenge.userVerification : 'preferred' }
                 for (var i = 0; i < hardwareKeyChallenge.keyIds.length; i++) {
                     publicKeyCredentialRequestOptions.allowCredentials.push(
                         { id: Uint8Array.from(atob(hardwareKeyChallenge.keyIds[i]), function (c) { return c.charCodeAt(0) }), type: 'public-key', transports: ['usb', 'ble', 'nfc', 'internal'] }

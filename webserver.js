@@ -1105,6 +1105,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (webAuthnKeys.length > 0) {
                 // Generate a Webauthn challenge, this is really easy, no need to call any modules to do this.
                 var authnOptions = { type: 'webAuthn', keyIds: [], timeout: 60000, challenge: obj.crypto.randomBytes(64).toString('base64') };
+                // userVerification: 'preferred' use security pin if possible (default), 'required' always use security pin, 'discouraged' do not use security pin.
+                authnOptions.userVerification = (domain.passwordrequirements && domain.passwordrequirements.fidopininput) ? domain.passwordrequirements.fidopininput : 'preferred'; // Use the domain setting if it exists, otherwise use 'preferred'.{
                 for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
                 sec.u2f = authnOptions.challenge;
                 req.session.e = parent.encryptSessionData(sec);
