@@ -3197,9 +3197,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Load default page style or new modern ui
                 var uiViewMode = 'default';
                 var webstateJSON = JSON.parse(webstate);
-                if (webstateJSON && webstateJSON.uiViewMode == 3) { uiViewMode = 'default3'; }
-                if (domain.sitestyle == 3) { uiViewMode = 'default3'; }
-                if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
+                if (req.query.sitestyle != null) {
+                    if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
+                } else if (domain.sitestyle == 3) {
+                    uiViewMode = 'default3';
+                } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                }
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
