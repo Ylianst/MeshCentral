@@ -15,7 +15,7 @@ COPY ./ /opt/meshcentral/meshcentral/
 RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
         echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
-        npm install html-minifier@4.0.0 jsdom@26.0.0 esprima@4.0.1 && \
+        npm install html-minifier-terser@7.2.0 jsdom@26.0.0 esprima@4.0.1 && \
         cd translate && \
         echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
         node translate.js extractall && \
@@ -33,7 +33,7 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
             *) \
                 echo "Setting TRANSLATE as disabled.";; \
         esac; \
-        npm uninstall html-minifier jsdom esprima; \
+        npm uninstall html-minifier-terser jsdom esprima; \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
@@ -43,6 +43,9 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 ### STAGE 2 BUILDING.
 
 FROM alpine:3.21
+
+# copy files from builder-image
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -118,7 +121,7 @@ RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
-            npm install ssh2@1.16.0 semver@7.7.1 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
+            npm install ssh2@1.16.0 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
         false|no|FALSE|NO) \
             echo "Not pre-installing libraries.";; \
         *) \
@@ -166,11 +169,11 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             exit 1;; \
     esac
 
-# copy files from builder-image
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-
 # install dependencies from package.json
-RUN cd meshcentral && npm install
+RUN cd meshcentral && \
+    npm install && \
+    npm cache clean --force && \
+    rm -rf /root/ /tmp/
 
 # Expose needed ports
 EXPOSE 80 443

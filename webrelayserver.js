@@ -23,7 +23,6 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
     obj.tlsServer = null;
     obj.net = require('net');
     obj.app = obj.express();
-    if (args.compression !== false) { obj.app.use(require('compression')()); }
     obj.app.disable('x-powered-by');
     obj.webRelayServer = null;
     obj.port = 0;

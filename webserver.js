@@ -65,9 +65,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.db = db;
     obj.app = obj.express();
     if (obj.args.agentport) { obj.agentapp = obj.express(); }
-    if (args.compression !== false) {
+    if (args.compression === true) {
         obj.app.use(require('compression')({ filter: function (req, res) {
             if (req.path == '/devicefile.ashx') return false; // Don't compress device file transfers to show file sizes
+            if ((args.relaydns != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) return false; // Don't compress DNS relay requests
             return require('compression').filter(req, res);
         }}));
     }
@@ -1104,6 +1105,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (webAuthnKeys.length > 0) {
                 // Generate a Webauthn challenge, this is really easy, no need to call any modules to do this.
                 var authnOptions = { type: 'webAuthn', keyIds: [], timeout: 60000, challenge: obj.crypto.randomBytes(64).toString('base64') };
+                // userVerification: 'preferred' use security pin if possible (default), 'required' always use security pin, 'discouraged' do not use security pin.
+                authnOptions.userVerification = (domain.passwordrequirements && domain.passwordrequirements.fidopininput) ? domain.passwordrequirements.fidopininput : 'preferred'; // Use the domain setting if it exists, otherwise use 'preferred'.{
                 for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
                 sec.u2f = authnOptions.challenge;
                 req.session.e = parent.encryptSessionData(sec);
@@ -3194,9 +3197,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Load default page style or new modern ui
                 var uiViewMode = 'default';
                 var webstateJSON = JSON.parse(webstate);
-                if (webstateJSON && webstateJSON.uiViewMode == 3) { uiViewMode = 'default3'; }
-                if (domain.sitestyle == 3) { uiViewMode = 'default3'; }
-                if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
+                if (req.query.sitestyle != null) {
+                    if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
+                } else if (domain.sitestyle == 3) {
+                    uiViewMode = 'default3';
+                } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                }
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
@@ -5878,7 +5885,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (c.download == req.query.meshaction) {
                     if (req.query.meshaction == 'winrouter') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralRouter']) { p = obj.meshToolsBinaries['MeshCentralRouter'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralRouter']) { p = obj.parent.meshToolsBinaries['MeshCentralRouter'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
@@ -5887,7 +5894,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return;
                     } else if (req.query.meshaction == 'winassistant') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralAssistant']) { p = obj.meshToolsBinaries['MeshCentralAssistant'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralAssistant']) { p = obj.parent.meshToolsBinaries['MeshCentralAssistant'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
@@ -5896,7 +5903,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         return;
                     } else if (req.query.meshaction == 'macrouter') {
                         var p = null;
-                        if (obj.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
+                        if (obj.parent.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.parent.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
                         if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg'); }
                         if (obj.fs.existsSync(p)) {
                             setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
@@ -6611,13 +6618,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             // Special Client Hint Headers for Browser Detection on every request - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers#client_hints
             // note: only works in a secure context (localhost or https://)
-            const secCH = [
-                'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
-                'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
-                'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
-            ];
-            response.setHeader('Accept-CH', secCH.join(', '));
-            response.setHeader('Critical-CH', secCH.join(', '));
+            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(request.hostname) == -1)) {
+                const secCH = [
+                    'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
+                    'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
+                    'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
+                ];
+                response.setHeader('Accept-CH', secCH.join(', '));
+                response.setHeader('Critical-CH', secCH.join(', '));
+            }
             next();
         });
 
@@ -7682,7 +7691,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAuthStrategyConsts = {
         twitter: 1,
         google: 2,
-        github: 3,
+        github: 4,
         reddit: 8, // Deprecated
         azure: 16,
         oidc: 32,
@@ -8604,7 +8613,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', msg2fa: msg2fa, msg2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else {
                                             // Ask for a login token
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, msg2fa: msg2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         }
                                     } else {
                                         // We are authenticated with 2nd factor.

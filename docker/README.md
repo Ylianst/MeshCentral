@@ -174,7 +174,7 @@ The following build arguments are available for customizing the build process:
 - **INCLUDE_MONGODB_TOOLS**: Include MongoDB client and related tools.
 - **INCLUDE_POSTGRESQL_TOOLS**: Include PostgreSQL client tools.
 - **INCLUDE_MARIADB_TOOLS**: Include MariaDB/MySQL client tools.
-- **PREINSTALL_LIBS**: Pre-install specific libraries like `ssh2`, `semver`, `nodemailer`, etc.
+- **PREINSTALL_LIBS**: Pre-install specific libraries like `ssh2`, `nodemailer`, etc.
 
 ### Build Commands with Arguments
 

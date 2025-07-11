@@ -14,7 +14,6 @@ module.exports.CreateMonitoring = function (parent, args) {
     obj.express = require('express');
     obj.app = obj.express();
     obj.prometheus = null;
-    if (args.compression !== false) { obj.app.use(require('compression')()); }
     obj.app.disable('x-powered-by');
     obj.counterMetrics = { // Counter Metrics always start at 0 and increase but never decrease
         RelayErrors: { description: "Relay Errors" }, // parent.webserver.relaySessionErrorCount
