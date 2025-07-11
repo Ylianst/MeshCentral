@@ -7691,7 +7691,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAuthStrategyConsts = {
         twitter: 1,
         google: 2,
-        github: 3,
+        github: 4,
         reddit: 8, // Deprecated
         azure: 16,
         oidc: 32,
