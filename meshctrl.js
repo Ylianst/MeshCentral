@@ -2401,10 +2401,10 @@ function serverConnect() {
                                 for (var j in devicesInMesh) {
                                     var n = devicesInMesh[j];
                                     nodecount++;
-                                    if (settings.xmeshes) {
+                                    if (settings.xmeshes && settings.xmeshes[i]) {
                                         console.log('\"' + settings.xmeshes[i]._id.split('/')[2] + '\",\"' + settings.xmeshes[i].name.split('\"').join('') + '\",\"' + n._id.split('/')[2] + '\",\"' + n.name.split('\"').join('') + '\",' + (n.icon ? n.icon : 0) + ',' + (n.conn ? n.conn : 0) + ',' + (n.pwr ? n.pwr : 0));
                                     } else {
-                                        console.log('\"' + n._id.split('/')[2] + '\",\"' + n.name.split('\"').join('') + '\",' + (n.icon ? n.icon : 0) + ',' + (n.conn ? n.conn : 0) + ',' + (n.pwr ? n.pwr : 0));
+                                        console.log('\"\",\"\",\"' + n._id.split('/')[2] + '\",\"' + n.name.split('\"').join('') + '\",' + (n.icon ? n.icon : 0) + ',' + (n.conn ? n.conn : 0) + ',' + (n.pwr ? n.pwr : 0));
                                     }
                                 }
                             }
@@ -2433,7 +2433,7 @@ function serverConnect() {
                             for (var i in data.nodes) {
                                 var devicesInMesh = data.nodes[i];
                                 if (devicesInMesh.length > 0) {
-                                    if (settings.xmeshes) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name.split('\"').join('') + '\"'); }
+                                    if (settings.xmeshes && settings.xmeshes[i] && settings.xmeshes[i].name) { console.log('\r\nDevice group: \"' + settings.xmeshes[i].name.split('\"').join('') + '\"'); }
                                     console.log('id, name, icon, conn, pwr\r\n-------------------------');
                                     for (var j in devicesInMesh) {
                                         var n = devicesInMesh[j];
@@ -2662,7 +2662,7 @@ function getDevicesThatMatchFilter(nodes, x) {
         for (var d in nodes) { if ((nodes[d].ip != null) && (nodes[d].ip.indexOf(ipSearch) >= 0)) { r.push(nodes[d]); } }
     } else if (groupSearch != null) {
         // Group filter
-        if (settings.xmeshes) { for (var d in nodes) { if (settings.xmeshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0) { r.push(nodes[d]); } } }
+        if (settings.xmeshes) { for (var d in nodes) { if (settings.xmeshes[nodes[d].meshid] && settings.xmeshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0) { r.push(nodes[d]); } } }
     } else if (tagSearch != null) {
         // Tag filter
         for (var d in nodes) {
