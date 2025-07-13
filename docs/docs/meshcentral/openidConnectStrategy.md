@@ -468,10 +468,6 @@ As you can see in the schema below, there aren't any required properties in the 
 
 ### Overview
 
-#### *Introduction*
-
-Google is a blah and is used by tons of blahs as its so great. Lets move on.
-
 #### *Common Config Chart*
 
 > NOTE: All settings directly related to presets are in the custom section of the config.
