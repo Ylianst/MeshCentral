@@ -7458,6 +7458,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Setup agent file downloads
                     obj.agentapp.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
+
+                    // Setup APF.ashx for AMT communication
+                    if (obj.parent.mpsserver != null) {
+                        obj.agentapp.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })
+                    }
                 }
 
                 // Setup web relay on this web server if needed
