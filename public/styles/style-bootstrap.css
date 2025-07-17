@@ -3315,6 +3315,10 @@ nav .lbbuttonsel2 {
     background-color: black !important;
 }
 
+.night .modal-content .backgroundContainer {
+    color: #000;
+}
+
 .table td,
 .table th {
     padding: 0.05rem !important; /* Decrease padding to reduce row height */
