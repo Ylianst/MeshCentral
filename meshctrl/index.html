@@ -1,0 +1,2308 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A remote monitoring and management tool">
+      
+      
+        <meta name="author" content="Ylianst">
+      
+      
+        <link rel="canonical" href="https://ylianst.github.io/MeshCentral/meshctrl/">
+      
+      
+        <link rel="prev" href="../meshcmd/">
+      
+      
+        <link rel="next" href="../meshrouter/">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>MeshCtrl - MeshCentral Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#meshctrl" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="MeshCentral Documentation" class="md-header__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../images/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MeshCentral Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              MeshCtrl
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../install/" class="md-tabs__link">
+          
+  
+  
+  Install
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../meshcentral/" class="md-tabs__link">
+          
+  
+  
+  MeshCentral2
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../design/" class="md-tabs__link">
+          
+  
+  
+  Design and Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../meshcmd/" class="md-tabs__link">
+          
+  
+  
+  MeshCmd
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  MeshCtrl
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../meshrouter/" class="md-tabs__link">
+          
+  
+  
+  Mesh Router
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../intelamt/" class="md-tabs__link">
+          
+  
+  
+  Intel AMT
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../how-to-contribute/" class="md-tabs__link">
+          
+  
+  
+  How to Contribute
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../other/adfs_sso_guide/" class="md-tabs__link">
+          
+  
+  
+  Other
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="MeshCentral Documentation" class="md-nav__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../images/favicon.ico" alt="logo">
+
+    </a>
+    MeshCentral Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Install
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Install
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/install2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Full Install Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCentral2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2 Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    All Configuration Options
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent Information
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/assistant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Assistant
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/codesigning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Code Signing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Debugging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/devicetabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Device Tabs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/SSLnletsencrypt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    SSL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/tokens/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tokens
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FAQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/tipsntricks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tips n Tricks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Messaging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/customization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Customization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/openidConnectStrategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    openidConnectStrategy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Design and Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCmd
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcmd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCtrl
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-meshctrl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running MeshCtrl
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Login">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#login-using-username-password" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login using username &amp; password
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login-using-the-server-login-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login using the server login key
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login-into-a-different-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login into a different domain
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#making-use-of-meshctrl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making use of MeshCtrl
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Making use of MeshCtrl">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gathering-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gathering information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-and-removing-accounts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding and removing accounts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-and-removing-device-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating and removing device groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-and-removing-users-from-device-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding and removing users from device groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-broadcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      Message Broadcast
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Mesh Router
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Mesh Router
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshrouter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Router
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Intel AMT
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../intelamt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    How to Contribute
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            How to Contribute
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-contribute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contribute to MeshCentral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Other
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Other
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../other/adfs_sso_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ADFS SSO Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../other/meshcentral_satellite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Satellite
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-meshctrl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running MeshCtrl
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Login">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#login-using-username-password" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login using username &amp; password
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login-using-the-server-login-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login using the server login key
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login-into-a-different-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login into a different domain
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#making-use-of-meshctrl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making use of MeshCtrl
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Making use of MeshCtrl">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gathering-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gathering information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-and-removing-accounts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding and removing accounts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-and-removing-device-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating and removing device groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-and-removing-users-from-device-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding and removing users from device groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-broadcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      Message Broadcast
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="meshctrl">MeshCtrl<a class="headerlink" href="#meshctrl" title="Permanent link">&para;</a></h1>
+<p>MeshCmd Guide <a href="https://meshcentral.com/docs/MeshCtrlUsersGuide.pdf">as .pdf</a> <a href="https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCtrl User's Guide v0.0.1.odt?raw=true">as .odt</a></p>
+<h2 id="video-walkthru">Video Walkthru<a class="headerlink" href="#video-walkthru" title="Permanent link">&para;</a></h2>
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/p_jdtYJyuBQ" frameborder="0" allowfullscreen></iframe>
+</div>
+
+<p><img alt="" src="images/2022-05-16-21-33-47.png" /></p>
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This user guide contains all essential information for the user to make full use of MeshCtrl, a command line tool used to perform tasks on the MeshCentral server. This tool is built in NodeJS and can be run on the same computer as the server, or on a different computer. It’s typically used by administrators to perform various management operations on the MeshCentral server. </p>
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
+<p>MeshCtrl, also called “Mesh Control”, is a command line tool built in NodeJS that comes with MeshCentral and allows command line management operation of the MeshCentral server. It can be run both on the same computer as the MeshCentral server, or on a different computer. This tool allows an administrator to list user accounts, create and remove user accounts, list device groups and much more. All of the operations performed by this tool can also be performed using the MeshCentral website, however it’s sometimes useful to automate and script some management operations from the command line and this tool can do this. </p>
+<p><img alt="" src="images/2022-05-16-21-40-21.png" /></p>
+<p>MeshCtrl will login to the MeshCentral server using a web socket connection, just like the web application does and so, it needs to login to the server using user or administrator credentials. In the next section, we will cover how to login using MeshCtrl, we then follow with the operations that MeshCtrl can perform. </p>
+<h2 id="running-meshctrl">Running MeshCtrl<a class="headerlink" href="#running-meshctrl" title="Permanent link">&para;</a></h2>
+<p>MeshCtrl.js is a file that is installed with MeshCentral and is located in the “./node_modules/meshcentral” folder. You can normally run MeshCtrl like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node\_modules/meshcentral/meshctrl 
+</code></pre></div>
+<p>In this case, when the above command is run without parameters, you should see something like this: </p>
+<div class="highlight"><pre><span></span><code>MeshCtrl performs command line actions on a MeshCentral server.
+Information at: https://meshcommander.com/meshcentral
+No action specified, use MeshCtrl like this:
+
+  meshctrl [action] [arguments]
+
+Supported actions:
+  Help [action]             - Get help on an action.
+  ServerInfo                - Show server information.
+  UserInfo                  - Show user information.
+  ListUsers                 - List user accounts.
+  ListDevices               - List devices.
+  ListDeviceGroups          - List device groups.
+  ListUsersOfDeviceGroup    - List the users in a device group.
+  AddUser                   - Create a new user account.
+  RemoveUser                - Delete a user account.
+  AddDeviceGroup            - Create a new device group.
+  RemoveDeviceGroup         - Delete a device group.
+  AddUserToDeviceGroup      - Add a user to a device group.
+  RemoveUserFromDeviceGroup - Remove a user from a device group.
+  SendInviteEmail           - Send an agent install invitation email.
+  Broadcast                 - Display a message to all online users.
+
+Supported login arguments:
+  --url [wss://server]      - Server url, wss://localhost:443 is default.
+  --loginuser [username]    - Login username, admin is default.
+  --loginpass [password]    - Login password.
+  --token [number]          - 2nd factor authentication token.
+  --loginkey [hex]          - Server login key in hex.
+  --loginkeyfile [file]     - File containing server login key in hex.
+  --domain [domainid]       - Domain id, default is empty.
+</code></pre></div>
+<p>This indicated you have a good version of MeshCentral with support for MeshCtrl. MeshCentral and MeshCtrl will be updated together, so as changes are made to the server, MeshCtrl will also be updated to match. </p>
+<p>The next step is to login to the server with MeshCtrl before we can start performing commands. For this document, we will assume we are connection to the local MeshCentral server on port 443 using TLS. For connecting to a different server, use the --url argument to set a different server. </p>
+<h2 id="login">Login<a class="headerlink" href="#login" title="Permanent link">&para;</a></h2>
+<p>There are two ways to login to MeshCentral using MeshCtrl. You can use the normal username/password, or use a login key. In this section we look at both. </p>
+<h3 id="login-using-username-password">Login using username &amp; password<a class="headerlink" href="#login-using-username-password" title="Permanent link">&para;</a></h3>
+<p>This is the easiest way to login and start issuing commands is to login using a username and password. </p>
+<p><img alt="" src="images/2022-05-16-21-47-32.png" /></p>
+<p>You do this by using the "loginuser" and "loginpass" argument like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo --loginuser &quot;admin&quot; --loginpass &quot;mypassword&quot;
+</code></pre></div>
+<p>In this example we are trying to run the “serverinfo” command using the “admin” user and “mypassword” as the password. Because “admin” if the default username for MeshCtrl, you can omit it and just type: </p>
+<div class="highlight"><pre><span></span><code>Authentication token required, use --token [number].
+</code></pre></div>
+<p>In this case, you need to use the Google Authenticator application or a similar application to enter your time based second factor like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo --loginpass &quot;mypassword&quot; –token 123456
+</code></pre></div>
+<p>Once the command is run successfully, you should see a response like this: </p>
+<div class="highlight"><pre><span></span><code>name: devbox.meshcentral.com
+mpsname: devbox.meshcentral.com
+mpsport: 4433
+port: 443
+emailcheck: true
+domainauth: false
+tlshash: E7A41E1A56D8D716F7D7729B876E48693F2D19C4761F22B1…
+https: true
+redirport: 80
+</code></pre></div>
+<p>This is a typical response for the “serverinfo” command and a good way to test that everything is working as expected. </p>
+<h3 id="login-using-the-server-login-key">Login using the server login key<a class="headerlink" href="#login-using-the-server-login-key" title="Permanent link">&para;</a></h3>
+<p>This technique needs some setup, but allows MeshCtrl to login as any account without knowing the password of the account, making it very powerful. Care must be taken when doing this and it’s recommended to only be done on the local server itself unless you know when you are doing. </p>
+<p><img alt="" src="images/2022-05-16-21-50-39.png" /></p>
+<p>In this technique, we will get a special encryption key from the server and use this to generate a login token to the server. First, we must activate the login token feature of the server by setting “AllowLoginToken” to “true” in the “settings” section of config.json: </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;Port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">443</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;AllowLoginToken&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Then run the MeshCentral server with the --logintokenkey parameter, you should see something like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral --logintokenkey
+f3bd69a08a2dde4a3423bec8f20d8626b1e6365381f2d9919e7dfe256ace9cbbdea66bed2bdcd00b71eea9d7c727cb6eb37f3148c0c2d240d5ed44c8f3f6795a479c949159dad366571fea4db7f31c24
+</code></pre></div>
+<p>The hex value presented here is a sensitive secret that allows anyone to create login tokens that can be used for user impersonation. This key is used when MeshCentral does server peering and load balancing for example. You should save this key in a file, for example “key.txt”, you can do it like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral –logintokenkey &gt; key.txt
+</code></pre></div>
+<p>Now that you have the server key, you can use MeshCtrl like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo –-loginkeyfile key.txt --loginuser admin
+</code></pre></div>
+<p>Instead of using a password, we use the key file instead. MeshCtrl will generate a time limited cookie and use that to login as “admin”. Since “admin” is the default username for MeshCtrl, we can omit this parameter: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo –-loginkeyfile key.txt
+</code></pre></div>
+<p>Like the username and password example above, the result will be the server information we requested. Something like this: </p>
+<div class="highlight"><pre><span></span><code>name: devbox.meshcentral.com
+mpsname: devbox.meshcentral.com
+mpsport: 4433
+port: 443
+emailcheck: true
+domainauth: false
+tlshash: E7A41E1A56D8D716F7D7729B876E48693F2D19C4761F22B1…
+https: true
+redirport: 80
+</code></pre></div>
+<h3 id="login-into-a-different-domain">Login into a different domain<a class="headerlink" href="#login-into-a-different-domain" title="Permanent link">&para;</a></h3>
+<p>So far, we have seen how to login to a MeshCentral server using a username/password or username/key technique for the default domain. MeshCentral supports many domains at once with each of the domain having its own set of users, groups and administrators. </p>
+<p><img alt="" src="images/2022-05-16-21-54-38.png" /></p>
+<p>To do this, using the username and password, we have to tell MeshCtrl to login using the URL that would be used to access that domain, for example: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo --url wss://server/domainname --loginuser &quot;admin&quot; --loginpass &quot;mypassword&quot;
+</code></pre></div>
+<p>or for servers have a DNS name for a domain: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo --url wss://domainname.server --loginuser &quot;admin&quot; --loginpass &quot;mypassword&quot;
+</code></pre></div>
+<p>Note the "--url" argument is different and so, the server will see MeshCtrl access the server using a different domain. </p>
+<p>Doing a domain login using the login is key file is a bit different. We need to specify both the url to access that domain and specify the domain name explicitly using the --domain argument. For example: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo –-loginkeyfile key.txt --url wss://server/domainname --domain mycustomer
+</code></pre></div>
+<p>So, we add both the url to access the correct domain and the domain name explicitly. The domain name must be exactly the one that is used in the domain section of the config.json for of MeshCentral. For example, if the MeshCentral config.json file looks like this: </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;Cert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;myserver.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;Port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">443</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;domains&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Default domain&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;customer1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;dns&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;c1.myserver.com&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Customer1 domain&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The domain login for MeshCtrl with a key file would look like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl serverinfo –-loginkeyfile key.txt --url wss://c1.myserver.com --domain customer1
+</code></pre></div>
+<p>In the next section, we start making use of MeshCtrl to do useful things on the server. From now on, we will omit the login arguments, but note that they are required for all commands. </p>
+<h2 id="making-use-of-meshctrl">Making use of MeshCtrl<a class="headerlink" href="#making-use-of-meshctrl" title="Permanent link">&para;</a></h2>
+<p>We can start doing useful operations with MeshCtrl. The current list of operations are: </p>
+<div class="highlight"><pre><span></span><code>edituser
+listusers
+listusersessions
+listdevicegroups
+listdevices
+listusersofdevicegroup
+listevents
+logintokens
+serverinfo
+userinfo
+adduser
+removeuser
+adddevicegroup
+removedevicegroup
+editdevicegroup
+broadcast
+showevents
+addusertodevicegroup
+removeuserfromdevicegroup
+addusertodevice
+removeuserfromdevice
+sendinviteemail
+generateinvitelink
+config
+movetodevicegroup
+deviceinfo
+editdevice
+addusergroup
+listusergroups
+removeusergroup
+runcommand
+shell
+upload
+download
+deviceopenurl
+devicemessage
+devicetoast
+addtousergroup
+removefromusergroup
+removeallusersfromusergroup
+devicesharing
+devicepower
+indexagenterrorlog
+agentdownload
+report
+</code></pre></div>
+<p>You can get this list by just running MeshCtrl without any argument and can get more information on each action by typing “meshctrl help [action]” </p>
+<p><img alt="example" src="images/amt_commands.png" /></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that when using Intel AMT only (no agent) you can do wake (on) and power off and reset from the group action. MeshCentral should automatically using Intel AMT to perform these actions when you select "Wake-up devices", "Power off devices" or "Reset devices".</p>
+</div>
+<h3 id="gathering-information">Gathering information<a class="headerlink" href="#gathering-information" title="Permanent link">&para;</a></h3>
+<p>The following commands are really easy to use: serverinfo, userinfo, listusers, listdevices, listdevicegroups. They just request information from the server. Note that for these commands, you can optionally use “--json" to receive the response in JSON format. For example, getting the list of users will look like this: </p>
+<div class="highlight"><pre><span></span><code>node meshctrl.js listusers
+id, name, email
+---------------
+&quot;admin&quot;, &quot;admin&quot;, &quot;username@domain.com&quot;
+&quot;joe&quot;, &quot;joe&quot;, &quot;joe@domain.com&quot;
+&quot;mytestuser&quot;, &quot;MyTestUser&quot;, &quot;a@a.com&quot;
+&quot;test.user&quot;, &quot;test.user&quot;, &quot;test.user@user.com&quot;
+</code></pre></div>
+<p>In the --json argument is used, it looks like this: </p>
+<div class="highlight"><pre><span></span><code>node meshctrl.js listusers --json
+  {
+    &quot;_id&quot;: &quot;user//admin&quot;,
+    &quot;name&quot;: &quot;admin&quot;,
+    &quot;creation&quot;: 1417814230,
+    &quot;siteadmin&quot;: 4294967295,
+    …
+</code></pre></div>
+<p>The JSON version is much long and contain much more information. This format can be useful if you take the output of MeshCtrl and dump it into a file for later parsing. One really useful command is “listdevices” that just displays all the devices in the account grouped by device groups. For example: </p>
+<div class="highlight"><pre><span></span><code>node meshctrl listdevices
+
+Device group: &quot;Lab Computers&quot;
+id, name, icon, conn, pwr, ip
+-----------------------------
+p3HOhDapgT@VyO$upGJYxEa$v4YCY76Y2G@hOGmJnbPXjkSHP@AgJ1M6FkqSEUqg, &quot;raspberrypi&quot;, 5, 1, 1
+yjbMXlQBf09TSIqKlkwrRucm767TcXfNbSinQWXgpdBBY5MEU1gg0kzshwiwFCOp, &quot;tinkerboard&quot;, 5, 1, 1
+DRvCLkYIgk744tqqMr9Xvy5TK8aXkLoOXUQETnFdFepVQojyFV5gaBi5Gh4f6B6d, &quot;LattePanda&quot;, 5, 1, 1
+ggifepc5wqK7sCVnOIjOZy9i9kaJizalIarz7Qwe5bJ4icpLD69zWYpjAaU@sfY$, &quot;MeshLabTop&quot;, 1, 5, 1
+ECAI7NO893JoN3ntK7@mbniyDq0qriG82wqGKQF4s8SpXs3NdnvuHR76Bzq14Pik, &quot;MeshLabRight&quot;, 1, 1, 1
+fCLFeHaxQ$T6mgICdVkCdkifiU8LNJdU73YknmxfAb@0jBF2BrhTsEIBwgpoCNx$, &quot;DevLinux&quot;, 1, 1, 1
+hfbJ7zAgwZK@LQfsZkr1cqTSp6mjjZ3MjGC$v4X8E7HM1cZEnlGBgcorELu1hZWe, &quot;AmtMachine11&quot;, 1, 1, 1
+YRGm4AQVRR38Ypisuo40KhvBGhDl2pE5YCp4j4eIbLaX3kmH3tmumOUbxb44A@Rh, &quot;CoffeeTable&quot;, 1, 1, 1
+PpMJiPxtjRjfoEal$9RHdm5s31BaqDSbGc3329s49rzcXcVuTDvm4VO0YllO5XR7, &quot;DevBox&quot;, 1, 0, 0
+tyR7l2j5@wOjDeRbOQNfjU7xB$ss6VZQPDkFsALPzJ4zbTI4IamV$OdwHeqiXV0K, &quot;MeshLabLeft&quot;, 1, 5, 1
+i@BNTAHB5NMtDyrHMiCaz3GzYlJUUQn7qZZfh@N6271DWAM3EH6ujRNPc2snGXYX, &quot;raspberrypi&quot;, 5, 1, 1
+2E$CjXw2Aldh3DGAzSNo5qTSgEhd4OTWcO9KGBi9ja4EOxEUHq8J1135Y2IvxOlX, &quot;AmtMachine7&quot;, 1, 5, 1
+0Ab3O@4fgHjwVOpC0qaARfURTtKCa@QjxWPDpT5WQ0Wz5s4OvRWAgeoGT9j8k5JF, &quot;RaspberryPi&quot;, 5, 1, 1
+
+Device group: &quot;IntelAMT only&quot;
+id, name, icon, conn, pwr, ip
+-----------------------------
+LN8qsH634RGjDwATIOd3ICzfKrB@t@ERow8AEyDndyAs3yqwfrfhEaMPABMg53cg, &quot;AmtMachine7&quot;, 0, 0, 0
+Ea3GcF$EoMnDEc9Tbz$Vu9wnmTziqqcOZ0URSdYeuVn4LU9LLMT@91P5s1WLSgVA, &quot;DevBox&quot;, 0, 0, 0
+</code></pre></div>
+<p>It’s also possible to list only the display the list of devices for a single group. Just add --id followed by the group identifier. You can find the group identifier using the “DeisplayDeviceGroups” command. For example: </p>
+<div class="highlight"><pre><span></span><code>node meshctrl listdevices --id 7b4b43cdad850135f36ab31124b52e47c167fba055…
+
+id, name, icon, conn, pwr, ip
+-----------------------------
+p3HOhDapgT@VyO$upGJYxEa$v4YCY76Y2G@hOGmJnbPXjkSHP@AgJ1M6FkqSEUqg, &quot;raspberrypi&quot;, 5, 1, 1
+yjbMXlQBf09TSIqKlkwrRucm767TcXfNbSinQWXgpdBBY5MEU1gg0kzshwiwFCOp, &quot;tinkerboard&quot;, 5, 1, 1
+DRvCLkYIgk744tqqMr9Xvy5TK8aXkLoOXUQETnFdFepVQojyFV5gaBi5Gh4f6B6d, &quot;LattePanda&quot;, 5, 1, 1
+ggifepc5wqK7sCVnOIjOZy9i9kaJizalIarz7Qwe5bJ4icpLD69zWYpjAaU@sfY$, &quot;MeshLabTop&quot;, 1, 5, 1
+ECAI7NO893JoN3ntK7@mbniyDq0qriG82wqGKQF4s8SpXs3NdnvuHR76Bzq14Pik, &quot;MeshLabRight&quot;, 1, 1, 1
+fCLFeHaxQ$T6mgICdVkCdkifiU8LNJdU73YknmxfAb@0jBF2BrhTsEIBwgpoCNx$, &quot;DevLinux&quot;, 1, 1, 1
+hfbJ7zAgwZK@LQfsZkr1cqTSp6mjjZ3MjGC$v4X8E7HM1cZEnlGBgcorELu1hZWe, &quot;AmtMachine11&quot;, 1, 1, 1
+YRGm4AQVRR38Ypisuo40KhvBGhDl2pE5YCp4j4eIbLaX3kmH3tmumOUbxb44A@Rh, &quot;CoffeeTable&quot;, 1, 1, 1
+PpMJiPxtjRjfoEal$9RHdm5s31BaqDSbGc3329s49rzcXcVuTDvm4VO0YllO5XR7, &quot;DevBox&quot;, 1, 0, 0
+tyR7l2j5@wOjDeRbOQNfjU7xB$ss6VZQPDkFsALPzJ4zbTI4IamV$OdwHeqiXV0K, &quot;MeshLabLeft&quot;, 1, 5, 1
+i@BNTAHB5NMtDyrHMiCaz3GzYlJUUQn7qZZfh@N6271DWAM3EH6ujRNPc2snGXYX, &quot;raspberrypi&quot;, 5, 1, 1
+2E$CjXw2Aldh3DGAzSNo5qTSgEhd4OTWcO9KGBi9ja4EOxEUHq8J1135Y2IvxOlX, &quot;AmtMachine7&quot;, 1, 5, 1
+0Ab3O@4fgHjwVOpC0qaARfURTtKCa@QjxWPDpT5WQ0Wz5s4OvRWAgeoGT9j8k5JF, &quot;RaspberryPi&quot;, 5, 1, 1
+</code></pre></div>
+<p>You can also add “--count" to just return the number of devices instead of displaying them. An example of this would be: </p>
+<div class="highlight"><pre><span></span><code>node meshctrl listdevices --id 7b4b43cdad850135f36ab31124b52e47c167fba055… --count
+13
+</code></pre></div>
+<p>Here we see that in a specific device group, there are 13 devices.</p>
+<h3 id="adding-and-removing-accounts">Adding and removing accounts<a class="headerlink" href="#adding-and-removing-accounts" title="Permanent link">&para;</a></h3>
+<p>MeshCtrl can be used to add and remove user accounts. This is great is you want to automate MeshCentral in some situations. Normally, an administrator can go to the “My Users” tab and press “New Account…” button to create a new account. </p>
+<p><img alt="" src="images/2022-05-16-22-04-06.png" /></p>
+<p>With MeshCtrl the same process can be accomplished using the following command line:</p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl adduser --user SampleUser --pass SamplePassword 
+</code></pre></div>
+<p>This will create a basic user account with the specified “SampleUser” username and “SamplePassword” password. In addition to the basic example above, there are plenty of additional arguments that can be used. There is a list: </p>
+<div class="highlight"><pre><span></span><code>--email [email]    - New account email address.
+--emailverified    - New account email is verified.
+--resetpass        - Request password reset on next login.
+--siteadmin        - Create the account as full site administrator.
+--manageusers      - Allow this account to manage server users.
+--fileaccess       - Allow this account to store server files.
+--serverupdate     - Allow this account to update the server.
+--locked           - This account will be locked.
+--nonewgroups      - Account will not be allowed to create device groups
+--notools          - Account not see MeshCMD download links.
+</code></pre></div>
+<p>Instead of specifying a password, one can specify “--randompass" to have MeshCtrl generate a random password, this is typically use along with “--resetpass" and “--email" to cause the user to perform a password reset the first time a login occurs. </p>
+<p>The permission arguments are used to grant server permissions to the new account. The “-- siteadmin" argument will grant this account full site administrator rights and all other permission arguments are ignored. The other permission arguments can be combined. </p>
+<p>To remove a user account, use the following command: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl removeuser --userid SampleId
+</code></pre></div>
+<p>Note that when creating a new user, the username is passed in. However, when removing a user account, the userid is used. One can get the list of userid’s by using the “ListUsers” command. </p>
+<p>MeshCtrl will return “ok” if the command is successful and the account will be added in real-time to the “My Users” tab on the website. </p>
+<h3 id="creating-and-removing-device-groups">Creating and removing device groups<a class="headerlink" href="#creating-and-removing-device-groups" title="Permanent link">&para;</a></h3>
+<p>MeshCtrl can be used to add and remove device groups. When a group is created, it’s added in the account that MeshCtrl is logged into and that account gets full rights over that device group. Typically, a new device group is created using the “Add Device Group” link in the main website. </p>
+<p><img alt="" src="images/2022-05-16-22-06-35.png" /></p>
+<p>A group has a name, type and optionally a description text. To add a device group using MeshCtrl, we use the “AddDeviceGroup” command like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl adddevicegroup --name &quot;Sample group name&quot; --desc &quot;Sample description&quot;
+</code></pre></div>
+<p>Here we specify the name and description of the new device group. This will create a normal device group that requires agents to be installed on each computer. You can also create an agent-less Intel AMT device group by adding the "--amtonly" argument. Once done, MeshCtrl will return “ok" and the group will be created in the logged in account in real-time. </p>
+<p>You can delete a group by using the “RemoveDeviceGroup” command like this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl removedevicegroup --id 7b4b43cd…dc89fe0e581c
+</code></pre></div>
+<p>To remove a device group, the group identifier needs to be specified. You can get that identifier using the "ListDeviceGroups" command. For device groups, the group identifier is a long hex value. </p>
+<h3 id="adding-and-removing-users-from-device-groups">Adding and removing users from device groups<a class="headerlink" href="#adding-and-removing-users-from-device-groups" title="Permanent link">&para;</a></h3>
+<p>Once you created user account and device groups, the next important operation is to connect the two and grant users access to some device groups. In the web interface, this is typically done by clicking on a device group and managing the users in that page. </p>
+<p><img alt="" src="images/2022-05-16-22-20-44.png" /></p>
+<p>To do this, you first have to get the user and group identifiers. You can get these using the “listusers” and “listdevicegroups” commands. Then, you can for example do this: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl addusertodevicegroup --id 7b4b43cd…dc89fe0e581c --userid bob --fullrights
+</code></pre></div>
+<p>Typically, the group identifier is a long hex value. The command will add user “bob” to a given group with full rights. You can also add a user to a group with only some rights, the list is as follows: </p>
+<div class="highlight"><pre><span></span><code>  --fullrights           - Allow full rights over this device group.
+  --editgroup            - Allow the user to edit group information.
+  --manageusers          - Allow the user to add/remove users.
+  --managedevices        - Allow the user to edit device information.
+  --remotecontrol        - Allow device remote control operations.
+  --agentconsole         - Allow agent console operations.
+  --serverfiles          - Allow access to group server files.
+  --wakedevices          - Allow device wake operation.
+  --notes                - Allow editing of device notes.
+  --desktopviewonly      - Restrict user to view-only remote desktop.
+  --limiteddesktop       - Limit remote desktop keys.
+  --noterminal           - Hide the terminal tab from this user.
+  --nofiles              - Hide the files tab from this user.
+  --noamt                - Hide the Intel AMT tab from this user.
+</code></pre></div>
+<p>Note that if “fullrights” are granted, all other access right arguments are ignored. If successful, MeshCtrl will display “ok”, otherwise it will show an error message. </p>
+<p>To remove a user from a group, use the “removeuserfromdevicegroup” command. For example: </p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral/meshctrl removeuserfromdevicegroup --id 7b4b43cd…dc89fe0e581c --userid bob
+</code></pre></div>
+<p>The syntax of this command is identical to the “addusertodevicegroup” command, but there are no rights arguments. MeshCtrl will also display “ok” if the command got processed correctly. </p>
+<h3 id="message-broadcast">Message Broadcast<a class="headerlink" href="#message-broadcast" title="Permanent link">&para;</a></h3>
+<p>One fun command the MeshCtrl offers is the “broadcast” command. It sends a short notification message that all connected users will see in real-time. For example, you can do this: </p>
+<div class="highlight"><pre><span></span><code>node ./node\_modules/meshcentral/meshctrl broadcast --msg &quot;This is a test&quot; 
+</code></pre></div>
+<p>All connected users will see this: </p>
+<p><img alt="" src="images/2022-05-16-22-23-40.png" /></p>
+<p>The broadcast command is great for notifying users of upcoming server downtime or other events. </p>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>MeshCtrl is an essential tools in every MeshCentral administrator’s tool box. It allows administrators to automate various MeshCentral management tasks which can be useful for large scale management of many devices and users. </p>
+<h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
+<p>MeshCtrl and this document are both opens source and licensed using Apache 2.0, the full license can be found at <a href="https://www.apache.org/licenses/LICENSE-2.0">https://www.apache.org/licenses/LICENSE-2.0</a> </p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.expand", "navigation.top", "navigation.instant"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

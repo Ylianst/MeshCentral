@@ -1,0 +1,2267 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A remote monitoring and management tool">
+      
+      
+        <meta name="author" content="Ylianst">
+      
+      
+        <link rel="canonical" href="https://ylianst.github.io/MeshCentral/meshcmd/">
+      
+      
+        <link rel="prev" href="../design/">
+      
+      
+        <link rel="next" href="../meshctrl/">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>MeshCmd - MeshCentral Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#meshcmd" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="MeshCentral Documentation" class="md-header__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../images/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MeshCentral Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              MeshCmd
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../install/" class="md-tabs__link">
+          
+  
+  
+  Install
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../meshcentral/" class="md-tabs__link">
+          
+  
+  
+  MeshCentral2
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../design/" class="md-tabs__link">
+          
+  
+  
+  Design and Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  MeshCmd
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../meshctrl/" class="md-tabs__link">
+          
+  
+  
+  MeshCtrl
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../meshrouter/" class="md-tabs__link">
+          
+  
+  
+  Mesh Router
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../intelamt/" class="md-tabs__link">
+          
+  
+  
+  Intel AMT
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../how-to-contribute/" class="md-tabs__link">
+          
+  
+  
+  How to Contribute
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../other/adfs_sso_guide/" class="md-tabs__link">
+          
+  
+  
+  Other
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="MeshCentral Documentation" class="md-nav__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../images/favicon.ico" alt="logo">
+
+    </a>
+    MeshCentral Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Install
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Install
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/install2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Full Install Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCentral2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2 Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    All Configuration Options
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent Information
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/assistant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Assistant
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/codesigning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Code Signing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Debugging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/devicetabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Device Tabs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/SSLnletsencrypt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    SSL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/tokens/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tokens
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FAQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/tipsntricks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tips n Tricks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Messaging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/customization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Customization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshcentral/openidConnectStrategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    openidConnectStrategy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Design and Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCmd
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#meshcentral-tcp-port-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCentral TCP port mapping
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#meshcommander" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCommander
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MeshCommander">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#meshcommander-local-web-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCommander local web server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lms-meshcommander" class="md-nav__link">
+    <span class="md-ellipsis">
+      LMS &amp; MeshCommander
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#meshcommander-for-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCommander for firmware
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intel-amt-state-activation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Intel AMT state &amp; activation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intel-amt-audit-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Intel AMT Audit Log
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-intel-amt-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running Intel AMT script
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ide-redirection" class="md-nav__link">
+    <span class="md-ellipsis">
+      IDE Redirection
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCtrl
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshctrl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Mesh Router
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Mesh Router
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../meshrouter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Router
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Intel AMT
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../intelamt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    How to Contribute
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            How to Contribute
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-contribute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contribute to MeshCentral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Other
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Other
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../other/adfs_sso_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ADFS SSO Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../other/meshcentral_satellite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Satellite
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#meshcentral-tcp-port-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCentral TCP port mapping
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#meshcommander" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCommander
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MeshCommander">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#meshcommander-local-web-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCommander local web server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lms-meshcommander" class="md-nav__link">
+    <span class="md-ellipsis">
+      LMS &amp; MeshCommander
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#meshcommander-for-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      MeshCommander for firmware
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intel-amt-state-activation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Intel AMT state &amp; activation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intel-amt-audit-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Intel AMT Audit Log
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-intel-amt-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running Intel AMT script
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ide-redirection" class="md-nav__link">
+    <span class="md-ellipsis">
+      IDE Redirection
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="meshcmd">MeshCmd<a class="headerlink" href="#meshcmd" title="Permanent link">&para;</a></h1>
+<p>MeshCmd Guide <a href="https://meshcentral.com/docs/MeshCmdUserGuide.pdf">as .pdf</a> <a href="https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCmd User's Guide v0.0.3.odt?raw=true">as .odt</a></p>
+<h2 id="video-walkthru">Video Walkthru<a class="headerlink" href="#video-walkthru" title="Permanent link">&para;</a></h2>
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/AzdKyzqmpIs" frameborder="0" allowfullscreen></iframe>
+</div>
+
+<p><img alt="" src="images/2022-05-15-15-11-39.png" /></p>
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This user guide contains all essential information for the user to make full use of MeshCmd, a command line tool used to perform tasks on MeshCentral and for Intel® AMT. This tool run on Windows and Linux and perform a wide array of different tasks. From routing traffic over the Internet to activating Intel AMT, MeshCmd is a great do it all tool for computer management. </p>
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
+<p>MeshCmd, called “Mesh Command”, is a command line tool that runs on both Windows and Linux and used to perform many tasks related to computer management. As the tool continues to evolve, it will continue to be improved and acquire more features. Broadly, the tool is intended to perform three sets of tasks. </p>
+<p><code>MeshCentral2 command line operations</code>
+- There are command line operations that relate to interacting with the MeshCentral2 server. A good example of this is to route traffic from your computer to a remote computer on the internet thru a MeshCentral2 server. </p>
+<p><code>Intel AMT local actions</code>
+- If you happen to have Intel AMT on your computer, MeshCmd can take a look at the version and activation status, activate and de-activate Intel AMT and help with getting access to Intel AMT and more. </p>
+<p><code>Intel AMT remote actions</code>
+- Whether you have Intel AMT on your local computer or a remote computer on your network, MeshCmd can help unlock the features Intel AMT provides. From getting the state of Intel AMT remotely to running configuration scripts and loading MeshCommander into Intel AMT web storage. </p>
+<p>To get started, you need to download MeshCmd for your computer. MeshCmd is a single file executable that you can get on MeshCommander.com at: <a href="http://www.meshcommander.com/meshcommander/meshcmd">http://www.meshcommander.com/meshcommander/meshcmd</a>  </p>
+<p><img alt="" src="images/2022-05-15-15-21-12.png" />
+If you have access to a MeshCentral2 server, the download link to MeshCmd is at the bottom left of the main device page. </p>
+<p><img alt="" src="images/2022-05-15-15-22-07.png" /></p>
+<p>Once you click on the “MeshCmd” link, a dialog box will allow you to select the operating system you want to get a link to MeshCmd. MeshCentral will also provide an action file called meshaction.txt that contains information on how MeshCmd can connect back to that MeshCentral server. This is optional, and only used for some operations. </p>
+<p>Once downloaded, just run it from the command prompt or terminal window. </p>
+<div class="highlight"><pre><span></span><code>C:\Temp&gt;meshcmd
+MeshCentral Command (MeshCmd)
+No action specified, use MeshCmd like this:
+
+  meshcmd [action] [arguments...]
+
+Valid MeshCentral actions:
+  Route             - Map a local TCP port to a remote computer.
+
+Valid local actions:
+  SMBios            - Display System Management BIOS tables for this computer.
+  RawSMBios         - Display RAW System Management BIOS tables for this computer.
+  MicroLMS          - Run MicroLMS, allowing local access to Intel AMT.
+  AmtInfo           - Show Intel AMT version and activation state.
+  AmtVersions       - Show all Intel ME version information.
+  AmtHashes         - Show all Intel AMT trusted activation hashes.
+  AmtCCM            - Activate Intel AMT into Client Control Mode.
+  AmtACM            - Activate Intel AMT into Admin Control Mode.
+  AmtDeactivate     - Deactivate Intel AMT if activated in Client Control mode.
+  AmtAcmDeactivate  - Deactivate Intel AMT if activated in Admin Control mode.
+
+Valid local or remote actions:
+  MeshCommander     - Launch a local MeshCommander web server.
+  AmtUUID           - Show Intel AMT unique identifier.
+  AmtAuditLog       - Show the Intel AMT audit log.
+  AmtLoadWebApp     - Load MeshCommander in Intel AMT 11.6+ firmware.
+  AmtClearWebApp    - Clear everything from Intel AMT web storage.
+  AmtStorageState   - Show contents of the Intel AMT web storage.
+  AmtSaveState      - Save all Intel AMT WSMAN object to file.
+  AmtPresence       - Heartbeat a local Intel AMT watchdog agent.
+  AmtScript         - Run .mescript on Intel AMT.
+  AmtIDER           - Mount local disk image to remote computer.
+
+Help on a specific action using:
+
+  meshcmd help [action]
+</code></pre></div>
+<p>By default you will get the help screen with all of the different actions you can take with the tool. You can also get help by typing “help” followed by the action name. In this document we will cover the main actions that MeshCmd can perform. If you don’t use Intel AMT at all, then only the MeshCentral actions are interesting for you. If you use Intel AMT, the rest of the actions will be of interest to you. </p>
+<h2 id="meshcentral-tcp-port-mapping">MeshCentral TCP port mapping<a class="headerlink" href="#meshcentral-tcp-port-mapping" title="Permanent link">&para;</a></h2>
+<p>MeshCmd can map a TCP port from your local computer to any remote port on any computer with one of your MeshAgents installed. This port mapping will work over a local network or the Internet and should work even thru proxies and firewalls. </p>
+<p>In order to start using MeshCmd in this way, you first need to have access to a MeshCentral server and at least one computer you already manage. TCP port mapping works by selecting a port on your local computer that will be routed to a remote device and port. Here, local port 123 is routed thru the server to port 123 on a remote device. </p>
+<p><img alt="" src="images/2022-05-15-15-23-45.png" /></p>
+<p>Of course, this picture is a bit simplify. Firewalls, NAT routers and HTTP proxies may be in the way and the MeshAgent on the remote computer will act at the TCP traffic relay in most cases. </p>
+<p>One typical use of this is to route local port 1234 to port Microsoft RDP port 3389 on a remote device. Once routed, you can start a RDP session on “localhost:1234” and get a RDP session to the remote device. The RDP protocol is feature rich and efficient, so you get a great user experience regardless of where in the world the remote computer is at. </p>
+<p>To get started, click on a device in MeshCentral and click on the “Router” link on the bottom left of the device page.  </p>
+<p><img alt="" src="images/2022-05-15-15-24-12.png" /></p>
+<p>You can download MeshCmd is you have not done so already, but more importantly, download the action.txt file. The file is in text format and contain something like this: </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;route&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;localPort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1234</span><span class="p">,</span><span class="w">             </span><span class="err"></span><span class="w"> </span><span class="err">Cha</span><span class="kc">n</span><span class="err">ge</span><span class="w"> </span><span class="kc">t</span><span class="err">his</span>
+<span class="w"> </span><span class="nt">&quot;remoteName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AmtMachine7&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;remoteNodeId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node//@yw$s5jLUivpzZ49laprt4T0sBaOKImbDAiniothQwccZPukCB696$BvPWAW0Bg2&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;remotePort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3389</span><span class="p">,</span><span class="w">                </span><span class="err"></span><span class="w"> </span><span class="err">Cha</span><span class="kc">n</span><span class="err">ge</span><span class="w"> </span><span class="kc">t</span><span class="err">his</span>
+<span class="w"> </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;admin&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w">                </span><span class="err"></span><span class="w"> </span><span class="err">No</span><span class="kc">te</span><span class="w"> </span><span class="kc">t</span><span class="err">ha</span><span class="kc">t</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">password</span><span class="w"> </span><span class="err">is</span><span class="w"> </span><span class="err">emp</span><span class="kc">t</span><span class="err">y</span>
+<span class="w"> </span><span class="nt">&quot;serverId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;D99362D5ED8BAEA8BF9E743B34B242256370C460FD66CB62373C6CFCB204D6D70</span>
+<span class="s2">7403E396CF0EF6DC2B3A42F735135FD&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;serverHttpsHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;D9DE9E27A229B5355708A3672FB23237CC994A680B3570D242A91E36B4AE5BC</span>
+<span class="s2">96539E59746E2B71EEF3DBDABBF2AE138&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;debugLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;serverUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wss://devbox.mesh.meshcentral.com:443/meshrelay.ashx&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The action file contains almost all the parameters needed to perform the route. It indicates the local and remote ports, the remote computer unique identifier, server location and authentication information and more. You can just put the action file in the same folder as MeshCmd and run MeshCmd, it will automatically pick up the arguments from the meshaction.txt file. </p>
+<p>You may want to change the local and remote port in the action file to suite your needs. Be default, the Microsoft RDP port is the target. If the password is not specified in the meshaction.txt file, you can also specify it as a meshcmd argument. </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd --pass xxxxxxxx 
+Redirecting local port 1234 to AmtMachine7:3389. Press ctrl-c to exit. 
+Now, the traffic router is ready. You can now RDP to localhost:1234 and login to the remote computer. 
+</code></pre></div>
+<h2 id="meshcommander">MeshCommander<a class="headerlink" href="#meshcommander" title="Permanent link">&para;</a></h2>
+<p>MeshCommander is a web based Intel AMT management console. MeshCmd has no less then three different versions of MeshCommander built-in, so if you are using Intel AMT, it’s worth a moment to get some knowledge about MeshCommander which is available as a standalone tool along with a full user’s guide at:<a href="http://www.meshcommander.com/">http://www.meshcommander.com/</a>and also included as part of MeshCentral. </p>
+<p>The three versions included in MeshCmd are: </p>
+<ul>
+<li>MeshCommander as a local web server. </li>
+<li>MeshCommander for LMS </li>
+<li>MeshCommander for firmware. </li>
+</ul>
+<p>In this section, we review the three versions, how they are used and what can be done with them. </p>
+<h3 id="meshcommander-local-web-server">MeshCommander local web server<a class="headerlink" href="#meshcommander-local-web-server" title="Permanent link">&para;</a></h3>
+<p>You can start MeshCommander on a local web server by typing “meshcmd meshcommander”. By default, local port 3000 is used, but you can optionally specify the port using “--localport [port]”. Running it with look like this: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd meshcommander
+MeshCommander running on HTTP port 3000. Ctrl-C to exit. 
+</code></pre></div>
+<p>Once running, use a web browser and go to “http://localhost:3000” to see the MeshCommander web page. The page will start out without any computers in it and you will have to add some. </p>
+<p><img alt="" src="images/2022-05-15-15-27-41.png" /></p>
+<p>In this mode, the local computers that are added will be stored in the browser’s storage cache. So, clearing the browser’s cache will also clear the list of computers. You can however load and save the list of computers using the “Open…” and “Save…” buttons. This version of MeshCommander will have some limitations when compared to the full version installed using the Windows .MSI installer. Notably: </p>
+<ul>
+<li>No certificate management or validation. </li>
+<li>Mutual-Authenticated TLS is not supported. </li>
+<li>Kerberos authentication is not supported. </li>
+<li>IDE-R is not supported. </li>
+</ul>
+<p>This said, features like KVM, Terminal and most Intel AMT configuration options are available which makes this a fairly powerful Intel AMT management console. You can run MeshCommander as a background server on both Windows and Linux. To do this, use the install, uninstall, start and stop commands like this: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd meshcommander install
+Installing to &quot;C:\Program Files (x86)\Open Source\MeshCmd\MeshCommander.exe&quot; MeshCommander installed. 
+
+C:\MeshCmd&gt;meshcmd meshcommander start
+MeshCommander starting.
+</code></pre></div>
+<p>On Linux computers, both systemd and initd are supported. When installing, the MeshCmd executable will be copied to a different installation folder. </p>
+<h3 id="lms-meshcommander">LMS &amp; MeshCommander<a class="headerlink" href="#lms-meshcommander" title="Permanent link">&para;</a></h3>
+<p>The Layered Management Service (LMS) is a background process that runs in the operating system and provides local OS access to Intel AMT. More specifically, it redirects local TCP ports 16992 and 16993 to Intel AMT thru the MEI driver. One way to check if the LMS service is installed on your computer is to try<a href="http://localhost:16992/">http://localhost:16992</a> or <a href="https://localhost:16993/">https://localhost:16993</a>in a browser. A page should generally show up. </p>
+<p>On Windows, LMS is a Windows service that must be downloaded and installed as part of the OEM drivers for a computer. On Linux, it’s generally never installed and users normally have to download the source code and compile it themselves. </p>
+<p>MeshCmd has its own LMS implementation, so is LMS is not installed it will automatically use its own internal one. In addition, you can run MicroLMS alone by typing the following list while running as root or local administrator: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd microlms
+MicroLMS started, MeshCommander on HTTP/16994. 
+</code></pre></div>
+<p>This will start MicroLMS and as indicated, start MeshCommander on local port 16994 at the same time. In total, traffic redirection looks like this: </p>
+<p><img alt="" src="images/2022-05-15-15-30-02.png" /></p>
+<p>In addition to providing normal services, MicroLMS that is part of MeshCmd will also start a web server on port 16994 and allow a browser to access LMS MeshCommander, a special version of MeshCommander specially made to run in this situation. </p>
+<p>MeshCommander for LMS will show up even if the computer has Intel AMT un-configured and offer the user the choice to activate Intel AMT and perform configuration actions. In the following screen, we see a computer activated in Client Control Mode. Because it’s in this mode, you can use the web interface to de-activate Intel AMT or login to perform additional configuration. </p>
+<p><img alt="" src="images/2022-05-15-15-30-41.png" /></p>
+<p>MicroLMS along with MeshCommander for LMS is very useful, especially on Linux as it offers a single tool to setup and configuration Intel AMT. If you wish you run MicroLMS without MeshCommander being available on port 16994, run MeshCmd with “--noconsole": </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd microlms --noconsole
+MicroLMS started. 
+</code></pre></div>
+<p>You can run MicroLMS as a background server on both Windows and Linux. To do this, use the MicroLMS install, uninstall, start and stop commands like this: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd microlms install
+Installing to &quot;C:\Program Files (x86)\Open Source\MeshCmd\MicroLMS.exe&quot; 
+MicroLMS installed. 
+
+C:\MeshCmd&gt;meshcmd microlms start
+MicroLMS starting. 
+</code></pre></div>
+<p>On Linux computers, both systemd and initd are supported. When installing, the MeshCmd executable will be copied to a different installation folder. </p>
+<h3 id="meshcommander-for-firmware">MeshCommander for firmware<a class="headerlink" href="#meshcommander-for-firmware" title="Permanent link">&para;</a></h3>
+<p>MeshCmd also includes a surprising version of MeshCommander, the one you can load into the firmware of Intel AMT. Starting with Intel AMT 11.6, you can push into the small ~190k storage space of Intel AMT a replacement to the index.htm page served by the firmware on port 16992 &amp; 16993. In the following picture, the left side is the original Intel AMT web page, the right is the replaced MeshCommander built to go in firmware. </p>
+<p><img alt="" src="images/2022-05-15-15-32-15.png" /></p>
+<p>The firmware version of MeshCommander has support for remote desktop, terminal and all sorts of Intel AMT usages and configuration. Probably the most surprising is that this entire page is between 40k and 100k depending on the version you select. It’s notable that with MeshCommander loaded into Intel AMT firmware, one does not need any other tool except for a browser to perform most Intel AMT maintenance operations. </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtloadwebapp --host 192.168.2.144 --pass xxxxxxxx
+Uploading MeshCommander...
+Verifying MeshCommander...
+Done.
+</code></pre></div>
+<p>To get the current state of Intel AMT web storage, type this: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtstoragestate --host 192.168.2.144 --pass xxxxxxxx
+Storage State: {
+  &quot;information&quot;: {
+    &quot;version&quot;: 1,
+    &quot;realms&quot;: 7765759,
+    &quot;user&quot;: &quot;admin&quot;
+  },
+  &quot;content&quot;: {
+    &quot;index.htm&quot;: {
+      &quot;size&quot;: 57246      Replacement index.htm with size.
+    }
+  }
+}
+</code></pre></div>
+<p>Here, a 57k index.htm replacement is present in the Intel AMT flash. You can clear the web storage, revering the web page back to the original like this: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtclearwebapp --host 192.168.2.144 --pass xxxxxxxx
+Done.
+</code></pre></div>
+<p>When MeshCommander is loaded into Intel AMT, you can access it from a different computer using <a href="http://computername:16992/">http://computername:16992 </a>or<a href="https://computername:16993/">https://computername:16993</a> You will need to authenticate first before getting access to the web page. </p>
+<h2 id="intel-amt-state-activation">Intel AMT state &amp; activation<a class="headerlink" href="#intel-amt-state-activation" title="Permanent link">&para;</a></h2>
+<p>MeshCmd can easily be used to read the local state of the computer and Intel AMT. There are many commands available to do this. The “SMBios” action works on most computers and is used to get basic information about your current system. The output is JSON format. </p>
+<div class="highlight"><pre><span></span><code><span class="err">C</span><span class="p">:</span><span class="err">\MeshCmd&gt;meshcmd</span><span class="w"> </span><span class="err">smbios</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="err">processorI</span><span class="kc">nf</span><span class="err">o</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="mi">0</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="err">Processor</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CPU&quot;</span>
+<span class="w">      </span><span class="err">MaxSpeed</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3800 Mhz&quot;</span>
+<span class="w">      </span><span class="err">Cores</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<span class="w">      </span><span class="err">Threads</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span>
+<span class="w">      </span><span class="err">Popula</span><span class="kc">te</span><span class="err">d</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">      </span><span class="err">S</span><span class="kc">tatus</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Enabled&quot;</span>
+<span class="w">      </span><span class="err">Socke</span><span class="kc">t</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CPU 1&quot;</span>
+<span class="w">      </span><span class="err">Ma</span><span class="kc">nufa</span><span class="err">c</span><span class="kc">turer</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Intel(R) Corporation&quot;</span>
+<span class="w">      </span><span class="err">Versio</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="err">memoryI</span><span class="kc">nf</span><span class="err">o</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="err">loca</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;System Board&quot;</span>
+<span class="w">    </span><span class="err">maxCapaci</span><span class="kc">t</span><span class="err">yKb</span><span class="p">:</span><span class="w"> </span><span class="mi">33554432</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="err">sys</span><span class="kc">te</span><span class="err">mI</span><span class="kc">nf</span><span class="err">o</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="err">uuid</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C57B83D9A94E11E18BA1505054503030&quot;</span>
+<span class="w">    </span><span class="err">wakeReaso</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Power Switch&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="err">sys</span><span class="kc">te</span><span class="err">mSlo</span><span class="kc">ts</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="err">uuid</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C57B83D9A94E11E18BA1505054503030&quot;</span>
+<span class="w">    </span><span class="err">wakeReaso</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Power Switch&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="err">am</span><span class="kc">t</span><span class="err">I</span><span class="kc">nf</span><span class="err">o</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="err">AMT</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="err">e</span><span class="kc">na</span><span class="err">bled</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="err">s</span><span class="kc">t</span><span class="err">orageRedirec</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="err">serialOverLa</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="err">kvm</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="err">TXT</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">    </span><span class="err">VMX</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="err">MEBX</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;66.0.0.8&quot;</span>
+<span class="w">    </span><span class="err">Ma</span><span class="kc">na</span><span class="err">geme</span><span class="kc">nt</span><span class="err">E</span><span class="kc">n</span><span class="err">gi</span><span class="kc">ne</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8.1.0.57353&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If you have Intel AMT on your system, you can use the “amtinfo”, “amtversions” and “amthashes” to get lots of information about Intel AMT current state. These commands use the Intel AMT MEI driver to get this information and require MeshCmd be run as root or administrator: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtinfo
+Intel AMT v8.1.71, activated in client control mode.
+Wired Enabled, DHCP, 00:1E:8C:F5:4F:ED, 192.168.2.10.
+
+C:\MeshCmd&gt;meshcmd amtversions
+MEI Version = MKQ7710H.86A.0072.2017.0519.1347
+Flash = 8.1.71
+Netstack = 8.1.71
+AMTApps = 8.1.71
+AMT = 8.1.71
+Sku = 24584
+VendorID = 8086
+Build Number = 3608
+Recovery Version = 8.1.71
+Recovery Build Num = 3608
+Legacy Mode = False
+
+C:\MeshCmd&gt;meshcmd amthashes
+VeriSign Class 3 Primary CA-G1, (Default, Active)
+  SHA256: E7685634EFACF69ACE939A6B255B7B4FABEF42935B50A265ACB5CB6027E44E70
+VeriSign Class 3 Primary CA-G3, (Default, Active)
+  SHA256: EB04CF5EB1F39AFA762F2BB120F296CBA520C1B97DB1589565B81CB9A17B7244
+…
+</code></pre></div>
+<p>In addition to getting Intel AMT state, MeshCmd can activate Intel AMT in client control mode (CCM) and de-activate Intel AMT if it’s in this mode. Doing this is very simple, starting with Intel AMT not being activated, you use the “amtccm” and “amtdeactivate” actions. </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtinfo
+Intel AMT v8.1.71, pre-provisioning state.
+
+C:\MeshCmd&gt;meshcmd amtccm --pass xxxxxxxx
+Success
+
+C:\MeshCmd&gt;meshcmd amtinfo
+Intel AMT v8.1.71, activated in client control mode.
+
+C:\MeshCmd&gt;meshcmd amtdeactivate
+Success
+</code></pre></div>
+<p>Note that when using the “amtccm” action, you need to provide a password that will be used for authentication into Intel AMT. This password must be strong with at least 8 characters including a lower case, an uppercase, a numeric value and a non-alpha-numeric value. </p>
+<h2 id="intel-amt-audit-log">Intel AMT Audit Log<a class="headerlink" href="#intel-amt-audit-log" title="Permanent link">&para;</a></h2>
+<p>One very useful feature of MeshCmd is its ability to fetch the Intel AMT audit log. This can be valuable when doing forensics on a computer or just trying figure out what is being done thru Intel AMT. MeshCmd can pull the audit log on a local computer without any credentials, as long as it’s running as root or administrator, or pull the audit log remotely if usual credentials are provided. </p>
+<p><img alt="" src="images/2022-05-15-15-37-16.png" /></p>
+<p>The Intel AMT audit log will show when a computer’s Intel AMT was activated, when remote desktop sessions where initiated and more. To get the local audit log, just use the “AmtAuditLog” action. </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtauditlog
+2004-01-01 19:17:58.000-08:00 - Local: Provisioning Started
+2018-01-26 14:03:16.000-08:00 - Local: Unprovisioning Started
+2018-01-26 14:03:31.000-08:00 - Local: Provisioning Started
+2018-02-01 12:13:14.000-08:00 - admin: KVM Enabled
+2018-02-01 12:16:01.000-08:00 - admin: KVM Session Started
+2018-02-01 12:16:07.000-08:00 - admin: KVM Session Ended
+2018-02-02 10:56:06.000-08:00 - admin: KVM Session Started
+2018-02-02 10:56:08.000-08:00 - admin: KVM Session Ended
+</code></pre></div>
+<p>To get a remote audit log: </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtauditlog --host 192.168.2.144 --user admin --pass xxxxxxxx
+2003-12-31 23:06:58.000-08:00 - $$OsAdmin: Intel(r) ME Time Set
+2017-08-15 06:53:31.000-07:00 - $$OsAdmin: Intel(r) ME Time Set
+2017-10-13 17:55:11.000-07:00 - Local: Provisioning Started
+2017-10-13 17:55:54.000-07:00 - Local: Opt-In Policy Change
+2017-10-15 06:44:38.000-07:00 - admin: KVM Enabled
+</code></pre></div>
+<p>You can also save the audit log to file using the “--output" option. </p>
+<h2 id="running-intel-amt-script">Running Intel AMT script<a class="headerlink" href="#running-intel-amt-script" title="Permanent link">&para;</a></h2>
+<p>MeshCmd has a full WSMAN stack built-in and can be used to run “.mescript” file on a target Intel AMT computer. Script file are useful when you want to run a set of actions on one or more Intel AMT computers at once. You can build a .mescript file using the script editor within MeshCommander. </p>
+<p>This script editor allows the user to drag &amp; drop script blocks, set parameters on each block and test the script against a connected Intel AMT computer. </p>
+<p><img alt="" src="images/2022-05-15-15-39-40.png" /></p>
+<p>In addition to building your own scripts, you can download a CIRA setup script from a MeshCentral server. When running this script, Intel AMT will be setup to call back to the server using an encrypted connection. This enables remote management of Intel AMT over the Internet. The CIRA setup script is available in the “Add CIRA” link for meshes that are Intel AMT only (no agent). </p>
+<p><img alt="" src="images/2022-05-15-15-40-05.png" /></p>
+<p>Once you got the script, run it with MeshCmd like this. You specify the host if it’s not localhost, the password and the script file. </p>
+<div class="highlight"><pre><span></span><code>C:\MeshCmd&gt;meshcmd amtscript --host 192.168.2.106 --pass xxxxxxxx --script cira_setup.mescript
+Script Started
+Policies removed successfully
+Adding root certificate...
+Management Presence Server (MPS) successfully added
+Found matching (primary) mps: Intel(r) AMT:Management Presence Server 0
+Setting policy...
+Policy added successfully
+Remote Access user interfaces set to: BIOS &amp; OS Enabed
+Parsing block parameters
+Setting Environment Detection
+Environment Detection set successfully
+Script Completed
+</code></pre></div>
+<p>In this example, the CIRA setup script was run on a remote computer. After the script is run, the computer got configured and connected back to the server. MeshCentral show the new connection state for this computer. </p>
+<p><img alt="" src="images/2022-05-15-15-41-20.png" /></p>
+<h2 id="ide-redirection">IDE Redirection<a class="headerlink" href="#ide-redirection" title="Permanent link">&para;</a></h2>
+<h2 id="video-walkthru_1">Video Walkthru<a class="headerlink" href="#video-walkthru_1" title="Permanent link">&para;</a></h2>
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/iG73j7Toz1c" frameborder="0" allowfullscreen></iframe>
+</div>
+
+<p>MeshCmd has all the code needed to perform Intel AMT IDE Redirection from the command line. This allows disk images on the administrator’s computer to be remotely mounted to an Intel AMT computer. You need to start with a floppy disk .img file and/or an .iso CDROM file. </p>
+<p><img alt="" src="images/2022-05-15-15-42-01.png" /></p>
+<p>Then use the “AmtIDER” command of MeshCMD to start an IDER session. The help command for AmtIDER looks like this: </p>
+<div class="highlight"><pre><span></span><code>C:\Temp&gt;meshcmd help amtider
+AmtIDER will mount a local disk images to a remote Intel AMT computer. Example usage:
+
+  meshcmd amtider --host 1.2.3.4 --user admin --pass mypassword --tls --floppy disk.img --cdrom disk.iso
+
+Possible arguments:
+
+  --host [hostname]      The IP address or DNS name of Intel AMT.
+  --user [username]      The Intel AMT login username, admin is default.
+  --pass [password]      The Intel AMT login password.
+  --tls                  Specifies that TLS must be used.
+  --floppy [file]        Specifies .img file to be mounted as a flppy disk.
+  --cdrom [file]         Specifies .img file to be mounted as a CDROM disk.
+  --timeout [seconds]    Optional, disconnect after number of seconds without disk read.
+</code></pre></div>
+<p>The command is fairly simple. It takes as input a remote host, username/password for Intel AMT login, the disk images and TLS option. One can also specify the timeout option so that MeshCMD will automatically disconnect when no disk read operations are performed for a set number of seconds. </p>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>MeshCmd is a cross-platform command line tools that perform an ever-growing list of actions that are important for remote computer management. MeshCmd works alone or with MeshCentral and MeshCommander to offer a suite of free, opens source and powerful tools that work well together. </p>
+<h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
+<p>MeshCmd and this document are both opens source and licensed using Apache 2.0, the full license can be found at <a href="https://www.apache.org/licenses/LICENSE-2.0">https://www.apache.org/licenses/LICENSE-2.0</a> </p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.expand", "navigation.top", "navigation.instant"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

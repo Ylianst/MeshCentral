@@ -1,0 +1,3614 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A remote monitoring and management tool">
+      
+      
+        <meta name="author" content="Ylianst">
+      
+      
+        <link rel="canonical" href="https://ylianst.github.io/MeshCentral/meshcentral/openidConnectStrategy/">
+      
+      
+        <link rel="prev" href="../customization/">
+      
+      
+        <link rel="next" href="../../design/">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>openidConnectStrategy - MeshCentral Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#using-the-openid-connect-strategy-on-meshcentral" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="MeshCentral Documentation" class="md-header__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../../images/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MeshCentral Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              openidConnectStrategy
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../install/" class="md-tabs__link">
+          
+  
+  
+  Install
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  MeshCentral2
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../design/" class="md-tabs__link">
+          
+  
+  
+  Design and Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../meshcmd/" class="md-tabs__link">
+          
+  
+  
+  MeshCmd
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../meshctrl/" class="md-tabs__link">
+          
+  
+  
+  MeshCtrl
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../meshrouter/" class="md-tabs__link">
+          
+  
+  
+  Mesh Router
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../intelamt/" class="md-tabs__link">
+          
+  
+  
+  Intel AMT
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how-to-contribute/" class="md-tabs__link">
+          
+  
+  
+  How to Contribute
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../other/adfs_sso_guide/" class="md-tabs__link">
+          
+  
+  
+  Other
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MeshCentral Documentation" class="md-nav__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../../images/favicon.ico" alt="logo">
+
+    </a>
+    MeshCentral Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Install
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Install
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/install2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Full Install Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCentral2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2 Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    All Configuration Options
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent Information
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../assistant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Assistant
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../codesigning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Code Signing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Debugging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../devicetabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Device Tabs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SSLnletsencrypt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    SSL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tokens/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tokens
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FAQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tipsntricks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tips n Tricks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Messaging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../customization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Customization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    openidConnectStrategy
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    openidConnectStrategy
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chart-of-frequently-used-terms-and-acronyms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chart of Frequently Used Terms and Acronyms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openid-connect-technology-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      OpenID Connect Technology Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Annotations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Annotations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#own-idp-ca-and-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      Own IDP, CA and Docker
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-config-file-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config File Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-file-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config File Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issuer-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Issuer" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Issuer&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Client" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Client&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Custom" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Custom&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groups-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Groups" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Groups&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preset-openid-connect-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Preset OpenID Connect Configurations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preset OpenID Connect Configurations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Google Preset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Google Preset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specifics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-example-with-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Example with Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customer-id-and-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customer ID and Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#azure-preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Azure Preset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Azure Preset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-config-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specifics_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-example-with-groups_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Example with Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#depreciated-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Depreciated Properties
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Depreciated Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrating-old-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migrating Old Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#old-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Old Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advcanced-old-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advcanced Old Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-to-v1122" class="md-nav__link">
+    <span class="md-ellipsis">
+      Upgrading to v1.1.22
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Design and Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCmd
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcmd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCtrl
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshctrl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Mesh Router
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Mesh Router
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshrouter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Router
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Intel AMT
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intelamt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    How to Contribute
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            How to Contribute
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to-contribute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contribute to MeshCentral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Other
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Other
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../other/adfs_sso_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ADFS SSO Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../other/meshcentral_satellite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Satellite
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chart-of-frequently-used-terms-and-acronyms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chart of Frequently Used Terms and Acronyms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openid-connect-technology-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      OpenID Connect Technology Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Annotations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Annotations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#own-idp-ca-and-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      Own IDP, CA and Docker
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-config-file-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config File Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-file-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config File Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issuer-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Issuer" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Issuer&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Client" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Client&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Custom" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Custom&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groups-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      "Groups" Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="&#34;Groups&#34; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-config-example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-and-commonly-used-configs_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Required and Commonly Used Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preset-openid-connect-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Preset OpenID Connect Configurations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preset OpenID Connect Configurations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-config-chart_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Config Chart
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Google Preset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Google Preset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specifics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-example-with-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Example with Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customer-id-and-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customer ID and Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#azure-preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Azure Preset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Azure Preset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basic-config-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specifics_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-example-with-groups_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Example with Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#depreciated-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Depreciated Properties
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Depreciated Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrating-old-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migrating Old Configs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#old-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Old Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advcanced-old-config-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advcanced Old Config Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-to-v1122" class="md-nav__link">
+    <span class="md-ellipsis">
+      Upgrading to v1.1.22
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="using-the-openid-connect-strategy-on-meshcentral">Using the OpenID Connect Strategy on MeshCentral<a class="headerlink" href="#using-the-openid-connect-strategy-on-meshcentral" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<h3 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h3>
+<p>There is a lot of information to go over, but first, why OpenID Connect?</p>
+<p>Esentially its because its both based on a industry standard authorization protocol, and is becoming an industry standard authentication protocol. Put simply it's reliable and reusable, and we use OpenID Connect for exactly those reasons, almost every everyone does, and we want to be able to integrate with almost anyone. This strategy allows us to expand the potential of MeshCentral through the potential of OpenID Connect.</p>
+<p>In this document, we will learn about the OpenID Connect specification at a high level, and then use that information to configure the OpenID Connect strategy for MeshCentral using a generic OpenID Connect compatible IdP. After that we will go over some advanced configurations and then continue by explaining how to use the new presets for popular IdPs, specifically Google or Azure. Then we will explore the configuration and usage of the groups feature.</p>
+<blockquote>
+<p>ATTENTION: As of MeshCentral <code>v1.1.22</code> there are multiple config options being depreciated. Using any of the old configs will only generate a warning in the authlog and will not stop you from using this strategy at this time. If there is information found in both the new and old config locations the new config location will be used. We will go over the specifics later, now lets jump in.</p>
+</blockquote>
+<h3 id="chart-of-frequently-used-terms-and-acronyms">Chart of Frequently Used Terms and Acronyms<a class="headerlink" href="#chart-of-frequently-used-terms-and-acronyms" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>AKA</th>
+<th>Descriptions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OAuth 2.0</td>
+<td>OAuth2</td>
+<td>OAuth 2.0 is the industry-standard protocol for user <em>authorization</em>.</td>
+</tr>
+<tr>
+<td>OpenID Connect</td>
+<td>OIDC</td>
+<td>Identity layer built on top of OAuth2 for user <em>authentication</em>.</td>
+</tr>
+<tr>
+<td>Identity Provider</td>
+<td>IdP</td>
+<td>The <em>service used</em> to provide authentication and authorization.</td>
+</tr>
+<tr>
+<td>Preset Configs</td>
+<td>Presets</td>
+<td>Set of <em>pre-configured values</em> to allow some specific IdPs to connect correctly.</td>
+</tr>
+<tr>
+<td>OAuth2 Scope</td>
+<td>Scope</td>
+<td>A flag <em>requesting access</em> to a specific resource or endpoint</td>
+</tr>
+<tr>
+<td>OIDC Claim</td>
+<td>Claim</td>
+<td>A <em>returned property</em> in the user info provided by your IdP</td>
+</tr>
+<tr>
+<td>User Authentication</td>
+<td>AuthN</td>
+<td>Checks if you <em>are who you say you are</em>. Example: Username and password authentication</td>
+</tr>
+<tr>
+<td>User Authorization</td>
+<td>AuthZ</td>
+<td>Check if you have the <em>permissions</em> required to access a specific resource or endpoint</td>
+</tr>
+</tbody>
+</table>
+<h3 id="openid-connect-technology-overview">OpenID Connect Technology Overview<a class="headerlink" href="#openid-connect-technology-overview" title="Permanent link">&para;</a></h3>
+<p>OpenID Connect is a simple identity layer built on top of the OAuth2 protocol. It allows Clients to verify the identity of the End-User based on the authentication performed by an “Authorization Server”, as well as to obtain basic profile information about the End-User in an interoperable and REST-like manner.</p>
+<p>OpenID Connect allows clients of all types, including Web-based, mobile, and JavaScript clients, to request and receive information about authenticated sessions and end-users. The specification suite is extensible, allowing participants to use optional features such as encryption of identity data, discovery of OpenID Providers, and logout, when it makes sense for them.</p>
+<p>That description was straight from <a href="https://openid.net/connect/">OpenID Connect Documentation</a>, but basically, OAuth2 is the foundation upon which OpenID Connect was built, allowing for wide ranging compatability and interconnection. OpenID Connect appends the secure user <em>authentication</em> OAuth2 is known for, with user <em>authorization</em> by allowing the request of additional <em>scopes</em> that provide additional <em>claims</em> or access to API's in an easily expandable way.</p>
+<h3 id="annotations">Annotations<a class="headerlink" href="#annotations" title="Permanent link">&para;</a></h3>
+<h4 id="own-idp-ca-and-docker">Own IDP, CA and Docker<a class="headerlink" href="#own-idp-ca-and-docker" title="Permanent link">&para;</a></h4>
+<p>If you operate your own identity provider, your own certification authority and MeshCentral via Docker, it is necessary to provide the complete certificate chain, otherwise NodeJS (in particular the openid-client module) will refuse the connection to the IDP server. </p>
+<p>The following errors can be found in the log file:</p>
+<blockquote>
+<p>OIDC: Discovery failed.</p>
+<p>UNABLE_TO_GET_ISSUER_CERT_LOCALLY</p>
+</blockquote>
+<p>To solve this problem, the certificate chain in PEM format must be placed in the data directory and the following entry must be added to the docker-compose.yml file in the “environment” section:
+<div class="highlight"><pre><span></span><code>    environment:
+            - NODE_EXTRA_CA_CERTS=/opt/meshcentral/meshcentral-data/chain.pem
+</code></pre></div></p>
+<h2 id="basic-config">Basic Config<a class="headerlink" href="#basic-config" title="Permanent link">&para;</a></h2>
+<h3 id="introduction_1"><em>Introduction</em><a class="headerlink" href="#introduction_1" title="Permanent link">&para;</a></h3>
+<p>Generally, if you are using an IdP that supports OIDC, you can use a very basic configuration to get started, and if needed, add more specific or advanced configurations later. Here is what your config file will look like with a basic, generic, configuration.</p>
+<h3 id="basic-config-file-example"><em>Basic Config File Example</em><a class="headerlink" href="#basic-config-file-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;cert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mesh.your.domain&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">443</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sqlite3&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;domains&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MeshCentral&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;title2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Your sub-title&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;authStrategies&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;clientid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2d5685c5-0f32-4c1f-9f09-c60e0dbc948a&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;clientsecret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;7PiGSLSLL4e7NGi67KM229tfK7Z7TqzQ&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;newAccounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>As you can see, this is roughly the same as all the other OAuth2 based authentication strategies. These are the basics you need to get started, however, if you plan to take advantage of some of the more advanced features provided by this strategy, you'll need to keep reading.</p>
+<p>In this most basic of setups, you only need the URL of the issuer, as well as a client ID and a client secret. Notice in this example that the callback URL (or client redirect uri) is not configured, thats because MeshCentral will use <code>https://mesh.your.domain/auth-oidc-callback</code> as the default. Once you've got your configuration saved, restart MeshCentral and you should see an OpenID Connect Single Sign-on button on the login screen.</p>
+<blockquote>
+<p>WARNING: The redirect endpoint must EXACTLY match the value provided to your IdP or your will deny the connection.</p>
+<p>ATTENTION: You are required to configure the cert property in the settings section for the default domain, and configure the dns property under each additional domain.</p>
+</blockquote>
+<h2 id="advanced-options">Advanced Options<a class="headerlink" href="#advanced-options" title="Permanent link">&para;</a></h2>
+<h3 id="overview_1">Overview<a class="headerlink" href="#overview_1" title="Permanent link">&para;</a></h3>
+<p>There are plenty of options at your disposal if you need them. In fact, you can configure any property that node-openid-client supports. The openid-client module supports far more customization than I know what to do with, if you want to know more check out <a href="https://github.com/panva/node-openid-client">node-openid-client on GitHub</a> for expert level configuration details. There are plenty of things you can configure with this strategy and there is a lot of decumentation behind the tools used to make this all happen. I strongly recommend you explore the <a href="https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json">config schema</a>, and if you have a complicated config maybe check out the <a href="https://github.com/panva/node-openid-client/blob/main/docs/README.md">openid-client readme</a>. Theres a list of resources at the end if you want more information on any specific topics. In the meantime, let’s take a look at an example of what your config file could look with a slightly more complicated configuration, including multiple manually defined endpoints.</p>
+<h4 id="advanced-config-file-example"><em>Advanced Config File Example</em><a class="headerlink" href="#advanced-config-file-example" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;cert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mesh.your.domain&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">443</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;redirPort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;AgentPong&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;TLSOffload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;192.168.1.50&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;SelfUpdate&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;AllowFraming&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sqlite3&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;WebRTC&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;domains&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;title2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;.Your.Domain&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;orphanAgentUser&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;~oidc:e48f8ef3-a9cb-4c84-b6d1-fb7d294e963c&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;authStrategies&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;authorization_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://auth.your.domain/auth-endpoint&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;token_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://tokens.sso.your.domain/token-endpoint&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;end_session_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/logout&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;jwks_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/jwks-uri&quot;</span>
+<span class="w">                    </span><span class="p">},</span>
+<span class="w">                    </span><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;110d5612-0822-4449-a057-8a0dbe26eca5&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4TqST46K53o3Z2Q88p39YwR6YwJb7Cka&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;redirect_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mesh.your.domain/auth-oidc-callback&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;post_logout_redirect_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mesh.your.domain/login&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;token_endpoint_auth_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;client_secret_post&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;response_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;authorization_code&quot;</span>
+<span class="w">                    </span><span class="p">},</span>
+<span class="w">                    </span><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;openid&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;read.EmailAlias&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;read.UserProfile&quot;</span><span class="w"> </span><span class="p">],</span>
+<span class="w">                        </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">                    </span><span class="p">},</span>
+<span class="w">                    </span><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">&quot;recursive&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Group1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Group2&quot;</span><span class="p">],</span>
+<span class="w">                        </span><span class="nt">&quot;siteadmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GroupA&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">],</span>
+<span class="w">                        </span><span class="nt">&quot;revokeAdmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;sync&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">                            </span><span class="nt">&quot;filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Group1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;OtherGroup&quot;</span><span class="p">]</span>
+<span class="w">                        </span><span class="p">},</span>
+<span class="w">                        </span><span class="nt">&quot;claim&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GroupClaim&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;read.GroupMemberships&quot;</span>
+<span class="w">                    </span><span class="p">},</span>
+<span class="w">                    </span><span class="nt">&quot;logouturl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/logout?r=https://mesh.your.domain/login&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;newAccounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span><span class="err">...</span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="issuer-options">"Issuer" Options<a class="headerlink" href="#issuer-options" title="Permanent link">&para;</a></h3>
+<h4 id="introduction_2"><em>Introduction</em><a class="headerlink" href="#introduction_2" title="Permanent link">&para;</a></h4>
+<p>In the advanced example config above, did you notice that the issuer property has changed from a <em>string</em> to an <em>object</em> compared to the basic example? This not only allows for much a much smaller config footprint when advanced issuer options are not required, it successfully fools you in to a false sense of confidence early on in this document. If you are manually configuring the issuer endpoints, keep in mind that MeshCentral will still attempt to discover <strong>ALL</strong> issuer information. Obviously if you manually configure an endpoint, it will be used even if the discovered information is different from your config. </p>
+<blockquote>
+<p>NOTE: If you are using a preset, you dont need to define an issuer. If you do, the predefined information will be ignored.</p>
+</blockquote>
+<h4 id="common-config-chart"><em>Common Config Chart</em><a class="headerlink" href="#common-config-chart" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default</th>
+<th>Example</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>issuer</code></td>
+<td>The primary URI that represents your Identity Providers authentication endpoints.</td>
+<td>N/A</td>
+<td><code>"issuer": "https://sso.your.domain"</code><br/><code>"issuer": { "issuer": "https://sso.your.domain" }</code></td>
+<td>Unless using preset.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="advanced-config-example"><em>Advanced Config Example</em><a class="headerlink" href="#advanced-config-example" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;authorization_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://auth.your.domain/auth-endpoint&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;token_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://tokens.sso.your.domain/token-endpoint&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;end_session_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/logout&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;jwks_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/jwks-uri&quot;</span>
+<span class="p">},</span>
+</code></pre></div>
+<h4 id="required-and-commonly-used-configs"><em>Required and Commonly Used Configs</em><a class="headerlink" href="#required-and-commonly-used-configs" title="Permanent link">&para;</a></h4>
+<p>The <code>issuer</code> property in the <code>issuer</code> object is the only one required, and its only required if you aren't using a preset. Besides the issuer, these are mostly options related to the endpoints and their configuration. The schema below looks intimidating but it comes down to being able to support any IdP. Setting the issuer, and end_session_endpoint are the two main ones you want to setup.</p>
+<h4 id="schema"><em>Schema</em><a class="headerlink" href="#schema" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="s2">&quot;object&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Issuer options. Requires issuer URI (issuer.issuer) to discover missing information unless using preset&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;URI of the issuer.&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;authorization_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;token_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;jwks_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;userinfo_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;revocation_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;introspection_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;end_session_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;URI to direct users to when logging out of MeshCentral.&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;this.issuer/logout&quot;</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;registration_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;token_endpoint_auth_methods_supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;token_endpoint_auth_signing_alg_values_supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;introspection_endpoint_auth_methods_supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;introspection_endpoint_auth_signing_alg_values_supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;revocation_endpoint_auth_methods_supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;revocation_endpoint_auth_signing_alg_values_supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;request_object_signing_alg_values_supported&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;mtls_endpoint_aliases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;token_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">&quot;userinfo_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">&quot;revocation_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">&quot;introspection_endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">},</span>
+</code></pre></div>
+<h3 id="client-options">"Client" Options<a class="headerlink" href="#client-options" title="Permanent link">&para;</a></h3>
+<h4 id="introduction_3"><em>Introduction</em><a class="headerlink" href="#introduction_3" title="Permanent link">&para;</a></h4>
+<p>There are just about as many option as possible here since openid-client also provides a Client class, because of this you are able to manually configure the client how ever you need. This includes setting your redirect URI to any available path, for example, if I was using the "google" preset and wanted to have Google redirect me back to "https://mesh.your.domain/oauth2/oidc/redirect/givemebackgooglemusicyoujerks", MeshCentral will now fully support you in that. One of the other options is the post logout redirect URI, and it is exactly what it sounds like. After MeshCentral logs out a user using the IdPs end session endpoint, it send the post logout redirect URI to your IdP to forward the user back to MeshCentral or to an valid URI such as a homepage.</p>
+<blockquote>
+<p>NOTE: The client object is required, however an exception would be with using old configs, which will be discussed later.</p>
+</blockquote>
+<h4 id="common-configs"><em>Common Configs</em><a class="headerlink" href="#common-configs" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default</th>
+<th>Example</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client_id</code></td>
+<td>The client ID provided by your Identity Provider (IdP)</td>
+<td>N/A</td>
+<td><code>bdd6aa4b-d2a2-4ceb-96d3-b3e23cd17678</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>client_secret</code></td>
+<td>The client secret provided by your Identity Provider (IdP)</td>
+<td>N/A</td>
+<td><code>vUg82LJ322rp2bvdzuVRh3dPn3oVo29m</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>redirect_uri</code></td>
+<td>"URI your IdP sends you after successful authorization.</td>
+<td><code>https://mesh.your.domain/auth-oidc-callback</code></td>
+<td><code>https://mesh.your.domain/oauth2/oidc/redirect</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>post_logout_redirect_uri</code></td>
+<td>URI for your IdP to send you after logging out of IdP via MeshCentral.</td>
+<td><code>https://mesh.your.domain/login</code></td>
+<td><code>https://site.your.other.domain/login</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="advanced-config-example_1"><em>Advanced Config Example</em><a class="headerlink" href="#advanced-config-example_1" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;00b3875c-8d82-4238-a8ef-25303fa7f9f2&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;7PP453H577xbFDCqG8nYEJg8M3u8GT8F&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;redirect_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mesh.your.domain/auth-oidc-callback&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;post_logout_redirect_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mesh.your.domain/login&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;token_endpoint_auth_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;client_secret_post&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;response_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;authorization_code&quot;</span>
+<span class="p">},</span>
+</code></pre></div>
+<h4 id="required-and-commonly-used-configs_1"><em>Required and Commonly Used Configs</em><a class="headerlink" href="#required-and-commonly-used-configs_1" title="Permanent link">&para;</a></h4>
+<p>There are many available options you can configure but most of them go unused. Although there are a few <em>commonly used</em> properties. The first two properties, <code>client_id</code> and <code>client_secret</code> are required. The next one <code>redirect_uri</code> is used to setup a custom URI for the redirect back to MeshCentral after being authenicated by your IdP.  The <code>post_logout_redirect_uri</code> property is used to tell your IdP where to send you after being logged out. These work in conjunction with the issuers <code>end_session_url</code> to automatically fill in any blanks in the config.</p>
+<h4 id="schema_1"><em>Schema</em><a class="headerlink" href="#schema_1" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OIDC Client Options&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;REQUIRED: The client ID provided by your Identity Provider (IdP)&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;REQUIRED: The client secret provided by your Identity Provider (IdP)&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;redirect_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;URI your IdP sends you after successful authorization. This must match what is listed with your IdP. (Default is https://[currentHost][currentPath]/auth-oidc-callback)&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;post_logout_redirect_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uri&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;URI for your IdP to send you after logging out of IdP via MeshCentral.&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https:[currentHost][currentPath]/login&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;id_token_signed_response_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RS256&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;id_token_encrypted_response_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;id_token_encrypted_response_enc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;userinfo_signed_response_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;userinfo_encrypted_response_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;userinfo_encrypted_response_enc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;response_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="p">],</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;default_max_age&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;require_auth_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span><span class="w"> </span>
+<span class="w">        </span><span class="nt">&quot;request_object_signing_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;request_object_encryption_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;request_object_encryption_enc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;token_endpoint_auth_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;client_secret_basic&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_basic&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_post&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_jwt&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;private_key_jwt&quot;</span><span class="w"> </span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span><span class="w"> </span>
+<span class="w">        </span><span class="nt">&quot;introspection_endpoint_auth_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;client_secret_basic&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_basic&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_post&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_jwt&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;private_key_jwt&quot;</span><span class="w"> </span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span><span class="w"> </span>
+<span class="w">        </span><span class="nt">&quot;revocation_endpoint_auth_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;client_secret_basic&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_basic&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_post&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret_jwt&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;private_key_jwt&quot;</span><span class="w"> </span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span><span class="w"> </span>
+<span class="w">        </span><span class="nt">&quot;token_endpoint_auth_signing_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;introspection_endpoint_auth_signing_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;revocation_endpoint_auth_signing_alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;tls_client_certificate_bound_access_tokens&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;client_id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;client_secret&quot;</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">},</span>
+</code></pre></div>
+<h3 id="custom-options">"Custom" Options<a class="headerlink" href="#custom-options" title="Permanent link">&para;</a></h3>
+<h4 id="introduction_4"><em>Introduction</em><a class="headerlink" href="#introduction_4" title="Permanent link">&para;</a></h4>
+<p>These are all the options that dont fit with the issuer or client, including the presets. The presets define more than just the issuer URL used in discovery, they also define API endpoints, and specific ways to assemble your data. You are able to manually override most of the effects of the preset, but not all. You are able to manually configure the <em>scope</em> of the authorization request though, as well as choose which claims to use if your IdP uses something other than the defaults.</p>
+<blockquote>
+<p>NOTE: The scope must be a string, an array of strings, or a space separated list of scopes as a single string.</p>
+</blockquote>
+<h4 id="common-config-chart_1"><em>Common Config Chart</em><a class="headerlink" href="#common-config-chart_1" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default</th>
+<th>Example</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scope</code></td>
+<td>A list of scopes to request from the issuer.</td>
+<td><code>"openid profile email"</code></td>
+<td><code>["openid", "profile"]</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>claims</code></td>
+<td>A group of claims to use instead of the defaults</td>
+<td>Defauts to name of property except that <code>uuid</code> used <code>sub</code></td>
+<td><code>"claims": {"uuid": "unique_name"}</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="advanced-config-example_2"><em>Advanced Config Example</em><a class="headerlink" href="#advanced-config-example_2" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;openid&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;read.EmailAlias&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;read.UserProfile&quot;</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;claims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;nameOfUser&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;publicEmail&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">},</span>
+</code></pre></div>
+<blockquote>
+<p>NOTE: You can <code>preset</code> to null if you want to explicitly disable presets.</p>
+</blockquote>
+<h4 id="required-and-commonly-used-configs_2"><em>Required and Commonly Used Configs</em><a class="headerlink" href="#required-and-commonly-used-configs_2" title="Permanent link">&para;</a></h4>
+<p>As should be apparent by the name alone, the custom property does not need to be configured and is used for optional or advanced configurations. With that said, lets look at few common options  strategy will default to using the <code>openid</code>, <code>profile</code>, and <code>email</code> scopes to gather the required information about the user, if your IdP doesn't support or require all these, you can set up the scope manually. Combine that with the ability to set the group scope and you can end up with an entirely custom scope being sent to your IdP. Not to mention the claims property, which allows you to pick and choose what claims to use to gather your data in case you have issues with any of the default behaviors of OpenID Connect and your IdP. This is also where you would set the preset and any values required by the presets.</p>
+<h4 id="schema_2"><em>Schema</em><a class="headerlink" href="#schema_2" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="p">],</span>
+<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A list of scopes to request from the issuer.&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;openid profile email&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;examples&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;openid&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;openid&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;profile&quot;</span><span class="p">],</span><span class="w"> </span><span class="s2">&quot;openid profile email&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;openid profile email groups&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;claims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;azure&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;google&quot;</span><span class="p">]},</span>
+<span class="w">        </span><span class="nt">&quot;tenant_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;REQUIRED FOR AZURE PRESET: Tenantid for Azure&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;REQUIRED FOR GOOGLE PRESET IF USING GROUPS: Customer ID from Google, should start with &#39;C&#39;.&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">},</span>
+</code></pre></div>
+<h3 id="groups-options">"Groups" Options<a class="headerlink" href="#groups-options" title="Permanent link">&para;</a></h3>
+<h4 id="introduction_5"><em>Introduction</em><a class="headerlink" href="#introduction_5" title="Permanent link">&para;</a></h4>
+<p>The groups option allows you to use the groups you already have with your IdP in MeshCentral in a few ways. First you can set a group that the authorized user must be in to sign in to MeshCentral. You can also allow users with the right memberships automatic admin privlidges, and there is even an option to revoke privlidges if the user is NOT in the admin group. Besides these filters, you can filter the sync property to mirror only certain groups as MeshCentral User Groups, dynamically created as the user logs in. You can of course simply enable sync and mirror all groups from your IdP as User Groups. Additionally you can define the scope and claim of the groups for a custom setup, again allowing for a wide range of IdPs to be used, even without a preset.</p>
+<h4 id="common-config-chart_2"><em>Common Config Chart</em><a class="headerlink" href="#common-config-chart_2" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default</th>
+<th>Example</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sync</code></td>
+<td>Allows you to mirror user groups from your IdP.</td>
+<td><code>false</code></td>
+<td><code>"sync": { "filter": ["Group1", "Group2"] }</code><br/><code>"sync": true</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td>Access is only granted to users who are a member<br/>of at least one of the listed required groups.</td>
+<td><code>undefined</code></td>
+<td><code>"required": ["Group1", "Group2"]</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>siteadmin</code></td>
+<td>Full site admin priviledges will be granted to users<br/>who are a member of at least one of the listed admin groups</td>
+<td><code>undefined</code></td>
+<td><code>"siteadmin": ["Group1", "Group2"]</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>revokeAdmin</code></td>
+<td>If true, admin privileges will be revoked from users<br/>who arent a member of at least one of the listed admin groups.</td>
+<td><code>true</code></td>
+<td><code>"revokeAdmin": false</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="advanced-config-example_3"><em>Advanced Config Example</em><a class="headerlink" href="#advanced-config-example_3" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;recursive&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Group1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Group2&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;siteadmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GroupA&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;revokeAdmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;sync&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">        </span><span class="nt">&quot;filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Group1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;OtherGroup&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;claim&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GroupClaim&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;read.GroupMemberships&quot;</span>
+<span class="p">},</span>
+</code></pre></div>
+<h4 id="required-and-commonly-used-configs_3"><em>Required and Commonly Used Configs</em><a class="headerlink" href="#required-and-commonly-used-configs_3" title="Permanent link">&para;</a></h4>
+<p>As you can see in the schema below, there aren't any required properties in the groups object, however there are some commonly used ones. The first, and maybe most commonly used one, is the sync property. The sync property mirrors IdP provided groups into MeshCentral as user groups. You can then configure access as required to those groups, and as users log in, they will be added to the now existing groups if they are a member. You also have other options like using a custom <em>scope</em> or <em>claim</em> to get your IdP communicating with MeshCentral properly, without the use of preset configs. You also can set the required property if you need to limit authorization to users that are a member of at least one of the groups you set.  or the siteadmin property to grant admin privilege, with the revokeAdmin property available to allow revoking admin rights also.</p>
+<h4 id="schema_3"><em>Schema</em><a class="headerlink" href="#schema_3" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;recursive&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;When true, the group memberships will be scanned recursively.&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="w"> </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Access is only granted to users who are a member of at least one of the listed required groups.&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;siteadmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="w"> </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Full site admin priviledges will be granted to users who are a member of at least one of the listed admin groups.&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;revokeAdmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If true, admin privileges will be revoked from users who are NOT a member of at least one of the listed admin groups.&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;sync&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="w"> </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If true, all groups found during user login are mirrored into MeshCentral user groups.&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="w"> </span><span class="p">],</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Only groups listed here are mirrored into MeshCentral user groups.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;groups&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Custom scope to use.&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;claim&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;groups&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Custom claim to use.&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="preset-openid-connect-configurations">Preset OpenID Connect Configurations<a class="headerlink" href="#preset-openid-connect-configurations" title="Permanent link">&para;</a></h2>
+<h3 id="overview_2">Overview<a class="headerlink" href="#overview_2" title="Permanent link">&para;</a></h3>
+<h4 id="common-config-chart_3"><em>Common Config Chart</em><a class="headerlink" href="#common-config-chart_3" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>NOTE: All settings directly related to presets are in the custom section of the config.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Example</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>preset</code></td>
+<td>Manually enable the use of a preset.</td>
+<td><code>"preset": "google"</code><br/><code>"preset": "azure"</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>customer_id</code></td>
+<td>Customer ID of the Google Workspaces instace you<br/>plan to use with the groups feature.</td>
+<td><code>"customer_id": ["Group1", "Group2"]</code></td>
+<td>If <code>google</code> preset is used with <code>groups</code> feature.</td>
+</tr>
+<tr>
+<td><code>tenant_id</code></td>
+<td>Tenant ID from Azure AD, this is required to use<br/>the <code>azure</code> preset as it is part of the issuer url.</td>
+<td><code>"tenant_id": "46a6022g-4h33-1451-h1rc-08102ga3b5e4"</code></td>
+<td>If <code>Azure</code> preset is being used.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="google-preset">Google Preset<a class="headerlink" href="#google-preset" title="Permanent link">&para;</a></h3>
+<h4 id="prerequisites"><em>Prerequisites</em><a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>Check out this <a href="https://developers.google.com/identity/protocols/oauth2/openid-connect">documentation</a> to get ready before we start.</p>
+</blockquote>
+<h4 id="basic-config-example"><em>Basic Config Example</em><a class="headerlink" href="#basic-config-example" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;268438852161-r8xa7qxwf3rr0shp1xnpgmm70bnag21p.apps.googleusercontent.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ETFWBX-gFEaxfPXs1tWmAOkuWDFTgoL3nwh&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="specifics"><em>Specifics</em><a class="headerlink" href="#specifics" title="Permanent link">&para;</a></h4>
+<p>If you notice above I forgot to add any preset related configs, however because google tags the client ID we can detect that and automatically use the google preset. The above config is tested, the sentive data has been scrambled of course. That said, you would normally use this preset in more advaced setups, let take a look at an example.</p>
+<h4 id="advanced-example-with-groups"><em>Advanced Example with Groups</em><a class="headerlink" href="#advanced-example-with-groups" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;424555768625-k7ub3ovqs0yp7mfo0usvyyx51nfii61c.apps.googleusercontent.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;QLBCQY-nRYmjnFWv3nKyHGmwQEGLokP6ldk&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;google&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C46kyhmps&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;siteadmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GroupA&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;revokeAdmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sync&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;callbackURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mesh.your.domain/auth-oidc-google-callback&quot;</span>
+<span class="p">},</span>
+</code></pre></div>
+<h4 id="customer-id-and-groups"><em>Customer ID and Groups</em><a class="headerlink" href="#customer-id-and-groups" title="Permanent link">&para;</a></h4>
+<p>As always, the client ID and secret are required, the customer ID on the other hand is only required if you plan to take advantage of the groups function <em>and</em> the google preset. This also requires you have a customer ID, if you have do, it is available in the Google Workspace Admin Console under Profile-&gt;View. Groups work the same as they would with any other IdP but they are pulled from the Workspace groups. </p>
+<h4 id="schema_4"><em>Schema</em><a class="headerlink" href="#schema_4" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;azure&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;google&quot;</span><span class="p">]},</span>
+<span class="w">        </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Customer ID from Google, should start with &#39;C&#39;.&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">},</span>
+</code></pre></div>
+<h3 id="azure-preset">Azure Preset<a class="headerlink" href="#azure-preset" title="Permanent link">&para;</a></h3>
+<h4 id="prerequisites_1"><em>Prerequisites</em><a class="headerlink" href="#prerequisites_1" title="Permanent link">&para;</a></h4>
+<p>To configure OIDC-based SSO, you need an Azure account with an active subscription. <a href="https://azure.microsoft.com/free/?WT.mc_id=A261C142F">Create an account</a> for free. The account used for setup must be of the following roles: Global Administrator, Cloud Application Administrator, Application Administrator, or owner the service principal.</p>
+<blockquote>
+<p>Check this <a href="https://learn.microsoft.com/en-us/azure/active-directory/manage-apps/add-application-portal-setup-oidc-sso">documentation</a> for more information.  </p>
+</blockquote>
+<h4 id="basic-config-example_1"><em>Basic Config Example</em><a class="headerlink" href="#basic-config-example_1" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1gkl04i-40g8-2h74-6v41-2jm2o2x0x27r&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AxT6U5K4QtcyS6gF48gndL7Ys22BL15BWJImuq1O&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;azure&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tenant_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;46a6022g-4h33-1451-h1rc-08102ga3b5e4&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="specifics_1"><em>Specifics</em><a class="headerlink" href="#specifics_1" title="Permanent link">&para;</a></h4>
+<p>As with all other types of configuration for the OIDC strategy, the Azure preset requires a client ID and secret.The tenant ID is used as part of the issuer URI to make even the most basic AuthN requests so it is also required for the azure preset. besides that groups are available to the Azure preset as well as the recursive feature of groups. This allows you to search user groups recursively for groups they have membership in through other groups.</p>
+<blockquote>
+<p>NOTE: The Azure AD preset uses the Tenant ID as part of the issuer URI:<br><code>"https://login.microsoftonline.com/"</code> + <code>strategy</code>.custom.tenant_id + <code>"/v2.0"</code></p>
+</blockquote>
+<h4 id="advanced-example-with-groups_1"><em>Advanced Example with Groups</em><a class="headerlink" href="#advanced-example-with-groups_1" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;client&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1gkl04i-40g8-2h74-6v41-2jm2o2x0x27r&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AxT6U5K4QtcyS6gF48gndL7Ys22BL15BWJImuq1O&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;azure&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tenant_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;46a6022g-4h33-1451-h1rc-08102ga3b5e4&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;recursive&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;siteadmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GroupA&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;revokeAdmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sync&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;callbackURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mesh.your.domain/auth-oidc-azure-callback&quot;</span>
+<span class="p">},</span>
+</code></pre></div>
+<h4 id="schema_5"><em>Schema</em><a class="headerlink" href="#schema_5" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;custom&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;preset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;azure&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;google&quot;</span><span class="p">]},</span>
+<span class="w">        </span><span class="nt">&quot;tenant_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Tenant ID from Azure AD.&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">},</span>
+</code></pre></div>
+<h2 id="depreciated-properties">Depreciated Properties<a class="headerlink" href="#depreciated-properties" title="Permanent link">&para;</a></h2>
+<h3 id="overview_3">Overview<a class="headerlink" href="#overview_3" title="Permanent link">&para;</a></h3>
+<h4 id="introduction_6">Introduction<a class="headerlink" href="#introduction_6" title="Permanent link">&para;</a></h4>
+<p>As of MeshCentral <code>v1.1.22</code> and the writing of this documentation, the node module that handles everything was changed from <a href="https://github.com/jaredhanson/passport-openidconnect">passport-openid-connect</a> to <a href="https://github.com/panva/node-openid-client">openid-client</a>. As a result of this change, multiple properties in the config have been depcrecated; this means some options in the strategy arent being used anymore. These are often referred to as "old configs" by this documentation. </p>
+<h4 id="migrating-old-configs"><em>Migrating Old Configs</em><a class="headerlink" href="#migrating-old-configs" title="Permanent link">&para;</a></h4>
+<p>We upgraded but what about all the existing users, we couldn't just invalidate every config pre <code>v1.1.22</code>. So in an effort to allow greater flexibility to all users of MeshCentral, and what futures scholars will all agree was an obvious move, all the depreciated configs will continue working as expected. Using any of the old options will just generate a warning in the authlog and will not stop you from using this the OIDC strategy with outdated configs, however if both the equivalent new and old config are set the new config will be used.</p>
+<h4 id="old-config-example"><em>Old Config Example</em><a class="headerlink" href="#old-config-example" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;newAccounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;clientid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;421326444155-i1tt4bsmk3jm7dri6jldekl86rfpg07r.apps.googleusercontent.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;clientsecret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GNLXOL-kEDjufOCk6pIcTHtaHFOCgbT4hoi&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This example was chosen because I wanted to highlight an advantage of supporting these old configs long term, even in a depreciated status. That is, the ability to copy your existing config from one of the related strategies without making any changes to your config by using the presets. This allows you to test out the oidc strategy without commiting to anything, since the user is always appended with the strategy used to login. In this example, the config was originally a google auth strategy config, changing the <code>"google"</code> to <code>"oidc"</code> is all that was done to the above config, besides obsfuscation of course.</p>
+<h4 id="advcanced-old-config-example"><em>Advcanced Old Config Example</em><a class="headerlink" href="#advcanced-old-config-example" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">&quot;oidc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;authorizationURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/api/oidc/authorization&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;callbackURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://mesh.your.domain/oauth2/oidc/callback&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;clientid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tZiPTMDNuSaQPapAQJtwDXVnYjjhQybc&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;clientsecret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vrQWspJxdVAxEFJdrxvxeQwWkooVcqdU&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;issuer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tokenURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/api/oidc/token&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;userInfoURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/api/oidc/userinfo&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;logoutURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://sso.your.domain/logout?rd=https://mesh.your.domain/login&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;recursive&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Group1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Group2&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;siteadmin&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GroupA&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;sync&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Group1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;GroupB&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;OtherGroup&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;newAccounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">},</span>
+</code></pre></div>
+<h4 id="upgrading-to-v1122"><em>Upgrading to v1.1.22</em><a class="headerlink" href="#upgrading-to-v1122" title="Permanent link">&para;</a></h4>
+<p>If you were already using a meticulusly configured oidc strategy, all of your configs will still be used. You will simply see a warning in the logs if any depreciated properties were used. If you check the authLog there are additional details about the old config and provide the new place to put that information. In this advanced config, even the groups will continue to work just as they did before without any user intervention when upgrading from a version of MeshCentral pre v1.1.22. There are no step to take and no action is needed, moving the configs to the new locations is completely optional at the moment.</p>
+<h1 id="links">Links<a class="headerlink" href="#links" title="Permanent link">&para;</a></h1>
+<p>https://cloud.google.com/identity/docs/reference/rest/v1/groups/list</p>
+<p>https://www.onelogin.com/learn/authentication-vs-authorization</p>
+<p>https://auth0.com/docs/authenticate/protocols/openid-connect-protocol</p>
+<p>https://github.com/panva/node-openid-client</p>
+<p>https://openid.net/connect/</p>
+<blockquote>
+<p>You just read <code>openidConnectStrategy.ms v1.0.1</code> by <a href="https://github.com/mstrhakr">@mstrhakr</a></p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.expand", "navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>

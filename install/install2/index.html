@@ -1,0 +1,3467 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A remote monitoring and management tool">
+      
+      
+        <meta name="author" content="Ylianst">
+      
+      
+        <link rel="canonical" href="https://ylianst.github.io/MeshCentral/install/install2/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../../meshcentral/">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>Full Install Guide - MeshCentral Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#full-install-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="MeshCentral Documentation" class="md-header__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../../images/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MeshCentral Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Full Install Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Install
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../meshcentral/" class="md-tabs__link">
+          
+  
+  
+  MeshCentral2
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../design/" class="md-tabs__link">
+          
+  
+  
+  Design and Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../meshcmd/" class="md-tabs__link">
+          
+  
+  
+  MeshCmd
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../meshctrl/" class="md-tabs__link">
+          
+  
+  
+  MeshCtrl
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../meshrouter/" class="md-tabs__link">
+          
+  
+  
+  Mesh Router
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../intelamt/" class="md-tabs__link">
+          
+  
+  
+  Intel AMT
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how-to-contribute/" class="md-tabs__link">
+          
+  
+  
+  How to Contribute
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../other/adfs_sso_guide/" class="md-tabs__link">
+          
+  
+  
+  Other
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MeshCentral Documentation" class="md-nav__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+      
+  <img src="../../images/favicon.ico" alt="logo">
+
+    </a>
+    MeshCentral Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ylianst/MeshCentral
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Install
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Install
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Full Install Guide
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Full Install Guide
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker Compose
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Start
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#amazon-linux-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Amazon Linux 2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microsoft-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microsoft Azure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elestio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Elestio
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#server-security-adding-crowdsec" class="md-nav__link">
+    <span class="md-ellipsis">
+      Server Security - Adding Crowdsec
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windows-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windows-installation-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows Installation Tool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm-installation-for-advanced-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      NPM Installation for Advanced Users
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-defender-firewall-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows Defender Firewall Settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows Defender Firewall Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editing-the-existing-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Editing the existing rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-new-firewall-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add new firewall rules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amazon-linux-2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Amazon Linux 2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Amazon Linux 2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getting-the-aws-instance-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting the AWS instance setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port permissions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-for-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring for MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-starting-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatically-starting-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatically starting the server
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#raspberry-pi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Raspberry Pi
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Raspberry Pi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-permissions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port permissions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-for-lan-only-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring for LAN-only mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-starting-the-server_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatically-starting-the-server_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatically starting the server
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ubuntu-1804" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ubuntu 18.04
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ubuntu 18.04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-mongodb_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-permissions_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port permissions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-for-mongodb_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring for MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-starting-the-server_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatically-starting-the-server_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatically starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#increased-security-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Increased Security Installation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restore-backup-in-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Restore backup in Ubuntu
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#microsoft-azure_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microsoft Azure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-cloud" class="md-nav__link">
+    <span class="md-ellipsis">
+      Google Cloud
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ubuntu-1604" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ubuntu 16.04
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ubuntu 16.04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openbsd-64" class="md-nav__link">
+    <span class="md-ellipsis">
+      OpenBSD 6.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenBSD 6.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-mongodb_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCentral2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral2 Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    All Configuration Options
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent Information
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/assistant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Assistant
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/codesigning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Code Signing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Debugging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/devicetabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Device Tabs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/plugins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/SSLnletsencrypt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    SSL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Security
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/tokens/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tokens
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FAQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/tipsntricks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tips n Tricks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Messaging
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/customization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Customization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcentral/openidConnectStrategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    openidConnectStrategy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Design and Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Design and Architecture
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCmd
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshcmd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCmd
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            MeshCtrl
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshctrl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCtrl
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Mesh Router
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Mesh Router
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../meshrouter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Router
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Intel AMT
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intelamt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Intel AMT
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    How to Contribute
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            How to Contribute
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to-contribute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contribute to MeshCentral
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Other
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Other
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../other/adfs_sso_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ADFS SSO Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../other/meshcentral_satellite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MeshCentral Satellite
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker Compose
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Start
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#amazon-linux-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Amazon Linux 2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microsoft-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microsoft Azure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elestio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Elestio
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#server-security-adding-crowdsec" class="md-nav__link">
+    <span class="md-ellipsis">
+      Server Security - Adding Crowdsec
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#video-walkthru" class="md-nav__link">
+    <span class="md-ellipsis">
+      Video Walkthru
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windows-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windows-installation-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows Installation Tool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm-installation-for-advanced-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      NPM Installation for Advanced Users
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-defender-firewall-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows Defender Firewall Settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows Defender Firewall Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editing-the-existing-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Editing the existing rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-new-firewall-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add new firewall rules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amazon-linux-2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Amazon Linux 2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Amazon Linux 2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getting-the-aws-instance-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting the AWS instance setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port permissions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-for-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring for MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-starting-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatically-starting-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatically starting the server
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#raspberry-pi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Raspberry Pi
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Raspberry Pi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-permissions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port permissions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-for-lan-only-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring for LAN-only mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-starting-the-server_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatically-starting-the-server_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatically starting the server
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ubuntu-1804" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ubuntu 18.04
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ubuntu 18.04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-mongodb_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-permissions_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port permissions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuring-for-mongodb_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring for MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-starting-the-server_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatically-starting-the-server_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automatically starting the server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#increased-security-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Increased Security Installation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restore-backup-in-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Restore backup in Ubuntu
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#microsoft-azure_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microsoft Azure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-cloud" class="md-nav__link">
+    <span class="md-ellipsis">
+      Google Cloud
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ubuntu-1604" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ubuntu 16.04
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ubuntu 16.04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openbsd-64" class="md-nav__link">
+    <span class="md-ellipsis">
+      OpenBSD 6.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenBSD 6.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-mongodb_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MongoDB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-nodejs_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing NodeJS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-meshcentral_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing MeshCentral
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="full-install-guide">Full Install Guide<a class="headerlink" href="#full-install-guide" title="Permanent link">&para;</a></h1>
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This guide is specifically intended to help users install MeshCentral from start to finish. Once installed, you can take a look at the MeshCentral user’s guide for information on how to configure MeshCentral for your specific use. In this document, we will look at installing MeshCentral on AWS Linux, Raspberry Pi and Ubuntu.</p>
+<h2 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral">https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral</a></p>
+<div class="highlight"><pre><span></span><code>docker pull ghcr.io/ylianst/meshcentral:master
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not use the built in mesh update function. Update docker the docker way.</p>
+</div>
+<h3 id="docker-compose">Docker Compose<a class="headerlink" href="#docker-compose" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>version: &#39;3&#39;
+services:
+  meshcentral:
+    restart: unless-stopped # always restart the container unless you stop it
+    image: ghcr.io/ylianst/meshcentral:1.1.27 # 1.1.27 is a version number OR use master for the master branch of bug fixes
+    ports:
+      - 80:80 # HTTP
+      - 443:443 # HTTPS
+      - 4433:4433 # AMT (Optional)
+    volumes:
+      - data:/opt/meshcentral/meshcentral-data # config.json and other important files live here
+      - user_files:/opt/meshcentral/meshcentral-files # where file uploads for users live
+      - backup:/opt/meshcentral/meshcentral-backups # location for the meshcentral backups - this should be mounted to an external storage
+      - web:/opt/meshcentral/meshcentral-web # location for site customization files
+volumes:
+  data:
+    driver: local
+  user_files:
+    driver: local
+  backup:
+    driver: local
+  web:
+    driver: local
+</code></pre></div>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<p>For some who want to skip this document entirely, there are quick install scripts that will get a MeshCentral2 instance up and running on Linux in a few minutes. These scripts will pretty much do what this document explains very rapidly. Right now, there are two such scripts available:</p>
+<h3 id="amazon-linux-2">Amazon Linux 2<a class="headerlink" href="#amazon-linux-2" title="Permanent link">&para;</a></h3>
+<p>For Amazon EC2 users, that want to manage 100 devices or less. Launch a t3.nano or t3.micro EC2 instance with Amazon Linux 2 with TCP ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 4433 (CIRA) open. Then login as <code>ec2-user</code> and enter the following commands:</p>
+<div class="highlight"><pre><span></span><code>wget https://meshcentral.com/scripts/mc-aws-linux2.sh
+chmod 755 mc-aws-linux2.sh
+./mc-aws-linux2.sh
+</code></pre></div>
+<p>This will download the fast install script and once run, will install nodejs, meshcentral, setup systemd and start the server. For a larger instance like a t3.small, t3.medium or larger you can run the following that does the same but also installs MongoDB.</p>
+<div class="highlight"><pre><span></span><code>wget https://meshcentral.com/scripts/mc-aws-linux2-mongo.sh
+chmod 755 mc-aws-linux2-mongo.sh
+./mc-aws-linux2-mongo.sh
+</code></pre></div>
+<p>After these scripts are run, try accessing the server using a browser. MeshCentral will take a minute or two to create certificates after that, the server will be up. The first account to be created will be the site administrator – so don’t delay and create an account right away. Once running, move on to the MeshCentral’s user’s guide to configure your new server.</p>
+<h3 id="microsoft-azure">Microsoft Azure<a class="headerlink" href="#microsoft-azure" title="Permanent link">&para;</a></h3>
+<p>For 100 devices or less, launch an instance of Ubuntu 18.04 using a small B1s instance. Set the username to <code>default</code> in all lower case and open ports 22, 80, 443 and 3389 using the basic network profile. Then start the instance and run the following lines.</p>
+<div class="highlight"><pre><span></span><code>wget https://meshcentral.com/scripts/mc-azure-ubuntu1804.sh
+chmod 755 mc-azure-ubuntu1804.sh
+./mc-azure-ubuntu1804.sh
+</code></pre></div>
+<p>In this situation, port 3389 will be used to receive Intel AMT CIRA connections instead of port 4433. After these scripts are run, try accessing the server using a browser. MeshCentral will take a minute or two to create certificates after that, the server will be up. The first account to be created will be the site administrator – so don’t delay and create an account right away. Once running, move on to the MeshCentral’s user’s guide to configure your new server.</p>
+<h3 id="elestio">Elestio<a class="headerlink" href="#elestio" title="Permanent link">&para;</a></h3>
+<p>You can deploy MeshCentral on Elestio using one-click deployment. Elestio handles version updates, maintenance, securtiy, backups, etc. Additionally, Elestio supports MeshCentral by providing revenue share so go ahead and click below to deploy and start using.</p>
+<p><a href="https://elest.io/open-source/meshcentral"><img alt="Deploy on Elestio" src="https://elest.io/images/logos/deploy-to-elestio-btn.png" /></a></p>
+<h2 id="server-security-adding-crowdsec">Server Security - Adding Crowdsec<a class="headerlink" href="#server-security-adding-crowdsec" title="Permanent link">&para;</a></h2>
+<p>MeshCentral has built-in support for a CrowdSec bouncer. This allows MeshCentral to get threat signals from the community and block or CAPTCHA requests coming from known bad IP addresses.</p>
+<h2 id="video-walkthru">Video Walkthru<a class="headerlink" href="#video-walkthru" title="Permanent link">&para;</a></h2>
+<div class="video-wrapper">
+  <iframe width="320" height="180" src="https://www.youtube.com/embed/TVKF9gBJFCE" frameborder="0" allowfullscreen></iframe>
+</div>
+
+<h2 id="windows-installation">Windows Installation<a class="headerlink" href="#windows-installation" title="Permanent link">&para;</a></h2>
+<p>MeshCentral is constructed entirely with NodeJS, an asynchronous event driven JavaScript runtime (https://nodejs.org/). A basic understanding on NodeJS may be preferable but not compulsory. MeshCentral server which heavily relies on NodeJS runtime will be able run on almost any computing platform with contemporary operating systems including Windows*, Linux* and macOS*.</p>
+<p>There are two ways to get MeshCentral setup. </p>
+<ul>
+<li>For Linux*, macOS*, or advanced users can use CLI based NPM tool.</li>
+<li>For Windows users, you can use the MeshCentral installation tool. </li>
+</ul>
+<h3 id="windows-installation-tool">Windows Installation Tool<a class="headerlink" href="#windows-installation-tool" title="Permanent link">&para;</a></h3>
+<p>The MeshCentral installer tool for Microsoft Windows can be downloaded at <a href="https://www.meshcommander.com/meshcentral2">https://www.meshcommander.com/meshcentral2</a> or by clicking this link. This tool will automatically detect and install NodeJS if needed. NodeJS will be downloaded from <a href="https://nodejs.org">https://nodejs.org</a> checked and installed. We recommend the installer be run on a modern version of Windows (.e.g. Win8.1, Win10, Win Server 2012* or better)</p>
+<p><img alt="" src="../images/2022-05-16-23-45-01.png" /></p>
+<p>During installation, the installation tool will prompt for the following settings:</p>
+<ul>
+<li>Multi-user Server : By enabling this option, the server will be open to any user with a web browser app. Users will be able to create accounts and start managing computers associated in their respective accounts. </li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If this option is disabled (unchecked), the server will run as a single-user server, no login screen will be presented and MeshCentral application will be limited to the server host machine only.</p>
+</div>
+<ul>
+<li>Auto-update Server: By enabling this option, the server will check new version releases daily and perform automatic update. </li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Update check occurs at 0000 between 0100 hours (local time). During update, the server will not be accessible until update is completed. </p>
+</div>
+<ul>
+<li>
+<p>Server Modes, LAN, WAN or Hybrid: </p>
+<p><code>LAN mode</code>: Recommended for small installation within a local network. Server host does not need a fixed IP address or DNS record to operate. </p>
+<p><code>WAN or Hybrid modes</code>: Server host will require a fixed IP address or DNS record to function correctly. If selected, user will need to enter server’s DNS name or static IP address in the <code>Server Name</code> field. This name or IP address will be used by browsers and agents to connect back to the server, this name MUST be correct or the server will not work. If you do not have a fixed name, select LAN mode to get started.</p>
+</li>
+</ul>
+<p>Acquiring a static IP or DNS record is beyond the scope of this document. Please seek advice or consult your network administrator if unsure. If unsure, leave the settings as default (as-is) and proceed setup in LAN mode to manage computers that reside within the same network.</p>
+<p>Once installed MeshCentral will run as a background Windows Service and can be accessed using a web browser with the link provided by the installer.</p>
+<p>The installation tool can be run again to perform server update, re-installation or un-installation. When performing an update check, the tool will look at the currently installed version and compare it to the one present on NPM.</p>
+<p><img alt="" src="../images/2022-05-16-23-47-10.png" /></p>
+<p>By default, MeshCentral will use TCP ports 80 (HTTP), 443 (HTTPS) and 4433 (Intel® AMT CIRA). The installer will add Windows Defender Firewall rules to allow incoming connections on these ports. In addition, if the server is in LAN or Hybrid mode, an addition rule on UDP port 16990 is added to allow for server discovery.</p>
+<h3 id="npm-installation-for-advanced-users">NPM Installation for Advanced Users<a class="headerlink" href="#npm-installation-for-advanced-users" title="Permanent link">&para;</a></h3>
+<p>For advanced users or administrators, MeshCentral can be installed with NPM, a NodeJS package manager that can be accessed via web browser (https://www.npmjs.com/) or command line tool, <code>npm</code>. </p>
+<p><img alt="" src="../images/2022-05-16-23-47-36.png" /></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As a prerequisite, NodeJS and NPM must be installed on host OS and HTTP/HTTPS proxy settings maybe required if server host resides behind a HTTP proxy server. </p>
+</div>
+<ol>
+<li>
+<p>To begin, start a command line terminal (Windows Command Prompt or Linux Terminal) and type the following to verify if nodeJS and npm has been installed correctly as shown below 
+    a. To check on nodeJS installed version, type <code>node –v</code> and hit <code>enter</code> key
+    b. To check on npm installed version, type <code>npm –v</code> and hit <code>enter</code> key</p>
+</li>
+<li>
+<p>If MeshCentral installation is performed on a server host that resides behind a HTTP proxy, NPM’s proxy settings must be updated with respective proxy settings associated with the network environment. Skip this step if not applicable. 
+    <div class="highlight"><pre><span></span><code>.e.g. for http proxy `npm config set proxy http://proxy.com:88`
+.e.g. for https proxy `npm config set https-proxy http://proxy.com:88`
+</code></pre></div></p>
+</li>
+<li>Create a new directory <code>MeshCentral</code> and run the NPM install command as shown below:
+<div class="highlight"><pre><span></span><code>mkdir meshcentral
+cd meshcentral
+npm install meshcentral
+</code></pre></div>
+<strong>Warning</strong>: Do not use <code>sudo</code> in front of <code>npm install meshcentral</code>.</li>
+<li>Upon download completion, the server can be started with the commands below:
+<div class="highlight"><pre><span></span><code>node node_modules/meshcentral [arguments]
+</code></pre></div>
+    <strong>Warning</strong>: Do not run MeshCentral by going into the <code>node_modules/meshcentral</code> folder as this may cause auto-install and self-update features to fail. Instead, go into the directory above <code>node_modules</code> and run <code>node node_modules/meshcentral</code>.
+<img alt="" src="../images/2022-05-16-23-53-08.png" />
+<strong>Note</strong>: If MeshCentral is started without any arguments, default settings in LAN-only mode will be in effect and user/administrator will only be able to manage computers that reside within the local network.</li>
+<li>To manage computers over the internet, the server needs to have static IP settings or a DNS record that resolves back to the right server. The mesh agents will be using the mechanism to call home to MeshCentral server. For WAN or Hybrid mode, run one of the commands below
+<div class="highlight"><pre><span></span><code>node node_modules/meshcentral --cert servername.domain.com
+node node_modules/meshcentral --cert hostname.domain.com
+node node_modules/meshcentral --cert 1.2.3.4
+</code></pre></div>
+<strong>Note</strong>: On first attempt running on WAN or Hybrid Mode:<ul>
+<li>Certificates will be generated for the first time and this may take a few minutes to complete. </li>
+</ul>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At this point, no user account will be created or available for the user hence 1<sup>st</sup> user account will be the most privileged user with Administrator rights </p>
+</div>
+<ul>
+<li>User is advised to create an <code>admin</code> account immediately by navigating to https://127.0.0.1 with a web browser. </li>
+</ul>
+<p><strong>Note</strong>: To run MeshCentral as a service, run it using <code>--install</code> argument. Once running, start a web browser and access MeshCentral application with respective URL.</p>
+<h3 id="windows-defender-firewall-settings">Windows Defender Firewall Settings<a class="headerlink" href="#windows-defender-firewall-settings" title="Permanent link">&para;</a></h3>
+<p>On Windows, the built-in firewall will need to be configured to allow TCP ports 80, 443 and 4433 and sometimes UDP port 16990. The MeshCentral Windows Installer will add incoming rules for these ports automatically. If using the advanced NPM installation or when changing the default ports, it may be needed to add or edit these firewall rules. In this section we look at how to do this.</p>
+<p>To get started, we need to go in the control panel, click <code>System and Security</code> then <code>Windows Defender Firewall</code> and <code>Advanced Settings</code> on the left side then click on <code>Inbound rules</code>. This will get us on the right place to add or edit firewall rules.</p>
+<p><img alt="" src="../images/2022-05-17-00-01-10.png" /></p>
+<p>If the MeshCentral Windows Installer was used, the <code>MeshCentral Server TCP ports</code> and optionally <code>MeshCentral Server UDP ports</code> rules should already be present.</p>
+<h4 id="editing-the-existing-rules">Editing the existing rules<a class="headerlink" href="#editing-the-existing-rules" title="Permanent link">&para;</a></h4>
+<p>To edit an existing rule, simply double click on it. To change the allowed inbound ports, go to the <code>Protocols and Ports</code> tab and change the local ports.</p>
+<p><img alt="" src="../images/2022-05-17-00-01-52.png" /></p>
+<h4 id="add-new-firewall-rules">Add new firewall rules<a class="headerlink" href="#add-new-firewall-rules" title="Permanent link">&para;</a></h4>
+<p>To add a new firewall rule, click on the <code>New Rule…</code> then select <code>Port</code> and ok. TCP or UDP and enter the specific local ports needed and ok. Then click ok twice, enter the rule name and ok again.</p>
+<p><img alt="" src="../images/2022-05-17-00-02-25.png" /></p>
+<p>Typically, inbound TCP ports 80, 443 and 4433 are used, but the rule can be added with different ports as needed.</p>
+<h2 id="amazon-linux-2_1">Amazon Linux 2<a class="headerlink" href="#amazon-linux-2_1" title="Permanent link">&para;</a></h2>
+<p>In this section, we will look at installing MeshCentral on Amazon AWS with <code>Amazon Linux 2</code>. This is a low cost instance and a free tier is available so you can experiment or run a small instance of MeshCentral and it will work perfectly fine.</p>
+<h3 id="getting-the-aws-instance-setup">Getting the AWS instance setup<a class="headerlink" href="#getting-the-aws-instance-setup" title="Permanent link">&para;</a></h3>
+<p>On AWS EC2, you can launch an instance and select <code>Amazon Linux 2</code>. In this case, it’s the first option available.</p>
+<p><img alt="" src="../images/2022-05-17-00-03-59.png" /></p>
+<p>When launching a new instance, you are asked to use or create a security group with the allowed inbound TCP and UDP ports. The security group should look like this:</p>
+<p><img alt="" src="../images/2022-05-17_000542.png" /></p>
+<p>All security group rules should have a source of <code>0.0.0.0/0</code> and <code>::/0</code>. The last rule for port 8080 is only needed if migrating from a MeshCentral1 server, most people don’t need it and should not be added.</p>
+<p>If you are not going to be managing Intel AMT computers, you can remove port 4433. One can also remove port 80, however it’s needed to get a Let’s Encrypt certificate and useful to route users from the HTTP to the HTTPS web page.</p>
+<p>For all the following sections, we assume that we are in the <code>ec2-user</code> home path. You can do: </p>
+<div class="highlight"><pre><span></span><code>cd ~
+</code></pre></div>
+<p>This will change the current path to the home folder. </p>
+<h3 id="installing-nodejs">Installing NodeJS<a class="headerlink" href="#installing-nodejs" title="Permanent link">&para;</a></h3>
+<p>To get started, launch an instance and start a SSH session to it. You can use SSH on Linux or Putty on Windows to login to the AWS instance.</p>
+<p>The first thing to do is get NodeJS installed on the instance. We will be installing a long term support (LTS) version of NodeJS. Additional information on how to do this can be found here. We first install the node version manager then activate it and install the NodeJS LTS. It’s done with 3 commands:</p>
+<div class="highlight"><pre><span></span><code>curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+. ~/.nvm/nvm.sh
+nvm install --lts
+</code></pre></div>
+<p>We can test what version of NodeJS is installed using:</p>
+<div class="highlight"><pre><span></span><code>node -v
+</code></pre></div>
+<h3 id="installing-mongodb">Installing MongoDB<a class="headerlink" href="#installing-mongodb" title="Permanent link">&para;</a></h3>
+<p>If we are going to run a large instance, it’s best to use MongoDB as the database. If you are using a small instance, you can skip installing MongoDB and MeshCentral will use NeDB instead which is a light weight database that is probably great for managing less than 100 computers.</p>
+<p>If you want to use MongoDB, we can install MongoDB Community Edition. More information on how to do this can be found here.</p>
+<p>Using <code>nano</code> create the file <code>/etc/yum.repos.d/mongodb-org-4.0.repo</code>:</p>
+<div class="highlight"><pre><span></span><code>sudo nano /etc/yum.repos.d/mongodb-org-4.0.repo
+</code></pre></div>
+<p>Then, put this in it:</p>
+<div class="highlight"><pre><span></span><code>[mongodb-org-4.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/amazon/2/mongodb-org/4.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.0.asc
+</code></pre></div>
+<p>This file will setup the repository that we will be using to bet MongoDB. Once done, you can install the package using yum and get it started like this:</p>
+<div class="highlight"><pre><span></span><code>sudo yum install -y mongodb-org
+sudo service mongod start
+</code></pre></div>
+<p>To verify that MongoDB is running, you can enter the MongoDB shell like this:</p>
+<div class="highlight"><pre><span></span><code>mongo --host 127.0.0.1:27017
+</code></pre></div>
+<p>You can leave the shell using Ctrl-C. The database and log files will be create at these locations:</p>
+<div class="highlight"><pre><span></span><code>/var/log/mongodb
+/var/lib/mongo
+</code></pre></div>
+<p>This is useful to know if you want to make a backup of the database file.</p>
+<h3 id="port-permissions">Port permissions<a class="headerlink" href="#port-permissions" title="Permanent link">&para;</a></h3>
+<p>On Linux, ports below 1024 are reserved for the <code>root</code> user. This is a security feature. In our case MeshCentral will need to listen to ports 80 and 443. To allow this, we need to allow node to listen to ports below 1024 like this:</p>
+<div class="highlight"><pre><span></span><code>whereis node
+node: /home/ec2-user/.nvm/versions/node/v8.11.3/bin/node
+
+sudo setcap cap_net_bind_service=+ep /home/ec2-user/.nvm/versions/node/v8.11.3/bin/node
+</code></pre></div>
+<p>We first locate the node binary, using <code>whereis node</code>, we then use the <code>setcap</code> command to add permissions to node. Note that we take the path given by whereis and place it in the setcap command. The <code>setcap</code> command will set permissions allowing node to use ports 1024 and below. This permission may be lost when updating the Linux kernel, so this command may need to be applied again in some case.</p>
+<h3 id="installing-meshcentral">Installing MeshCentral<a class="headerlink" href="#installing-meshcentral" title="Permanent link">&para;</a></h3>
+<p>It’s almost time to install MeshCentral but first, we need to know the public name of our AWS instance, you can run the following command:</p>
+<div class="highlight"><pre><span></span><code>curl http://169.254.169.254/latest/meta-data/public-hostname
+</code></pre></div>
+<p>It will return the public name of the AWS instance, for example:</p>
+<div class="highlight"><pre><span></span><code>ec2-1-2-3-4.us-west-2.compute.amazonaws.com
+</code></pre></div>
+<p>You can use this name, or if you have another registered DNS name pointing to the server instance, you can also use that now. Note that you must setup any alternative name on your own, MeshCentral will not do this for you. This name must be correct and must resolve to this AWS instance as all mesh agents will use this name to connect back to this server.</p>
+<p>Now, we can use the node package manager (NPM) to install MeshCentral.</p>
+<div class="highlight"><pre><span></span><code>npm install meshcentral
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not use <code>sudo</code> in front of <code>npm install meshcentral</code>. </p>
+</div>
+<p>After that, we can run MeshCentral for the first time. We want to run in WAN-only mode since we will not be managing any computers on the same local network at this server. We also want to create a server with a certificate name that is the same at the AWS instance name. So, we will use <code>--wanonly</code> and <code>--cert [name]</code> arguments to get the server started. For example:</p>
+<p><div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral --wanonly --cert ec2-1-2-3-4.us-west-2.compute.amazonaws.com
+</code></pre></div>
+At this point, the server will create its certificates and start running.
+<div class="highlight"><pre><span></span><code>MeshCentral HTTP redirection web server running on port 80.
+Generating certificates, may take a few minutes...
+Generating root certificate...
+Generating HTTPS certificate...
+Generating MeshAgent certificate...
+Generating Intel AMT MPS certificate...
+Generating Intel AMT console certificate...
+MeshCentral Intel(R) AMT server running on ec2-54-245-141-130.us-west-2.compute.amazonaws.com:4433.
+MeshCentral HTTPS web server running on ec2-54-245-141-130.us-west-2.compute.amazonaws.com:443.
+Server has no users, next new account will be site administrator.
+</code></pre></div></p>
+<p>You can now open a browser to the name of the server, for example:</p>
+<div class="highlight"><pre><span></span><code>https://ec2-1-2-3-4.us-west-2.compute.amazonaws.com
+</code></pre></div>
+<p>You will see the server working as expected. You will get a certificate error since the server is used an untrusted certificate for now. Just ignore the error and see the MeshCentral User’s Guide to fix this.</p>
+<p><img alt="" src="../images/2022-05-17-00-12-10.png" />
+At this point, the server is usable but, there are two things that may still need to be done. First, if we opted to use MongoDB, we have to configure MeshCentral to use a MongoDB database. By default, NeDB will be used which should only be used for small deployments managing less than 100 computers. We also need to automatically start the server when the AWS instance starts.</p>
+<p>To continue, stop the MeshCentral server with CTRL-C.</p>
+<h3 id="configuring-for-mongodb">Configuring for MongoDB<a class="headerlink" href="#configuring-for-mongodb" title="Permanent link">&para;</a></h3>
+<p>By default, MeshCentral uses NeDB with a database file located in ~/meshcentral-data/meshcentral.db. This is great for small servers, but if we opted to install MongoDB, let’s make use of it. We need to edit the config.json file located in the meshcentral-data folder.</p>
+<div class="highlight"><pre><span></span><code>nano ~/meshcentral-data/config.json
+</code></pre></div>
+<p>Then, make the start of the file look like this:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;MongoDb&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mongodb://127.0.0.1:27017/meshcentral&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;WANonly&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_Port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">443</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_RedirPort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_AllowLoginToken&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_AllowFraming&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_WebRTC&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_ClickOnce&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_UserAllowedIP&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1,::1,192.168.0.100&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="err">…</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If you start with the default config.json created by MeshCentral, you will need to remove some <code>_</code> characters in front of settings, mongodb and wanonly. You can also add a <code>_</code> to other values.</p>
+<p>You can then same the same and run MeshCentral again. This time, you don’t need to specify the certificate name or <code>--wanonly</code>. You just need to run it like this:</p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral
+</code></pre></div>
+<p>The server should now run correctly and use MongoDB. You can even delete the file <code>~/meshcentral-data/meshcentral.db</code> as it’s not going to be used anymore. You can check that it runs correctly by browsing to the server’s address again and creating a new account. The first account that is created will be administrator for the server, so don’t delay and create the first account right away.</p>
+<p>Once you are done, we can stop the server again using CTRL-C and in the next sections, we will look at starting the server in the background.</p>
+<h3 id="manually-starting-the-server">Manually starting the server<a class="headerlink" href="#manually-starting-the-server" title="Permanent link">&para;</a></h3>
+<p>We can manually start and stop the MeshCentral server in the background in different ways. In this section, we are going to create two commands <code>mcstart</code> and <code>mcstop</code> to take care of this. Type this to create the two commands:</p>
+<div class="highlight"><pre><span></span><code>echo &quot;node ./node_modules/meshcentral &gt; stdout.txt 2&gt; stderr.txt &amp;&quot; &gt; mcstart
+chmod 755 mcstart
+
+echo &quot;pkill –f node_modules/meshcentral&quot; &gt; mcstop
+chmod 755 mcstop
+</code></pre></div>
+<p>You can now run the <code>./mcstart</code> command to launch the server in the background and stop it using the <code>./mcstop</code> to stop it. This should work pretty well, but if the AWS instance is ever stopped and started again, the server will not automatically launch.</p>
+<h3 id="automatically-starting-the-server">Automatically starting the server<a class="headerlink" href="#automatically-starting-the-server" title="Permanent link">&para;</a></h3>
+<p>Since Amazon Linux 2 supports systemd, we are going to use that to auto-start MeshCentral in the background. First, we need to know our own username and group. If we do <code>ls -l</code> in our home folder we get for example:</p>
+<div class="highlight"><pre><span></span><code>drwxr-xr-x   2 default default 4096 Jul 20 00:03 Desktop
+drwxr-xr-x   2 default default 4096 Jul 20 00:03 Documents
+drwxr-xr-x   2 default default 4096 Jul 20 00:03 Downloads
+…
+</code></pre></div>
+<p>Note the username and group name, in this example it’s <code>default</code> for both. We need this information to create the system service description file. To create this file type:</p>
+<div class="highlight"><pre><span></span><code>sudo pico /etc/systemd/system/meshcentral.service
+</code></pre></div>
+<p>Then enter the following lines:</p>
+<div class="highlight"><pre><span></span><code>[Unit]
+Description=MeshCentral Server
+
+[Service]
+Type=simple
+LimitNOFILE=1000000
+ExecStart=/usr/bin/node /home/default/node_modules/meshcentral
+WorkingDirectory=/home/default
+Environment=NODE_ENV=production
+User=default
+Group=default
+Restart=always
+# Restart service after 10 seconds if node service crashes
+
+RestartSec=10
+# Set port permissions capability
+AmbientCapabilities=cap_net_bind_service
+
+[Install]
+WantedBy=multi-user.target
+</code></pre></div>
+<p>Note that the user and group values have to be set correctly for your specific situation. Also, the ExecStart and WorkingDirectory lines includes the path to the user’s home folder which includes the username in it. Make sure that is set correctly.</p>
+<p>Once this is done, you can now start, enable, stop and disable using the following commands:</p>
+<div class="highlight"><pre><span></span><code>sudo systemctl enable meshcentral.service
+sudo systemctl start meshcentral.service
+sudo systemctl stop meshcentral.service
+sudo systemctl disable meshcentral.service
+</code></pre></div>
+<p>Type in the first two commands to start and enable the service. Enabling the service will make it automatically start when the computer restarts.</p>
+<p>Once the server is launched, you can access it using a web browser as before. From this point on, refer to the MeshCentral User’s Guide for information on how to configure and use MeshCentral.</p>
+<h2 id="raspberry-pi">Raspberry Pi<a class="headerlink" href="#raspberry-pi" title="Permanent link">&para;</a></h2>
+<p>In this section, we will look at installing MeshCentral on the famous Raspberry Pi. This computer’s low price makes it a perfect always-on system for managing computers on a home or small business network. This installation will work on any version of the Raspberry Pi, but version 3 certainly much faster.</p>
+<p><img alt="" src="../images/2022-05-17-00-16-40.png" /></p>
+<p>For this installation, we are going to use the Raspbian operating system. You can use the NOOBS version to install this operating system on your Raspberry Pi and install Raspbian. For best performance you can use the <code>Raspbian Stretch Lite</code> image which is much smaller and does not have the X desktop interface. To keep things even smaller, we are not going to be installing MongoDB, instead we are just going to be using NeBD as a database that comes by default with MeshCentral.</p>
+<h3 id="installing-nodejs_1">Installing NodeJS<a class="headerlink" href="#installing-nodejs_1" title="Permanent link">&para;</a></h3>
+<p>Start by opening a terminal. For all of the installation, we will assume we are the default <code>pi</code> user and we are in the home (~) folder. Let’s get started by installing NodeJS.</p>
+<div class="highlight"><pre><span></span><code>sudo apt-get update
+sudo apt-get dist-upgrade
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash
+sudo apt-get -y install nodejs
+</code></pre></div>
+<p>We can now check what version of Node was installed by typing:</p>
+<div class="highlight"><pre><span></span><code>node -v
+</code></pre></div>
+<p>If all goes well, we can now move on to port permissions and installing MeshCentral itself.</p>
+<h3 id="port-permissions_1">Port permissions<a class="headerlink" href="#port-permissions_1" title="Permanent link">&para;</a></h3>
+<p>On Linux, ports below 1024 are reserved for the <code>root</code> user. This is a security feature. In our case MeshCentral will need to listen to ports 80 and 443. To allow this, we need to allow node to listen to ports below 1024 like this:</p>
+<div class="highlight"><pre><span></span><code>whereis node
+node: /usr/bin/node /usr/include/node /usr/share/man/man1/node.1.gz
+
+sudo setcap cap_net_bind_service=+ep /usr/bin/node
+</code></pre></div>
+<p>We first locate the node binary, using <code>whereis node</code>, we then use the <code>setcap</code> command to add permissions to node. Note that we take the path given by whereis and place it in the setcap command. The <code>setcap</code> command will set permissions allowing node to use ports 1024 and below. This permission may be lost when updating the Linux kernel, so this command may need to be applied again in some case.</p>
+<h3 id="installing-meshcentral_1">Installing MeshCentral<a class="headerlink" href="#installing-meshcentral_1" title="Permanent link">&para;</a></h3>
+<p>Now, we can use the Node Package Manager (NPM) to install MeshCentral.</p>
+<div class="highlight"><pre><span></span><code>npm install meshcentral
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not use <code>sudo</code> in front of <code>npm install meshcentral</code>. </p>
+</div>
+<p>After that, we can run MeshCentral for the first time. We want to run in WAN-only mode since we will not be managing any computers on the same local network at this server. We also want to create a server with a certificate name that is the same at the AWS instance name. So, we will use <code>--wanonly</code> and <code>--cert [name]</code> arguments to get the server started. For example:</p>
+<div class="highlight"><pre><span></span><code>node node_modules/meshcentral --lanonly --fastcert
+</code></pre></div>
+<p>At this point, the server will create its certificates and start running.</p>
+<div class="highlight"><pre><span></span><code>MeshCentral HTTP redirection web server running on port 80.
+Generating certificates, may take a few minutes...
+Generating root certificate...
+Generating HTTPS certificate...
+Generating MeshAgent certificate...
+Generating Intel AMT MPS certificate...
+Generating Intel AMT console certificate...
+Server name not configured, running in LAN-only mode.
+MeshCentral HTTPS web server running on port 443.
+Server has no users, next new account will be site administrator.
+</code></pre></div>
+<p>The next step is to get the IP address of the Raspberry Pi. Use <code>ipconfig</code>:</p>
+<div class="highlight"><pre><span></span><code>eth0: flags=4163&lt;UP,BROADCAST,RUNNING,MULTICAST&gt;  mtu 1500
+        inet 192.168.2.162  netmask 255.255.255.0  broadcast 192.168.2.255
+        inet6 fe80::8841:34b7:685:14a7  prefixlen 64  scopeid 0x20&lt;link&gt;
+        ether b8:27:eb:01:13:3f  txqueuelen 1000  (Ethernet)
+        RX packets 58325  bytes 72302196 (68.9 MiB)
+        RX errors 0  dropped 271  overruns 0  frame 0
+        TX packets 28457  bytes 3576126 (3.4 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+</code></pre></div>
+<p>You can now open a browser to the name of the server, for example:</p>
+<div class="highlight"><pre><span></span><code>https://192.168.2.162
+</code></pre></div>
+<p>You will see the server working as expected. You will get a certificate error since the server is used an untrusted certificate for now. Just ignore the error and see the MeshCentral User’s Guide to fix this.</p>
+<p><img alt="" src="../images/2022-05-17-00-19-19.png" /></p>
+<h3 id="configuring-for-lan-only-mode">Configuring for LAN-only mode<a class="headerlink" href="#configuring-for-lan-only-mode" title="Permanent link">&para;</a></h3>
+<p>By default, MeshCentral will assume that you are managing devices both on a local network and on the internet. In the case of this Raspberry Pi installation, we only want to manage device on the local network and so, we can configure MeshCentral to do this. It will adapt the server for this usages. To do this, edit the config.json file:</p>
+<div class="highlight"><pre><span></span><code>pico ~/meshcentral-data/config.json
+</code></pre></div>
+<p>Then, make the start of the file look like this:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;LANonly&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;FastCert&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_Port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">443</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_RedirPort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_AllowLoginToken&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_AllowFraming&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_WebRTC&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_ClickOnce&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_UserAllowedIP&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1,::1,192.168.0.100&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="err">…</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>While we are at it, we can put <code>FastCert</code> to true so that RSA2048 certificates are created instead of RSA3072. This is less secure but runs much faster on small processors like the Raspberry Pi. This is the same as specifying `--fastcert" in the prior section.</p>
+<h3 id="manually-starting-the-server_1">Manually starting the server<a class="headerlink" href="#manually-starting-the-server_1" title="Permanent link">&para;</a></h3>
+<p>We can manually start and stop the MeshCentral server in the background in different ways. In this section, we are going to create two commands <code>mcstart</code> and <code>mcstop</code> to take care of this. Type this to create the two commands:</p>
+<div class="highlight"><pre><span></span><code>echo &quot;node ./node_modules/meshcentral &gt; stdout.txt 2&gt; stderr.txt &amp;&quot; &gt; mcstart
+chmod 755 mcstart
+
+echo &quot;pkill -f node_modules/meshcentral&quot; &gt; mcstop
+chmod 755 mcstop
+</code></pre></div>
+<p>You can now run the <code>./mcstart</code> command to launch the server in the background and stop it using the <code>./mcstop</code> to stop it. This should work pretty well, but if the AWS instance is ever stopped and started again, the server will not automatically launch.</p>
+<h3 id="automatically-starting-the-server_1">Automatically starting the server<a class="headerlink" href="#automatically-starting-the-server_1" title="Permanent link">&para;</a></h3>
+<p>Since Raspbian OS supports systemd, we are going to use that to auto-start MeshCentral in the background. First, we need to know our own username and group. If we do <code>ls -l</code> in our home folder we </p>
+<div class="highlight"><pre><span></span><code>drwxr-xr-x   2 pi pi  4096 Jul 19 21:23 Desktop
+drwxr-xr-x   2 pi pi  4096 Jun 26 18:23 Documents
+drwxr-xr-x   2 pi pi  4096 Jun 26 18:23 Downloads
+…
+</code></pre></div>
+<p>Note the username and group name, in this example it’s <code>pi</code> for both. We need this information to create the system service description file. To create this file type:</p>
+<p><div class="highlight"><pre><span></span><code>sudo nano /etc/systemd/system/meshcentral.service
+</code></pre></div>
+Then enter the following lines:</p>
+<div class="highlight"><pre><span></span><code>[Unit]
+Description=MeshCentral Server
+
+[Service]
+Type=simple
+LimitNOFILE=1000000
+ExecStart=/usr/bin/node /home/pi/node_modules/meshcentral
+WorkingDirectory=/home/pi
+Environment=NODE_ENV=production
+User=pi
+Group=pi
+Restart=always
+# Restart service after 10 seconds if node service crashes
+RestartSec=10
+# Set port permissions capability
+AmbientCapabilities=cap_net_bind_service
+
+[Install]
+WantedBy=multi-user.target
+</code></pre></div>
+<p>Note that the user and group values have to be set correctly for your specific situation. Also, the ExecStart and WorkingDirectory lines includes the path to the user’s home folder which includes the username in it. Make sure that is set correctly.</p>
+<p>Once this is done, you can now enable, start, stop and disable using the following commands:</p>
+<div class="highlight"><pre><span></span><code>sudo systemctl enable meshcentral.service
+sudo systemctl start meshcentral.service
+sudo systemctl stop meshcentral.service
+sudo systemctl disable meshcentral.service
+</code></pre></div>
+<p>Type in the first two commands to start and enable the service. Enabling the service will make it automatically start when the computer restarts.</p>
+<p>Once the server is launched, you can access it using a web browser as before. From this point on, refer to the MeshCentral User’s Guide for information on how to configure and use MeshCentral.</p>
+<h2 id="ubuntu-1804">Ubuntu 18.04<a class="headerlink" href="#ubuntu-1804" title="Permanent link">&para;</a></h2>
+<p>In this section, we will look at installing MeshCentral on Ubuntu 18.04 LTS. This is a long term support of Ubuntu freely available for download at <a href="https://www.ubuntu.com">https://www.ubuntu.com</a>. Both the desktop and server versions of Ubuntu will work. If this is a remote server and the desktop will not be needed, the server version of Ubuntu can be used. This section will describe a way to install MeshCentral in a user’s home folder, however there is a more secure way to do it, see <code>Increased Security Installation</code> at the end of this section.</p>
+<p>In all cases, MeshCentral must not be installed as root user. It’s not secure and the instructions below will not work correctly.</p>
+<h3 id="installing-nodejs_2">Installing NodeJS<a class="headerlink" href="#installing-nodejs_2" title="Permanent link">&para;</a></h3>
+<p>The first thing to do is get NodeJS installed on the computer. We first install the node version manager then activate it and install the NodeJS LTS. It’s done with 4 commands:</p>
+<div class="highlight"><pre><span></span><code>sudo add-apt-repository universe
+sudo apt update
+sudo apt install nodejs -y
+sudo apt install npm -y
+</code></pre></div>
+<p>We can test what version of Node and NPM are installed using:</p>
+<div class="highlight"><pre><span></span><code>node –v
+npm -v
+</code></pre></div>
+<h3 id="installing-mongodb_1">Installing MongoDB<a class="headerlink" href="#installing-mongodb_1" title="Permanent link">&para;</a></h3>
+<p>If we are going to run a large instance, it’s best to use MongoDB as the database. If you are using a small instance, you can skip installing MongoDB and MeshCentral will use NeDB instead which is a light weight database that is probably great for managing less than 100 computers.</p>
+<p>If you want to use MongoDB, we can install MongoDB Community Edition. More information on how to do this for Ubuntu can be found here.</p>
+<p>You can install the package using apt and get it started like this:</p>
+<div class="highlight"><pre><span></span><code>sudo apt install mongodb -y
+</code></pre></div>
+<p>Then start the Mongodb service in the background and enable it for auto-restart.</p>
+<div class="highlight"><pre><span></span><code>sudo systemctl start mongodb
+sudo systemctl enable mongodb
+</code></pre></div>
+<p>To verify that MongoDB is running, you can enter the MongoDB shell like this:</p>
+<div class="highlight"><pre><span></span><code>mongo --host 127.0.0.1:27017
+</code></pre></div>
+<p>You can leave the shell using Ctrl-C. The database and log files will be create at these locations:</p>
+<div class="highlight"><pre><span></span><code>/var/log/mongodb
+/var/lib/mongo
+</code></pre></div>
+<p>This is useful to know if you want to make a backup of the database file.</p>
+<h3 id="port-permissions_2">Port permissions<a class="headerlink" href="#port-permissions_2" title="Permanent link">&para;</a></h3>
+<p>On Linux, ports below 1024 are reserved for the <code>root</code> user. This is a security feature. In our case MeshCentral will need to listen to ports 80 and 443. To allow this, we need to allow node to listen to ports below 1024 like this:</p>
+<div class="highlight"><pre><span></span><code>whereis node
+node: /usr/bin/node /usr/include/node /usr/share/man/man1/node.1.gz
+
+sudo setcap cap_net_bind_service=+ep /usr/bin/node
+</code></pre></div>
+<p>We first locate the node binary, using <code>whereis node</code>, we then use the <code>setcap</code> command to add permissions to node. Note that we take the path given by whereis and place it in the setcap command. The <code>setcap</code> command will set permissions allowing node to use ports 1024 and below. This permission may be lost when updating the Linux kernel, so this command may need to be applied again in some case.</p>
+<h3 id="installing-meshcentral_2">Installing MeshCentral<a class="headerlink" href="#installing-meshcentral_2" title="Permanent link">&para;</a></h3>
+<p>Now, we can use the node package manager (NPM) to install MeshCentral.</p>
+<div class="highlight"><pre><span></span><code>npm install meshcentral
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not use <code>sudo</code> in front of <code>npm install meshcentral</code>. </p>
+</div>
+<p>After that, we can run MeshCentral for the first time. For example:</p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral
+</code></pre></div>
+<p>If the computer has a well-known DNS name that users and agents will use to connect to this server, run MeshCentral like this:</p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral --cert example.servername.com
+</code></pre></div>
+<p>At this point, the server will create its certificates and start running.</p>
+<div class="highlight"><pre><span></span><code>MeshCentral HTTP redirection web server running on port 80.
+Generating certificates, may take a few minutes...
+Generating root certificate...
+Generating HTTPS certificate...
+Generating MeshAgent certificate...
+Generating Intel AMT MPS certificate...
+Generating Intel AMT console certificate...
+MeshCentral Intel(R) AMT server running on ec2-54-245-141-130.us-west-2.compute.amazonaws.com:4433.
+MeshCentral HTTPS web server running on ec2-54-245-141-130.us-west-2.compute.amazonaws.com:443.
+Server has no users, next new account will be site administrator.
+</code></pre></div>
+<p>You can now open a browser and try the server. If you can on the same computer, you navigate to this URL:</p>
+<div class="highlight"><pre><span></span><code>http://localhost
+</code></pre></div>
+<p>If installing on a server that does not have a desktop GUI, use a different computer and enter http:// followed by the IP address or name of the server you installed.</p>
+<p>You should see the server working as expected. You will get a certificate error since the server is used an untrusted certificate for now. Just ignore the error and see the MeshCentral User’s Guide to fix this.</p>
+<p><img alt="" src="../images/2022-05-17-00-29-07.png" /></p>
+<p>At this point, the server is usable but, there are two things that may still need to be done. First, if we opted to use MongoDB, we have to configure MeshCentral to use a MongoDB database. By default, NeDB will be used which should only be used for small deployments managing less than 100 computers. We also need to automatically start the server when the computer starts.</p>
+<p>To continue, stop the MeshCentral server with CTRL-C.</p>
+<h3 id="configuring-for-mongodb_1">Configuring for MongoDB<a class="headerlink" href="#configuring-for-mongodb_1" title="Permanent link">&para;</a></h3>
+<p>By default, MeshCentral uses NeDB with a database file located in ~/meshcentral-data/meshcentral.db. This is great for small servers, but if we opted to install MongoDB, let’s make use of it. We need to edit the config.json file located in the meshcentral-data folder.</p>
+<div class="highlight"><pre><span></span><code>pico ~/meshcentral-data/config.json
+</code></pre></div>
+<p>Then, make the start of the file look like this:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;MongoDb&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mongodb://127.0.0.1:27017/meshcentral&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;WANonly&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_Port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">443</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_RedirPort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_AllowLoginToken&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_AllowFraming&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_WebRTC&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_ClickOnce&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_UserAllowedIP&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1,::1,192.168.0.100&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="err">…</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If you start with the default config.json created by MeshCentral, you will need to remove some <code>_</code> characters in front of settings, mongodb and wanonly. You can also add a <code>_</code> to other values. For details on all of the config.json options, including the <code>WANonly</code> option, refer to the MeshCentral User’s Guide.</p>
+<p>You can then save the config.json file and run MeshCentral again. This time, you don’t need to specify the certificate name. You just need to run it like this:</p>
+<div class="highlight"><pre><span></span><code>node ./node_modules/meshcentral
+</code></pre></div>
+<p>The server should now run correctly and use MongoDB. You can even delete the file ~/meshcentral-data/meshcentral.db as it’s not going to be used anymore. You can check that it runs correctly by browsing to the server’s address again and creating a new account. The first account that is created will be administrator for the server, so don’t delay and create the first account right away.</p>
+<p>Once you are done, we can stop the server again using CTRL-C and in the next sections, we will look at starting the server in the background.</p>
+<h3 id="manually-starting-the-server_2">Manually starting the server<a class="headerlink" href="#manually-starting-the-server_2" title="Permanent link">&para;</a></h3>
+<p>We can manually start and stop the MeshCentral server in the background in different ways. In this section, we are going to create two commands <code>mcstart</code> and <code>mcstop</code> to take care of this. Type this to create the two commands:</p>
+<div class="highlight"><pre><span></span><code>echo &quot;node ./node_modules/meshcentral &gt; stdout.txt 2&gt; stderr.txt &amp;&quot; &gt; mcstart
+chmod 755 mcstart
+
+echo &quot;pkill –f node_modules/meshcentral&quot; &gt; mcstop
+chmod 755 mcstop
+</code></pre></div>
+<p>You can now run the <code>./mcstart</code> command to launch the server in the background and stop it using the <code>./mcstop</code> to stop it. This should work pretty well, but if the AWS instance is ever stopped and started again, the server will not automatically launch.</p>
+<h3 id="automatically-starting-the-server_2">Automatically starting the server<a class="headerlink" href="#automatically-starting-the-server_2" title="Permanent link">&para;</a></h3>
+<p>Since Ubuntu 18.04 supports systemd, we are going to use that to auto-start MeshCentral in the background. First, we need to know our own username and group. If we do <code>ls -l</code> in our home folder we get for example:</p>
+<div class="highlight"><pre><span></span><code>drwxr-xr-x   2 default default 4096 Jul 20 00:03 Desktop
+drwxr-xr-x   2 default default 4096 Jul 20 00:03 Documents
+drwxr-xr-x   2 default default 4096 Jul 20 00:03 Downloads
+…
+</code></pre></div>
+<p>Note the username and group name, in this example it’s <code>default</code> for both. We need this information to create the system service description file. To create this file type:</p>
+<div class="highlight"><pre><span></span><code>sudo pico /etc/systemd/system/meshcentral.service
+</code></pre></div>
+<p>Then enter the following lines:</p>
+<div class="highlight"><pre><span></span><code>[Unit]
+Description=MeshCentral Server
+
+[Service]
+Type=simple
+LimitNOFILE=1000000
+ExecStart=/usr/bin/node /home/default/node_modules/meshcentral
+WorkingDirectory=/home/default
+Environment=NODE_ENV=production
+User=default
+Group=default
+Restart=always
+# Restart service after 10 seconds if node service crashes
+RestartSec=10
+# Set port permissions capability
+AmbientCapabilities=cap_net_bind_service
+
+[Install]
+WantedBy=multi-user.target
+</code></pre></div>
+<p>Note that the user and group values have to be set correctly for your specific situation. Also, the ExecStart and WorkingDirectory lines includes the path to the user’s home folder which includes the username in it. Make sure that is set correctly. Lastly the path to node may need to be changed. Type <code>whereis node</code> to find the correct path.</p>
+<p>Once this is done, you can now start, enable, stop and disable using the following commands:</p>
+<div class="highlight"><pre><span></span><code>sudo systemctl enable meshcentral.service
+sudo systemctl start meshcentral.service
+sudo systemctl stop meshcentral.service
+sudo systemctl disable meshcentral.service
+</code></pre></div>
+<p>Type in the first two commands to start and enable the service. Enabling the service will make it automatically start when the computer restarts.</p>
+<p>Once the server is launched, you can access it using a web browser as before. From this point on, refer to the MeshCentral User’s Guide for information on how to configure and use MeshCentral.</p>
+<h3 id="increased-security-installation">Increased Security Installation<a class="headerlink" href="#increased-security-installation" title="Permanent link">&para;</a></h3>
+<p>On Debian based Linux distributions like Ubuntu, a better and more secure way to install MeshCentral is to have it run within a user account this restricted privileges. When installed like this, the self-update capability of MeshCentral will not work. Instead of installing MeshCentral in the user’s home folder, we install it in /opt/meshcentral and we create a meshcentral user that does not have rights to login or change any of the MeshCentral files. To do this, start by creating a new user called <code>meshcentral</code></p>
+<div class="highlight"><pre><span></span><code>sudo useradd -r -d /opt/meshcentral -s /sbin/nologin meshcentral
+</code></pre></div>
+<p>We can then create the installation folder, install and change permissions of the files so that the <code>meshcentral</code> account gets read-only access to the files.</p>
+<div class="highlight"><pre><span></span><code>sudo mkdir /opt/meshcentral
+cd /opt/meshcentral
+sudo npm install meshcentral
+sudo -u meshcentral node ./node_modules/meshcentral
+</code></pre></div>
+<p>The last line will run MeshCentral manually and allow it to install any missing modules and create the MeshCentral data folders. Once it’s running, press CTRL-C and continue. The following two lines will change the ownership of files to the meshcentral user and restrict access to the files.</p>
+<div class="highlight"><pre><span></span><code>sudo chown -R meshcentral:meshcentral /opt/meshcentral
+sudo chmod -R 755 /opt/meshcentral/meshcentral-*
+</code></pre></div>
+<p>To make this work, you will need to make MeshCentral work with MongoDB because the /meshcentral-data folder will be read-only. In addition, MeshCentral will not be able to update itself since the account does not have write access to the /node_modules files, so the update will have to be manual. First used systemctl to stop the MeshCentral server process, than use this:</p>
+<div class="highlight"><pre><span></span><code>cd /opt/meshcentral
+sudo npm install meshcentral
+sudo -u meshcentral node ./node_modules/meshcentral
+sudo chown -R meshcentral:meshcentral /opt/meshcentral
+</code></pre></div>
+<p>This will perform the update to the latest server on NPM and re-set the permissions so that the meshcentral user account has read-only access again. You can then use systemctl to make the server run again.</p>
+<p>MeshCentral allows users to upload and download files stores in the server’s <code>meshcentral-files</code> folder. In an increased security setup, we still want the server to be able to read and write files to this folder and we can allow this with:</p>
+<div class="highlight"><pre><span></span><code>sudo chmod -R 755 /opt/meshcentral/meshcentral-files
+</code></pre></div>
+<p>If you plan on using the increased security installation along with MeshCentral built-in Let’s Encrypt support you will need to type the following commands to make the <code>letsencrypt</code> folder in <code>meshcentral-data</code> writable.</p>
+<div class="highlight"><pre><span></span><code>sudo mkdir /opt/meshcentral/meshcentral-data
+sudo mkdir /opt/meshcentral/meshcentral-data/letsencrypt
+sudo chmod -R 755 /opt/meshcentral/meshcentral-data/letsencrypt
+</code></pre></div>
+<p>This will allow the server to get and periodically update its Let’s Encrypt certificate. If this is not done, the server will generate an <code>ACCES: permission denied</code> exception.</p>
+<h3 id="restore-backup-in-ubuntu">Restore backup in Ubuntu<a class="headerlink" href="#restore-backup-in-ubuntu" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Stop Meshcentral service <code>sudo systemctl stop meshcentral.service</code></li>
+<li>In your old server, get your backup : meshcentral-data folder, and mongodump-xxxx.archive</li>
+<li>In the new server, replace the actual meshcentral-data with your backup (it will handle your LestEncrypt cert also)</li>
+<li>Restore mongodb : mongorestore --archive=mongodump-xxxx.archive</li>
+<li>Restart meshcentral.service <code>sudo systemctl start meshcentral.service</code></li>
+</ul>
+<h2 id="microsoft-azure_1">Microsoft Azure<a class="headerlink" href="#microsoft-azure_1" title="Permanent link">&para;</a></h2>
+<p>In this section, we will look installing MeshCentral on Microsoft Azure. Microsoft Azure offers many operating system options and we will be selecting <code>Ubuntu Server</code> as our choice. From the Azure portal, we select <code>Virtual machines</code> on the left and <code>Add</code>.</p>
+<p><img alt="" src="../images/2022-05-17-00-34-12.png" /></p>
+<p>Once you click on Ubuntu Server, you will see a list of available versions. In this example, we selected Ubuntu 18.04 LTS (Long Term Support). We then have to create an instance name and a way to authenticate to the instance.</p>
+<p><img alt="" src="../images/2022-05-17-00-34-24.png" /></p>
+<p>Next is the type of instance to launch. Any instance will do including the <code>B1s</code> which is the smallest possible instance. Of course, as you manage more computers, using an instance that is a bit more powerful is a good idea.</p>
+<p><img alt="" src="../images/2022-05-17-00-34-37.png" /></p>
+<p>After selecting the instance type, you can configure storage. 30 gigabytes is plenty. Then the Network Security Group. This is where it’s important to open at least TCP ports 22, 80 and 443.</p>
+<p><img alt="" src="../images/2022-05-17_003521.png" /></p>
+<p>Optionally if you wish to use the instance with Intel AMT, open port 4433. In addition port 8080 must be open if you are migrating from MeshCentral1 (not typical).</p>
+<p>Lastly we launch the instance, it will take a few minutes to setup.</p>
+<p><img alt="" src="../images/2022-05-17-00-36-30.png" /></p>
+<p>You can then find the public IP address and use a SSH client like PUTTY on Windows to connect to the instance and start getting MeshCentral setup. From this point on, just use the Ubuntu section above to complete the installation.</p>
+<h2 id="google-cloud">Google Cloud<a class="headerlink" href="#google-cloud" title="Permanent link">&para;</a></h2>
+<p>In this section, we will look installing MeshCentral on Google Cloud. You can sign up easily at https://cloud.google.com/ and you can run a small instance for less than 5$ a month. </p>
+<p><img alt="" src="../images/2022-05-17-00-36-52.png" /></p>
+<p>Once you have create an account, you can go to the main console and on the left side, go to <code>Compute Engine</code> and create a new VM instance. For our demonstration, we are going to create the smallest instance possible which is a single shared CPU and only 0.6 gigs of RAM.</p>
+<p><img alt="" src="../images/2022-05-17-00-37-05.png" /></p>
+<p>We select the proper settings and select <code>Ubuntu 18.04 LTS Minimal</code> as the boot operating system. This is convenient as we already covered how to install MeshCentral on this operating system.</p>
+<p><img alt="" src="../images/2022-05-17-00-37-21.png" /></p>
+<p>Make sure to allow HTTP and HTTPS traffic. Setup like this, we will not be able to manage Intel AMT unless we also open TCP port 4433. Once done with all these options, we can launch the VM instance.</p>
+<p><img alt="" src="../images/2022-05-17-00-37-35.png" /></p>
+<p>The new instance will take a few minutes to start up. An interesting feature of Google Cloud is that you can access the VM instance shell directly from the web browser. No need for a separate SSH client. This is exactly what we need and we opt to go ahead and option the web console.</p>
+<p><img alt="" src="../images/2022-05-17-00-37-46.png" /></p>
+<p>If will log you in automatically, no additional credentials needed. We can then follow the <code>Ubuntu 18.04 LTS</code> section above to complete the installation. If you opt for a very small instance, it’s probably a good idea to skip installing MongoDB. Just to get started quickly, we can use the following commands:</p>
+<div class="highlight"><pre><span></span><code>sudo apt update
+sudo apt install nodejs -y
+sudo apt install npm -y
+sudo setcap cap_net_bind_service=+ep /usr/bin/node
+npm install meshcentral
+node ./node_modules/meshcentral --fastcert –wanonly --cert 35.227.45.84
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not use <code>sudo</code> in front of <code>npm install meshcentral</code>. </p>
+</div>
+<p>This will install node and npm. Will allow non-root access to ports 80 and 443 and install and start MeshCentral. Because this example uses a very small server instance, we opted to use the <code>fastcert</code> option to create RSA 2048 certificates (the default is RSA 3072 which is more secure). </p>
+<p>We use the <code>wantonly</code> option because MeshCentral will not be managing computers on a local network, and for this demonstration just used the external IP address of the instance as the server name.</p>
+<p>If you plan on using an instance without the Intel AMT CIRA port being open (TCP 4433), it’s recommended to add <code>--mpsport 0</code> so to inform MeshCentral that this port is not open and to not offer Intel AMT CIRA features.</p>
+<p>Of course, this set of commands is just to get the server started quickly. Follow the Ubuntu 18.04 instructions to setup the server to automatically start using system.</p>
+<h2 id="ubuntu-1604">Ubuntu 16.04<a class="headerlink" href="#ubuntu-1604" title="Permanent link">&para;</a></h2>
+<p>In this section, we will look at installing MeshCentral on Ubuntu 16.04 LTS. This is the same installation at Ubuntu 18.04 LTS, however you need to install NodeJS in a special way. If you use <code>apt install node</code>, you will get an older version 4.x of NodeJS that will not work with MeshCentral.</p>
+<h3 id="installing-nodejs_3">Installing NodeJS<a class="headerlink" href="#installing-nodejs_3" title="Permanent link">&para;</a></h3>
+<p>The first thing to do is get NodeJS installed on the computer. We first install the node version manager then activate it and install the NodeJS LTS. It’s done with 3 commands:</p>
+<div class="highlight"><pre><span></span><code>cd ~
+wget https://deb.nodesource.com/setup_8.x
+sudo bash setup_8.x
+sudo apt-get –y install nodejs
+</code></pre></div>
+<p>We can test what version of Node and NPM are installed using:</p>
+<div class="highlight"><pre><span></span><code>node –v
+npm -v
+</code></pre></div>
+<p>You should see Node version 8 and NPM version 5. At this point, you can continue installing MeshCentral using the Ubuntu 18.04 installation instructions.</p>
+<h2 id="openbsd-64">OpenBSD 6.4<a class="headerlink" href="#openbsd-64" title="Permanent link">&para;</a></h2>
+<p>In this section, we will look at installing MeshCentral on OpenBSD 6.4. This section was originally written by Daulton and placed here with this permission. The original instructions are located at: https://daulton.ca/meshcentral-server-on-openbsd/. The section will setup MeshCentral on non-standard ports HTTPS/3000 and HTTP/3001. Thank you to Daulton for his contribution.</p>
+<h3 id="installing-mongodb_2">Installing MongoDB<a class="headerlink" href="#installing-mongodb_2" title="Permanent link">&para;</a></h3>
+<p>Install the Mongodb package.</p>
+<div class="highlight"><pre><span></span><code>pkg_add mongodb
+</code></pre></div>
+<p>Start and enable Mongodb at boot.</p>
+<div class="highlight"><pre><span></span><code>rcctl start mongod
+rcctl enable mongod
+</code></pre></div>
+<p>Temporary remount /usr with wxallowed while we compile the port. For Cloud VPS they usually only have a root partition instead of how OpenBSD splits it up by default, you will need to edit /etc/fstab and add wxallowed to the options for the root partition and then reboot. Assure to remove this from the fstab options after you are done.</p>
+<div class="highlight"><pre><span></span><code>mount -r -o wxallowed /usr/
+</code></pre></div>
+<h3 id="installing-nodejs_4">Installing NodeJS<a class="headerlink" href="#installing-nodejs_4" title="Permanent link">&para;</a></h3>
+<p>Install NodeJS from ports as it is not available by a package.</p>
+<div class="highlight"><pre><span></span><code>$ cd /tmp
+$ ftp https://cdn.openbsd.org/pub/OpenBSD/$(uname -r)/{ports.tar.gz,SHA256.sig}
+# cd /usr
+# tar xzf /tmp/ports.tar.gz
+# cd /usr/ports/lang/node
+# make install
+# make clean
+</code></pre></div>
+<h3 id="installing-meshcentral_3">Installing MeshCentral<a class="headerlink" href="#installing-meshcentral_3" title="Permanent link">&para;</a></h3>
+<p>Create the MeshCentral user. The parameters used here are important as we will not let this user login, it has no home directory, and its class is set to daemon. In line with the OpenBSD daemon user naming scheme, we preface the username with an underscore <code>_</code> to make it easily identifiable as a daemon user.</p>
+<div class="highlight"><pre><span></span><code>useradd -s /sbin/nologin -d /nonexistent -L daemon -u 446 _meshcentral
+</code></pre></div>
+<p>Let’s install MeshCentral and adjust the permissions.</p>
+<div class="highlight"><pre><span></span><code>mkdir -p /usr/local/meshcentral
+cd /usr/local/meshcentral
+npm install meshcentral
+chown -R _meshcentral:_meshcentral /usr/local/meshcentral
+</code></pre></div>
+<p>Configuring for MongoDB and adjusting some other settings such as the network port. Open up the following config in an editor then, make the start of the file look like below. If the setting does not exist yet, just add it below one of the ones we are adjusting in the main settings block.</p>
+<p>If you start with the default config.json created by MeshCentral, you will need to remove some underscore character in front of settings to enable the setting, such as mongodb and wanonly. You can also add an underscore to other values. For details on all of the config.json options, including the <code>WANonly</code> option, refer to the MeshCentral User’s Guide.</p>
+<p>Before you can edit the configuration, start the Meshcentral briefly so it generates the default configurations and certificates. Once you see that it says "MeshCentral HTTPS server running...", Ctrl-C to exit then edit the configuration file next.</p>
+<div class="highlight"><pre><span></span><code>cd /usr/local/meshcentral/node_modules/meshcentral/ &amp;&amp; doas -u _meshcentral /usr/local/bin/node /usr/local/meshcentral/node_modules/meshcentral/meshcentral.js --launch
+</code></pre></div>
+<p>Edit the MeshCentral config.json. For example using vi:</p>
+<div class="highlight"><pre><span></span><code>vi /usr/local/meshcentral/meshcentral-data/config.json
+</code></pre></div>
+<p>In the settings section, set the following key value pairs:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="nt">&quot;Cert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;meshcentral.example.com&quot;</span><span class="p">,</span>
+<span class="nt">&quot;MongoDb&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mongodb://127.0.0.1:27017/meshcentral&quot;</span><span class="p">,</span>
+<span class="nt">&quot;WANonly&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="nt">&quot;Port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3000</span><span class="p">,</span>
+<span class="nt">&quot;ExactPorts&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="nt">&quot;RedirPort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3001</span><span class="p">,</span>
+<span class="nt">&quot;allowLoginToken&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="nt">&quot;allowFraming&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="nt">&quot;NewAccounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="p">},</span>
+<span class="err">…</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Add the following to the root crontab to start MeshCentral at boot. Edit the root crontab by doing the following command as root: crontab -e</p>
+<div class="highlight"><pre><span></span><code>@reboot cd /usr/local/meshcentral/node_modules/meshcentral/ &amp;&amp; doas -u _meshcentral /usr/local/bin/node /usr/local/meshcentral/node_modules/meshcentral/meshcentral.js --launch
+</code></pre></div>
+<p>As root launch Meshcentral while it installs mongojs, once that finishes and Meshcentral launches close it by doing Ctrl-C. Adjust the permissions again as we ran Meshcentral and it generated new files we need to change the ownership of.</p>
+<p>/usr/local/bin/node /usr/local/meshcentral/node_modules/meshcentral
+<div class="highlight"><pre><span></span><code>chown -R _meshcentral:_meshcentral /usr/local/meshcentral
+</code></pre></div></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not keep this running or use this command in the future to start the Meshcentral server as it starts the server as root!</p>
+</div>
+<p>This is a reference /etc/pf.conf for you to keep your server secure. Add any locally connected networks which should have access and any public IP address of a network which will have client PCs connect from to target_whitelist table. Add your own home and/or business IP to my_own_IPs table.</p>
+<div class="highlight"><pre><span></span><code>ext_if = vio0
+set reassemble yes
+set block-policy return
+set loginterface egress
+set ruleset-optimization basic
+set skip on lo
+
+icmp_types = &quot;{ 0, 8, 3, 4, 11, 30 }&quot;
+
+table &lt;target_whitelist&gt; const { 45.63.15.84, 10.18.5.0/24 }
+table &lt;my_own_IPs&gt; const { 45.63.15.84 }
+table &lt;bruteforce&gt;
+
+match in all scrub (no-df max-mss 1440)
+match out all scrub (no-df max-mss 1440)
+
+block in quick log from urpf-failed label uRPF
+block quick log from &lt;fail2ban&gt;
+
+block in from no-route to any
+block in from urpf-failed to any
+block in quick on $ext_if from any to 255.255.255.255
+block in log quick on $ext_if from { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 255.255.255.255/32 } to any antispoof for $ext_if
+block log all
+
+pass in quick inet proto icmp icmp-type $icmp_types
+pass in quick inet6 proto icmp6
+
+pass in quick proto tcp from &lt;my_own_IPs&gt; \
+to (egress) port { 22 } \
+flags S/SA modulate state \
+(max-src-conn 5, max-src-conn-rate 5/5, overload &lt;bruteforce&gt; flush global)
+
+pass in quick inet proto tcp from &lt;target_whitelist&gt; to port 3000
+pass in quick inet6 proto tcp from &lt;target_whitelist&gt; to port 3000
+
+block in quick log on egress all
+
+pass out quick on egress proto tcp from any to any modulate state
+pass out quick on egress proto udp from any to any keep state
+pass out quick on egress proto icmp from any to any keep state
+pass out quick on egress proto icmp6 from any to any keep state
+</code></pre></div>
+<p>After saving the configuration in /etc/pf.conf, reload the pf rules with:</p>
+<div class="highlight"><pre><span></span><code>pfctl -f /etc/pf.conf
+</code></pre></div>
+<p>To save rebooting and have MeshCentral launch then, launch it so you can begin using it. This time it is running as _meshcentral, now it is safe to keep running and you can use this command in the future.</p>
+<div class="highlight"><pre><span></span><code>cd /usr/local/meshcentral/node_modules/meshcentral/ &amp;&amp; doas -u _meshcentral /usr/local/bin/node /usr/local/meshcentral/node_modules/meshcentral/meshcentral.js --launch
+</code></pre></div>
+<p>You can now access MeshCentral at https://youraddress:3000 or https://meshcentral.example.com:3000 if you named the machine meshcentral or create an A record named meshcentral. The first user you create will be the Administrator, there is no default user.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.expand", "navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>
