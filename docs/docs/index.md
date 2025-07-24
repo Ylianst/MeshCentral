@@ -6,15 +6,15 @@ MeshCentral is a full computer management web site. With MeshCentral, you can ru
 
 For more information, [visit MeshCentral.com](https://meshcentral.com).
 
-## Social Media
+## 🌐 Social Media
 
-[YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)<br>
-[Reddit](https://www.reddit.com/r/MeshCentral/)<br>
-[Discord](https://discord.gg/wF9UT3Vjdj)<br>
-[BlueSky](https://bsky.app/profile/meshcentral.bsky.social)<br>
-[BlogSpot](https://meshcentral2.blogspot.com/)<br>
+  ![YouTube](https://img.icons8.com/color/16/youtube-play.png) [YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)  
+  ![Reddit](https://img.icons8.com/color/16/reddit.png) [Reddit](https://www.reddit.com/r/MeshCentral/)  
+  ![Discord](https://img.icons8.com/color/16/discord-logo.png) [Discord](https://discord.gg/wF9UT3Vjdj)  
+  ![BlueSky](https://img.icons8.com/color/16/internet--v1.png) [BlueSky](https://bsky.app/profile/meshcentral.bsky.social)  
+  ![BlogSpot](https://img.icons8.com/color/16/blogger.png) [BlogSpot](https://meshcentral2.blogspot.com/)  
 
-## Documentation
+## 📚 Documentation
 
 The [User's Guide](meshcentral/index.md) contains information every administrator should know including usage, the server configuration file, databases, TLS offloading, Lets Encrypt, IP Filtering, Email setup, embedding, server port aliasing, reverse proxy setup, multi factor authentication, branding & terms of use, HashiCorp Vault support, and SSO.
 
@@ -22,29 +22,36 @@ The [Installation Guide](install/install.md) has detailed instructions for insta
 
 The [Design and Architecture Guide](design/index.md) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
 
-## Video Tutorials
+## 📺 Video Tutorials
 
-You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Two videos to get started involve installation and basic usages.
+You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Here are some essential ones to get you started :
 
-Installing MeshCentral on Windows, Linux and macOS.
-[MeshCentral - Installation](https://www.youtube.com/watch?v=GsQbWZmRRAU)
+#### Installation
+> **[MeshCentral - Installation](https://www.youtube.com/results?search_query=MeshCentral+Installation)**  
+  Installing MeshCentral on **Windows**, **Linux**, and **macOS**.
+-
+#### Basic Usage
+> **[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Basics)**  
+  Learn how to install the agent and use remote **desktop**, **terminal**, and **file access** features.
+-
+#### Two-Factor Authentication
+> **[MeshCentral - Two Factor Authentication](https://www.youtube.com/results?search_query=MeshCentral+Two+Factor+Authentication)**  
+  Secure your MeshCentral instance with **two-factor authentication**.
+-
+#### NGINX Reverse Proxy Setup
+> **[MeshCentral - NGINX Reverse Proxy](https://www.youtube.com/results?search_query=MeshCentral+NGINX+Reverse+Proxy)**  
+  Configure MeshCentral with an **NGINX reverse proxy** for better security and scalability.
+-
+#### Android Agent
+> **[MeshCentral - Android](https://www.youtube.com/results?search_query=MeshCentral+Android)**  
+  Install and use the **MeshCentral Android agent** for mobile device management.
+-
+#### MeshCentral Router (Port Mapping)
+> **[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Router+Port+Mapping)**  
+  Use **MeshCentral Router** to **port map TCP connections** securely.
 
-Basic Usages including installing the agent and remote desktop, terminal and file access.
-[MeshCentral - Basics](https://www.youtube.com/watch?v=D9Q7M7PdTg0)
 
-MeshCentral support for two-factor authentication.
-[MeshCentral - Two Factor Authentication](https://www.youtube.com/watch?v=luLZKcma9l0)
-
-How to setup MeshCentral with the NGINX reverse proxy.
-[MeshCentral - NGINX Reverse Proxy](https://www.youtube.com/watch?v=YSmiLyKSX2I)
-
-Installing and using the MeshCentral Android agent.
-[MeshCentral - Android](https://www.youtube.com/watch?v=wi1HYdW00Bk)
-
-Using MeshCentral Router to port map TCP connections.
-[MeshCentral - Basics](https://www.youtube.com/watch?v=BubeVRmbCRM)
-
-## Feedback
+## 💬 Feedback
 
 If you encounter a problem or have a suggestion to improve the product, you may file an [GitHub Issue](https://github.com/Ylianst/MeshCentral/issues/).<br>
 If you are filing a problem report, you should include:
