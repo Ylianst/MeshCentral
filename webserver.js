@@ -5124,10 +5124,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.debug('webrelay', 'Error with relay web socket connection from ' + req.clientIp + '.');
                     // Log the disconnection
                     if (ws.time) {
-                        var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                        if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
-                            obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
+                        if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
+                            var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                            if (user) {
+                                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
+                                obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
+                            }
                         }
                     }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
@@ -5164,10 +5166,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.debug('webrelay', 'Closing relay web socket connection to ' + req.query.host + '.');
                     // Log the disconnection
                     if (ws.time) {
-                        var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                        if (user) {
-                            var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
-                            obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
+                        if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
+                            var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
+                            if (user) {
+                                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
+                                obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
+                            }
                         }
                     }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }

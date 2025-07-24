@@ -5466,7 +5466,8 @@
         }
 
         function showAmtAcmSetupEx() {
-            meshserver.send({ action: 'amtsetupbin', oldmebxpass: Q('dp1password0').value, newmebxpass: Q('dp1password1').value, baremetal: ((features2 & 0x00000020) && (Q('dp1lanprov').checked)) });
+            var baremetal = ((features2 & 0x00000020) && (currentMesh.mtype == 1) && (serverinfo.amtProvServerMeshId == currentMesh._id) && (Q('dp1lanprov').checked));
+            meshserver.send({ action: 'amtsetupbin', oldmebxpass: Q('dp1password0').value, newmebxpass: Q('dp1password1').value, baremetal: baremetal });
         }
 
         // Display the Intel AMT scanning dialog box
