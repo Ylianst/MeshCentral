@@ -18,6 +18,7 @@
     <link id="theme-stylesheet" href="styles/bootstrap{{{min}}}.css" rel="stylesheet" title="CSS">
     <link href="styles/select2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2-bootstrap-5-theme.min.css" rel="stylesheet" title="CSS">
+    <link type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -2072,6 +2073,7 @@
             delete urlargs.viewmode;
             delete urlargs.gotonode;
             delete urlargs.gotodevicename;
+            delete urlargs.gotodevicername;
             delete urlargs.gotodeviceip;
             delete urlargs.gotomesh;
             delete urlargs.gotouser;
@@ -3567,7 +3569,7 @@
                     var start = '<div style="border-radius:6px;border:2px solid #CCC;background-color:#BBB;width:100%;box-sizing:border-box;margin-bottom:6px"><div style="margin:3px;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:bold"><table style=width:100%;text-align:left>';
                     var end = '</table></div></div>';
                     var x = '<a href="https://www.yubico.com/" rel="noreferrer noopener" target="_blank">' + "Hardware keys" + '</a> ' + "are used as secondary login authentication.";
-                    x += '<div style="max-height:150px;overflow-y:auto;overflow-x:hidden;margin-top:6px;margin-bottom:6px">';
+                    x += '<div class="backgroundContainer" style="max-height:150px;overflow-y:auto;overflow-x:hidden;margin-top:6px;margin-bottom:6px">';
                     if (message.keys && message.keys.length > 0) {
                         for (var i in message.keys) {
                             var key = message.keys[i], type = (key.type == 2) ? 'OTP' : 'WebAuthn';
@@ -4056,6 +4058,7 @@
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
+                                if (message.event.node.lastbootuptime != null) { node.lastbootuptime = message.event.node.lastbootuptime; }
 
                                 // Check if this device has changed device group
                                 if (message.event.node.meshid != node.meshid) {
@@ -4467,14 +4470,14 @@
                     if (message.events.length == 0) {
                         x += 'No previous login.';
                     } else {
-                        x += '<div style=max-height:260px;overflow-y:scroll;overflow-x:hidden><table>';
+                        x += '<div class="backgroundContainer" style=max-height:260px;overflow-y:scroll;overflow-x:hidden><table>';
                         for (var i in message.events) {
                             var m = message.events[i].m;
                             if (m == 107) { m = "Valid login"; c = 'BBD1BB'; xx = ''; if (message.events[i].tn != null) { m = format("Token: {0}", message.events[i].tn); c = '88D188' } }
                             else if (m == 108) { m = "Invalid 2FA"; c = 'DD9DC3'; xx = 'x'; }
                             else if (m == 109) { m = "Locked account"; c = 'E1BBBB'; xx = 'x'; }
                             else if (m == 110) { m = "Invalid password"; c = 'E1BBBB'; xx = 'x'; }
-                            x += '<tr><td><img src=images/user-32' + xx + '.png height=32 width=32 style=float:left srcset="images/user-64' + xx + '.png 2x"><td><div style=width:300px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div>' + printDateTime(new Date(message.events[i].t)) + ', <b>' + EscapeHtml(m) + '</b></div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
+                            x += '<tr><td><img src=images/user-32' + xx + '.png height=32 width=32 style=float:left srcset="images/user-64' + xx + '.png 2x"><td><div style=width:350px;background-color:#' + c + ';border-radius:6px;margin-bottom:4px;padding:4px><div>' + printDateTime(new Date(message.events[i].t)) + ', <b>' + EscapeHtml(m) + '</b></div><div style=font-size:x-small>' + EscapeHtml(message.events[i].a.join(', ')) + '</div></div></tr>';
                         }
                         x += '</table></div>';
                     }
@@ -4527,6 +4530,10 @@
             } else if (args.gotodevicename != null) {
                 var foundNode = null;
                 if (nodes != null) { for (var i in nodes) { if (nodes[i].name == args.gotodevicename) { foundNode = nodes[i]._id; } } }
+                if (foundNode) { gotoDevice(foundNode, xviewmode); goBackStack.push(1); }
+            } else if (args.gotodevicername != null) {
+                var foundNode = null;
+                if (nodes != null) { for (var i in nodes) { if (nodes[i].rname == args.gotodevicername) { foundNode =  nodes[i]._id; } } }
                 if (foundNode) { gotoDevice(foundNode, xviewmode); goBackStack.push(1); }
             } else if (args.gotodeviceip != null) {
                 var foundNode = null;

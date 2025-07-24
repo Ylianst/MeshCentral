@@ -59,6 +59,36 @@ To update device icons, you need to edit these files: `meshcentral-web/public/im
 By following these steps, you can customize any icon in MeshCentral. Just find and change the corresponding image files in the `meshcentral-web/public/images` folder. Similarly, you can also move other folders from `node_modules/meshcentral` to `meshcentral-web` while keeping the original folder structure. This allows you to modify other parts of MeshCentral too, like the `.handlebars` templates for the web interface. Simply copy files from `node_modules/meshcentral/views` to `meshcentral-web/views` and make your changes in `meshcentral-web`. This lets you match MeshCentral's look to your company's brand or your own style.   
 ![](images/custom-web-icons.png)  
 
+### Customizing Web Style
+MeshCentral gives you the flexibility to override some or all of the web interface. An easy way to modify the style is to do the following:
+
+1. Create the file `custom.css` under `meshcentral-web/public/styles`. See [above](#customizing-web-style) for more information on `meshcentral-web`.
+2. Anything added to this file will override the default stylesheets. 
+
+An example file:
+
+```css
+#masthead {
+     background-color: red;
+}
+
+#page_leftbar {
+     background: linear-gradient(to bottom, #104893 0%,green 100%)
+}
+
+#footer {
+     background-color: green;
+}
+```
+
+Gives:
+
+![Custom Style](images/custom-style-example.png)
+
+!!!note
+You can of course override the stylesheets by directly copying them into `meshcentral-web/public/styles` but run the risk that future updates to those files in MeshCentral will be masked. `custom.css` is guaranteed to be loaded last on every page and will contain no content by default which means upgrades will work as normal. 
+
+
 ### Customizing Agent Invitation  
 Agents can be invited by public link or via email. [Click Here](assistant.md#agent-invitation) to see details. 
 

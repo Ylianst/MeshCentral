@@ -1105,6 +1105,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (webAuthnKeys.length > 0) {
                 // Generate a Webauthn challenge, this is really easy, no need to call any modules to do this.
                 var authnOptions = { type: 'webAuthn', keyIds: [], timeout: 60000, challenge: obj.crypto.randomBytes(64).toString('base64') };
+                // userVerification: 'preferred' use security pin if possible (default), 'required' always use security pin, 'discouraged' do not use security pin.
+                authnOptions.userVerification = (domain.passwordrequirements && domain.passwordrequirements.fidopininput) ? domain.passwordrequirements.fidopininput : 'preferred'; // Use the domain setting if it exists, otherwise use 'preferred'.{
                 for (var i = 0; i < webAuthnKeys.length; i++) { authnOptions.keyIds.push(webAuthnKeys[i].keyId); }
                 sec.u2f = authnOptions.challenge;
                 req.session.e = parent.encryptSessionData(sec);
@@ -3195,9 +3197,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Load default page style or new modern ui
                 var uiViewMode = 'default';
                 var webstateJSON = JSON.parse(webstate);
-                if (webstateJSON && webstateJSON.uiViewMode == 3) { uiViewMode = 'default3'; }
-                if (domain.sitestyle == 3) { uiViewMode = 'default3'; }
-                if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
+                if (req.query.sitestyle != null) {
+                    if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
+                } else if (domain.sitestyle == 3) {
+                    uiViewMode = 'default3';
+                } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                }
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
@@ -7452,6 +7458,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Setup agent file downloads
                     obj.agentapp.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
+
+                    // Setup APF.ashx for AMT communication
+                    if (obj.parent.mpsserver != null) {
+                        obj.agentapp.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })
+                    }
                 }
 
                 // Setup web relay on this web server if needed
@@ -7685,7 +7696,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAuthStrategyConsts = {
         twitter: 1,
         google: 2,
-        github: 3,
+        github: 4,
         reddit: 8, // Deprecated
         azure: 16,
         oidc: 32,
@@ -8607,7 +8618,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', msg2fa: msg2fa, msg2fasent: true, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         } else {
                                             // Ask for a login token
-                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
+                                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'tokenrequired', email2fa: email2fa, sms2fa: sms2fa, msg2fa: msg2fa, twoFactorCookieDays: twoFactorCookieDays })); ws.close(); } catch (e) { }
                                         }
                                     } else {
                                         // We are authenticated with 2nd factor.

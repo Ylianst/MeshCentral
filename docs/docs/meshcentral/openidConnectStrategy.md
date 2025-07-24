@@ -468,10 +468,6 @@ As you can see in the schema below, there aren't any required properties in the 
 
 ### Overview
 
-#### *Introduction*
-
-Google is a blah and is used by tons of blahs as its so great. Lets move on.
-
 #### *Common Config Chart*
 
 > NOTE: All settings directly related to presets are in the custom section of the config.
@@ -479,8 +475,8 @@ Google is a blah and is used by tons of blahs as its so great. Lets move on.
 | Name | Description | Example | Required |
 | --- | --- | --- | --- |
 | `preset` | Manually enable the use of a preset. | `"preset": "google"`<br/>`"preset": "azure"` | `false` |
-| `customer_id` | Customer ID of the Google Workspaces instace you<br/>plan to use with the groups feature.| `"customer_id": ["Group1", "Group2"]` | If `google` preset is used with `groups` feature |
-| `tenant_id` | Tenant ID from Azure AD, this is required to use<br/>the `azure` preset as it is part of the issuer url. | `"siteadmin": ["Group1", "Group2"]` | `false` |
+| `customer_id` | Customer ID of the Google Workspaces instace you<br/>plan to use with the groups feature.| `"customer_id": ["Group1", "Group2"]` | If `google` preset is used with `groups` feature. |
+| `tenant_id` | Tenant ID from Azure AD, this is required to use<br/>the `azure` preset as it is part of the issuer url. | `"tenant_id": "46a6022g-4h33-1451-h1rc-08102ga3b5e4"` | If `Azure` preset is being used. |
 
 ### Google Preset
 
