@@ -11,7 +11,6 @@ nav:
         - 'Advanced': './install/advanced.md'
         - 'Container (Docker)': './install/container.md'
         - 'Debian/Ubuntu': './install/debian.md'
-        - 'OpenBSD': './install/openbsd.md'
         - 'RedHat': './install/redhat.md'
         - 'Windows': './install/windows.md'
     - 'Security':
