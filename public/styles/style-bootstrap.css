@@ -2221,8 +2221,7 @@ nav .lbbuttonsel2 {
 [data-bs-theme="dark"] input[type="number"],
 [data-bs-theme="dark"] textarea,
 [data-bs-theme="dark"] select,
-[data-bs-theme="dark"] .form-select,
-[data-bs-theme="dark"] select {
+[data-bs-theme="dark"] .form-select {
     color: #f8f9fa !important;
     background-color: #2b3035 !important;
 }
@@ -2231,6 +2230,22 @@ nav .lbbuttonsel2 {
 [data-bs-theme="dark"] select option {
     color: #f8f9fa !important;
     background-color: #2b3035 !important;
+}
+
+/* Ensure checkboxes are visible in both light and dark mode */
+[data-bs-theme="light"] input[type="checkbox"] {
+    opacity: 1 !important;
+    appearance: checkbox !important;
+}
+
+[data-bs-theme="light"] input[type="checkbox"]:checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+[data-bs-theme="dark"] input[type="checkbox"] {
+    opacity: 1 !important;
+    appearance: checkbox !important;
 }
 
 /* Ensure select dropdown remains visible when focused */
