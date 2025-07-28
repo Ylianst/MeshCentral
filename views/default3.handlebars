@@ -9519,7 +9519,7 @@
             return false;
         }
 
-        function addDeviceAttribute(name, value, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b> ${name} </b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}"> ${value} </div></div>`; }
+        function addDeviceAttribute(name, value, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b> ${name} </b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}"> <span>${value}</span> </div></div>`; }
 
         function editDeviceAmtSettings(nodeid, func, arg) {
             if (xxdialogMode) return;
@@ -18819,7 +18819,7 @@
             if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
             if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
             if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
-            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
+            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); }
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true) { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
@@ -20669,7 +20669,7 @@
         function getUrlVars() { var j, hash, vars = [], hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); for (var i = 0; i < hashes.length; i++) { j = hashes[i].indexOf('='); if (j > 0) { vars[hashes[i].substring(0, j)] = hashes[i].substring(j + 1, hashes[i].length); } } return vars; }
         //function getDocWidth() { if (window.innerWidth) return window.innerWidth; if (document.documentElement && document.documentElement.clientWidth && document.documentElement.clientWidth != 0) return document.documentElement.clientWidth; return document.getElementsByTagName('body')[0].clientWidth; }
         //function addHtmlValue(t, v) { return '<div style=height:20px><div style=float:right;width:220px><b>' + v + '</b></div><div>' + t + '</div></div>'; }
-        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b>${t}</b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}">${v}</div></div>`; }
+        function addHtmlValue(t, v, classNames = []) { return `<div class="row mb-1"><div class="${classNames[0] || 'col col-md-2 col-lg-2'}"><b>${t}</b></div><div class="${classNames[1] || 'col col-md-10 col-lg-10'}"><span>${v}</span></div></div>`; }
         function addHtmlFormFloating(t, v, classNames = []) { return `<div class="row mb-1"><div class="form-floating mb-3 ${classNames[0] || 'col-md-12'}">${v}<label class="${classNames[1] || 'ms-2'}">${t}</label></div></div>`; }
 
 
