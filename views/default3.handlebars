@@ -2393,28 +2393,31 @@
             QV('masthead', !(hide & 1));
             QV('topbar', !(hide & 2));
             QV('footer', !(hide & 4));
-            QV('p1title', !(hide & 8));
-            QV('p2title', !(hide & 8));
-            QV('p3title', !(hide & 8));
-            QV('p4title', !(hide & 8));
-            QV('p5title', !(hide & 8));
-            QV('p6title', !(hide & 8));
-            QV('p10title', !(hide & 8));
-            QV('p11title', !(hide & 8));
-            QV('p12title', !(hide & 8));
-            QV('p13title', !(hide & 8));
-            QV('p14title', !(hide & 8));
-            QV('p15title', !(hide & 8));
-            QV('p16title', !(hide & 8));
-            QV('p17title', !(hide & 8));
-            QV('p20title', !(hide & 8));
-            QV('p21title', !(hide & 8));
-            QV('p30title', !(hide & 8));
-            QV('p31title', !(hide & 8));
-            QV('p40title', !(hide & 8));
-            QV('p41title', !(hide & 8));
-            QV('p50title', !(hide & 8));
-            QV('p51title', !(hide & 8));
+            if ((hide & 8)) {
+                QC('p1title').add('d-none');
+                QC('p2title').add('d-none');
+                QC('p3title').add('d-none');
+                QC('p4title').add('d-none');
+                QC('p5title').add('d-none');
+                QC('p6title').add('d-none');
+                QC('p10title').add('d-none');
+                QC('p11title').add('d-none');
+                QC('p12title').add('d-none');
+                QC('p13title').add('d-none');
+                QC('p14title').add('d-none');
+                QC('p15title').add('d-none');
+                QC('p16title').add('d-none');
+                QC('p17title').add('d-none');
+                QC('p20title').add('d-none');
+                QC('p21title').add('d-none');
+                QC('p30title').add('d-none');
+                QC('p31title').add('d-none');
+                QC('p40title').add('d-none');
+                QC('p41title').add('d-none');
+                QC('p50title').add('d-none');
+                QC('p51title').add('d-none');
+                QC('column_l').remove('pt-3');
+            }
             //if (hide & 16) { QV('page_leftbar', false); QS('page_content').left = '0px'; }
             if (!footerBar) { QC('body').add('nofooter'); } else { QC('body').remove('nofooter'); }
 
