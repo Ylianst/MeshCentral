@@ -6897,7 +6897,7 @@
                 if (options.selectedFile == null) {
                     x += '<select id=d2cmdsource onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px class=form-select><option value=0' + ((runopt.source == 0) ? ' selected' : '') + '>' + "Commands from text box" + '</option><option value=1' + ((runopt.source == 1) ? ' selected' : '') + '>' + "Commands from file" + '</option>';
                     if (userinfo.siteadmin & 8) { x += '<option value=2' + ((runopt.source == 2) ? ' selected' : '') + '>' + "Commands from file on server" + '</option>'; }
-                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll class=form-control>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
+                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=width:100%;height:200px;resize:none;overflow-y:scroll class=form-control>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
                     x += '<div id=d2runfile style=display:none><input id=d2runfileex class="form-control" type=file onchange=d2runCommandValidate() id=d2localFile name=files onchange=d2runCommandValidate() /></div>';
                     if (userinfo.siteadmin & 8) { x += '<div id=d2runsfile style=display:none><div id=d2serveraction valign=bottom><input type=button id=p2FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p2CurrentFolder></span></div><div id=d2serverfiles></div></div>'; }
                 }
