@@ -5093,19 +5093,19 @@
                             r += getMeshActions(mesh, meshrights);
                             r += '</span></td></tr><tr>';
                             if (mesh.mtype == 1) {
-                                r += '<td><div style=padding:10px><i>' + "No Intel&reg; AMT devices in this device group";
+                                r += '<td><div style=padding:10px><i>' + "<span>No Intel&reg; AMT devices in this device group</span>";
                                 if (((meshrights & 4) != 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { r += ', <a href=# style=cursor:pointer onclick=\'return addDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             } else if (mesh.mtype == 2) {
                                 r += '<td><div id=DevxCol' + deviceHeaderId2 + ((collapsed === true) ? ' style=display:none' : '') + '>'; // Open collapse div
-                                r += '<div style=padding:10px><i>' + "No devices in this device group";
+                                r += '<div style=padding:10px><i>' + "<span>No devices in this device group</span>";
                                 if (((meshrights & 4) != 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { r += ', <a href=# style=cursor:pointer onclick=\'return addAgentToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             } else if (mesh.mtype == 3) {
                                 r += '<td><div id=DevxCol' + deviceHeaderId2 + ((collapsed === true) ? ' style=display:none' : '') + '>'; // Open collapse div
-                                r += '<div style=padding:10px><i>' + "No local devices in this device group";
+                                r += '<div style=padding:10px><i>' + "<span>No local devices in this device group</span>";
                                 if (((meshrights & 4) != 0) && ((userinfo.siteadmin == 0xFFFFFFFF) || ((userinfo.siteadmin & 4096) == 0))) { r += ', <a href=# style=cursor:pointer onclick=\'return addLocalDeviceToMesh("' + mesh._id + '")\'>' + "add one" + '</a>'; }
                             } else if (mesh.mtype == 4) {
                                 r += '<td><div id=DevxCol' + deviceHeaderId2 + ((collapsed === true) ? ' style=display:none' : '') + '>'; // Open collapse div
-                                r += '<div style=padding:10px><i>' + "No devices in this device group";
+                                r += '<div style=padding:10px><i>' + "<span>No devices in this device group</span>";
                             }
                             r += '.</i></div></td>';
                             r += '</div>'; // End collapsing area
@@ -5149,7 +5149,7 @@
                     }
                 } else {
                     r += '</table>';
-                    if (sort == 3) { r = '<div style="margin:10px"><i>' + "No devices with tags found." + '</i></div>'; }
+                    if (sort == 3) { r = '<div style="margin:10px"><i>' + "<span>No devices with tags found</span>." + '</i></div>'; }
                 }
 
                 // Add a "Add Device Group" option
