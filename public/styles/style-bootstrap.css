@@ -2265,16 +2265,6 @@ nav .lbbuttonsel2 {
     color: #fff;
 }
 
-[data-bs-theme="light"] .btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-}
-
-[data-bs-theme="light"] .btn-primary:hover {
-    background-color: #0b5ed7;
-    border-color: #0a58ca;
-}
-
 [data-bs-theme="light"] .btn-outline-secondary {
     border-color: #6c757d;
 }
