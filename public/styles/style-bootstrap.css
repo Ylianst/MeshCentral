@@ -2340,6 +2340,11 @@ nav .lbbuttonsel2 {
     color: var(--bs-heading-color, #f8f9fa) !important;
 }
 
+[data-bs-theme="dark"] b,
+[data-bs-theme="dark"] span {
+    color: #bbb !important;
+}
+
 /* Main content areas */
 [data-bs-theme="light"] .content-area,
 [data-bs-theme="light"] .panel-content,
