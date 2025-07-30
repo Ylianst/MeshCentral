@@ -2155,8 +2155,10 @@ nav .lbbuttonsel2 {
 [data-bs-theme="dark"] h6,
 [data-bs-theme="dark"] .fs-4,
 [data-bs-theme="dark"] .content-heading,
-[data-bs-theme="dark"] .panel-title {
-    color: #f8f9fa !important;
+[data-bs-theme="dark"] .panel-title,
+[data-bs-theme="dark"] b,
+[data-bs-theme="dark"] span {
+    color: #bbb !important;
 }
 
 /* Main content areas */
