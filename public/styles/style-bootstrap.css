@@ -266,20 +266,6 @@ body {
     right: 3px;
 }
 
-.textnewui {
-    color: white;
-    font-weight: bold;
-    padding-top: 5px;
-    cursor: pointer;
-    position: absolute;
-    right: 0;
-    margin-right: 10px;
-}
-
-.LogoffLinkColor {
-    color:white;
-}
-
 #logoutControlSpan2 {
     cursor: pointer;
     color: white;
@@ -2265,14 +2251,6 @@ nav .lbbuttonsel2 {
     color: #fff;
 }
 
-[data-bs-theme="light"] .btn-outline-secondary {
-    border-color: #6c757d;
-}
-
-[data-bs-theme="light"] .btn-outline-success {
-    color: inherit !important;
-}
-
 [data-bs-theme="dark"] .btn-outline-secondary {
     color: #adb5bd;
 }
@@ -2361,6 +2339,20 @@ nav .lbbuttonsel2 {
 
 [data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
     background-color: #6c757d;
+}
+
+.textnewui {
+    color: white !important;
+    font-weight: bold;
+    padding-top: 5px;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    margin-right: 10px;
+}
+
+.LogoffLinkColor {
+    color:white !important;
 }
 
 .h2end {
