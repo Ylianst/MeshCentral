@@ -778,13 +778,15 @@ As illustrated above, we see the business site using the token key to generate a
 
 ### Embedding Options
 
-There are multiple options available for user to explicitly choose the features that will be loaded from MeshCentral to the business website. The argument in the in the URL can dictate which web page should display and how. The three embedding URL arguments are Viewmode, Hide and Node. 
+There are multiple options available for user to explicitly choose the features that will be loaded from MeshCentral to the business website. The argument in the in the URL can dictate which web page should display and how. The embedding URL arguments are Viewmode, Hide, Node, Gotodevicename and Gotodevicername. 
 
 | Embedding Options / URL Argument | Description | "Values<br><br>**Note**: For values 10 and above, a node identifier must be specified."
 | -------------------------------- | ----------- | ------------------------------------------------------------------------------------------ |
 | **viewmode** | "Indicates the information to show. <br>This is an integer value, possible values are:" | "1 = Devices tab<br><br>2 = Account tab<br><br>3 = Events tab<br><br>4 = Users tab (Site admins only)<br><br>5 = Server files tab<br><br>10 = Device general information<br><br>11 = Device remote desktop<br><br>12 = Device terminal<br><br>14 = Device Intel AMT console.<br><br>15 = Device Mesh Agent console |
 | **hide** | "Indicates which portion of the web page to hide. <br>This is a bitmask integer hence it will need the sum of values. <br>For .e.g.: To hide all of the values, add 1+2+4+8 and use 15 as the value. | 1 = Hide the page header<br><br>2 = Hide the page tab<br><br>4 = Hide the page footer<br><br>8 = Hide the page title<br><br>16 = Hide the left tool bar<br><br>32 = Hide back buttons |
 | **node** | Optional unless Viewmode is set to value of 10 or greater. <br>Indicates which node to show on the screen,<br><br>For example, if we want to embed the remote desktop <br>page for a given node and hide the header, tabs, <br>footer and page title, we could have this URL: <br>https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&viewmode=11&hide=15" | Node or NodeID is a long base64 encoded SHA384 value |
+| **gotodevicename** | Optional unless Viewmode is set to value of 10 or greater. <br>Indicates which node to show on the screen,<br><br>For example, if we want to embed the remote desktop <br>page for a given node and hide the header, tabs, <br>footer and page title, we could have this URL: <br>https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&viewmode=11&hide=15" | gotodevicename uses name (nickname) |
+| **gotodevicername** | Optional unless Viewmode is set to value of 10 or greater. <br>Indicates which node to show on the screen,<br><br>For example, if we want to embed the remote desktop <br>page for a given node and hide the header, tabs, <br>footer and page title, we could have this URL: <br>https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&viewmode=11&hide=15" | gotodevicename uses the devices os name. Please note: case sensitive |
 
 **Note**:  Typically, the URL for the website is followed by “?” then a set of name=value pairs separated by “&”.
 
