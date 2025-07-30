@@ -2312,12 +2312,11 @@ nav .lbbuttonsel2 {
 
 /* Light theme text colors */
 [data-bs-theme="light"] h1,
-[data-bs-theme="light"] .h1,
-[data-bs-theme="light"] .h2,
-[data-bs-theme="light"] .h3,
-[data-bs-theme="light"] .h4,
-[data-bs-theme="light"] .h5,
-[data-bs-theme="light"] .h6,
+[data-bs-theme="light"] h2,
+[data-bs-theme="light"] h3,
+[data-bs-theme="light"] h4,
+[data-bs-theme="light"] h5,
+[data-bs-theme="light"] h6,
 [data-bs-theme="light"] .fs-4,
 [data-bs-theme="light"] .content-heading,
 [data-bs-theme="light"] .panel-title {
@@ -2326,12 +2325,11 @@ nav .lbbuttonsel2 {
 
 /* Dark theme text colors */
 [data-bs-theme="dark"] h1,
-[data-bs-theme="dark"] .h1,
-[data-bs-theme="dark"] .h2,
-[data-bs-theme="dark"] .h3,
-[data-bs-theme="dark"] .h4,
-[data-bs-theme="dark"] .h5,
-[data-bs-theme="dark"] .h6,
+[data-bs-theme="dark"] h2,
+[data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4,
+[data-bs-theme="dark"] h5,
+[data-bs-theme="dark"] h6,
 [data-bs-theme="dark"] .fs-4,
 [data-bs-theme="dark"] .content-heading,
 [data-bs-theme="dark"] .panel-title,
