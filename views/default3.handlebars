@@ -11429,7 +11429,7 @@
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) {
             setModalContent('xxAddAgent', "Process Control", format("Stop process #{0} \"{1}\"?", id, name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => stopProcessEx(3, id));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => stopProcessEx(3, (id + '|' + name)));
             return false;
         }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
@@ -16426,7 +16426,7 @@
             16: "Started file management session \"{0}\" from {1} to {2}",
             17: "Processing console command: \"{0}\"",
             18: "Displaying message box, title=\"{0}\", message=\"{1}\"",
-            19: "Killing process {0}",
+            19: "Killing process {0} ({1})",
             20: "Opening: {0}",
             21: "Getting clipboard content, {0} byte(s)",
             22: "Setting clipboard content, {0} byte(s)",

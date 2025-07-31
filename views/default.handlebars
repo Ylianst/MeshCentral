@@ -10645,7 +10645,7 @@
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
+        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), (id + '|' + name)); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //
