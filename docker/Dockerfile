@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-alpine3.21 AS builder
+FROM node:lts-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_MINIFY="yes"
@@ -42,7 +42,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 ### STAGE 2 BUILDING.
 
-FROM alpine:3.21
+FROM alpine:3.22
 
 # copy files from builder-image
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
@@ -121,7 +121,7 @@ RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
-            npm install ssh2@1.16.0 nodemailer@6.10.0 image-size@2.0.1 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
+            npm install ssh2@1.16.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
         false|no|FALSE|NO) \
             echo "Not pre-installing libraries.";; \
         *) \
