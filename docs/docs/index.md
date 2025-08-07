@@ -10,6 +10,7 @@ For more information, [visit MeshCentral.com](https://meshcentral.com).
 
   ![YouTube](https://img.icons8.com/color/16/youtube-play.png) [YouTube](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos)  
   ![Reddit](https://img.icons8.com/color/16/reddit.png) [Reddit](https://www.reddit.com/r/MeshCentral/)  
+  ![Telegram](https://img.icons8.com/color/16/telegram-app.png) [Telegram](https://t.me/meshcentral)  
   ![Discord](https://img.icons8.com/color/16/discord-logo.png) [Discord](https://discord.gg/wF9UT3Vjdj)  
   ![BlueSky](https://img.icons8.com/color/16/internet--v1.png) [BlueSky](https://bsky.app/profile/meshcentral.bsky.social)  
   ![BlogSpot](https://img.icons8.com/color/16/blogger.png) [BlogSpot](https://meshcentral2.blogspot.com/)  
