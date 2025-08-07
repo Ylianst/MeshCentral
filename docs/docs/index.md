@@ -30,23 +30,28 @@ You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://
 #### Installation
 > **[MeshCentral - Installation](https://www.youtube.com/results?search_query=MeshCentral+Installation)**  
   Installing MeshCentral on **Windows**, **Linux**, and **macOS**.
--
+
+
 #### Basic Usage
 > **[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Basics)**  
   Learn how to install the agent and use remote **desktop**, **terminal**, and **file access** features.
--
+
+
 #### Two-Factor Authentication
 > **[MeshCentral - Two Factor Authentication](https://www.youtube.com/results?search_query=MeshCentral+Two+Factor+Authentication)**  
   Secure your MeshCentral instance with **two-factor authentication**.
--
+
+
 #### NGINX Reverse Proxy Setup
 > **[MeshCentral - NGINX Reverse Proxy](https://www.youtube.com/results?search_query=MeshCentral+NGINX+Reverse+Proxy)**  
   Configure MeshCentral with an **NGINX reverse proxy** for better security and scalability.
--
+
+
 #### Android Agent
 > **[MeshCentral - Android](https://www.youtube.com/results?search_query=MeshCentral+Android)**  
   Install and use the **MeshCentral Android agent** for mobile device management.
--
+
+
 #### MeshCentral Router (Port Mapping)
 > **[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Router+Port+Mapping)**  
   Use **MeshCentral Router** to **port map TCP connections** securely.
@@ -58,7 +63,7 @@ If you encounter a problem or have a suggestion to improve the product, you may 
 If you are filing a problem report, you should include:
 
 * The version of the software you are using.
-> For example: 1.1.43
+> For example: 1.1.46
 * The Operating System and version.
 > For example: Debian 12
 * Any troubleshooting you took to resolve the issue yourself.
