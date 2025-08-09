@@ -2847,6 +2847,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                             parent.parent.DispatchEvent(targets, obj, event);
                                         }
+                                    } else if (i.startsWith('ugrp/')) {
+                                        var cusergroup = parent.userGroups[i];
+                                        console.log(cusergroup);
+                                        if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
+                                            // Remove the user link & save the user
+                                            delete cusergroup.links[node._id];
+                                            if (Object.keys(cusergroup.links).length == 0) { delete cusergroup.links; }
+                                            db.Set(cusergroup);
+
+                                            // Notify user change
+                                            var targets = ['*', 'server-users', cusergroup._id];
+                                            var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: cusergroup._id, name: cusergroup.name, desc: cusergroup.desc, action: 'usergroupchange', links: cusergroup.links, msgid: 163, msgArgs: [node.name, cusergroup.name], msg: 'Removed device ' + node.name + ' from user group ' + cusergroup.name };
+                                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                            parent.parent.DispatchEvent(targets, obj, event);
+                                        }
                                     }
                                 }
                             }

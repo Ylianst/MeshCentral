@@ -1302,8 +1302,10 @@ function handleServerCommand(data) {
                     case 'pskill': {
                         // Kill a process
                         if (data.value) {
-                            MeshServerLogEx(19, [data.value], "Killing process " + data.value, data);
-                            try { process.kill(data.value); } catch (ex) { sendConsoleText("pskill: " + JSON.stringify(ex)); }
+                            var info = data.value.split('|'), pid = data.value, msg = " (Unknown)";
+                            if (info.length > 1) { pid = info[0]; msg = " (" + info[1] + ")"; } else { info[1] = "Unknown"; }
+                            MeshServerLogEx(19, info, "Killing process " + pid + msg, data);
+                            try { process.kill(parseInt(pid)); } catch (ex) { sendConsoleText("pskill: " + JSON.stringify(ex)); }
                         }
                         break;
                     }

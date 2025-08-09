@@ -2393,28 +2393,31 @@
             QV('masthead', !(hide & 1));
             QV('topbar', !(hide & 2));
             QV('footer', !(hide & 4));
-            QV('p1title', !(hide & 8));
-            QV('p2title', !(hide & 8));
-            QV('p3title', !(hide & 8));
-            QV('p4title', !(hide & 8));
-            QV('p5title', !(hide & 8));
-            QV('p6title', !(hide & 8));
-            QV('p10title', !(hide & 8));
-            QV('p11title', !(hide & 8));
-            QV('p12title', !(hide & 8));
-            QV('p13title', !(hide & 8));
-            QV('p14title', !(hide & 8));
-            QV('p15title', !(hide & 8));
-            QV('p16title', !(hide & 8));
-            QV('p17title', !(hide & 8));
-            QV('p20title', !(hide & 8));
-            QV('p21title', !(hide & 8));
-            QV('p30title', !(hide & 8));
-            QV('p31title', !(hide & 8));
-            QV('p40title', !(hide & 8));
-            QV('p41title', !(hide & 8));
-            QV('p50title', !(hide & 8));
-            QV('p51title', !(hide & 8));
+            if ((hide & 8)) {
+                QC('p1title').add('d-none');
+                QC('p2title').add('d-none');
+                QC('p3title').add('d-none');
+                QC('p4title').add('d-none');
+                QC('p5title').add('d-none');
+                QC('p6title').add('d-none');
+                QC('p10title').add('d-none');
+                QC('p11title').add('d-none');
+                QC('p12title').add('d-none');
+                QC('p13title').add('d-none');
+                QC('p14title').add('d-none');
+                QC('p15title').add('d-none');
+                QC('p16title').add('d-none');
+                QC('p17title').add('d-none');
+                QC('p20title').add('d-none');
+                QC('p21title').add('d-none');
+                QC('p30title').add('d-none');
+                QC('p31title').add('d-none');
+                QC('p40title').add('d-none');
+                QC('p41title').add('d-none');
+                QC('p50title').add('d-none');
+                QC('p51title').add('d-none');
+                QC('column_l').remove('pt-3');
+            }
             //if (hide & 16) { QV('page_leftbar', false); QS('page_content').left = '0px'; }
             if (!footerBar) { QC('body').add('nofooter'); } else { QC('body').remove('nofooter'); }
 
@@ -6894,7 +6897,7 @@
                 if (options.selectedFile == null) {
                     x += '<select id=d2cmdsource onclick=d2runCommandValidate() style=width:100%;margin-bottom:4px class=form-select><option value=0' + ((runopt.source == 0) ? ' selected' : '') + '>' + "Commands from text box" + '</option><option value=1' + ((runopt.source == 1) ? ' selected' : '') + '>' + "Commands from file" + '</option>';
                     if (userinfo.siteadmin & 8) { x += '<option value=2' + ((runopt.source == 2) ? ' selected' : '') + '>' + "Commands from file on server" + '</option>'; }
-                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=background-color:#fcf3cf;width:100%;height:200px;resize:none;overflow-y:scroll class=form-control>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
+                    x += '</select><textarea id=d2runcmd onkeyup=d2runCommandValidate() style=width:100%;height:200px;resize:none;overflow-y:scroll class=form-control>' + (runopt.cmd ? EscapeHtml(decodeURIComponent(runopt.cmd)) : '') + '</textarea>';
                     x += '<div id=d2runfile style=display:none><input id=d2runfileex class="form-control" type=file onchange=d2runCommandValidate() id=d2localFile name=files onchange=d2runCommandValidate() /></div>';
                     if (userinfo.siteadmin & 8) { x += '<div id=d2runsfile style=display:none><div id=d2serveraction valign=bottom><input type=button id=p2FolderUp disabled="disabled" onclick=d3folderup() value="Up" />&nbsp;<span id=p2CurrentFolder></span></div><div id=d2serverfiles></div></div>'; }
                 }
@@ -11426,7 +11429,7 @@
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
         function stopProcess(id, name) {
             setModalContent('xxAddAgent', "Process Control", format("Stop process #{0} \"{1}\"?", id, name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => stopProcessEx(3, id));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => stopProcessEx(3, (id + '|' + name)));
             return false;
         }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
@@ -16423,7 +16426,7 @@
             16: "Started file management session \"{0}\" from {1} to {2}",
             17: "Processing console command: \"{0}\"",
             18: "Displaying message box, title=\"{0}\", message=\"{1}\"",
-            19: "Killing process {0}",
+            19: "Killing process {0} ({1})",
             20: "Opening: {0}",
             21: "Getting clipboard content, {0} byte(s)",
             22: "Setting clipboard content, {0} byte(s)",
@@ -16566,7 +16569,8 @@
             159: "Device Powered On",
             160: "Enabled Duo two-factor authentication",
             161: "Disabled Duo two-factor authentication",
-            162: "Started messenger session \"{0}\" from {1} to {2}"
+            162: "Started messenger session \"{0}\" from {1} to {2}",
+            163: "Removed device {0} from user group {1}"
         };
 
         var eventsShortMessageId = {
