@@ -1,6 +1,7 @@
 name: Docker-Builder
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -9,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository || 'MeshCentral' }}
   REGISTRY_USERNAME: ${{ github.repository_owner || 'DaanSelen' }} # This is done so I can test the workflow with nektos/act
 
 jobs:
@@ -50,7 +51,7 @@ jobs:
             include_mariadb: false
             tag_suffix: "-postgresql"
           - name: mariadb
-            include_mongodb: true
+            include_mongodb: false
             include_postgresql: false
             include_mariadb: true
             tag_suffix: "-mariadb"
