@@ -50,7 +50,7 @@ jobs:
             include_mariadb: false
             tag_suffix: "-postgresql"
           - name: mariadb
-            include_mongodb: true
+            include_mongodb: false
             include_postgresql: false
             include_mariadb: true
             tag_suffix: "-mariadb"
