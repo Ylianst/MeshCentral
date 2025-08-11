@@ -3334,7 +3334,7 @@ module.exports.CreateDB = function (parent, func) {
     // Tries configured custom location with fallback to default location
     // Now runs after autobackup config init in meshcentral.js so config options are checked
     obj.checkBackupCapability = function (func) {
-        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { return; };
+        if (parent.config.settings.autobackup.backupintervalhours == -1) { return; };
         //block backup until validated. Gets put back if all checks are ok.
         let backupInterval = parent.config.settings.autobackup.backupintervalhours;
         parent.config.settings.autobackup.backupintervalhours = -1;
@@ -3381,7 +3381,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Mongodump error, backup will not be performed. Command tried: " + cmd + ' --> ERROR: ' + stderr);
+                        func(1, "Mongodump error, backup will not be performed. Check path or use mongodumppath & mongodumpargs");
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
@@ -3392,7 +3392,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath, timeout: 1000*30 }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "mysqldump error, backup will not be performed. Command tried: " + cmd);
+                        func(1, "mysqldump error, backup will not be performed. Check path or use mysqldumppath");
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
 
@@ -3407,7 +3407,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "pg_dump error, backup will not be performed. Command tried: " + cmd);
+                        func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath.");
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
