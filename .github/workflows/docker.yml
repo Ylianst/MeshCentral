@@ -11,7 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository || 'MeshCentral' }}
-  REGISTRY_USERNAME: ${{ github.repository_owner || 'DaanSelen' }} # This is done so I can test the workflow with nektos/act
+  REGISTRY_USERNAME: ${{ github.repository_owner || 'DaanSelen' }}
 
 jobs:
   build-images:
