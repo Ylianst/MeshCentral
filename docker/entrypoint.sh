@@ -1,7 +1,7 @@
 #!/bin/bash
 
 graceful_shutdown() {
-    echo "Received SIGTERM. Cleaning up..."
+    echo "Received SIGTERM from the container host. Cleaning up..."
     kill -SIGINT $meshcentral_pid
 
     echo "MeshCentral process stopped. Exiting..."
