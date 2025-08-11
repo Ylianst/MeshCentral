@@ -10,7 +10,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  MY_TOKEN: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN}}
   IMAGE_NAME: ${{ github.repository || 'MeshCentral' }}
   REGISTRY_USERNAME: ${{ github.repository_owner || 'DaanSelen' }} # This is done so I can test the workflow with nektos/act
 
@@ -65,14 +64,14 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ env.REGISTRY_USERNAME }}
-          password: ${{ env.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          github-token: ${{ env.MY_TOKEN }}
+          github-token: ${{ secrets.MY_TOKEN }}
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
 
