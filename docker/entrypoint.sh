@@ -2,7 +2,7 @@
 
 graceful_shutdown() {
     echo "Received SIGTERM. Cleaning up..."
-    node /opt/meshcentral/meshcentral/meshcentral --stop
+    kill -SIGINT $meshcentral_pid
 
     echo "MeshCentral process stopped. Exiting..."
     exit 0
