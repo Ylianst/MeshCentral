@@ -23,8 +23,8 @@ jobs:
       - name: Check token
         id: token_check
         env:
-          MY_TOKEN: ${{ secrets.MY_TOKEN }}
-        if: "${{ env.MY_TOKEN != '' }}"
+          MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: "${{ env.GITHUB_TOKEN != '' }}"
         run: echo "token_defined=true" >> "$GITHUB_OUTPUT"
 
   build-images:
@@ -76,14 +76,14 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ env.REGISTRY_USERNAME }}
-          password: ${{ secrets.MY_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          github-token: ${{ secrets.MY_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
 
