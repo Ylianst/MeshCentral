@@ -38,23 +38,23 @@ jobs:
           - name: complete
             include_mongodb: true
             include_postgresql: true
-            include_mariadb: true
+            include_mysql: true
             tag_suffix: ""
           - name: mongodb
             include_mongodb: true
             include_postgresql: false
-            include_mariadb: false
+            include_mysql: false
             tag_suffix: "-mongodb"
           - name: postgresql
             include_mongodb: false
             include_postgresql: true
-            include_mariadb: false
+            include_mysql: false
             tag_suffix: "-postgresql"
-          - name: mariadb
+          - name: mysql
             include_mongodb: false
             include_postgresql: false
-            include_mariadb: true
-            tag_suffix: "-mariadb"
+            include_mysql: true
+            tag_suffix: "-mysql"
 
     steps:
       - name: Checkout repository
@@ -80,10 +80,12 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@master
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           github-token: ${{ secrets.MY_TOKEN }}
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
 
       - name: Install Translate Packages (allowed to fail)
         working-directory: ./translate
@@ -114,7 +116,7 @@ jobs:
           build-args: |
             INCLUDE_MONGODB_TOOLS=${{ matrix.variant.include_mongodb }}
             INCLUDE_POSTGRESQL_TOOLS=${{ matrix.variant.include_postgresql }}
-            INCLUDE_MARIADB_TOOLS=${{ matrix.variant.include_mariadb }}
+            INCLUDE_MARIADB_TOOLS=${{ matrix.variant.include_mysql }}
             DISABLE_MINIFY=yes
             DISABLE_TRANSLATE=yes
             PREINSTALL_LIBS=true
