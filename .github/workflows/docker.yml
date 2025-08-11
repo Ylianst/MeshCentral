@@ -1,6 +1,7 @@
 name: Docker-Builder
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -9,10 +10,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository || 'MeshCentral' }}
+  REGISTRY_USERNAME: ${{ github.repository_owner || 'DaanSelen' }} # This is done so I can test the workflow with nektos/act
 
 jobs:
-
   check-token:
     name: Check Token
     runs-on: ubuntu-latest
@@ -22,15 +23,39 @@ jobs:
       - name: Check token
         id: token_check
         env:
-          MY_TOKEN: ${{ secrets.MY_TOKEN }}
-        if: "${{ env.MY_TOKEN != '' }}"
+          MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: "${{ env.GITHUB_TOKEN != '' }}"
         run: echo "token_defined=true" >> "$GITHUB_OUTPUT"
 
-  build:
-    name: Build
+  build-images:
+    name: Build Docker Images
     runs-on: ubuntu-latest
     needs: [check-token]
     if: needs.check-token.outputs.token_defined == 'true'
+    strategy:
+      matrix:
+        variant:
+          - name: complete
+            include_mongodb: true
+            include_postgresql: true
+            include_mysql: true
+            tag_suffix: ""
+          - name: mongodb
+            include_mongodb: true
+            include_postgresql: false
+            include_mysql: false
+            tag_suffix: "-mongodb"
+          - name: postgresql
+            include_mongodb: false
+            include_postgresql: true
+            include_mysql: false
+            tag_suffix: "-postgresql"
+          - name: mysql
+            include_mongodb: false
+            include_postgresql: false
+            include_mysql: true
+            tag_suffix: "-mysql"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -50,14 +75,15 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
 
@@ -84,22 +110,13 @@ jobs:
           file: docker/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}${{ matrix.variant.tag_suffix }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
           build-args: |
-            INCLUDE_MONGODB_TOOLS=true
-            INCLUDE_POSTGRESQL_TOOLS=true
-            INCLUDE_MARIADB_TOOLS=true
+            INCLUDE_MONGODB_TOOLS=${{ matrix.variant.include_mongodb }}
+            INCLUDE_POSTGRESQL_TOOLS=${{ matrix.variant.include_postgresql }}
+            INCLUDE_MARIADB_TOOLS=${{ matrix.variant.include_mysql }}
             DISABLE_MINIFY=yes
             DISABLE_TRANSLATE=yes
             PREINSTALL_LIBS=true
-
-      #- name: Docker Scout
-      #  id: docker-scout
-      #  uses: docker/scout-action@v1
-      #  with:
-      #    command: quickview,cves
-      #    image: image://
-      #    summary: true
-      #    only-severities: critical,high,medium,low,unspecified
