@@ -14,24 +14,9 @@ env:
   REGISTRY_USERNAME: ${{ github.repository_owner || 'DaanSelen' }} # This is done so I can test the workflow with nektos/act
 
 jobs:
-  check-token:
-    name: Check Token
-    runs-on: ubuntu-latest
-    outputs:
-      token_defined: ${{ steps.token_check.outputs.token_defined }}
-    steps:
-      - name: Check token
-        id: token_check
-        env:
-          MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: "${{ env.GITHUB_TOKEN != '' }}"
-        run: echo "token_defined=true" >> "$GITHUB_OUTPUT"
-
   build-images:
     name: Build Docker Images
     runs-on: ubuntu-latest
-    needs: [check-token]
-    if: needs.check-token.outputs.token_defined == 'true'
     strategy:
       matrix:
         variant:
