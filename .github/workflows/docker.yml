@@ -16,6 +16,9 @@ env:
 jobs:
   build-images:
     name: Build Docker Images
+    permissions:
+      packages: write
+      contents: read
     runs-on: ubuntu-latest
     strategy:
       matrix:
