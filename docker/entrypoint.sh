@@ -11,6 +11,8 @@ trap graceful_shutdown SIGTERM
 
 ### Start MeshCentral Docker Container.
 
+# Make the start more cleared when restarted.
+echo "-------------------------------------------------------------"
 date
 echo "Config file: $CONFIG_FILE"
 

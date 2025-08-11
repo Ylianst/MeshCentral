@@ -49,18 +49,16 @@ RUN apk update && \
     apk add --no-cache --update \
         bash gcc g++ jq make nodejs npm python3 tzdata
 
-RUN mkdir -p /opt/meshcentral/meshcentral
-WORKDIR /opt/meshcentral/meshcentral
+RUN mkdir -p /opt/syslog
+WORKDIR /opt/syslog
 RUN npm install modern-syslog
 
-### STAGE 3 BUILDING.
+### STAGE 3 RUNTIME
 
-FROM alpine:3.21 AS finalizer
+FROM alpine:3.21 AS runtime
 
-# copy files from previous layers
+# Copy prepared app from builder stage
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=syslog-compiler /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
-COPY --from=syslog-compiler /opt/meshcentral/meshcentral/package.json /opt/meshcentral/meshcentral/package.json
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -116,7 +114,6 @@ ENV MARIADB_HOST="" \
     MARIADB_PASS="" \
     MARIADB_DATABASE=""
 
-RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN apk update && \
@@ -190,6 +187,12 @@ RUN cd meshcentral && \
     npm cache clean --force && \
     rm -rf /root/ /tmp/
 
+COPY --from=syslog-compiler /opt/syslog/node_modules/modern-syslog /opt/meshcentral/meshcentral/node_modules/modern-syslog
+
+RUN jq '.dependencies["modern-syslog"] = "^1.2.0"' /opt/meshcentral/meshcentral/package.json \
+    > /opt/meshcentral/meshcentral/package.json.tmp \
+  && mv /opt/meshcentral/meshcentral/package.json.tmp /opt/meshcentral/meshcentral/package.json
+
 # Expose needed ports
 EXPOSE 80 443
 
@@ -203,4 +206,5 @@ VOLUME /opt/meshcentral/meshcentral-backups
 COPY ./docker/entrypoint.sh ./entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
+#CMD ["sleep", "infinity"]
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
