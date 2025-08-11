@@ -40,6 +40,7 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
+<<<<<<< HEAD
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
 FROM node:lts-alpine3.22 AS dep-compiler
@@ -63,6 +64,29 @@ FROM alpine:3.22 AS finalizer
 # copy files from previous layers
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+=======
+### STAGE 2 PRECOMPILE SYSLOG MODULE
+
+FROM alpine:3.21 AS syslog-compiler
+
+RUN apk update && \
+    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    apk add --no-cache --update \
+        bash gcc g++ jq make nodejs npm python3 tzdata
+
+RUN mkdir -p /opt/meshcentral/meshcentral
+WORKDIR /opt/meshcentral/meshcentral
+RUN npm install modern-syslog
+
+### STAGE 3 BUILDING.
+
+FROM alpine:3.21 AS finalizer
+
+# copy files from previous layers
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+COPY --from=syslog-compiler /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
+COPY --from=syslog-compiler /opt/meshcentral/meshcentral/package.json /opt/meshcentral/meshcentral/package.json
+>>>>>>> af1984fa (Integrate the syslog compiler)
 
 # environment variables
 ENV NODE_ENV="production" \
