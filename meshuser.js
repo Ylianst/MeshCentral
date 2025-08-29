@@ -2849,7 +2849,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         }
                                     } else if (i.startsWith('ugrp/')) {
                                         var cusergroup = parent.userGroups[i];
-                                        console.log(cusergroup);
                                         if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
                                             // Remove the user link & save the user
                                             delete cusergroup.links[node._id];
