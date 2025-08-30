@@ -1,3 +1,5 @@
+# Debugging
+
 ## Websockets Video
 
 Make sure you understand how MeshCentral works with your browser using chrome developer tools.

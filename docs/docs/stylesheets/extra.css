@@ -1,99 +1,24 @@
-/* Maximum space for text block */
 .md-grid {
-    max-width: 95%; /* or 100%, if you want to stretch to full-width */
-  }
+    max-width: 80%;
+}
 
-.md-header {
-    background-color: #0b3e81 !important;
-    color: white !important;
+img {
+    height: auto;
+    width: auto;
+    border: none;
+    border-radius: 10px;
+    transition: transform ease-in-out 0.3s;
 }
-.md-search__input {
-    background-color: white !important;
+img:hover {
+    transform: scale(1.025); /* Slightly enlarges on hover */
 }
-.md-search__icon[for=__search]{
-    color: initial;
+
+.video-wrapper iframe {
+    width: 100%; /* Ratio 16:9 */
+    height: 600px; /* Ratio 16:9 */
+    border-radius: 10px; /* Rounded Corners */
+    transition: transform ease-in-out 0.3s;
 }
-.md-container {
-    background-color: #0b3e81;
+.video-wrapper:hover iframe {
+    transform: scale(1.025); /* Slightly enlarges on hover */
 }
-.md-footer-meta__inner {
-    background-color: #0b3e81;
-}
-.md-grid {
-}
-.md-nav__item .md-nav__link--active {
-    color: white;
-}
-.md-nav__link {
-    color: white;
-}
-.md-nav__link[data-md-state=blur] {
-    color: white;
-}
-.md-tabs {
-    background-color: #0b3e81;
-    color: white;
-}
-.md-tabs__list {
-}
-.md-typeset a {
-    color: whitesmoke;
-    text-decoration: underline;
-    text-shadow: 4px 4px 8px black;
-}
-.md-typeset h1 {
-    color: white;
-    text-shadow: 4px 4px 8px black;
-}
-.md-typeset h2 {
-    color: white;
-    text-shadow: 4px 4px 8px black;
-}
-.md-typeset h3 {
-    color: white;
-    text-shadow: 4px 4px 8px black;
-}
-.md-typeset h4 {
-    color: white;
-    text-shadow: 4px 4px 8px black;
-}
-.md-typeset h5 {
-    color: white;
-    text-shadow: 4px 4px 8px black;
-}
-.md-typeset table {
-    color: black;
-}
-.md-main {
-    color: white !important;
-    background-color: #113962;
-    background: linear-gradient(to bottom, #104893 0%,#113962 100%);
-}
-a:link {
-    color: #c8c8c8;
-}
-.html {
-    background-color: #0b3e81;
-}
-.dlspan {
-    background-color:gray;
-    color:black;
-    font-size:16px;
-    padding:4px;
-    border-radius:4px;
-    box-shadow: 2px 2px 4px black;
-}
-.md-typeset .tabbed-set {
-    border-left-width: 0.2rem;
-    border-left-color: rgb(244, 244, 244);
-    border-left-style: solid;
-    border-radius: 4px;
-    background-color: rgba(68,138,255,.1);
-    border-color: rgb(244, 244, 244);
-    padding: 5px;
-}
-@media only screen and (max-width: 76.1875em) {
-    .md-nav__link {
-        color: black;
-    }
-  }
