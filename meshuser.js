@@ -6602,7 +6602,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         obj.send({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag });
     }
 
-    function serverCommandPing(command) { try { ws.send('{action:"pong"}'); } catch (ex) { } }
+    function serverCommandPing(command) { try { ws.send('{"action":"pong"}'); } catch (ex) { } }
     function serverCommandPong(command) { } // NOP
 
     function serverCommandPowerTimeline(command) {
