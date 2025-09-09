@@ -3906,12 +3906,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
-                    var yubikeyotp = null;
-                    try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
+                    var yub = null;
+                    try { yub = require('yub'); } catch (ex) { }
 
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
-                    if ((yubikeyotp == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
+                    if ((yub == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         break;
                     }
@@ -3925,9 +3925,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // TODO: Check if command.otp is modhex encoded, reject if not.
 
                     // Query the YubiKey server to validate the OTP
-                    var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
-                    if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-                    yubikeyotp.verifyOTP(request, function (err, results) {
+                    yub.init(domain.yubikey.id, domain.yubikey.secret);
+                    yub.verify(command.otp, function (err, results) {
                         if ((results != null) && (results.status == 'OK')) {
                             var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                             var keyId = command.otp.substring(0, 12);
