@@ -43,7 +43,7 @@ jobs:
             include_postgresql: false
             include_mysql: true
             tag_suffix: "-mysql"
-            
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
