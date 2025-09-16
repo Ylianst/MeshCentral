@@ -2785,7 +2785,7 @@
           },
           "yubikey": {
             "type": "object",
-            "description": "Yubikey configuration",
+            "description": "Yubikey OTP configuration (get API Key from https://upgrade.yubico.com/getapikey/)",
             "properties": {
               "id": {
                 "type": "string",
@@ -2794,11 +2794,6 @@
               "secret": {
                 "type": "string",
                 "description": "Yubikey secret key"
-              },
-              "proxy": {
-                "type": "string",
-                "format": "uri",
-                "description": "Yubikey proxy URL"
               }
             },
             "required": [

@@ -1073,10 +1073,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // If we have a match, check the OTP
             if (match === true) {
-                var yubikeyotp = require('yubikeyotp');
-                var request = { otp: token, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
-                if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-                yubikeyotp.verifyOTP(request, function (err, results) {
+                var yub = require('yub');
+                yub.init(domain.yubikey.id, domain.yubikey.secret);
+                yub.verify(token, function (err, results) {
                     if ((results != null) && (results.status == 'OK')) {
                         parent.debug('web', 'checkUserOneTimePassword: success (Yubikey).');
                         func(true, { twoFactorType: 'hwotp' });
@@ -3887,7 +3886,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle device file request
     function handleDeviceFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = getDomain(req, res);
         if (domain == null) { return; }
         if ((req.query.c == null) || (req.query.f == null)) { res.sendStatus(404); return; }
 
