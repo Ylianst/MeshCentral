@@ -2812,7 +2812,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
-                            if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
+                            if ((rights & MESHRIGHT_UNINSTALL) == 0) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                                return;
+                            }
 
                             // Delete this node including network interface information, events and timeline
                             db.Remove(node._id);                                 // Remove node with that id
@@ -2849,7 +2852,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         }
                                     } else if (i.startsWith('ugrp/')) {
                                         var cusergroup = parent.userGroups[i];
-                                        console.log(cusergroup);
                                         if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
                                             // Remove the user link & save the user
                                             delete cusergroup.links[node._id];
@@ -2878,11 +2880,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((state.connectivity & 1) != 0) { parent.wsagents[nodeid].close(); } // Disconnect mesh agent
                                 if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.closeAllForNode(nodeid); } // Disconnect CIRA/Relay/LMS connections
                             }
+
+                            // Send response if required
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                         });
                     }
-
-                    // Send response if required, in this case we always send ok which is not ideal.
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
 
                     break;
                 }
@@ -3907,12 +3909,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
-                    var yubikeyotp = null;
-                    try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
+                    var yub = null;
+                    try { yub = require('yub'); } catch (ex) { }
 
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
-                    if ((yubikeyotp == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
+                    if ((yub == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         break;
                     }
@@ -3926,9 +3928,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // TODO: Check if command.otp is modhex encoded, reject if not.
 
                     // Query the YubiKey server to validate the OTP
-                    var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
-                    if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-                    yubikeyotp.verifyOTP(request, function (err, results) {
+                    yub.init(domain.yubikey.id, domain.yubikey.secret);
+                    yub.verify(command.otp, function (err, results) {
                         if ((results != null) && (results.status == 'OK')) {
                             var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                             var keyId = command.otp.substring(0, 12);
@@ -6603,7 +6604,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         obj.send({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag });
     }
 
-    function serverCommandPing(command) { try { ws.send('{action:"pong"}'); } catch (ex) { } }
+    function serverCommandPing(command) { try { ws.send('{"action":"pong"}'); } catch (ex) { } }
     function serverCommandPong(command) { } // NOP
 
     function serverCommandPowerTimeline(command) {

@@ -2214,6 +2214,27 @@
                     }
                     break;
                 }
+                case 'getcookie': {
+                    if (message.tag == 'novnc') {
+                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
+                        var node = getNodeFromId(message.nodeid);
+                        if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
+                        safeNewWindow(vncurl, 'mcnovnc/' + message.nodeid);
+                    } else if (message.tag == 'mstsc') {
+                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
+                        var node = getNodeFromId(message.nodeid);
+                        if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
+                        if (message.localRelay) { rdpurl += '&local=1'; }
+                        safeNewWindow(rdpurl, 'mcmstsc/' + message.nodeid);
+                    } else if (message.tag == 'ssh') {
+                        var sshurl = window.location.origin + domainUrl + 'ssh.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
+                        var node = getNodeFromId(message.nodeid);
+                        if (node != null) { sshurl += '&name=' + encodeURIComponentEx(node.name); }
+                        if (message.localRelay) { sshurl += '&local=1'; }
+                        safeNewWindow(sshurl, 'mcssh/' + message.nodeid);
+                    }
+                    break;
+                }
                 default:
                     //console.log('Unknown message.action', message.action);
                     break;
@@ -3938,6 +3959,22 @@
                     x += '<a onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + ((node.httpport && (node.httpport != 80)) ? '/' + node.httpport : '') + '</a>&nbsp;';
                     x += '<a onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + ((node.httpsport && (node.httpsport != 443)) ? '/' + node.httpsport : '') + '</a>&nbsp;';
                 }
+
+                // noVNC link
+                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x20000000) == 0)) {
+                    x += '<a id=rfbLink onclick=p10rfb("' + node._id + '")>' + "Web-VNC" + '</a>&nbsp;';
+                }
+
+                // MSTSC.js link
+                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0)) {
+                    x += '<a id=mstscLink onclick=p10mstsc("' + node._id + '")>' + "Web-RDP" + '</a>&nbsp;';
+                }
+
+                // SSH link
+                if ((features2 & 0x200) && (((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0)) {
+                    x += '<a id=sshLink onclick=p10ssh("' + node._id + '")>' + "Web-SSH" + '</a>&nbsp;';
+                }
+
                 //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
                 //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
                 x += '</div><br>'
@@ -4412,6 +4449,28 @@
             if (relayid != null) { url += '&relayid=' + relayid; }
             safeNewWindow(url, 'WebRelay');
             return false;
+        }
+
+        function p10rfb(nodeid, port) {
+            var node = getNodeFromId(nodeid), addr = null;
+            var mesh = meshes[node.meshid];
+            if (port == null) { if (node.rfbport != null) { port = node.rfbport; } else { port = 5900; } }
+            if (node.mtype == 3) { if (mesh && mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device relay if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tcpaddr: addr, tag: 'novnc', name: mesh ? mesh.name : null });
+        }
+
+        function p10mstsc(nodeid, port) {
+            var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
+            if (port == null) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } } // Adjust RDP port if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'mstsc', name: mesh ? mesh.name : null });
+        }
+
+        function p10ssh(nodeid, port) {
+            var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
+            if (port == null) { if (node.sshport != null) { port = node.sshport; } else { port = 22; } }
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'ssh', name: mesh ? mesh.name : null });
         }
 
         function p10showiconselector() {

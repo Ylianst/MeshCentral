@@ -933,7 +933,7 @@ module.exports.CreateDB = function (parent, func) {
         connectinArgs.database = 'postgres';
         DatastoreTest = new Client(connectinArgs);
         DatastoreTest.connect();
-
+        connectinArgs.database = databaseName; //put the name back for backupconfig info
         DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
             if (res.rowCount != 0) { // database exists now check tables exists
                 DatastoreTest.end();
@@ -3206,6 +3206,7 @@ module.exports.CreateDB = function (parent, func) {
         if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
         else if ((typeof parent.args.mariadb == 'object') && (typeof parent.args.mariadb.database == 'string')) { dbname = parent.args.mariadb.database; }
         else if ((typeof parent.args.mysql == 'object') && (typeof parent.args.mysql.database == 'string')) { dbname = parent.args.mysql.database; }
+        else if ((typeof parent.args.postgres == 'object') && (typeof parent.args.postgres.database == 'string')) { dbname = parent.args.postgres.database; }
         else if (typeof parent.config.settings.sqlite3 == 'string') {dbname = parent.config.settings.sqlite3 + '.sqlite'};
 
         const currentDate = new Date();
@@ -3214,18 +3215,17 @@ module.exports.CreateDB = function (parent, func) {
 
         r += 'DB Name: ' + dbname + '\r\n';
         r += 'DB Type: ' + DB_LIST[obj.databaseType] + '\r\n';
-        r += 'BackupPath: ' + backupPath + '\r\n';
-        r += 'BackupFile: ' + obj.newAutoBackupFile + '.zip\r\n';
 
-        if (parent.config.settings.autobackup == null) {
-            r += 'No Settings/AutoBackup\r\n';
+        if (parent.config.settings.autobackup.backupintervalhours == -1) {
+            r += 'Backup disabled\r\n';
         } else {
+            r += 'BackupPath: ' + backupPath + '\r\n';
+            r += 'BackupFile: ' + obj.newAutoBackupFile + '.zip\r\n';
+
             if (parent.config.settings.autobackup.backuphour != null && parent.config.settings.autobackup.backuphour != -1) {
                 r += 'Backup between: ' + parent.config.settings.autobackup.backuphour + 'H-' + (parent.config.settings.autobackup.backuphour + 1)  + 'H\r\n';
             }
-            if (parent.config.settings.autobackup.backupintervalhours != null) {
-                r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n';
-            }
+            r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n';
             if (parent.config.settings.autobackup.keeplastdaysbackup != null) {
                 r += 'Keep Last Backups (Days): ' + parent.config.settings.autobackup.keeplastdaysbackup + '\r\n';
             }
@@ -3244,6 +3244,11 @@ module.exports.CreateDB = function (parent, func) {
                 r += 'MySqlDump Path: ';
                 if (typeof parent.config.settings.autobackup.mysqldumppath != 'string') { r += 'Bad mysqldump type\r\n'; }
                 else { r += parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
+            }
+            if (parent.config.settings.autobackup.pgdumppath != null) {
+                r += 'pgDump Path: ';
+                if (typeof parent.config.settings.autobackup.pgdumppath != 'string') { r += 'Bad pgdump type\r\n'; }
+                else { r += parent.config.settings.autobackup.pgdumppath + '\r\n'; }
             }
             if (parent.config.settings.autobackup.backupotherfolders) {
                 r += 'Backup other folders: ';
