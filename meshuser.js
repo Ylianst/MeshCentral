@@ -2812,7 +2812,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
-                            if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
+                            if ((rights & MESHRIGHT_UNINSTALL) == 0) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                                return;
+                            }
 
                             // Delete this node including network interface information, events and timeline
                             db.Remove(node._id);                                 // Remove node with that id
@@ -2877,11 +2880,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((state.connectivity & 1) != 0) { parent.wsagents[nodeid].close(); } // Disconnect mesh agent
                                 if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.closeAllForNode(nodeid); } // Disconnect CIRA/Relay/LMS connections
                             }
+
+                            // Send response if required
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                         });
                     }
-
-                    // Send response if required, in this case we always send ok which is not ideal.
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
 
                     break;
                 }
