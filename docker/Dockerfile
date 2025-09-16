@@ -206,5 +206,4 @@ VOLUME /opt/meshcentral/meshcentral-backups
 COPY ./docker/entrypoint.sh ./entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
-#CMD ["sleep", "infinity"]
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
