@@ -42,7 +42,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 ### STAGE 2 PRECOMPILE SYSLOG MODULE
 
-FROM alpine:3.21 AS syslog-compiler
+FROM alpine:3.22 AS syslog-compiler
 
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
@@ -55,7 +55,7 @@ RUN npm install modern-syslog
 
 ### STAGE 3 RUNTIME
 
-FROM alpine:3.21 AS runtime
+FROM alpine:3.22 AS runtime
 
 # Copy prepared app from builder stage
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
