@@ -1,26 +1,33 @@
-# Container (OCI-specification).
+# 🐳 Container (OCI-specification).
 
 [Open Container Initiative](https://opencontainers.org/)
 
 The following section explains possible ways to install MeshCentral locally with the use of Docker or Podman.
 For the syntax, docker will be used as default. This is done because podman also supports this syntax.<br>
-For reference: [Docker](https://www.docker.com/) and [Podman](https://podman.io/).
+
+🔗 References:
+
+- [Docker](https://www.docker.com/)  
+- [Podman](https://podman.io/)
 
 !!!warning
     Do not use the built-in MeshCentral update functionality.<br>
     Update the container the 'docker way', by updating the image itself.
 
-### Available Tags:
+### 🏷️ Available Tags:
 
 | Tag-name | Explanation |
 |--------|-----|
-| master | This tag belongs to the image which is built on every new commit to the main branch, therefor it has the latest code. |
-| latest | This tag takes the latest released version of MeshCentral  |
-| 1.1.43 | You can also specify the specific MeshCentral release with its tag, for example:  ghcr.io/ylianst/meshcentral:1.1.43 |
+| `master` | This tag belongs to the image which is built on every new commit to the main branch, therefor it has the latest code. |
+| `latest` | This tag takes the latest released version of MeshCentral  |
+| `1.1.43` | You can also specify the specific MeshCentral release with its tag, for example:  `ghcr.io/ylianst/meshcentral:1.1.43` |
 
+---
+> **📌 Note:**
 Refer to [this page](https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral) for more information on the container status.
+---
 
-## Docker/Podman
+## 🐋 Docker/Podman
 
 For single-machine setups such as Docker and Podman.
 
@@ -74,12 +81,12 @@ volumes:
   web:
 ```
 
-## Kubernetes
+## ☸️ Kubernetes
 
 ###
 
-Using YAML deployment files.
+> Using YAML deployment files.
 
-## Extra sources
+## 📚 Extra sources
 
-[Github Docker Resources](https://github.com/Ylianst/MeshCentral/tree/master/docker)
+> [Github Docker Resources](https://github.com/Ylianst/MeshCentral/tree/master/docker)
