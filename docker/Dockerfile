@@ -40,11 +40,24 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
-### STAGE 2 BUILDING.
+### STAGE 2 PRECOMPILE SYSLOG MODULE
 
-FROM alpine:3.22
+FROM alpine:3.22 AS syslog-compiler
 
-# copy files from builder-image
+RUN apk update && \
+    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    apk add --no-cache --update \
+        bash gcc g++ jq make nodejs npm python3 tzdata
+
+RUN mkdir -p /opt/syslog
+WORKDIR /opt/syslog
+RUN npm install modern-syslog
+
+### STAGE 3 RUNTIME
+
+FROM alpine:3.22 AS runtime
+
+# Copy prepared app from builder stage
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # environment variables
@@ -101,13 +114,12 @@ ENV MARIADB_HOST="" \
     MARIADB_PASS="" \
     MARIADB_DATABASE=""
 
-RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ jq make nodejs npm python3 tzdata && \
+        bash jq nodejs npm tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
@@ -121,7 +133,7 @@ RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
-            npm install ssh2@1.16.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
+            npm install ssh2@1.16.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 otplib@12.0.1 yub@0.11.1;; \
         false|no|FALSE|NO) \
             echo "Not pre-installing libraries.";; \
         *) \
@@ -174,6 +186,12 @@ RUN cd meshcentral && \
     npm install && \
     npm cache clean --force && \
     rm -rf /root/ /tmp/
+
+COPY --from=syslog-compiler /opt/syslog/node_modules/modern-syslog /opt/meshcentral/meshcentral/node_modules/modern-syslog
+
+RUN jq '.dependencies["modern-syslog"] = "^1.2.0"' /opt/meshcentral/meshcentral/package.json \
+    > /opt/meshcentral/meshcentral/package.json.tmp \
+  && mv /opt/meshcentral/meshcentral/package.json.tmp /opt/meshcentral/meshcentral/package.json
 
 # Expose needed ports
 EXPOSE 80 443

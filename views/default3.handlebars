@@ -2125,6 +2125,7 @@
                 if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" CLASS="LogoffLinkColor">' + "Logout" + '</a>'); }
             }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
+            if (logoutControls && logoutControls.logoutUrl) { Q('logoutMenuOptionRef').href = logoutControls.logoutUrl; }
 
             // Setup the context menu
             document.onclick = function (e) { hideContextMenu(); }

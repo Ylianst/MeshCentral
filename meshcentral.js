@@ -2120,10 +2120,10 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
                     obj.updateServerState('state', "running");
 
-                    // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: 0}; } //no schedule, but able to console autobackup
+                    // Setup auto-backup defaults. Unless autobackup is set to false try to make a backup.
+                    if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: -1}; } //block all autobackup functions
                     else {
-                        if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
+                        if (typeof obj.config.settings.autobackup != 'object') { obj.config.settings.autobackup = {}; };
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
                         if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
@@ -4319,7 +4319,7 @@ function mainStart() {
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
             if ((config.domains[i].newaccountscaptcha != null) && (config.domains[i].newaccountscaptcha !== false)) { captcha = true; }
-            if ((typeof config.domains[i].duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal'); }
+            if ((typeof config.domains[i].duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal@2.1.0'); }
         }
 
         // Build the list of required modules
@@ -4369,7 +4369,7 @@ function mainStart() {
         // Setup 2nd factor authentication
         if (config.settings.no2factorauth !== true) {
             // Setup YubiKey OTP if configured
-            if (yubikey == true) { modules.push('yubikeyotp@0.2.0'); } // Add YubiKey OTP support
+            if (yubikey == true) { modules.push('yub@0.11.1'); } // Add YubiKey OTP support (replaced yubikeyotp due to form-data issues)
             if (allsspi == false) { modules.push('otplib@12.0.1'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
