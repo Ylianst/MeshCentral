@@ -1,3 +1,4 @@
+---
 name: Docker-Builder
 
 on:
@@ -21,6 +22,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     strategy:
+      #max-parallel: 3
       matrix:
         variant:
           - name: complete
@@ -51,7 +53,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
