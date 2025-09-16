@@ -43,6 +43,11 @@ jobs:
             include_postgresql: false
             include_mysql: true
             tag_suffix: "-mysql"
+          - name: slim
+            include_mongodb: false
+            include_postgresql: false
+            include_mysql: false
+            tag_suffix: "-slim"
 
     steps:
       - name: Checkout repository
