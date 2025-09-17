@@ -12,6 +12,7 @@ WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 # Check the Docker build arguments and if they are empty do the task.
+RUN apk add --no-cache python3 make g++ bash
 RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
         echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
@@ -40,18 +41,20 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
-### STAGE 2 PRECOMPILE SYSLOG MODULE
+### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM alpine:3.22 AS syslog-compiler
+FROM alpine:3.22 AS dep-compiler
 
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
         bash gcc g++ jq make nodejs npm python3 tzdata
 
-RUN mkdir -p /opt/syslog
-WORKDIR /opt/syslog
-RUN npm install modern-syslog
+RUN mkdir -p /opt/meshcentral
+COPY ./package.json /opt/meshcentral/package.json
+COPY ./package-lock.json /opt/meshcentral/package-lock.json
+WORKDIR /opt/meshcentral
+RUN npm ci
 
 ### STAGE 3 RUNTIME
 
@@ -59,6 +62,7 @@ FROM alpine:3.22 AS runtime
 
 # Copy prepared app from builder stage
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+COPY --from=dep-compiler /opt/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -183,15 +187,8 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
 
 # install dependencies from package.json
 RUN cd meshcentral && \
-    npm install && \
     npm cache clean --force && \
     rm -rf /root/ /tmp/
-
-COPY --from=syslog-compiler /opt/syslog/node_modules/modern-syslog /opt/meshcentral/meshcentral/node_modules/modern-syslog
-
-RUN jq '.dependencies["modern-syslog"] = "^1.2.0"' /opt/meshcentral/meshcentral/package.json \
-    > /opt/meshcentral/meshcentral/package.json.tmp \
-  && mv /opt/meshcentral/meshcentral/package.json.tmp /opt/meshcentral/meshcentral/package.json
 
 # Expose needed ports
 EXPOSE 80 443
