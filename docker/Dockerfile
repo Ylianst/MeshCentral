@@ -45,7 +45,6 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 FROM alpine:3.22 AS dep-compiler
 
-
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
@@ -53,9 +52,12 @@ RUN apk update && \
 
 RUN mkdir -p /opt/meshcentral
 COPY ./package.json /opt/meshcentral/package.json
-COPY ./package-lock.json /opt/meshcentral/package-lock.json
 WORKDIR /opt/meshcentral
-RUN npm ci
+
+RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
+    && mv tmp.$$.json package.json \
+    && npm i --package-lock-only \
+    && npm ci
 
 ### STAGE 3 RUNTIME
 
