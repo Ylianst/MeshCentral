@@ -5914,13 +5914,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, newuserid]), obj, event);
                 if (command.remove === true) { msgs.push("Removed user " + newuserid.split('/')[2]); } else { msgs.push("Added user " + newuserid.split('/')[2]); }
                 successCount++;
-                parent.InvalidateNodeCache(newuser, mesh)
             } else {
                 msgs.push("Unknown user " + newuserid.split('/')[2]);
                 unknownUsers.push(newuserid.split('/')[2]);
                 failCount++;
             }
         }
+        parent.FlushGetNodeRightsCache()
     
         if ((successCount == 0) && (failCount == 0)) { msgs.push("Nothing done"); }
     
