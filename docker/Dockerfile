@@ -45,6 +45,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 FROM alpine:3.22 AS dep-compiler
 
+
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
