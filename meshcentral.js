@@ -4061,6 +4061,7 @@ async function resolveDomainsToIps(originalArray) {
             console.log(`Could not resolve ${item}`);
         }
     }
+    if (flatResult.length == 0) { return undefined; }
     return flatResult;
 }
 
