@@ -9340,7 +9340,7 @@
             x += addHtmlFormFloating("Operation", y);
             if (count == 0) { x = "No actions currently available for this device."; }
             xxdialogButtons = (count == 0) ? 2 : 3; xxdialogTag = x + z;
-            setModalContent('xxAddAgent', "Device Action", x);
+            setModalContent('xxAddAgent', "Device Action", xxdialogTag);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', deviceActionFunctionEx);
             if (count > 0) { deviceActionFunctionValidate(); }
         }
