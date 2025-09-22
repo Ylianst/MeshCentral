@@ -1474,7 +1474,7 @@
                         <input id=p22Connect value="Update" cmenu="geolocationConnectButton" onclick=connectGeolocation(event,1) type="button" />
                     </div>
                     <div>
-                        <div id="map" style="width: 100%; height: 600px;"></div>
+                        <div id="p22map" style="width: 100%; height: 600px;"></div>
                     </div>
                 </div>
             </div>
@@ -12019,9 +12019,11 @@
                 try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse: ' + data); return; }
             }
             console.log("P22gotCoordinates: ", data)
-            if(!map){
-                map = L.map('map').setView([data["latitude"], data["longitude"]], 15);
+            if(map){
+                map.remove();
+                map = null;
             }
+            map = L.map('p22map').setView([data["latitude"], data["longitude"]], 15);
             // Adding layer OpenStreetMap
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
@@ -20339,6 +20341,9 @@
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
             if (pluginHandler != null) pluginHandler.callHook('goPageEnd', x, event);
+
+            // Remove map
+            if( x == 22){ QH("p22map", ""); Q("p22map").setAttribute("class",""); }
 
             // Some panels must not have scroll bars
             QS('column_l')['overflow'] = ([11, 12].indexOf(x) >= 0) ? 'hidden' : null;
