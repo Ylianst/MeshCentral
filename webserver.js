@@ -3833,9 +3833,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Return a customised mainifest.json for PWA
     function handleManifestRequest(req, res){
-        const domain = getDomain(req);
+        const domain = checkUserIpAddress(req);
         if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
-        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleManifestRequest: invalid ip'); return; } // Check server-wide IP filter only.
         parent.debug('web', 'handleManifestRequest()');
         var manifest = {
             "name": (domain.title != null) ? domain.title : 'MeshCentral',
