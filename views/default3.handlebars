@@ -411,9 +411,9 @@
                             <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
                         </span>
-                        <input type=button class="btn btn-primary me-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
+                        <input type=button class="btn btn-secondary me-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
                         <input type=button class="btn btn-primary me-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
-                        <input type=button class="btn btn-primary me-1 btn-sm" id=ScrollToTopButton onclick="onDevicesScroll(true);" value="Scroll To Top" />
+                        <input type=button class="btn btn-secondary me-1 btn-sm" id=ScrollToTopButton onclick="onDevicesScroll(true);" value="Scroll To Top" />
                         <input type="text" id=SearchInput class="form-control-sm me-1 btn-sm" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx">
                         <span id=SearchInputClearButton style="display:none;position:relative">
                             <span class="fa-layers fa-fw" role="button" onclick="clearDeviceSearch()" style="position:absolute;left:-25px;top:-15px">
@@ -445,9 +445,9 @@
                             <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
                         </span>
-                        <input type="button" class="btn btn-primary me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
-                        <input type="button" class="btn btn-primary me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
-                        <input type="button" class="btn btn-primary me-1 btn-sm" onclick="onDevicesScroll(true);" value="Scroll To Top" />
+                        <input type="button" class="btn btn-success me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
+                        <input type="button" class="btn btn-danger me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
+                        <input type="button" class="btn btn-secondary me-1 btn-sm" onclick="onDevicesScroll(true);" value="Scroll To Top" />
                         <div class="form-check me-1" title="Automatic connect"><input class="form-check-input me-1" type=checkbox id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" /><label class="form-check-label" for="autoConnectDesktopCheckbox">Auto</label></div>
                         <input type="button" class="btn btn-primary me-1 btn-sm" onclick="showMultiDesktopSettings()" value="Settings" />
                         <input type="text" id=KvmSearchInput class="form-control-sm me-1" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx">
@@ -461,7 +461,7 @@
                     <div id=devMapToolbar class="d-flex align-items-center style14 visually-hidden">
                         <input class="form-control-sm me-1" type=search id=mapSearchLocation placeholder="Search Location" onfocus=onMapSearchFocus(1) onblur=onMapSearchFocus(0) />
                         <input class="btn btn-primary me-1 btn-sm" type=button value=Search title="Search for location" onclick=getSearchLocation() />
-                        <input class="btn btn-primary me-1 btn-sm" type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
+                        <input class="btn btn-secondary me-1 btn-sm" type=button id=refreshmap title="Reset map view" value=Reset onclick=refreshMap(false,true) />
                     </div>
                     <div class="d-flex align-items-center ms-auto">
                         <div style="display:none" id=devListToolbarView>
@@ -653,9 +653,9 @@
                     <tr>
                         <td class="style14 d-flex align-items-center flex-wrap p-1">
                             <div  class="d-flex align-items-center">
-                                <input type=button id=UsersSelectAllButton class="btn btn-primary btn-sm me-1" onclick="p3usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersSelectAllButton class="btn btn-secondary btn-sm me-1" onclick="p3usersSelectallButtonFunction()" value="Select All" />
                                 <input type=button id=UsersGroupActionButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Group Action" onclick=p3usersGroupActionFunction() />
-                                <input id=UserNewAccountButton class="btn btn-primary btn-sm me-1" type=button onclick=showCreateNewAccountDialog() value="New Account..." />
+                                <input id=UserNewAccountButton class="btn btn-success btn-sm me-1" type=button onclick=showCreateNewAccountDialog() value="New Account..." />
                                 <div class="d-inline-flex align-items-center">
                                     <input id=UserSearchInput type=search class="form-control-sm me-1" placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
                                 </div>
@@ -680,8 +680,8 @@
                         <td id="p5filehead" valign=bottom class="d-flex align-items-center">
                             <div id="p5rightOfButtons" class="d-flex align-items-center"></div>
                             <div class="m-1 d-flex align-items-center">
-                                <input type=button id=p5FolderUp class="btn btn-primary btn-sm me-1" disabled="disabled" onclick="return p5folderup();" value="Up" />
-                                <input type=button id=p5SelectAllButton class="btn btn-primary btn-sm me-1" disabled="disabled" onclick="p5selectallfile();" value="Select All" />
+                                <input type=button id=p5FolderUp class="btn btn-secondary btn-sm me-1" disabled="disabled" onclick="return p5folderup();" value="Up" />
+                                <input type=button id=p5SelectAllButton class="btn btn-secondary btn-sm me-1" disabled="disabled" onclick="p5selectallfile();" value="Select All" />
                                 <input type=button id=p5RenameFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Rename" onclick="p5renamefile();" />
                                 <input type=button id=p5DeleteFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Delete" onclick="p5deletefile();" />
                                 <input type=button id=p5ViewFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Edit" onclick="p5viewfile()" />
@@ -871,8 +871,8 @@
                                 value="AutoConnect" onclick=autoConnectDesktop(event) onkeypress="return false"
                                 onkeydown="return false" style="display:none;margin-right:4px" />
                             <div class="btn-group dropdown-center me-1" id=connectbutton1span>
-                                <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton1 title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
-                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton1d data-bs-toggle="dropdown" aria-expanded="false">
+                                <button type="button" class="btn btn-success btn-sm" id=connectbutton1 title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
+                                <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton1d data-bs-toggle="dropdown" aria-expanded="false">
                                     <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <ul class="dropdown-menu">
@@ -882,8 +882,8 @@
                                 </ul>
                             </div>
                             <div class="btn-group dropdown-center me-1" id=connectbutton1rspan>
-                                <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton1r title="Connect using RDP" onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false" disabled="disabled">RDP Connect</button>
-                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton1rd data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                <button type="button" class="btn btn-success btn-sm" id=connectbutton1r title="Connect using RDP" onclick=askRdpCredentials() onkeypress="return false" onkeydown="return false" disabled="disabled">RDP Connect</button>
+                                <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton1rd data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" onclick="cmaltportaction(1,event)">Alternate Port</a></li>
                                 </ul>
@@ -893,8 +893,8 @@
                                     onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false"
                                     disabled="disabled">HW Connect</button></span>
                             <div class="btn-group dropdown-center me-1" id=disconnectbutton1span>
-                                <button type="button" class="btn btn btn-primary btn-sm" id=disconnectbutton1 title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false">Disconnect</button>
-                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=diconnectbutton1d data-bs-toggle="dropdown" aria-expanded="false">
+                                <button type="button" class="btn btn-danger btn-sm" id=disconnectbutton1 title="Connect using MeshAgent remote desktop" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false">Disconnect</button>
+                                <button type="button" class="btn btn-danger btn-sm dropdown-toggle dropdown-toggle-split" id=diconnectbutton1d data-bs-toggle="dropdown" aria-expanded="false">
                                     <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <ul class="dropdown-menu">
@@ -965,9 +965,9 @@
                         <div class="d-flex align-items-center">
                             <select id="deskkeys" class="form-select-sm me-1" cmenu=deskKeyShortcutContextMenu></select>
                             <input id="DeskWD" type=button class="btn btn-primary btn-sm me-1" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
-                            <input id="DeskESC" style="display:none" type="button" class="btn btn-primary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
-                            <input id="DeskClip" type="button" class="btn btn-primary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
-                            <input id="DeskType" class="btn btn-primary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <input id="DeskESC" style="display:none" type="button" class="btn btn-secondary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
+                            <input id="DeskClip" type="button" class="btn btn-secondary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
+                            <input id="DeskType" class="btn btn-secondary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
                             <div id="DeskControlSpan" title="Toggle mouse and keyboard input" class="form-check"><input id="DeskControl" type="checkbox" class="form-check-input" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()"><label class="form-check-label" for="DeskControl">Input</label></div>&nbsp;
                         </div>
                         <div class="d-flex ms-auto align-items-center">
@@ -1050,8 +1050,8 @@
                                         onkeydown="return false" style="display:none"><i class="fa-solid fa-play"></i>
                                         AutoConnect</button>
                                     <div class="btn-group dropdown-center me-1" id=connectbutton2span>
-                                        <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton2 title="Connect using MeshAgent remote desktop" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
-                                        <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton2d data-bs-toggle="dropdown" aria-expanded="false" onclick=newContextMenu(event,1)><span class="visually-hidden">Toggle Dropdown</span></button>
+                                        <button type="button" class="btn btn-success btn-sm" id=connectbutton2 title="Connect using MeshAgent remote desktop" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
+                                        <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton2d data-bs-toggle="dropdown" aria-expanded="false" onclick=newContextMenu(event,1)><span class="visually-hidden">Toggle Dropdown</span></button>
                                         <ul class="dropdown-menu">
                                             <li><a class="dropdown-item" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></a></li>
                                             <li><a class="dropdown-item" onclick="cmtermaction(6,0,event)">Admin PowerShell</a></li>
@@ -1069,19 +1069,19 @@
                                         </ul>
                                     </div>
                                     <div class="btn-group dropdown-center me-1" id=connectbutton2sspan>
-                                        <button type="button" class="btn btn btn-primary btn-sm" id=connectbutton2s title="Connect using MeshAgent remote desktop" onclick=connectTerminal(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled">SSH Connect</button>
-                                        <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton2sd data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                        <button type="button" class="btn btn-success btn-sm" id=connectbutton2s title="Connect using MeshAgent remote desktop" onclick=connectTerminal(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled">SSH Connect</button>
+                                        <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton2sd data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
                                         <ul class="dropdown-menu">
                                             <li><a class="dropdown-item" onclick="cmsshportaction(1,event)">Alternate Port</a></li>
                                         </ul>
                                     </div>
                                     <span id="connectbutton2hspan"><button type="button"
-                                            class="btn btn-primary btn-sm me-1" id="connectbutton2h"
+                                            class="btn btn-success btn-sm me-1" id="connectbutton2h"
                                             title="Connect using Intel&reg; AMT hardware KVM"
                                             onclick=connectTerminal(event,2) onkeypress="return false"
                                             onkeydown="return false" disabled="disabled">HW Connect</button></span>
                                     <span id="disconnectbutton2span"><button type="button"
-                                            class="btn btn-primary btn-sm me-1" id="disconnectbutton2"
+                                            class="btn btn-danger btn-sm me-1" id="disconnectbutton2"
                                             onclick=connectTerminal(event,0) onkeypress="return false"
                                             onkeydown="return false">Disconnect</button></span>
                                     <span id="termstatus" style="line-height:22px">Disconnected</span><span id="termtitle"></span>
@@ -1174,16 +1174,16 @@
                                     class="btn btn-primary btn-sm me-1" type="button" style="display:none"><i
                                         class="fa-solid fa-play"></i> AutoConnect</button>
                                 <div class="btn-group dropdown-center me-1" id=p13Connectspan>
-                                    <button type="button" class="btn btn btn-primary btn-sm" id=p13Connect title="Connect using MeshAgent remote desktop" onclick=connectFiles(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
-                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=p13Connectdrop data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                    <button type="button" class="btn btn-success btn-sm" id=p13Connect title="Connect using MeshAgent remote desktop" onclick=connectFiles(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
+                                    <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" id=p13Connectdrop data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" onclick="cmconnectfilesaction()">Ask Consent</a></li>
                                     </ul>
                                 </div>
-                                <button id=p13Disconnect class="btn btn-primary btn-sm me-1" onclick=connectFiles(event) type="button">Disconnect</button>
+                                <button id=p13Disconnect class="btn btn-danger btn-sm me-1" onclick=connectFiles(event) type="button">Disconnect</button>
                                 <div class="btn-group dropdown-center me-1" id=p13Connectsspan>
-                                    <button type="button" class="btn btn btn-primary btn-sm" id=p13Connects title="Connect using MeshAgent remote desktop" onclick=connectFiles(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled">SFTP Connect</button>
-                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" id=p13Connectsdrop data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
+                                    <button type="button" class="btn btn-success btn-sm" id=p13Connects title="Connect using MeshAgent remote desktop" onclick=connectFiles(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled">SFTP Connect</button>
+                                    <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" id=p13Connectsdrop data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" onclick="cmsshportaction(1,event)">Alternate Port</a></li>
                                     </ul>
@@ -1206,8 +1206,8 @@
                         <td class="areaHead2 d-flex align-items-center flex-wrap" valign=bottom>
                             <div id="p13rightOfButtons" class="toright2 d-flex align-items-center"></div>
                             <div class="d-flex align-items-center">
-                                <input type=button disabled="disabled" id=p13FolderUp class="btn btn-primary me-1 btn-sm" value="Up" onclick="p13folderup()" />
-                                <input type=button disabled="disabled" id=p13SelectAllButton class="btn btn-primary me-1 btn-sm" value="Select All" onclick="p13selectallfile()" />
+                                <input type=button disabled="disabled" id=p13FolderUp class="btn btn-secondary me-1 btn-sm" value="Up" onclick="p13folderup()" />
+                                <input type=button disabled="disabled" id=p13SelectAllButton class="btn btn-secondary me-1 btn-sm" value="Select All" onclick="p13selectallfile()" />
                                 <input type=button disabled="disabled" id=p13RenameFileButton class="btn btn-primary me-1 btn-sm" value="Rename" onclick="p13renamefile()" />
                                 <input type=button disabled="disabled" id=p13DeleteFileButton class="btn btn-primary me-1 btn-sm" value="Delete" onclick="p13deletefile()" />
                                 <input type=button disabled="disabled" id=p13ViewFileButton class="btn btn-primary me-1 btn-sm" value="Edit" onclick="p13viewfile()" />
@@ -1637,10 +1637,10 @@
                     <tr>
                         <td class="style14 d-flex align-items-center flex-wrap p-1">
                             <div id="p50userGroupOps" class="d-flex align-items-center">
-                                <input type=button id=UsersGroupsSelectAllButton class="btn btn-primary btn-sm me-1" onclick="p50usersSelectallButtonFunction()" value="Select All" />
+                                <input type=button id=UsersGroupsSelectAllButton class="btn btn-secondary btn-sm me-1" onclick="p50usersSelectallButtonFunction()" value="Select All" />
                                 <input type=button id=UsersGroupsGroupActionButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Group Action" onclick=p50usersGroupActionFunction() />
-                                <input id=NewUserGroupButton type=button class="btn btn-primary btn-sm me-1" onclick=showCreateUserGroupDialog(1) value="New Group..." />
-                                <input id=DuplicateUserGroupButton type=button class="btn btn-primary btn-sm me-1" style=display:none onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
+                                <input id=NewUserGroupButton type=button class="btn btn-success btn-sm me-1" onclick=showCreateUserGroupDialog(1) value="New Group..." />
+                                <input id=DuplicateUserGroupButton type=button class="btn btn-primary button-outline-success btn-sm me-1" style=display:none onclick=showCreateUserGroupDialog(2) value="Duplicate Group..." />
                             </div>
                         </td>
                     </tr>
@@ -1888,9 +1888,9 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="idx_dlgCancelButton">Cancel</button>
-                        <button type="button" class="btn btn-outline-success" id="idx_dlgOkButton" >OK</button>
-                        <button type="button" class="btn btn-outline-danger" id="idx_dlgDeleteButton" style="display:none">Delete</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="idx_dlgCancelButton">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="idx_dlgOkButton" >OK</button>
+                        <button type="button" class="btn btn-danger" id="idx_dlgDeleteButton" style="display:none">Delete</button>
                         <!-- <div id="idx_dlgMoreButtons">
                             <a href="#" id="idx_dlgMoreButtons1" class="btn btn-primary"
                                 title="Toggle advanced options" onclick="MoreToggle(true)">&#x25BC;</a>
