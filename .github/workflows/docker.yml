@@ -1,3 +1,4 @@
+---
 name: Docker-Builder
 
 on:
@@ -11,7 +12,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository || 'MeshCentral' }}
-  REGISTRY_USERNAME: ${{ github.repository_owner || 'DaanSelen' }}
+  REGISTRY_USERNAME: ${{ github.repository_owner || 'meshcentral-extensions' }}
 
 jobs:
   build-images:
@@ -21,6 +22,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     strategy:
+      #max-parallel: 1
       matrix:
         variant:
           - name: complete
@@ -43,10 +45,15 @@ jobs:
             include_postgresql: false
             include_mysql: true
             tag_suffix: "-mysql"
+          - name: slim
+            include_mongodb: false
+            include_postgresql: false
+            include_mysql: false
+            tag_suffix: "-slim"
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -91,6 +98,23 @@ jobs:
         working-directory: ./translate
         run: node translate.js translateall
 
+      - name: process tags with suffix
+        id: clean-tag
+        run: |
+          SUFFIX="${{ matrix.variant.tag_suffix }}"
+          # Read each line into an array
+          mapfile -t TAGS <<< "${{ steps.meta.outputs.tags }}"
+          
+          RESULT=""
+          for tag in "${TAGS[@]}"; do
+            if [ -n "$RESULT" ]; then
+              RESULT+=","
+            fi
+            RESULT+="${tag}${SUFFIX}"
+          done
+
+          echo "TAGS_WITH_SUFFIX=$RESULT" >> $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -98,7 +122,7 @@ jobs:
           file: docker/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
           push: true
-          tags: ${{ steps.meta.outputs.tags }}${{ matrix.variant.tag_suffix }}
+          tags: ${{ env.TAGS_WITH_SUFFIX }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
           build-args: |
