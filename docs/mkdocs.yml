@@ -10,16 +10,15 @@ nav:
         - 'Abstract': './install/abstract.md'
         - 'Advanced': './install/advanced.md'
         - 'Container (Docker)': './install/container.md'
-        - 'Debian/Ubuntu': './install/debian.md'
-        - 'RedHat': './install/redhat.md'
         - 'Windows': './install/windows.md'
+    - 'Databases':
+      - 'MongoDB': './install/database/mongodb.md'
+      - 'PostgreSQL': './install/database/postgresql.md'
+      - 'MariaDB/MySQL': './install/database/mariadb.md'
+      - 'Local Databases': './install/database/local.md'
     - 'Security':
       - 'Crowdsec': './install/security/crowdsec.md'
       - 'Secure Installation': './install/security/secure.md'
-    - 'Databases':
-      - 'MongoDB': './install/database/mongodb.md'
-      - 'PostgreSQL': './install/database/mongodb.md'
-      - 'MariaDB/MySQL': './install/database/mongodb.md'
 
   - 'MeshCentral':
       - 'MeshCentral Guide': './meshcentral/index.md'

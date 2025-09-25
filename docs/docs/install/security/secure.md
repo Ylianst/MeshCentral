@@ -1,68 +1,101 @@
-# 🔒 Increased Security Installation
+## 🔒 Increased Security Installation on Debian/Ubuntu
 
-On Debian based Linux distributions like Ubuntu, a better and more secure way to install MeshCentral is to have it run within a user account this restricted privileges. When installed like this, the self-update capability of MeshCentral will not work. Instead of installing MeshCentral in the user’s home folder, we install it in /opt/meshcentral and we create a meshcentral user that does not have rights to login or change any of the MeshCentral files. To do this, start by creating a new user called `meshcentral`
+For enhanced security on Debian-based Linux distributions (like Ubuntu), it's best practice to run **MeshCentral** under a dedicated, low-privilege user account. This prevents the server from making unauthorized changes to the system.
+
+> ⚠️ **Important:** Running with restricted privileges disables MeshCentral's **self-update capability**. Updates must be performed manually. Additionally, this setup **requires using an external database (like MongoDB)** because the primary data folder will be read-only.
+
+-----
+
+### 1\. Create a Low-Privilege User
+
+Start by creating a system user named `meshcentral`. This user will be restricted from logging in and changing files outside its designated directory.
 
 ```shell
 sudo useradd -r -d /opt/meshcentral -s /sbin/nologin meshcentral
 ```
 
-We can then create the installation folder, install and change permissions of the files so that the `meshcentral` account gets read-only access to the files.
+### 2\. Install MeshCentral
+
+Next, create the installation directory and install the package using NPM.
 
 ```shell
+# Create the installation folder
 sudo mkdir /opt/meshcentral
-```
-```shell
+
+# Change to the installation directory
 cd /opt/meshcentral
+
+# Install MeshCentral (as the created user)
+sudo -u meshcentral npm install meshcentral
 ```
+
+### 3\. Initialize Data Folders
+
+Run the server once under the new low-privilege user to generate the necessary data folders and install any initial dependencies.
+
 ```shell
-sudo npm install meshcentral
-```
-```shell
+# Run once as the meshcentral user
 sudo -u meshcentral node ./node_modules/meshcentral
 ```
 
-The last line will run MeshCentral manually and allow it to install any missing modules and create the MeshCentral data folders. Once it’s running, press CTRL-C and continue. The following two lines will change the ownership of files to the meshcentral user and restrict access to the files.
+Once the server is running and the folders have been created, press **CTRL-C** to stop the process.
+
+### 4\. Restrict Permissions
+
+Now, set the ownership and permissions to ensure the `meshcentral` user has **read-only access** to the application code, enhancing security.
 
 ```shell
+# Change ownership of all files to the meshcentral user and group
 sudo chown -R meshcentral:meshcentral /opt/meshcentral
-```
-```shell
-sudo chmod -R 755 /opt/meshcentral/meshcentral-*
+
+# Set read/execute permissions for the meshcentral user on data folders
+# Note: meshcentral-* refers to meshcentral-data, meshcentral-files, etc.
+sudo chmod -R 755 /opt/meshcentral/
 ```
 
-To make this work, you will need to make MeshCentral work with MongoDB because the `/meshcentral-data` folder will be read-only. In addition, MeshCentral will not be able to update itself since the account does not have write access to the /node_modules files, so the update will have to be manual. First used systemctl to stop the MeshCentral server process, than use this:
+### 5\. Adjust Write Permissions for Functionality (Optional)
 
-```shell
-cd /opt/meshcentral
-```
-```shell
-sudo npm install meshcentral
-```
-```shell
-sudo -u meshcentral node ./node_modules/meshcentral
-```
-```shell
-sudo chown -R meshcentral:meshcentral /opt/meshcentral
-```
+In a restricted environment, you need to explicitly grant write access to specific subfolders the server needs to modify during operation.
 
-This will perform the update to the latest server on NPM and re-set the permissions so that the meshcentral user account has read-only access again. You can then use systemctl to make the server run again.
+#### A. File Upload/Download
 
-MeshCentral allows users to upload and download files stores in the server’s `meshcentral-files` folder. In an increased security setup, we still want the server to be able to read and write files to this folder and we can allow this with:
+If you plan to use MeshCentral's file transfer features, the server needs to read and write to the `meshcentral-files` folder:
 
 ```shell
 sudo chmod -R 755 /opt/meshcentral/meshcentral-files
 ```
 
-If you plan on using the increased security installation along with MeshCentral built-in Let’s Encrypt support you will need to type the following commands to make the `letsencrypt` folder in `meshcentral-data` writable.
+#### B. Let's Encrypt Support
+
+If you plan to use MeshCentral's built-in **Let's Encrypt** support, you must make its certificate folder writable to avoid `ACCES: permission denied` exceptions:
 
 ```shell
-sudo mkdir /opt/meshcentral/meshcentral-data
-```
-```shell
-sudo mkdir /opt/meshcentral/meshcentral-data/letsencrypt
-```
-```shell
-sudo chmod -R 755 /opt/meshcentral/meshcentral-data/letsencrypt
+# Create the necessary sub-folders if they don't exist
+sudo mkdir -p /opt/meshcentral/meshcentral-data/letsencrypt
+
+# Grant write access to the letsencrypt folder
+sudo chmod -R 775 /opt/meshcentral/meshcentral-data/letsencrypt
 ```
 
-This will allow the server to get and periodically update its Let’s Encrypt certificate. If this is not done, the server will generate an `ACCES: permission denied` exception.
+### 6\. Manual Server Update
+
+Because the `meshcentral` user lacks write access to the `/node_modules` directory, the server cannot update itself. To perform a manual update:
+
+1.  Use `systemctl` (or your service manager) to **stop** the MeshCentral server process.
+2.  Run the following commands:
+
+<!-- end list -->
+
+```shell
+cd /opt/meshcentral
+
+# Update the MeshCentral package via NPM (requires sudo/root privileges)
+sudo npm install meshcentral
+
+# Re-set ownership to the meshcentral user
+sudo chown -R meshcentral:meshcentral /opt/meshcentral
+```
+
+3.  Use `systemctl` to **restart** the MeshCentral server.
+
+This process updates the server to the latest version on NPM and reapplies the strict permissions.

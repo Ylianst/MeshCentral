@@ -2,85 +2,90 @@
 
 ![](images/2022-05-16-23-47-36.jpg)
 
-For advanced users or administrators, MeshCentral can be installed with [NPM](https://www.npmjs.com/).<br>
-NPM is a NodeJS package manager that can be used through the command line tool; `npm`. 
+## Prerequisites and Verification
 
----
-> **📌 Note:**
->
-> As a prerequisite, NodeJS and NPM must be installed on host OS and HTTP/HTTPS proxy settings maybe required if server host resides behind a HTTP proxy server. 
----
+Before beginning the installation, ensure **Node.js** and **NPM** (Node Package Manager) are installed on your host operating system.
 
-**1. To begin, start a command line terminal (Windows cmd/powershell or Linux shell) and type the following to verify if nodeJS and npm has been installed correctly as shown below:**
+If your server is behind an HTTP/HTTPS proxy, you may need to configure NPM's proxy settings.
 
-> *a. To check on nodeJS installed version, type `node –v` and hit the `enter` key.*
+### 1\. Verify Node.js and NPM
 
-> *b. To check on npm installed version, type `npm –v` and hit the `enter` key.*
+Open your command-line terminal (CMD/PowerShell on Windows, or Shell on Linux) and run the following commands to check the installed versions:
 
-**2. If MeshCentral installation is performed on a server host that resides behind a HTTP proxy, NPM’s proxy settings must be updated with respective proxy settings associated with the network environment.<br>**
-
-Skip this step if not applicable, and see examples below:
+  * **Node.js:**
     ```shell
-    npm config set proxy http://proxy.com:88       # http proxy
+    node -v
     ```
+  * **NPM:**
     ```shell
-    npm config set https-proxy http://proxy.com:88 # https proxy
+    npm -v
     ```
-**3. Create a new directory `MeshCentral`, recommended on Linux inside the `/opt` directory and run the NPM install command as shown below:**
-!!!warning
-    Do not use `sudo` in front of `npm install meshcentral`.
+
+-----
+
+### 2\. Configure Proxy Settings (If Applicable)
+
+If your server requires a proxy to access the internet, you must set the proxy configurations for NPM. **Skip this step if not needed.**
+
 ```shell
+# Set HTTP proxy
+npm config set proxy http://proxy.com:88
+# Set HTTPS proxy
+npm config set https-proxy http://proxy.com:88
+```
+
+-----
+
+## MeshCentral Installation
+
+### 3\. Install MeshCentral
+
+Create a dedicated directory for the installation, change into it, and use NPM to install the MeshCentral package.
+
+**Recommendation:** On Linux, use the `/opt` directory.
+
+> ⚠️ **Important:** Do not use `sudo` when executing the `npm install meshcentral` command.
+
+```shell
+# Create the directory
 mkdir -p /opt/meshcentral
-```
-```shell
+# Move into the directory
 cd /opt/meshcentral
-```
-```shell
+# Install MeshCentral
 npm install meshcentral
 ```
----
-> **📌 Note:**
->
-> To run MeshCentral as a service, run it using `--install` argument. Once running, start a web browser and access MeshCentral application with respective URL.
----
-**4. Upon download completion, the server can be started with the commands below:**
-!!!warning
-    Do not run MeshCentral by going into the `node_modules/meshcentral` (with cd for example) folder as this may cause auto-install and self-update features to fail.<br>
-    Instead, go into the directory above `node_modules` and run `node node_modules/meshcentral`.
+
+-----
+
+### 4\. Start the Server
+
+Once the download is complete, start the MeshCentral server.
+
+> ⚠️ **Crucial:** **Do not** `cd` into the `node_modules/meshcentral` directory to run the server. Running it from the directory **above** `node_modules` is required for features like auto-install and self-update to function correctly.
 
 ```shell
 node node_modules/meshcentral [arguments]
 ```
 
-![](images/2022-05-16-23-53-08.jpg)
+> **LAN-Only Mode:** If you run the command without arguments, MeshCentral will default to **LAN-only mode**, meaning you can only manage computers on the local network.
 
----
-> **📌 Note:**
->
->If MeshCentral is started without any arguments;
->default settings such as LAN-only mode will be in effect and user/administrator will only be able to manage computers that reside within the local network.
----
-**5. To manage computers over the internet, the server needs to have static IP settings or a DNS record that resolves back to the right server.**
+-----
 
-The mesh agents will be using this mechanism to call home to the MeshCentral server. For WAN or Hybrid mode, run one of the commands below.<br>
+### 5\. Configure for WAN/Internet Access (Optional)
 
-!!!warning
-    It is recommeded to use a valid configuration file, not to use command-line parameters.
+To manage computers over the internet (**WAN** or **Hybrid Mode**), your server needs a **static IP** or a **DNS record** that resolves to its public address. This is how remote mesh agents "call home."
+
+While command-line parameters exist, it's **highly recommended to use a configuration file** for persistent settings.
+
+Here are examples of starting the server and generating initial certificates for a public address:
 
 ```shell
+# Using a domain name
 node node_modules/meshcentral --cert servername.domain.com
-```
-```shell
-node node_modules/meshcentral --cert hostname.domain.com
-```
-```shell
+# Using an IP address
 node node_modules/meshcentral --cert 1.2.3.4
 ```
----
-> **📌 Note:**
->
-> On first attempt running on WAN or Hybrid Mode: <br>
->   - Certificates will be generated for the first time and this may take a few minutes to complete.
----
 
-It is advised to create an `admin` account immediately by navigating to https://127.0.0.1 (or the public hostname) with a web browser. 
+> **Note:** The first time you run in WAN or Hybrid Mode, MeshCentral will generate necessary **certificates**, which may take a few minutes.
+
+Once running, immediately create your **admin account** by navigating to `https://127.0.0.1` (or your public hostname) in a web browser.

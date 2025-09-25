@@ -7,8 +7,10 @@ Once installed, you can take a look at the MeshCentral user’s guide,<br>
 for information on how to configure MeshCentral for your specific use.<br>
 In this document, we will look at installing MeshCentral on different operating systems like:
 
- - 🐧 **[Debian-based](debian.md)**
+And remember! The `config.json` is case insensitive in its keys.
 
- - 🎩 **[Redhat-based](redhat.md)**
+ - 📢 **[Quick-start](./quickstart.md)**
 
- - 🪟 **[Windows](windows.md)**
+ - 🧐 **[Advanced Information](./advanced.md)**
+
+ - 🪟 **[Windows-specific](./windows.md)**

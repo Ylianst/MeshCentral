@@ -27,34 +27,28 @@ The [Design and Architecture Guide](design/index.md) is a short document that in
 
 You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Here are some essential ones to get you started :
 
-#### Installation
-> **[MeshCentral - Installation](https://www.youtube.com/results?search_query=MeshCentral+Installation)**  
-  Installing MeshCentral on **Windows**, **Linux**, and **macOS**.
+**[MeshCentral - Installation](https://www.youtube.com/results?search_query=MeshCentral+Installation)**  
+Installing MeshCentral on **Windows**, **Linux**, and **macOS**.
 
 
-#### Basic Usage
-> **[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Basics)**  
-  Learn how to install the agent and use remote **desktop**, **terminal**, and **file access** features.
+**[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Basics)**  
+Learn how to install the agent and use remote **desktop**, **terminal**, and **file access** features.
 
 
-#### Two-Factor Authentication
-> **[MeshCentral - Two Factor Authentication](https://www.youtube.com/results?search_query=MeshCentral+Two+Factor+Authentication)**  
-  Secure your MeshCentral instance with **two-factor authentication**.
+**[MeshCentral - Two Factor Authentication](https://www.youtube.com/results?search_query=MeshCentral+Two+Factor+Authentication)**  
+Secure your MeshCentral instance with **two-factor authentication**.
 
 
-#### NGINX Reverse Proxy Setup
-> **[MeshCentral - NGINX Reverse Proxy](https://www.youtube.com/results?search_query=MeshCentral+NGINX+Reverse+Proxy)**  
-  Configure MeshCentral with an **NGINX reverse proxy** for better security and scalability.
+**[MeshCentral - NGINX Reverse Proxy](https://www.youtube.com/results?search_query=MeshCentral+NGINX+Reverse+Proxy)**  
+Configure MeshCentral with an **NGINX reverse proxy** for better security and scalability.
 
 
-#### Android Agent
-> **[MeshCentral - Android](https://www.youtube.com/results?search_query=MeshCentral+Android)**  
-  Install and use the **MeshCentral Android agent** for mobile device management.
+**[MeshCentral - Android](https://www.youtube.com/results?search_query=MeshCentral+Android)**  
+Install and use the **MeshCentral Android agent** for mobile device management.
 
 
-#### MeshCentral Router (Port Mapping)
-> **[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Router+Port+Mapping)**  
-  Use **MeshCentral Router** to **port map TCP connections** securely.
+**[MeshCentral - Basics](https://www.youtube.com/results?search_query=MeshCentral+Router+Port+Mapping)**  
+Use **MeshCentral Router** to **port map TCP connections** securely.
 
 
 ## 💬 Feedback

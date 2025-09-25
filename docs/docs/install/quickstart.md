@@ -1,68 +1,88 @@
-# 🚀 Quick Start Guide
+## 🚀 Quick Start Guide: Basic NPM Installation
 
-## 🛠️ Basic Installation
+MeshCentral is platform-agnostic, running almost anywhere thanks to being primarily written in JavaScript. This guide covers the simplest way to get started using **NPM**.
 
-Getting started is not a difficult process. Since MeshCentral is written in mostly JavaScript its platform agnostic therefor it can run almost everywhere!<br>
-If you don't have it already, install NodeJS to get started.
+### 🛠️ Basic Setup
 
----
-> **🐧 Linux:**
-> Possible installation instructions on how to do that in Linux *[here](https://nodejs.org/en/download/package-manager/all)*.<br>
----
+The only prerequisites are **Node.js** and **npm**.
 
----
-> **🪟 Windows:**
-> Possible installation instructions on how to do that in Windows *[here](https://nodejs.org/en)*.<br>
----
+-----
 
-Then, create a directory where you want to install meshcentral such as `/opt/meshcentral`.<br>
-Set your current directory to the desired directory and execute the following commands:
+#### 1\. Install Node.js
+
+  * **Linux:** Find installation instructions for your distribution [here](https://nodejs.org/en/download/package-manager/all).
+  * **Windows:** Download the installer from the official site [here](https://nodejs.org/en).
+
+> 🪟 **Windows Users:** If you prefer an automated setup, you can skip the manual installation and download the **Windows MeshCentral Installer**. However, this is **not recommended for advanced users**.
+> [Download Windows MeshCentral Installer](https://meshcentral.com/tools/MeshCentralInstaller.exe)
+
+-----
+
+#### 2\. Install and Start MeshCentral
+
+Create a dedicated directory (e.g., `/opt/meshcentral`) and run the following commands in your terminal.
+
+> ⚠️ **Do not** use `sudo` with the `npm install meshcentral` command.
 
 ```shell
+# Example: Create and move into the directory
+mkdir -p /opt/meshcentral
+cd /opt/meshcentral
+
+# Install the MeshCentral package
 npm install meshcentral
-```
 
-```shell
+# Start the server
 node node_modules/meshcentral
 ```
 
-That's it. MeshCentral will set itself up and start managing computers on your local network if they have the MeshAgent!<br>
+That's it\! MeshCentral will now set itself up and begin managing computers on your **local network** that have the MeshAgent installed.
 
-By default it will be setup in LAN mode and agents you install will multicast on the local network to find the server, to setup the server so that agents use a well known DNS name and to start customizing your server, go in the `"meshcentral-data"` folder and edit the config.json file. For reference here is [the schema](https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json).<br>
-The configuration file must be valid JSON, you can use this [web-based link](https://duckduckgo.com/?va=j&t=hc&q=json+lint&ia=answer) or [jq utility](https://jqlang.org/) to validate the file format.
+#### Running as a Service
 
-For Windows users, you can download the MeshCentral Installer that will automate installation of NodeJS and provide basic configuration of the server. This option is not recommended for advanced users.
+To run MeshCentral as a persistent background service (recommended for production environments), use the --install argument when starting the server. Consult the MeshCentral documentation for OS-specific service setup details.
 
----
-> **⬇️ Download:**
-[Windows MeshCentral Installer](https://meshcentral.com/tools/MeshCentralInstaller.exe)
+-----
 
----
+### ⚙️ Configuration and Customization
 
-By default, MeshCentral will use NeDB as this is the built-in database. For more advanced users, it's recommended to switch to using MongoDB (or something SQL-based such as Postgresql).<br>
-MeshCentral can be installed on a very small server. A [Raspberry Pi](https://www.raspberrypi.org/) or [AWS t3.nano running Amazon Linux 2 instance](https://aws.amazon.com/ec2/pricing/on-demand/) for 5$ a month will do just fine for managing up to a few hundred devices.
+#### Default Mode and Initial Access
 
-You can run the MeshCentral Server with `--help` to get options for background installation.
+By default, MeshCentral starts in **LAN-only mode**. Agents use local network multicasting to find the server.
 
-## ⚙️ Configuration
+  * The first user account you create upon accessing the server will automatically become the **server administrator**. Access the login page in your web browser and create your account right away.
+  * Once installed, server settings are stored in the **`config.json`** file, which is located inside the **`meshcentral-data`** folder.
 
-Once you get MeshCentral installed, the first user account that is created will be the server administrator. So to make use of that; go to the login page and create a new account.<br>
-You can then start using your server right away. A lot of the fun with MeshCentral is the hundreds of configuration options that are available in the `config.json` file.<br>
-You can put your own branding on the web pages, setup a SMTP email server, SMS services and much more.
+#### Advanced Configuration
 
-You can look at the sample configurations placed in the Github repository. They can be found with the following links:
+The **`config.json`** file holds hundreds of options for deep customization, including:
 
-- [Simple sample config](https://github.com/Ylianst/MeshCentral/blob/master/sample-config.json).
-> [Raw (cURL-able) link](https://raw.githubusercontent.com/Ylianst/MeshCentral/refs/heads/master/sample-config.json)
-- [Advanced sample config](https://github.com/Ylianst/MeshCentral/blob/master/sample-config-advanced.json).
-> [Raw (cURL-able) link](https://raw.githubusercontent.com/Ylianst/MeshCentral/refs/heads/master/sample-config-advanced.json)
-- [Full config schema](https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json).
-> [Raw (cURL-able) link](https://raw.githubusercontent.com/Ylianst/MeshCentral/refs/heads/master/meshcentral-config-schema.json)
+  * Switching the server from LAN-only to **WAN/Hybrid mode** by setting a known DNS name.
+  * Customizing the server with your own **branding**.
+  * Setting up an **SMTP email server** or **SMS services**.
 
-You can also take a look at the [YouTube Tutorial Videos](https://www.youtube.com/@MeshCentral/videos) for additional help.
+The configuration file must be valid **JSON**. You can use an online tool or utilities like `jq` to validate its format.
 
-## Video Walkthrough
+You can find sample configuration files on the GitHub repository for reference:
 
-<div class="video-wrapper">
-  <iframe src="https://www.youtube.com/embed/LSiWuu71k_U" frameborder="0" allowfullscreen></iframe>
-</div>
+  * [Simple sample config](https://github.com/Ylianst/MeshCentral/blob/master/sample-config.json)
+  * [Advanced sample config](https://github.com/Ylianst/MeshCentral/blob/master/sample-config-advanced.json)
+  * [Full config schema](https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json)
+
+-----
+
+### Database and Scaling Notes
+
+  * **Database:** By default, MeshCentral uses **NeDB**, its built-in database. For advanced use cases and better performance, it's recommended to switch to **MongoDB** or an SQL-based solution like **Postgresql**.
+  * **Hardware:** MeshCentral is very lightweight. You can run a server capable of managing a few hundred devices on a small platform like a **Raspberry Pi** or an **AWS t3.nano** instance running Linux.
+  * **Service Mode:** To run the server as a background service, start it with the `--help` argument to view options for background installation.
+
+For a visual guide, check out the official [YouTube Tutorial Videos](https://www.youtube.com/@MeshCentral/videos).
+
+\<div class="video-wrapper"\>
+  \<iframe src="[https://www.youtube.com/embed/LSiWuu71k\_U](https://www.youtube.com/embed/LSiWuu71k_U)" frameborder="0" allowfullscreen\>\</iframe\>
+\</div\>
+
+-----
+
+Do you want to know more about configuring the server for WAN access or switching to a different database?
