@@ -1776,21 +1776,20 @@
                             <input id="d4LineBreakButton" class="btn btn-primary me-1 mb-1" type="button" value="Windows" onclick="d4ToggleLineBreak()" />
                             <textarea id=d4editorarea autocomplete="off" style="height:calc(100vh - 286px);width:100%;overflow:scroll;resize:none;white-space:pre"></textarea>
                         </div>
-                        <div id=dialog7 style="">
-                            <div class="dtab">
-                                <button id="td7meshkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
-                                <button id="td7rdpkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
-                                <button id="td7amtkvm" class="tablinks" onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg; AMT</button>
+                        <div id=dialog7 class="tab-content" style="">
+                            <div class="nav nav-pills mb-3">
+                                <button id="td7meshkvm" class="nav-link" onclick="changeDesktopSettingsTab(event, 'd7meshkvm')">Agent</button>
+                                <button id="td7rdpkvm" class="nav-link" onclick="changeDesktopSettingsTab(event, 'd7rdpkvm')">RDP</button>
+                                <button id="td7amtkvm" class="nav-link" onclick="changeDesktopSettingsTab(event, 'd7amtkvm')">Intel&reg; AMT</button>
                             </div>
-                            <div id="d7meshkvm" class="tabcontent">
+                            <div id="d7meshkvm" class="tab-pane">
                                 <!--<h4>Agent Remote Desktop</h4>-->
-                                <div style="margin-top:8px">
-                                    <div>Quality</div>
-                                    <select id="d7bitmapquality" dir="rtl"></select>
+                                <div class="form-floating mb-2">
+                                    <select id="d7bitmapquality" class="form-select"></select>
+                                    <label for="d7bitmapquality">Quality</label>
                                 </div>
-                                <div>
-                                    <div>Scaling</div>
-                                    <select id="d7bitmapscaling" style="" dir="rtl">
+                                <div class="form-floating mb-2">
+                                    <select id="d7bitmapscaling" class="form-select">
                                         <option selected=selected value=1024>100%</option>
                                         <option value=896>87.5%</option>
                                         <option value=768>75%</option>
@@ -1800,62 +1799,89 @@
                                         <option value=256>25%</option>
                                         <option value=128>12.5%</option>
                                     </select>
+                                    <label for="d7bitmapscaling">Scaling</label>
                                 </div>
-                                <div>
-                                    <div>Frame rate</div>
-                                    <select id="d7framelimiter" dir="rtl">
+                                <div class="form-floating mb-2">
+                                    <select id="d7framelimiter" class="form-select">
                                         <option selected=selected value=50>Fast</option>
                                         <option value=100>Medium</option>
                                         <option value=400>Slow</option>
                                         <option value=1000>Very slow</option>
                                     </select>
+                                    <label for="d7framelimiter">Frame rate</label>
                                 </div>
-                                <div>
-                                    <div>Encoding</div>
-                                    <select id="d7encoding" dir="rtl">
+                                <div class="form-floating mb-2">
+                                    <select id="d7encoding" class="form-select">
                                         <option value=1>JPEG</option>
                                         <option value=2>PNG</option>
                                         <option value=3>TIFF</option>
                                         <option selected=selected value=4>WEBP</option>
                                     </select>
+                                    <label for="d7encoding">Encoding</label>
                                 </div>
-                                <div id="d7desktopOtherSettings">
-                                    <div>Other Settings</div>
-                                    <div id="d7otherset2" style="display:block">
-                                        <label style="display:block"><input type="checkbox" id="d7deskSwapMouse" />Swap Mouse Buttons</label>
-                                        <label style="display:block"><input type="checkbox" id="d7deskrmw" />Reverse Mouse Wheel</label>
-                                        <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
-                                        <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
-                                        <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
+                                <fieldset id="d7desktopOtherSettings">
+                                    <legend>Other Settings</legend>
+                                    <div id="d7otherset2" class="p-2">
+                                        <div class="form-check">
+                                            <input id="d7deskSwapMouse" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7deskSwapMouse" class="form-check-label">Swap Mouse Buttons</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7deskrmw" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7deskrmw" class="form-check-label">Reverse Mouse Wheel</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7deskRemoteKeyMap" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7deskRemoteKeyMap" class="form-check-label">Use Remote Keyboard Map</label>
+                                        </div>
+                                        <div id="d7deskAutoClipboardLabel" class="form-check">
+                                            <input id="d7deskAutoClipboard" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7deskAutoClipboard" class="form-check-label">Automatic Clipboard</label>
+                                        </div>
+                                        <div id="d7deskAutoLockLabel" class="form-check">
+                                            <input id="d7deskAutoLock" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7deskAutoLock" class="form-check-label">Lock on Disconnect</label>
+                                        </div>
                                     </div>
-                                </div>
+                                </fieldset>
                             </div>
-                            <div id="d7amtkvm" class="tabcontent">
+                            <div id="d7amtkvm" class="tab-pane">
                                 <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
-                                <div style="margin-top:8px">
-                                    <div>Image Encoding</div>
-                                    <select id="d7desktopmode">
+                                <div class="form-floating mb-2">
+                                    <select id="d7desktopmode" class="form-select">
                                         <option value="1">RLE8, Fastest</option>
                                         <option value="2">RLE16, Recommended</option>
                                         <option value="3">RAW8, Slow</option>
                                         <option value="4">RAW16, Very Slow</option>
                                     </select>
+                                    <label for="d7desktopmode">Image Encoding</label>
                                 </div>
-                                <div>
-                                    <div>Other Settings</div>
-                                    <div id="d7otherset" style="display:block">
-                                        <label style="display:block"><input type="checkbox" id="d7showfocus" />Show Focus Tool</label>
-                                        <label style="display:block"><input type="checkbox" id="d7showcursor" />Show Local Mouse Cursor</label>
-                                        <label style="display:block"><input type="checkbox" id="d7localKeyMap" />Local Keyboard Map</label>
-                                        <label style="display:block"><input type="checkbox" id="d7kvmrmw" />Reverse Mouse Wheel</label>
+                                <fieldset>
+                                    <legend>Other Settings</legend>
+                                    <div id="d7otherset" class="p-2">
+                                        <div class="form-check">
+                                            <input id="d7showfocus" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7showfocus" class="form-check-label">Show Focus Tool</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7showcursor" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7showcursor" class="form-check-label">Show Local Mouse Cursor</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7localKeyMap" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7localKeyMap" class="form-check-label">Local Keyboard Map</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7kvmrmw" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7kvmrmw" class="form-check-label">Reverse Mouse Wheel</label>
+                                        </div>
                                     </div>
-                                </div>
+                                </fieldset>
                             </div>
-                            <div id="d7rdpkvm" class="tabcontent">
+                            <div id="d7rdpkvm" class="tab-pane">
                                 <!--<h4>Remote Desktop Protocol</h4>-->
-                                <div style="margin-top:8px">
-                                    <div>Display Size</div>
-                                    <select id="d7rdpsize">
+                                <div class="form-floating mb-2">
+                                    <select id="d7rdpsize" class="form-select">
                                         <option notransval=1 value="canvas">Canvas Size</option>
                                         <option notransval=1 value="browser">Browser Size</option>
                                         <option notransval=1 value="screen">Screen Size</option>
@@ -1867,23 +1893,57 @@
                                         <option notransval=1 value="1680x1050">1680x1050</option>
                                         <option notransval=1 value="1920x1080">1920x1080</option>
                                     </select>
+                                    <label for="d7rdpsize">Display Size</label>
                                 </div>
-                                <div>
-                                    <div>Options</div>
-                                    <div id="d7rdpflags" style="display:block">
-                                        <label style="display:block"><input type="checkbox" id="d7rdp1" />Disable Wallpaper</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp2" />Disable Full Window Drag</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp3" />Disable Menu Animations</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp4" />Disable Theming</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp6" />Disable Cursor Shadow</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp7" />Disable Cursor Settings</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp8" />Enable Font Smoothing</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdp9" />Enable Desktop Composision</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdpclip" />Automatic Clipboard</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdpsmb" />Swap Mouse Buttons</label>
-                                        <label style="display:block"><input type="checkbox" id="d7rdprmw" />Reverse Mouse Wheel</label>
+                                <fieldset>
+                                    <legend>Options</legend>
+                                    <div id="d7rdpflags" class="p-2">
+                                        <div class="form-check">
+                                            <input id="d7rdp1" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp1" class="form-check-label">Disable Wallpaper</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdp2" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp2" class="form-check-label">Disable Full Window Drag</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdp3" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp3" class="form-check-label">Disable Menu Animations</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdp4" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp4" class="form-check-label">Disable Theming</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdp6" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp6" class="form-check-label">Disable Cursor Shadow</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdp7" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp7" class="form-check-label">Disable Cursor Settings</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdp8" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp8" class="form-check-label">Enable Font Smoothing</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdp9" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdp9" class="form-check-label">Enable Desktop Composision</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdpclip" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdpclip" class="form-check-label">Automatic Clipboard</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdpsmb" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdpsmb" class="form-check-label">Swap Mouse Buttons</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input id="d7rdprmw" class="form-check-input me-2" type="checkbox" />
+                                            <label for="d7rdprmw" class="form-check-label">Reverse Mouse Wheel</label>
+                                        </div>
                                     </div>
-                                </div>
+                                </fieldset>
                             </div>
                         </div>
                     </div>
@@ -10527,20 +10587,18 @@
         }
 
         function changeDesktopSettingsTab(evt, tabname) {
-            // Declare all variables
-            var i, tabcontent, tablinks;
+            var i, dialog, tabcontent, tablinks;
 
-            // Get all elements with class="tabcontent" and hide them
-            tabcontent = document.getElementsByClassName('tabcontent');
-            for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = 'none'; }
+            dialog = Q("dialog7");
 
-            // Get all elements with class="tablinks" and remove the class "active"
-            tablinks = document.getElementsByClassName('tablinks');
+            tabcontent = dialog.getElementsByClassName('tab-pane');
+            for (i = 0; i < tabcontent.length; i++) { tabcontent[i].className = tabcontent[i].className.replace(' active', ''); }
+
+            tablinks = dialog.getElementsByClassName('nav-link');
             for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(' active', ''); }
 
-            // Show the current tab, and add an "active" class to the button that opened the tab
-            document.getElementById(tabname).style.display = 'block';
-            if (evt != null) { evt.currentTarget.className += ' active'; } else { document.getElementById('t' + tabname).className += ' active'; }
+            Q(tabname).className += ' active';
+            Q('t' + tabname).className += ' active';
         }
 
         function showDesktopSettingsChanged() {
