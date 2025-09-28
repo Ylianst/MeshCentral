@@ -3614,7 +3614,7 @@ module.exports.CreateDB = function (parent, func) {
                 });
             } else if (obj.databaseType == DB_POSTGRESQL) {
                 // Perform a PostgresDump backup
-                const newBackupFile = encodeURIComponent(databaseName) + '-pgdump-' + fileSuffix + '.sql';
+                const newBackupFile = 'pgdump-' + fileSuffix + '.sql';
                 obj.newDBDumpFile = path.join(backupPath, newBackupFile);
                 let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
                     + ' --dbname=postgresql://' + encodeURIComponent(parent.config.settings.postgres.user) + ":" + encodeURIComponent(parent.config.settings.postgres.password)
