@@ -686,7 +686,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Users in this list are allowed to see and manage all device groups within their domain. For example ['user//billybob','user//fred'] would allow billybob and fred to manage all device groups from all users in their domain."
+          "description": "Users or groups that users are a member of in this list are allowed to see and manage all device groups within their domain. For example ['user//billybob','user//fred','ugrp//RA...'] would allow billybob, fred and members of ugrp//RA to manage all device groups from all users in their domain."
         },
         "manageCrossDomain": {
           "type": "array",
