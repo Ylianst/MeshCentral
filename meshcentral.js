@@ -4337,7 +4337,7 @@ function mainStart() {
         if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
         if (config.settings.mysql != null) { modules.push('mysql2@3.11.4'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb@4.17.2'); } // Add MongoDB, official driver. 4.17.0 and above now includes saslprep by default https://github.com/mongodb/node-mongodb-native/releases/tag/v4.17.0
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.17.2'); modules.push('@mongodb-js/saslprep@1.3.1')} // Add MongoDB, official driver.
         if (config.settings.postgres != null) { modules.push('pg@8.14.1') } // Add Postgres, official driver.
         if (config.settings.mariadb != null) { modules.push('mariadb@3.4.0'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.

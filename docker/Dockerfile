@@ -154,7 +154,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
             apk add --no-cache mongodb-tools && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
-            npm install mongodb@4.17.2;; \
+            npm install mongodb@4.17.2 @mongodb-js/saslprep@1.3.1;; \
         false|no|FALSE|NO) \
             echo "Not including MongoDB Tools.";; \
         *) \
