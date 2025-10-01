@@ -597,6 +597,7 @@
                             </span>
                             <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                             <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
+                            <a href=# onclick="return showIconCustomization()">Icons Customization</a><br />
                         </p>
                         <br style=clear:both />
                     </div>
@@ -18882,7 +18883,7 @@
             if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
             if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
             if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
-            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
+            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); }
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true) { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
@@ -20818,11 +20819,55 @@
             }
         }
 
+        // --- Icons Customization ---
+        function showIconCustomization() {
+            const icons = JSON.parse(localStorage.getItem('customIcons')) || {};
+            var x = '';
+            x += '<div class="form-group"><label for="iconMyDevices">My Devices</label><input type="text" class="form-control" id="iconMyDevices" value="' + (icons.myDevices || '') + '" placeholder="Enter URL or data URL for My Devices icon"></div>';
+            x += '<div class="form-group"><label for="iconMyAccount">My Account</label><input type="text" class="form-control" id="iconMyAccount" value="' + (icons.myAccount || '') + '" placeholder="Enter URL or data URL for My Account icon"></div>';
+            x += '<div class="form-group"><label for="iconMyEvents">My Events</label><input type="text" class="form-control" id="iconMyEvents" value="' + (icons.myEvents || '') + '" placeholder="Enter URL or data URL for My Events icon"></div>';
+            x += '<div class="form-group"><label for="iconMyFiles">My Files</label><input type="text" class="form-control" id="iconMyFiles" value="' + (icons.myFiles || '') + '" placeholder="Enter URL or data URL for My Files icon"></div>';
+            x += '<div class="form-group"><label for="iconMyUsers">My Users</label><input type="text" class="form-control" id="iconMyUsers" value="' + (icons.myUsers || '') + '" placeholder="Enter URL or data URL for My Users icon"></div>';
+            x += '<div class="form-group"><label for="iconMyServer">My Server</label><input type="text" class="form-control" id="iconMyServer" value="' + (icons.myServer || '') + '" placeholder="Enter URL or data URL for My Server icon"></div>';
+
+            setModalContent('xxAddAgent', 'Icons Customization', 2); // Use dialog2 for the content
+            Q('dialog2').innerHTML = x; // Manually set the content of dialog2
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', saveIconCustomization);
+            return false;
+        }
+
+        function saveIconCustomization() {
+            const icons = {
+                myDevices: document.getElementById('iconMyDevices').value,
+                myAccount: document.getElementById('iconMyAccount').value,
+                myEvents: document.getElementById('iconMyEvents').value,
+                myFiles: document.getElementById('iconMyFiles').value,
+                myUsers: document.getElementById('iconMyUsers').value,
+                myServer: document.getElementById('iconMyServer').value
+            };
+            localStorage.setItem('customIcons', JSON.stringify(icons));
+            applyIconCustomization(icons);
+            if (xxModal) { xxModal.hide(); }
+        }
+
+        function applyIconCustomization(icons) {
+            if (!icons) return;
+            if (icons.myDevices) { const e = document.querySelector('#LeftMenuMyDevices svg'); if (e) e.style.backgroundImage = `url(${icons.myDevices})`; }
+            if (icons.myAccount) { const e = document.querySelector('#LeftMenuMyAccount svg'); if (e) e.style.backgroundImage = `url(${icons.myAccount})`; }
+            if (icons.myEvents) { const e = document.querySelector('#LeftMenuMyEvents svg'); if (e) e.style.backgroundImage = `url(${icons.myEvents})`; }
+            if (icons.myFiles) { const e = document.querySelector('#LeftMenuMyFiles svg'); if (e) e.style.backgroundImage = `url(${icons.myFiles})`; }
+            if (icons.myUsers) { const e = document.querySelector('#LeftMenuMyUsers svg'); if (e) e.style.backgroundImage = `url(${icons.myUsers})`; }
+            if (icons.myServer) { const e = document.querySelector('#LeftMenuMyServer svg'); if (e) e.style.backgroundImage = `url(${icons.myServer})`; }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            applyIconCustomization(JSON.parse(localStorage.getItem('customIcons')));
+        });
+
         // Request Confirmation if closing while a desktop, terminal session is active
         window.addEventListener('beforeunload', function (e) {
             if (((desktop != null) && (xxcurrentView == 11)) || ((terminal != null) && (xxcurrentView == 12))) { e.preventDefault(); e.returnValue = ''; }
         });
-
     </script>
 </body>
 

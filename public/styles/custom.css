@@ -25,25 +25,25 @@
 /* Individual icons */
 /* use https://yoksel.github.io/url-encoder/ to convert SVG to data URL */
 #LeftMenuMyDevices svg {
-    background-image: url("/icons/devices.svg");
+    background-image: url("/icons/svg/devices.svg");
 }
 
 #LeftMenuMyAccount svg {
-    background-image: url("/icons/accounts.svg");
+    background-image: url("/icons/svg/accounts.svg");
 }
 
 #LeftMenuMyEvents svg {
-    background-image: url("/icons/events.svg");
+    background-image: url("/icons/svg/events.svg");
 }
 
 #LeftMenuMyFiles svg {
-    background-image: url("/icons/files.svg");
+    background-image: url("/icons/svg/files.svg");
 }
 
 #LeftMenuMyUsers svg {
-    background-image: url("/icons/group.svg");
+    background-image: url("/icons/svg/group.svg");
 }
 
 #LeftMenuMyServer svg {
-    background-image: url("/icons/server.svg");
+    background-image: url("/icons/svg/server.svg");
 }
