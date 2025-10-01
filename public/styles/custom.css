@@ -1,10 +1,5 @@
 /* Shared styles for all custom icons */
-#LeftMenuMyAccount svg,
-#LeftMenuMyEvents svg,
-#LeftMenuMyFiles svg,
-#LeftMenuMyUsers svg,
-#LeftMenuMyServer svg,
-#LeftMenuMyDevices svg {
+.custom-icon svg {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -13,37 +8,6 @@
     display: inline-block !important;
 }
 
-#LeftMenuMyAccount svg path,
-#LeftMenuMyEvents svg path,
-#LeftMenuMyFiles svg path,
-#LeftMenuMyUsers svg path,
-#LeftMenuMyServer svg path,
-#LeftMenuMyDevices svg path {
+.custom-icon svg path {
     display: none !important;
-}
-
-/* Individual icons */
-/* use https://yoksel.github.io/url-encoder/ to convert SVG to data URL */
-#LeftMenuMyDevices svg {
-    background-image: url("/icons/svg/devices.svg");
-}
-
-#LeftMenuMyAccount svg {
-    background-image: url("/icons/svg/accounts.svg");
-}
-
-#LeftMenuMyEvents svg {
-    background-image: url("/icons/svg/events.svg");
-}
-
-#LeftMenuMyFiles svg {
-    background-image: url("/icons/svg/files.svg");
-}
-
-#LeftMenuMyUsers svg {
-    background-image: url("/icons/svg/group.svg");
-}
-
-#LeftMenuMyServer svg {
-    background-image: url("/icons/svg/server.svg");
 }
