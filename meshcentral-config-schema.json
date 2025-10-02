@@ -2022,6 +2022,11 @@
                 "default": false,
                 "description": "If true, user consent is accepted if no user is logged in."
               },
+              "autoAcceptIfLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent is accepted if device is locked."
+              },
               "oldStyle": {
                 "type": "boolean",
                 "default": false,
