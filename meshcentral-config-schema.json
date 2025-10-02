@@ -2020,12 +2020,42 @@
               "autoAcceptIfNoUser": {
                 "type": "boolean",
                 "default": false,
-                "description": "If true, user consent is accepted if no user is logged in."
+                "description": "If true, user consents for desktop, terminal, and file are accepted if no user is logged in."
+              },
+              "autoAcceptIfDesktopNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if no user is logged in."
+              },
+              "autoAcceptIfTerminalNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if no user is logged in."
+              },
+              "autoAcceptIfFileNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if no user is logged in."
               },
               "autoAcceptIfLocked": {
                 "type": "boolean",
                 "default": false,
-                "description": "If true, user consent is accepted if device is locked."
+                "description": "If true, user consents for desktop, terminal, and file are accepted if device is locked."
+              },
+              "autoAcceptIfDesktopLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if device is locked."
+              },
+              "autoAcceptIfTerminalLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if device is locked."
+              },
+              "autoAcceptIfFileLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if device is locked."
               },
               "oldStyle": {
                 "type": "boolean",
