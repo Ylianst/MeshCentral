@@ -39,6 +39,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.net = require('net');
     obj.tls = require('tls');
     obj.path = require('path');
+    obj.os = require('os');
     obj.bodyParser = require('body-parser');
     obj.exphbs = require('express-handlebars');
     obj.crypto = require('crypto');
@@ -93,6 +94,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.renderPages = null;
     obj.renderLanguages = [];
     obj.destroyedSessions = {};                 // userid/req.session.x --> destroyed session time
+
+    const isWindowsPlatform = (obj.os.platform() === 'win32');
+    const safeUploadTempRoots = (function () {
+        const roots = [];
+        const addRoot = function (p) {
+            if (typeof p !== 'string') { return; }
+            var resolved;
+            try { resolved = obj.path.normalize(obj.path.resolve(p)); } catch (ex) { return; }
+            if (resolved.length === 0) { return; }
+            if ((resolved.length > 1) && resolved.endsWith(obj.path.sep)) { resolved = resolved.slice(0, -1); }
+            const comparison = isWindowsPlatform ? resolved.toLowerCase() : resolved;
+            const comparisonWithSep = comparison + obj.path.sep;
+            roots.push({ comparison: comparison, comparisonWithSep: comparisonWithSep });
+        };
+        addRoot(obj.os.tmpdir());
+        if (typeof obj.parent.filespath === 'string') { addRoot(obj.path.join(obj.parent.filespath, 'tmp')); }
+        return roots;
+    })();
+    function resolveSafeUploadTempPath(tempPath) {
+        if (typeof tempPath !== 'string') { return null; }
+        var resolvedPath;
+        try { resolvedPath = obj.path.normalize(obj.path.resolve(tempPath)); } catch (ex) { return null; }
+        var comparisonPath = isWindowsPlatform ? resolvedPath.toLowerCase() : resolvedPath;
+        var comparisonPathNoTrailing = comparisonPath;
+        if ((comparisonPathNoTrailing.length > 1) && comparisonPathNoTrailing.endsWith(obj.path.sep)) { comparisonPathNoTrailing = comparisonPathNoTrailing.slice(0, -1); }
+        for (var i = 0; i < safeUploadTempRoots.length; i++) {
+            var root = safeUploadTempRoots[i];
+            if ((comparisonPathNoTrailing === root.comparison) || comparisonPath.startsWith(root.comparisonWithSep)) { return resolvedPath; }
+        }
+        return null;
+    }
 
     // Web relay sessions
     var webRelayNextSessionId = 1;
@@ -4478,11 +4510,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
                 for (var i in files.files) {
                     var file = files.files[i];
-                    obj.fs.readFile(file.path, 'utf8', function (err, data) {
+                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                    if (uploadTempPath == null) { res.sendStatus(400); return; }
+                    obj.fs.readFile(uploadTempPath, 'utf8', function (err, data) {
                         if (err != null) return;
                         data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                         obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
-                        try { obj.fs.unlinkSync(file.path); } catch (e) { }
+                        try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { }
                     });
                 }
                 res.send('');
@@ -4521,11 +4555,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
                 for (var i in files.files) {
                     var file = files.files[i];
+                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                    if (uploadTempPath == null) { res.sendStatus(400); return; }
 
                     // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
-                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
+                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: uploadTempPath });
 
-                    //try { obj.fs.unlinkSync(file.path); } catch (e) { } // TODO: Remove this file after 30 minutes.
+                    //try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { } // TODO: Remove this file after 30 minutes.
                 }
                 res.send('');
             });
@@ -4551,8 +4587,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             const iconFile = (files && files.iconFile && files.iconFile[0]) ? files.iconFile[0] : null;
             if ((iconFile == null) || (typeof iconFile.path !== 'string')) { res.status(400).json({ success: false, error: 'Missing icon file.' }); return; }
+            const iconTempPath = resolveSafeUploadTempPath(iconFile.path);
+            if (iconTempPath == null) { res.status(400).json({ success: false, error: 'Invalid icon file location.' }); return; }
 
-            const cleanupTempFile = function () { try { obj.fs.unlink(iconFile.path, function () { }); } catch (ex) { } };
+            const cleanupTempFile = function () { try { obj.fs.unlink(iconTempPath, function () { }); } catch (ex) { } };
 
             const extension = obj.path.extname(iconFile.originalFilename || '').toLowerCase();
             if (extension !== '.svg') { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG files are supported.' }); return; }
@@ -4580,7 +4618,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + '.svg';
             const destinationPath = obj.path.join(customDir, newFilename);
 
-            obj.fs.readFile(iconFile.path, function (readErr, data) {
+            obj.fs.readFile(iconTempPath, function (readErr, data) {
                 cleanupTempFile();
                 if (readErr) { res.status(500).json({ success: false, error: 'Failed to process uploaded icon.' }); return; }
                 obj.fs.writeFile(destinationPath, data, function (writeErr) {
@@ -4632,7 +4670,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
                     if ((names.length == sizes.length) && (types.length == datas.length) && (names.length == types.length)) {
                         for (var i = 0; i < names.length; i++) {
-                            if (obj.common.IsFilenameValid(names[i]) == false) { res.sendStatus(404); return; }
+                            var originalName = names[i];
+                            var safeName = obj.path.basename(originalName);
+                            if ((safeName !== originalName) || (obj.common.IsFilenameValid(safeName) == false)) { res.sendStatus(404); return; }
                             var filedata = Buffer.from(datas[i].split(',')[1], 'base64');
                             if ((xfile.quota == null) || ((totalsize + filedata.length) < xfile.quota)) { // Check if quota would not be broken if we add this file
                                 // Create the user folder if needed
@@ -4643,7 +4683,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
-                                })(xfile.fullpath, names[i], filedata);
+                                })(xfile.fullpath, safeName, filedata);
                             } else {
                                 // Send a notification
                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: names[i], nolog: 1, id: Math.random() });
@@ -4653,8 +4693,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 } else {
                     // More typical upload method, the file data is in a multipart mime post.
                     for (var i in files.files) {
-                        var file = files.files[i], fpath = obj.path.join(xfile.fullpath, file.originalFilename);
-                        if (obj.common.IsFilenameValid(file.originalFilename) && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+                        var file = files.files[i];
+                        var originalFilename = (typeof file.originalFilename === 'string') ? file.originalFilename : '';
+                        var safeOriginalFilename = obj.path.basename(originalFilename);
+                        var isFilenameAcceptable = (safeOriginalFilename === originalFilename) && obj.common.IsFilenameValid(safeOriginalFilename);
+                        const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                        if (uploadTempPath == null) { res.sendStatus(400); return; }
+                        if (isFilenameAcceptable && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+                            var fpath = obj.path.join(xfile.fullpath, safeOriginalFilename);
 
                             // See if we need to create the folder
                             var domainx = 'domain';
@@ -4664,11 +4710,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
 
                             // Rename the file
-                            obj.fs.rename(file.path, fpath, function (err) {
+                            obj.fs.rename(uploadTempPath, fpath, function (err) {
                                 if (err && (err.code === 'EXDEV')) {
                                     // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                                    obj.common.copyFile(file.path, fpath, function (err) {
-                                        obj.fs.unlink(file.path, function (err) {
+                                    obj.common.copyFile(uploadTempPath, fpath, function (err) {
+                                        obj.fs.unlink(uploadTempPath, function (err) {
                                             obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
@@ -4679,7 +4725,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         } else {
                             // Send a notification
                             obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
-                            try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
+                            try { obj.fs.unlink(uploadTempPath, function (err) { }); } catch (e) { }
                         }
                     }
                 }
@@ -4734,13 +4780,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // More typical upload method, the file data is in a multipart mime post.
             for (var i in files.files) {
-                var file = files.files[i], ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
+                var file = files.files[i];
+                const ftarget = getRandomPassword() + '-' + file.originalFilename;
+                const targetPath = obj.path.join(serverpath, ftarget);
+                const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                if (uploadTempPath == null) { res.sendStatus(400); return; }
                 cmd.files.push({ name: file.originalFilename, target: ftarget });
                 // Rename the file
-                obj.fs.rename(file.path, fpath, function (err) {
+                obj.fs.rename(uploadTempPath, targetPath, function (err) {
                     if (err && (err.code === 'EXDEV')) {
                         // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                        obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { }); });
+                        obj.common.copyFile(uploadTempPath, targetPath, function (err) { obj.fs.unlink(uploadTempPath, function (err) { }); });
                     }
                 });
             }
