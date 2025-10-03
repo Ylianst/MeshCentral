@@ -1176,6 +1176,13 @@ function handleServerCommand(data) {
                                 tunnel.consentTimeout = (tunnel.soptions && tunnel.soptions.consentTimeout) ? tunnel.soptions.consentTimeout : 30;
                                 tunnel.consentAutoAccept = (tunnel.soptions && (tunnel.soptions.consentAutoAccept === true));
                                 tunnel.consentAutoAcceptIfNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfNoUser === true));
+                                tunnel.consentAutoAcceptIfDesktopNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfDesktopNoUser === true));
+                                tunnel.consentAutoAcceptIfTerminalNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfTerminalNoUser === true));
+                                tunnel.consentAutoAcceptIfFileNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfFileNoUser === true));
+                                tunnel.consentAutoAcceptIfLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfLocked === true));
+                                tunnel.consentAutoAcceptIfDesktopLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfDesktopLocked === true));
+                                tunnel.consentAutoAcceptIfTerminalLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfTerminalLocked === true));
+                                tunnel.consentAutoAcceptIfFileLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfFileLocked === true));
                                 tunnel.oldStyle = (tunnel.soptions && tunnel.soptions.oldStyle) ? tunnel.soptions.oldStyle : false;
                                 tunnel.tcpaddr = data.tcpaddr;
                                 tunnel.tcpport = data.tcpport;
@@ -3067,7 +3074,7 @@ function onTunnelData(data)
                 // Perform User-Consent if needed. 
                 if (this.httprequest.consent && (this.httprequest.consent & 16)) {
                     // User asked for consent so now we check if we can auto accept if no user is present/loggedin
-                    if (this.httprequest.consentAutoAcceptIfNoUser) {
+                    if (this.httprequest.consentAutoAcceptIfNoUser || this.httprequest.consentAutoAcceptIfTerminalNoUser || this.httprequest.consentAutoAcceptIfLocked || this.httprequest.consentAutoAcceptIfTerminalLocked) {
                         var p = require('user-sessions').enumerateUsers();
                         p.sessionid = this.httprequest.sessionid;
                         p.ws = this;
@@ -3076,10 +3083,35 @@ function onTunnelData(data)
                             for (var i in u) {
                                 if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
                             }
-                            if (v.length == 0) { // No user is present, auto accept
+                            var autoAccept = false;
+                            
+                            // Check if we should auto-accept because no user is present
+                            if ((this.ws.httprequest.consentAutoAcceptIfNoUser || this.ws.httprequest.consentAutoAcceptIfTerminalNoUser) && (v.length == 0)) {
+                                autoAccept = true;
+                            }
+                            
+                            // Check if we should auto-accept because all users are locked
+                            if ((this.ws.httprequest.consentAutoAcceptIfLocked || this.ws.httprequest.consentAutoAcceptIfTerminalLocked) && (v.length > 0)) {
+                                var allUsersLocked = true;
+                                if (!meshCoreObj.lusers || meshCoreObj.lusers.length == 0) {
+                                    // No locked users list available, assume users are not locked
+                                    allUsersLocked = false;
+                                } else {
+                                    for (var i in v) {
+                                        var username = v[i].domain ? (v[i].domain + '\\' + v[i].user) : v[i].user;
+                                        if (meshCoreObj.lusers.indexOf(username) == -1) {
+                                            allUsersLocked = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (allUsersLocked) { autoAccept = true; }
+                            }
+                            
+                            if (autoAccept) {
                                 this.ws.httprequest.tpromise._res();
                             } else { 
-                                // User is present so we still need consent
+                                // User is present and not all locked, so we still need consent
                                 terminal_consent_ask(this.ws);
                             }
                         });
@@ -3188,7 +3220,7 @@ function onTunnelData(data)
                 if (this.httprequest.consent && (this.httprequest.consent & 8)) {
 
                     // User asked for consent but now we check if can auto accept if no user is present
-                    if (this.httprequest.consentAutoAcceptIfNoUser) {
+                    if (this.httprequest.consentAutoAcceptIfNoUser || this.httprequest.consentAutoAcceptIfDesktopNoUser || this.httprequest.consentAutoAcceptIfLocked || this.httprequest.consentAutoAcceptIfDesktopLocked) {
                         // Get list of users to check if we any actual users logged in, and if users logged in, we still need consent
                         var p = require('user-sessions').enumerateUsers();
                         p.sessionid = this.httprequest.sessionid;
@@ -3198,10 +3230,36 @@ function onTunnelData(data)
                             for (var i in u) {
                                 if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
                             }
-                            if (v.length == 0) { // No user is present, auto accept
+                            var autoAccept = false;
+                            
+                            // Check if we can auto-accept because no user is present
+                            if ((this.ws.httprequest.consentAutoAcceptIfNoUser || this.ws.httprequest.consentAutoAcceptIfDesktopNoUser) && (v.length == 0)) {
+                                // No user is present, auto accept
+                                autoAccept = true;
+                            }
+                            
+                            // Check if we can auto-accept because all users are locked
+                            if ((this.ws.httprequest.consentAutoAcceptIfLocked || this.ws.httprequest.consentAutoAcceptIfDesktopLocked) && (v.length > 0)) {
+                                var allUsersLocked = true;
+                                if (!meshCoreObj.lusers || meshCoreObj.lusers.length == 0) {
+                                    // No locked users list available, assume users are not locked
+                                    allUsersLocked = false;
+                                } else {
+                                    for (var i in v) {
+                                        var username = v[i].domain ? (v[i].domain + '\\' + v[i].user) : v[i].user;
+                                        if (meshCoreObj.lusers.indexOf(username) == -1) {
+                                            allUsersLocked = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (allUsersLocked) { autoAccept = true; }
+                            }
+                            
+                            if (autoAccept) {
                                 kvm_consent_ok(this.ws);
                             } else { 
-                                // User is present so we still need consent
+                                // User is present and not all locked, so we still need consent
                                 kvm_consent_ask(this.ws);
                             }
                         });
@@ -3259,10 +3317,7 @@ function onTunnelData(data)
                 };
 
                 // Perform notification if needed. Toast messages may not be supported on all platforms.
-                if (this.httprequest.consent && (this.httprequest.consent & 32))
-                {
-                    // User asked for consent so now we check if we can auto accept if no user is present/loggedin
-                    if (this.httprequest.consentAutoAcceptIfNoUser) {
+                if (this.httprequest.consentAutoAcceptIfNoUser || this.httprequest.consentAutoAcceptIfFileNoUser || this.httprequest.consentAutoAcceptIfLocked || this.httprequest.consentAutoAcceptIfFileLocked) {
                         var p = require('user-sessions').enumerateUsers();
                         p.sessionid = this.httprequest.sessionid;
                         p.ws = this;
@@ -3271,19 +3326,40 @@ function onTunnelData(data)
                             for (var i in u) {
                                 if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
                             }
-                            if (v.length == 0) { // No user is present, auto accept
+                            var autoAccept = false;
+                            
+                            // Check if we should auto-accept because no user is present
+                            if ((this.ws.httprequest.consentAutoAcceptIfNoUser || this.ws.httprequest.consentAutoAcceptIfFileNoUser) && (v.length == 0)) {
+                                autoAccept = true;
+                            }
+                            
+                            // Check if we should auto-accept because all users are locked
+                            if ((this.ws.httprequest.consentAutoAcceptIfLocked || this.ws.httprequest.consentAutoAcceptIfFileLocked) && (v.length > 0)) {
+                                var allUsersLocked = true;
+                                if (!meshCoreObj.lusers || meshCoreObj.lusers.length == 0) {
+                                    // No locked users list available, assume users are not locked
+                                    allUsersLocked = false;
+                                } else {
+                                    for (var i in v) {
+                                        var username = v[i].domain ? (v[i].domain + '\\' + v[i].user) : v[i].user;
+                                        if (meshCoreObj.lusers.indexOf(username) == -1) {
+                                            allUsersLocked = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (allUsersLocked) { autoAccept = true; }
+                            }
+                            
+                            if (autoAccept) {
                                 // User Consent Prompt is not required
                                 files_consent_ok(this.ws);
                             } else { 
-                                // User is present so we still need consent
+                                // User is present and not all locked, so we still need consent
                                 files_consent_ask(this.ws);
                             }
                         });
                     } else {
-                        // User Consent Prompt is required
-                        files_consent_ask(this);
-                    }
-                } else {
                     // User Consent Prompt is not required
                     files_consent_ok(this);
                 }
