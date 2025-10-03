@@ -317,13 +317,14 @@
         }
 
         function addAgentToMeshClick() {
+            if (installFlags != 0) { Q('aginsType').value = installFlags; }
             var v = Q('aginsSelect').value;
             QV('agins_linux_un', v == 4);
             QV('agins_linux_inst', v == 5);
             QV('aginsSysTypeDiv', v == 5);
             Q('aginsbinlnk').onclick = function() { downloadFile((Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value); };
             Q('aginsbincmd').value = (Q('aginsbincmd').value.split('&installflags=')[0]) + '&installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value + '\"';
-            QV('aginsTypeDiv', (v == 0) || (v == 5));
+            QV('aginsTypeDiv', (installFlags != 0) ? false : ((v == 0) || (v == 5)));
             QV('asinsTypeDiv', (v == 7));
         }
 
