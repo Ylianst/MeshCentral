@@ -1552,6 +1552,7 @@
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
+        var features3 = parseInt('{{{features3}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -2359,6 +2360,7 @@
                     if (updateNaggleFlags & 16384) { updateUsers(); }
                     if (updateNaggleFlags & 32768) { updateRecordings(); }
                     if (updateNaggleFlags & 65536) { updateLoginTokens(); }
+                    if (currentNode && (updateNaggleFlags & 131072)) { updateDesktopButtons(); }
                     updateNaggleTimer = null;
                     updateNaggleFlags = 0;
                     gotoStartViewPage();
@@ -3011,18 +3013,18 @@
                         //console.log(url);
                         downloadFile(url, '');
                     } else if (message.tag == 'novnc') {
-                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
+                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay ? 'local' : 'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}' + (message.qsappend ? '&' + message.qsappend : '');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
                         safeNewWindow(vncurl, 'mcnovnc/' + message.nodeid);
                     } else if (message.tag == 'mstsc') {
-                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
+                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '') + (message.qsappend ? '&' + message.qsappend : '');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
                         if (message.localRelay) { rdpurl += '&local=1'; }
                         safeNewWindow(rdpurl, 'mcmstsc/' + message.nodeid);
                     } else if (message.tag == 'ssh') {
-                        var sshurl = window.location.origin + domainUrl + 'ssh.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
+                        var sshurl = window.location.origin + domainUrl + 'ssh.html?ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '') + (message.qsappend ? '&' + message.qsappend : '');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { sshurl += '&name=' + encodeURIComponentEx(node.name); }
                         if (message.localRelay) { sshurl += '&local=1'; }
@@ -3468,6 +3470,7 @@
                                     // If we are looking at a node that is no longer visible, move back to "My Devices"
                                     if ((xxcurrentView >= 10) && (xxcurrentView < 20) && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                                 }
+                                mainUpdate(131072);
                             }
                             mainUpdate(4 + 128 + 8192 + 16384);
                             if (currentNode && !IsNodeViewable(currentNode)) { currentNode = null; if ((xxcurrentView >= 10) && (xxcurrentView < 20)) { go(1); } }
@@ -6560,12 +6563,12 @@
                     QV('cxfiles', (node.mtype != 4) && ((node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 4) != 0))) && (rights & 8) && fileAccess);
                     QV('cxevents', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (rights & 8));
                     QV('cxdetails', node.mtype < 3);
-                    QV('cxwebvnc', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x20000000) == 0)));
-                    QV('cxwebrdp', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0) && ((features & 0x40000000) == 0)));
-                    QV('cxwebssh', ((features2 & 0x200) && (((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)));
+                    QV('cxwebvnc', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights == 0xFFFFFFFF) || ((rights & (8 | (features3 & 0x00000001 ? 65536 : 0))) == 8)) && ((features & 0x20000000) == 0)));
+                    QV('cxwebrdp', ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights == 0xFFFFFFFF) || ((rights & (8 | (features3 & 0x00000001 ? 256 | 65536 : 0))) == 8)) && ((features & 0x40000000) == 0)));
+                    QV('cxwebssh', ((features2 & 0x200) && (((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights == 0xFFFFFFFF) || ((rights & (8 | (features3 & 0x00000001 ? 512 : 0))) == 8))));
                     QV('cxconsole', (consoleRights && (node.mtype == 2) && ((node.agent == null) || (node.agent.caps == null) || ((node.agent.caps & 8) != 0))) && (rights & 8));
                     QV('cxrdp', false); // always have the RDP hidden
-                    if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights & 8) != 0)) {
+                    if ((((node.conn & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((rights == 0xFFFFFFFF) || ((rights & (8 | (features3 & 0x00000001 ? 256 | 65536 : 0))) == 8))) {
                         if ((node.agent.id > 0) && (node.agent.id < 5)) {
                             if (navigator.platform.toLowerCase() == 'win32') {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
@@ -7874,19 +7877,19 @@
                         }
                         if ((node.agent.id > 0) && (node.agent.id < 5)) {
                             if (navigator.platform.toLowerCase() == 'win32') {
-                                if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false)) {
+                                if (((meshrights == 0xFFFFFFFF) || ((meshrights & (8 | (features3 & 0x00000001 ? 256 | 65536 : 0))) == 8)) && ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.rdp != false))) {
                                     x += '<a href=# cmenu=altPortContextMenu id=rdpMCRouterLink onclick=p10MCRouter("' + node._id + '",3) title="' + "Requires installation of MeshCentral Router" + '.">' + "RDP" + ((node.rdpport && (node.rdpport != 3389)) ? '/' + node.rdpport : '') + '</a>&nbsp;';
                                 }
                             }
                         }
                         if (node.agent.id > 4) {
-                            if ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel')) {
+                            if (((meshrights == 0xFFFFFFFF) || ((meshrights & ( 8 | (features3 & 0x00000001 ? 512 : 0))) == 8)) && ((navigator.platform.toLowerCase() == 'win32') || (navigator.platform.toLowerCase() == 'macintel'))) {
                                 if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.ssh != false)) {
                                     x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",4,' + (node.sshport ? node.sshport : 22) + ') title="' + "Requires installation of MeshCentral Router." + '">' + "SSH" + ((node.sshport && (node.sshport != 22)) ? '/' + node.sshport : '') + '</a>&nbsp;';
                                 }
                             }
                             if (navigator.platform.toLowerCase() == 'win32') {
-                                if ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false)) {
+                                if (((meshrights == 0xFFFFFFFF) || ((meshrights & (8 | (features3 & 0x00000001 ? 1024 : 0))) == 8)) && ((serverinfo.devicemeshrouterlinks == null) || (serverinfo.devicemeshrouterlinks.scp != false))) {
                                     x += '<a href=# cmenu=sshPortContextMenu onclick=p10MCRouter("' + node._id + '",5,' + (node.sshport ? node.sshport : 22) + ') title="' + "Requires installation of MeshCentral Router." + '">' + "SCP" + ((node.sshport && (node.sshport != 22)) ? '/' + node.sshport : '') + '</a>&nbsp;';
                                 }
                             }
@@ -7906,17 +7909,17 @@
                     }
 
                     // noVNC link
-                    if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x20000000) == 0)) {
+                    if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights == 0xFFFFFFFF) || ((meshrights & (8 | (features3 & 0x00000001 ? 65536 : 0))) == 8 )) && ((features & 0x20000000) == 0)) {
                         x += '<a href=# cmenu=rfbPortContextMenu id=rfbLink onclick=p10rfb("' + node._id + '") title="' + "Launch web-based VNC session to this device" + '.">' + "Web-VNC" + '</a>&nbsp;';
                     }
 
                     // MSTSC.js link
-                    if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0)) {
+                    if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights == 0xFFFFFFFF) || ((meshrights & (8 | (features3 & 0x00000001 ? 256 | 65536 : 0))) == 8)) && ((features & 0x40000000) == 0)) {
                         x += '<a href=# cmenu=altPortContextMenu id=mstscLink onclick=p10mstsc("' + node._id + '") title="' + "Launch web-based RDP session to this device" + '.">' + "Web-RDP" + '</a>&nbsp;';
                     }
 
                     // SSH link
-                    if ((features2 & 0x200) && (((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0)) {
+                    if ((features2 & 0x200) && (((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights == 0xFFFFFFFF) || ((meshrights & (8 | (features3 & 0x00000001 ? 512 : 0))) == 8))) {
                         x += '<a href=# cmenu=sshPortContextMenu id=sshLink onclick=p10ssh("' + node._id + '") title="' + "Launch web-based SSH session to this device" + '.">' + "Web-SSH" + '</a>&nbsp;';
                     }
 
@@ -8229,6 +8232,7 @@
                 if (rights & 512) str1.push("No Terminal");
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 2048) str1.push("No AMT");
+                if (rights & 4194304) str1.push("Hide RDP");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
                 if ((rights & 524288) && (serverinfo.guestdevicesharing !== false)) str1.push("Guest Share");
@@ -8263,6 +8267,7 @@
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
+                if (rights & 4194304) str1.push("Hide RDP");
                 if (rights & 65536) str1.push("No Desktop");
                 if ((rights & 524288) && (serverinfo.guestdevicesharing !== false)) str1.push("Guest Share");
                 if (str1.length > 0) { str.push('Control (' + str1.join(', ') + ')'); } else { str.push("Control"); }
@@ -9241,7 +9246,7 @@
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
-            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && (rights & 8) && (currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)));
+            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && ((rights == 0XFFFFFFFF) || ((rights & (8 | (features3 & 0x00000001 ? 256 : 0))) == 8)) && (currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)));
             if (mtype == 1) {
                 QV('connectbutton1hspan',
                     (deskState == 0) &&
@@ -14268,6 +14273,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotecontrol>' + "Remote Control & Relay" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remoteview style=margin-left:12px>' + "Remote View Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20hiderdpsessions style=margin-left:12px>' + "Hide RDP Sessionss" + '</label><br>';
             if (serverinfo.guestdevicesharing !== false) { x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20guestshare style=margin-left:12px>' + "Guest Sharing" + '</label><br>'; }
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
@@ -14349,6 +14355,7 @@
                     if (urights & 1024) { Q('p20nofiles').checked = true; }
                     if (urights & 2048) { Q('p20noamt').checked = true; }
                     if (urights & 4096) { Q('p20remotelimitedinput').checked = true; }
+                    if (urights & 4194304) { Q('p20hiderdpsessions').checked = true; }
                 }
                 if (urights & 16) { Q('p20meshagentconsole').checked = true; }
                 if (urights & 32) { Q('p20meshserverfiles').checked = true; }
@@ -14402,6 +14409,7 @@
                 Q('p20nofiles').checked = ((devrights & 1024) != 0);
                 Q('p20noamt').checked = ((devrights & 2048) != 0);
                 Q('p20remotelimitedinput').checked = ((devrights & 4096) != 0);
+                Q('p20hiderdpsessions').checked = ((devrights & 4194304) != 0);
                 Q('p20limitevents').checked = ((devrights & 8192) != 0);
                 Q('p20chatnotify').checked = ((devrights & 16384) != 0);
                 Q('p20uninstall').checked = ((devrights & 32768) != 0);
@@ -14483,6 +14491,7 @@
             QE('p20remoteview', nc && Q('p20remotecontrol').checked);
             if (serverinfo.guestdevicesharing !== false) { QE('p20guestshare', nc && Q('p20remotecontrol').checked && (Q('p20remoteview').checked || !Q('p20remotelimitedinput').checked)); }
             QE('p20remotelimitedinput', nc && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
+            QE('p20hiderdpsessions', nc && Q('p20remotecontrol').checked);
             QE('p20nodesktop', nc && Q('p20remotecontrol').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
@@ -14515,6 +14524,7 @@
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if ((Q('p20remotelimitedinput').checked == true) && (!Q('p20remoteview').checked)) meshadmin += 4096;
+                if ((Q('p20hiderdpsessions').checked == true)) meshadmin += 4194304;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
                 if (Q('p20chatnotify').checked == true) meshadmin += 16384;
                 if (Q('p20uninstall').checked == true) meshadmin += 32768;
@@ -14527,13 +14537,14 @@
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
             if ((meshadmin & 8) == 0) {
-                // Remove 256, 512, 1024, 2048, 4096, 65536
+                // Remove 256, 512, 1024, 2048, 4096, 65536, 4194304
                 if (meshadmin & 256) { meshadmin -= 256; }
                 if (meshadmin & 512) { meshadmin -= 512; }
                 if (meshadmin & 1024) { meshadmin -= 1024; }
                 if (meshadmin & 2048) { meshadmin -= 2048; }
                 if (meshadmin & 4096) { meshadmin -= 4096; }
                 if (meshadmin & 65536) { meshadmin -= 65536; }
+                if (meshadmin & 4194304) { meshadmin -= 4194304; }
             }
 
             // Send the action to the server
@@ -14596,11 +14607,13 @@
                     if ((meshrights & 64) != 0) r.push("Wake Devices");
                     if ((meshrights & 128) != 0) r.push("Edit Notes");
                     if (((meshrights & 8) != 0) && (meshrights & 256) != 0) r.push("Remote View Only");
+                    if (((meshrights & 8) != 0) && (meshrights & 4194304) != 0) r.push("Hide RDP Sessionss");
                     if (((meshrights & 8) != 0) && (meshrights & 65536) != 0) r.push("No Desktop");
                     if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r.push("No Terminal");
                     if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r.push("No Files");
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
+                    if (((meshrights & 8) != 0) && ((meshrights & 4194304) != 0) && ((meshrights & 256) == 0)) r.push("Hide RDP");
                     if ((meshrights & 8192) != 0) r.push("Self Events Only");
                     if ((meshrights & 16384) != 0) r.push("Chat & Notify");
                     if ((meshrights & 32768) != 0) r.push("Uninstall");
@@ -16533,8 +16546,8 @@
                     var cr = 0, mesh = omeshes[i], r = currentUserGroup.links[mesh._id].rights, trash = '', rights = makeDeviceGroupRightsString(r);
                     if ((userinfo.links) && (userinfo.links[mesh._id] != null) && (userinfo.links[mesh._id].rights != null)) { cr = userinfo.links[mesh._id].rights; }
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
-                    if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else {}
-                    if ((cr & 2) != 0) {
+                    if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else { }
+                    if ((userinfo.siteadmin == 0xFFFFFFFF) || ((cr & 2) != 0)) {
                         trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
@@ -16834,8 +16847,11 @@
             if ((serverinfo.usersSessionRecording == 1) && (user.flags) && (user.flags & 2)) { userFeatures.push("Record Sessions"); }
             if (user.removeRights) {
                 if ((user.removeRights & 0x00000008) != 0) { userFeatures.push("No Remote Control"); } else {
-                    if ((user.removeRights & 0x00010000) != 0) { userFeatures.push("No Desktop"); }
-                    else if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
+                    if ((user.removeRights & 0x00010000) != 0) { userFeatures.push("No Desktop"); } else {
+                        if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
+                        else if ((user.removeRights & 0x00001000) != 0) { userFeatures.push("Limited Input"); }
+                        if ((user.removeRights & 0x00400000) != 0) { userFeatures.push("Hide RDP"); }
+                    }
                     if ((user.removeRights & 0x00000200) != 0) { userFeatures.push("No Terminal"); }
                     if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
                 }
@@ -17060,6 +17076,8 @@
             x += '<div><label><input type=checkbox id=d20flag7 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000008) ? 'checked' : '') + '>' + "No Remote Control" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag2 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00010000) ? 'checked' : '') + '>' + "No Desktop Access" + '</label><br></div>';
             x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag3 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
+            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag12 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00001000) ? 'checked' : '') + '>' + "Limited Input Only" + '</label><br></div>';
+            x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag13 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00400000) ? 'checked' : '') + '>' + "Hide RDP Sessions" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag6 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
@@ -17076,6 +17094,8 @@
             QE('d20flag3', !Q('d20flag7').checked && !Q('d20flag2').checked);
             QE('d20flag4', !Q('d20flag7').checked);
             QE('d20flag5', !Q('d20flag7').checked);
+            QE('d20flag12', !Q('d20flag7').checked && !Q('d20flag2').checked && !Q('d20flag3').checked);
+            QE('d20flag13', !Q('d20flag7').checked && !Q('d20flag2').checked);
         }
 
         // Send to the server the new user's real name
@@ -17089,7 +17109,11 @@
             var r = 0;
             if (Q('d20flag7').checked) { r += 0x00000008; } else {
                 if (Q('d20flag2').checked) { r += 0x00010000; }
-                else if (Q('d20flag3').checked) { r += 0x00000100; }
+                else {
+                    if (Q('d20flag3').checked) { r += 0x00000100; }
+                    else if (Q('d20flag12').checked) { r += 0x00001000; }
+                    if (Q('d20flag13').checked) { r += 0x00400000; }
+                }
                 if (Q('d20flag4').checked) { r += 0x00000200; }
                 if (Q('d20flag5').checked) { r += 0x00000400; }
             }
@@ -17232,7 +17256,7 @@
                     if ((userinfo.links) && (userinfo.links[mesh._id] != null) && (userinfo.links[mesh._id].rights != null)) { cr = userinfo.links[mesh._id].rights; }
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
                     if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; }
-                    if ((currentUser._id != userinfo._id) && ((cr & 2) != 0)) { // 2 = MESHRIGHT_MANAGEUSERS
+                    if ((userinfo.siteadmin == 0xFFFFFFFF) || ((currentUser._id != userinfo._id) && ((cr & 2) != 0))) { // 2 = MESHRIGHT_MANAGEUSERS
                         trash = '<a href=# onclick=\'return p30removeMeshFromUser(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(1,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
                     }
@@ -19111,6 +19135,8 @@
             if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
             if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+            if ((userinfo.removeRights & 0x00001000) != 0) { add += 0x00001000; } // Limited Input Only
+            if ((userinfo.removeRights & 0x00400000) != 0) { add += 0x00400000; } // Hide RDP Sessions
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
