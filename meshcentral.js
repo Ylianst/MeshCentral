@@ -116,9 +116,12 @@ function CreateMeshCentralServer(config, args) {
     });
 
     // Look to see if data and/or file path is specified
-    if (obj.config.settings && (typeof obj.config.settings.datapath == 'string')) { obj.datapath = obj.config.settings.datapath; }
-    if (obj.config.settings && (typeof obj.config.settings.filespath == 'string')) { obj.filespath = obj.config.settings.filespath; }
-
+    if (obj.config.settings) {
+        if (typeof obj.config.settings.datapath == 'string') { obj.datapath = obj.config.settings.datapath; }
+        if (typeof obj.config.settings.filespath == 'string') { obj.filespath = obj.config.settings.filespath; }
+        if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = obj.config.settings.autobackup.backuppath; }
+    }
+    
     // Create data and files folders if needed
     try { obj.fs.mkdirSync(obj.datapath); } catch (ex) { }
     try { obj.fs.mkdirSync(obj.filespath); } catch (ex) { }
