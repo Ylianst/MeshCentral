@@ -1464,6 +1464,7 @@ function CreateMeshCentralServer(config, args) {
             if ((i.length > 0) && (i[0] == '_')) { delete obj.config.domains[i]; continue; } // Remove any domains with names that start with _
             if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); }
             if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
+            if (obj.config.domains[i].preventduplicatedevices == null) { obj.config.domains[i].preventduplicatedevices = false; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
             if ((typeof obj.config.domains[i].maxdeviceview != 'number') || (obj.config.domains[i].maxdeviceview < 1)) { delete obj.config.domains[i].maxdeviceview; }
@@ -4325,32 +4326,31 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb@4.1.2', 'node-forge@1.3.1', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.3', 'yauzl@2.10.0'];
+        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.0', 'yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
-        if (ssh == true) { modules.push('ssh2@1.17.0'); }
+        if (ssh == true) { modules.push('ssh2@1.16.0'); }
         if (passport != null) { modules.push(...passport); }
         if (captcha == true) { modules.push('svg-captcha@1.4.0'); }
 
         if (sessionRecording == true) { modules.push('image-size@2.0.2'); } // Need to get the remote desktop JPEG sizes to index the recording file.
         if (config.letsencrypt != null) { modules.push('acme-client@4.2.5'); } // Add acme-client module. We need to force v4.2.4 or higher since olver versions using SHA-1 which is no longer supported by Let's Encrypt.
-        if (config.settings.mqtt != null) { modules.push('aedes@0.51.3'); } // Add MQTT Modules
-        if (config.settings.mysql != null) { modules.push('mysql2@3.15.1'); } // Add MySQL.
+        if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
+        if (config.settings.mysql != null) { modules.push('mysql2@3.11.4'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb@4.17.2'); modules.push('@mongodb-js/saslprep@1.3.1')} // Add MongoDB, official driver.
-        if (config.settings.postgres != null) { modules.push('pg@8.16.3') } // Add Postgres, official driver.
-        if (config.settings.mariadb != null) { modules.push('mariadb@3.4.5'); } // Add MariaDB, official driver.
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.17.2'); } // Add MongoDB, official driver. 4.17.0 and above now includes saslprep by default https://github.com/mongodb/node-mongodb-native/releases/tag/v4.17.0
+        if (config.settings.postgres != null) { modules.push('pg@8.14.1') } // Add Postgres, official driver.
+        if (config.settings.mariadb != null) { modules.push('mariadb@3.4.0'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.
         if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.7'); } // Add sqlite3, official driver.
-        if (config.settings.vault != null) { modules.push('node-vault@0.10.5'); } // Add official HashiCorp's Vault module.
-        const hasExistingProxy = process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy'];
-        if (((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) || (hasExistingProxy)) { modules.push('https-proxy-agent@7.0.6'); } // Required for HTTP/HTTPS proxy support
+        if (config.settings.vault != null) { modules.push('node-vault@0.10.2'); } // Add official HashiCorp's Vault module.
+        if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent@7.0.2'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs@3.1.0'); } // Add MongoJS, old driver.
         if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.10.1'); } // Add SMTP support
-        if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail@8.1.6'); } // Add SendGrid support
+        if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
         if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('html-minifier-terser@7.2.0'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer@0.1.0'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
-        if (config.settings.prometheus != null) { modules.push('prom-client@15.1.3'); } // Add Prometheus Metrics support
+        if (config.settings.prometheus != null) { modules.push('prom-client'); } // Add Prometheus Metrics support
 
         if (typeof config.settings.autobackup == 'object') {
             // Setup encrypted zip support if needed
@@ -4362,7 +4362,7 @@ function mainStart() {
                 if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@5.8.0'); }
             }
             // Enable S3 Support
-            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.6'); }
+            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.2'); }
         }
 
         // Setup common password blocking
@@ -4380,22 +4380,22 @@ function mainStart() {
 
         // SMS support
         if (config.sms != null) {
-            if (config.sms.provider == 'twilio') { modules.push('twilio@4.23.0'); }
-            if (config.sms.provider == 'plivo') { modules.push('plivo@4.75.1'); }
+            if (config.sms.provider == 'twilio') { modules.push('twilio@4.19.0'); }
+            if (config.sms.provider == 'plivo') { modules.push('plivo@4.58.0'); }
             if (config.sms.provider == 'telnyx') { modules.push('telnyx@1.25.5'); }
         }
 
         // Messaging support
         if (config.messaging != null) {
-            if (config.messaging.telegram != null) { modules.push('telegram@2.26.22'); modules.push('input@1.0.1'); }
+            if (config.messaging.telegram != null) { modules.push('telegram@2.19.8'); modules.push('input@1.0.1'); }
             if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
-            if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.6'); }
+            if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.1'); }
             if (config.messaging.pushover != null) { modules.push('node-pushover@1.0.0'); }
             if (config.messaging.zulip != null) { modules.push('zulip@0.1.0'); }
         }
 
         // Setup web based push notifications
-        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.7'); }
+        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.6'); }
 
         // Firebase Support
         if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) { modules.push('firebase-admin@12.7.0'); }

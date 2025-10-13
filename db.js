@@ -950,7 +950,7 @@ module.exports.CreateDB = function (parent, func) {
                 });
             } else { // If not present, create the tables and indexes
                 //not needed, just use a create db statement: const pgtools = require('pgtools'); 
-                DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
+                DatastoreTest.query('CREATE DATABASE '+ databaseName + ';', [], function (err, res) {
                     if (err == null) {
                         // Create the tables and indexes
                         DatastoreTest.end();
@@ -1000,13 +1000,14 @@ module.exports.CreateDB = function (parent, func) {
                 // Check if we need to reset indexes
                 var indexesByName = {}, indexCount = 0;
                 for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
+                if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['TypeDomainRnameIndex1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
                     console.log('Resetting main indexes...');
                     obj.file.dropIndexes(function (err) {
-                        obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
-                        obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
-                        obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
-                        obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
+                        obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });        // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+                        obj.file.createIndex({ type: 1, domain: 1, rname: 1 }, { sparse: 1, name: "TypeDomainRnameIndex1" });   // Speeds up
+                        obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                      // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+                        obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                      // Speeds up RemoveMesh()
+                        obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                          // Speeds up getAmtUuidMeshNode()
                     });
                 }
             });
@@ -1160,10 +1161,11 @@ module.exports.CreateDB = function (parent, func) {
             // Check if we need to reset indexes
             var indexesByName = {}, indexCount = 0;
             for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-            if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
+            if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['TypeDomainRnameIndex1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
                 console.log("Resetting main indexes...");
                 obj.file.dropIndexes(function (err) {
                     obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+                    obj.file.createIndex({ type: 1, domain: 1, rname: 1 }, { sparse: 1, name: "TypeDomainRnameIndex1" });
                     obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
                     obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
                     obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
@@ -1656,6 +1658,12 @@ module.exports.CreateDB = function (parent, func) {
                     func(err, performTypedRecordDecrypt(docs));
                 });
             }
+            obj.GetNodeByComputerName = function (domain, rname, func) {
+                sqlDbQuery('SELECT doc FROM main WHERE type = $1 AND domain = $2 AND JSON_EXTRACT(doc, "$.rname") = $3 ORDER BY lastbootuptime', 
+                    ['node', domain, rname], function (err, docs) {
+                        func(err, performTypedRecordDecrypt(docs));
+                    });
+            };
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = $1', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = $1', [type], func); };
@@ -1926,6 +1934,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.query('meshcentral').filter('_id', 'in', ids).filter('domain', '==', domain).filter('type', '==', type).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).filter('emailVerified', '==', true).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
+            obj.GetNodeByComputerName = function (domain, rname, func) { obj.file.query('meshcentral').filter('type', '==', 'node').filter('domain', '==', domain).filter('rname', '==', rname).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { obj.file.ref('meshcentral').child(encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); };
             obj.RemoveAll = function (func) { obj.file.query('meshcentral').remove().then(function () { if (func) { func(); } }); };
             obj.RemoveAllOfType = function (type, func) { obj.file.query('meshcentral').filter('type', '==', type).remove().then(function () { if (func) { func(); } }); };
@@ -2213,6 +2222,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { sqlDbQuery('SELECT doc FROM main WHERE (id = ANY ($1)) AND domain = $2 AND type = $3', [ids, domain, type], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extra = $2', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extra = $2', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
+            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = "$1" AND domain = $2 AND doc->>\'rname\' = $3 ORDER BY lastbootuptime', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });};
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = $1', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = $1', [type], func); };
@@ -2473,6 +2483,7 @@ module.exports.CreateDB = function (parent, func) {
             }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
+            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND JSON_EXTRACT(doc, "$.rname") = ? ORDER BY lastbootuptime', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = ?', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = ?', [type], func); };
@@ -2704,11 +2715,13 @@ module.exports.CreateDB = function (parent, func) {
 
                     if (obj.filePendingGets == null) {
                         // No pending gets, perform the operation now.
+                        console.log("No pending gets, perform the operation now.");
                         obj.filePendingGets = {};
                         obj.filePendingGets[id] = [func2];
                         obj.file.find({ _id: id }).toArray(fileBulkReadCompleted);
                     } else {
                         // Add get to pending list.
+                        console.log("Add get to pending list.");
                         if (obj.filePendingGet == null) { obj.filePendingGet = {}; }
                         if (obj.filePendingGet[id] == null) { obj.filePendingGet[id] = [func2]; } else { obj.filePendingGet[id].push(func2); }
                     }
@@ -2731,11 +2744,14 @@ module.exports.CreateDB = function (parent, func) {
                         };
                         func2.userArgs = parms;
                         obj.file.find({ _id: id }).toArray(function (err, docs) {
+                            console.log("1");
                             if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
                             func2(err, performTypedRecordDecrypt(docs));
                         });
                     } else {
+                        //console.log("ID: " + id);
                         obj.file.find({ _id: id }).toArray(function (err, docs) {
+                            //console.log("Docs: " + docs);
                             if ((docs != null) && (docs.length > 0) && (docs[0].links != null)) { docs[0] = common.unEscapeLinksFieldName(docs[0]); }
                             func(err, performTypedRecordDecrypt(docs));
                         });
@@ -2784,6 +2800,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetNodeByComputerName = function (domain, rname, func) { obj.file.find({ type: 'node', domain: domain, rname: rname }).sort({ lastbootuptime: -1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
 
             // Bulk operations
             if (parent.config.settings.mongodbbulkoperations) {
@@ -3031,6 +3048,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetNodeByComputerName = function (domain, rname, func) { obj.file.find({ type: 'node', domain: domain, rname: rname }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { obj.file.remove({ _id: id }, func); };
             obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); };
@@ -3420,8 +3438,8 @@ module.exports.CreateDB = function (parent, func) {
             // Check that we have access to pg_dump
             parent.config.settings.autobackup.pgdumppath = path.normalize(parent.config.settings.autobackup.pgdumppath ? parent.config.settings.autobackup.pgdumppath : 'pg_dump');
             let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
-                    + ' --dbname=postgresql://' + encodeURIComponent(parent.config.settings.postgres.user) + ":" + encodeURIComponent(parent.config.settings.postgres.password)
-                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + encodeURIComponent(databaseName)
+                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
                     + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
@@ -3614,11 +3632,11 @@ module.exports.CreateDB = function (parent, func) {
                 });
             } else if (obj.databaseType == DB_POSTGRESQL) {
                 // Perform a PostgresDump backup
-                const newBackupFile = 'pgdump-' + fileSuffix + '.sql';
+                const newBackupFile = databaseName + '-pgdump-' + fileSuffix + '.sql';
                 obj.newDBDumpFile = path.join(backupPath, newBackupFile);
                 let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
-                    + ' --dbname=postgresql://' + encodeURIComponent(parent.config.settings.postgres.user) + ":" + encodeURIComponent(parent.config.settings.postgres.password)
-                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + encodeURIComponent(databaseName)
+                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
                     + " --file=" + obj.newDBDumpFile;
                 parent.debug('backup','Postgresqldump cmd: ' + cmd);
                 const child_process = require('child_process');

@@ -741,12 +741,60 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         */
 
         // Check that the node exists
-        db.Get(obj.dbNodeKey, function (err, nodes) {
+        db.Get(obj.dbNodeKey, async function (err, nodes) {
             if (obj.agentInfo == null) { return; }
             var device, mesh;
+            var nodeExists = Boolean(false);
 
-            // See if this node exists in the database
             if ((nodes == null) || (nodes.length == 0)) {
+                if(domain.preventduplicatedevices){
+
+                    const existingNodes = await new Promise((resolve, reject) => {
+                        db.GetNodeByComputerName(domain.id, obj.agentInfo.computerName, (err, result) => {
+                            if (err) reject(err);
+                            else resolve(result);
+                        });
+                    });
+
+                    if (!existingNodes || existingNodes.length === 0) {
+                        // Device does not exist with the name
+                        nodeExists = false;
+                    } else {
+                        console.log("Device already exists");
+                        // Remove nodes with the same name
+                        existingNodes.forEach((eNode) => {
+
+                            parent.parent.debug('agent', 'Removing old dublicated node (' + eNode.rname + ', ' + eNode._id + ').');
+
+                            db.Remove(eNode._id);                                 // Remove node with that id
+                            db.Remove('if' + eNode._id);                          // Remove interface information
+                            db.Remove('nt' + eNode._id);                          // Remove notes
+                            db.Remove('lc' + eNode._id);                          // Remove last connect time
+                            db.Remove('si' + eNode._id);                          // Remove system information
+                            db.Remove('al' + eNode._id);                          // Remove error log last time
+                            if (db.RemoveSMBIOS) { db.RemoveSMBIOS(eNode._id); }  // Remove SMBios data
+                            db.RemoveAllNodeEvents(eNode._id);                    // Remove all events for this node
+                            db.removeAllPowerEventsForNode(eNode._id);            // Remove all power events for this node
+
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(eNode.meshid, [eNode._id]), obj, { etype: 'node', action: 'removenode', nodeid: eNode._id, domain: eNode.domain, nolog: 1 });
+                        });
+                        
+                        // Set mesh from previous node
+                        obj.dbMeshKey = existingNodes[0].meshid
+
+                        nodeExists = false;
+
+                    }
+                } else {
+                    nodeExists = false;
+                }
+
+            } else {
+                nodeExists = true;
+            }
+            
+            // See if this node exists in the database
+            if (nodeExists == false) {
                 // This device does not exist, use the meshid given by the device
 
                 // Check if we already have too many devices for this domain
