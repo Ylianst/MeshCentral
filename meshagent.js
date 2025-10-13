@@ -746,6 +746,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             var device, mesh;
             var nodeExists = Boolean(false);
 
+            // See if this node exists in the database
             if ((nodes == null) || (nodes.length == 0)) {
                 if(domain.preventduplicatedevices){
 
@@ -793,7 +794,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 nodeExists = true;
             }
             
-            // See if this node exists in the database
             if (nodeExists == false) {
                 // This device does not exist, use the meshid given by the device
 
