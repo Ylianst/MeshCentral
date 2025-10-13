@@ -761,7 +761,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Device does not exist with the name
                         nodeExists = false;
                     } else {
-                        console.log("Device already exists");
+                        // Device exists with the name
                         // Remove nodes with the same name
                         existingNodes.forEach((eNode) => {
 
