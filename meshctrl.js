@@ -1212,8 +1212,6 @@ function performConfigOperations(args) {
     var config = null;
     try { config = fs.readFileSync(configFile).toString('utf8'); } catch (ex) { console.log("Error: Unable to read config.json"); return; }
     try { config = JSON.parse(fs.readFileSync(configFile)); } catch (e) { console.log('ERROR: Unable to parse ' + configFile + '.'); return null; }
-    console.log("!!!READ CONFIG");
-    console.log(JSON.parse(fs.readFileSync(configFile)));
     if (args.adddomain != null) {
         didSomething++;
         if (config.domains == null) { config.domains = {}; }
