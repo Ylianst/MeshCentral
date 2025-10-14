@@ -1656,12 +1656,6 @@ module.exports.CreateDB = function (parent, func) {
                     func(err, performTypedRecordDecrypt(docs));
                 });
             }
-            obj.GetNodeByComputerName = function (domain, rname, func) {
-                sqlDbQuery('SELECT doc FROM main WHERE type = $1 AND domain = $2 AND JSON_EXTRACT(doc, "$.rname") = $3', 
-                    ['node', domain, rname], function (err, docs) {
-                        func(err, performTypedRecordDecrypt(docs));
-                    });
-            };
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = $1', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = $1', [type], func); };
@@ -1932,7 +1926,6 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.query('meshcentral').filter('_id', 'in', ids).filter('domain', '==', domain).filter('type', '==', type).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).filter('emailVerified', '==', true).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
-            obj.GetNodeByComputerName = function (domain, rname, func) { obj.file.query('meshcentral').filter('type', '==', 'node').filter('domain', '==', domain).filter('rname', '==', rname).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { obj.file.ref('meshcentral').child(encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); };
             obj.RemoveAll = function (func) { obj.file.query('meshcentral').remove().then(function () { if (func) { func(); } }); };
             obj.RemoveAllOfType = function (type, func) { obj.file.query('meshcentral').filter('type', '==', type).remove().then(function () { if (func) { func(); } }); };
@@ -2220,7 +2213,6 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { sqlDbQuery('SELECT doc FROM main WHERE (id = ANY ($1)) AND domain = $2 AND type = $3', [ids, domain, type], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extra = $2', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extra = $2', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
-            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = $1 AND domain = $2 AND doc->>\'rname\' = $3', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });};
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = $1', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = $1', [type], func); };
@@ -2481,7 +2473,6 @@ module.exports.CreateDB = function (parent, func) {
             }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
-            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND JSON_EXTRACT(doc, "$.rname") = ?', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = ?', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = ?', [type], func); };
@@ -2793,7 +2784,6 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.GetNodeByComputerName = function (domain, rname, func) { obj.file.find({ type: 'node', domain: domain, rname: rname }).sort({ lastbootuptime: -1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
 
             // Bulk operations
             if (parent.config.settings.mongodbbulkoperations) {
@@ -3041,7 +3031,6 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.GetNodeByComputerName = function (domain, rname, func) { obj.file.find({ type: 'node', domain: domain, rname: rname }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { obj.file.remove({ _id: id }, func); };
             obj.RemoveAll = function (func) { obj.file.remove({}, { multi: true }, func); };
             obj.RemoveAllOfType = function (type, func) { obj.file.remove({ type: type }, { multi: true }, func); };
