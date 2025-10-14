@@ -1657,7 +1657,7 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
             obj.GetNodeByComputerName = function (domain, rname, func) {
-                sqlDbQuery('SELECT doc FROM main WHERE type = $1 AND domain = $2 AND JSON_EXTRACT(doc, "$.rname") = $3 ORDER BY lastbootuptime', 
+                sqlDbQuery('SELECT doc FROM main WHERE type = $1 AND domain = $2 AND JSON_EXTRACT(doc, "$.rname") = $3', 
                     ['node', domain, rname], function (err, docs) {
                         func(err, performTypedRecordDecrypt(docs));
                     });
@@ -2220,7 +2220,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllIdsOfType = function (ids, domain, type, func) { sqlDbQuery('SELECT doc FROM main WHERE (id = ANY ($1)) AND domain = $2 AND type = $3', [ids, domain, type], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extra = $2', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extra = $2', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
-            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = "$1" AND domain = $2 AND doc->>\'rname\' = $3 ORDER BY lastbootuptime', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });};
+            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = $1 AND domain = $2 AND doc->>\'rname\' = $3', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });};
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = $1', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = $1', [type], func); };
@@ -2481,7 +2481,7 @@ module.exports.CreateDB = function (parent, func) {
             }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
-            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND JSON_EXTRACT(doc, "$.rname") = ? ORDER BY lastbootuptime', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND JSON_EXTRACT(doc, "$.rname") = ?', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = ?', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = ?', [type], func); };
