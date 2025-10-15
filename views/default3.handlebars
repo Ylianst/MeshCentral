@@ -1400,13 +1400,11 @@
                 </div>
             </div>
             <div id=p19 style="display:none">
-                <div id="p19title">
-                    <div id="p19BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p19title" class="d-flex align-items-center">
+                    <div id="p19BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>Plugins - <span id=p19deviceName></span></h1>
+                    <div class='fs-4 fw-bold'>Plugins - <span id=p19deviceName></span></div>
                 </div>
                 <div id="p19headers"></div>
                 <div id=p19pages></div>
