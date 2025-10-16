@@ -19,6 +19,7 @@
     <link href="styles/select2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2-bootstrap-5-theme.min.css" rel="stylesheet" title="CSS">
     <link type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />
+    <link type="text/css" href="styles/annotation-style.css" media="screen" rel="stylesheet" title="CSS" />
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -59,6 +60,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
+    <script src="scripts/annotation-ui.js"></script>
     <title>{{{title}}}</title>
 </head>
 
@@ -975,6 +977,75 @@
                             <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
                             <input id=DeskToolsButton type=button class="btn btn-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <span id=DeskAnnotateMenuButton title="Annotations menu"><img class="desktopButtons" id=DeskAnnotateMenuButtonImage src='images/icon-meshtoolbox.png' onclick="AnnotationUI && AnnotationUI.toggleAnnotateMenu()"  height=16 width=16 />
+                                 <div id=annotationMenu style="display:none">
+                                     <!-- Main tools section - 3x2 grid -->
+                                     <div id="mainMenuSection">
+                                         <div class="annoToolsSection">
+                                             <div tabindex=0 id=annoToolButton1 class=uiSelector onclick="AnnotationUI && AnnotationUI.selectAnnotationTool(1)" title="Pen tool">
+                                                 <div class="annoSelector1"></div>
+                                             </div>
+                                             <div tabindex=0 id=annoToolButton2 class=uiSelector onclick="AnnotationUI && AnnotationUI.selectAnnotationTool(2)" title="Rectangle tool">
+                                                 <div class="annoSelector2"></div>
+                                             </div>
+                                             <div tabindex=0 id=annoToolButton3 class=uiSelector onclick="AnnotationUI && AnnotationUI.selectAnnotationTool(3)" title="Circle tool">
+                                                 <div class="annoSelector3"></div>
+                                             </div>
+                                             <div tabindex=0 id=annoToolButton4 class=uiSelector onclick="AnnotationUI && AnnotationUI.selectAnnotationTool(4)" title="Arrow tool">
+                                                <div class="annoSelector4"></div>
+                                             </div>
+                                             <div tabindex=0 id=annoToolButton5 class=uiSelector onclick="AnnotationUI && AnnotationUI.selectAnnotationTool(5)" title="Eraser tool">
+                                                 <div class="annoSelector5"></div>
+                                             </div>
+                                             <div tabindex=0 id=annoToolButton6 class=uiSelector onclick="AnnotationUI && AnnotationUI.selectAnnotationTool(6)" title="Color picker">
+                                                 <div class="annoSelector6"></div>
+                                             </div>
+                                             <div tabindex=0 id=annoToolButton7 class=uiSelector onclick="AnnotationUI && AnnotationUI.selectAnnotationTool(7)" title="Timer/TTL">
+                                                 <div class="annoSelector7"></div>
+                                                 <div id="ttlIndicator" class="ttl-indicator">5s</div>
+                                             </div>
+                                             <div tabindex=0 id=annoClearButton class=uiSelector onclick="AnnotationUI && AnnotationUI.clearAnnotations()" title="Clear all">
+                                                 <div class="annoClear"></div>
+                                             </div>
+                                         </div>
+                                     </div>
+
+                                     <div id="ttlMenuSection">
+                                         <div class="ttl-options-header">Annotation Duration</div>
+                                             <div id="ttltoolssection" class="annoToolsSection"> <!-- Reuse the same grid layout -->
+                                                <div tabindex=0 id=ttlOption0 class=uiSelector onclick="AnnotationUI._setTtlOption(0)" title="Permanent">
+                                                    <div class="ttlSelector0">∞</div>
+                                                </div>
+                                                <div tabindex=0 id=ttlOption1 class=uiSelector onclick="AnnotationUI._setTtlOption(1)" title="5 seconds">
+                                                    <div class="ttlSelector1">5s</div>
+                                                </div>
+                                                <div tabindex=0 id=ttlOption2 class=uiSelector onclick="AnnotationUI._setTtlOption(2)" title="10 seconds">
+                                                    <div class="ttlSelector2">10s</div>
+                                                </div>
+                                                <div tabindex=0 id=ttlOption3 class=uiSelector onclick="AnnotationUI._setTtlOption(3)" title="15 seconds">
+                                                    <div class="ttlSelector3">15s</div>
+                                                </div>
+                                                <div tabindex=0 id=ttlOption4 class=uiSelector onclick="AnnotationUI._setTtlOption(4)" title="20 seconds">
+                                                    <div class="ttlSelector4">20s</div>
+                                                </div>
+                                                <div tabindex=0 id=ttlBackButton class=uiSelector onclick="AnnotationUI._showMainMenu()" title="Back to main menu">
+                                                    <div class="ttlBack">←</div>
+                                                </div>
+                                            </div>
+                                     </div>
+                                     <!-- Separator line -->
+                                     <div class="annoSeparator"></div>
+
+                                        <!-- Color presets section - horizontal row -->
+                                     <div class="annoColorsSection">
+                                         <div tabindex=0 id=annoColorPreset1 class="annoColorPreset selected-color" onclick="AnnotationUI && AnnotationUI.selectAnnotationColor('#215587')" title="Default Blue" style="background:#215587"></div>
+                                         <div tabindex=0 id=annoColorPreset2 class="annoColorPreset" onclick="AnnotationUI && AnnotationUI.selectAnnotationColor('#27ae60')" title="Green" style="background:#27ae60"></div>
+                                         <div tabindex=0 id=annoColorPreset3 class="annoColorPreset" onclick="AnnotationUI && AnnotationUI.selectAnnotationColor('#c0392b')" title="Red" style="background:#c0392b"></div>
+                                         <div tabindex=0 id=annoColorPreset4 class="annoColorPreset" onclick="AnnotationUI && AnnotationUI.selectAnnotationColor('#d35400')" title="Orange" style="background:#d35400"></div>
+                                     </div>
+                                </div>
+                            </span>
+			    <span id=DeskAnnotateButton title="On-screen Annotations"><img class="desktopButtons" id=DeskAnnotateButtonImage src='images/icon-annotate-tool.png' onclick="AnnotationUI && AnnotationUI.toggle()" height=16 width=16 /></span>
                             <span id=DeskGuestShareButton title="Share the device with a guest" role="button">
                                 <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
                             </span>
@@ -4154,7 +4225,8 @@
                                 if ((xxcurrentView == 20) && (currentMesh != null) && (currentMesh._id == node.meshid)) { mainUpdate(4096); }
 
                                 if ((currentNode == node) && (xxdialogMode != null) && (xxdialogTag == '@xxmap')) { p10showNodeLocationDialog(); }
-                            }
+                                if (message.event.node.caps != null) { node.caps = message.event.node.caps; }
+                                if (message.event.node.annotationPermission != null) { node.annotationPermission = message.event.node.annotationPermission; }		                                                      }
                             break;
                         }
                         case 'nodemeshchange': {
@@ -4391,6 +4463,13 @@
                         case 'plugin': {
                             if (pluginHandler == null) break;
                             try { pluginHandler[message.event.plugin][message.event.pluginaction](message); } catch (e) { console.log("PluginHandler could not event message: ", e); }
+                            break;
+                        }
+			case 'annotationAck': {
+                            // Forward annotation acknowledgments to annotation UI
+                            if (typeof AnnotationUI !== 'undefined' && AnnotationUI._onAnnoAck) {
+                               AnnotationUI._onAnnoAck(message);
+                            }
                             break;
                         }
                         default:
@@ -10151,7 +10230,28 @@
             if (rights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
             QS('DeskControlSpan').color = Q('DeskControl').checked ? null : 'red';
 
-            if (online == false) QV('DeskTools', false);
+            if (online == false) QV('DeskTools', false);    
+
+  	    // Annotation button (Android only, requires online connection and desktop session)
+            var showAnnotateButton = false;
+            if (currentNode && currentNode.agent && currentNode.agent.id === 14) {  // Android
+               if (online && (deskState == 3) && (desktop != null) && (desktop.contype == 1)) {
+                  // Only show if annotation caps available AND screen capture is actually streaming
+                  if (currentNode.caps && currentNode.caps.annotation === true && desktop.m._AnnotateCanStart) {
+                     showAnnotateButton = true;
+		     if (Q('DeskAnnotateMenuButton')) QC('DeskAnnotateMenuButton').add('annotationDefault3');
+                     if (Q('DeskAnnotateButton')) QC('DeskAnnotateButton').add('annotationDefault3');
+                  }
+               }
+            }
+            QV('DeskAnnotateButton', showAnnotateButton);
+            QE('DeskAnnotateButton', showAnnotateButton);  // Enable/disable based on same logic
+            if(showAnnotateButton && AnnotationUI && AnnotationUI.isActive()){
+              QV('DeskAnnotateMenuButton', true);
+            }else{
+              QV('DeskAnnotateMenuButton',false);
+            }
+											  
         }
 
         // Debug
@@ -10167,6 +10267,39 @@
             if (msgid && (msgid < agentConsoleMessages.length)) { r = EscapeHtml(format(agentConsoleMessages[msgid], (msgargs[0]), (msgargs[1]), (msgargs[2]))); } else { r = EscapeHtml(msg); }
             return r.split('\n').join('<br />') + '<br /><br />';
         }
+
+        function bindAnnotations(viewer) {
+           if (!window.AnnotationUI) return;
+              // Keep everything centralized in AnnotationUI
+              AnnotationUI.setContext({
+                    getCurrentNode: () => currentNode,
+                    send: (o) => meshserver.send(o),
+                    getViewer: () => viewer,
+                    getCanvas: () => Q('Desk')   // the canvas id used by your viewer here
+              });
+
+              AnnotationUI.hookDesktop(viewer);
+
+              try {
+                   const prev = viewer.onStateChanged;
+                   viewer.onStateChanged = function () {
+                   // call existing handler first
+                   if (typeof prev === 'function') { try { prev.apply(this, arguments); } catch {} }
+                    // if viewer is gone or state is disconnected, unhook safely
+                     try {
+                        const st = viewer && viewer.State;
+                        if (!viewer || st === 0) { AnnotationUI.unhook(); }
+                      } catch {}
+                    };
+                  } catch {}
+
+              if (typeof connectivity === 'number' && typeof meshrights === 'number') {
+                    AnnotationUI.updateNodeContext(currentNode, connectivity, meshrights);
+              } else {
+                    AnnotationUI.updateNodeContext(currentNode);
+              }
+        }
+
 
         function connectDesktop(e, contype, tsid, consent) {
             if (xxdialogMode) return;
@@ -10307,6 +10440,13 @@
                     if (desktopsettings.remotekeymap == true) { desktop.m.remoteKeyMap = desktopsettings.remotekeymap; }
                     //desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
+                    desktop.m.onFirstTileDrawn = function() {
+                     if (desktop.m._AnnotateCanStart) return; // Only run once
+                     desktop.m._AnnotateCanStart = true;
+                     bindAnnotations(desktop);
+                     updateDesktopButtons();
+                    };
+											  
                     desktop.Start(desktopNode._id);
                     desktop.latency.callback = function (ms) { /* console.log('latency', ms); */ updateSessionTime(); };
                     desktop.contype = 1;
@@ -10339,6 +10479,7 @@
                 desktop.Stop();
                 webRtcDesktopReset();
                 desktopNode = desktop = null;
+                if (window.AnnotationUI) { AnnotationUI.unhook(); }											  
                 if (pluginHandler != null) { pluginHandler.callHook('onDesktopDisconnect'); }
             }
         }

@@ -1758,6 +1758,70 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (parent.parent.taskManager != null) { parent.parent.taskManager.agentAction(command, obj); }
                     break;
                 }
+	        case 'annotationcaps': {
+		  try {
+		    const nodeid = obj.dbNodeKey; 
+		    if (!nodeid) { console.log('annotationcaps: missing obj.dbNodeKey'); break; }
+
+		    parent.db.Get(nodeid, function (err, doc) {
+		      if (err || !doc) { console.log('annotationcaps: db.Get failed', err); return; }
+
+		      // db.Get may return a single doc or an array in some paths — normalize.
+		      const node = Array.isArray(doc) ? doc[0] : doc;
+
+		      node.caps = node.caps || {};
+		      if (typeof command.annotation === 'boolean') {
+			node.caps.annotation = command.annotation;
+		      }
+		      if (typeof command.annotationPermission === 'string') {
+			node.annotationPermission = (command.annotationPermission === 'granted') ? 'granted' : 'denied';
+		      }
+
+		      parent.db.Set(node);
+
+		      const targets = ['*', 'server-ids', node.meshid, node._id];
+		      const ev = {
+			etype: 'node',
+			action: 'changenode',
+			nodeid: node._id,
+			meshid: node.meshid,
+			domain: node.domain || (obj.domain && obj.domain.id),
+			node: parent.CloneSafeNode ? parent.CloneSafeNode(node) : node
+		      };
+		      parent.parent.DispatchEvent(targets, obj, ev);
+
+		    });
+		  } catch (e) {
+		    console.log('annotationcaps handler error:', e);
+		  }
+		  break;
+		}
+		case 'annotationAck': {
+		  try {
+		    const nodeid = obj.dbNodeKey;
+		    const meshid = obj.dbMeshKey;
+		    if (nodeid) {
+		      const targets = ['*', 'server-ids', meshid, nodeid];
+		      const ev = {
+			etype: 'node',
+			action: 'annotationAck',
+			nodeid: nodeid,
+			meshid: meshid,
+			domain: (obj.domain && obj.domain.id),
+			supported: command.supported,
+			permission: command.permission,
+			op: command.op,
+			event: command.event,
+			ok: command.ok,
+			error: command.error
+		      };
+		      parent.parent.DispatchEvent(targets, obj, ev);
+		    }
+		  } catch (e) {
+		    console.log('annotationAck handler error:', e);
+		  }
+		  break;
+		}			    
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
                     parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');

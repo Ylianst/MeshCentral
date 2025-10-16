@@ -5558,6 +5558,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'adduserbatch': serverCommandAddUserBatch,
         'addusertousergroup': serverCommandAddUserToUserGroup,
         'agentdisconnect': serverCommandAgentDisconnect,
+	'annotation': serverCommandAnnotation,    
         'authcookie': serverCommandAuthCookie,
         'changeemail': serverCommandChangeEmail,
         'changelang': serverCommandChangeLang,
@@ -6236,6 +6237,141 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             parent.forceMeshAgentDisconnect(user, domain, node._id, command.disconnectMode);
         });
     }
+
+    function serverCommandAnnotation(command) {
+	    const allowedOps = new Set([
+                    'start','stop','clear','style',
+                    'strokeStart','strokeMove','strokeEnd',
+                    'path','rect','circle','arrow','remove','probe'
+                  ]);
+
+	    let err = null;
+	    try {
+		let nodeids = [];
+		if (Array.isArray(command.nodeids)) {
+		    if (common.validateStrArray(command.nodeids, 1, 256) == false) { err = 'Invalid nodeids'; }
+		    else nodeids = command.nodeids;
+		} else if (typeof command.nodeid === 'string') {
+		    nodeids = [ command.nodeid ];
+		} else {
+		    err = 'Missing nodeid(s)';
+		}
+		if (err == null) {
+		    const norm = [];
+		    for (let i in nodeids) {
+			const nid = nodeids[i];
+			norm.push((nid.indexOf('/') === -1) ? ('node/' + domain.id + '/' + nid) : nid);
+		    }
+		    command.nodeids = norm;
+		}
+
+		if (command.payload && (typeof command.payload === 'object')) {
+		    for (const k in command.payload) { if (command[k] === undefined) { command[k] = command.payload[k]; } }
+		    delete command.payload;
+		}
+
+	        if (!err) {
+	          if (common.validateString(command.op, 3, 32) === false || !allowedOps.has(command.op)) {
+ 		      err = 'Invalid op';
+	          }
+	        }
+	    } catch (ex) { err = 'Validation exception: ' + ex; }
+
+	    if (err != null) {
+		if (command.responseid != null) { try { ws.send(JSON.stringify({ action:'annotation', responseid:command.responseid, result:err })); } catch (ex) { } }
+		return;
+	    }
+
+	    let anyForwarded = false;
+	    for (let i in command.nodeids) {
+		const nodeid = command.nodeids[i];
+
+		parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
+		    if ((node == null) || (visible === false)) {
+			if (command.responseid != null) { try { ws.send(JSON.stringify({ action:'annotation', responseid:command.responseid, nodeid:nodeid, result:'Invalid device id' })); } catch (ex) { } }
+			return;
+		    }
+                   
+		    if (((rights & MESHRIGHT_REMOTECONTROL) == 0) && ((rights & MESHRIGHT_REMOTEVIEWONLY) == 0)) {
+			if (command.responseid != null) { try { ws.send(JSON.stringify({ action:'annotation', responseid:command.responseid, nodeid:node._id, result:'Access Denied' })); } catch (ex) { } }
+			return;
+		    }
+
+		    const caps = node.caps || {}; 
+		    //console.log('anno caps =', caps);
+		    
+		    if (!(node.agent && node.agent.id === 14) || caps.annotation !== true) {
+                       if (command.responseid != null) {
+                           try { ws.send(JSON.stringify({ action:'annotation', responseid:command.responseid, nodeid:node._id, result:'Not supported' })); } catch (ex) {}
+                       }
+                       return;
+                    }
+
+			switch (command.op) {
+			  case 'rect':
+			    if (command.w == null && (typeof command.x2 === 'number')) command.w = command.x2;
+			    if (command.h == null && (typeof command.y2 === 'number')) command.h = command.y2;
+			    break;
+
+			  case 'circle':
+			    if (command.cx == null && (typeof command.x === 'number')) command.cx = command.x;
+			    if (command.cy == null && (typeof command.y === 'number')) command.cy = command.y;
+			    break;
+
+			  case 'strokeStart':
+			  case 'strokeMove':
+			    break;
+
+			  case 'path':
+			    break;
+
+			  case 'style':
+			    break;
+
+			}
+
+
+			const agentCmd = {
+			  action: 'annotation',
+			  op: command.op,
+
+			  color: command.color,
+			  width: command.width,
+
+			  x: command.x, y: command.y,
+			  x2: command.x2, y2: command.y2,
+			  w: command.w, h: command.h,       
+			  r: command.r,
+			  cx: command.cx, cy: command.cy,   
+
+			  points: command.points,
+			  norm: (command.norm === true),
+			  ttlMs: command.ttlMs,
+
+			  sessionid: ws.sessionId,
+			  username: user.name,
+			  userid: user._id
+			};
+
+		    const routedCmd = Object.assign({ nodeid: node._id }, agentCmd);
+		    const routed = routeCommandToNode(routedCmd);
+
+		    if (routed === true) { anyForwarded = true; }
+
+		    try {
+			parent.parent.DispatchEvent(
+			    ['*', node._id, user._id],
+			    obj,
+			    { etype:'node', action:'annotation', nodeid:node._id, userid:user._id, username:user.name, domain:domain.id, op:command.op }
+			);
+		    } catch (e) { console.log('SystemCommandAnnotation() - meshuser - WARN : ' + e) }
+		});
+	    } 
+	    if (command.responseid != null) {
+		    try { ws.send(JSON.stringify({ action:'annotation', responseid:command.responseid, result:'ok' })); } catch (ex) { }
+	    }
+    }
+
 
     function serverCommandAuthCookie(command) {
         try {
