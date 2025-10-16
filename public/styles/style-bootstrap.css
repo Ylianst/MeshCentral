@@ -622,10 +622,10 @@ body {
 }
 
 
-#d7bitmapquality, #d7bitmapquality, #d7bitmapscaling, #d7framelimiter, #d7desktopmode, #d7rdpsize, #d7encoding {
-    float: right;
-    width: 200px;
-    height: 20px;
+#d3upload, #d3localmode {
+    margin: 3px 0 3px 0;
+    display: flex;
+    justify-content: space-between;
 }
 
 #dialog7 h4 {
@@ -633,16 +633,9 @@ body {
     border-bottom: 1px solid gray;
 }
 
-#d7meshkvm div, #d7amtkvm div, #d7rdpkvm div, #d3upload, #d3localmode {
-    margin: 3px 0 3px 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-#d7otherset, #d7rdpflags {
+#d7otherset, #d7otherset2, #d7rdpflags {
     border: 1px solid #666;
-    width: 230px;
-    height: 100px;
+    max-height: 180px;
     overflow-y: scroll;
 }
 

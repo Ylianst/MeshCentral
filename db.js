@@ -950,7 +950,7 @@ module.exports.CreateDB = function (parent, func) {
                 });
             } else { // If not present, create the tables and indexes
                 //not needed, just use a create db statement: const pgtools = require('pgtools'); 
-                DatastoreTest.query('CREATE DATABASE '+ databaseName + ';', [], function (err, res) {
+                DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
                     if (err == null) {
                         // Create the tables and indexes
                         DatastoreTest.end();
@@ -3420,8 +3420,8 @@ module.exports.CreateDB = function (parent, func) {
             // Check that we have access to pg_dump
             parent.config.settings.autobackup.pgdumppath = path.normalize(parent.config.settings.autobackup.pgdumppath ? parent.config.settings.autobackup.pgdumppath : 'pg_dump');
             let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
-                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
-                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
+                    + ' --dbname=postgresql://' + encodeURIComponent(parent.config.settings.postgres.user) + ":" + encodeURIComponent(parent.config.settings.postgres.password)
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + encodeURIComponent(databaseName)
                     + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
@@ -3614,11 +3614,11 @@ module.exports.CreateDB = function (parent, func) {
                 });
             } else if (obj.databaseType == DB_POSTGRESQL) {
                 // Perform a PostgresDump backup
-                const newBackupFile = databaseName + '-pgdump-' + fileSuffix + '.sql';
+                const newBackupFile = 'pgdump-' + fileSuffix + '.sql';
                 obj.newDBDumpFile = path.join(backupPath, newBackupFile);
                 let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
-                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
-                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
+                    + ' --dbname=postgresql://' + encodeURIComponent(parent.config.settings.postgres.user) + ":" + encodeURIComponent(parent.config.settings.postgres.password)
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + encodeURIComponent(databaseName)
                     + " --file=" + obj.newDBDumpFile;
                 parent.debug('backup','Postgresqldump cmd: ' + cmd);
                 const child_process = require('child_process');

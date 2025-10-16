@@ -130,7 +130,7 @@ There are plenty of options at your disposal if you need them. In fact, you can 
                         "redirect_uri": "https://mesh.your.domain/auth-oidc-callback",
                         "post_logout_redirect_uri": "https://mesh.your.domain/login",
                         "token_endpoint_auth_method": "client_secret_post",
-                        "response_types": "authorization_code"
+                        "response_types": "code"
                     },
                     "custom": {
                         "scope": [ "openid", "profile", "read.EmailAlias", "read.UserProfile" ],
@@ -256,7 +256,7 @@ There are just about as many option as possible here since openid-client also pr
     "redirect_uri": "https://mesh.your.domain/auth-oidc-callback",
     "post_logout_redirect_uri": "https://mesh.your.domain/login",
     "token_endpoint_auth_method": "client_secret_post",
-    "response_types": "authorization_code"
+    "response_types": "code"
 },
 ```
 
