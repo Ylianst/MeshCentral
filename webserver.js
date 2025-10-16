@@ -4595,37 +4595,69 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const extension = obj.path.extname(iconFile.originalFilename || '').toLowerCase();
             if (extension !== '.svg') { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG files are supported.' }); return; }
 
-            const publicPath = (domain.webpublicpath != null) ? domain.webpublicpath : obj.path.join(__dirname, 'public');
-            const iconsDir = obj.path.join(publicPath, 'icons');
-            const customDir = obj.path.join(iconsDir, 'custom');
-            try { obj.fs.mkdirSync(iconsDir); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
+            const iconsRoot = obj.path.join(obj.parent.datapath, 'icons');
+            const customDir = obj.path.join(iconsRoot, 'custom');
+            try { obj.fs.mkdirSync(iconsRoot); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
             try { obj.fs.mkdirSync(customDir); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
 
-            const resolveExistingIconPath = function (requestPath) {
+            const resolveExistingIconName = function (requestPath) {
                 if (typeof requestPath !== 'string') { return null; }
                 if (requestPath.startsWith('http://') || requestPath.startsWith('https://') || requestPath.startsWith('data:')) { return null; }
                 if (requestPath.startsWith('/icons/custom/') === false) { return null; }
-                const normalized = obj.path.normalize(obj.path.join(publicPath, requestPath.substring(1)));
-                const customDirNormalized = obj.path.normalize(customDir + obj.path.sep);
-                if (normalized.startsWith(customDirNormalized)) { return normalized; }
-                return null;
+                const name = requestPath.substring('/icons/custom/'.length);
+                if (name.indexOf('/') !== -1 || name.indexOf('\\') !== -1) { return null; }
+                if (obj.common.IsFilenameValid(name) !== true) { return null; }
+                if (name.toLowerCase().endsWith('.svg') === false) { return null; }
+                return name;
             };
 
             const previousIcon = (fields && fields.previousIcon && fields.previousIcon[0]) ? fields.previousIcon[0] : null;
-            const previousPath = resolveExistingIconPath(previousIcon);
-            if (previousPath != null) { try { obj.fs.unlinkSync(previousPath); } catch (ex) { } }
+            const previousName = resolveExistingIconName(previousIcon);
+            if (previousName != null) {
+                try { obj.fs.unlinkSync(obj.path.join(customDir, previousName)); } catch (ex) { }
+            }
 
             const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + '.svg';
             const destinationPath = obj.path.join(customDir, newFilename);
 
-            obj.fs.readFile(iconTempPath, function (readErr, data) {
-                cleanupTempFile();
-                if (readErr) { res.status(500).json({ success: false, error: 'Failed to process uploaded icon.' }); return; }
-                obj.fs.writeFile(destinationPath, data, function (writeErr) {
-                    if (writeErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
-                    res.json({ success: true, path: '/icons/custom/' + newFilename });
-                });
+            const respondSuccess = function () { res.json({ success: true, path: '/icons/custom/' + newFilename }); };
+
+            obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
+                if (renameErr == null) { respondSuccess(); return; }
+                if ((renameErr != null) && (renameErr.code === 'EXDEV')) {
+                    obj.common.copyFile(iconTempPath, destinationPath, function (copyErr) {
+                        cleanupTempFile();
+                        if (copyErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
+                        respondSuccess();
+                    });
+                } else {
+                    cleanupTempFile();
+                    res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' });
+                }
             });
+        });
+    }
+
+    function handleCustomIconDownload(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { res.sendStatus(404); return; }
+
+        if ((req.params == null) || (typeof req.params[0] !== 'string')) { res.sendStatus(404); return; }
+        const iconName = req.params[0];
+        if ((iconName.length === 0) || (iconName.indexOf('/') !== -1) || (iconName.indexOf('\\') !== -1)) { res.sendStatus(404); return; }
+        if (obj.common.IsFilenameValid(iconName) !== true) { res.sendStatus(404); return; }
+        if (iconName.toLowerCase().endsWith('.svg') === false) { res.sendStatus(404); return; }
+
+        const customDir = obj.path.join(obj.parent.datapath, 'icons', 'custom');
+        var resolvedPath;
+        try { resolvedPath = obj.path.normalize(obj.path.join(customDir, iconName)); } catch (ex) { res.sendStatus(404); return; }
+        const customDirNormalized = obj.path.normalize(customDir + obj.path.sep);
+        if ((resolvedPath !== obj.path.normalize(customDir)) && (resolvedPath.startsWith(customDirNormalized) === false)) { res.sendStatus(404); return; }
+
+        obj.fs.readFile(resolvedPath, function (err, data) {
+            if (err) { res.sendStatus(404); return; }
+            res.set({ 'Content-Type': 'image/svg+xml' });
+            res.send(data);
         });
     }
 
@@ -7053,6 +7085,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
                 obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
                 obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
+                obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);
                 obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
                 obj.app.post(url + 'oneclickrecovery.ashx', obj.bodyParser.urlencoded({ extended: false }), handleOneClickRecoveryFile);
                 obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
