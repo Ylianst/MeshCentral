@@ -312,6 +312,3 @@ __pycache__/
 docs/__pycache__/
 docs/env/
 docker-compose.yaml
-
-# Public custom icons folder
-public/icons/custom
