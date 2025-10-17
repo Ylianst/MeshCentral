@@ -4575,6 +4575,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
         const user = obj.users[req.session.userid];
         if (user == null) { res.sendStatus(401); return; }
+        if (user.siteadmin !== SITERIGHT_ADMIN) { res.sendStatus(401); return; }
 
         const multiparty = require('multiparty');
         const form = new multiparty.Form();

@@ -597,7 +597,7 @@
                             </span>
                             <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                             <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
-                            <a href=# onclick="return showIconCustomization()">Icons Customization</a><br />
+                            <span id="accountCustomIconsSpan" style="display:none"><a href=# onclick="return showIconCustomization()">Icons Customization</a><br /></span>
                         </p>
                         <br style=clear:both />
                     </div>
@@ -2806,6 +2806,7 @@
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
+            QV('accountCustomIconsSpan', (userinfo.siteadmin === 0xFFFFFFFF));
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
             QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
