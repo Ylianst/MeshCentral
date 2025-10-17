@@ -2128,79 +2128,79 @@
 						'<div id="userDropdownButton">' +
 							'<img id="userDropdownImage" src="' + userImageSrc + '" />' +
 							'<span id="userDropdownName" class="LogoffLinkColor">' + logoutControls.name + '</span>' +
-							'<img id="userDropdownArrow" class="LogoffLinkColor" src="images/icons/chevron-down.svg" onerror="this.src=\'images/icons/chevron-down.png\'; this.onerror=null;" />' +
+							'<i class="fa fa-chevron-down LogoffLinkColor" style="font-size: 12px;"></i>' +
 						'</div>' +
 						'<div id="userDropdownMenu">' +
 							'<div id="userDropdownMenuContainer">' +
 					
 								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'devices\'); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownMyDevices" class="userDropdownMenuIcon" src="images/icons/MyDevices.svg" onerror="this.src=\'images/icons/MyDevices.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-desktop userDropdownMenuIcon"></i>' +
 									'<span>My Devices</span>' +
 								'</div>' +
 					
 								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'events\'); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownMyEvents" class="userDropdownMenuIcon" src="images/icons/MyEvents.svg" onerror="this.src=\'images/icons/MyEvents.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-calendar userDropdownMenuIcon"></i>' +
 									'<span>My Events</span>' +
 								'</div>' +
 					
 								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownMyUsers" class="userDropdownMenuIcon" src="images/icons/MyUsers.svg" onerror="this.src=\'images/icons/MyUsers.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-users userDropdownMenuIcon"></i>' +
 									'<span>My Users</span>' +
 								'</div>' +
 					
 								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownMyFiles" class="userDropdownMenuIcon" src="images/icons/MyFiles.svg" onerror="this.src=\'images/icons/MyFiles.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-folder userDropdownMenuIcon"></i>' +
 									'<span>My Files</span>' +
 								'</div>' +
 					
 								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownMyServer" class="userDropdownMenuIcon" src="images/icons/MyServer.svg" onerror="this.src=\'images/icons/MyServer.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-server userDropdownMenuIcon"></i>' +
 									'<span>My Server</span>' +
 								'</div>' +
 					
 								'<div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>' +
 					
 								'<div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(event);">' +
-									'<img id="userDropdownUISettings" class="userDropdownMenuIcon" src="images/icons/UISettings.svg" onerror="this.src=\'images/icons/UISettings.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-cog userDropdownMenuIcon"></i>' +
 									'<span>UI Settings</span>' +
-									'<img id="userDropdownChevronRight" class="userDropdownMenuIcon" src="images/icons/chevron-right.svg" onerror="this.src=\'images/icons/chevron-right.png\'; this.onerror=null;" style="margin-left: auto; margin-right: 0;" />' +
+									'<i class="fa fa-chevron-right userDropdownMenuIcon" style="margin-left: auto; margin-right: 0;"></i>' +
 								'</div>' +
 					
 								'<div id="uiSubmenu" class="userDropdownSubmenu" style="display:none;" onclick="event.stopPropagation();">' +
 									'<div class="userDropdownMenuItem" onclick="toggleBootstrapUIMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<img id="userDropdownToggleModernUI" class="userDropdownMenuIcon" src="images/icons/ToggleModernUI.svg" onerror="this.src=\'images/icons/ToggleModernUI.png\'; this.onerror=null;" />' +
+										'<i class="fa fa-toggle-on userDropdownMenuIcon"></i>' +
 										'<span>Toggle Modern UI</span>' +
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(1); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<img id="userDropdownLeftbarinterface" class="userDropdownMenuIcon" src="images/icons/Leftbarinterface.svg" onerror="this.src=\'images/icons/Leftbarinterface.png\'; this.onerror=null;" />' +
+										'<i class="fa fa-bars userDropdownMenuIcon"></i>' +
 										'<span>Left bar interface</span>' +
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<img id="userDropdownTopbarinterface" class="userDropdownMenuIcon" src="images/icons/Topbarinterface.svg" onerror="this.src=\'images/icons/Topbarinterface.png\'; this.onerror=null;" />' +
+										'<i class="fa fa-window-maximize userDropdownMenuIcon"></i>' +
 										'<span>Top bar interface</span>' +
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(3); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<img id="userDropdownFixedwidthinterface" class="userDropdownMenuIcon" src="images/icons/Fixedwidthinterface.svg" onerror="this.src=\'images/icons/Fixedwidthinterface.png\'; this.onerror=null;" />' +
+										'<i class="fa fa-columns userDropdownMenuIcon"></i>' +
 										'<span>Fixed width interface</span>' +
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="toggleFooterBarMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<img id="userDropdownTogglefooterbar" class="userDropdownMenuIcon" src="images/icons/Togglefooterbar.svg" onerror="this.src=\'images/icons/Togglefooterbar.png\'; this.onerror=null;" />' +
+										'<i class="fa fa-window-minimize userDropdownMenuIcon"></i>' +
 										'<span>Toggle footer bar</span>' +
 									'</div>' +
 								'</div>' +
                                 
 								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownTogglenightmode" class="userDropdownMenuIcon" src="images/icons/Togglenightmode.svg" onerror="this.src=\'images/icons/Togglenightmode.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-moon-o userDropdownMenuIcon"></i>' +
 									'<span>Toggle night mode</span>' +
 								'</div>' +
 
 								'<div class="userDropdownMenuItem" onclick="showNotes(false); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownPersonalNotes" class="userDropdownMenuIcon" src="images/icons/PersonalNotes.svg" onerror="this.src=\'images/icons/PersonalNotes.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-sticky-note userDropdownMenuIcon"></i>' +
 									'<span>Personal Notes</span>' +
 								'</div>' +
 					
 								'<div class="userDropdownMenuItem" onclick="go(2); QV(\'userDropdownMenu\', false);">' +
-									'<img id="userDropdownMyAccount" class="userDropdownMenuIcon" src="images/icons/MyAccount.svg" onerror="this.src=\'images/icons/MyAccount.png\'; this.onerror=null;" />' +
+									'<i class="fa fa-user userDropdownMenuIcon"></i>' +
 									'<span>My Account</span>' +
 								'</div>' +
                                 
@@ -2208,7 +2208,7 @@
 					
 					if (logoutControls.logoutUrl != null) {
 						logoutControl += '<div class="userDropdownMenuItem" onclick="window.location.href=\'' + logoutControls.logoutUrl + '\'">' +
-							'<img id="userDropdownLogout" class="userDropdownMenuIcon" src="images/icons/Logout.svg" onerror="this.src=\'images/icons/Logout.png\'; this.onerror=null;" />' +
+							'<i class="fa fa-sign-out userDropdownMenuIcon"></i>' +
 							'<span>Logout</span>' +
 						'</div>';
 					}
