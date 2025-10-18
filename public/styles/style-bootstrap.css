@@ -3444,7 +3444,6 @@ nav .lbbuttonsel2 {
     z-index: 1000;
     right: 10px;
 }
-
 #userDropdownButton {
     display: flex;
     align-items: center;
@@ -3573,4 +3572,8 @@ nav .lbbuttonsel2 {
 	width: 14px;
 	height: 14px;
 	opacity: 0.7;
+}
+
+body:not(.fullscreen) #userDropdown {
+    right: calc(50vw - 470px);
 }
