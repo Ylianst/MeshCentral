@@ -14584,7 +14584,7 @@
             x += addHtmlValue("Name", EscapeHtml(token.name));
             x += addHtmlValue("Username", EscapeHtml(token.tokenUser));
             setModalContent('xxAddAgent', "Remove Login Token", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => function (b, tokenUser) { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); });
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); });
         }
 
         function gotoMesh(meshid) {
