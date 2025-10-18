@@ -3188,6 +3188,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var customui = '';
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+                // Custom files (CSS and JS)
+                var customFiles = '';
+                if (domain.customFiles != null) { 
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+                } else if (domain.customfiles != null) {
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+                }
+
                 // Server features
                 var serverFeatures = 255;
                 if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
@@ -3239,6 +3247,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,
                     customui: customui,
+                    customFiles: customFiles,
                     webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
                     footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, { 
                         'serverversion': obj.parent.currentVer,
@@ -3258,7 +3267,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig
-                }, dbGetFunc.req, domain), user);
+                }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;
             xdbGetFunc.res = res;
@@ -3455,6 +3464,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var customui = '';
         if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+        // Custom files (CSS and JS)
+        var customFiles = '';
+        if (domain.customFiles != null) { 
+            customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+        } else if (domain.customfiles != null) {
+            customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+        }
+
         // Get two-factor screen timeout
         var twoFactorTimeout = 300000; // Default is 5 minutes, 0 for no timeout.
         if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.twofactortimeout == 'number')) {
@@ -3493,6 +3510,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
+                customFiles: customFiles,
                 footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, { 
                     'serverversion': obj.parent.currentVer,
                     'servername': obj.getWebServerName(domain, req),
@@ -9396,6 +9414,63 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return null;
     }
 
+    function generateCustomCSSTags(customFilesArray, currentTemplate) {
+        var cssTags = '';
+        
+        cssTags += '<link keeplink=1 type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
+        
+
+        if (customFilesArray) {
+            if (Array.isArray(customFilesArray)) {
+                for (var i = 0; i < customFilesArray.length; i++) {
+                    var customFileConfig = customFilesArray[i];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesArray.css && Array.isArray(customFilesArray.css)) {
+                for (var i = 0; i < customFilesArray.css.length; i++) {
+                    cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFilesArray.css[i] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                }
+            }
+        }
+        
+        return cssTags.trim();
+    }
+
+    function generateCustomJSTags(customFilesArray, currentTemplate) {
+        var jsTags = '';
+        
+        jsTags += '<script keeplink=1 type="text/javascript" src="scripts/custom.js"></script>\n    ';
+        
+        if (customFilesArray) {
+            if (Array.isArray(customFilesArray)) {
+                for (var i = 0; i < customFilesArray.length; i++) {
+                    var customFileConfig = customFilesArray[i];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesArray.js && Array.isArray(customFilesArray.js)) {
+                for (var i = 0; i < customFilesArray.js.length; i++) {
+                    jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFilesArray.js[i] + '"></script>\n    ';
+                }
+            }
+        }
+        
+        return jsTags.trim();
+    }
+    
     // Return the correct render page arguments.
     function getRenderArgs(xargs, req, domain, page) {
         var minify = (domain.minify == true);
@@ -9434,6 +9509,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // To mitigate any possible BREACH attack, we generate a random 0 to 255 bytes length string here.
         xargs.randomlength = (args.webpagelengthrandomization !== false) ? parent.crypto.randomBytes(parent.crypto.randomBytes(1)[0]).toString('base64') : '';
+
+        // Generate custom CSS and JS tags
+        if (xargs.customFiles) {
+            try {
+                var customFiles = JSON.parse(decodeURIComponent(xargs.customFiles));
+                xargs.customCSSTags = generateCustomCSSTags(customFiles, page);
+                xargs.customJSTags = generateCustomJSTags(customFiles, page);
+            } catch (ex) {
+                xargs.customCSSTags = generateCustomCSSTags(null, page);
+                xargs.customJSTags = generateCustomJSTags(null, page);
+            }
+        } else {
+            xargs.customCSSTags = generateCustomCSSTags(null, page);
+            xargs.customJSTags = generateCustomJSTags(null, page);
+        }
 
         return xargs;
     }

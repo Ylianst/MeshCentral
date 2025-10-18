@@ -1987,6 +1987,41 @@
           "customUI": {
             "type": "object"
           },
+          "customFiles": {
+            "type": "array",
+            "description": "Advanced customization system allowing multiple CSS and JavaScript file configurations per domain. Each configuration can target specific templates using the 'scope' property, enabling granular control over where custom files are loaded. All custom files are loaded after the default custom.css and custom.js files.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Unique name for this custom files configuration. Used for identification and debugging purposes."
+                },
+                "css": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                },
+                "js": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                },
+                "scope": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of template names where these custom files should be loaded. If not specified or empty, files will NOT be loaded anywhere. Use 'all' to load on all templates. Available template names: all, default, default3, default-mobile, login, login2, login-mobile, messenger, message, message2, invite, agentinvite, player, xterm, mstsc, ssh, sharing, sharing-mobile, download, download2, terms, terms-mobile, error404, error4042, error404-mobile. Example: [\"default3\", \"login2\", \"player\"] or [\"all\"]"
+                }
+              },
+              "required": ["name"]
+            }
+          },
           "consentMessages": {
             "type": "object",
             "description": "This section is used to customize user consent prompts, these show up when asking if a remote session is allowed or not.",
