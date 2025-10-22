@@ -4557,10 +4557,11 @@
                     var x = "Take note of this username and password, the password cannot be shown again." + '<br /><br />';
                     x += addHtmlValue("Name", EscapeHtml(message.name))
                     if (message.expire != 0) { x += addHtmlValue("Expire", EscapeHtml(printDateTime(new Date(message.expire)))); }
-                    x += addHtmlValue("Username", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
-                    x += addHtmlValue("Password", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
-                    setModalContent('xxAddAgent', "Create Login Token", x);
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                    x += addHtmlValue("Username", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '")></i><div class=selecttext style=width:230px;padding:5px;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
+                    x += addHtmlValue("Password", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '")></i><div class=selecttext style=width:230px;padding:5px;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
+                    setModalContent('xxAddAgent', "Login Token Created", x);
+                    QV('idx_dlgOkButton', false);
+                    Q('idx_dlgCancelButton').innerHTML = "Close";
                     break;
                 }
                 case 'loginTokens': { // Reveiced the list of login tokens
@@ -14121,6 +14122,7 @@
 
         function account_createLoginTokenEx() {
             meshserver.send({ action: 'createLoginToken', name: Q('d2tokenName').value, expire: parseInt(Q('d2tokenExpire').value) });
+            return false;
         }
 
         function account_showAccountNotifySettings() {
@@ -14584,7 +14586,7 @@
             x += addHtmlValue("Name", EscapeHtml(token.name));
             x += addHtmlValue("Username", EscapeHtml(token.tokenUser));
             setModalContent('xxAddAgent', "Remove Login Token", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => function (b, tokenUser) { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); });
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); });
         }
 
         function gotoMesh(meshid) {
