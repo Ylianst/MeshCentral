@@ -1,0 +1,200 @@
+/* === Annotation overlay (scoped, no impact on existing UI) === */
+#AnnoOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;           /* Above #Desk, below HUD */
+  pointer-events: none;  /* toggled to 'auto' while drawing */
+}
+
+#annotationMenu {
+    position: absolute;
+    bottom: 45px;
+    background-color: #eee;
+    z-index: 100;
+    border-radius: 5px;
+    box-shadow: 1px 0px 10px 5px #333;
+    padding: 5px;
+    width: 115px; 
+}
+/* Tool section layout */
+.annoToolsSection {
+    width: 114px;
+    margin-bottom: 5px;
+    overflow: hidden; /* Clear floats */
+}
+
+/* Tool icons */
+.annoSelector1, .annoSelector2, .annoSelector3, .annoSelector4, .annoSelector5, .annoSelector6, .annoSelector7, .annoClear {
+    margin: 2px;
+    height: 28px;
+    width: 28px;
+    background: url(../images/icon-meshtoolbox.png) center center no-repeat;
+    background-size: 20px 20px;
+}
+
+.annoSelector1{
+    background: url(../images/pen24.png) center center no-repeat;
+}
+
+.annoSelector2{
+    background: url(../images/icon-round-rectangle24.png) center center no-repeat;
+}
+
+.annoSelector3{
+    background: url(../images/icon-circle24.png) center center no-repeat;
+}
+
+.annoSelector4{
+    background: url(../images/icon-arrow24.png) center center no-repeat;
+}
+
+.annoSelector5{
+    background: url(../images/icon-eraser24.png) center center no-repeat;
+}
+
+.annoSelector6{
+    background: url(../images/icon-colorpicker24.png) center center no-repeat;
+}
+
+.annoSelector7{
+    background: url(../images/icon-TTL24.png) center center no-repeat;
+}
+
+.annoClear{
+    background: url(../images/icon-clear24.png) center center no-repeat;
+}
+
+
+/* Separator line */
+.annoSeparator {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent 0%, #bbb 20%, #bbb 80%, transparent 100%);
+    clear: both;
+    margin: 9px 0 9px 0;
+}
+
+/* Color presets section */
+.annoColorsSection {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    width: 90%;
+    clear: both;
+    margin: 3px;
+}
+
+.annoColorPreset {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    border: 1px solid #bbb;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.annoColorPreset:hover {
+    transform: scale(1.1);
+}
+#ttlMenuSection {
+    display: none;
+}
+
+#annotationMenu.ttl-active #mainMenuSection {
+    display: none;
+}
+
+#annotationMenu.ttl-active #ttlMenuSection {
+    display: block;
+}
+
+.ttl-options-header {
+    font-size: 11px;
+    text-align: center;
+    margin-bottom: 5px;
+    color: #666;
+}
+
+/* TTL selector styling - matches annoSelector pattern */
+.ttlSelector0, .ttlSelector1, .ttlSelector2, .ttlSelector3, .ttlSelector4, .ttlBack {
+    margin: 2px;
+    height: 28px;
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: #333;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.ttlSelector0 {
+    font-size: 14px; 
+}
+
+.ttlBack {
+    font-size: 16px;
+    background-color: #e8e8e8;
+}
+
+/* Selected state for TTL options */
+.uiSelector.selected .ttlSelector0,
+.uiSelector.selected .ttlSelector1,
+.uiSelector.selected .ttlSelector2,
+.uiSelector.selected .ttlSelector3,
+.uiSelector.selected .ttlSelector4 {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #45a049;
+}
+.ttl-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 1px 3px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Ensure the parent button has relative positioning */
+#annoToolButton7 {
+    position: relative;
+}
+
+
+.annoColorPreset.selected-color {
+    border: 2px solid #818181 !important;
+    box-shadow: 2px 2px 3px rgb(129 129 129 / 37%);
+    transform: scale(1.1);
+}
+
+.custom-color {
+  border: 2px solid #333 !important; /* Distinguish custom colors */
+}
+.annotationDefault3{
+  padding: 0px 2px 3px 2px;
+}
+.mobileAnnoMenuFix{
+  margin: auto;
+    width: 40px;
+}
+.ttl-indicator-mobile {
+    position: absolute;
+    bottom: 2px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 1px 3px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 1;
+}
