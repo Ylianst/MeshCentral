@@ -280,13 +280,6 @@
                             </tr>
                         </table>
                     </div>
-                    <div id=UserDummyMenuSpan>
-                        <table id=UserDummyMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td class=style3 style="">&nbsp;</td>
-                            </tr>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
@@ -2792,7 +2785,6 @@
                 QC('body').remove('fullscreen');
                 QC('body').remove('arg_hide');
                 if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
-                QV('UserDummyMenuSpan', false);
                 leftBar.classList.add('d-none');
                 //QV('page_leftbar', false);
             } else {
@@ -2801,7 +2793,6 @@
                 QV('page_leftbar', !(args.hide & 16));
                 QV('MainMenuSpan', !(args.hide & 16));
                 if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
-                QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
                 leftBar.classList.remove('d-none');
             }
             mainUpdate(512);
@@ -20364,7 +20355,6 @@
             if ((x == 0) && (webPageFullScreen)) { QC('body').add('arg_hide'); }
 
             QV('MainSubMenuSpan', (x >= 10) && (x < 20));
-            QV('UserDummyMenuSpan', (x == 51) || ((x < 10) && (x != 6) && webPageFullScreen));
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
