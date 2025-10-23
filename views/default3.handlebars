@@ -2136,27 +2136,27 @@
 						'<div id="userDropdownMenu">' +
 							'<div id="userDropdownMenuContainer">' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'devices\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'devices\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-desktop userDropdownMenuIcon"></i>' +
 									'<span>' + "My Devices" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'events\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'events\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-calendar userDropdownMenuIcon"></i>' +
 									'<span>' + "My Events" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-users userDropdownMenuIcon"></i>' +
 									'<span>' + "My Users" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-folder userDropdownMenuIcon"></i>' +
 									'<span>' + "My Files" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-server userDropdownMenuIcon"></i>' +
 									'<span>' + "My Server" + '</span>' +
 								'</div>' +
@@ -2166,43 +2166,43 @@
 								'<div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(event);">' +
 									'<i class="fa fa-sliders userDropdownMenuIcon"></i>' +
 									'<span>' + "UI Settings" + '</span>' +
-									'<i class="fa fa-chevron-right userDropdownMenuIcon" style="margin-left: auto; margin-right: 0;"></i>' +
+									'<i class="fa fa-chevron-right userDropdownMenuIcon" style="margin-left: auto; margin-right: 0; transition: transform 0.3s ease;"></i>' +
 								'</div>' +
 					
 								'<div id="uiSubmenu" class="userDropdownSubmenu" style="display:none;" onclick="event.stopPropagation();">' +
-									'<div class="userDropdownMenuItem" onclick="toggleBootstrapUIMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+									'<div class="userDropdownMenuItem" onclick="toggleBootstrapUIMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-toggle-on userDropdownMenuIcon"></i>' +
 										'<span>' + "Toggle Modern UI" + '</span>' +
 									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(1); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(1); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-window-maximize fa-rotate-270 userDropdownMenuIcon"></i>' +
 										'<span>' + "Left Bar Interface" + '</span>' +
 									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-window-maximize userDropdownMenuIcon"></i>' +
 										'<span>' + "Top Bar Interface" + '</span>' +
 									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(3); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(3); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-columns userDropdownMenuIcon"></i>' +
 										'<span>' + "Fixed Width Interface" + '</span>' +
 									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="toggleFooterBarMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+									'<div class="userDropdownMenuItem" onclick="toggleFooterBarMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-window-minimize userDropdownMenuIcon"></i>' +
 										'<span>' + "Toggle Footer Bar" + '</span>' +
 									'</div>' +
 								'</div>' +
                                 
-								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa ' + (document.body.classList.contains('night') ? 'fa-sun' : 'fa-moon') + ' userDropdownMenuIcon"></i>' +
 									'<span>' + "Toggle night mode" + '</span>' +
 								'</div>' +
 
-								'<div class="userDropdownMenuItem" onclick="showNotes(false); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem" onclick="showNotes(false); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-sticky-note userDropdownMenuIcon"></i>' +
 									'<span>' + "Personal Notes" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem" onclick="go(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								'<div class="userDropdownMenuItem" onclick="go(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-user userDropdownMenuIcon"></i>' +
 									'<span>' + "My Account" + '</span>' +
 								'</div>' +
@@ -2210,7 +2210,7 @@
                                 '<div id="userDropdownMenuDivider"></div>';
 					
 					if (logoutControls.logoutUrl != null) {
-						logoutControl += '<div class="userDropdownMenuItem" onclick="QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu); window.location.href=\'' + logoutControls.logoutUrl + '\'">' +
+						logoutControl += '<div class="userDropdownMenuItem" onclick="QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu); window.location.href=\'' + logoutControls.logoutUrl + '\'">' +
 							'<i class="fa fa-sign-out userDropdownMenuIcon"></i>' +
 								'<span>' + "Logout" + '</span>' +
 						'</div>';
@@ -2666,6 +2666,7 @@
                     if (uiSubmenu) {
                         uiSubmenu.style.display = 'none';
                     }
+                    resetChevronArrow();
                 }
             }
         }
@@ -2708,6 +2709,14 @@
                 var isVisible = (uiSubmenu.style.display == 'block');
                 uiSubmenu.style.display = isVisible ? 'none' : 'block';
                 
+                var chevronIcon = document.querySelector('.userDropdownMenuItem[onclick*="toggleUISubmenu"] .fa-chevron-right');
+                if (chevronIcon) {
+                    if (isVisible) {
+                        chevronIcon.style.transform = 'rotate(0deg)';
+                    } else {
+                        chevronIcon.style.transform = 'rotate(90deg)';
+                    }
+                }
                 if (!isVisible) {
                     setTimeout(function() {
                         document.addEventListener('click', closeUISubmenu);
@@ -2722,6 +2731,7 @@
             if (uiSubmenu && userDropdown) {
                 if (!uiSubmenu.contains(event.target) && !userDropdown.contains(event.target)) {
                     uiSubmenu.style.display = 'none';
+                    resetChevronArrow();
                     document.removeEventListener('click', closeUISubmenu);
                 }
             }
@@ -19519,6 +19529,12 @@
                     icon.parentNode.replaceChild(newIcon, icon);
                     textSpan.textContent = text;
                 }
+            }
+        }
+        function resetChevronArrow() {
+            var chevronIcon = document.querySelector('.userDropdownMenuItem[onclick*="toggleUISubmenu"] .fa-chevron-right');
+            if (chevronIcon) {
+                chevronIcon.style.transform = 'rotate(0deg)';
             }
         }
         
