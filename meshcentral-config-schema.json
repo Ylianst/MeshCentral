@@ -1250,6 +1250,11 @@
             "default": null,
             "description": "The maximum number of devices a user can see on the devices page at the same time. By default all devices will show, but this may need to be limited on servers with large number of devices."
           },
+		  "preventDuplicateDevices": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, devices with the same name gets removed before a new device with the identical name gets joined. MeshID gets transfered."
+          },
           "unknownUserRootRedirect": {
             "type": "string",
             "default": null,

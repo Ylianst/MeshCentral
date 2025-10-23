@@ -1464,6 +1464,7 @@ function CreateMeshCentralServer(config, args) {
             if ((i.length > 0) && (i[0] == '_')) { delete obj.config.domains[i]; continue; } // Remove any domains with names that start with _
             if (typeof config.domains[i].auth == 'string') { config.domains[i].auth = config.domains[i].auth.toLowerCase(); }
             if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
+            if (obj.config.domains[i].preventduplicatedevices == null) { obj.config.domains[i].preventduplicatedevices = false; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
             if ((typeof obj.config.domains[i].maxdeviceview != 'number') || (obj.config.domains[i].maxdeviceview < 1)) { delete obj.config.domains[i].maxdeviceview; }
