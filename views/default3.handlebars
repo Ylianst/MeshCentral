@@ -2176,24 +2176,24 @@
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(1); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-window-maximize fa-rotate-270 userDropdownMenuIcon"></i>' +
-										'<span>' + "Left bar interface" + '</span>' +
+										'<span>' + "Left Bar Interface" + '</span>' +
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-window-maximize userDropdownMenuIcon"></i>' +
-										'<span>' + "Top bar interface" + '</span>' +
+										'<span>' + "Top Bar Interface" + '</span>' +
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(3); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-columns userDropdownMenuIcon"></i>' +
-										'<span>' + "Fixed width interface" + '</span>' +
+										'<span>' + "Fixed Width Interface" + '</span>' +
 									'</div>' +
 									'<div class="userDropdownMenuItem" onclick="toggleFooterBarMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 										'<i class="fa fa-window-minimize userDropdownMenuIcon"></i>' +
-										'<span>' + "Toggle footer bar" + '</span>' +
+										'<span>' + "Toggle Footer Bar" + '</span>' +
 									'</div>' +
 								'</div>' +
                                 
 								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-moon userDropdownMenuIcon"></i>' +
+									'<i class="fa ' + (document.body.classList.contains('night') ? 'fa-sun' : 'fa-moon') + ' userDropdownMenuIcon"></i>' +
 									'<span>' + "Toggle night mode" + '</span>' +
 								'</div>' +
 
@@ -2659,6 +2659,7 @@
                     userDropdownMenu.style.display = 'block';
                     QV('uiMenu', false);
                     QV('topMenu', false);
+                    updateNightModeIcon();
                 } else {
                     userDropdownMenu.style.display = 'none';
                     var uiSubmenu = Q('uiSubmenu');
@@ -19502,6 +19503,24 @@
             });
         }
         setupNotificationClickOutside();
+
+        // Update night mode icon and text in dropdown menu
+        function updateNightModeIcon() {
+            var nightModeItem = document.querySelector('.userDropdownMenuItem[onclick*="toggleNightMode"]');
+            if (nightModeItem) {
+                var icon = nightModeItem.querySelector('.userDropdownMenuIcon');
+                var textSpan = nightModeItem.querySelector('span');
+                if (icon && textSpan) {
+                    var isNightMode = document.body.classList.contains('night');
+                    var iconClass = isNightMode ? 'fa-sun' : 'fa-moon';
+                    var text = isNightMode ? "Toggle Light Mode" : "Toggle Dark Mode";
+                    var newIcon = document.createElement('i');
+                    newIcon.className = 'fa ' + iconClass + ' userDropdownMenuIcon';
+                    icon.parentNode.replaceChild(newIcon, icon);
+                    textSpan.textContent = text;
+                }
+            }
+        }
         
         // Refresh the notification box
         function drawNotifications() {
