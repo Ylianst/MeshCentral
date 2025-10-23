@@ -2342,7 +2342,7 @@ nav .lbbuttonsel2 {
     position: absolute;
     z-index: 1000;
     top: 80px;
-    right: 187px;
+    right: 10rem;
     width: 300px;
     text-align: left;
     background-color: #F0ECCD;
@@ -2395,13 +2395,12 @@ nav .lbbuttonsel2 {
     min-width: 28px;
     font-size: 20px;
     border-radius: 5px;
-    background-color: lightblue;
     text-align: center;
     margin: 8px;
     cursor: pointer;
     padding: 4px;
     position: absolute;
-    right: 10rem;
+    right: 9rem;
     top: 0.2em;
 }
 
@@ -3394,10 +3393,10 @@ nav .lbbuttonsel2 {
     }
 
     #notificationCount {
-        right: 7rem;
+        right: 4rem;
     }
     .notifiyBox {
-        right: 97px;
+        right: 3.5rem;
     }
 
     .notifiyBox:after {

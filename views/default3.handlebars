@@ -145,8 +145,18 @@
             <div class="title" onclick="go(1,event)">{{{title1}}}</div>
             <div class="title2">{{{title2}}}</div>
             <div style="float:right">
-                <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;"
-                    title="Click to view current notifications">0</div>
+                <div id="notificationCount"
+                    class="position-relative"
+                    title="Click to view current notifications"
+                    onclick="clickNotificationIcon()"
+                    style="display: none;">
+                <i class="fa-solid fa-bell fa-lg text-white"></i>
+                <span id="notificationBadge"
+                        class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger"
+                        style="font-size: 0.65rem;">
+                    0
+                </span>
+                </div>
             </div>
             <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
                     style="color:yellow"></span></p>
@@ -19473,12 +19483,26 @@
 
         // Set the notification count on the upper right of the screen
         function setNotificationCount(c) {
-            if (parseInt(Q('notificationCount').innerHTML) == c) return; // If the count did not change, exit now.
-            QH('notificationCount', c);
-            QS('notificationCount')['background-color'] = (c == 0) ? 'lightblue' : 'orange';
+            var badge = Q('notificationBadge');
+            if (parseInt(badge.innerHTML) === c) return;
+            badge.innerHTML = c;
             QV('notificationCount', c > 0);
         }
 
+        // Close notification box when clicking outside
+        function setupNotificationClickOutside() {
+            document.addEventListener('click', function(event) {
+                var notificationBox = Q('notifiyBox');
+                var notificationIcon = Q('notificationCount');
+                if (notificationBox && QS('notifiyBox')['display'] !== 'none') {
+                    if (!notificationBox.contains(event.target) && !notificationIcon.contains(event.target)) {
+                        QV('notifiyBox', false);
+                    }
+                }
+            });
+        }
+        setupNotificationClickOutside();
+        
         // Refresh the notification box
         function drawNotifications() {
             var notifySettings = getstore('notifications', 0);
