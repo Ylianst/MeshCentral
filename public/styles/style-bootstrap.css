@@ -2403,7 +2403,16 @@ nav .lbbuttonsel2 {
     right: 9rem;
     top: 0.2em;
 }
-
+#notificationBadge {
+    box-shadow: -0.1px 1px 2px #000000;
+    -webkit-box-shadow: -0.1px 1px 2px #000000;
+    -moz-box-shadow: -0.1px 1px 2px #000000;
+    top: 0.95rem;
+    left: 1.6rem !important;
+}
+#notificationCount:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
 .night #notificationCount {
     color: black;
 }
