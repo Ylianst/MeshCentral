@@ -2133,27 +2133,27 @@
 						'<div id="userDropdownMenu">' +
 							'<div id="userDropdownMenuContainer">' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'devices\'); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'devices\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-desktop userDropdownMenuIcon"></i>' +
 									'<span>' + "My Devices" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'events\'); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'events\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-calendar userDropdownMenuIcon"></i>' +
 									'<span>' + "My Events" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-users userDropdownMenuIcon"></i>' +
 									'<span>' + "My Users" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-folder userDropdownMenuIcon"></i>' +
 									'<span>' + "My Files" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-server userDropdownMenuIcon"></i>' +
 									'<span>' + "My Server" + '</span>' +
 								'</div>' +
@@ -2189,17 +2189,17 @@
 									'</div>' +
 								'</div>' +
                                 
-								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-moon userDropdownMenuIcon"></i>' +
 									'<span>' + "Toggle night mode" + '</span>' +
 								'</div>' +
 
-								'<div class="userDropdownMenuItem" onclick="showNotes(false); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem" onclick="showNotes(false); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-sticky-note userDropdownMenuIcon"></i>' +
 									'<span>' + "Personal Notes" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem" onclick="go(2); QV(\'userDropdownMenu\', false);">' +
+								'<div class="userDropdownMenuItem" onclick="go(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-user userDropdownMenuIcon"></i>' +
 									'<span>' + "My Account" + '</span>' +
 								'</div>' +
@@ -2207,7 +2207,7 @@
                                 '<div id="userDropdownMenuDivider"></div>';
 					
 					if (logoutControls.logoutUrl != null) {
-						logoutControl += '<div class="userDropdownMenuItem" onclick="window.location.href=\'' + logoutControls.logoutUrl + '\'">' +
+						logoutControl += '<div class="userDropdownMenuItem" onclick="QV(\'uiSubmenu\', false); document.removeEventListener(\'click\', closeUISubmenu); window.location.href=\'' + logoutControls.logoutUrl + '\'">' +
 							'<i class="fa fa-sign-out userDropdownMenuIcon"></i>' +
 								'<span>' + "Logout" + '</span>' +
 						'</div>';
