@@ -3451,6 +3451,8 @@ nav .lbbuttonsel2 {
     display: inline-block;
     z-index: 1000;
     right: 10px;
+    background: #00000026;
+    border-radius: 4px;
 }
 #userDropdownButton {
     display: flex;
