@@ -413,6 +413,22 @@ body {
     .fullscreen #welcomeimage {
         display: none;
     }
+    #devListToolbar, #kvmListToolbar {
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+    }
+    #devListToolbarSpan {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    #devListToolbarSpan > .d-flex.ms-auto {
+        flex-basis: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-start;
+    }
 }
 
 #welcomeimage img {
