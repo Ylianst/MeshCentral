@@ -7983,6 +7983,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             let issuer
             try {
                 parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer}`);
+				const { HttpsProxyAgent } = require('https-proxy-agent');
+				//process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // <- no be set by system variable
+                strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: (process.env.HTTPS_PROXY || process.env.HTTP_PROXY) ? new HttpsProxyAgent(process.env.HTTPS_PROXY) : undefined });
                 issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
             } catch (err) {
                 let error = new Error('OIDC: Discovery failed.', { cause: err });
@@ -8132,7 +8135,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null; }
                     return new Promise((resolve, reject) => {
                         const options = {
-                            'headers': { authorization: 'Bearer ' + tokenset.access_token }
+                            'headers': { authorization: 'Bearer ' + tokenset.access_token },
+                            agent: (process.env.HTTPS_PROXY || process.env.HTTP_PROXY) ? new HttpsProxyAgent(process.env.HTTPS_PROXY) : undefined
                         }
                         const req = require('https').get(url, options, (res) => {
                             let data = []
