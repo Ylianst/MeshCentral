@@ -8081,71 +8081,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // Callback function must be able to grab info from API's using the access token, would prefer to use the token here.
-            function oidcCallback(tokenset, profile, done) {
-                // Handle case where done might not be the third parameter
-                if (typeof done !== 'function') {
-                    // OpenID Connect strategy calls with (tokenset, done) instead of (tokenset, profile, done)
-                    if (typeof profile === 'function') {
-                        done = profile;
-                        profile = null;
-                    } else {
-                        parent.debug('error', 'OIDC: Unable to find callback function in parameters');
-                        return;
-                    }
-                }
-
-                // If profile is null/undefined, extract user info from the tokenset
-                if (!profile && tokenset && tokenset.id_token) {
-                    try {
-                        // Simple JWT decoder to extract user claims from id_token
-                        const parts = tokenset.id_token.split('.');
-                        if (parts.length === 3) {
-                            const payload = parts[1];
-                            const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
-                            const decoded = JSON.parse(Buffer.from(paddedPayload, 'base64').toString());
-                            if (decoded) {
-                                profile = decoded;
-                            }
-                        }
-                    } catch (err) {
-                        parent.debug('error', `OIDC: Failed to decode id_token: ${err.message}`);
-                    }
-                }
-
+            function oidcCallback(tokenset, profile, verified) {
                 // Initialize user object
                 let user = { 'strategy': 'oidc' }
                 let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null;
-                
-                user.sid = null;
-                if (profile && obj.common.validateString(profile.sub)) {
-                    user.sid = '~oidc:' + profile.sub;
-                } else if (profile && obj.common.validateString(profile.oid)) {
-                    user.sid = '~oidc:' + profile.oid;
-                } else if (profile && obj.common.validateString(profile.email)) {
-                    user.sid = '~oidc:' + profile.email;
-                } else if (profile && obj.common.validateString(profile.upn)) {
-                    user.sid = '~oidc:' + profile.upn;
-                }
-                
-                user.name = profile && obj.common.validateString(profile.name) ? profile.name : null;
-                user.email = profile && obj.common.validateString(profile.email) ? profile.email : null;
+                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null;
+                user.name = obj.common.validateString(profile.name) ? profile.name : null;
+                user.email = obj.common.validateString(profile.email) ? profile.email : null;
                 if (claims != null) {
                     user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid;
                     user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name;
                     user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email;
                 }
-                
-                // Ensure we have a valid sid before proceeding
-                if (!user.sid) {
-                    parent.debug('error', `OIDC: No valid user identifier found in profile`);
-                    return done(new Error('OIDC: No valid user identifier found in profile'));
-                }
-                
-                user.emailVerified = profile && profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
-                user.groups = profile && obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
+                user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
                 if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
-                    user.groups = profile && obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
+                    user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
                 }
 
                 // Setup end session enpoint if not already configured this requires an auth token
@@ -8165,20 +8117,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (strategy.groups && typeof user.preset == 'string') {
                     getGroups(user.preset, tokenset).then((groups) => {
                         user = Object.assign(user, { 'groups': groups });
-                        done(null, user);
+                        return verified(null, user);
                     }).catch((err) => {
                         let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
                         parent.debug('error', `${JSON.stringify(error)}`);
                         parent.authLog('oidcCallback', error.message);
                         user.groups = [];
-                        done(null, user);
+                        return verified(null, user);
                     });
                 } else {
-                    done(null, user);
+                    return verified(null, user);
                 }
 
                 async function getGroups(preset, tokenset) {
                     let url = '';
+					const { HttpsProxyAgent } = require('https-proxy-agent');
                     if (preset == 'azure') { url = strategy.groups.recursive == true ? 'https://graph.microsoft.com/v1.0/me/transitiveMemberOf?$top=999' : 'https://graph.microsoft.com/v1.0/me/memberOf?$top=999'; }
                     if (preset == 'google') { url = strategy.custom.customer_id ? 'https://cloudidentity.googleapis.com/v1/groups?parent=customers/' + strategy.custom.customer_id : strategy.custom.identitysource ? 'https://cloudidentity.googleapis.com/v1/groups?parent=identitysources/' + strategy.custom.identitysource : null; }
                     return new Promise((resolve, reject) => {
