@@ -2341,8 +2341,8 @@ nav .lbbuttonsel2 {
 .notifiyBox {
     position: absolute;
     z-index: 1000;
-    top: 50px;
-    right: 26px;
+    top: 80px;
+    right: 10rem;
     width: 300px;
     text-align: left;
     background-color: #F0ECCD;
@@ -2395,13 +2395,24 @@ nav .lbbuttonsel2 {
     min-width: 28px;
     font-size: 20px;
     border-radius: 5px;
-    background-color: lightblue;
     text-align: center;
     margin: 8px;
     cursor: pointer;
     padding: 4px;
+    position: absolute;
+    right: 9rem;
+    top: 0.2em;
 }
-
+#notificationBadge {
+    box-shadow: -0.1px 1px 2px #000000;
+    -webkit-box-shadow: -0.1px 1px 2px #000000;
+    -moz-box-shadow: -0.1px 1px 2px #000000;
+    top: 0.95rem;
+    left: 1.6rem !important;
+}
+#notificationCount:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
 .night #notificationCount {
     color: black;
 }
@@ -3344,6 +3355,12 @@ nav .lbbuttonsel2 {
         font-size: 36px;
     }
 
+    #masthead {
+        background-size: 18rem 2.5rem !important;
+        background-position: center left;
+        background-repeat: no-repeat !important;
+        padding-right: 20px !important;
+    }
     #MainMeshImage /*, #p2AccountImageFrame */ {
         /* text-align: center !important; */
         float: none !important;
@@ -3355,17 +3372,40 @@ nav .lbbuttonsel2 {
         float: none !important;
         text-align: left;
     }
+    #userDropdown {
+        display: inline-block !important;
+        position: absolute !important;
+        right: 10px !important;
+    }
 
-    #logoutControl {
+    #userDropdownName {
         display: none !important;
     }
 
-    #topMenuIcon {
+    .userDropdownMobileOnly {
+        display: flex !important;
+    }
+
+    #userDropdownMenuDivider.userDropdownMobileOnly {
         display: block !important;
     }
 
+    .userDropdownSubmenu {
+        right: 100%;
+        left: auto;
+        top: 13rem !important;
+        margin-left: 0;
+        margin-right: 4px;
+    }
+    .userDropdownUISettings {
+        position: relative;
+    }
+
     #notificationCount {
-        margin-right: 45px;
+        right: 4rem;
+    }
+    .notifiyBox {
+        right: 3.5rem;
     }
 
     .notifiyBox:after {
@@ -3405,3 +3445,145 @@ nav .lbbuttonsel2 {
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-search {
     display: inline !important;
 } */
+/* User Dropdown Menu Styles */
+#userDropdown {
+    position: absolute;
+    display: inline-block;
+    z-index: 1000;
+    right: 10px;
+    background: #00000026;
+    border-radius: 4px;
+}
+#userDropdownButton {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    height: 40px;
+}
+
+#userDropdownButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#userDropdownImage {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    object-fit: cover;
+}
+
+#userDropdownName {
+    margin-right: 6px;
+    white-space: nowrap;
+}
+
+#userDropdownArrow {
+    font-size: 12px;
+}
+
+#userDropdownMenu {
+	display: none;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background-color: #ffffff;
+	box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+	border-radius: 4px;
+	z-index: 10000;
+	min-width: 200px;
+	margin-top: 4px;
+	transform: translateX(0);
+	font-family: sans-serif;
+}
+
+#userDropdownMenuContainer {
+	padding: 6px 0;
+}
+
+.userDropdownMenuItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	cursor: pointer;
+	color: #333;
+	white-space: nowrap;
+	transition: background-color 0.15s ease;
+}
+
+.userDropdownMenuItem:hover {
+	background-color: #f5f5f5;
+	border-radius: 4px;
+}
+
+.userDropdownMenuIcon {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
+	flex-shrink: 0;
+}
+
+.userDropdownMenuItem span {
+	flex-grow: 1;
+	text-align: left;
+	color: #333;
+	font-size: 14px;
+	line-height: 1.2;
+}
+
+#userDropdownMenuDivider {
+	border-top: 1px solid #eee;
+	margin: 4px 0;
+}
+
+.userDropdownSubmenu {
+	position: absolute;
+	right: 100%;
+	top: 0;
+	background-color: #ffffff;
+	box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+	border-radius: 4px;
+	margin-right: 4px;
+	min-width: 200px;
+	z-index: 10001;
+	padding: 6px 0;
+}
+
+.userDropdownSubmenu .userDropdownMenuItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	color: #333;
+}
+
+.userDropdownSubmenu .userDropdownMenuItem:hover {
+	background-color: #f5f5f5;
+	border-radius: 4px;
+}
+
+.userDropdownSubmenu .userDropdownMenuIcon {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
+	flex-shrink: 0;
+}
+
+.userDropdownMobileOnly {
+	display: none;
+}
+
+.userDropdownUISettings img:last-child {
+	margin-left: auto;
+	width: 14px;
+	height: 14px;
+	opacity: 0.7;
+}
+
+body:not(.fullscreen) #userDropdown {
+    right: calc(50vw - 470px);
+}
