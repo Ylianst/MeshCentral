@@ -181,6 +181,31 @@ Then run Docker Compose:
 docker compose -f ./docker/compose.yaml --env-file .env up -d
 ```
 
+# Custom healthchecks at runtime
+
+If you want to add a custom healthcheck post-compilation/with precompiled images, then do the following:<br>
+This all is based on [Docker documentation](https://docs.docker.com/reference/compose-file/services/).
+
+Add the following lines to your compose.yaml:
+```yaml
+services:
+  meshcentral:
+    image: ghcr.io/ylianst/meshcentral:latest
+    ...
+    <the rest of the compose.yaml>
+    ...
+    
+    healthcheck:
+      test: ["CMD", "curl", "-k", "--fail", "https://localhost:443/health.ashx"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+```
+
+And if you ever change the port on which MeshCentral *INTERNALLY* runs on please also change the healthcheck either in your compose or self-compiled Dockerfile.<br>
+Also relevant if you change scheme, such as HTTP to HTTPS or vice versa.
+
 # MeshCentral Docker Build Process
 
 This document explains the build process for the MeshCentral Docker image, along with details on various build arguments and how to use them.
