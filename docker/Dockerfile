@@ -126,7 +126,7 @@ WORKDIR /opt/meshcentral
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash jq nodejs npm tzdata && \
+        bash curl jq nodejs npm tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
@@ -203,7 +203,10 @@ VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
-COPY ./docker/entrypoint.sh ./entrypoint.sh
+COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -k --fail https://localhost:443/health.ashx || exit 1
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
