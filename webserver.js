@@ -8603,7 +8603,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
                 if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); ws.close(); } catch (e) { } return; }
                 obj.authenticate(s[0], s[1], domain, function (err, userid, passhint, loginOptions) {
-                    var user = obj.users[userid];
+                    var user = obj.users[userid];      
                     if ((err == null) && (user)) {
                         // Check if user as the "notools" site right. If so, deny this connection as tools are not allowed to connect.
                         if ((user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & SITERIGHT_NOMESHCMD)) {
@@ -8997,7 +8997,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
 
             // This is a super user that can see all device groups for a given domain
-            if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (nodes[0].domain == user.domain)) {
+            if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (nodes[0].domain == user.domain)) {
                 func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return;
             }
 
@@ -9055,7 +9055,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user == null) { return []; }
 
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) ) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) ) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]); } }
@@ -9086,7 +9086,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof user == 'string') { user = obj.users[user]; }
         if (user == null) { return []; }
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0)))) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0)))) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]._id); } }
@@ -9131,7 +9131,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return 0;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
 
         // Check direct user to device group permissions
         if (user.links == null) return 0;
@@ -9176,7 +9176,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return false;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
 
         // Check direct user to device group permissions
         if (user.links == null) { return false; }
