@@ -3,9 +3,9 @@ name: My-Docker-Builder
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - testme-docker
   #   paths:
   #     - '**'
   #     - '!docs/**'
