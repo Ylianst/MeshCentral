@@ -58,7 +58,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ./
-          key: cache-translate
+          key: cache-translate-${{ github.sha }}
 
       - name: List directory after cache
         run: ls -R ./
@@ -106,7 +106,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ./
-          key: cache-translate
+          key: cache-translate-${{ github.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
