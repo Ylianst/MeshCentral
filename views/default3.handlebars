@@ -2127,6 +2127,13 @@
                         userImageSrc = 'userimage.ashx?rnd=' + userinfo.accountImageRnd;
                     }
                     
+					// Check permissions
+					var siteRights = userinfo ? userinfo.siteadmin : 0;
+					var serverFeatures = parseInt('{{{serverfeatures}}}');
+					var canViewUsers = ((users != null) && ((features & 4) == 0)) || (((userinfo && userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0));
+					var canViewFiles = (siteRights & 8) != 0;
+					var canViewServer = (siteRights & 21) && ((serverFeatures & 64) != 0);
+					
 					logoutControl = '<div id="userDropdown">' +
 						'<div id="userDropdownButton">' +
 							'<img id="userDropdownImage" src="' + userImageSrc + '" />' +
@@ -2146,20 +2153,20 @@
 									'<span>' + "My Events" + '</span>' +
 								'</div>' +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								(canViewUsers ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-users userDropdownMenuIcon"></i>' +
 									'<span>' + "My Users" + '</span>' +
-								'</div>' +
+								'</div>' : '') +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								(canViewFiles ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-folder userDropdownMenuIcon"></i>' +
 									'<span>' + "My Files" + '</span>' +
-								'</div>' +
+								'</div>' : '') +
 					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
+								(canViewServer ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
 									'<i class="fa fa-server userDropdownMenuIcon"></i>' +
 									'<span>' + "My Server" + '</span>' +
-								'</div>' +
+								'</div>' : '') +
 					
 								'<div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>' +
 					
