@@ -168,4 +168,5 @@ jobs:
             INCLUDE_MARIADB_TOOLS=${{ matrix.variant.include_mysql }}
             DISABLE_MINIFY=yes
             DISABLE_TRANSLATE=yes
+            DISABLE_EXTRACT=yes
             PREINSTALL_LIBS=true
