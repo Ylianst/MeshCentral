@@ -59,7 +59,7 @@ RUN mkdir -p /opt/meshcentral
 COPY ./package.json /opt/meshcentral/package.json
 WORKDIR /opt/meshcentral
 
-RUN node -e "let pkg=require('./package.json');pkg.dependencies['modern-syslog']='1.2.0';require('fs').writeFileSync('package.json',JSON.stringify(pkg,null,2));" \
+RUN node -e "let pkg=require('./package.json');pkg.dependencies['modern-syslog']='1.2.0';pkg.dependencies['telegram']='2.26.22';require('fs').writeFileSync('package.json',JSON.stringify(pkg,null,2));" \
     && npm i --package-lock-only \
     && npm ci
 
