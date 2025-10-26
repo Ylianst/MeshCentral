@@ -50,8 +50,7 @@ RUN apk update && \
     apk add --no-cache --update \
         bash gcc g++ jq make nodejs npm python3 tzdata
 
-RUN mkdir -p /opt/meshcentral
-COPY ./package.json /opt/meshcentral/package.json
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN cat /opt/meshcentral/package.json
