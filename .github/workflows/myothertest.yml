@@ -80,7 +80,7 @@ jobs:
             --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
             --build-arg INCLUDE_MARIADB_TOOLS=NO \
             --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \s
+            --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
             -f docker/Dockerfile \
