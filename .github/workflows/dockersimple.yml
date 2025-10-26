@@ -1,10 +1,10 @@
-name: simple-docker-builder
+name: dockersimple-builder
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - simpledocker
+      - dockersimple
 
 env:
   REGISTRY: ghcr.io
