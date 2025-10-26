@@ -82,7 +82,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-amd64 \
+            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-amd64 \
             --push \
             ./docker
 
@@ -126,7 +126,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-arm64 \
+            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-arm64 \
             --push \
             ./docker
 
@@ -170,7 +170,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-armv7 \
+            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv7 \
             --push \
             ./docker
 
@@ -214,7 +214,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-armv6 \
+            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv6 \
             --push \
             ./docker
 
@@ -237,21 +237,21 @@ jobs:
       - name: Create and push multi-arch manifest
         run: |
           docker buildx imagetools create \
-            -t ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }} \
-            ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-amd64 \
-            ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-arm64 \
-            ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-armv7 \
-            ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral:${{ github.ref_name }}-armv6
+            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }} \
+            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-amd64 \
+            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-arm64 \
+            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv7 \
+            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv6
 
       - name: Delete architecture-specific tags
         run: |
-          ghcr_repo=ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral
+          ghcr_repo=ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral
           for arch in amd64 arm64 armv7 armv6; do
             echo "Deleting $ghcr_repo:${{ github.ref_name }}-$arch ..."
             digest=$(docker buildx imagetools inspect $ghcr_repo:${{ github.ref_name }}-$arch --format '{{.Manifest.Digest}}')
             if [ -n "$digest" ]; then
               curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                "https://ghcr.io/v2/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/meshcentral/manifests/$digest"
+                "https://ghcr.io/v2/${{ toLower(github.repository_owner) }}/meshcentral/manifests/$digest"
             fi
           done
         env:
