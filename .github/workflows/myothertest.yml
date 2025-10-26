@@ -73,6 +73,7 @@ jobs:
 
       - name: Build and push Docker image (amd64)
         run: |
+          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           docker buildx build \
             --platform linux/amd64 \
             --build-arg INCLUDE_MONGODB_TOOLS=YES \
@@ -82,7 +83,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-amd64 \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64 \
             --push \
             ./docker
 
@@ -117,6 +118,7 @@ jobs:
 
       - name: Build and push Docker image (arm64)
         run: |
+          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           docker buildx build \
             --platform linux/arm64 \
             --build-arg INCLUDE_MONGODB_TOOLS=YES \
@@ -126,7 +128,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-arm64 \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64 \
             --push \
             ./docker
 
@@ -161,6 +163,7 @@ jobs:
 
       - name: Build and push Docker image (arm/v7)
         run: |
+          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           docker buildx build \
             --platform linux/arm/v7 \
             --build-arg INCLUDE_MONGODB_TOOLS=YES \
@@ -170,7 +173,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv7 \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7 \
             --push \
             ./docker
 
@@ -205,6 +208,7 @@ jobs:
 
       - name: Build and push Docker image (arm/v6)
         run: |
+          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           docker buildx build \
             --platform linux/arm/v6 \
             --build-arg INCLUDE_MONGODB_TOOLS=YES \
@@ -214,7 +218,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv6 \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6 \
             --push \
             ./docker
 
@@ -236,22 +240,24 @@ jobs:
 
       - name: Create and push multi-arch manifest
         run: |
+          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           docker buildx imagetools create \
-            -t ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }} \
-            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-amd64 \
-            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-arm64 \
-            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv7 \
-            ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral:${{ github.ref_name }}-armv6
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }} \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64 \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64 \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7 \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6
 
       - name: Delete architecture-specific tags
         run: |
-          ghcr_repo=ghcr.io/${{ toLower(github.repository_owner) }}/meshcentral
+          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+          ghcr_repo=ghcr.io/$REPO_OWNER_LC/meshcentral
           for arch in amd64 arm64 armv7 armv6; do
             echo "Deleting $ghcr_repo:${{ github.ref_name }}-$arch ..."
             digest=$(docker buildx imagetools inspect $ghcr_repo:${{ github.ref_name }}-$arch --format '{{.Manifest.Digest}}')
             if [ -n "$digest" ]; then
               curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                "https://ghcr.io/v2/${{ toLower(github.repository_owner) }}/meshcentral/manifests/$digest"
+                "https://ghcr.io/v2/$REPO_OWNER_LC/meshcentral/manifests/$digest"
             fi
           done
         env:
