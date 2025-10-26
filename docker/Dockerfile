@@ -52,21 +52,18 @@ RUN apk update && \
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
-RUN cat meshcentral/package.json
-
-RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' meshcentral/package.json > temp.json && mv temp.json meshcentral/package.json
+RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' meshcentral/package.json > temp.json && mv temp.json meshcentral/package.json \
 #     && npm i --package-lock-only \
-#     && npm ci
+    && npm ci
 
-RUN cat meshcentral/package.json
+### STAGE 3 RUNTIME
 
-# ### STAGE 3 RUNTIME
-
-# FROM alpine:3.22 AS runtime
+FROM alpine:3.22 AS runtime
 
 # # Copy prepared app from builder stage
-# COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-# COPY --from=dep-compiler /opt/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
+COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+
+RUN cat /opt/meshcentral/meshcentral/package.json
 
 # # environment variables
 # ENV NODE_ENV="production" \
