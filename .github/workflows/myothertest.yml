@@ -252,17 +252,30 @@ jobs:
             ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7 \
             ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6
 
-      - name: Delete architecture-specific tags
+      - name: Get arch-specific package version IDs
+        id: get_arch_ids
         run: |
           REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          ghcr_repo=ghcr.io/$REPO_OWNER_LC/meshcentral
-          for arch in amd64 arm64 armv7 armv6; do
-            echo "Deleting $ghcr_repo:${{ github.ref_name }}-$arch ..."
-            digest=$(docker buildx imagetools inspect $ghcr_repo:${{ github.ref_name }}-$arch | grep '^Digest:' | awk '{print $2}')
-            if [ -n "$digest" ]; then
-              curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}" \
-                "https://ghcr.io/v2/$REPO_OWNER_LC/meshcentral/manifests/$digest"
+          GHCR_REPO="$REPO_OWNER_LC/meshcentral"
+          TAGS=(amd64 arm64 armv7 armv6)
+          ids=""
+          for arch in "${TAGS[@]}"; do
+            tag="${{ github.ref_name }}-$arch"
+            resp=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/orgs/${REPO_OWNER_LC}/packages/container/meshcentral/versions?per_page=100")
+            id=$(echo "$resp" | jq -r ".[] | select(.metadata.container.tags[]? == \"$tag\") | .id" | head -n1)
+            if [ -n "$id" ]; then
+              ids+="$id "
             fi
           done
+          echo "ids=$ids" >> $GITHUB_OUTPUT
         env:
-          DOCKER_CLI_EXPERIMENTAL: enabled
+          GH_TOKEN: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Delete arch-specific package versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'meshcentral'
+          package-type: 'container'
+          token: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
+          version-ids: ${{ steps.get_arch_ids.outputs.ids }}
