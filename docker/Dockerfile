@@ -48,12 +48,12 @@ RUN rm -rf /opt/meshcentral/meshcentral/docs
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM alpine:3.22 AS dep-compiler
+FROM node:lts-alpine3.22 AS dep-compiler
 
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ make nodejs npm python3 tzdata
+        gcc g++ make python3 linux-headers
 
 RUN mkdir -p /opt/meshcentral
 COPY ./package.json /opt/meshcentral/package.json
@@ -63,7 +63,7 @@ RUN npm install --save-exact --no-audit --no-optional --omit=optional --verbose 
     && npm install --save-exact --no-audit --no-optional --omit=optional --verbose modern-syslog@1.2.0 telegram@2.26.22
 ### STAGE 3 RUNTIME
 
-FROM alpine:3.22 AS runtime
+FROM node:lts-alpine3.22 AS runtime
 
 # Copy prepared app from builder stage
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
@@ -128,15 +128,14 @@ WORKDIR /opt/meshcentral
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash curl jq nodejs npm tzdata && \
+        bash curl jq tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
-        /usr/lib/debug/ && \
-    npm install -g npm@latest
+        /usr/lib/debug/ 
 
 RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
