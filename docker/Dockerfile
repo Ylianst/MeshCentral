@@ -48,10 +48,14 @@ FROM alpine:3.22 AS dep-compiler
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ jq make nodejs npm python3 tzdata
+        bash gcc g++ make nodejs npm python3 tzdata
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
+
+RUN cat /opt/meshcentral/package.json
+
+RUN node -e "let pkg=require('./package.json');pkg.dependencies['modern-syslog']='1.2.0';pkg.dependencies['telegram']='2.26.22';require('fs').writeFileSync('package.json',JSON.stringify(pkg,null,2));"
 
 RUN cat /opt/meshcentral/package.json
 
