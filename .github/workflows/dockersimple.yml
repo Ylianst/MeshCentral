@@ -53,17 +53,17 @@ jobs:
         working-directory: ./translate
         run: node translate.js || true
 
-      # - name: Run extractall
-      #   working-directory: ./translate
-      #   run: node translate.js extractall
+      - name: Run extractall
+        working-directory: ./translate
+        run: node translate.js extractall
 
-      # - name: Run minifyall
-      #   working-directory: ./translate
-      #   run: node translate.js minifyall
+      - name: Run minifyall
+        working-directory: ./translate
+        run: node translate.js minifyall
 
-      # - name: Run translateall
-      #   working-directory: ./translate
-      #   run: node translate.js translateall
+      - name: Run translateall
+        working-directory: ./translate
+        run: node translate.js translateall
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

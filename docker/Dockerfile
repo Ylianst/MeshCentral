@@ -63,8 +63,6 @@ FROM alpine:3.22 AS runtime
 # # Copy prepared app from builder stage
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
-RUN cat /opt/meshcentral/meshcentral/package.json
-
 # environment variables
 ENV NODE_ENV="production" \
     CONFIG_FILE="/opt/meshcentral/meshcentral-data/config.json" \
