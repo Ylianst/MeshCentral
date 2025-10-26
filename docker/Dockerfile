@@ -59,7 +59,8 @@ RUN mkdir -p /opt/meshcentral
 COPY ./package.json /opt/meshcentral/package.json
 WORKDIR /opt/meshcentral
 
-RUN npm install && npm install modern-syslog@1.2.0 telegram@2.26.22
+RUN npm install --save-exact --no-audit --no-optional --omit=optional --verbose \
+    && npm install --save-exact --no-audit --no-optional --omit=optional --verbose modern-syslog@1.2.0 telegram@2.26.22
 ### STAGE 3 RUNTIME
 
 FROM alpine:3.22 AS runtime
