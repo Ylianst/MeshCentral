@@ -8,10 +8,13 @@ on:
     branches: [testme-docker]
 
 jobs:
-  build-amd64-slim:
+  build-amd64:
     runs-on: ubuntu-latest
     needs: translate
-    name: Build Docker Image (amd64-slim)
+    strategy:
+      matrix:
+        variant: [mongodb, postgresql, mariadb, all, slim]
+    name: Build Docker Image (amd64-${{ matrix.variant }})
     steps:
       - name: Download repo artifact
         uses: actions/download-artifact@v4
@@ -31,27 +34,42 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (amd64-slim)
+      - name: Build and push Docker image (amd64-${{ matrix.variant }})
         run: |
           REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+          case "${{ matrix.variant }}" in
+            mongodb)
+              MONGODB=YES; POSTGRESQL=NO; MARIADB=NO; TAG="-amd64-mongodb";;
+            postgresql)
+              MONGODB=NO; POSTGRESQL=YES; MARIADB=NO; TAG="-amd64-postgresql";;
+            mariadb)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=YES; TAG="-amd64-mariadb";;
+            all)
+              MONGODB=YES; POSTGRESQL=YES; MARIADB=YES; TAG="-amd64";;
+            slim)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=NO; TAG="-amd64-slim";;
+          esac
           docker buildx build \
             --platform linux/amd64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
+            --build-arg INCLUDE_MONGODB_TOOLS=$MONGODB \
+            --build-arg INCLUDE_POSTGRESQL_TOOLS=$POSTGRESQL \
+            --build-arg INCLUDE_MARIADB_TOOLS=$MARIADB \
             --build-arg DISABLE_MINIFY=yes \
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
             -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-slim \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}$TAG \
             --push \
             .
 
-  build-arm64-slim:
+  build-arm64:
     runs-on: ubuntu-latest
     needs: translate
-    name: Build Docker Image (arm64-slim)
+    strategy:
+      matrix:
+        variant: [mongodb, postgresql, mariadb, all, slim]
+    name: Build Docker Image (arm64-${{ matrix.variant }})
     steps:
       - name: Download repo artifact
         uses: actions/download-artifact@v4
@@ -71,27 +89,42 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (arm64-slim)
+      - name: Build and push Docker image (arm64-${{ matrix.variant }})
         run: |
           REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+          case "${{ matrix.variant }}" in
+            mongodb)
+              MONGODB=YES; POSTGRESQL=NO; MARIADB=NO; TAG="-arm64-mongodb";;
+            postgresql)
+              MONGODB=NO; POSTGRESQL=YES; MARIADB=NO; TAG="-arm64-postgresql";;
+            mariadb)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=YES; TAG="-arm64-mariadb";;
+            all)
+              MONGODB=YES; POSTGRESQL=YES; MARIADB=YES; TAG="-arm64";;
+            slim)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=NO; TAG="-arm64-slim";;
+          esac
           docker buildx build \
             --platform linux/arm64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
+            --build-arg INCLUDE_MONGODB_TOOLS=$MONGODB \
+            --build-arg INCLUDE_POSTGRESQL_TOOLS=$POSTGRESQL \
+            --build-arg INCLUDE_MARIADB_TOOLS=$MARIADB \
             --build-arg DISABLE_MINIFY=yes \
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
             -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-slim \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}$TAG \
             --push \
             .
 
-  build-armv7-slim:
+  build-armv7:
     runs-on: ubuntu-latest
     needs: translate
-    name: Build Docker Image (armv7-slim)
+    strategy:
+      matrix:
+        variant: [mongodb, postgresql, mariadb, all, slim]
+    name: Build Docker Image (armv7-${{ matrix.variant }})
     steps:
       - name: Download repo artifact
         uses: actions/download-artifact@v4
@@ -111,27 +144,42 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv7-slim)
+      - name: Build and push Docker image (armv7-${{ matrix.variant }})
         run: |
           REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+          case "${{ matrix.variant }}" in
+            mongodb)
+              MONGODB=YES; POSTGRESQL=NO; MARIADB=NO; TAG="-armv7-mongodb";;
+            postgresql)
+              MONGODB=NO; POSTGRESQL=YES; MARIADB=NO; TAG="-armv7-postgresql";;
+            mariadb)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=YES; TAG="-armv7-mariadb";;
+            all)
+              MONGODB=YES; POSTGRESQL=YES; MARIADB=YES; TAG="-armv7";;
+            slim)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=NO; TAG="-armv7-slim";;
+          esac
           docker buildx build \
             --platform linux/arm/v7 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
+            --build-arg INCLUDE_MONGODB_TOOLS=$MONGODB \
+            --build-arg INCLUDE_POSTGRESQL_TOOLS=$POSTGRESQL \
+            --build-arg INCLUDE_MARIADB_TOOLS=$MARIADB \
             --build-arg DISABLE_MINIFY=yes \
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
             -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7-slim \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}$TAG \
             --push \
             .
 
-  build-armv6-slim:
+  build-armv6:
     runs-on: ubuntu-latest
     needs: translate
-    name: Build Docker Image (armv6-slim)
+    strategy:
+      matrix:
+        variant: [mongodb, postgresql, mariadb, all, slim]
+    name: Build Docker Image (armv6-${{ matrix.variant }})
     steps:
       - name: Download repo artifact
         uses: actions/download-artifact@v4
@@ -151,22 +199,35 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv6-slim)
+      - name: Build and push Docker image (armv6-${{ matrix.variant }})
         run: |
           REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+          case "${{ matrix.variant }}" in
+            mongodb)
+              MONGODB=YES; POSTGRESQL=NO; MARIADB=NO; TAG="-armv6-mongodb";;
+            postgresql)
+              MONGODB=NO; POSTGRESQL=YES; MARIADB=NO; TAG="-armv6-postgresql";;
+            mariadb)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=YES; TAG="-armv6-mariadb";;
+            all)
+              MONGODB=YES; POSTGRESQL=YES; MARIADB=YES; TAG="-armv6";;
+            slim)
+              MONGODB=NO; POSTGRESQL=NO; MARIADB=NO; TAG="-armv6-slim";;
+          esac
           docker buildx build \
             --platform linux/arm/v6 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
+            --build-arg INCLUDE_MONGODB_TOOLS=$MONGODB \
+            --build-arg INCLUDE_POSTGRESQL_TOOLS=$POSTGRESQL \
+            --build-arg INCLUDE_MARIADB_TOOLS=$MARIADB \
             --build-arg DISABLE_MINIFY=yes \
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
             -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6-slim \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}$TAG \
             --push \
             .
+
   translate:
     runs-on: ubuntu-latest
     name: Run Translations
@@ -200,655 +261,6 @@ jobs:
         with:
           name: repo-with-translations
           path: .
-
-
-
-  build-amd64-mongodb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (amd64-mongodb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (amd64-mongodb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/amd64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mongodb \
-            --push \
-            .
-
-  build-amd64-postgresql:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (amd64-postgresql)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (amd64-postgresql)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/amd64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-postgresql \
-            --push \
-            .
-
-  build-amd64-mariadb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (amd64-mariadb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (amd64-mariadb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/amd64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mariadb \
-            --push \
-            .
-
-  build-amd64-all:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (amd64-all)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (amd64-all)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/amd64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64 \
-            --push \
-            .
-
-
-
-  build-arm64-mongodb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (arm64-mongodb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (arm64-mongodb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mongodb \
-            --push \
-            .
-
-  build-arm64-postgresql:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (arm64-postgresql)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (arm64-postgresql)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-postgresql \
-            --push \
-            .
-
-  build-arm64-mariadb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (arm64-mariadb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (arm64-mariadb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mariadb \
-            --push \
-            .
-
-  build-arm64-all:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (arm64-all)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (arm64-all)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm64 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64 \
-            --push \
-            .
-
-
-
-  build-armv7-mongodb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv7-mongodb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv7-mongodb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v7 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7-mongodb \
-            --push \
-            .
-
-  build-armv7-postgresql:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv7-postgresql)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv7-postgresql)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v7 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7-postgresql \
-            --push \
-            .
-
-  build-armv7-mariadb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv7-mariadb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv7-mariadb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v7 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7-mariadb \
-            --push \
-            .
-
-  build-armv7-all:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv7-all)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv7-all)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v7 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7 \
-            --push \
-            .
-
-
-
-  build-armv6-mongodb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv6-mongodb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv6-mongodb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v6 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6-mongodb \
-            --push \
-            .
-
-  build-armv6-postgresql:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv6-postgresql)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv6-postgresql)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v6 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=NO \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6-postgresql \
-            --push \
-            .
-
-  build-armv6-mariadb:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv6-mariadb)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv6-mariadb)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v6 \
-            --build-arg INCLUDE_MONGODB_TOOLS=NO \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=NO \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6-mariadb \
-            --push \
-            .
-
-  build-armv6-all:
-    runs-on: ubuntu-latest
-    needs: translate
-    name: Build Docker Image (armv6-all)
-    steps:
-      - name: Download repo artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: repo-with-translations
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Node.js (LTS)
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image (armv6-all)
-        run: |
-          REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          docker buildx build \
-            --platform linux/arm/v6 \
-            --build-arg INCLUDE_MONGODB_TOOLS=YES \
-            --build-arg INCLUDE_POSTGRESQL_TOOLS=YES \
-            --build-arg INCLUDE_MARIADB_TOOLS=YES \
-            --build-arg DISABLE_MINIFY=yes \
-            --build-arg DISABLE_TRANSLATE=yes \
-            --build-arg DISABLE_EXTRACT=yes \
-            --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6 \
-            --push \
-            .
-
 
   merge-manifest:
     runs-on: ubuntu-latest
