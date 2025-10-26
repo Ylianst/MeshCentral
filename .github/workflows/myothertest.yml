@@ -69,7 +69,6 @@ jobs:
     needs: translate
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
         variant: [mongodb, postgresql, mariadb, all, slim]
     name: Build Docker Image (arm64-${{ matrix.variant }})
@@ -126,7 +125,6 @@ jobs:
     needs: translate
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
         variant: [mongodb, postgresql, mariadb, all, slim]
     name: Build Docker Image (armv7-${{ matrix.variant }})
@@ -183,7 +181,6 @@ jobs:
     needs: translate
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
         variant: [mongodb, postgresql, mariadb, all, slim]
     name: Build Docker Image (armv6-${{ matrix.variant }})
