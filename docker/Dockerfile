@@ -38,8 +38,7 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
-RUN rm -rf /opt/meshcentral/meshcentral/docker
-RUN rm -rf /opt/meshcentral/meshcentral/node_modules
+RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
@@ -48,7 +47,7 @@ FROM alpine:3.22 AS dep-compiler
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ make nodejs npm python3 tzdata
+        bash gcc g++ make nodejs jq npm python3 tzdata
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
