@@ -258,9 +258,9 @@ jobs:
           ghcr_repo=ghcr.io/$REPO_OWNER_LC/meshcentral
           for arch in amd64 arm64 armv7 armv6; do
             echo "Deleting $ghcr_repo:${{ github.ref_name }}-$arch ..."
-            digest=$(docker buildx imagetools inspect $ghcr_repo:${{ github.ref_name }}-$arch --format '{{.Manifest.Digest}}')
+            digest=$(docker buildx imagetools inspect $ghcr_repo:${{ github.ref_name }}-$arch | grep '^Digest:' | awk '{print $2}')
             if [ -n "$digest" ]; then
-              curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}" \
                 "https://ghcr.io/v2/$REPO_OWNER_LC/meshcentral/manifests/$digest"
             fi
           done
