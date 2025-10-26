@@ -40,21 +40,21 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
 
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
-RUN cat /opt/meshcentral/meshcentral/package.json
-RUN ls -la /opt/meshcentral/meshcentral/node_modules || echo "No node_modules folder present"
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-# FROM alpine:3.22 AS dep-compiler
+FROM alpine:3.22 AS dep-compiler
 
-# RUN apk update && \
-#     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
-#     apk add --no-cache --update \
-#         bash gcc g++ jq make nodejs npm python3 tzdata
+RUN apk update && \
+    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    apk add --no-cache --update \
+        bash gcc g++ jq make nodejs npm python3 tzdata
 
-# RUN mkdir -p /opt/meshcentral
-# COPY ./package.json /opt/meshcentral/package.json
-# WORKDIR /opt/meshcentral
+RUN mkdir -p /opt/meshcentral
+COPY ./package.json /opt/meshcentral/package.json
+WORKDIR /opt/meshcentral
+
+RUN cat /opt/meshcentral/package.json
 
 # RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
 #     && mv tmp.$$.json package.json \
