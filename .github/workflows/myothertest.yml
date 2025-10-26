@@ -69,7 +69,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image (amd64)
         run: |
@@ -115,7 +115,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image (arm64)
         run: |
@@ -161,7 +161,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image (arm/v7)
         run: |
@@ -207,7 +207,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image (arm/v6)
         run: |
@@ -240,7 +240,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Create and push multi-arch manifest
         run: |
