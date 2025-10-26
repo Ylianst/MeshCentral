@@ -53,11 +53,11 @@ RUN apk update && \
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
-RUN cat /opt/meshcentral/package.json
+RUN cat meshcentral/package.json
 
-RUN node -e "let pkg=require('./package.json');pkg.dependencies['modern-syslog']='1.2.0';pkg.dependencies['telegram']='2.26.22';require('fs').writeFileSync('package.json',JSON.stringify(pkg,null,2));"
+RUN node -e "let pkg=require('./meshcentral/package.json');pkg.dependencies['modern-syslog']='1.2.0';pkg.dependencies['telegram']='2.26.22';require('fs').writeFileSync('./meshcentral/package.json',JSON.stringify(pkg,null,2));"
 
-RUN cat /opt/meshcentral/package.json
+RUN cat meshcentral/package.json
 
 # RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
 #     && mv tmp.$$.json package.json \
