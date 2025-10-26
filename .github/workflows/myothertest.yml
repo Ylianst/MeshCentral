@@ -83,9 +83,10 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
+            -f docker/Dockerfile \
             -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64 \
             --push \
-            ./docker
+            .
 
 
   build-arm64:
@@ -128,9 +129,10 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
+            -f docker/Dockerfile \
             -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64 \
             --push \
-            ./docker
+            .
 
 
   build-armv7:
@@ -173,9 +175,10 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
+            -f docker/Dockerfile \
             -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv7 \
             --push \
-            ./docker
+            .
 
 
   build-armv6:
@@ -218,9 +221,10 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
+            -f docker/Dockerfile \
             -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-armv6 \
             --push \
-            ./docker
+            .
 
 
   merge-manifest:
