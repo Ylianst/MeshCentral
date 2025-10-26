@@ -50,10 +50,10 @@ RUN apk update && \
         bash gcc g++ make nodejs jq npm python3 tzdata
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-WORKDIR /opt/meshcentral
+WORKDIR /opt/meshcentral/meshcentral
 
-RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' meshcentral/package.json > temp.json && mv temp.json meshcentral/package.json \
-#     && npm i --package-lock-only \
+RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
+    && npm i --package-lock-only \
     && npm ci
 
 ### STAGE 3 RUNTIME
