@@ -55,14 +55,12 @@ WORKDIR /opt/meshcentral
 
 RUN cat meshcentral/package.json
 
-RUN node -e "let pkg=require('./meshcentral/package.json');pkg.dependencies['modern-syslog']='1.2.0';pkg.dependencies['telegram']='2.26.22';require('fs').writeFileSync('./meshcentral/package.json',JSON.stringify(pkg,null,2));"
-
-RUN cat meshcentral/package.json
-
-# RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
-#     && mv tmp.$$.json package.json \
+RUN jq '.dependencies["modern-syslog"] = "1.2.0"' meshcentral/package.json > tmp.$$.json \
+    && mv tmp.$$.json meshcentral/package.json
 #     && npm i --package-lock-only \
 #     && npm ci
+
+RUN cat meshcentral/package.json
 
 # ### STAGE 3 RUNTIME
 
