@@ -54,8 +54,7 @@ WORKDIR /opt/meshcentral
 
 RUN cat meshcentral/package.json
 
-RUN jq '.dependencies["modern-syslog"] = "1.2.0"' meshcentral/package.json > tmp.$$.json \
-    && mv tmp.$$.json meshcentral/package.json
+RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' meshcentral/package.json > temp.json && mv temp.json meshcentral/package.json
 #     && npm i --package-lock-only \
 #     && npm ci
 
