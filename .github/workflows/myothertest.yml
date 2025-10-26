@@ -265,26 +265,11 @@ jobs:
   merge-manifest:
     runs-on: ubuntu-latest
     needs:
-      - build-amd64-mongodb
-      - build-arm64-mongodb
-      - build-armv7-mongodb
-      - build-armv6-mongodb
-      - build-amd64-postgresql
-      - build-arm64-postgresql
-      - build-armv7-postgresql
-      - build-armv6-postgresql
-      - build-amd64-mariadb
-      - build-arm64-mariadb
-      - build-armv7-mariadb
-      - build-armv6-mariadb
-      - build-amd64-all
-      - build-arm64-all
-      - build-armv7-all
-      - build-armv6-all
-      - build-amd64-slim
-      - build-arm64-slim
-      - build-armv7-slim
-      - build-armv6-slim
+      - translate
+      - build-amd64
+      - build-arm64
+      - build-armv7
+      - build-armv6
     name: Create and Push Multi-Arch Manifest
     steps:
       - name: Set up Docker Buildx
