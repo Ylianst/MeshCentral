@@ -13,7 +13,6 @@ WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 # Check the Docker build arguments and if they are empty do the task.
-RUN apk add --no-cache python3 make g++ bash
 RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
         echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral/translate && \
@@ -45,6 +44,7 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
 
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
+RUN rm -rf /opt/meshcentral/meshcentral/docs
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
@@ -59,9 +59,7 @@ RUN mkdir -p /opt/meshcentral
 COPY ./package.json /opt/meshcentral/package.json
 WORKDIR /opt/meshcentral
 
-RUN node -e "let pkg=require('./package.json');pkg.dependencies['modern-syslog']='1.2.0';pkg.dependencies['telegram']='2.26.22';require('fs').writeFileSync('package.json',JSON.stringify(pkg,null,2));" \
-    && npm install
-
+RUN npm install && npm install modern-syslog@1.2.0 telegram@2.26.22
 ### STAGE 3 RUNTIME
 
 FROM alpine:3.22 AS runtime
