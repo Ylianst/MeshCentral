@@ -9462,16 +9462,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return null;
     }
 
-    function generateCustomCSSTags(customFilesArray, currentTemplate) {
+    function generateCustomCSSTags(customFilesObject, currentTemplate) {
         var cssTags = '';
         
         cssTags += '<link keeplink=1 type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
         
 
-        if (customFilesArray) {
-            if (Array.isArray(customFilesArray)) {
-                for (var i = 0; i < customFilesArray.length; i++) {
-                    var customFileConfig = customFilesArray[i];
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
                     if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
                         if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
                             (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
@@ -9481,9 +9482,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
                 }
-            } else if (customFilesArray.css && Array.isArray(customFilesArray.css)) {
-                for (var i = 0; i < customFilesArray.css.length; i++) {
-                    cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFilesArray.css[i] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+            } else if (customFilesObject.css && Array.isArray(customFilesObject.css)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.css.length; i++) {
+                    cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFilesObject.css[i] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -9491,15 +9506,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return cssTags.trim();
     }
 
-    function generateCustomJSTags(customFilesArray, currentTemplate) {
+    function generateCustomJSTags(customFilesObject, currentTemplate) {
         var jsTags = '';
         
         jsTags += '<script keeplink=1 type="text/javascript" src="scripts/custom.js"></script>\n    ';
         
-        if (customFilesArray) {
-            if (Array.isArray(customFilesArray)) {
-                for (var i = 0; i < customFilesArray.length; i++) {
-                    var customFileConfig = customFilesArray[i];
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
                     if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
                         if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
                             (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
@@ -9509,9 +9525,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
                 }
-            } else if (customFilesArray.js && Array.isArray(customFilesArray.js)) {
-                for (var i = 0; i < customFilesArray.js.length; i++) {
-                    jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFilesArray.js[i] + '"></script>\n    ';
+            } else if (customFilesObject.js && Array.isArray(customFilesObject.js)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.js.length; i++) {
+                    jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFilesObject.js[i] + '"></script>\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
                 }
             }
         }
