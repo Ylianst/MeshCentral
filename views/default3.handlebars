@@ -13339,6 +13339,9 @@
                             x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m[0].mac)));
                         }
                     }
+                    if (typeof m[0].speed == 'number' && (m[0].speed != 9223372036854775807 && m[0].speed > 0)) {
+                        x += addDetailItem("Interface Speed", format("{0}", getNetworkSpeed(m[0].speed)));
+                    }
                     for (var j = 0; j < m.length; j++) {
                         var iplayer = m[j], items = [];
                         if (iplayer.address) { items.push(format("IP: {0}", EscapeHtml(iplayer.address))); }
@@ -16326,6 +16329,14 @@
             if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
             if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
             return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+        }
+
+        function getNetworkSpeed(bitsPerSecond) {
+            if (bitsPerSecond <= 0) return "0 bps";
+            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
+            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {

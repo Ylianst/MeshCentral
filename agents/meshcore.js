@@ -5908,6 +5908,23 @@ function sendNetworkUpdate(force) {
     try {
         // Update the network interfaces information data
         var netInfo = { netif2: require('os').networkInterfaces() };
+        if (process.platform == 'win32') {
+            try {
+                var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                if (ret[0]) {
+                    var speedMap = {};
+                    for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
+                    var adapterNames = Object.keys(netInfo.netif2);
+                    for (var j = 0; j < adapterNames.length; j++) {
+                        var interfaces = netInfo.netif2[adapterNames[j]];
+                        for (var k = 0; k < interfaces.length; k++) {
+                            var iface = interfaces[k], speed = speedMap[iface.index] || 0;
+                            iface.speed = parseInt(speed); // bits per seconds
+                        }
+                    }
+                }
+            } catch(ex) { }
+        }
         if (netInfo.netif2) {
             netInfo.action = 'netinfo';
             var netInfoStr = JSON.stringify(netInfo);
