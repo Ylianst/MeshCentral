@@ -167,12 +167,12 @@
         <div class="sidebar flex-column" id="page_leftbar">
             <div style="height:24px"></div>
             <nav class="nav flex-column">
-                <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#" data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i class="fa-solid fa-computer me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account" onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i class="fa-solid fa-user-gear me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events" onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i class="fa-solid fa-calendar-alt me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files" onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i class="fa-solid fa-folder-open me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users" onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i class="fa-solid fa-users me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyServer" href="#" data-target="server" onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i class="fa-solid fa-server me-2"></i></a>
+                <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#" data-target="general" onclick=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i class="fa-solid fa-computer me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account" onclick=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i class="fa-solid fa-user-gear me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events" onclick=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i class="fa-solid fa-calendar-alt me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files" onclick=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i class="fa-solid fa-folder-open me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users" onclick=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i class="fa-solid fa-users me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyServer" href="#" data-target="server" onclick=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i class="fa-solid fa-server me-2"></i></a>
             </nav>
         </div>
         <div id=topbar class=noselect>
@@ -20322,6 +20322,7 @@
             // If "shift" is pressed, open a new tab.
             if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
+                event.preventDefault();
                 if ((x >= 10) && (x <= 19)) {
                     if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key) ? ('&key=' + urlargs.key) : ''), 'meshcentral:' + currentNode._id); }
                 } else if ((x >= 20) && (x <= 29)) {
