@@ -38,8 +38,7 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
-RUN rm -rf /opt/meshcentral/meshcentral/docker
-RUN rm -rf /opt/meshcentral/meshcentral/node_modules
+RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
@@ -50,12 +49,10 @@ RUN apk update && \
     apk add --no-cache --update \
         bash gcc g++ jq make nodejs npm python3 tzdata
 
-RUN mkdir -p /opt/meshcentral
-COPY ./package.json /opt/meshcentral/package.json
-WORKDIR /opt/meshcentral
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+WORKDIR /opt/meshcentral/meshcentral
 
-RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
-    && mv tmp.$$.json package.json \
+RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
     && npm i --package-lock-only \
     && npm ci
 
@@ -63,9 +60,8 @@ RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
 
 FROM alpine:3.22 AS runtime
 
-# Copy prepared app from builder stage
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=dep-compiler /opt/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
+# # Copy prepared app from builder stage
+COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # environment variables
 ENV NODE_ENV="production" \
