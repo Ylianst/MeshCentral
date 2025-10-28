@@ -2205,6 +2205,7 @@
             QV('uiViewButton5', !(args.hide & 4)); // Hide the footer toggle button if footer is hidden anyway.
             adjustPanels();
 
+            setTimeout(updateUserDropdownVisibility, 100);
 
             // Setup the context menu
             document.onclick = function (e) { hideContextMenu(); }
