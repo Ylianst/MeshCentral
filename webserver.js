@@ -58,6 +58,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Setup WebAuthn / FIDO2
     obj.webauthn = require('./webauthn.js').CreateWebAuthnModule();
 
+    if (process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) {
+        obj.httpsProxyAgent = new (require('https-proxy-agent').HttpsProxyAgent)(process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+    }
+
     // Variables
     obj.args = args;
     obj.parent = parent;
@@ -7979,6 +7983,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
 
+            if (obj.httpsProxyAgent) {
+                // process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // add using environment variables if needs be not here
+                strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: obj.httpsProxyAgent });
+            }
             // Discover additional information if available, use endpoints from config if present
             let issuer
             try {
@@ -8182,6 +8190,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         const options = {
                             'headers': { authorization: 'Bearer ' + tokenset.access_token }
                         }
+                        if (obj.httpsProxyAgent) { options.agent = obj.httpsProxyAgent; }
                         const req = require('https').get(url, options, (res) => {
                             let data = []
                             res.on('data', (chunk) => {
