@@ -167,32 +167,32 @@
                         </div>
                         <div id="userDropdownMenu">
                             <div id="userDropdownMenuContainer">
-                                <div class="userDropdownMenuItem userDropdownMobileOnly" data-action="devices" onclick="handleUserMenuItem('devices')">
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="devices" onclick="handleUserMenuItem('devices')">
                                     <i class="fa fa-desktop userDropdownMenuIcon"></i>
                                     <span>My Devices</span>
                                 </div>
 
-                                <div class="userDropdownMenuItem userDropdownMobileOnly" data-action="events" onclick="handleUserMenuItem('events')">
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="events" onclick="handleUserMenuItem('events')">
                                     <i class="fa fa-calendar userDropdownMenuIcon"></i>
                                     <span>My Events</span>
                                 </div>
 
-                                <div id="mobileUsersMenuItem" class="userDropdownMenuItem userDropdownMobileOnly users-menu-item d-none" data-action="users" onclick="handleUserMenuItem('users')">
+                                <div id="mobileUsersMenuItem" class="userDropdownMenuItem userDropdownMobileOnly users-menu-item mobile-menu-item d-none" data-action="users" onclick="handleUserMenuItem('users')">
                                     <i class="fa fa-users userDropdownMenuIcon"></i>
                                     <span>My Users</span>
                                 </div>
 
-                                <div id="mobileFilesMenuItem" class="userDropdownMenuItem userDropdownMobileOnly files-menu-item d-none" data-action="files" onclick="handleUserMenuItem('files')">
+                                <div id="mobileFilesMenuItem" class="userDropdownMenuItem userDropdownMobileOnly files-menu-item mobile-menu-item d-none" data-action="files" onclick="handleUserMenuItem('files')">
                                     <i class="fa fa-folder userDropdownMenuIcon"></i>
                                     <span>My Files</span>
                                 </div>
 
-                                <div id="mobileServerMenuItem" class="userDropdownMenuItem userDropdownMobileOnly server-menu-item d-none" data-action="server" onclick="handleUserMenuItem('server')">
+                                <div id="mobileServerMenuItem" class="userDropdownMenuItem userDropdownMobileOnly server-menu-item mobile-menu-item d-none" data-action="server" onclick="handleUserMenuItem('server')">
                                     <i class="fa fa-server userDropdownMenuIcon"></i>
                                     <span>My Server</span>
                                 </div>
 
-                                <div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>
+                                <div id="userDropdownMenuDivider" class="userDropdownMobileOnly mobile-menu-item"></div>
 
                                 <div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(); event.stopPropagation();">
                                     <i class="fa fa-sliders userDropdownMenuIcon"></i>
@@ -201,7 +201,7 @@
                                 </div>
 
                                 <div id="uiSubmenu" class="userDropdownSubmenu">
-                                    <div class="userDropdownMenuItem" data-action="toggle-modern-ui" onclick="handleUserMenuItem('toggle-modern-ui')">
+                                    <div id="toggleModernUIMenuItem" class="userDropdownMenuItem" data-action="toggle-modern-ui" onclick="handleUserMenuItem('toggle-modern-ui')">
                                         <i class="fa fa-toggle-on userDropdownMenuIcon"></i>
                                         <span>Toggle Modern UI</span>
                                     </div>
@@ -217,13 +217,14 @@
                                         <i class="fa fa-columns userDropdownMenuIcon"></i>
                                         <span>Fixed Width Interface</span>
                                     </div>
-                                    <div class="userDropdownMenuItem" data-action="toggle-footer" onclick="handleUserMenuItem('toggle-footer')">
+                                    <div id="toggleFooterMenuItem" class="userDropdownMenuItem" data-action="toggle-footer" onclick="handleUserMenuItem('toggle-footer')">
                                         <i class="fa fa-window-minimize userDropdownMenuIcon"></i>
                                         <span>Toggle Footer Bar</span>
                                     </div>
+                                    <div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>
                                 </div>
 
-                                <div class="userDropdownMenuItem" data-action="toggle-night" onclick="toggleNightMode(); QV('userDropdownMenu', false); QV('uiSubmenu', false); resetChevronArrow();">
+                                <div id="toggleNightMenuItem" class="userDropdownMenuItem" data-action="toggle-night" onclick="toggleNightMode(); QV('userDropdownMenu', false); QV('uiSubmenu', false); resetChevronArrow();">
                                     <i id="nightModeIcon" class="fa userDropdownMenuIcon night-mode-icon"></i>
                                     <span id="nightModeText">Toggle night mode</span>
                                 </div>
@@ -2203,6 +2204,10 @@
             }
             args.hide = hide;
             QV('uiViewButton5', !(args.hide & 4)); // Hide the footer toggle button if footer is hidden anyway.
+            QV('toggleFooterMenuItem', !(args.hide & 4)); // Hide the footer toggle menu item if footer is hidden anyway.
+            QV('toggleNightMenuItem', ((features2 & 0x00100000) == 0) && ((features2 & 0x00200000) == 0)); // Hide night mode toggle if permanent night (1) or day (2) mode is set
+            QV('toggleModernUIMenuItem', ((features2 & 0x80000000) == 0)); // Show only if allowed and not forced siteStyle=3
+            updateMobileTopBarVisibility();
             adjustPanels();
 
             setTimeout(updateUserDropdownVisibility, 100);
@@ -2644,6 +2649,7 @@
                     QV('uiMenu', false);
                     QV('topMenu', false);
                     updateNightModeIcon();
+                    updateMobileTopBarVisibility();
                 } else {
                     userDropdownMenu.style.display = 'none';
                     var uiSubmenu = Q('uiSubmenu');
@@ -2739,6 +2745,16 @@
             toggleStackMenu(0);
             if (webPageStackMenu && (xxcurrentView >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
             adjustPanels();
+        }
+
+        function updateMobileTopBarVisibility() {
+            try {
+                var items = document.querySelectorAll('.mobile-menu-item');
+                for (var i = 0; i < items.length; i++) {
+                    if ((uiMode == 2) || (uiMode == 3)) { items[i].classList.add('d-none'); }
+                    else { items[i].classList.remove('d-none'); }
+                }
+            } catch (ex) { }
         }
 
         function toggleNightMode() {

@@ -3525,9 +3525,6 @@ body:not(.fullscreen) .notifiyBox {
         border-radius: 0 !important;
     }
     
-    .userDropdownSubmenu .userDropdownMenuItem {
-        border-left: 3px solid #444444 !important;
-    }
     .userDropdownMenuItem:hover {
         border-radius: unset !important;
     }
