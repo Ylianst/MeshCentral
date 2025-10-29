@@ -3497,7 +3497,7 @@ body:not(.fullscreen) .notifiyBox {
     }
 
     #userDropdownMenuDivider.userDropdownMobileOnly {
-        display: block !important;
+        display: block;
     }
 
     .userDropdownSubmenu {
@@ -3736,7 +3736,7 @@ body:not(.fullscreen) .notifiyBox {
     transform: rotate(90deg);
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
     .userDropdownSubmenu {
         position: absolute;
         display: none;

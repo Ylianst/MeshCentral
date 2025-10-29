@@ -18882,12 +18882,13 @@
             uiSubmenuOpen = !uiSubmenuOpen;
             
             var uiSubmenu = Q('uiSubmenu');
-            var isDesktop = window.innerWidth > 1024;
+            var isDesktop = window.innerWidth > 769;
+            var reduceMotion = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
             
             if (uiSubmenuOpen) {
                 QS('uiSubmenu').display = 'block';
                 
-                if (isDesktop) {
+                if (isDesktop && (reduceMotion == false)) {
                     setTimeout(function() {
                         QS('uiSubmenu').opacity = '1';
                         QS('uiSubmenu').transform = 'translateX(0)';
@@ -18897,7 +18898,7 @@
                     QS('uiSubmenu').transform = 'translateX(0)';
                 }
             } else {
-                if (isDesktop) {
+                if (isDesktop && (reduceMotion == false)) {
                     QS('uiSubmenu').opacity = '0';
                     QS('uiSubmenu').transform = 'translateX(12px)';
                     setTimeout(function() {
