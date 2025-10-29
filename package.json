@@ -1,6 +1,6 @@
 {
   "name": "meshcentral",
-  "version": "1.1.50",
+  "version": "1.1.53",
   "keywords": [
     "Remote Device Management",
     "Remote Device Monitoring",
@@ -37,7 +37,7 @@
     "sample-config-advanced.json"
   ],
   "dependencies": {
-    "@seald-io/nedb": "4.0.4",
+    "@seald-io/nedb": "4.1.2",
     "archiver": "7.0.1",
     "body-parser": "1.20.3",
     "cbor": "5.2.0",
@@ -53,7 +53,7 @@
     "otplib": "12.0.1",
     "ua-client-hints-js": "0.1.2",
     "ua-parser-js": "1.0.40",
-    "ws": "8.18.0",
+    "ws": "8.18.3",
     "yauzl": "2.10.0"
   },
   "engines": {

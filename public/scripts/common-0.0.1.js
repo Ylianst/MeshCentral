@@ -43,22 +43,22 @@ function ArrayElementMove(arr, from, to) { arr.splice(to, 0, arr.splice(from, 1)
 
 // Print object for HTML
 function ObjectToStringEx(x, c) {
-    var r = "";
-    if (x != 0 && (!x || x == null)) return '(Null)';
-    if (x instanceof Array) { for (var i in x) { r += '<br />' + gap(c) + 'Item #' + i + ": " + ObjectToStringEx(x[i], c + 1); } }
-    else if (x instanceof Object) { for (var i in x) { r += '<br />' + gap(c) + i + ' = ' + ObjectToStringEx(x[i], c + 1); } }
-    else { r += EscapeHtml(x); }
-    return r;
+  var r = "";
+  if (x != 0 && (!x || x == null)) return '(Null)';
+  if (x instanceof Array) { for (var i in x) { r += '<br />' + gap(c) + 'Item #' + i + ": " + ObjectToStringEx(x[i], c + 1); } }
+  else if (x instanceof Object) { for (var i in x) { r += '<br />' + gap(c) + i + ' = ' + ObjectToStringEx(x[i], c + 1); } }
+  else { r += EscapeHtml(x); }
+  return r;
 }
 
 // Print object for console
 function ObjectToStringEx2(x, c) {
-    var r = '';
-    if (x != 0 && (!x || x == null)) return '(Null)';
-    if (x instanceof Array) { for (var i in x) { r += '\r\n' + gap2(c) + 'Item #' + i + ': ' + ObjectToStringEx2(x[i], c + 1); } }
-    else if (x instanceof Object) { for (var i in x) { r += '\r\n' + gap2(c) + i + ' = ' + ObjectToStringEx2(x[i], c + 1); } }
-    else { r += EscapeHtml(x); }
-    return r;
+  var r = '';
+  if (x != 0 && (!x || x == null)) return '(Null)';
+  if (x instanceof Array) { for (var i in x) { r += '\r\n' + gap2(c) + 'Item #' + i + ': ' + ObjectToStringEx2(x[i], c + 1); } }
+  else if (x instanceof Object) { for (var i in x) { r += '\r\n' + gap2(c) + i + ' = ' + ObjectToStringEx2(x[i], c + 1); } }
+  else { r += EscapeHtml(x); }
+  return r;
 }
 
 // Create an ident gap
@@ -71,10 +71,10 @@ function ObjectToString2(x) { return ObjectToStringEx2(x, 0); }
 
 // Convert a hex string to a raw string
 function hex2rstr(d) {
-    if (typeof d != 'string' || d.length == 0) return '';
-    var r = '', m = ('' + d).match(/../g), t;
-    while (t = m.shift()) r += String.fromCharCode('0x' + t);
-    return r
+  if (typeof d != 'string' || d.length == 0) return '';
+  var r = '', m = ('' + d).match(/../g), t;
+  while (t = m.shift()) r += String.fromCharCode('0x' + t);
+  return r
 }
 
 // Convert decimal to hex
@@ -89,16 +89,16 @@ function decode_utf8(s) { return decodeURIComponent(escape(s)); }
 
 // Convert a string into a blob
 function data2blob(data) {
-    var bytes = new Array(data.length);
-    for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
-    return new Blob([new Uint8Array(bytes)]);
+  var bytes = new Array(data.length);
+  for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
+  return new Blob([new Uint8Array(bytes)]);
 }
 
 // Convert a UTF8 string into a blob
 function utf2blob(str) {
-    var bytes = [], utf8 = unescape(encodeURIComponent(str));
-    for (var i = 0; i < utf8.length; i++) { bytes.push(utf8.charCodeAt(i)); }
-    return new Blob([new Uint8Array(bytes)]);
+  var bytes = [], utf8 = unescape(encodeURIComponent(str));
+  for (var i = 0; i < utf8.length; i++) { bytes.push(utf8.charCodeAt(i)); }
+  return new Blob([new Uint8Array(bytes)]);
 }
 
 // Generate random numbers
@@ -117,18 +117,18 @@ function isSafeString2(str) { return ((typeof str == 'string') && (str.indexOf('
 
 // Parse URL arguments, only keep safe values
 function parseUriArgs(decodeUrl) {
-    var href = window.document.location.href;
-    if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
-    var name, r = {}, parsedUri = href.split(/[\?&|]/);
-    parsedUri.splice(0, 1);
-    for (var j in parsedUri) {
-        var arg = parsedUri[j], i = arg.indexOf('=');
-        name = arg.substring(0, i);
-        r[name] = arg.substring(i + 1);
-        if (decodeUrl) { r[name] = decodeURIComponent(arg.substring(i + 1)); }
-        if (!isSafeString2(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
-    }
-    return r;
+  var href = window.document.location.href;
+  if (href.endsWith('#')) { href = href.substring(0, href.length - 1); }
+  var name, r = {}, parsedUri = href.split(/[\?&|]/);
+  parsedUri.splice(0, 1);
+  for (var j in parsedUri) {
+    var arg = parsedUri[j], i = arg.indexOf('=');
+    name = arg.substring(0, i);
+    r[name] = arg.substring(i + 1);
+    if (decodeUrl) { r[name] = decodeURIComponent(arg.substring(i + 1)); }
+    if (!isSafeString2(r[name])) { delete r[name]; } else { var x = parseInt(r[name]); if (x == r[name]) { r[name] = x; } }
+  }
+  return r;
 }
 
 // check_webp_feature:
@@ -136,45 +136,59 @@ function parseUriArgs(decodeUrl) {
 //   'callback(feature, isSupported)' will be passed back the detection result (in an asynchronous way!)
 // From: https://stackoverflow.com/questions/5573096/detecting-webp-support
 function check_webp_feature(feature, callback) {
-    var kTestImages = {
-        lossy: 'UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA'//,
-        //lossless: 'UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==',
-        //alpha: 'UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==',
-        //animation: 'UklGRlIAAABXRUJQVlA4WAoAAAASAAAAAAAAAAAAQU5JTQYAAAD/////AABBTk1GJgAAAAAAAAAAAAAAAAAAAGQAAABWUDhMDQAAAC8AAAAQBxAREYiI/gcA'
-    };
-    var img = new Image();
-    img.onload = function () {
-        var result = (img.width > 0) && (img.height > 0);
-        callback(feature, result);
-    };
-    img.onerror = function () {
-        callback(feature, false);
-    };
-    img.src = 'data:image/webp;base64,' + kTestImages[feature];
+  var kTestImages = {
+    lossy: 'UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA'//,
+    //lossless: 'UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==',
+    //alpha: 'UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==',
+    //animation: 'UklGRlIAAABXRUJQVlA4WAoAAAASAAAAAAAAAAAAQU5JTQYAAAD/////AABBTk1GJgAAAAAAAAAAAAAAAAAAAGQAAABWUDhMDQAAAC8AAAAQBxAREYiI/gcA'
+  };
+  var img = new Image();
+  img.onload = function () {
+    var result = (img.width > 0) && (img.height > 0);
+    callback(feature, result);
+  };
+  img.onerror = function () {
+    callback(feature, false);
+  };
+  img.src = 'data:image/webp;base64,' + kTestImages[feature];
 }
 
 // camelCase converter for JSON
 function jsonToCamel(o) {
-    var newO, origKey, newKey, value
-    if (o instanceof Array) {
+  var newO, origKey, newKey, value
+  if (o instanceof Array) {
       return o.map(function(value) {
-          if (typeof value === "object") {
-            value = jsonToCamel(value)
-          }
-          return value
-      })
-    } else {
-      newO = {}
-      for (origKey in o) {
-        if (o.hasOwnProperty(origKey)) {
-          newKey = (origKey.charAt(0).toLowerCase() + origKey.slice(1) || origKey).toString()
-          value = o[origKey]
-          if (value instanceof Array || (value !== null && value.constructor === Object)) {
-            value = jsonToCamel(value)
-          }
-          newO[newKey] = value
+      if (typeof value === "object") {
+        value = jsonToCamel(value)
+      }
+      return value
+    })
+  } else {
+    newO = {}
+    for (origKey in o) {
+      if (o.hasOwnProperty(origKey)) {
+        newKey = (origKey.charAt(0).toLowerCase() + origKey.slice(1) || origKey).toString()
+        value = o[origKey]
+        if (value instanceof Array || (value !== null && value.constructor === Object)) {
+          value = jsonToCamel(value)
         }
+        newO[newKey] = value
       }
     }
-    return newO
   }
+  return newO
+}
+
+function joinPaths() {
+  var x = [];
+  for (var i in arguments) {
+    var w = arguments[i];
+    if ((w != null) && (w != '')) {
+      while (w.endsWith('/') || w.endsWith('\\')) {
+        w = w.substring(0, w.length - 1);
+      }
+      x.push(w);
+    }
+  }
+  return x.join('/');
+}

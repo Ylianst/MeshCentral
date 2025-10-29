@@ -1,53 +1,59 @@
 site_name: "MeshCentral Documentation"
 nav:
-  - Home: index.md
+  - Home:
+    - 'Abstract': './index.md'
 
-  - Install:
-    - install/index.md
-    - install/install2.md
+  - 'Install':
+    - 'Abstract': './install/abstract.md'
+    - 'Quickstart': 'install/quickstart.md'
+    - 'Installation Guides':
+        - 'Abstract': './install/abstract.md'
+        - 'Advanced': './install/advanced.md'
+        - 'Container (Docker)': './install/container.md'
+        - 'Windows': './install/windows.md'
+    - 'Databases':
+      - 'MongoDB': './install/database/mongodb.md'
+      - 'PostgreSQL': './install/database/postgresql.md'
+      - 'MariaDB/MySQL': './install/database/mariadb.md'
+      - 'Local Databases': './install/database/local.md'
+    - 'Security':
+      - 'Crowdsec': './install/security/crowdsec.md'
+      - 'Secure Installation': './install/security/secure.md'
 
-  - MeshCentral2: 
-      - 'MeshCentral2 Guide': 'meshcentral/index.md'
-      - 'All Configuration Options': 'meshcentral/config.md'
-      - 'Agent Information': 'meshcentral/agents.md'
-      - 'Assistant': 'meshcentral/assistant.md'
-      - 'Code Signing': 'meshcentral/codesigning.md'
-      - 'Debugging': 'meshcentral/debugging.md'
-      - 'Device Tabs': 'meshcentral/devicetabs.md'
-      - 'Plugins': 'meshcentral/plugins.md'
-      - 'SSL': 'meshcentral/SSLnletsencrypt.md'
-      - 'Security': 'meshcentral/security.md'
-      - 'Tokens': 'meshcentral/tokens.md'
-      - 'FAQ': 'meshcentral/faq.md'
-      - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
-      - 'Messaging': 'messaging/index.md'
-      - 'Customization': 'meshcentral/customization.md'
-      - 'openidConnectStrategy': 'meshcentral/openidConnectStrategy.md'
-      
-  - Design and Architecture:
-    - design/index.md
+  - 'MeshCentral':
+      - 'MeshCentral Guide': './meshcentral/index.md'
+      - 'All Configuration Options': './meshcentral/config.md'
+      - 'SSL/TLS': './meshcentral/SSLnletsencrypt.md'
+      - 'Agent Information': './meshcentral/agents.md'
+      - 'Assistant': './meshcentral/assistant.md'
+      - 'Code Signing': './meshcentral/codesigning.md'
+      - 'Debugging': './meshcentral/debugging.md'
+      - 'Device Tabs': './meshcentral/devicetabs.md'
+      - 'Plugins': './meshcentral/plugins.md'
+      - 'Security': './meshcentral/security.md'
+      - 'Tokens': './meshcentral/tokens.md'
+      - 'FAQ': './meshcentral/faq.md'
+      - 'Tips n Tricks': './meshcentral/tipsntricks.md'
+      - 'Messaging': './messaging/index.md'
+      - 'Customization': './meshcentral/customization.md'
+      - 'OpenID Connect Strategy (OIDC)': './meshcentral/openidConnectStrategy.md'
 
-  - MeshCmd:
-    - meshcmd/index.md
+  - 'Submodules and Features':
+    - 'MeshCmd': ./meshcmd/index.md
+    - 'MeshCtrl': ./meshctrl/index.md
+    - 'Mesh Router': ./meshrouter/index.md
+    - 'Intel AMT': ./intelamt/index.md
 
-  - MeshCtrl:
-    - meshctrl/index.md
+  - 'How to Contribute': './how-to-contribute/index.md'
 
-  - Mesh Router:
-    - meshrouter/index.md
+  - 'Design and Architecture': './design/index.md'
 
-  - Intel AMT:
-    - intelamt/index.md
-
-  - How to Contribute:
-    - how-to-contribute/index.md
-
-  - Other:
-    - other/adfs_sso_guide.md
-    - other/meshcentral_satellite.md
+  - 'Other':
+    - './other/adfs_sso_guide.md' 
+    - './other/meshcentral_satellite.md'
 
 site_description: "A remote monitoring and management tool"
-site_author: "Ylianst"
+site_author: "Ylianst and others"
 site_url: "https://ylianst.github.io/MeshCentral/"
 
 dev_addr: "0.0.0.0:8010"
@@ -55,46 +61,45 @@ dev_addr: "0.0.0.0:8010"
 # Repository
 repo_name: "Ylianst/MeshCentral"
 repo_url: "https://github.com/Ylianst/MeshCentral"
-edit_uri: ""
 
 theme:
   name: "material"
   logo: "images/favicon.ico"
   favicon: "images/favicon.ico"
-  language: "en"
+  language: en
+  locale: en
+  include_sidebar: false
   palette:
-    primary: "white"
-    accent: "indigo"
+    - scheme: default # Palette toggle for dark mode
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+    - scheme: slate # Palette toggle for light mode
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
   features:
+    - content.code.copy
+    - content.code.select
     - navigation.tabs
-    - navigation.expand
     - navigation.top
+    - navigation.sections
     - navigation.instant
+    - search.suggest
 extra_css:
   - stylesheets/extra.css
 extra:
   generator: false
+plugins:
+  - search
+  - print-site
 
 markdown_extensions:
-  - pymdownx.keys
-  - pymdownx.inlinehilite
-  - pymdownx.arithmatex:
-      generic: true
-  - pymdownx.betterem:
-      smart_enable: all
-  - pymdownx.caret
-  - admonition
-  - pymdownx.details
-  - pymdownx.highlight
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - codehilite:
-      guess_lang: true
-  - toc:
-      permalink: true
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+  - admonition
+  - tables
