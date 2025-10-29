@@ -9512,10 +9512,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
-        if(currentTemplate && (currentTemplate == "default3" || currentTemplate == "default")){
-            cssTags += '<link type="text/css" href="styles/leaflet.css" media="screen" rel="stylesheet" title="CSS" />';
-        }
-        
         return cssTags.trim();
     }
 
@@ -9557,10 +9553,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 }
             }
-        }
-
-        if(currentTemplate && (currentTemplate == "default3" || currentTemplate == "default")){
-            jsTags += '<script type="text/javascript" src="scripts/leaflet.js"></script>';
         }
         
         return jsTags.trim();
