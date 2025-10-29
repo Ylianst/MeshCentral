@@ -2,6 +2,7 @@
 FROM node:lts-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
+ARG DISABLE_EXTRACT="yes"
 ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
 #    NODE_OPTIONS="--max_old_space_size=4096"
@@ -12,14 +13,18 @@ WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 # Check the Docker build arguments and if they are empty do the task.
-RUN apk add --no-cache python3 make g++ bash
-RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
+RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
         echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
         npm install html-minifier-terser@7.2.0 jsdom@26.0.0 esprima@4.0.1 && \
         cd translate && \
-        echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
-        node translate.js extractall && \
+        case "$DISABLE_EXTRACT" in \
+            false|no|FALSE|NO) \
+                echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
+                node translate.js extractall;; \
+            *) \
+                echo "Setting EXTRACT as disabled.";; \
+        esac && \
         case "$DISABLE_MINIFY" in \
             false|no|FALSE|NO) \
                 echo -e "----------\nSTARTING THE MINIFYING PROCESS...\n----------"; \
@@ -38,8 +43,7 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
-RUN rm -rf /opt/meshcentral/meshcentral/docker
-RUN rm -rf /opt/meshcentral/meshcentral/node_modules
+RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
@@ -50,12 +54,10 @@ RUN apk update && \
     apk add --no-cache --update \
         bash gcc g++ jq make nodejs npm python3 tzdata
 
-RUN mkdir -p /opt/meshcentral
-COPY ./package.json /opt/meshcentral/package.json
-WORKDIR /opt/meshcentral
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+WORKDIR /opt/meshcentral/meshcentral
 
-RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
-    && mv tmp.$$.json package.json \
+RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
     && npm i --package-lock-only \
     && npm ci
 
@@ -63,9 +65,8 @@ RUN jq '.dependencies["modern-syslog"] = "1.2.0"' package.json > tmp.$$.json \
 
 FROM alpine:3.22 AS runtime
 
-# Copy prepared app from builder stage
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=dep-compiler /opt/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
+# # Copy prepared app from builder stage
+COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -126,7 +127,7 @@ WORKDIR /opt/meshcentral
 RUN apk update && \
     echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash jq nodejs npm tzdata && \
+        bash curl jq nodejs npm tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
@@ -203,7 +204,10 @@ VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
-COPY ./docker/entrypoint.sh ./entrypoint.sh
+COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -k --fail https://localhost:443/health.ashx || exit 1
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]

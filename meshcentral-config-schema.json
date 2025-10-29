@@ -1987,6 +1987,66 @@
           "customUI": {
             "type": "object"
           },
+          "customFiles": {
+            "type": "object",
+            "description": "Advanced customization system allowing multiple CSS and JavaScript file configurations per domain. Each configuration is identified by a unique name and can target specific templates using the 'scope' property, enabling granular control over where custom files are loaded. All custom files are loaded after the default custom.css and custom.js files.",
+            "properties": {
+              "example-config": {
+                "type": "object",
+                "description": "Example configuration - replace 'example-config' with your desired name",
+                "properties": {
+                  "css": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                  },
+                  "js": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                  },
+                  "scope": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of template names where these custom files should be loaded. If not specified or empty, files will NOT be loaded anywhere. Use 'all' to load on all templates. Available template names: all, default, default3, default-mobile, login, login2, login-mobile, messenger, message, message2, invite, agentinvite, player, xterm, mstsc, ssh, sharing, sharing-mobile, download, download2, terms, terms-mobile, error404, error4042, error404-mobile. Example: [\"default3\", \"login2\", \"player\"] or [\"all\"]"
+                  }
+                }
+              }
+            },
+            "additionalProperties": {
+              "type": "object",
+              "description": "Custom file configuration identified by a unique name",
+              "properties": {
+                "css": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                },
+                "js": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                },
+                "scope": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of template names where these custom files should be loaded. If not specified or empty, files will NOT be loaded anywhere. Use 'all' to load on all templates. Available template names: all, default, default3, default-mobile, login, login2, login-mobile, messenger, message, message2, invite, agentinvite, player, xterm, mstsc, ssh, sharing, sharing-mobile, download, download2, terms, terms-mobile, error404, error4042, error404-mobile. Example: [\"default3\", \"login2\", \"player\"] or [\"all\"]"
+                }
+              }
+            }
+          },
           "consentMessages": {
             "type": "object",
             "description": "This section is used to customize user consent prompts, these show up when asking if a remote session is allowed or not.",
@@ -2020,7 +2080,42 @@
               "autoAcceptIfNoUser": {
                 "type": "boolean",
                 "default": false,
-                "description": "If true, user consent is accepted if no user is logged in."
+                "description": "If true, user consents for desktop, terminal, and file are accepted if no user is logged in."
+              },
+              "autoAcceptIfDesktopNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if no user is logged in."
+              },
+              "autoAcceptIfTerminalNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if no user is logged in."
+              },
+              "autoAcceptIfFileNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if no user is logged in."
+              },
+              "autoAcceptIfLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consents for desktop, terminal, and file are accepted if device is locked."
+              },
+              "autoAcceptIfDesktopLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if device is locked."
+              },
+              "autoAcceptIfTerminalLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if device is locked."
+              },
+              "autoAcceptIfFileLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if device is locked."
               },
               "oldStyle": {
                 "type": "boolean",

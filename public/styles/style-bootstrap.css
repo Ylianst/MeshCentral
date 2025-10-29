@@ -413,6 +413,22 @@ body {
     .fullscreen #welcomeimage {
         display: none;
     }
+    #devListToolbar, #kvmListToolbar {
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+    }
+    #devListToolbarSpan {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    #devListToolbarSpan > .d-flex.ms-auto {
+        flex-basis: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-start;
+    }
 }
 
 #welcomeimage img {
@@ -2341,8 +2357,8 @@ nav .lbbuttonsel2 {
 .notifiyBox {
     position: absolute;
     z-index: 1000;
-    top: 50px;
-    right: 26px;
+    top: 80px;
+    right: 10rem;
     width: 300px;
     text-align: left;
     background-color: #F0ECCD;
@@ -2395,13 +2411,24 @@ nav .lbbuttonsel2 {
     min-width: 28px;
     font-size: 20px;
     border-radius: 5px;
-    background-color: lightblue;
     text-align: center;
     margin: 8px;
     cursor: pointer;
     padding: 4px;
+    position: absolute;
+    right: 9rem;
+    top: 0.2em;
 }
-
+#notificationBadge {
+    box-shadow: -0.1px 1px 2px #000000;
+    -webkit-box-shadow: -0.1px 1px 2px #000000;
+    -moz-box-shadow: -0.1px 1px 2px #000000;
+    top: 0.95rem;
+    left: 1.6rem !important;
+}
+#notificationCount:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
 .night #notificationCount {
     color: black;
 }
@@ -3344,6 +3371,12 @@ nav .lbbuttonsel2 {
         font-size: 36px;
     }
 
+    #masthead {
+        background-size: 18rem 2.5rem !important;
+        background-position: center left;
+        background-repeat: no-repeat !important;
+        padding-right: 20px !important;
+    }
     #MainMeshImage /*, #p2AccountImageFrame */ {
         /* text-align: center !important; */
         float: none !important;
@@ -3355,17 +3388,61 @@ nav .lbbuttonsel2 {
         float: none !important;
         text-align: left;
     }
+    #userDropdown {
+        display: inline-block !important;
+        position: absolute !important;
+        right: 10px !important;
+    }
 
-    #logoutControl {
+    #userDropdownName {
         display: none !important;
     }
 
-    #topMenuIcon {
+    .userDropdownMobileOnly {
+        display: flex !important;
+    }
+
+    #userDropdownMenuDivider.userDropdownMobileOnly {
         display: block !important;
     }
 
+    .userDropdownSubmenu {
+        right: 100%;
+        left: auto;
+        top: 13rem !important;
+        margin-left: 0;
+        margin-right: 4px;
+    }
+    .userDropdownUISettings {
+        position: relative;
+    }
+
+    .userDropdownSubmenu {
+        position: static !important;
+        right: auto !important;
+        left: auto !important;
+        top: auto !important;
+        margin: 0 !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        box-shadow: none !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .userDropdownSubmenu .userDropdownMenuItem {
+        border-left: 3px solid #444444 !important;
+    }
+    .userDropdownMenuItem:hover {
+        border-radius: unset !important;
+    }
+
     #notificationCount {
-        margin-right: 45px;
+        right: 4rem;
+    }
+    .notifiyBox {
+        right: 3.5rem;
     }
 
     .notifiyBox:after {
@@ -3392,7 +3469,6 @@ nav .lbbuttonsel2 {
         flex-direction: column !important;
     } */
 }
-
 /* css fixes for select2 */
 /* .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
     display: inline;
@@ -3405,3 +3481,178 @@ nav .lbbuttonsel2 {
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-search {
     display: inline !important;
 } */
+/* User Dropdown Menu Styles */
+#userDropdown {
+    position: absolute;
+    display: inline-block;
+    z-index: 1000;
+    right: 10px;
+    background: #00000026;
+    border-radius: 4px;
+}
+#userDropdownButton {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    height: 40px;
+}
+
+#userDropdownButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#userDropdownImage {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    object-fit: cover;
+}
+
+#userDropdownName {
+    margin-right: 6px;
+    white-space: nowrap;
+}
+
+#userDropdownArrow {
+    font-size: 12px;
+}
+
+#userDropdownMenu {
+	display: none;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background-color: #f3f3f3;
+	box-shadow: 0 0 12px #0000004d;
+	border-radius: 10px;
+	z-index: 10000;
+	min-width: 200px;
+	margin-top: 4px;
+	transform: translateX(0);
+	font-family: sans-serif;
+	font-size: small;
+}
+
+#userDropdownMenuContainer {
+	padding: 6px 0;
+}
+
+.userDropdownMenuItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	cursor: pointer;
+	color: var(--bs-body-color);
+	white-space: nowrap;
+	transition: background-color 0.15s ease;
+	font-size: small;
+}
+
+.userDropdownMenuItem:hover {
+	background-color: #8181814a;
+	border-radius: 4px;
+}
+
+.userDropdownMenuIcon {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
+	flex-shrink: 0;
+}
+
+.userDropdownMenuItem span {
+	flex-grow: 1;
+	text-align: left;
+	font-size: small;
+	line-height: 1.2;
+}
+
+#userDropdownMenuDivider {
+	border-top: var(--bs-border-width) solid #000000;
+    opacity: .25;
+	margin: 4px 0;
+}
+
+.night #userDropdownMenuDivider {
+    border-top: var(--bs-border-width) solid;
+}
+
+.userDropdownSubmenu {
+	position: absolute;
+	right: 96%;
+	top: 0;
+	background-color: #f3f3f3;
+	box-shadow: 0 0 12px #0000004d;
+	border-radius: 10px;
+	margin-right: 4px;
+	min-width: 200px;
+	z-index: 10001;
+	padding: 6px 0;
+	font-size: small;
+}
+
+.userDropdownSubmenu .userDropdownMenuItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+}
+
+.userDropdownSubmenu .userDropdownMenuItem:hover {
+	background-color: #8181814a;
+	border-radius: 4px;
+}
+
+.userDropdownSubmenu .userDropdownMenuIcon {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
+	flex-shrink: 0;
+}
+
+.userDropdownMobileOnly {
+	display: none;
+}
+
+.userDropdownUISettings img:last-child {
+	margin-left: auto;
+	width: 14px;
+	height: 14px;
+	opacity: 0.7;
+}
+.night #userDropdownMenu, .night .userDropdownSubmenu {
+	background-color: #292c2c;
+}
+
+body:not(.fullscreen) #userDropdown {
+    right: calc(50vw - 470px);
+}
+@media (min-width: 1025px) {
+    .userDropdownSubmenu {
+        display: block !important;
+        position: absolute;
+        opacity: 0;
+        transform: translateX(12px);
+        transition: opacity 0.2s ease, transform 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .userDropdownUISettings:hover + .userDropdownSubmenu,
+    .userDropdownSubmenu:hover,
+    .userDropdownMenuItem:hover .userDropdownSubmenu {
+        display: block !important;
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+    }
+    .userDropdownUISettings:hover .fa-chevron-right,
+    .userDropdownUISettings:has(+ .userDropdownSubmenu:hover) .fa-chevron-right {
+        transform: rotate(90deg) !important;
+        transition: transform 0.3s ease;
+    }
+}

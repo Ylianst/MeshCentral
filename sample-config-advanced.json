@@ -347,6 +347,18 @@
         "autoAcceptIfNoUser": false,
         "oldStyle": true
       },
+      "_customFiles": {
+        "desktop-theme": {
+          "css": ["theme.css"],
+          "js": ["theme.js"],
+          "scope": ["all"]
+        },
+        "mobile-theme": {
+          "css": ["theme.css", "test.css"],
+          "js": ["analytics.js", "test.js"],
+          "scope": ["login2", "login"]
+        }
+      },
       "_notificationMessages": {
         "title": "MeshCentral",
         "desktop": "{0} started a remote desktop session.",
