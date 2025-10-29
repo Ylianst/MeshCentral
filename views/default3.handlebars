@@ -12179,6 +12179,7 @@
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
         var map = undefined;
+        var marker = undefined;
 
         function GetGeolocationCoordinates(onGeolocationCoordinatesReceived){
             var obj = { protocol: 5 };
@@ -12192,28 +12193,43 @@
             try { data = JSON.parse(decode_utf8(data)); } catch (ex) {
                 try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse: ' + data); return; }
             }
-            console.log("P22gotCoordinates: ", data)
-            if(map){
-                map.remove();
-                map = null;
+            if(map && marker){
+                // Updating existing map
+                var newCoordinates = ol.proj.fromLonLat([data["longitude"], data["latitude"]]);
+                marker.getGeometry().setCoordinates(newCoordinates);
+                map.getView().setCenter(newCoordinates);
+            } else {
+                map = new ol.Map({
+                    target: 'p22map',
+                    layers: [
+                      new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                      })
+                    ],
+                    view: new ol.View({
+                      center: ol.proj.fromLonLat([data["longitude"], data["latitude"]]),
+                      zoom: 15
+                    })
+                });
+                marker = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat([data["longitude"], data["latitude"]]))
+                });
+                marker.setStyle(
+                    new ol.style.Style({
+                        image: new ol.style.Icon({
+                            src: 'styles/images/marker-icon-2x.png',
+                            scale: 0.7,
+                            anchor: [0.5, 1]
+                        })
+                    })
+                );
+                var vectorLayer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: [marker]
+                    })
+                });
+                map.addLayer(vectorLayer);
             }
-            map = L.map('p22map').setView([data["latitude"], data["longitude"]], 15);
-            // Adding layer OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-                }
-            ).addTo(map);
-            var OpenStreetMap_HOT = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(map);
-            var color = ["red", "#f03"];
-            var marker = L.marker(
-                [data["latitude"], data["longitude"]], {
-                    color: color[0],
-                    fillColor: color[1],
-                    fillOpacity: 0.5
-            }).addTo(map);
             files.Stop();
             files = null;
         }
