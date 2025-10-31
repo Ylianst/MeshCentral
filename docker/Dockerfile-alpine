@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-trixie-slim AS builder
+FROM node:lts-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_MINIFY="yes"
@@ -40,29 +40,27 @@ RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
 RUN rm -rf /opt/meshcentral/meshcentral/docker
 RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
-### STAGE 2 PRECOMPILE DEPS MODULE
+### STAGE 2 PRECOMPILE SYSLOG MODULE
 
-FROM node:lts-alpine3.22 AS dep-compiler
+FROM alpine:3.21 AS syslog-compiler
 
-RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+RUN apk update && \
+    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ jq make python3 tzdata
+        bash gcc g++ jq make nodejs npm python3 tzdata
 
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
-
-RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
-    && npm i --package-lock-only \
-    && npm ci --omit=dev \
-    && npm cache clean --force
+RUN npm install modern-syslog
 
 ### STAGE 3 BUILDING.
 
-FROM alpine:3.22 AS finalizer
+FROM alpine:3.21 AS finalizer
 
 # copy files from previous layers
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+COPY --from=syslog-compiler /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
+COPY --from=syslog-compiler /opt/meshcentral/meshcentral/package.json /opt/meshcentral/meshcentral/package.json
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -121,7 +119,8 @@ ENV MARIADB_HOST="" \
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
-RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+RUN apk update && \
+    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
         bash jq nodejs npm tzdata && \
     rm -rf /var/cache/* \
@@ -148,9 +147,7 @@ RUN case "$PREINSTALL_LIBS" in \
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentraljs mainStart()
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache mongodb-tools && \
-            curl --output ./mongo-tools.deb "$MONGODB_CMDT_URL"; \
-            apt-get install -y ./mongo-tools.deb; \
+            apk add --no-cache mongodb-tools && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
             npm install mongodb@4.17.2;; \
@@ -163,8 +160,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache postgresql-client && \
-            apt-get install -y postgresql-client-common; \
+            apk add --no-cache postgresql-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.14.1;; \
@@ -177,8 +173,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache mariadb-client && \
-            apt-get install -y default-mysql-client mariadb-client; \
+            apk add --no-cache mariadb-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.0 mysql2@3.11.4;; \
@@ -190,14 +185,15 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
     esac
 
 # install dependencies from package.json
-RUN cd meshcentral \
-    && rm -rf /root/ /tmp/ /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
-    && npm cache clean --force
+RUN cd meshcentral && \
+    npm install && \
+    npm cache clean --force && \
+    rm -rf /root/ /tmp/
 
 # Expose needed ports
 EXPOSE 80 443
 
-# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman. Dummy proofing.
+# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
 VOLUME /opt/meshcentral/meshcentral-data
 VOLUME /opt/meshcentral/meshcentral-files
 VOLUME /opt/meshcentral/meshcentral-web
