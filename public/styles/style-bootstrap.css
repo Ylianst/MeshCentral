@@ -92,7 +92,7 @@ body {
     grid-gap: 0px;
     grid-template-areas: "header header" "sidebar nav" "sidebar content" "sidebar footer";
     -ms-grid-columns: 90px 1fr;
-    grid-template-columns: 90px auto;
+    grid-template-columns: 70px auto;
     -ms-grid-rows: 66px 24px 1fr 45px;
     grid-template-rows: 66px 24px auto 45px;
 }
@@ -196,11 +196,23 @@ body {
     align-items: center;
     gap: 1rem;
     flex: 1;
+    min-width: 0;
+    overflow: ellipsis; 
 }
 
 .masthead-title {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+}
+
+.masthead-titles-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 #masthead .title {
@@ -210,6 +222,11 @@ body {
     font-weight: bold;
     text-shadow: 1px 1px 2px #000;
     cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 #masthead .title2 {
@@ -218,7 +235,14 @@ body {
     font-family: Arial,Helvetica,sans-serif;
     font-weight: bold;
     text-shadow: 1px 1px 2px #000;
+    cursor: pointer;
     padding-top: 12px;
+    padding-bottom: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .masthead-right {
@@ -274,20 +298,7 @@ body {
     flex: 0 0 auto; /* Prevent flex item from growing or shrinking */
 }
 
-@media (max-width: 768px) {
-    #masthead {
-        padding-right: 1rem;
-    }
 
-    #masthead .title {
-        font-size: 36px;
-    }
-
-    #masthead {
-        background-size: 18rem 2.5rem;
-        background-position: center left;
-    }
-}
 
 #page_leftbar {
     -ms-grid-column: 1;
@@ -295,12 +306,13 @@ body {
     -ms-grid-row-span: 3;
     height: 100%;
     /* height: calc(100vh - 66px); */
-    width: 90px;
+    width: 70px;
     z-index: 1000;
     background: #113962;
     background: linear-gradient(to bottom, #104893 0%,#113962 100%);
     color: white;
     overflow-y: hidden;
+    overflow-x: hidden;
     display: none;
 }
 
@@ -3413,8 +3425,17 @@ body:not(.fullscreen) .notifiyBox {
 
 .sidebar .nav-link {
     font-size: xx-large;
+    
 }
-  
+
+.nav-link {
+    width: unset !important;
+}
+
+.nav { 
+    --bs-nav-link-padding-x: 19px !important;
+}
+
 .card:hover, #p2AccountImage:hover, #p2canvas:hover {
     background: #f3f5f7 !important;
 }
@@ -3464,7 +3485,31 @@ body:not(.fullscreen) .notifiyBox {
     }
 
     #masthead .title {
-        font-size: 36px;
+        font-size: 22px;
+        padding-top: 4px;
+    }
+
+    #masthead .title2 {
+        font-size: 12px;
+        padding-top: 2px;
+        padding-bottom: 10px;
+    }
+
+    .masthead-left {
+        gap: 0.5rem;
+        max-width: calc(100% - 120px);
+    }
+
+    .masthead-titles-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    .masthead-titles-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
     }
 
     #masthead {
