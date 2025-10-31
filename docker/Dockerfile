@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-alpine3.22 AS builder
+FROM node:lts-trixie-slim AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_MINIFY="yes"
@@ -67,12 +67,15 @@ COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentr
 =======
 ### STAGE 2 PRECOMPILE SYSLOG MODULE
 
-FROM alpine:3.21 AS syslog-compiler
+FROM node:lts-trixie-slim AS syslog-compiler
 
-RUN apk update && \
-    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
-    apk add --no-cache --update \
-        bash gcc g++ jq make nodejs npm python3 tzdata
+#RUN apk update && \
+RUN apt-get update && \
+    echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
+    apt-get install -y \
+        bash gcc g++ jq make python3 tzdata
+#    apk add --no-cache --update \
+#        bash gcc g++ jq make python3 tzdata
 
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
@@ -80,7 +83,9 @@ RUN npm install modern-syslog
 
 ### STAGE 3 BUILDING.
 
-FROM alpine:3.21 AS finalizer
+FROM node:lts-trixie-slim AS finalizer
+
+ARG MONGODB_CMDT_URL="https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian12-x86_64-100.13.0.deb"
 
 # copy files from previous layers
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
@@ -145,10 +150,21 @@ ENV MARIADB_HOST="" \
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
+<<<<<<< HEAD
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
         bash jq nodejs npm tzdata && \
     rm -rf /var/cache/* \
+=======
+#RUN apk update && \
+RUN apt-get update && \
+    echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
+#    apk add --no-cache --update \
+    apt-get install -y \
+        bash jq tzdata curl && \
+    rm -rf \
+        /var/cache/* \
+>>>>>>> 5542df7a (feat: debian variant)
         /tmp/* \
         /usr/share/man/ \
         /usr/share/doc/ \
@@ -172,7 +188,9 @@ RUN case "$PREINSTALL_LIBS" in \
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentraljs mainStart()
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
-            apk add --no-cache mongodb-tools && \
+#            apk add --no-cache mongodb-tools && \
+            curl --output ./mongo-tools.deb "$MONGODB_CMDT_URL"; \
+            apt-get install -y ./mongo-tools.deb; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
             npm install mongodb@4.17.2;; \
@@ -185,7 +203,8 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
-            apk add --no-cache postgresql-client && \
+#            apk add --no-cache postgresql-client && \
+            apt-get install -y postgresql-client-common; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.14.1;; \
@@ -198,7 +217,8 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
-            apk add --no-cache mariadb-client && \
+#            apk add --no-cache mariadb-client && \
+            apt-get install -y default-mysql-client mariadb-client; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.0 mysql2@3.11.4;; \
