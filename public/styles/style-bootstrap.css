@@ -154,12 +154,16 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .masthead-right {
     display: flex;
     align-items: center;
     gap: 1.5rem;
+    flex: 0 0 auto;
 }
 
 .notification-icon {
@@ -195,9 +199,9 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
-    overflow: ellipsis; 
+    overflow: hidden;
 }
 
 .masthead-title {
@@ -210,7 +214,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    flex-shrink: 1;
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
 }
@@ -243,6 +247,42 @@ body {
     white-space: nowrap;
     flex-shrink: 1;
     min-width: 0;
+}
+
+@media (max-width: 1500px) {
+    #masthead .title {
+        font-size: 40px;
+    }
+}
+
+@media (max-width: 1300px) {
+    #masthead .title {
+        font-size: 34px;
+        white-space: normal;
+        line-height: 1.1;
+    }
+
+    #masthead .title2 {
+        font-size: 13px;
+        padding-top: 10px;
+        padding-bottom: 20px;
+        white-space: normal;
+        line-height: 1.2;
+    }
+}
+
+@media (max-width: 1100px) {
+    .masthead-left {
+        gap: 0.75rem;
+    }
+
+    .masthead-titles-container {
+        max-width: 100%;
+    }
+
+    #masthead .title {
+        font-size: 30px;
+    }
 }
 
 .masthead-right {
