@@ -1,3 +1,5 @@
+# Quickstart
+
 ## 🪟 Quick Start on Windows with the Installer
 
 For Microsoft Windows users, the easiest way to install MeshCentral is by using the dedicated installer tool. This tool automates the setup, including checking for and installing **Node.js** if necessary.
