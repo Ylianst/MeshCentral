@@ -10,7 +10,7 @@ on:
 jobs:
 
   translate:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Run Translations
     steps:
       - name: Checkout repository
@@ -38,7 +38,7 @@ jobs:
           path: .
 
   build-amd64:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: translate
     strategy:
       fail-fast: false
@@ -96,7 +96,7 @@ jobs:
             .
 
   build-arm64:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04-arm
     needs: translate
     strategy:
       fail-fast: false
@@ -155,7 +155,7 @@ jobs:
             .
 
   merge-manifest:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - translate
       - build-amd64

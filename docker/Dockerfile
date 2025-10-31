@@ -45,8 +45,6 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
 
 RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
-### STAGE 2 PRECOMPILE DEPS MODULE
-
 ### STAGE 2 PRECOMPILE SYSLOG MODULE
 
 FROM node:lts-trixie-slim AS syslog-compiler
@@ -63,16 +61,26 @@ RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
 RUN npm install modern-syslog
 
-### STAGE 3 BUILDING.
+### STAGE 3 fun. building from source...
+
+FROM golang:trixie AS mongo-tools-compiler
+
+RUN apt-get update && \
+    apt-get install -y git lsb-release
+
+RUN git clone https://github.com/mongodb/mongo-tools /mongo-tools; \
+    cd /mongo-tools; \
+    ./make build;
+
+### STAGE 4 BUILDING.
 
 FROM node:lts-trixie-slim AS finalizer
-
-ARG MONGODB_CMDT_URL="https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian12-x86_64-100.13.0.deb"
 
 # copy files from previous layers
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 COPY --from=syslog-compiler /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
 COPY --from=syslog-compiler /opt/meshcentral/meshcentral/package.json /opt/meshcentral/meshcentral/package.json
+COPY --from=mongo-tools-compiler /mongo-tools/bin/ /tmp/bin/
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -138,7 +146,6 @@ RUN apt-get update && \
         bash jq tzdata curl && \
     rm -rf \
         /var/cache/* \
-        /tmp/* \
         /usr/share/man/ \
         /usr/share/doc/ \
         /var/log/* \
@@ -162,8 +169,7 @@ RUN case "$PREINSTALL_LIBS" in \
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
 #            apk add --no-cache mongodb-tools && \
-            curl --output ./mongo-tools.deb "$MONGODB_CMDT_URL"; \
-            apt-get install -y ./mongo-tools.deb; \
+            mv /tmp/bin/* /usr/bin; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
             npm install mongodb@4.17.2 @mongodb-js/saslprep@1.3.1;; \
@@ -205,7 +211,7 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
 # install dependencies from package.json
 RUN cd meshcentral && \
     npm cache clean --force && \
-    rm -rf /root/ /tmp/
+    rm -rf /root/* /tmp/* 
 
 # Expose needed ports
 EXPOSE 80 443
