@@ -472,16 +472,13 @@ body {
 }
 
 #footer {
-    -ms-grid-column: 2;
-    -ms-grid-row: 4;
-    grid-area: footer;
-    clear: both;
-    overflow: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    text-align: center;
     background-color: #113962;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding: 5px 0;
+    text-align: center;
 }
 
 .fulldesk #footer {
