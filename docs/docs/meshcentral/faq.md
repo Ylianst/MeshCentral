@@ -28,7 +28,7 @@ No, you haven't.
 
 3. You have the option enabled to submit unknown applications for analysis.
 
-    ![AV Option1](images/faq_av_option1.png)
+    ![AV Option1](images/faq_av_option1.jpg)
 
 4. They ran it against their virtualization testing cluster.
 
@@ -42,7 +42,7 @@ You're sure you're typing in everything right, giving it 2FA code and can't logi
 
 [TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password) is time sensitive, check your time/NTP and make sure it's right (on server and TOTP app device)! :)
 
-![](images/2022-08-04-18-19-19.png)
+![](../images/2022-08-04-18-19-19.png)
 
 ## Branding and Customization
 
@@ -57,15 +57,15 @@ You have to manually grant Mac permissions outside of the agent install process 
 
 To see the screen (otherwise you just see the menu bar, and otherwise blank)
 
-![](images/2023-11-29-12-57-15.png)
+![](images/2023-11-29-12-57-15.jpg)
 
 To be able to transfer files
 
-![](images/2023-11-29-12-58-05.png)
+![](images/2023-11-29-12-58-05.jpg)
 
 To be able to control keyboard and mouse
 
-![](images/2023-11-29-12-58-36.png)
+![](images/2023-11-29-12-58-36.jpg)
 
 ## I'm using CloudFlare and I'm getting a black screen but the mouse moves?
 

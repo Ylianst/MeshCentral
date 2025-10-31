@@ -686,7 +686,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Users in this list are allowed to see and manage all device groups within their domain. For example ['user//billybob','user//fred'] would allow billybob and fred to manage all device groups from all users in their domain."
+          "description": "Users or groups that users are a member of in this list are allowed to see and manage all device groups within their domain. For example ['user//billybob','user//fred','ugrp//RA...'] would allow billybob, fred and members of ugrp//RA to manage all device groups from all users in their domain."
         },
         "manageCrossDomain": {
           "type": "array",
@@ -889,7 +889,7 @@
             "mongoDumpArgs": {
               "type": "string",
               "description": "Override the default mongodump --uri=<mongoDb>. The --db= option is automatically appended if omitted. (f.e. --host=127.0.0.1 --username=someUser --password=PaSsWORD --authenticationDatabase=admin)"
-            },    
+            },
             "mysqlDumpPath": {
               "type": "string",
               "default": "mysqldump",
@@ -1172,6 +1172,14 @@
             }
           }
         }
+      },
+      "patternProperties": {
+        "^_.*": {
+          "type": "null",
+          "x-disabled": true,
+          "x-enabled-name": "Remove underscore prefix to enable",
+          "errorMessage": "⚠️ DISABLED SETTING - This setting is currently disabled. Remove the underscore (_) prefix to enable it."
+        }
       }
     },
     "domaindefaults": {
@@ -1326,7 +1334,7 @@
             "items": {
               "type": "string"
             },
-            "description": "When set, new accounts will be added to these groups." 
+            "description": "When set, new accounts will be added to these groups."
           },
           "userNameIsEmail": {
             "type": "boolean",
@@ -1793,11 +1801,11 @@
                 "default": null,
                 "description": "Maximum number of FIDO/YubikeyOTP hardware 2FA keys that can be setup in a user account."
               },
-              "fidopininput": {  
-                "type": "string",  
-                "default": "preferred",  
+              "fidopininput": {
+                "type": "string",
+                "default": "preferred",
                 "enum": ["preferred", "required", "discouraged"],
-                "description": "Controls FIDO PIN prompt behavior: 'preferred' (asks only if key requires PIN), 'required' (always asks for PIN), or 'discouraged' (never asks for PIN). Default: 'preferred'."  
+                "description": "Controls FIDO PIN prompt behavior: 'preferred' (asks only if key requires PIN), 'required' (always asks for PIN), or 'discouraged' (never asks for PIN). Default: 'preferred'."
               },
               "allowaccountreset": {
                 "type": "boolean",
@@ -1987,6 +1995,66 @@
           "customUI": {
             "type": "object"
           },
+          "customFiles": {
+            "type": "object",
+            "description": "Advanced customization system allowing multiple CSS and JavaScript file configurations per domain. Each configuration is identified by a unique name and can target specific templates using the 'scope' property, enabling granular control over where custom files are loaded. All custom files are loaded after the default custom.css and custom.js files.",
+            "properties": {
+              "example-config": {
+                "type": "object",
+                "description": "Example configuration - replace 'example-config' with your desired name",
+                "properties": {
+                  "css": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                  },
+                  "js": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                  },
+                  "scope": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of template names where these custom files should be loaded. If not specified or empty, files will NOT be loaded anywhere. Use 'all' to load on all templates. Available template names: all, default, default3, default-mobile, login, login2, login-mobile, messenger, message, message2, invite, agentinvite, player, xterm, mstsc, ssh, sharing, sharing-mobile, download, download2, terms, terms-mobile, error404, error4042, error404-mobile. Example: [\"default3\", \"login2\", \"player\"] or [\"all\"]"
+                  }
+                }
+              }
+            },
+            "additionalProperties": {
+              "type": "object",
+              "description": "Custom file configuration identified by a unique name",
+              "properties": {
+                "css": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                },
+                "js": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                },
+                "scope": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of template names where these custom files should be loaded. If not specified or empty, files will NOT be loaded anywhere. Use 'all' to load on all templates. Available template names: all, default, default3, default-mobile, login, login2, login-mobile, messenger, message, message2, invite, agentinvite, player, xterm, mstsc, ssh, sharing, sharing-mobile, download, download2, terms, terms-mobile, error404, error4042, error404-mobile. Example: [\"default3\", \"login2\", \"player\"] or [\"all\"]"
+                }
+              }
+            }
+          },
           "consentMessages": {
             "type": "object",
             "description": "This section is used to customize user consent prompts, these show up when asking if a remote session is allowed or not.",
@@ -2020,7 +2088,42 @@
               "autoAcceptIfNoUser": {
                 "type": "boolean",
                 "default": false,
-                "description": "If true, user consent is accepted if no user is logged in."
+                "description": "If true, user consents for desktop, terminal, and file are accepted if no user is logged in."
+              },
+              "autoAcceptIfDesktopNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if no user is logged in."
+              },
+              "autoAcceptIfTerminalNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if no user is logged in."
+              },
+              "autoAcceptIfFileNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if no user is logged in."
+              },
+              "autoAcceptIfLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consents for desktop, terminal, and file are accepted if device is locked."
+              },
+              "autoAcceptIfDesktopLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if device is locked."
+              },
+              "autoAcceptIfTerminalLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if device is locked."
+              },
+              "autoAcceptIfFileLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if device is locked."
               },
               "oldStyle": {
                 "type": "boolean",
@@ -2785,7 +2888,7 @@
           },
           "yubikey": {
             "type": "object",
-            "description": "Yubikey configuration",
+            "description": "Yubikey OTP configuration (get API Key from https://upgrade.yubico.com/getapikey/)",
             "properties": {
               "id": {
                 "type": "string",
@@ -2794,11 +2897,6 @@
               "secret": {
                 "type": "string",
                 "description": "Yubikey secret key"
-              },
-              "proxy": {
-                "type": "string",
-                "format": "uri",
-                "description": "Yubikey proxy URL"
               }
             },
             "required": [
@@ -3238,7 +3336,7 @@
                   },
                   "newAccountsUserGroups": {
                     "type": "array",
-                    "description": "When set, new accounts will be created for users that authenticate with Azure and added to the specified groups.",  
+                    "description": "When set, new accounts will be created for users that authenticate with Azure and added to the specified groups.",
                     "uniqueItems": true,
                     "items": {
                       "type": "string"
@@ -3871,6 +3969,14 @@
               "bottom"
             ]
           }
+        },
+        "patternProperties": {
+          "^_.*": {
+            "type": "null",
+            "x-disabled": true,
+            "x-enabled-name": "Remove underscore prefix to enable",
+            "errorMessage": "⚠️ DISABLED SETTING - This setting is currently disabled. Remove the underscore (_) prefix to enable it."
+          }
         }
       }
     },
@@ -4140,7 +4246,7 @@
               "description": "Twilio SID"
             },
             "auth": {
-              "type": "string", 
+              "type": "string",
               "description": "Twilio Auth Token"
             },
             "from": {
@@ -4373,6 +4479,14 @@
           "description": "Enabled Zulip integration support."
         }
       }
+    }
+  },
+  "patternProperties": {
+    "^_.*": {
+      "type": "null",
+      "x-disabled": true,
+      "x-enabled-name": "Remove underscore prefix to enable",
+      "errorMessage": "⚠️ DISABLED SECTION - This section is currently disabled. Remove the underscore (_) prefix to enable it."
     }
   }
 }

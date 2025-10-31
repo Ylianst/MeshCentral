@@ -453,7 +453,6 @@ async function startEx(argv) {
                         removeScriptTypeAttributes: true,
                         removeTagWhitespace: true,
                         preserveLineBreaks: false,
-                        useShortDoctype: true,
                         log: function(a) { if (typeof a !== 'string') { console.log(a); } } // Log errors from UglifyJS to console output
                     });
                 } catch (ex) {

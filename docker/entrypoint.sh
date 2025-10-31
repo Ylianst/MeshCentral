@@ -1,7 +1,7 @@
 #!/bin/bash
 
 graceful_shutdown() {
-    echo "Received SIGTERM. Cleaning up..."
+    echo "Received SIGTERM from the container host. Cleaning up..."
     kill -SIGINT $meshcentral_pid
 
     echo "MeshCentral process stopped. Exiting..."
@@ -11,6 +11,8 @@ trap graceful_shutdown SIGTERM
 
 ### Start MeshCentral Docker Container.
 
+# Make the start more cleared when restarted.
+echo "-------------------------------------------------------------"
 date
 echo "Config file: $CONFIG_FILE"
 

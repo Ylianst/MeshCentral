@@ -613,7 +613,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 serverinfo.logoutonidlesessiontimeout = true;
             }
             if (user.siteadmin === SITERIGHT_ADMIN) {
-                if (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) { serverinfo.manageAllDeviceGroups = true; }
+            if (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0 || (user.links && Object.keys(user.links).some(key => parent.parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) { serverinfo.manageAllDeviceGroups = true; }
                 if (obj.crossDomain === true) { serverinfo.crossDomain = []; for (var i in parent.parent.config.domains) { serverinfo.crossDomain.push(i); } }
                 if (typeof parent.webCertificateExpire[domain.id] == 'number') { serverinfo.certExpire = parent.webCertificateExpire[domain.id]; }
             }
@@ -1009,6 +1009,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((typeof domain.consentmessages.consenttimeout == 'number') && (domain.consentmessages.consenttimeout > 0)) { command.soptions.consentTimeout = domain.consentmessages.consenttimeout; }
                             if (domain.consentmessages.autoacceptontimeout === true) { command.soptions.consentAutoAccept = true; }
                             if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
+                            if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
+                            if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
+                            if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
+                            if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
+                            if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
+                            if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
+                            if (domain.consentmessages.autoacceptiffilelocked === true) { command.soptions.consentAutoAcceptIfFileLocked = true; }
                             if (domain.consentmessages.oldstyle === true) { command.soptions.oldStyle = true; }
                         }
                         if (typeof domain.notificationmessages == 'object') {
@@ -2812,7 +2819,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
-                            if ((rights & MESHRIGHT_UNINSTALL) == 0) return;
+                            if ((rights & MESHRIGHT_UNINSTALL) == 0) {
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                                return;
+                            }
 
                             // Delete this node including network interface information, events and timeline
                             db.Remove(node._id);                                 // Remove node with that id
@@ -2849,7 +2859,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         }
                                     } else if (i.startsWith('ugrp/')) {
                                         var cusergroup = parent.userGroups[i];
-                                        console.log(cusergroup);
                                         if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
                                             // Remove the user link & save the user
                                             delete cusergroup.links[node._id];
@@ -2878,11 +2887,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 if ((state.connectivity & 1) != 0) { parent.wsagents[nodeid].close(); } // Disconnect mesh agent
                                 if ((state.connectivity & 2) != 0) { parent.parent.mpsserver.closeAllForNode(nodeid); } // Disconnect CIRA/Relay/LMS connections
                             }
+
+                            // Send response if required
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                         });
                     }
-
-                    // Send response if required, in this case we always send ok which is not ideal.
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
 
                     break;
                 }
@@ -3907,12 +3916,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) return; // If this account is settings locked, return here.
 
                     // Yubico API id and signature key can be requested from https://upgrade.yubico.com/getapikey/
-                    var yubikeyotp = null;
-                    try { yubikeyotp = require('yubikeyotp'); } catch (ex) { }
+                    var yub = null;
+                    try { yub = require('yub'); } catch (ex) { }
 
                     // Check if 2-step login is supported
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
-                    if ((yubikeyotp == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
+                    if ((yub == null) || (twoStepLoginSupported == false) || (typeof command.otp != 'string')) {
                         ws.send(JSON.stringify({ action: 'otp-hkey-yubikey-add', result: false, name: command.name }));
                         break;
                     }
@@ -3926,9 +3935,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // TODO: Check if command.otp is modhex encoded, reject if not.
 
                     // Query the YubiKey server to validate the OTP
-                    var request = { otp: command.otp, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
-                    if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-                    yubikeyotp.verifyOTP(request, function (err, results) {
+                    yub.init(domain.yubikey.id, domain.yubikey.secret);
+                    yub.verify(command.otp, function (err, results) {
                         if ((results != null) && (results.status == 'OK')) {
                             var keyIndex = parent.crypto.randomBytes(4).readUInt32BE(0);
                             var keyId = command.otp.substring(0, 12);
@@ -6603,7 +6611,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         obj.send({ action: 'meshes', meshes: parent.GetAllMeshWithRights(user).map(parent.CloneSafeMesh), tag: command.tag });
     }
 
-    function serverCommandPing(command) { try { ws.send('{action:"pong"}'); } catch (ex) { } }
+    function serverCommandPing(command) { try { ws.send('{"action":"pong"}'); } catch (ex) { } }
     function serverCommandPong(command) { } // NOP
 
     function serverCommandPowerTimeline(command) {
@@ -6748,7 +6756,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         if (common.validateInt(command.type, 1, 4) == false) return; // Validate type
         if (common.validateInt(command.groupBy, 1, 3) == false) return; // Validate groupBy: 1 = User, 2 = Device, 3 = Day
         if ((typeof command.start != 'number') || (typeof command.end != 'number') || (command.start >= command.end)) return; // Validate start and end time
-        const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0));
+        const manageAllDeviceGroups = ((user.siteadmin == 0xFFFFFFFF) && (parent.parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0 || (user.links && Object.keys(user.links).some(key => parent.parent.config.settings.managealldevicegroups.indexOf(key) >= 0))));
         if ((command.devGroup != null) && (manageAllDeviceGroups == false) && ((user.links == null) || (user.links[command.devGroup] == null))) return; // Asking for a device group that is not allowed
 
         const msgIdFilter = [5, 10, 11, 12, 122, 123, 124, 125, 126, 144];

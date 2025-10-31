@@ -2120,10 +2120,10 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
                     obj.updateServerState('state', "running");
 
-                    // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: 0}; } //no schedule, but able to console autobackup
+                    // Setup auto-backup defaults. Unless autobackup is set to false try to make a backup.
+                    if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: -1}; } //block all autobackup functions
                     else {
-                        if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
+                        if (typeof obj.config.settings.autobackup != 'object') { obj.config.settings.autobackup = {}; };
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
                         if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
@@ -4061,6 +4061,7 @@ async function resolveDomainsToIps(originalArray) {
             console.log(`Could not resolve ${item}`);
         }
     }
+    if (flatResult.length == 0) { return undefined; }
     return flatResult;
 }
 
@@ -4298,11 +4299,11 @@ function mainStart() {
             if (mstsc == false) { config.domains[i].mstsc = false; }
             if (config.domains[i].ssh == true) { ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
-                if (passport.indexOf('passport') == -1) { passport.push('passport','connect-flash'); } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904 and include connect-flash here to display errors
-                if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
-                if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20'); }
-                if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
-                if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
+                if (passport.indexOf('passport') == -1) { passport.push('passport@0.7.0','connect-flash@0.1.1'); } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904 and include connect-flash here to display errors
+                if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter@1.0.4'); }
+                if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20@2.0.0'); }
+                if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2@0.1.12'); }
+                if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2@0.1.0'); passport.push('jwt-simple@0.5.6'); }
                 if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client@5.7.1') == -1)) {
                     if ((nodeVersion >= 17)
                         || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13))
@@ -4319,36 +4320,37 @@ function mainStart() {
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
             if ((config.domains[i].newaccountscaptcha != null) && (config.domains[i].newaccountscaptcha !== false)) { captcha = true; }
-            if ((typeof config.domains[i].duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal'); }
+            if ((typeof config.domains[i].duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal@2.1.0'); }
         }
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.0', 'yauzl@2.10.0'];
+        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb@4.1.2', 'node-forge@1.3.1', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.3', 'yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
-        if (ssh == true) { modules.push('ssh2@1.16.0'); }
+        if (ssh == true) { modules.push('ssh2@1.17.0'); }
         if (passport != null) { modules.push(...passport); }
         if (captcha == true) { modules.push('svg-captcha@1.4.0'); }
 
         if (sessionRecording == true) { modules.push('image-size@2.0.2'); } // Need to get the remote desktop JPEG sizes to index the recording file.
         if (config.letsencrypt != null) { modules.push('acme-client@4.2.5'); } // Add acme-client module. We need to force v4.2.4 or higher since olver versions using SHA-1 which is no longer supported by Let's Encrypt.
-        if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
-        if (config.settings.mysql != null) { modules.push('mysql2@3.11.4'); } // Add MySQL.
+        if (config.settings.mqtt != null) { modules.push('aedes@0.51.3'); } // Add MQTT Modules
+        if (config.settings.mysql != null) { modules.push('mysql2@3.15.1'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb@4.17.2'); } // Add MongoDB, official driver. 4.17.0 and above now includes saslprep by default https://github.com/mongodb/node-mongodb-native/releases/tag/v4.17.0
-        if (config.settings.postgres != null) { modules.push('pg@8.14.1') } // Add Postgres, official driver.
-        if (config.settings.mariadb != null) { modules.push('mariadb@3.4.0'); } // Add MariaDB, official driver.
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.17.2'); modules.push('@mongodb-js/saslprep@1.3.1')} // Add MongoDB, official driver.
+        if (config.settings.postgres != null) { modules.push('pg@8.16.3') } // Add Postgres, official driver.
+        if (config.settings.mariadb != null) { modules.push('mariadb@3.4.5'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.
         if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.7'); } // Add sqlite3, official driver.
-        if (config.settings.vault != null) { modules.push('node-vault@0.10.2'); } // Add official HashiCorp's Vault module.
-        if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent@7.0.2'); } // Required for HTTP/HTTPS proxy support
+        if (config.settings.vault != null) { modules.push('node-vault@0.10.5'); } // Add official HashiCorp's Vault module.
+        const hasExistingProxy = process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy'];
+        if (((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) || (hasExistingProxy)) { modules.push('https-proxy-agent@7.0.6'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs@3.1.0'); } // Add MongoJS, old driver.
         if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.10.1'); } // Add SMTP support
-        if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
+        if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail@8.1.6'); } // Add SendGrid support
         if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('html-minifier-terser@7.2.0'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer@0.1.0'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
-        if (config.settings.prometheus != null) { modules.push('prom-client'); } // Add Prometheus Metrics support
+        if (config.settings.prometheus != null) { modules.push('prom-client@15.1.3'); } // Add Prometheus Metrics support
 
         if (typeof config.settings.autobackup == 'object') {
             // Setup encrypted zip support if needed
@@ -4360,7 +4362,7 @@ function mainStart() {
                 if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@5.8.0'); }
             }
             // Enable S3 Support
-            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.2'); }
+            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.6'); }
         }
 
         // Setup common password blocking
@@ -4369,7 +4371,7 @@ function mainStart() {
         // Setup 2nd factor authentication
         if (config.settings.no2factorauth !== true) {
             // Setup YubiKey OTP if configured
-            if (yubikey == true) { modules.push('yubikeyotp@0.2.0'); } // Add YubiKey OTP support
+            if (yubikey == true) { modules.push('yub@0.11.1'); } // Add YubiKey OTP support (replaced yubikeyotp due to form-data issues)
             if (allsspi == false) { modules.push('otplib@12.0.1'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
@@ -4378,22 +4380,22 @@ function mainStart() {
 
         // SMS support
         if (config.sms != null) {
-            if (config.sms.provider == 'twilio') { modules.push('twilio@4.19.0'); }
-            if (config.sms.provider == 'plivo') { modules.push('plivo@4.58.0'); }
+            if (config.sms.provider == 'twilio') { modules.push('twilio@4.23.0'); }
+            if (config.sms.provider == 'plivo') { modules.push('plivo@4.75.1'); }
             if (config.sms.provider == 'telnyx') { modules.push('telnyx@1.25.5'); }
         }
 
         // Messaging support
         if (config.messaging != null) {
-            if (config.messaging.telegram != null) { modules.push('telegram@2.19.8'); modules.push('input@1.0.1'); }
+            if (config.messaging.telegram != null) { modules.push('telegram@2.26.22'); modules.push('input@1.0.1'); }
             if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
-            if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.1'); }
+            if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.6'); }
             if (config.messaging.pushover != null) { modules.push('node-pushover@1.0.0'); }
             if (config.messaging.zulip != null) { modules.push('zulip@0.1.0'); }
         }
 
         // Setup web based push notifications
-        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.6'); }
+        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.7'); }
 
         // Firebase Support
         if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) { modules.push('firebase-admin@12.7.0'); }

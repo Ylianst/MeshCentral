@@ -13,6 +13,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{{domainurl}}}favicon-32x32.png">
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    {{{customCSSTags}}}
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
     <meta name="apple-mobile-web-app-title" content="{{{title}}}">
@@ -30,6 +31,7 @@
     <script type="text/javascript" src="scripts/zlib-adler32{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    {{{customJSTags}}}
     <meta name="msapplication-TileColor" content="#00aba9">
     <meta name="theme-color" content="#ffffff">
     <title>{{{title}}}</title>
@@ -1539,7 +1541,8 @@
                     files = null;
                 }
                 if (serverinfo.logoutonidlesessiontimeout) {
-                    window.location.href = 'logout';
+                    if (urlargs.key) { window.location.href = 'logout?key=' + urlargs.key; }
+					else { window.location.href = 'logout'; }
                 }
             }
         }
@@ -2211,6 +2214,27 @@
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
+                    }
+                    break;
+                }
+                case 'getcookie': {
+                    if (message.tag == 'novnc') {
+                        var vncurl = window.location.origin + domainUrl + 'novnc/vnc.html?ws=wss%3A%2F%2F' + window.location.host + encodeURIComponentEx(domainUrl) + (message.localRelay?'local':'mesh') + 'relay.ashx%3Fauth%3D' + message.cookie + '&show_dot=1' + (urlargs.key?('&key=' + urlargs.key):'') + '&l={{{lang}}}';
+                        var node = getNodeFromId(message.nodeid);
+                        if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
+                        safeNewWindow(vncurl, 'mcnovnc/' + message.nodeid);
+                    } else if (message.tag == 'mstsc') {
+                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
+                        var node = getNodeFromId(message.nodeid);
+                        if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
+                        if (message.localRelay) { rdpurl += '&local=1'; }
+                        safeNewWindow(rdpurl, 'mcmstsc/' + message.nodeid);
+                    } else if (message.tag == 'ssh') {
+                        var sshurl = window.location.origin + domainUrl + 'ssh.html?ws=' + message.cookie + (urlargs.key?('&key=' + urlargs.key):'');
+                        var node = getNodeFromId(message.nodeid);
+                        if (node != null) { sshurl += '&name=' + encodeURIComponentEx(node.name); }
+                        if (message.localRelay) { sshurl += '&local=1'; }
+                        safeNewWindow(sshurl, 'mcssh/' + message.nodeid);
                     }
                     break;
                 }
@@ -2893,6 +2917,14 @@
             if (bytes < 2097152) return format("{0}k left", Math.round(bytes / 1024));
             if (bytes < 2147483648) return format("{0}m left", Math.round(bytes / 1024 / 1024));
             return format("{0}g left", Math.round(bytes / 1024 / 1024 / 1024));
+        }
+
+        function getNetworkSpeed(bitsPerSecond) {
+            if (bitsPerSecond <= 0) return "0 bps";
+            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
+            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {
@@ -3938,6 +3970,22 @@
                     x += '<a onclick=p10WebRouter("' + node._id + '",1,' + (node.httpport ? node.httpport : 80) + ')>' + "HTTP" + ((node.httpport && (node.httpport != 80)) ? '/' + node.httpport : '') + '</a>&nbsp;';
                     x += '<a onclick=p10WebRouter("' + node._id + '",2,' + (node.httpsport ? node.httpsport : 443) + ')>' + "HTTPS" + ((node.httpsport && (node.httpsport != 443)) ? '/' + node.httpsport : '') + '</a>&nbsp;';
                 }
+
+                // noVNC link
+                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x20000000) == 0)) {
+                    x += '<a id=rfbLink onclick=p10rfb("' + node._id + '")>' + "Web-VNC" + '</a>&nbsp;';
+                }
+
+                // MSTSC.js link
+                if ((((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0) && ((features & 0x40000000) == 0)) {
+                    x += '<a id=mstscLink onclick=p10mstsc("' + node._id + '")>' + "Web-RDP" + '</a>&nbsp;';
+                }
+
+                // SSH link
+                if ((features2 & 0x200) && (((connectivity & 1) != 0) || (node.mtype == 3)) && (node.agent) && ((meshrights & 8) != 0)) {
+                    x += '<a id=sshLink onclick=p10ssh("' + node._id + '")>' + "Web-SSH" + '</a>&nbsp;';
+                }
+
                 //if (mesh.mtype == 2) x += '<a style=cursor:pointer onclick=p10showNodeNetInfoDialog("' + node._id + '")>Interfaces</a>&nbsp;';
                 //if (xxmap != null) x += '<a style=cursor:pointer onclick=p10showNodeLocationDialog("' + node._id + '")>Location</a>&nbsp;';
                 x += '</div><br>'
@@ -4412,6 +4460,28 @@
             if (relayid != null) { url += '&relayid=' + relayid; }
             safeNewWindow(url, 'WebRelay');
             return false;
+        }
+
+        function p10rfb(nodeid, port) {
+            var node = getNodeFromId(nodeid), addr = null;
+            var mesh = meshes[node.meshid];
+            if (port == null) { if (node.rfbport != null) { port = node.rfbport; } else { port = 5900; } }
+            if (node.mtype == 3) { if (mesh && mesh.relayid) { nodeid = mesh.relayid; addr = node.host; } } // Setup device relay if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tcpaddr: addr, tag: 'novnc', name: mesh ? mesh.name : null });
+        }
+
+        function p10mstsc(nodeid, port) {
+            var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
+            if (port == null) { if (node.rdpport != null) { port = node.rdpport; } else { port = 3389; } } // Adjust RDP port if needed
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'mstsc', name: mesh ? mesh.name : null });
+        }
+
+        function p10ssh(nodeid, port) {
+            var node = getNodeFromId(nodeid);
+            var mesh = meshes[node.meshid];
+            if (port == null) { if (node.sshport != null) { port = node.sshport; } else { port = 22; } }
+            meshserver.send({ action: 'getcookie', nodeid: nodeid, tcpport: port, tag: 'ssh', name: mesh ? mesh.name : null });
         }
 
         function p10showiconselector() {
@@ -6374,6 +6444,9 @@
                             x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m[0].mac)));
                         }
                     }
+                    if (typeof m[0].speed == 'number' && (m[0].speed != 9223372036854775807 && m[0].speed > 0)) {
+                        x += addDetailItem("Interface Speed", format("{0}", getNetworkSpeed(m[0].speed)));
+                    }
                     for (var j = 0; j < m.length; j++) {
                         var iplayer = m[j], items = [];
                         if (iplayer.address) { items.push(format("IP: {0}", EscapeHtml(iplayer.address))); }
@@ -7629,7 +7702,6 @@
         function addKeyLinkConditional(x, t, c) { if (c) return '<span title=\'' + t + '\'>' + x + ' <img class=hoverButton src=images/key16.png></span>'; return x }
         function passwordcheck(p) { var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()]).{8,}/; return re.test(p); }
         function getFileSizeStr(size) { if (typeof size != 'number') { size = 0; } if (size == 1) return "1 byte"; return format('{0} bytes', size); }
-        function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function printDate(d) { return d.toLocaleDateString(args.locale); }
