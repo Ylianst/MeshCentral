@@ -56,7 +56,18 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
     && npm ci --omit=dev \
     && npm cache clean --force
 
-### STAGE 3 BUILDING.
+### STAGE 3 fun. building from source...
+
+FROM golang:trixie AS mongo-tools-compiler
+
+RUN apt-get update && \
+    apt-get install -y git lsb-release
+
+RUN git clone https://github.com/mongodb/mongo-tools /mongo-tools; \
+    cd /mongo-tools; \
+    ./make build;
+
+### STAGE 4 BUILDING.
 
 FROM alpine:3.22 AS finalizer
 
@@ -149,8 +160,7 @@ RUN case "$PREINSTALL_LIBS" in \
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
 #            apk add --no-cache mongodb-tools && \
-            curl --output ./mongo-tools.deb "$MONGODB_CMDT_URL"; \
-            apt-get install -y ./mongo-tools.deb; \
+            mv /tmp/bin/* /usr/bin; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
             npm install mongodb@4.17.2;; \
@@ -190,9 +200,15 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
     esac
 
 # install dependencies from package.json
+<<<<<<< HEAD
 RUN cd meshcentral \
     && rm -rf /root/ /tmp/ /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
     && npm cache clean --force
+=======
+RUN cd meshcentral && \
+    npm cache clean --force && \
+    rm -rf /root/* /tmp/* 
+>>>>>>> 6fef6cce (git commit -a)
 
 # Expose needed ports
 EXPOSE 80 443
