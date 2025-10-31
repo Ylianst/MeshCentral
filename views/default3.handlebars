@@ -2753,8 +2753,13 @@
             try {
                 var items = document.querySelectorAll('.mobile-menu-item');
                 for (var i = 0; i < items.length; i++) {
-                    if ((uiMode == 2) || (uiMode == 3)) { items[i].classList.add('d-none'); }
-                    else { items[i].classList.remove('d-none'); }
+                    if ((uiMode == 2) || (uiMode == 3)) {
+                        items[i].classList.add('d-none');
+                    } else {
+                        if (!(items[i].classList.contains('users-menu-item') || items[i].classList.contains('files-menu-item') || items[i].classList.contains('server-menu-item'))) {
+                            items[i].classList.remove('d-none');
+                        }
+                    }
                 }
             } catch (ex) { }
         }
