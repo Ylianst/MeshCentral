@@ -889,7 +889,7 @@
             "mongoDumpArgs": {
               "type": "string",
               "description": "Override the default mongodump --uri=<mongoDb>. The --db= option is automatically appended if omitted. (f.e. --host=127.0.0.1 --username=someUser --password=PaSsWORD --authenticationDatabase=admin)"
-            },    
+            },
             "mysqlDumpPath": {
               "type": "string",
               "default": "mysqldump",
@@ -1172,6 +1172,14 @@
             }
           }
         }
+      },
+      "patternProperties": {
+        "^_.*": {
+          "type": "null",
+          "x-disabled": true,
+          "x-enabled-name": "Remove underscore prefix to enable",
+          "errorMessage": "⚠️ DISABLED SETTING - This setting is currently disabled. Remove the underscore (_) prefix to enable it."
+        }
       }
     },
     "domaindefaults": {
@@ -1326,7 +1334,7 @@
             "items": {
               "type": "string"
             },
-            "description": "When set, new accounts will be added to these groups." 
+            "description": "When set, new accounts will be added to these groups."
           },
           "userNameIsEmail": {
             "type": "boolean",
@@ -1793,11 +1801,11 @@
                 "default": null,
                 "description": "Maximum number of FIDO/YubikeyOTP hardware 2FA keys that can be setup in a user account."
               },
-              "fidopininput": {  
-                "type": "string",  
-                "default": "preferred",  
+              "fidopininput": {
+                "type": "string",
+                "default": "preferred",
                 "enum": ["preferred", "required", "discouraged"],
-                "description": "Controls FIDO PIN prompt behavior: 'preferred' (asks only if key requires PIN), 'required' (always asks for PIN), or 'discouraged' (never asks for PIN). Default: 'preferred'."  
+                "description": "Controls FIDO PIN prompt behavior: 'preferred' (asks only if key requires PIN), 'required' (always asks for PIN), or 'discouraged' (never asks for PIN). Default: 'preferred'."
               },
               "allowaccountreset": {
                 "type": "boolean",
@@ -3328,7 +3336,7 @@
                   },
                   "newAccountsUserGroups": {
                     "type": "array",
-                    "description": "When set, new accounts will be created for users that authenticate with Azure and added to the specified groups.",  
+                    "description": "When set, new accounts will be created for users that authenticate with Azure and added to the specified groups.",
                     "uniqueItems": true,
                     "items": {
                       "type": "string"
@@ -3961,6 +3969,14 @@
               "bottom"
             ]
           }
+        },
+        "patternProperties": {
+          "^_.*": {
+            "type": "null",
+            "x-disabled": true,
+            "x-enabled-name": "Remove underscore prefix to enable",
+            "errorMessage": "⚠️ DISABLED SETTING - This setting is currently disabled. Remove the underscore (_) prefix to enable it."
+          }
         }
       }
     },
@@ -4230,7 +4246,7 @@
               "description": "Twilio SID"
             },
             "auth": {
-              "type": "string", 
+              "type": "string",
               "description": "Twilio Auth Token"
             },
             "from": {
@@ -4463,6 +4479,14 @@
           "description": "Enabled Zulip integration support."
         }
       }
+    }
+  },
+  "patternProperties": {
+    "^_.*": {
+      "type": "null",
+      "x-disabled": true,
+      "x-enabled-name": "Remove underscore prefix to enable",
+      "errorMessage": "⚠️ DISABLED SECTION - This section is currently disabled. Remove the underscore (_) prefix to enable it."
     }
   }
 }
