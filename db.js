@@ -3426,7 +3426,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath.");
+                        func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath." + '<br />' + error.toString().replace(/(postgresql:\/\/)([^:]+):([^@]+)@/g, '$1$2:****@') );
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
