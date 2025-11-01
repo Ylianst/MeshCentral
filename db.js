@@ -2386,6 +2386,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = $1) OR (nodeid = \'*\')) ORDER BY time ASC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
             obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = $1', [nodeid], function (err, docs) { }); };
+			obj.moveAllPowerEventsToNode = function (nodeid, oldnodeid) { if (nodeid == null) return; sqlDbQuery('UPDATE SET nodeid = $1 FROM power WHERE nodeid = $2', [nodeid, oldnodeid], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { sqlDbQuery('SELECT doc FROM smbios', null, func); };
@@ -2481,7 +2482,7 @@ module.exports.CreateDB = function (parent, func) {
             }
             obj.GetUserWithEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = ? AND extra = ?', [domain, 'email/' + email], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
-            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND JSON_EXTRACT(doc, "$.rname") = ?', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetNodeByComputerName = function (domain, rname, func) { sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND rname = ?', ['node', domain, rname], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.Remove = function (id, func) { sqlDbQuery('DELETE FROM main WHERE id = ?', [id], func); };
             obj.RemoveAll = function (func) { sqlDbQuery('DELETE FROM main', null, func); };
             obj.RemoveAllOfType = function (type, func) { sqlDbQuery('DELETE FROM main WHERE type = ?', [type], func); };
