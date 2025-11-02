@@ -3393,6 +3393,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.devicesearchbargroupname === true) { features2 += 0x10000000; } // Search bar will find by group name too
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
+        if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
         return { features: features, features2: features2 };
     }
 
