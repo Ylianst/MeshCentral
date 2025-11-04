@@ -68,6 +68,8 @@ FROM golang:trixie AS mongo-tools-compiler
 
 ARG INCLUDE_MONGODB_TOOLS="false"
 
+ARG INCLUDE_MONGODB_TOOLS="false"
+
 FROM node:22-alpine3.22 AS runtime
 
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
