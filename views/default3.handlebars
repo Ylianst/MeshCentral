@@ -160,9 +160,6 @@
             </div>
             <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
                     style="color:yellow"></span></p>
-            <div class=textnewui id=textnewui onmouseup=toggleBootstrapUIMode() onkeypress="if (event.key=='Enter') { toggleBootstrapUIMode(); }">
-                <b>Try the new MeshCentral UI</b>
-            </div>
         </div>
         <div class="sidebar flex-column" id="page_leftbar">
             <div style="height:24px"></div>
@@ -454,7 +451,7 @@
                     <table>
                         <tr>
                             <td valign="top" style="width:50px">
-                                <img src="images/info.png" loading="lazy" width="47" height="48" />
+                                <img src="images/info.png" width="47" height="48" />
                             </td>
                             <td>
                                 <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
@@ -482,7 +479,7 @@
                 </div>
                 <div id="p2info" style="overflow-y:auto">
                     <div id="p2AccountImageFrame">
-                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128"
+                        <img id="p2AccountImage" alt="" width="128" height="128"
                             onclick="account_manageImage(0)" src="images/user-256.png" />
                         <div><a href=# onclick="account_manageImage(0)">Change image</a></div>
                     </div>
@@ -1421,7 +1418,7 @@
                         </div>
                         <div class="col-auto" style="width: 20px;"></div>
                         <div class="col-auto" style="width: 200px; position: relative;">
-                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
+                            <img id="p30userAuthServiceLogo" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
                             <picture id="MainUserImage"
                                 style="display:none; border-width:0px; height:200px; width:200px; float:right"
                                 onclick="account_manageImage(1)">
@@ -1667,7 +1664,7 @@
         </div>
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
-            <div class="footer2" style="display:none;">
+            <div class="footer2">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
                     </div>
@@ -12573,7 +12570,7 @@
                 }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { oldname: renamefile }));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
         }
@@ -16412,10 +16409,9 @@
                 if (checkboxes[i].checked) { renamefile = checkboxes[i].value; }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5renamefileEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile, newname: Q('p5renameinput').value}); });
             focusTextBox('p5renameinput'); p5fileNameCheck();
         }
-        function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() {
