@@ -49,13 +49,10 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 FROM node:lts-trixie-slim AS syslog-compiler
 
-#RUN apk update && \
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends --no-install-suggests \
         bash gcc g++ jq make python3 tzdata
-#    apk add --no-cache --update \
-#        bash gcc g++ jq make python3 tzdata
 
 RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
@@ -65,12 +62,24 @@ RUN npm install modern-syslog
 
 FROM golang:trixie AS mongo-tools-compiler
 
-RUN apt-get update && \
-    apt-get install -y git lsb-release
+ARG INCLUDE_MONGODB_TOOLS="false"
 
-RUN git clone https://github.com/mongodb/mongo-tools /mongo-tools; \
-    cd /mongo-tools; \
-    ./make build;
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --no-install-suggests \
+        git lsb-release
+
+RUN case "$INCLUDE_MONGODB_TOOLS" in \
+        true|yes|TRUE|YES) \
+            git clone https://github.com/mongodb/mongo-tools /mongo-tools; \
+            cd /mongo-tools; \
+            ./make build -pkgs=mongodump,mongorestore;; \
+        false|no|FALSE|NO) \
+            echo "Not building MongoDB Tools from source, what a shame!"; \
+            mkdir -p /mongo-tools/bin;; \
+        *) \
+            echo "Invalid value for build argument INCLUDE_MONGODB_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
+            exit 1;; \
+    esac
 
 ### STAGE 4 BUILDING.
 
@@ -138,11 +147,9 @@ ENV MARIADB_HOST="" \
 
 WORKDIR /opt/meshcentral
 
-#RUN apk update && \
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
-#    apk add --no-cache --update \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends --no-install-suggests \
         bash jq tzdata curl && \
     rm -rf \
         /var/cache/* \
@@ -150,6 +157,7 @@ RUN apt-get update && \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
+        /var/tmp/* \
         /usr/lib/debug/ && \
     npm install -g npm@latest
 
@@ -168,7 +176,6 @@ RUN case "$PREINSTALL_LIBS" in \
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentraljs mainStart()
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache mongodb-tools && \
             mv /tmp/bin/* /usr/bin; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
@@ -182,8 +189,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache postgresql-client && \
-            apt-get install -y postgresql-client-common; \
+            apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.14.1;; \
@@ -196,8 +202,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache mariadb-client && \
-            apt-get install -y default-mysql-client mariadb-client; \
+            apt-get install -y --no-install-recommends --no-install-suggests default-mysql-client mariadb-client; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.0 mysql2@3.11.4;; \
@@ -225,8 +230,5 @@ VOLUME /opt/meshcentral/meshcentral-backups
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
 COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -k --fail https://localhost:443/health.ashx || exit 1
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
