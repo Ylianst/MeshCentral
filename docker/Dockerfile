@@ -60,12 +60,24 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
 
 FROM golang:trixie AS mongo-tools-compiler
 
-RUN apt-get update && \
-    apt-get install -y git lsb-release
+ARG INCLUDE_MONGODB_TOOLS="false"
 
-RUN git clone https://github.com/mongodb/mongo-tools /mongo-tools; \
-    cd /mongo-tools; \
-    ./make build;
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --no-install-suggests \
+        git lsb-release
+
+RUN case "$INCLUDE_MONGODB_TOOLS" in \
+        true|yes|TRUE|YES) \
+            git clone https://github.com/mongodb/mongo-tools /mongo-tools; \
+            cd /mongo-tools; \
+            ./make build -pkgs=mongodump,mongorestore;; \
+        false|no|FALSE|NO) \
+            echo "Not building MongoDB Tools from source, what a shame!"; \
+            mkdir -p /mongo-tools/bin;; \
+        *) \
+            echo "Invalid value for build argument INCLUDE_MONGODB_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
+            exit 1;; \
+    esac
 
 ### STAGE 4 BUILDING.
 
@@ -141,6 +153,7 @@ RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
+        /var/tmp/* \
         /usr/lib/debug/ && \
     npm install -g npm@latest
 
@@ -159,7 +172,6 @@ RUN case "$PREINSTALL_LIBS" in \
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentraljs mainStart()
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache mongodb-tools && \
             mv /tmp/bin/* /usr/bin; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
@@ -173,8 +185,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache postgresql-client && \
-            apt-get install -y postgresql-client-common; \
+            apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.14.1;; \
@@ -187,8 +198,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
-#            apk add --no-cache mariadb-client && \
-            apt-get install -y default-mysql-client mariadb-client; \
+            apt-get install -y --no-install-recommends --no-install-suggests default-mysql-client mariadb-client; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.0 mysql2@3.11.4;; \
@@ -200,15 +210,9 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
     esac
 
 # install dependencies from package.json
-<<<<<<< HEAD
 RUN cd meshcentral \
     && rm -rf /root/ /tmp/ /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
     && npm cache clean --force
-=======
-RUN cd meshcentral && \
-    npm cache clean --force && \
-    rm -rf /root/* /tmp/* 
->>>>>>> 6fef6cce (git commit -a)
 
 # Expose needed ports
 EXPOSE 80 443
