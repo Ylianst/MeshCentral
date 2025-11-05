@@ -47,6 +47,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
+<<<<<<< HEAD:docker/Dockerfile-debian
 FROM node:lts-trixie-slim AS dep-compiler
 
 ENV NODE_ENV="production"
@@ -94,6 +95,29 @@ FROM node:lts-trixie-slim AS finalizer
 # Copy files from previous layers
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 COPY --from=mongo-tools-compiler /mongo-tools/bin/ /tmp/bin/
+=======
+FROM alpine:3.22 AS dep-compiler
+
+RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    apk add --no-cache --update \
+        bash gcc g++ jq make nodejs npm python3 tzdata
+
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+WORKDIR /opt/meshcentral/meshcentral
+
+RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
+    && npm i --package-lock-only \
+    && npm ci --omit=dev \
+    && npm cache clean --force
+
+### STAGE 3 BUILDING.
+
+FROM alpine:3.22 AS finalizer
+
+# copy files from previous layers
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+>>>>>>> da248ab0 (chore: update debian docker files):docker/Dockerfile-alpine
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -151,12 +175,20 @@ ENV MARIADB_HOST="" \
 
 WORKDIR /opt/meshcentral
 
+<<<<<<< HEAD:docker/Dockerfile-debian
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
         bash jq tzdata curl && \
     rm -rf \
         /var/cache/* \
+=======
+RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    apk add --no-cache --update \
+        bash jq nodejs npm tzdata && \
+    rm -rf /var/cache/* \
+        /tmp/* \
+>>>>>>> da248ab0 (chore: update debian docker files):docker/Dockerfile-alpine
         /usr/share/man/ \
         /usr/share/doc/ \
         /var/log/* \
@@ -217,22 +249,47 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             exit 1;; \
     esac
 
+<<<<<<< HEAD:docker/Dockerfile-debian
 # Remove left over files and cache
 RUN cd meshcentral \
     && rm -rf /root/* /tmp/* /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
+=======
+# install dependencies from package.json
+RUN cd meshcentral \
+    && rm -rf /root/ /tmp/ /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
+>>>>>>> da248ab0 (chore: update debian docker files):docker/Dockerfile-alpine
     && npm cache clean --force
 
 # Expose needed ports
 EXPOSE 80 443
 
+<<<<<<< HEAD:docker/Dockerfile-debian
 # These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman. Dummy-proofing.
 VOLUME /opt/meshcentral/meshcentral-data
 VOLUME /opt/meshcentral/meshcentral-files
 VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
+=======
+# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
+#VOLUME /opt/meshcentral/meshcentral-data
+#VOLUME /opt/meshcentral/meshcentral-files
+#VOLUME /opt/meshcentral/meshcentral-web
+#VOLUME /opt/meshcentral/meshcentral-backups
+>>>>>>> da248ab0 (chore: update debian docker files):docker/Dockerfile-alpine
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
 COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
+<<<<<<< HEAD:docker/Dockerfile-debian
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
+=======
+# Run as non-root user
+RUN addgroup -g 1001 meshgroup \
+    && adduser -D -u 1001 -G meshgroup meshuser \
+    && chown -R meshuser:meshgroup /opt/meshcentral
+USER meshuser
+
+
+ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
+>>>>>>> da248ab0 (chore: update debian docker files):docker/Dockerfile-alpine
