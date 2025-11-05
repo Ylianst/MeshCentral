@@ -27,6 +27,17 @@ So for another quick example: if you want to get a released version with a Mongo
 So for another quick example: if you want a very slim image with the latest code and only a local database: `ghcr.io/ylianst/meshcentral:master-slim`<br>
 So as a last example: if you want to get a MariaDB/MySQL backend with MeshCentral version 1.1.53: `ghcr.io/ylianst/meshcentral:1.1.53-mysql`
 
+## Persistency
+
+The Docker image has since recently removed its default creation of volumes. It might not be what you want.<br>
+If you still want to use volumes to make data persist across containers use Docker volumes (or Kubernetes PVCs).<br>
+For examples of how to use these volumes, see the examples below. Most data resides inside:
+
+- /opt/meshcentral/meshcentral-backups
+- /opt/meshcentral/meshcentral-data (most important! Server configurations, certificates, etc... reside here.)
+- /opt/meshcentral/meshcentral-files
+- /opt/meshcentral/meshcentral-web (relevant if you use a custom theme, such as [Stylish-UI](https://github.com/melo-professional/Meshcentral-Stylish-UI)
+
 ## Environment Variables
 Below is a breakdown of environment variables used in this setup.
 
