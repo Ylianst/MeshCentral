@@ -2,20 +2,14 @@
 
 # Don't install package docs
 path-exclude=/usr/share/doc/*
-<<<<<<< HEAD
-=======
 path-include=/usr/share/doc/*/copyright
->>>>>>> da248ab0 (chore: update debian docker files)
 
 # Don't install man pages
 path-exclude=/usr/share/man/*
 
 # Don't install localized man pages
 path-exclude=/usr/share/locale/*
-<<<<<<< HEAD
-=======
 path-include=/usr/share/locale/en*
->>>>>>> da248ab0 (chore: update debian docker files)
 
 # Optional: exclude info pages
 path-exclude=/usr/share/info/*

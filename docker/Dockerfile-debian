@@ -48,6 +48,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
 <<<<<<< HEAD:docker/Dockerfile-debian
+<<<<<<< HEAD:docker/Dockerfile-debian
 FROM node:lts-trixie-slim AS dep-compiler
 
 ENV NODE_ENV="production"
@@ -97,10 +98,13 @@ COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentr
 COPY --from=mongo-tools-compiler /mongo-tools/bin/ /tmp/bin/
 =======
 FROM alpine:3.22 AS dep-compiler
+=======
+FROM node:lts-alpine3.22 AS dep-compiler
+>>>>>>> b2b9823f (fix: some logic issues when removing volumes from Dockerfile):docker/Dockerfile-alpine
 
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ jq make nodejs npm python3 tzdata
+        bash gcc g++ jq make python3 tzdata
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
@@ -282,6 +286,7 @@ COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
 <<<<<<< HEAD:docker/Dockerfile-debian
+<<<<<<< HEAD:docker/Dockerfile-debian
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
 =======
 # Run as non-root user
@@ -291,5 +296,7 @@ RUN addgroup -g 1001 meshgroup \
 USER meshuser
 
 
+=======
+>>>>>>> b2b9823f (fix: some logic issues when removing volumes from Dockerfile):docker/Dockerfile-alpine
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
 >>>>>>> da248ab0 (chore: update debian docker files):docker/Dockerfile-alpine
