@@ -235,10 +235,4 @@ EXPOSE 80 443
 COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
-# Run as non-root user
-RUN groupadd -g 1001 meshgroup \
-    && useradd -u 1001 -g meshgroup -m meshuser \
-    && chown -R meshuser:meshgroup /opt/meshcentral 
-USER meshuser
-
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
