@@ -36,7 +36,11 @@ For examples of how to use these volumes, see the examples below. Most data resi
 - /opt/meshcentral/meshcentral-backups
 - /opt/meshcentral/meshcentral-data (most important! Server configurations, certificates, etc... reside here.)
 - /opt/meshcentral/meshcentral-files
+<<<<<<< HEAD
 - /opt/meshcentral/meshcentral-web (relevant if you use a custom theme, such as [Stylish-UI](https://github.com/melo-professional/Meshcentral-Stylish-UI))
+=======
+- /opt/meshcentral/meshcentral-web (relevant if you use a custom theme, such as [Stylish-UI](https://github.com/melo-professional/Meshcentral-Stylish-UI)
+>>>>>>> 0245c964 (chore: expand docs)
 
 ## Environment Variables
 Below is a breakdown of environment variables used in this setup.
