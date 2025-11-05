@@ -227,14 +227,4 @@ VOLUME /opt/meshcentral/meshcentral-backups
 COPY ./docker/entrypoint.sh ./entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
-<<<<<<< HEAD
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
-=======
-# Run as non-root user
-RUN groupadd -g 1001 meshgroup \
-    && useradd -u 1001 -g meshgroup -m meshuser \
-    && chown -R meshuser:meshgroup /opt/meshcentral 
-USER meshuser
-
-ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
->>>>>>> 69f0e2bf (chore: update debian docker files)
