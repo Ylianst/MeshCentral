@@ -45,18 +45,24 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
 
 RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
-### STAGE 2 PRECOMPILE SYSLOG MODULE
+### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM node:lts-trixie-slim AS syslog-compiler
+FROM node:lts-trixie-slim AS dep-compiler
+
+ENV NODE_ENV="production"
 
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
         bash gcc g++ jq make python3 tzdata
 
-RUN mkdir -p /opt/meshcentral/meshcentral
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
-RUN npm install modern-syslog
+
+RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
+    && npm i --package-lock-only \
+    && npm ci --omit=dev \
+    && npm cache clean --force
 
 ### STAGE 3 fun. building from source...
 
@@ -85,10 +91,8 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 FROM node:lts-trixie-slim AS finalizer
 
-# copy files from previous layers
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=syslog-compiler /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/node_modules
-COPY --from=syslog-compiler /opt/meshcentral/meshcentral/package.json /opt/meshcentral/meshcentral/package.json
+# Copy files from previous layers
+COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 COPY --from=mongo-tools-compiler /mongo-tools/bin/ /tmp/bin/
 
 # environment variables
@@ -213,22 +217,28 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             exit 1;; \
     esac
 
-# install dependencies from package.json
-RUN cd meshcentral && \
-    npm cache clean --force && \
-    rm -rf /root/* /tmp/* 
+# Remove left over files and cache
+RUN cd meshcentral \
+    && rm -rf /root/* /tmp/* /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
+    && npm cache clean --force
 
 # Expose needed ports
 EXPOSE 80 443
 
 # These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
-VOLUME /opt/meshcentral/meshcentral-data
-VOLUME /opt/meshcentral/meshcentral-files
-VOLUME /opt/meshcentral/meshcentral-web
-VOLUME /opt/meshcentral/meshcentral-backups
+#VOLUME /opt/meshcentral/meshcentral-data
+#VOLUME /opt/meshcentral/meshcentral-files
+#VOLUME /opt/meshcentral/meshcentral-web
+#VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
 COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
+
+# Run as non-root user
+RUN groupadd -g 1001 meshgroup \
+    && useradd -u 1001 -g meshgroup -m meshuser \
+    && chown -R meshuser:meshgroup /opt/meshcentral 
+USER meshuser
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
