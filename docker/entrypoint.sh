@@ -14,12 +14,22 @@ trap graceful_shutdown SIGTERM
 # Make the start more cleared when restarted.
 echo "-------------------------------------------------------------"
 date
-echo "Config file: $CONFIG_FILE"
+if [ -n "$CONFIG_FILE" ]; then
+    echo "Config file: $CONFIG_FILE"
+else
+    exit 1
+fi
 
 # Failsafe to create a new config if the expected config is not there.
 if [ -f "${CONFIG_FILE}" ]; then
     echo "Pre-existing config found, not recreating..."
 else
+    if [ ! -d $(dirname "$CONFIG_FILE") ]; then
+        echo "Creating meshcentral-data directory..."
+        mkdir -p /opt/meshcentral/meshcentral-data
+    fi
+
+    echo "Placing template into the relevant directory: $(dirname $CONFIG_FILE)"
     cp /opt/meshcentral/config.json.template "${CONFIG_FILE}"
 fi
 
@@ -260,7 +270,7 @@ if [[ ${DYNAMIC_CONFIG,,} =~ ^(true|yes)$ ]]; then
 
     cat "$CONFIG_FILE"
 else
-    echo "Leaving config as-is."
+    echo "Leaving config as-is. Dynamic Configuration is off."
 fi
 
 # Actually start MeshCentral.
