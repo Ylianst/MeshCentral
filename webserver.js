@@ -3227,9 +3227,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var webstateJSON = JSON.parse(webstate);
                 if (req.query.sitestyle != null) {
                     if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
-                } else if (domain.sitestyle == 3) {
-                    uiViewMode = 'default3';
                 } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                } else if (domain.sitestyle == 3) {
                     uiViewMode = 'default3';
                 }
                 // Refresh the session
