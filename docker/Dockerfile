@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-trixie-slim AS builder
+FROM node:lts-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_MINIFY="yes"
@@ -56,30 +56,7 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
     && npm ci --omit=dev \
     && npm cache clean --force
 
-### STAGE 3 fun. building from source...
-
-FROM golang:trixie AS mongo-tools-compiler
-
-ARG INCLUDE_MONGODB_TOOLS="false"
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --no-install-suggests \
-        git lsb-release
-
-RUN case "$INCLUDE_MONGODB_TOOLS" in \
-        true|yes|TRUE|YES) \
-            git clone https://github.com/mongodb/mongo-tools /mongo-tools; \
-            cd /mongo-tools; \
-            ./make build -pkgs=mongodump,mongorestore;; \
-        false|no|FALSE|NO) \
-            echo "Not building MongoDB Tools from source, what a shame!"; \
-            mkdir -p /mongo-tools/bin;; \
-        *) \
-            echo "Invalid value for build argument INCLUDE_MONGODB_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
-            exit 1;; \
-    esac
-
-### STAGE 4 BUILDING.
+### STAGE 3 BUILDING.
 
 FROM alpine:3.22 AS finalizer
 
@@ -153,7 +130,6 @@ RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
-        /var/tmp/* \
         /usr/lib/debug/ && \
     npm install -g npm@latest
 
@@ -172,7 +148,7 @@ RUN case "$PREINSTALL_LIBS" in \
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentraljs mainStart()
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
-            mv /tmp/bin/* /usr/bin; \
+            apk add --no-cache mongodb-tools && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
             npm install mongodb@4.17.2;; \
@@ -185,7 +161,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
-            apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
+            apk add --no-cache postgresql-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.14.1;; \
@@ -198,7 +174,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
-            apt-get install -y --no-install-recommends --no-install-suggests default-mysql-client mariadb-client; \
+            apk add --no-cache mariadb-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.0 mysql2@3.11.4;; \
