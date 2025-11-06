@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-alpine3.22 AS builder
+FROM node:22-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_MINIFY="yes"
