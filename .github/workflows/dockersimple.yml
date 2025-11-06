@@ -206,3 +206,4 @@ jobs:
             -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-slim \
             ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-slim \
             ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-slim
+
