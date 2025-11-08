@@ -3068,7 +3068,8 @@
             "properties": {
               "twitter": {
                 "type": "object",
-                "description": "Twitter authentication",
+                "description": "⚠️ DEPRECATED: Twitter OAuth authentication is deprecated. Migrate to 'oidc' with preset: 'twitter'. Note: Requires Twitter OAuth 2.0 (not OAuth 1.0a). See: docs/meshcentral/authentication/migration-guide.md",
+                "deprecated": true,
                 "properties": {
                   "callbackurl": {
                     "type": "string",
@@ -3120,7 +3121,8 @@
               },
               "google": {
                 "type": "object",
-                "description": "Google authentication",
+                "description": "⚠️ DEPRECATED: Google OAuth2 authentication is deprecated. Migrate to 'oidc' with preset: 'google'. See: docs/meshcentral/authentication/migration-guide.md",
+                "deprecated": true,
                 "properties": {
                   "callbackurl": {
                     "type": "string",
@@ -3172,7 +3174,8 @@
               },
               "github": {
                 "type": "object",
-                "description": "GitHub authentication",
+                "description": "⚠️ DEPRECATED: GitHub OAuth2 authentication is deprecated. Migrate to 'oidc' with preset: 'github'. See: docs/meshcentral/authentication/migration-guide.md",
+                "deprecated": true,
                 "properties": {
                   "callbackurl": {
                     "type": "string",
@@ -3224,7 +3227,8 @@
               },
               "azure": {
                 "type": "object",
-                "description": "Azure authentication",
+                "description": "⚠️ DEPRECATED: Azure OAuth2 authentication is deprecated. Migrate to 'oidc' with preset: 'azure'. This strategy uses the unstable 'unique_name' claim which causes duplicate accounts when users change email/UPN (Issue #4531). OIDC uses the stable 'oid' claim. See: docs/meshcentral/authentication/migration-guide.md",
+                "deprecated": true,
                 "properties": {
                   "callbackurl": {
                     "type": "string",
@@ -3281,7 +3285,8 @@
               },
               "jumpcloud": {
                 "type": "object",
-                "description": "JumpCloud authentication",
+                "description": "⚠️ DEPRECATED: JumpCloud SAML authentication is deprecated. Migrate to unified 'saml' strategy with preset: 'jumpcloud'. See: docs/meshcentral/authentication/migration-guide.md",
+                "deprecated": true,
                 "properties": {
                   "callbackurl": {
                     "type": "string",
@@ -3386,7 +3391,47 @@
                   },
                   "cert": {
                     "type": "string",
-                    "description": "SAML certificate."
+                    "description": "SAML certificate file path (relative to meshcentral-data directory)."
+                  },
+                  "preset": {
+                    "type": "string",
+                    "enum": ["azure", "okta", "onelogin", "jumpcloud", "auth0", "keycloak", "adfs", "pingfederate", "google", "intel", "generic"],
+                    "description": "SAML provider preset for optimized configuration."
+                  },
+                  "groups": {
+                    "type": "object",
+                    "description": "SAML group synchronization settings",
+                    "properties": {
+                      "attribute": {
+                        "type": "string",
+                        "description": "SAML assertion attribute name containing group memberships (default: 'groups')",
+                        "default": "groups"
+                      },
+                      "required": {
+                        "type": "array",
+                        "description": "User must be in at least one of these groups to log in",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "siteadmin": {
+                        "type": "array",
+                        "description": "Users in these groups will be granted site admin privileges",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "sync": {
+                        "type": "boolean",
+                        "description": "Sync IdP groups to MeshCentral user groups",
+                        "default": false
+                      },
+                      "revokeAdmin": {
+                        "type": "boolean",
+                        "description": "Revoke site admin if user leaves admin group",
+                        "default": true
+                      }
+                    }
                   },
                   "logouturl": {
                     "type": "string",
@@ -3791,12 +3836,33 @@
                         "description": "Preset to use for OIDC configuration",
                         "enum": [
                           "azure",
-                          "google"
+                          "google",
+                          "github",
+                          "twitter",
+                          "okta",
+                          "auth0",
+                          "keycloak"
                         ]
                       },
                       "tenant_id": {
                         "type": "string",
-                        "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"
+                        "description": "REQUIRED FOR AZURE PRESET: Tenant ID for Azure AD"
+                      },
+                      "org_domain": {
+                        "type": "string",
+                        "description": "REQUIRED FOR OKTA PRESET: Organization domain (e.g., 'company.okta.com')"
+                      },
+                      "domain": {
+                        "type": "string",
+                        "description": "REQUIRED FOR AUTH0 PRESET: Auth0 domain (e.g., 'company.auth0.com' or 'company.us.auth0.com')"
+                      },
+                      "server_url": {
+                        "type": "string",
+                        "description": "REQUIRED FOR KEYCLOAK PRESET: Keycloak server URL (e.g., 'https://keycloak.company.com')"
+                      },
+                      "realm": {
+                        "type": "string",
+                        "description": "REQUIRED FOR KEYCLOAK PRESET: Keycloak realm name"
                       },
                       "customer_id": {
                         "type": "string",

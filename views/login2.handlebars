@@ -102,16 +102,30 @@
                         <div id="authStrategies" style="display:none">
                             <hr id="loginuserpasshr" style="display:none" />
                             <div style="margin-bottom:8px">Log in using an existing account</div>
-                            <a id="auth-twitter" href="auth-twitter" style="display:none"><img src="images/login/twitter32.png" srcset="images/login/twitter64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Twitter" /></a>
-                            <a id="auth-google" href="auth-google" style="display:none"><img src="images/login/google32.png" srcset="images/login/google64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Google" /></a>
-                            <a id="auth-github" href="auth-github" style="display:none"><img src="images/login/github32.png" srcset="images/login/github64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using GitHub" /></a>
-                            <a id="auth-azure" href="auth-azure" style="display:none"><img src="images/login/azure32.png" srcset="images/login/azure64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Azure" /></a>
-                            <a id="auth-oidc" href="auth-oidc" style="display:none"><img src="images/login/oidc32.png" srcset="images/login/oidc64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using OpenID Connect" /></a>
-                            <a id="auth-oidc-azure" href="auth-oidc" style="display:none"><img src="images/login/azure32.png" srcset="images/login/azure64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in with Azure using OpenID Connect" /></a>
-                            <a id="auth-oidc-google" href="auth-oidc" style="display:none"><img src="images/login/google32.png" srcset="images/login/google64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in with Google using OpenID Connect" /></a>
-                            <a id="auth-jumpcloud" href="auth-jumpcloud" style="display:none"><img src="images/login/jumpcloud32.png" srcset="images/login/jumpcloud64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using JumpCloud" /></a>
-                            <a id="auth-intel" href="auth-intel" style="display:none"><img src="images/login/intel32.png" srcset="images/login/intel64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Intel" /></a>
-                            <a id="auth-saml" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Single Sign-in" /></a>
+                            
+                            <!-- OIDC Presets -->
+                            <a id="auth-oidc-azure" href="auth-oidc" style="display:none"><img src="images/login/azure32.png" srcset="images/login/azure64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Azure" /></a>
+                            <a id="auth-oidc-google" href="auth-oidc" style="display:none"><img src="images/login/google32.png" srcset="images/login/google64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Google" /></a>
+                            <a id="auth-oidc-okta" href="auth-oidc" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Okta" /></a>
+                            <a id="auth-oidc-auth0" href="auth-oidc" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Auth0" /></a>
+                            <a id="auth-oidc-keycloak" href="auth-oidc" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Keycloak" /></a>
+                            <a id="auth-oidc-github" href="auth-oidc" style="display:none"><img src="images/login/github32.png" srcset="images/login/github64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with GitHub" /></a>
+                            <a id="auth-oidc-twitter" href="auth-oidc" style="display:none"><img src="images/login/twitter32.png" srcset="images/login/twitter64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Twitter" /></a>
+                            <a id="auth-oidc" href="auth-oidc" style="display:none"><img src="images/login/oidc32.png" srcset="images/login/oidc64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with OpenID Connect" /></a>
+                            
+                            <!-- SAML Presets -->
+                            <a id="auth-saml-azure" href="auth-saml" style="display:none"><img src="images/login/azure32.png" srcset="images/login/azure64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Azure SAML" /></a>
+                            <a id="auth-saml-okta" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Okta" /></a>
+                            <a id="auth-saml-onelogin" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with OneLogin" /></a>
+                            <a id="auth-saml-jumpcloud" href="auth-saml" style="display:none"><img src="images/login/jumpcloud32.png" srcset="images/login/jumpcloud64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with JumpCloud" /></a>
+                            <a id="auth-saml-auth0" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Auth0 SAML" /></a>
+                            <a id="auth-saml-keycloak" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Keycloak SAML" /></a>
+                            <a id="auth-saml-adfs" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with ADFS" /></a>
+                            <a id="auth-saml-pingfederate" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with PingFederate" /></a>
+                            <a id="auth-saml-google" href="auth-saml" style="display:none"><img src="images/login/google32.png" srcset="images/login/google64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Google Workspace" /></a>
+                            <a id="auth-saml-intel" href="auth-saml" style="display:none"><img src="images/login/intel32.png" srcset="images/login/intel64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign in with Intel" /></a>
+                            <a id="auth-saml-generic" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Single Sign-On" /></a>
+                            <a id="auth-saml" href="auth-saml" style="display:none"><img src="images/login/generic32.png" srcset="images/login/generic64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Single Sign-On" /></a>
                         </div>
                     </form>
                 </div>
@@ -521,16 +535,30 @@
             // Setup authentication strategies
             if (authStrategies != '') {
                 QV('authStrategies', true);
-                if (authStrategies.indexOf('twitter') >= 0) { QV('auth-twitter', true); }
-                if (authStrategies.indexOf('google') >= 0) { QV('auth-google', true); }
-                if (authStrategies.indexOf('github') >= 0) { QV('auth-github', true); }
-                if (authStrategies.indexOf('azure') >= 0) { QV('auth-azure', true); }
-                if (authStrategies.indexOf('oidc') >= 0) { QV('auth-oidc', true); }
+                
+                // OIDC presets
                 if (authStrategies.indexOf('oidc-azure') >= 0) { QV('auth-oidc-azure', true); }
-                if (authStrategies.indexOf('oidc-google') >= 0) { QV('auth-oidc-google', true); }
-                if (authStrategies.indexOf('jumpcloud') >= 0) { QV('auth-jumpcloud', true); }
-                if (authStrategies.indexOf('intel') >= 0) { QV('auth-intel', true); }
-                if (authStrategies.indexOf('saml') >= 0) { QV('auth-saml', true); }
+                else if (authStrategies.indexOf('oidc-google') >= 0) { QV('auth-oidc-google', true); }
+                else if (authStrategies.indexOf('oidc-okta') >= 0) { QV('auth-oidc-okta', true); }
+                else if (authStrategies.indexOf('oidc-auth0') >= 0) { QV('auth-oidc-auth0', true); }
+                else if (authStrategies.indexOf('oidc-keycloak') >= 0) { QV('auth-oidc-keycloak', true); }
+                else if (authStrategies.indexOf('oidc-github') >= 0) { QV('auth-oidc-github', true); }
+                else if (authStrategies.indexOf('oidc-twitter') >= 0) { QV('auth-oidc-twitter', true); }
+                else if (authStrategies.indexOf('oidc') >= 0) { QV('auth-oidc', true); }
+                
+                // SAML presets
+                if (authStrategies.indexOf('saml-azure') >= 0) { QV('auth-saml-azure', true); }
+                else if (authStrategies.indexOf('saml-okta') >= 0) { QV('auth-saml-okta', true); }
+                else if (authStrategies.indexOf('saml-onelogin') >= 0) { QV('auth-saml-onelogin', true); }
+                else if (authStrategies.indexOf('saml-jumpcloud') >= 0) { QV('auth-saml-jumpcloud', true); }
+                else if (authStrategies.indexOf('saml-auth0') >= 0) { QV('auth-saml-auth0', true); }
+                else if (authStrategies.indexOf('saml-keycloak') >= 0) { QV('auth-saml-keycloak', true); }
+                else if (authStrategies.indexOf('saml-adfs') >= 0) { QV('auth-saml-adfs', true); }
+                else if (authStrategies.indexOf('saml-pingfederate') >= 0) { QV('auth-saml-pingfederate', true); }
+                else if (authStrategies.indexOf('saml-google') >= 0) { QV('auth-saml-google', true); }
+                else if (authStrategies.indexOf('saml-intel') >= 0) { QV('auth-saml-intel', true); }
+                else if (authStrategies.indexOf('saml-generic') >= 0) { QV('auth-saml-generic', true); }
+                else if (authStrategies.indexOf('saml') >= 0) { QV('auth-saml', true); }
             }
 
             validateCreate();

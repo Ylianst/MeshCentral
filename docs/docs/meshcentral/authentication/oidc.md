@@ -537,6 +537,121 @@ As always, the client ID and secret are required, the customer ID on the other h
 },
 ```
 
+## OIDC Presets
+
+### Available Presets
+
+MeshCentral includes presets for popular OAuth 2.0 and OIDC providers:
+
+- **`azure`** - Azure AD / Microsoft Entra ID
+- **`google`** - Google Workspace / Google Cloud Identity
+- **`okta`** - Okta Identity Cloud
+- **`auth0`** - Auth0 by Okta
+- **`keycloak`** - Keycloak / Red Hat SSO
+- **`github`** - GitHub OAuth 2.0
+- **`twitter`** - Twitter OAuth 2.0
+
+### Okta Preset
+
+```json
+{
+  "oidc": {
+    "client": {
+      "client_id": "your-client-id",
+      "client_secret": "your-client-secret"
+    },
+    "custom": {
+      "preset": "okta",
+      "org_domain": "company.okta.com"
+    },
+    "groups": {
+      "required": ["mesh-users"],
+      "siteadmin": ["mesh-admins"],
+      "sync": true
+    }
+  }
+}
+```
+
+**Required:** `org_domain` - Your Okta organization domain
+
+### Auth0 Preset
+
+```json
+{
+  "oidc": {
+    "client": {
+      "client_id": "your-client-id",
+      "client_secret": "your-client-secret"
+    },
+    "custom": {
+      "preset": "auth0",
+      "domain": "company.auth0.com"
+    }
+  }
+}
+```
+
+**Required:** `domain` - Your Auth0 tenant domain (e.g., `company.auth0.com` or `company.us.auth0.com`)
+
+### Keycloak Preset
+
+```json
+{
+  "oidc": {
+    "client": {
+      "client_id": "meshcentral",
+      "client_secret": "your-client-secret"
+    },
+    "custom": {
+      "preset": "keycloak",
+      "server_url": "https://keycloak.company.com",
+      "realm": "master"
+    }
+  }
+}
+```
+
+**Required:** 
+- `server_url` - Base URL of your Keycloak server
+- `realm` - Keycloak realm name
+
+### GitHub Preset
+
+```json
+{
+  "oidc": {
+    "client": {
+      "client_id": "Iv1.your-github-client-id",
+      "client_secret": "your-github-secret"
+    },
+    "custom": {
+      "preset": "github"
+    }
+  }
+}
+```
+
+**Note:** GitHub uses OAuth 2.0, not OIDC. Endpoints are configured automatically.
+
+### Twitter Preset
+
+```json
+{
+  "oidc": {
+    "client": {
+      "client_id": "your-twitter-client-id",
+      "client_secret": "your-twitter-secret"
+    },
+    "custom": {
+      "preset": "twitter"
+    }
+  }
+}
+```
+
+**Note:** Requires Twitter OAuth 2.0 credentials (not OAuth 1.0a).
+
 ### Azure Preset
 
 #### *Prerequisites*

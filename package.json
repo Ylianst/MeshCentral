@@ -37,6 +37,8 @@
     "sample-config-advanced.json"
   ],
   "dependencies": {
+    "@node-saml/node-saml": "^5.0.0",
+    "@node-saml/passport-saml": "^5.0.0",
     "@seald-io/nedb": "4.0.4",
     "archiver": "7.0.1",
     "body-parser": "1.20.3",
@@ -47,9 +49,12 @@
     "express-handlebars": "7.1.3",
     "express-ws": "5.0.2",
     "ipcheck": "0.1.0",
+    "loadavg-windows": "1.1.1",
     "minimist": "1.2.8",
     "multiparty": "4.2.3",
     "node-forge": "1.3.1",
+    "node-windows": "0.1.14",
+    "otplib": "12.0.1",
     "ua-client-hints-js": "0.1.2",
     "ua-parser-js": "1.0.40",
     "ws": "8.18.0",

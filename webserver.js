@@ -2619,9 +2619,127 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
+    // Migrate user accounts from deprecated auth strategies to new OIDC/SAML strategies
+    // This creates a new user with the new ID while preserving the old account
+    async function migrateUserAccount(req, domain) {
+        if (!req.user || !req.user.sid || !req.user.strategy) return;
+        
+        // Check if this is a migrated strategy (user has _migratedFrom metadata)
+        if (!req.user._migratedFrom) return;
+        
+        const newUserId = 'user/' + domain.id + '/' + req.user.sid;
+        const oldUserId = 'user/' + domain.id + '/' + req.user._migratedFrom;
+        
+        // If new user already exists, no migration needed
+        if (obj.users[newUserId]) {
+            parent.authLog('USER-MIGRATION', `✅ User already migrated: ${oldUserId} → ${newUserId}`);
+            return;
+        }
+        
+        // Look up old user account
+        const oldUser = obj.users[oldUserId];
+        if (!oldUser) {
+            parent.authLog('USER-MIGRATION', `ℹ️  No existing account found for ${oldUserId}, will create new account`);
+            return;
+        }
+        
+        // CRITICAL: Clone the old user account to create new one
+        parent.authLog('USER-MIGRATION', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        parent.authLog('USER-MIGRATION', `🔄 Migrating user account:`);
+        parent.authLog('USER-MIGRATION', `   OLD ID: ${oldUserId}`);
+        parent.authLog('USER-MIGRATION', `   NEW ID: ${newUserId}`);
+        parent.authLog('USER-MIGRATION', `   NAME: ${oldUser.name}`);
+        parent.authLog('USER-MIGRATION', `   EMAIL: ${oldUser.email || 'none'}`);
+        
+        try {
+            // Create new user by cloning old user
+            const newUser = JSON.parse(JSON.stringify(oldUser)); // Deep clone
+            
+            // Update critical fields
+            newUser._id = newUserId;
+            newUser.creation = Math.floor(Date.now() / 1000);
+            newUser.login = Math.floor(Date.now() / 1000);
+            newUser.access = Math.floor(Date.now() / 1000);
+            
+            // Add migration metadata
+            newUser._migratedFrom = oldUserId;
+            newUser._migrationDate = new Date().toISOString();
+            newUser._migrationStrategy = req.user.strategy;
+            
+            // Update user's name and email from SSO if provided
+            if (req.user.name) newUser.name = req.user.name;
+            if (req.user.email) {
+                newUser.email = req.user.email;
+                newUser.emailVerified = req.user.emailVerified || true;
+            }
+            
+            // Add old user reference for admin tracking
+            if (!oldUser._migratedTo) {
+                oldUser._migratedTo = newUserId;
+                oldUser._migrationDate = new Date().toISOString();
+            }
+            
+            // Verification: Check that critical data was preserved
+            const verification = {
+                siteadmin: oldUser.siteadmin === newUser.siteadmin,
+                links: JSON.stringify(oldUser.links) === JSON.stringify(newUser.links),
+                groups: JSON.stringify(oldUser.groups) === JSON.stringify(newUser.groups),
+                domain: oldUser.domain === newUser.domain
+            };
+            
+            const allVerified = Object.values(verification).every(v => v === true);
+            
+            if (!allVerified) {
+                parent.authLog('USER-MIGRATION', `   ⚠️  WARNING: Verification failed:`);
+                parent.authLog('USER-MIGRATION', `   ${JSON.stringify(verification, null, 2)}`);
+                throw new Error('User migration verification failed - data mismatch detected');
+            }
+            
+            parent.authLog('USER-MIGRATION', `   ✅ Verification passed - all permissions preserved`);
+            parent.authLog('USER-MIGRATION', `   📋 Site Admin: ${newUser.siteadmin !== undefined ? 'Yes (0x' + newUser.siteadmin.toString(16) + ')' : 'No'}`);
+            parent.authLog('USER-MIGRATION', `   📋 Device Links: ${Object.keys(newUser.links || {}).length} devices`);
+            parent.authLog('USER-MIGRATION', `   📋 User Groups: ${Object.keys(newUser.links || {}).filter(k => k.startsWith('ugrp/')).length} groups`);
+            
+            // Save new user to database
+            obj.users[newUserId] = newUser;
+            obj.db.SetUser(newUser);
+            
+            // Update old user with migration metadata (don't delete it)
+            obj.users[oldUserId] = oldUser;
+            obj.db.SetUser(oldUser);
+            
+            parent.authLog('USER-MIGRATION', `   💾 New user saved to database`);
+            parent.authLog('USER-MIGRATION', `   💾 Old user marked as migrated (preserved for backup)`);
+            parent.authLog('USER-MIGRATION', `   ✅ Migration complete`);
+            parent.authLog('USER-MIGRATION', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            
+            // Event user migration
+            var targets = ['*', 'server-users'];
+            var event = { 
+                etype: 'user', 
+                userid: newUser._id, 
+                username: newUser.name, 
+                account: obj.CloneSafeUser(newUser), 
+                action: 'accountmigrate', 
+                msg: `Account migrated from ${req.user._migratedFrom} to ${req.user.sid}`, 
+                domain: domain.id,
+                oldUserId: oldUserId,
+                newUserId: newUserId
+            };
+            parent.DispatchEvent(targets, obj, event);
+            
+        } catch (error) {
+            parent.authLog('USER-MIGRATION', `   ❌ ERROR: Migration failed - ${error.message}`);
+            parent.authLog('USER-MIGRATION', `   ❌ Stack: ${error.stack}`);
+            parent.authLog('USER-MIGRATION', `   ⚠️  User will log in without migration`);
+            parent.authLog('USER-MIGRATION', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            // Don't throw - allow login to proceed normally
+        }
+    }
+
     // Called when a strategy login occurred
     // This is called after a successful Oauth to Twitter, Google, GitHub...
-    function handleStrategyLogin(req, res) {
+    async function handleStrategyLogin(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
@@ -2700,6 +2818,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 }
             }
+
+            // Auto-migrate user accounts from deprecated strategies (Azure, Google, GitHub, Twitter, Intel, JumpCloud)
+            // This creates a new user with the new ID format while preserving the old account as backup
+            await migrateUserAccount(req, domain);
 
             // Check if the user already exists
             const userid = 'user/' + domain.id + '/' + req.user.sid;
@@ -3419,10 +3541,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // See what authentication strategies we have
         var authStrategies = [];
         if (typeof domain.authstrategies == 'object') {
-            if (typeof domain.authstrategies.twitter == 'object') { authStrategies.push('twitter'); }
-            if (typeof domain.authstrategies.google == 'object') { authStrategies.push('google'); }
-            if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
-            if (typeof domain.authstrategies.azure == 'object') { authStrategies.push('azure'); }
+            // OIDC strategy (consolidated OAuth2/OIDC)
             if (typeof domain.authstrategies.oidc == 'object') {
                 if (obj.common.validateObject(domain.authstrategies.oidc.custom) && obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
                     authStrategies.push('oidc-' + domain.authstrategies.oidc.custom.preset);
@@ -3430,9 +3549,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     authStrategies.push('oidc');
                 }
             }
-            if (typeof domain.authstrategies.intel == 'object') { authStrategies.push('intel'); }
-            if (typeof domain.authstrategies.jumpcloud == 'object') { authStrategies.push('jumpcloud'); }
-            if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
+            
+            // SAML strategy (consolidated SAML)
+            if (typeof domain.authstrategies.saml == 'object') {
+                if (obj.common.validateString(domain.authstrategies.saml.preset)) {
+                    authStrategies.push('saml-' + domain.authstrategies.saml.preset);
+                } else {
+                    authStrategies.push('saml');
+                }
+            }
         }
 
         // Custom user interface
@@ -7717,6 +7842,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Setup auth strategies using passport if needed
         if (typeof domain.authstrategies != 'object') return authStrategyFlags;
 
+        // Auto-migrate deprecated strategies to OIDC/SAML with presets (runtime only, no config file changes)
+        migrateLegacyStrategies(domain);
+
         const url = domain.url
         const passport = domain.passport = require('passport');
         passport.serializeUser(function (user, done) { done(null, user.sid); });
@@ -7724,77 +7852,161 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         obj.app.use(passport.initialize());
         obj.app.use(require('connect-flash')());
 
-        // Twitter
-        if ((typeof domain.authstrategies.twitter == 'object') && (typeof domain.authstrategies.twitter.clientid == 'string') && (typeof domain.authstrategies.twitter.clientsecret == 'string')) {
-            const TwitterStrategy = require('passport-twitter');
-            let options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
-            if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
-            passport.use('twitter-' + domain.id, new TwitterStrategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.authLog('setupDomainAuthStrategy', 'Twitter profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~twitter:' + profile.id, name: profile.displayName, strategy: 'twitter' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.twitter;
-        }
-
-        // Google
-        if ((typeof domain.authstrategies.google == 'object') && (typeof domain.authstrategies.google.clientid == 'string') && (typeof domain.authstrategies.google.clientsecret == 'string')) {
-            const GoogleStrategy = require('passport-google-oauth20');
-            let options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
-            if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Google SSO with options: ' + JSON.stringify(options));
-            passport.use('google-' + domain.id, new GoogleStrategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.authLog('setupDomainAuthStrategy', 'Google profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~google:' + profile.id, name: profile.displayName, strategy: 'google' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string') && (profile.emails[0].verified == true)) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.google;
-        }
-
-        // Github
-        if ((typeof domain.authstrategies.github == 'object') && (typeof domain.authstrategies.github.clientid == 'string') && (typeof domain.authstrategies.github.clientsecret == 'string')) {
-            const GitHubStrategy = require('passport-github2');
-            let options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
-            if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO with options: ' + JSON.stringify(options));
-            passport.use('github-' + domain.id, new GitHubStrategy(options,
-                function (token, tokenSecret, profile, cb) {
-                    parent.authLog('setupDomainAuthStrategy', 'Github profile: ' + JSON.stringify(profile));
-                    var user = { sid: '~github:' + profile.id, name: profile.displayName, strategy: 'github' };
-                    if ((typeof profile.emails == 'object') && (profile.emails[0] != null) && (typeof profile.emails[0].value == 'string')) { user.email = profile.emails[0].value; }
-                    return cb(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.github;
-        }
-
-        // Azure
-        if ((typeof domain.authstrategies.azure == 'object') && (typeof domain.authstrategies.azure.clientid == 'string') && (typeof domain.authstrategies.azure.clientsecret == 'string')) {
-            const AzureOAuth2Strategy = require('passport-azure-oauth2');
-            let options = { clientID: domain.authstrategies.azure.clientid, clientSecret: domain.authstrategies.azure.clientsecret, tenant: domain.authstrategies.azure.tenantid };
-            if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.callbackURL = url + 'auth-azure-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Azure SSO with options: ' + JSON.stringify(options));
-            passport.use('azure-' + domain.id, new AzureOAuth2Strategy(options,
-                function (accessToken, refreshtoken, params, profile, done) {
-                    var userex = null;
-                    try { userex = require('jwt-simple').decode(params.id_token, '', true); } catch (ex) { }
-                    parent.authLog('setupDomainAuthStrategy', 'Azure profile: ' + JSON.stringify(userex));
-                    var user = null;
-                    if (userex != null) {
-                        var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
-                        if (typeof userex.email == 'string') { user.email = userex.email; }
-                    }
-                    return done(null, user);
-                }
-            ));
-            authStrategyFlags |= domainAuthStrategyConsts.azure;
+        // Auto-migrate deprecated strategies to OIDC/SAML with presets
+        function migrateLegacyStrategies(domain) {
+            const strategies = domain.authstrategies;
+            
+            // Migrate Azure OAuth2 → OIDC with azure preset
+            if (strategies.azure && !strategies.oidc) {
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                parent.authLog('AUTO-MIGRATE', '✨ Auto-migrating Azure OAuth2 → OIDC with preset: "azure"');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Config file unchanged. Update config to remove this warning.');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Existing user accounts will be automatically migrated on login.');
+                parent.authLog('AUTO-MIGRATE', '📚 See: docs/docs/meshcentral/authentication/migration-guide.md');
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                strategies.oidc = {
+                    client: {
+                        client_id: strategies.azure.clientid,
+                        client_secret: strategies.azure.clientsecret,
+                        redirect_uri: strategies.azure.callbackurl
+                    },
+                    custom: {
+                        preset: 'azure',
+                        tenant_id: strategies.azure.tenantid
+                    },
+                    newAccounts: strategies.azure.newAccounts,
+                    newAccountsUserGroups: strategies.azure.newAccountsUserGroups,
+                    _autoMigrated: true,  // Mark for user account migration
+                    _migratedFromStrategy: 'azure'  // Track original strategy
+                };
+                delete strategies.azure;
+            }
+            
+            // Migrate Google OAuth2 → OIDC with google preset
+            if (strategies.google && !strategies.oidc) {
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                parent.authLog('AUTO-MIGRATE', '✨ Auto-migrating Google OAuth2 → OIDC with preset: "google"');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Config file unchanged. Update config to remove this warning.');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Existing user accounts will be automatically migrated on login.');
+                parent.authLog('AUTO-MIGRATE', '📚 See: docs/docs/meshcentral/authentication/migration-guide.md');
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                strategies.oidc = {
+                    client: {
+                        client_id: strategies.google.clientid,
+                        client_secret: strategies.google.clientsecret,
+                        redirect_uri: strategies.google.callbackurl
+                    },
+                    custom: {
+                        preset: 'google'
+                    },
+                    newAccounts: strategies.google.newAccounts,
+                    newAccountsUserGroups: strategies.google.newAccountsUserGroups,
+                    _autoMigrated: true,
+                    _migratedFromStrategy: 'google'
+                };
+                delete strategies.google;
+            }
+            
+            // Migrate GitHub OAuth2 → OIDC with github preset
+            if (strategies.github && !strategies.oidc) {
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                parent.authLog('AUTO-MIGRATE', '✨ Auto-migrating GitHub OAuth2 → OIDC with preset: "github"');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Config file unchanged. Update config to remove this warning.');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Existing user accounts will be automatically migrated on login.');
+                parent.authLog('AUTO-MIGRATE', '📚 See: docs/docs/meshcentral/authentication/migration-guide.md');
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                strategies.oidc = {
+                    client: {
+                        client_id: strategies.github.clientid,
+                        client_secret: strategies.github.clientsecret,
+                        redirect_uri: strategies.github.callbackurl
+                    },
+                    custom: {
+                        preset: 'github'
+                    },
+                    newAccounts: strategies.github.newAccounts,
+                    newAccountsUserGroups: strategies.github.newAccountsUserGroups,
+                    _autoMigrated: true,
+                    _migratedFromStrategy: 'github'
+                };
+                delete strategies.github;
+            }
+            
+            // Migrate Twitter OAuth → OIDC with twitter preset
+            if (strategies.twitter && !strategies.oidc) {
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                parent.authLog('AUTO-MIGRATE', '✨ Auto-migrating Twitter OAuth → OIDC with preset: "twitter"');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Requires Twitter OAuth 2.0 credentials (not OAuth 1.0a)');
+                parent.authLog('AUTO-MIGRATE', '⚠️  Config file unchanged. Update config to remove this warning.');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Existing user accounts will be automatically migrated on login.');
+                parent.authLog('AUTO-MIGRATE', '📚 See: docs/docs/meshcentral/authentication/migration-guide.md');
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                strategies.oidc = {
+                    client: {
+                        client_id: strategies.twitter.clientid,
+                        client_secret: strategies.twitter.clientsecret,
+                        redirect_uri: strategies.twitter.callbackurl
+                    },
+                    custom: {
+                        preset: 'twitter'
+                    },
+                    newAccounts: strategies.twitter.newAccounts,
+                    newAccountsUserGroups: strategies.twitter.newAccountsUserGroups,
+                    _autoMigrated: true,
+                    _migratedFromStrategy: 'twitter'
+                };
+                delete strategies.twitter;
+            }
+            
+            // Migrate Intel SAML → Unified SAML with intel preset
+            if (strategies.intel && !strategies.saml) {
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                parent.authLog('AUTO-MIGRATE', '✨ Auto-migrating Intel SAML → Unified SAML with preset: "intel"');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Config file unchanged. Update config to remove this warning.');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Existing user accounts will be automatically migrated on login.');
+                parent.authLog('AUTO-MIGRATE', '📚 See: docs/docs/meshcentral/authentication/migration-guide.md');
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                strategies.saml = {
+                    preset: 'intel',
+                    cert: strategies.intel.cert,
+                    idpurl: strategies.intel.idpurl,
+                    entityid: strategies.intel.entityid,
+                    callbackurl: strategies.intel.callbackurl,
+                    newAccounts: strategies.intel.newAccounts,
+                    newAccountsUserGroups: strategies.intel.newAccountsUserGroups,
+                    _autoMigrated: true,
+                    _migratedFromStrategy: 'intel'
+                };
+                delete strategies.intel;
+            }
+            
+            // Migrate JumpCloud SAML → Unified SAML with jumpcloud preset
+            if (strategies.jumpcloud && !strategies.saml) {
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                parent.authLog('AUTO-MIGRATE', '✨ Auto-migrating JumpCloud SAML → Unified SAML with preset: "jumpcloud"');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Config file unchanged. Update config to remove this warning.');
+                parent.authLog('AUTO-MIGRATE', '⚠️  NOTE: Existing user accounts will be automatically migrated on login.');
+                parent.authLog('AUTO-MIGRATE', '📚 See: docs/docs/meshcentral/authentication/migration-guide.md');
+                parent.authLog('AUTO-MIGRATE', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                strategies.saml = {
+                    preset: 'jumpcloud',
+                    cert: strategies.jumpcloud.cert,
+                    idpurl: strategies.jumpcloud.idpurl,
+                    entityid: strategies.jumpcloud.entityid,
+                    callbackurl: strategies.jumpcloud.callbackurl,
+                    newAccounts: strategies.jumpcloud.newAccounts,
+                    newAccountsUserGroups: strategies.jumpcloud.newAccountsUserGroups,
+                    _autoMigrated: true,
+                    _migratedFromStrategy: 'jumpcloud'
+                };
+                delete strategies.jumpcloud;
+            }
         }
 
         // Generic SAML
@@ -7807,91 +8019,108 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (cert == null) {
                     parent.debug('error', 'Unable to read SAML IdP certificate: ' + domain.authstrategies.saml.cert);
                 } else {
-                    var options = { entryPoint: domain.authstrategies.saml.idpurl, issuer: 'meshcentral' };
+                    // Detect preset
+                    let preset = domain.authstrategies.saml.preset || 'generic';
+                    
+                    // Preset-specific configurations
+                    const presetConfigs = {
+                        'azure': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent',
+                            wantAuthnResponseSigned: false
+                        },
+                        'okta': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
+                        },
+                        'onelogin': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent'
+                        },
+                        'jumpcloud': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
+                        },
+                        'auth0': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
+                        },
+                        'keycloak': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent',
+                            wantAuthnResponseSigned: true
+                        },
+                        'adfs': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+                            wantAuthnResponseSigned: false
+                        },
+                        'pingfederate': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent',
+                            wantAuthnResponseSigned: true
+                        },
+                        'google': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
+                        },
+                        'intel': {
+                            identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
+                        },
+                        'generic': {}
+                    };
+                    
+                    // Build options with preset defaults
+                    var options = Object.assign({
+                        entryPoint: domain.authstrategies.saml.idpurl,
+                        issuer: 'meshcentral'
+                    }, presetConfigs[preset] || {});
+                    
                     if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
                     if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                     if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
-                    parent.authLog('setupDomainAuthStrategy', 'Adding SAML SSO with options: ' + JSON.stringify(options));
+                    
+                    parent.authLog('setupDomainAuthStrategy', `Adding SAML SSO (preset: ${preset}) with options: ${JSON.stringify(options)}`);
                     options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
-                    const SamlStrategy = require('passport-saml').Strategy;
+                    
+                    const { Strategy: SamlStrategy } = require('@node-saml/passport-saml');
                     passport.use('saml-' + domain.id, new SamlStrategy(options,
                         function (profile, done) {
                             parent.authLog('setupDomainAuthStrategy', 'SAML profile: ' + JSON.stringify(profile));
                             if (typeof profile.nameID != 'string') { return done(); }
-                            var user = { sid: '~saml:' + profile.nameID, name: profile.nameID, strategy: 'saml' };
+                            var user = { sid: '~saml:' + profile.nameID, name: profile.nameID, strategy: 'saml', preset: preset };
                             if (typeof profile.displayname == 'string') {
                                 user.name = profile.displayname;
                             } else if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) {
                                 user.name = profile.firstname + ' ' + profile.lastname;
                             }
                             if (typeof profile.email == 'string') { user.email = profile.email; }
+                            
+                            // Extract groups if configured
+                            if (typeof domain.authstrategies.saml.groups == 'object') {
+                                let groupAttr = domain.authstrategies.saml.groups.attribute || 'groups';
+                                if (profile[groupAttr]) {
+                                    user.groups = Array.isArray(profile[groupAttr]) ? profile[groupAttr] : [profile[groupAttr]];
+                                }
+                            }
+                            
+                            // Add migration metadata if this strategy was auto-migrated from a deprecated SAML strategy
+                            if (domain.authstrategies.saml._autoMigrated === true && domain.authstrategies.saml._migratedFromStrategy) {
+                                // Construct old user ID format for account migration lookup
+                                let oldUserId = null;
+                                
+                                if (domain.authstrategies.saml._migratedFromStrategy === 'intel') {
+                                    // Intel SAML used '~intel:' prefix
+                                    oldUserId = '~intel:' + profile.nameID;
+                                    parent.authLog('setupDomainAuthStrategy', `🔄 Auto-migrated Intel SAML user detected: ${profile.nameID} → ${user.sid}`);
+                                } else if (domain.authstrategies.saml._migratedFromStrategy === 'jumpcloud') {
+                                    // JumpCloud SAML used '~jumpcloud:' prefix
+                                    oldUserId = '~jumpcloud:' + profile.nameID;
+                                    parent.authLog('setupDomainAuthStrategy', `🔄 Auto-migrated JumpCloud SAML user detected: ${profile.nameID} → ${user.sid}`);
+                                }
+                                
+                                if (oldUserId) {
+                                    user._migratedFrom = oldUserId;
+                                    user._migrationStrategy = domain.authstrategies.saml._migratedFromStrategy;
+                                    parent.authLog('setupDomainAuthStrategy', `✨ Will attempt to migrate old account: ${oldUserId} → ${user.sid}`);
+                                }
+                            }
+                            
                             return done(null, user);
                         }
                     ));
                     authStrategyFlags |= domainAuthStrategyConsts.saml
-                }
-            }
-        }
-
-        // Intel SAML
-        if (typeof domain.authstrategies.intel == 'object') {
-            if ((typeof domain.authstrategies.intel.cert != 'string') || (typeof domain.authstrategies.intel.idpurl != 'string')) {
-                parent.debug('error', 'Missing Intel SAML configuration.');
-            } else {
-                var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.intel.cert));
-                if (cert == null) {
-                    parent.debug('error', 'Unable to read Intel SAML IdP certificate: ' + domain.authstrategies.intel.cert);
-                } else {
-                    var options = { entryPoint: domain.authstrategies.intel.idpurl, issuer: 'meshcentral' };
-                    if (typeof domain.authstrategies.intel.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.intel.callbackurl; } else { options.callbackUrl = url + 'auth-intel-callback'; }
-                    if (domain.authstrategies.intel.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.intel.disablerequestedauthncontext; }
-                    if (typeof domain.authstrategies.intel.entityid == 'string') { options.issuer = domain.authstrategies.intel.entityid; }
-                    parent.authLog('setupDomainAuthStrategy', 'Adding Intel SSO with options: ' + JSON.stringify(options));
-                    options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
-                    const SamlStrategy = require('passport-saml').Strategy;
-                    passport.use('isaml-' + domain.id, new SamlStrategy(options,
-                        function (profile, done) {
-                            parent.authLog('setupDomainAuthStrategy', 'Intel profile: ' + JSON.stringify(profile));
-                            if (typeof profile.nameID != 'string') { return done(); }
-                            var user = { sid: '~intel:' + profile.nameID, name: profile.nameID, strategy: 'intel' };
-                            if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
-                            else if ((typeof profile.FirstName == 'string') && (typeof profile.LastName == 'string')) { user.name = profile.FirstName + ' ' + profile.LastName; }
-                            if (typeof profile.email == 'string') { user.email = profile.email; }
-                            else if (typeof profile.EmailAddress == 'string') { user.email = profile.EmailAddress; }
-                            return done(null, user);
-                        }
-                    ));
-                    authStrategyFlags |= domainAuthStrategyConsts.intelSaml
-                }
-            }
-        }
-
-        // JumpCloud SAML
-        if (typeof domain.authstrategies.jumpcloud == 'object') {
-            if ((typeof domain.authstrategies.jumpcloud.cert != 'string') || (typeof domain.authstrategies.jumpcloud.idpurl != 'string')) {
-                parent.debug('error', 'Missing JumpCloud SAML configuration.');
-            } else {
-                var cert = obj.fs.readFileSync(obj.common.joinPath(obj.parent.datapath, domain.authstrategies.jumpcloud.cert));
-                if (cert == null) {
-                    parent.debug('error', 'Unable to read JumpCloud IdP certificate: ' + domain.authstrategies.jumpcloud.cert);
-                } else {
-                    var options = { entryPoint: domain.authstrategies.jumpcloud.idpurl, issuer: 'meshcentral' };
-                    if (typeof domain.authstrategies.jumpcloud.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.jumpcloud.callbackurl; } else { options.callbackUrl = url + 'auth-jumpcloud-callback'; }
-                    if (typeof domain.authstrategies.jumpcloud.entityid == 'string') { options.issuer = domain.authstrategies.jumpcloud.entityid; }
-                    parent.authLog('setupDomainAuthStrategy', 'Adding JumpCloud SSO with options: ' + JSON.stringify(options));
-                    options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
-                    const SamlStrategy = require('passport-saml').Strategy;
-                    passport.use('jumpcloud-' + domain.id, new SamlStrategy(options,
-                        function (profile, done) {
-                            parent.authLog('setupDomainAuthStrategy', 'JumpCloud profile: ' + JSON.stringify(profile));
-                            if (typeof profile.nameID != 'string') { return done(); }
-                            var user = { sid: '~jumpcloud:' + profile.nameID, name: profile.nameID, strategy: 'jumpcloud' };
-                            if ((typeof profile.firstname == 'string') && (typeof profile.lastname == 'string')) { user.name = profile.firstname + ' ' + profile.lastname; }
-                            if (typeof profile.email == 'string') { user.email = profile.email; }
-                            return done(null, user);
-                        }
-                    ));
-                    authStrategyFlags |= domainAuthStrategyConsts.jumpCloudSaml
                 }
             }
         }
@@ -7913,6 +8142,44 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             let presetIssuer
             if (preset == 'azure') { presetIssuer = 'https://login.microsoftonline.com/' + strategy.custom.tenant_id + '/v2.0'; }
             if (preset == 'google') { presetIssuer = 'https://accounts.google.com'; }
+            if (preset == 'okta') { 
+                // Okta requires org domain
+                if (!strategy.custom.org_domain) {
+                    parent.authLog('error', 'OIDC: PRESET: OKTA: Missing org_domain (e.g., "company.okta.com")');
+                } else {
+                    presetIssuer = 'https://' + strategy.custom.org_domain;
+                }
+            }
+            if (preset == 'auth0') { 
+                // Auth0 requires domain
+                if (!strategy.custom.domain) {
+                    parent.authLog('error', 'OIDC: PRESET: AUTH0: Missing domain (e.g., "company.auth0.com" or "company.us.auth0.com")');
+                } else {
+                    presetIssuer = 'https://' + strategy.custom.domain + '/';
+                }
+            }
+            if (preset == 'keycloak') { 
+                // Keycloak requires server_url and realm
+                if (!strategy.custom.server_url || !strategy.custom.realm) {
+                    parent.authLog('error', 'OIDC: PRESET: KEYCLOAK: Missing server_url and realm');
+                } else {
+                    presetIssuer = strategy.custom.server_url + '/realms/' + strategy.custom.realm;
+                }
+            }
+            if (preset == 'github') { 
+                presetIssuer = 'https://github.com';
+                // GitHub uses OAuth2, not OIDC, so we need to manually set endpoints
+                if (!strategy.issuer.authorization_endpoint) { strategy.issuer.authorization_endpoint = 'https://github.com/login/oauth/authorize'; }
+                if (!strategy.issuer.token_endpoint) { strategy.issuer.token_endpoint = 'https://github.com/login/oauth/access_token'; }
+                if (!strategy.issuer.userinfo_endpoint) { strategy.issuer.userinfo_endpoint = 'https://api.github.com/user'; }
+            }
+            if (preset == 'twitter') { 
+                presetIssuer = 'https://twitter.com';
+                // Twitter OAuth 2.0 endpoints
+                if (!strategy.issuer.authorization_endpoint) { strategy.issuer.authorization_endpoint = 'https://twitter.com/i/oauth2/authorize'; }
+                if (!strategy.issuer.token_endpoint) { strategy.issuer.token_endpoint = 'https://api.twitter.com/2/oauth2/token'; }
+                if (!strategy.issuer.userinfo_endpoint) { strategy.issuer.userinfo_endpoint = 'https://api.twitter.com/2/users/me'; }
+            }
             if (!obj.common.validateString(strategy.issuer.issuer)) {
                 if (!preset) {
                     let error = new Error('OIDC: Missing issuer URI.');
@@ -8062,6 +8329,48 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
                 if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
                     user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
+                }
+
+                // Add migration metadata if this strategy was auto-migrated from a deprecated OAuth2 strategy
+                if (strategy._autoMigrated === true && strategy._migratedFromStrategy) {
+                    // Construct old user ID format for account migration lookup
+                    let oldUserId = null;
+                    
+                    if (strategy._migratedFromStrategy === 'azure') {
+                        // Azure used 'unique_name' claim (email-like identifier)
+                        const uniqueName = profile.unique_name || profile.upn || profile.email;
+                        if (uniqueName) {
+                            oldUserId = '~azure:' + uniqueName;
+                            parent.authLog('oidcCallback', `🔄 Auto-migrated Azure user detected: ${uniqueName} → ${user.sid}`);
+                        }
+                    } else if (strategy._migratedFromStrategy === 'google') {
+                        // Google used numeric 'id' from profile
+                        const googleId = profile.id || profile.sub;
+                        if (googleId) {
+                            oldUserId = '~google:' + googleId;
+                            parent.authLog('oidcCallback', `🔄 Auto-migrated Google user detected: ${googleId} → ${user.sid}`);
+                        }
+                    } else if (strategy._migratedFromStrategy === 'github') {
+                        // GitHub used numeric 'id' from profile
+                        const githubId = profile.id || profile.sub;
+                        if (githubId) {
+                            oldUserId = '~github:' + githubId;
+                            parent.authLog('oidcCallback', `🔄 Auto-migrated GitHub user detected: ${githubId} → ${user.sid}`);
+                        }
+                    } else if (strategy._migratedFromStrategy === 'twitter') {
+                        // Twitter used 'id' from profile
+                        const twitterId = profile.id || profile.sub;
+                        if (twitterId) {
+                            oldUserId = '~twitter:' + twitterId;
+                            parent.authLog('oidcCallback', `🔄 Auto-migrated Twitter user detected: ${twitterId} → ${user.sid}`);
+                        }
+                    }
+                    
+                    if (oldUserId) {
+                        user._migratedFrom = oldUserId;
+                        user._migrationStrategy = strategy._migratedFromStrategy;
+                        parent.authLog('oidcCallback', `✨ Will attempt to migrate old account: ${oldUserId} → ${user.sid}`);
+                    }
                 }
 
                 // Setup end session enpoint if not already configured this requires an auth token
