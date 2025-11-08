@@ -2208,7 +2208,7 @@
             QV('uiViewButton5', !(args.hide & 4)); // Hide the footer toggle button if footer is hidden anyway.
             QV('toggleFooterMenuItem', !(args.hide & 4)); // Hide the footer toggle menu item if footer is hidden anyway.
             QV('toggleNightMenuItem', ((features2 & 0x00100000) == 0) && ((features2 & 0x00200000) == 0)); // Hide night mode toggle if permanent night (1) or day (2) mode is set
-            QV('toggleModernUIMenuItem', ((features2 & 0x80000000) == 0)); // Show only if allowed and not forced siteStyle=3
+            //QV('toggleModernUIMenuItem', ((features2 & 0x80000000) == 0)); // Show only if allowed and not forced siteStyle=3
             updateMobileTopBarVisibility();
             adjustPanels();
 
