@@ -15,7 +15,7 @@ For Windows, nagivate to the following link to complete the process:
 ~
 ~</area-windows>
 ~<area-osx>
-For Apple OSX, nagivate to the following link to complete the process:
+For Apple macOS, navigate to the following link to complete the process:
 ~
 ~[[[SERVERURL]]]/meshosxagent?id=16&meshid=[[[MESHIDHEX]]]&tag=mailto:[[[EMAIL]]]&installflags=[[[INSTALLFLAGS]]]
 ~
