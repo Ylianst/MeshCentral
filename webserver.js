@@ -5703,9 +5703,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var scriptInfo = obj.parent.meshAgentInstallScripts[6];
             if ((argentInfo == null) || (scriptInfo == null) || (argentInfo.platform == 'win32')) { try { res.sendStatus(404); } catch (ex) { } return; }
 
-            // Check if this is a ZIP request (installflags >= 10) for macOS
+            // Check if this is a ZIP request (installflags >= 10)
             var installflags = parseInt(req.query.installflags) || 0;
-            if (installflags >= 10 && argentInfo.platform === 'darwin') {
+            if (installflags >= 10) {
                 // ZIP mode: Create ZIP with clean binary + separate .msh file
                 return createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain);
             }
