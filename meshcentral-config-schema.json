@@ -1784,7 +1784,7 @@
                   "array"
                 ],
                 "default": true,
-                "description": "Allows users to create alternative username/passwords for their account. Set to false to disallow all users, or set to a userid array or to a groupid to only allow some users."
+                "description": "Allows users to create alternative username/passwords for their account. Set to false to disallow all users, or set to a userid array or to a groupid array to only allow some users."
               },
               "twoFactorTimeout": {
                 "type": "integer",
