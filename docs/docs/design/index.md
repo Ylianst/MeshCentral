@@ -430,4 +430,4 @@ MeshCentral and this document are both opens source and licensed using Apache 2.
 
 [MeshCentral Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
 
-MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
+MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](../documents/MeshCentral%20Design%20&%20Architecture%20v0.0.4.odt)

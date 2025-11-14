@@ -44,7 +44,7 @@ In this section we will cover the basics of MeshCentral in your newly setup serv
 ### Launch
 
 Start your web browser and access MeshCentral via IP address/URL, `http://serverFQDN/`. If MeshCentral is running locally, enter `http://127.0.0.1/`. MeshCentral will redirect the browser to HTTPS if the server was accessed with HTTP. Once on HTTPS you will likely see this message:
-   ![](images/2022-05-18-22-16-11.png)
+   ![](images/2022-05-18-22-16-11.jpg)
 
 This is because by default MeshCentral is using a self-signed certificate that is not known to the browser as a “trusted” or “trustworthy” certificate. To prevent this warning from recurring, the following chapter will provide useful steps that can be considered. 
 
@@ -89,7 +89,7 @@ Once logged in, create a new device group. This is a group of computers that we 
 2. Key in a suitable “Name”, .e.g. “SampleGroup”
 3. Leave “Type” to default “Manage using a software agent” and click ‘OK”. 
 
-![](images/2022-05-18-22-23-59.png)
+![](images/2022-05-18-22-23-59.jpg)
 
 !!! note
     There are two types of groups: <br>
@@ -429,7 +429,7 @@ Click on the "OAuth Consent Screen" link, Under "APIs and Services" from the lef
 
 If you have a Google Workspace account, you will have the option to choose "Internal" application and skip the next steps.  If not, you will be required to provide Google with information about why you want access, as well as verifying domain ownership.  
 
-![](images/OAuth-Internal-External.jpg)
+![](images/oauth-internal-external.jpg)
 
 Add the Gmail address under which you have created this project to the fields labelled ‘User support email’ and ‘Developer contact information’ so that you will be allowed for authentication. After that, you will want to add a scope for your app, so that your token is valid for gmail:
 
@@ -880,11 +880,11 @@ As illustrated above, we see the business site using the token key to generate a
 
 There are multiple options available for user to explicitly choose the features that will be loaded from MeshCentral to the business website. The argument in the in the URL can dictate which web page should display and how. The three embedding URL arguments are Viewmode, Hide and Node. 
 
-| Embedding Options / URL Argument | Description | "Values<br><br>**Note**: For values 10 and above, a node identifier must be specified."
-| -------------------------------- | ----------- | ------------------------------------------------------------------------------------------ |
-| **viewmode** | "Indicates the information to show. <br>This is an integer value, possible values are:" | "1 = Devices tab<br><br>2 = Account tab<br><br>3 = Events tab<br><br>4 = Users tab (Site admins only)<br><br>5 = Server files tab<br><br>10 = Device general information<br><br>11 = Device remote desktop<br><br>12 = Device terminal<br><br>14 = Device Intel AMT console.<br><br>15 = Device Mesh Agent console |
-| **hide** | "Indicates which portion of the web page to hide. <br>This is a bitmask integer hence it will need the sum of values. <br>For .e.g.: To hide all of the values, add 1+2+4+8 and use 15 as the value. | 1 = Hide the page header<br><br>2 = Hide the page tab<br><br>4 = Hide the page footer<br><br>8 = Hide the page title<br><br>16 = Hide the left tool bar<br><br>32 = Hide back buttons |
-| **node** | Optional unless Viewmode is set to value of 10 or greater. <br>Indicates which node to show on the screen,<br><br>For example, if we want to embed the remote desktop <br>page for a given node and hide the header, tabs, <br>footer and page title, we could have this URL: <br>https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&viewmode=11&hide=15" | Node or NodeID is a long base64 encoded SHA384 value |
+| Embedding Options / URL Argument | Description | Values |
+| -------------------------------- | ----------- | ------ |
+| **viewmode** | Indicates the information to show. This is an integer value, possible values are: | 1 = Devices tab<br>2 = Account tab<br>3 = Events Live<br>4 = Users General<br>5 = Server files tab<br>6 = Server General<br>10 = Device general information<br>11 = Device remote desktop<br>12 = Device terminal<br>13 = Device files<br>14 = Device Intel AMT console<br>15 = Device Mesh Agent console<br>16 = Device events<br>17 = Device info<br>19 = Device plugins<br>20 = Mesh General<br>21 = Mesh Summary<br>30 = User General<br>31 = User Events<br>40 = Server Stats<br>41 = Server Trace<br>42 = Server Plugins<br>50 = Users Groups<br>52 = Users Recordings<br>60 = Events Report<br>115 = Server Console<br><br>**Note**: For values 10-19, a node identifier must be specified. For values 20-29, a mesh identifier must be specified. For values 30-39, a user identifier must be specified. For values 50-59, a user group identifier may be required. |
+| **hide** | Indicates which portion of the web page to hide. This is a bitmask integer hence it will need the sum of values. For example: To hide all of the values, add 1+2+4+8 and use 15 as the value. | 1 = Hide the page header<br>2 = Hide the page tab<br>4 = Hide the page footer<br>8 = Hide the page title<br>16 = Hide the left tool bar<br>32 = Hide back buttons |
+| **node** | Optional unless Viewmode is set to value of 10-19. Indicates which node to show on the screen. For example, if we want to embed the remote desktop page for a given node and hide the header, tabs, footer and page title, we could have this URL: `https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&viewmode=11&hide=15` | Node or NodeID is a long base64 encoded SHA384 value |
 
   ---
 
@@ -1621,7 +1621,7 @@ Before you get started, your MeshCentral server must be publicly facing on the i
 
 You can integrate LDAP using [these](https://github.com/Ylianst/MeshCentral/blob/f05eb9a198bed249c2b1a969ce17a41404ef70a6/meshcentral-config-schema.json#L505-L513) configuration options
 
-![](images/ldap_integration.png)
+![](images/ldap_integration.jpg)
 
 ### Twitter Authentication
 
@@ -1804,7 +1804,7 @@ Once setup, you will need to allow one or more users to use the new application.
 
 We are now almost done with JumpCloud. The last thing we need to do is download the certificate that JumpCloud will be using to sign the SAML assertions. You can get this certificate by going in the `Applications` tab, click on your new application and select `Download Certificate` as shown here.
 
-![](images/2022-05-19-00-54-50.png)
+![](images/2022-05-19-00-54-50.jpg)
 
 Save the certificate as `jumpcloud-saml.pem` and place it in the `meshcentral-data` folder. You are now ready to configure MeshCentral.
 
@@ -2084,4 +2084,4 @@ MeshCentral has built-in web-based integration of SSH in the "Terminal" tab and 
 
 [MeshCentral Guide](https://meshcentral.com/docs/MeshCentral2UserGuide.pdf)
 
-MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral User's Guide v0.2.9.odt?raw=true)
+MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCmdUserGuide.pdf) [as .odt](../documents/MeshCentral%20User's%20Guide%20v0.2.9.odt)
