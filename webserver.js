@@ -5703,6 +5703,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var scriptInfo = obj.parent.meshAgentInstallScripts[6];
             if ((argentInfo == null) || (scriptInfo == null) || (argentInfo.platform == 'win32')) { try { res.sendStatus(404); } catch (ex) { } return; }
 
+            // Check if this is a ZIP request (installflags >= 10)
+            var installflags = parseInt(req.query.installflags) || 0;
+            if (installflags >= 10) {
+                // ZIP mode: Create ZIP with clean binary + separate .msh file
+                return createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain);
+            }
+
             // Change the .msh file into JSON format and merge it into the install script
             var tokens, msh = {}, meshsettingslines = meshsettings.split('\r').join('').split('\n');
             for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
@@ -6354,6 +6361,47 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 archive.finalize();
             });
         });
+    }
+
+    // Create a ZIP package with clean macOS binary and separate .msh file (preserves code signature)
+    function createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain) {
+        try {
+            const archiver = require('archiver');
+            const archive = archiver('zip', { zlib: { level: 9 } });
+
+            // Get the agent filename
+            var meshagentFilename = 'meshagent';
+            if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
+                meshagentFilename = domain.agentcustomization.filename;
+            }
+
+            // Set response headers for ZIP download
+            setContentDispositionHeader(res, 'application/zip', meshagentFilename + '.zip', null, 'meshagent.zip');
+            if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+            res.statusCode = 200;
+
+            // Pipe archive to response
+            archive.pipe(res);
+
+            // Add clean binary (no embedded .msh - preserves code signature!)
+            archive.file(argentInfo.path, { name: meshagentFilename });
+
+            // Add separate .msh file with adjusted installflags (convert 10,11,12 back to 0,1,2)
+            var adjustedInstallFlags = installflags - 10;
+            var adjustedMeshSettings = meshsettings.replace(/InstallFlags=\d+/, 'InstallFlags=' + adjustedInstallFlags);
+            if (adjustedMeshSettings.indexOf('InstallFlags=') === -1 && adjustedInstallFlags > 0) {
+                adjustedMeshSettings += 'InstallFlags=' + adjustedInstallFlags + '\r\n';
+            }
+            archive.append(adjustedMeshSettings, { name: meshagentFilename + '.msh' });
+
+            // Finalize the archive
+            archive.finalize();
+
+            parent.debug('web', 'Serving macOS ZIP package: ' + meshagentFilename + '.zip (installflags=' + installflags + ')');
+        } catch (ex) {
+            parent.debug('web', 'Error creating macOS ZIP package: ' + ex);
+            try { res.sendStatus(500); } catch (ex2) { }
+        }
     }
 
     // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.

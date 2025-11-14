@@ -5564,7 +5564,7 @@
                 x += addHtmlValue("Link Expiration", '<select id=agentInviteExpire style=width:236px><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
                 x += '</div>';
                 x += '<div id=d2agentInstallTypeDiv2>';
-                x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+                x += addHtmlValue("Installation Type", '<select id=agentInviteType style=width:236px><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option><option value=10>' + "Background and interactive (ZIP)" + '</option><option value=12>' + "Background only (ZIP)" + '</option><option value=11>' + "Interactive only (ZIP)" + '</option></select>');
                 x += '</div>';
                 x += addHtmlValue("Message" + '<br />' + "(optional)", '<textarea id=agentInviteMessage value="" style=width:230px;height:100px;resize:none maxlength=1024 /></textarea>');
                 x += '</div>';
@@ -5573,7 +5573,7 @@
             x += addHtmlValue("Link Expiration", '<select id=d2inviteExpire style=width:236px onchange=d2RequestInvitationLink()><option value=1>' + "1 hour" + '</option><option value=8>' + "8 hours" + '</option><option value=24>' + "1 day" + '</option><option value=168>' + "1 week" + '</option><option value=5040>' + "1 month" + '</option><option value=0>' + "Unlimited" + '</option></select>');
             x += addHtmlValue("Agents", '<select id=d2agentType style=width:236px onchange=d2ChangedInviteType()><option value=0>' + "All Available Agents" + '</option><option value=1>' + "Windows MeshAgent" + '</option><option value=2>' + "Linux MeshAgent" + '</option><option value=4>' + "MacOS MeshAgent" + '</option><option value=8>' + "MeshCentral Assistant" + '</option><option value=16>' + "Android MeshAgent" + '</option></select>');
             x += '<div id=d2agentInstallTypeDiv>';
-            x += addHtmlValue("Installation Type", '<select id=d2agentInviteType style=width:236px onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+            x += addHtmlValue("Installation Type", '<select id=d2agentInviteType style=width:236px onchange=d2RequestInvitationLink()><option value=0>' + "Background and interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option><option value=10>' + "Background and interactive (ZIP)" + '</option><option value=12>' + "Background only (ZIP)" + '</option><option value=11>' + "Interactive only (ZIP)" + '</option></select>');
             x += '</div>';
             x += '<div id=agentInvitationLinkDiv style="text-align:center;font-size:large;margin:16px;display:none"><a href=# id=agentInvitationLink rel="noreferrer noopener" target="_blank" style=cursor:pointer></a> <img src=images/link4.png height=10 width=10 title="' + "Copy link to clipboard" + '" style=cursor:pointer onclick=d2CopyInviteToClip()></div></div>';
             setDialogMode(2, "Invite", 3, performAgentInvite, x, meshid);
@@ -5622,10 +5622,16 @@
             if (xxdialogMode) return false;
             var mesh = meshes[meshid], x = '', installType = 0, moreoptions = '';
 
-            var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
-            if ((features & 2) == 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; } // Don't display mobile setup in LAN mode.
-            opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
-            opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option><option value=8>' + "Apple macOS (UnInstall)" + '</option></select>';
+            var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px>';
+            if ((features & 2) == 0) { opts += '<option value=6>' + "Android" + '</option>'; } // Don't display mobile setup in LAN mode.
+            opts += '<option value=2>' + "Apple macOS" + '</option>';
+            opts += '<option value=1>' + "Linux / BSD" + '</option>';
+            opts += '<option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option>';
+            opts += '<option value=0 selected>' + "Windows" + '</option>';
+            opts += '<option value=7>' + "Win MeshCentral Assistant" + '</option>';
+            opts += '<option value=8>' + "Apple macOS (UnInstall)" + '</option>';
+            opts += '<option value=4>' + "Linux / BSD (UnInstall)" + '</option>';
+            opts += '<option value=3>' + "Windows (UnInstall)" + '</option></select>';
             x += addHtmlValue("Operating System", opts);
 
             var servername = serverinfo.name;
@@ -5634,8 +5640,8 @@
             if (serverinfo.https == true) { portStr = (serverinfo.port == 443)?'':(':' + serverinfo.port); } else { portStr = (serverinfo.port == 80) ? '' : (':' + serverinfo.port); }
 
             // Add Linux/macOS binary installer option
-            var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 45, 16, 29 ];
-            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V x86-64', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
+            var binaryInstallAgentsOrder = [ 29, 10005, 16, 41, 30, 32, 25, 26, 28, 40, 5, 6, 37, 36, 45 ];
+            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple macOS Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V x86-64', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
             for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id=aginsSysTypeDiv>';
             x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
@@ -5644,6 +5650,8 @@
             // Add agent and assistant installation type option
             x += '<div id=aginsTypeDiv>';
             x += addHtmlValue("Installation Type", '<select id=aginsType onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option></select>');
+            x += '</div><div id=aginsTypeBinDiv>';
+            x += addHtmlValue("Installation Type", '<select id=aginsTypeBin onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Background & interactive" + '</option><option value=2>' + "Background only" + '</option><option value=1>' + "Interactive only" + '</option><option value=10>' + "Background & interactive (ZIP)" + '</option><option value=12>' + "Background only (ZIP)" + '</option><option value=11>' + "Interactive only (ZIP)" + '</option></select>');
             x += '</div><div id=asinsTypeDiv>';
             x += addHtmlValue("Installation Type", '<select id=asinsType onchange=addAgentToMeshClick() style=width:236px><option value=2>' + "Application, Connect on user request" + '</option><option value=3>' + "Application, Always connected" + '</option><option value=0>' + "System Tray, Connect on user request" + '</option><option value=1>' + "System Tray, Always connected" + '</option><option value=4>' + "System Tray, Monitor only" + '</option></select>');
             x += '</div><hr>';
@@ -5746,7 +5754,7 @@
             var domainUrlNoSlash = domainUrl.substring(0, domainUrl.length - 1);
             var portStr = (serverinfo.port == 443) ? '' : (':' + serverinfo.port);
             var c = 'https://' + servername + portStr + domainUrl + url;
-            if (addflag == 1) c += Q('aginsType').value;
+            if (addflag == 1) c += (Q('aginsSelect').value == 5) ? Q('aginsTypeBin').value : Q('aginsType').value;
             c += (urlargs.key?('&key=' + urlargs.key):'');
             if (Q('aginsSelect').value == 5) { c += '&meshinstall=' + Q('aginsSysType').value; }
             if (Q('aginsSelect').value == 7) { c += '&ac=' + Q('asinsType').value; }
@@ -5766,10 +5774,16 @@
             QV('agins_assistant', (v == 7) && (Q('asinsType').value != 4));
             QV('agins_assistant2', (v == 7) && (Q('asinsType').value == 4));
             QV('agins_osx_un', v == 8);
-            Q('aginsbinlnk').onclick = function() { downloadFile((Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value); };
-            Q('aginsbincmd').value = (Q('aginsbincmd').value.split('&installflags=')[0]) + '&installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value + '\"';
-            QV('aginsTypeDiv', (v == 0) || (v == 5));
+            QV('aginsTypeDiv', v == 0);
+            QV('aginsTypeBinDiv', v == 5);
             QV('asinsTypeDiv', (v == 7));
+
+            // Update binary installer links with correct installflags dropdown
+            if (v == 5) {
+                Q('aginsbinlnk').name = (Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsTypeBin').value + (urlargs.key?('&key=' + urlargs.key):'');
+                Q('aginsbinlnk').onclick = function() { downloadFile((Q('aginsbinlnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsTypeBin').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value); };
+                Q('aginsbincmd').value = (Q('aginsbincmd').value.split('&installflags=')[0]) + '&installflags=' + Q('aginsTypeBin').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType').value + '\"';
+            }
 
             // Fix the links if needed
             Q('aginsw32lnk').onclick = function() { downloadFile((Q('aginsw32lnk').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType').value + (urlargs.key?('&key=' + urlargs.key):''), null, true); }
