@@ -241,24 +241,16 @@ function installedApps()
 }
 
 function defender(){
-    var promise = require('promise');
-    var ret = new promise(function (a, r) { this._resolve = a; this._reject = r; });
-    ret.child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
-    ret.child.promise = ret;
-    ret.child.stdout.str = ''; ret.child.stdout.on('data', function (c) { this.str += c.toString(); });
-    ret.child.stderr.str = ''; ret.child.stderr.on('data', function (c) { this.str += c.toString(); });
-    ret.child.stdin.write('Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled,IsTamperProtected | ConvertTo-JSON\r\n');
-    ret.child.stdin.write('exit\r\n');
-    ret.child.on('exit', function (c) { 
-        if (this.stdout.str == '') { this.promise._resolve({}); return; }
-        try {
-            var abc = JSON.parse(this.stdout.str.trim());
-            this.promise._resolve({ RealTimeProtection: abc.RealTimeProtectionEnabled, TamperProtected: abc.IsTamperProtected });
-        } catch (ex) { 
-            this.promise._resolve({}); return;
+    try {
+        var tokens = require('win-wmi').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
+        if (tokens[0]){
+            return ({ RealTimeProtection: tokens[0].RealTimeProtectionEnabled, TamperProtected: tokens[0].IsTamperProtected, AntivirusSignatureVersion: tokens[0].AntivirusSignatureVersion, AntivirusSignatureLastUpdated: tokens[0].AntivirusSignatureLastUpdated });
+        } else {
+            return ({});
         }
-    });
-    return (ret);
+    } catch (ex) {
+        return ({});
+    }
 }
 
 if (process.platform == 'win32')
