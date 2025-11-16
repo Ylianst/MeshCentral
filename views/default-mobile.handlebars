@@ -6384,6 +6384,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
