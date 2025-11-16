@@ -384,10 +384,26 @@ module.exports.pluginHandler = function (parent) {
         parent.db.getPlugin(id, function (err, docs) {
             // the "id" would probably suffice, but is probably an sanitary issue, generate a random instead
             var randId = Math.random().toString(32).replace('0.', '');
-            var fileName = obj.parent.path.join(require('os').tmpdir(), 'Plugin_' + randId + '.zip');
+            var tmpDir = require('os').tmpdir();
+            var fileName = obj.parent.path.join(tmpDir, 'Plugin_' + randId + '.zip');
+            try {
+                obj.fs.accessSync(tmpDir, obj.fs.constants.W_OK);
+            } catch (e) {
+                fileName = obj.parent.path.join(obj.parent.datapath, 'Plugin_' + randId + '.zip');
+            }
             var plugin = docs[0];
             if (plugin.repository.type == 'git') {
-                const file = obj.fs.createWriteStream(fileName);
+                var file;
+                try {
+                    file = obj.fs.createWriteStream(fileName);
+                } catch (e) {
+                    if (fileName.indexOf(tmpDir) >= 0) {
+                        fileName = obj.parent.path.join(obj.parent.datapath, 'Plugin_' + randId + '.zip');
+                        file = obj.fs.createWriteStream(fileName);
+                    } else {
+                        throw e;
+                    }
+                }
                 var dl_url = plugin.downloadUrl;
                 if (version_only != null && version_only != false) dl_url = version_only.url;
                 if (force_url != null) dl_url = force_url;
@@ -411,7 +427,7 @@ module.exports.pluginHandler = function (parent) {
                 var request = http.get(opts, function (response) {
                     // handle redirections with grace
                     if (response.headers.location) {
-                        file.close(function () { obj.fs.unlink(file.path, function(err) { void err; }); });
+                        file.close(function () { obj.fs.unlink(fileName, function(err) { void err; }); });
                         return obj.installPlugin(id, version_only, response.headers.location, func);
                     }
                     response.pipe(file);
@@ -544,7 +560,13 @@ module.exports.pluginHandler = function (parent) {
         parent.db.getPlugin(id, function (err, docs) {
             var plugin = docs[0];
             let pluginPath = obj.parent.path.join(obj.pluginPath, plugin.shortName);
-            obj.fs.rmdirSync(pluginPath, { recursive: true });
+            if (obj.fs.existsSync(pluginPath)) {
+                try {
+                    obj.fs.rmSync(pluginPath, { recursive: true, force: true });
+                } catch (e) {
+                    console.log("Error removing plugin directory:", e);
+                }
+            }
             parent.db.deletePlugin(id, func);
             delete obj.plugins[plugin.shortName];
         });
