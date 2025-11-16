@@ -6345,6 +6345,7 @@
                 var y = [];
                 if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                 if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                 if (y.length > 0) x += addDetailItem("Windows Defender", y.join(', '));
             }
 
@@ -6383,6 +6384,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {

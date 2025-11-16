@@ -156,7 +156,7 @@ function linux_identifiers()
     // Fetch storage volumes using df
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
-    child.stdin.write('df -T | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+    child.stdin.write('df -T -x tmpfs -x devtmpfs -x efivarfs | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
     child.waitExit();
     try { ret.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
     child = null;
@@ -702,17 +702,12 @@ function hexToAscii(hexString) {
 
 function win_chassisType()
 {
-    // needs to be replaced with win-wmi but due to bug in win-wmi it doesnt handle arrays correctly
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
-    if (child == null) { return ([]); }
-    child.descriptorMetadata = 'process-manager';
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.stdin.write('Get-WmiObject Win32_SystemEnclosure | Select-Object -ExpandProperty ChassisTypes\r\n');
-    child.stdin.write('exit\r\n');
-    child.waitExit();
+    // use new win-wmi-fixed module to get arrays correctly for time being
     try {
-        return (parseInt(child.stdout.str));
+        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT ChassisTypes FROM Win32_SystemEnclosure', ['ChassisTypes']);
+        if (tokens[0]) {
+            return (parseInt(tokens[0]['ChassisTypes'][0]));
+        }
     } catch (e) {
         return (2); // unknown
     }

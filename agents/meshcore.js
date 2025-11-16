@@ -4038,7 +4038,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4046,7 +4046,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
-                    try { require('win-info'); availcommands += ',installedapps,qfe'; } catch (ex) { }
+                    try { require('win-info'); availcommands += ',installedapps,qfe,defender,av'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -4880,6 +4880,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform == 'win32') {
                     // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
                     response = JSON.stringify(require('win-info').av(), null, 1);
+                } else {
+                    response = 'Not supported on the platform';
+                }
+                break;
+            case 'defender':
+                 if (process.platform == 'win32') {
+                    // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
+                    response = JSON.stringify(require('win-info').defender(), null, 1);
                 } else {
                     response = 'Not supported on the platform';
                 }
@@ -6047,13 +6055,10 @@ function sendPeriodicServerUpdate(flags, force) {
             } catch (ex) { }
         }
 
-        // Get Defender for Windows Server
-        try { 
-            var d = require('win-info').defender();
-            d.then(function(res){
-                meshCoreObj.defender = res;
-                meshCoreObjChanged();
-            });
+        // Get Defender Information
+        try {
+            meshCoreObj.defender = require('win-info').defender();
+            meshCoreObjChanged();
         } catch (ex) { }
     }
 

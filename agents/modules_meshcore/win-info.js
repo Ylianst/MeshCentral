@@ -36,53 +36,48 @@ function qfe()
 }
 function av()
 {
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
-    if (child == null) { return ([]); }
-
-    child.descriptorMetadata = 'process-manager';
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-
-    child.stdin.write('[reflection.Assembly]::LoadWithPartialName("system.core")\r\n');
-    child.stdin.write('Get-WmiObject -Namespace "root/SecurityCenter2" -Class AntiVirusProduct | ');
-    child.stdin.write('ForEach-Object -Process { ');
-    child.stdin.write('$matches = [regex]::Matches($_.pathToSignedProductExe, "%(.*?)%"); ');
-    child.stdin.write('$modifiedPath = $_.pathToSignedProductExe; ');
-    child.stdin.write('foreach ($match in $matches) { ');
-    child.stdin.write('$modifiedPath = $modifiedPath -replace [regex]::Escape($match.Value), [System.Environment]::GetEnvironmentVariable($match.Groups[1].Value, "Process") ');
-    child.stdin.write('} ');
-    child.stdin.write('$flag = $true; ');
-    child.stdin.write('if ($modifiedPath -ne "windowsdefender://"){ ');
-    child.stdin.write('if (-not (Test-Path -Path $modifiedPath -PathType Leaf)) { ');
-    child.stdin.write('$flag = $false; ');
-    child.stdin.write('} ');
-    child.stdin.write('} ');
-    child.stdin.write('if ($flag -eq $true) { ')
-    child.stdin.write('$Bytes = [System.Text.Encoding]::UTF8.GetBytes($_.displayName); ');
-    child.stdin.write('$EncodedText =[Convert]::ToBase64String($Bytes); ');
-    child.stdin.write('Write-Output ("{0},{1}" -f $_.productState,$EncodedText); ');
-    child.stdin.write('} ');
-    child.stdin.write('}\r\n ');
-    child.stdin.write('exit\r\n');
-    child.waitExit();
-
-    if (child.stdout.str == '') { return ([]); }
-
-    var lines = child.stdout.str.trim().split('\r\n');
     var result = [];
-    for (i = 0; i < lines.length; ++i)
-    {
-        var keys = lines[i].split(',');
-        if(keys.length == 2)
-        {
-            var status = {};
-            status.product = Buffer.from(keys[1], 'base64').toString();
-            status.updated = (parseInt(keys[0]) & 0x10) == 0;
-            status.enabled = (parseInt(keys[0]) & 0x1000) == 0x1000;
-            result.push(status);
+    try { 
+        var tokens = require('win-wmi').query('ROOT\\SecurityCenter2', 'SELECT * FROM AntiVirusProduct');
+        if (tokens.length == 0) { return ([]); }
+        // Process each antivirus product
+        for (var i = 0; i < tokens.length; ++i) {
+            var product = tokens[i];
+            var modifiedPath = product.pathToSignedProductExe || '';
+            // Expand environment variables (e.g., %ProgramFiles%)
+            var regex = /%([^%]+)%/g;
+            var match;
+            while ((match = regex.exec(product.pathToSignedProductExe)) !== null) {
+                var envVar = match[1];
+                var envValue = process.env[envVar] || '';
+                if (envValue) {
+                    modifiedPath = modifiedPath.replace(match[0], envValue);
+                }
+            }
+            // Check if the executable exists (unless it's Windows Defender pseudo-path)
+            var flag = true;
+            if (modifiedPath !== 'windowsdefender://') {
+                try {
+                    if (!require('fs').existsSync(modifiedPath)) {
+                        flag = false;
+                    }
+                } catch (ex) {
+                    flag = false;
+                }
+            }
+            // Only include products with valid executables
+            if (flag) {
+                var status = {};
+                status.product = product.displayName || '';
+                status.updated = (parseInt(product.productState) & 0x10) == 0;
+                status.enabled = (parseInt(product.productState) & 0x1000) == 0x1000;
+                result.push(status);
+            }
         }
+        return (result);
+    } catch (ex) {
+        return ([]);
     }
-    return (result);
 }
 function defrag(options)
 {
@@ -241,24 +236,19 @@ function installedApps()
 }
 
 function defender(){
-    var promise = require('promise');
-    var ret = new promise(function (a, r) { this._resolve = a; this._reject = r; });
-    ret.child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
-    ret.child.promise = ret;
-    ret.child.stdout.str = ''; ret.child.stdout.on('data', function (c) { this.str += c.toString(); });
-    ret.child.stderr.str = ''; ret.child.stderr.on('data', function (c) { this.str += c.toString(); });
-    ret.child.stdin.write('Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled,IsTamperProtected | ConvertTo-JSON\r\n');
-    ret.child.stdin.write('exit\r\n');
-    ret.child.on('exit', function (c) { 
-        if (this.stdout.str == '') { this.promise._resolve({}); return; }
-        try {
-            var abc = JSON.parse(this.stdout.str.trim());
-            this.promise._resolve({ RealTimeProtection: abc.RealTimeProtectionEnabled, TamperProtected: abc.IsTamperProtected });
-        } catch (ex) { 
-            this.promise._resolve({}); return;
+    try {
+        var tokens = require('win-wmi').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
+        if (tokens[0]){
+            var info = { RealTimeProtection: tokens[0].RealTimeProtectionEnabled, TamperProtected: tokens[0].IsTamperProtected };
+            if (tokens[0].AntivirusSignatureVersion) { info.AntivirusSignatureVersion = tokens[0].AntivirusSignatureVersion; }
+            if (tokens[0].AntivirusSignatureLastUpdated) { info.AntivirusSignatureLastUpdated = tokens[0].AntivirusSignatureLastUpdated; }
+            return (info);
+        } else {
+            return ({});
         }
-    });
-    return (ret);
+    } catch (ex) {
+        return ({});
+    }
 }
 
 if (process.platform == 'win32')
