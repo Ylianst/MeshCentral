@@ -389,7 +389,11 @@ module.exports.pluginHandler = function (parent) {
             try {
                 obj.fs.accessSync(tmpDir, obj.fs.constants.W_OK);
             } catch (e) {
-                fileName = obj.parent.path.join(obj.parent.datapath, 'Plugin_' + randId + '.zip');
+                var pluginTmpPath = obj.parent.path.join(obj.pluginPath, '_tmp');
+                if (!obj.fs.existsSync(pluginTmpPath)) {
+                    obj.fs.mkdirSync(pluginTmpPath, { recursive: true });
+                }
+                fileName = obj.parent.path.join(pluginTmpPath, 'Plugin_' + randId + '.zip');
             }
             var plugin = docs[0];
             if (plugin.repository.type == 'git') {
@@ -398,7 +402,11 @@ module.exports.pluginHandler = function (parent) {
                     file = obj.fs.createWriteStream(fileName);
                 } catch (e) {
                     if (fileName.indexOf(tmpDir) >= 0) {
-                        fileName = obj.parent.path.join(obj.parent.datapath, 'Plugin_' + randId + '.zip');
+                        var pluginTmpPath = obj.parent.path.join(obj.pluginPath, '_tmp');
+                        if (!obj.fs.existsSync(pluginTmpPath)) {
+                            obj.fs.mkdirSync(pluginTmpPath, { recursive: true });
+                        }
+                        fileName = obj.parent.path.join(pluginTmpPath, 'Plugin_' + randId + '.zip');
                         file = obj.fs.createWriteStream(fileName);
                     } else {
                         throw e;
@@ -427,7 +435,7 @@ module.exports.pluginHandler = function (parent) {
                 var request = http.get(opts, function (response) {
                     // handle redirections with grace
                     if (response.headers.location) {
-                        file.close(function () { obj.fs.unlink(fileName, function(err) { void err; }); });
+                        file.close(() => obj.fs.unlink(fileName, () => {}));
                         return obj.installPlugin(id, version_only, response.headers.location, func);
                     }
                     response.pipe(file);
