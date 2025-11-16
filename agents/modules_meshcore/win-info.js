@@ -244,7 +244,10 @@ function defender(){
     try {
         var tokens = require('win-wmi').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
         if (tokens[0]){
-            return ({ RealTimeProtection: tokens[0].RealTimeProtectionEnabled, TamperProtected: tokens[0].IsTamperProtected, AntivirusSignatureVersion: tokens[0].AntivirusSignatureVersion, AntivirusSignatureLastUpdated: tokens[0].AntivirusSignatureLastUpdated });
+            var info = { RealTimeProtection: tokens[0].RealTimeProtectionEnabled, TamperProtected: tokens[0].IsTamperProtected };
+            if (tokens[0].AntivirusSignatureVersion) { info.AntivirusSignatureVersion = tokens[0].AntivirusSignatureVersion; }
+            if (tokens[0].AntivirusSignatureLastUpdated) { info.AntivirusSignatureLastUpdated = tokens[0].AntivirusSignatureLastUpdated; }
+            return (info);
         } else {
             return ({});
         }
