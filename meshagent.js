@@ -869,7 +869,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // This node does not exist, create it.
         var agentName = obj.agentName ? obj.agentName : obj.agentInfo.computerName;
-        var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: agentName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
+        var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: agentName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null, firstconnect: obj.connectTime  };
         db.Set(device);
 
         // Event the new node
