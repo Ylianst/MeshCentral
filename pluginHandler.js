@@ -200,10 +200,12 @@ module.exports.pluginHandler = function (parent) {
     obj.deviceViewPanel = function () {
         var panel = {};
         for (var p in obj.plugins) {
-            if (typeof obj.plugins[p][hookName] == 'function') {
+            if (typeof obj.plugins[p].on_device_header === "function" && typeof obj.plugins[p].on_device_page === "function") {
                 try {
-                    panel[p].header = obj.plugins[p].on_device_header();
-                    panel[p].content = obj.plugins[p].on_device_page();
+                    panel[p] = {
+                        header: obj.plugins[p].on_device_header(),
+                        content: obj.plugins[p].on_device_page()
+                    };
                 } catch (e) {
                     console.log("Error occurred while getting plugin views " + p + ':' + ' (' + e + ')');
                 }
