@@ -115,8 +115,15 @@ module.exports.pluginHandler = function (parent) {
             meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
         };
         obj.addPluginDlg = function() {
-            setDialogMode(2, "Plugin Download URL", 3, obj.addPluginEx, '<p><b>WARNING:</b> Downloading plugins may compromise server security. Only download from trusted sources.</p><input type=text id=pluginurlinput style=width:100% placeholder="https://" />'); 
-            focusTextBox('pluginurlinput');
+            if (typeof showModal === 'function') {
+                setDialogMode(2, "Plugin Download URL", 3, obj.addPluginEx, '<p><b>WARNING:</b> Downloading plugins may compromise server security. Only download from trusted sources.</p><input type=text id=pluginurlinput style=width:100% placeholder="https://" />');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', obj.addPluginEx);
+                focusTextBox('pluginurlinput');
+            } else {
+                // Fallback to setDialogMode for default.handlebars
+                setDialogMode(2, "Plugin Download URL", 3, obj.addPluginEx, '<p><b>WARNING:</b> Downloading plugins may compromise server security. Only download from trusted sources.</p><input type=text id=pluginurlinput style=width:100% placeholder="https://" />'); 
+                focusTextBox('pluginurlinput');
+            }
         };
         obj.refreshPluginHandler = function() {
             let st = document.createElement('script');
