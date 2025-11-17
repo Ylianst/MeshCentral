@@ -9,7 +9,6 @@ path-exclude=/usr/share/man/*
 
 # Don't install localized man pages
 path-exclude=/usr/share/locale/*
-path-include=/usr/share/locale/en*
 
 # Optional: exclude info pages
 path-exclude=/usr/share/info/*
