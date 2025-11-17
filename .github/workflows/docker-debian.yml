@@ -177,55 +177,55 @@ jobs:
           REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           # mongodb
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-mongodb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mongodb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mongodb \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-mongodb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mongodb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mongodb-debian \
           # postgresql
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-postgresql \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-postgresql \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-postgresql \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-postgresql-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-postgresql-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-postgresql-debian \
           # mariadb
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-mariadb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mariadb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mariadb \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-mariadb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mariadb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mariadb-debian \
           # all (no suffix)
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }} \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64 \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64 \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-debian \
           # slim
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-slim \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-slim \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-slim \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-slim-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-slim-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-slim-debian \
       - name: Create and push 'latest' tags (releases only)
         if: github.event_name == 'release'
         run: |
           REPO_OWNER_LC="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
           # latest-mongodb
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-mongodb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mongodb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mongodb \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-mongodb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mongodb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mongodb-debian \
           # latest-postgresql
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-postgresql \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-postgresql \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-postgresql \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-postgresql-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-postgresql-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-postgresql-debian \
           # latest-mariadb
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-mariadb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mariadb \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mariadb \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-mariadb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-mariadb-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-mariadb-debian \
           # latest (all databases)
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64 \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64 \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-debian \
           # latest-slim
           docker buildx imagetools create \
-            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-slim \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-slim \
-            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-slim \
+            -t ghcr.io/$REPO_OWNER_LC/meshcentral:latest-slim-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-amd64-slim-debian \
+            ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}-arm64-slim-debian \
