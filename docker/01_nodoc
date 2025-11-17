@@ -1,0 +1,17 @@
+# Exclude unneeded documentation files to save space
+
+# Don't install package docs
+path-exclude=/usr/share/doc/*
+
+# Don't install man pages
+path-exclude=/usr/share/man/*
+
+# Don't install localized man pages
+path-exclude=/usr/share/locale/*
+
+# Optional: exclude info pages
+path-exclude=/usr/share/info/*
+
+# Optional: exclude lintian and other package data
+path-exclude=/usr/share/lintian/*
+path-exclude=/usr/share/linda/*
