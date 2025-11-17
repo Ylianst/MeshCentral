@@ -63,6 +63,7 @@ FROM alpine:3.22 AS finalizer
 # copy files from previous layers
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+COPY --from=mongo-tools-compiler /mongo-tools/bin/ /tmp/bin/
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -130,6 +131,7 @@ RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
+        /var/tmp/* \
         /usr/lib/debug/ && \
     npm install -g npm@latest
 
@@ -148,7 +150,7 @@ RUN case "$PREINSTALL_LIBS" in \
 # NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN meshcentraljs mainStart()
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
-            apk add --no-cache mongodb-tools && \
+            mv /tmp/bin/* /usr/bin; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
             npm install mongodb@4.17.2;; \
@@ -161,7 +163,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
-            apk add --no-cache postgresql-client && \
+            apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.14.1;; \
@@ -174,7 +176,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
-            apk add --no-cache mariadb-client && \
+            apt-get install -y --no-install-recommends --no-install-suggests default-mysql-client mariadb-client; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.0 mysql2@3.11.4;; \
