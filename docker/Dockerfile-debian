@@ -2,7 +2,6 @@
 FROM node:lts-trixie-slim AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
-ARG DISABLE_EXTRACT="yes"
 ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
 #    NODE_OPTIONS="--max_old_space_size=4096"
@@ -43,7 +42,8 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
-RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
+RUN rm -rf /opt/meshcentral/meshcentral/docker
+RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
@@ -225,16 +225,14 @@ RUN cd meshcentral \
 # Expose needed ports
 EXPOSE 80 443
 
-ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
-
-# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
+# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman. Dummy-proofing.
 VOLUME /opt/meshcentral/meshcentral-data
 VOLUME /opt/meshcentral/meshcentral-files
 VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
-COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
+COPY ./docker/entrypoint.sh ./entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
