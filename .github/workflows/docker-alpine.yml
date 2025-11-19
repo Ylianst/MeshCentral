@@ -90,7 +90,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
+            -f docker/Dockerfile-alpine \
             -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}$TAG \
             --push \
             .
@@ -149,7 +149,7 @@ jobs:
             --build-arg DISABLE_TRANSLATE=yes \
             --build-arg DISABLE_EXTRACT=yes \
             --build-arg PREINSTALL_LIBS=true \
-            -f docker/Dockerfile \
+            -f docker/Dockerfile-alpine \
             -t ghcr.io/$REPO_OWNER_LC/meshcentral:${{ github.ref_name }}$TAG \
             --push \
             .
