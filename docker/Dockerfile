@@ -2,7 +2,6 @@
 FROM node:lts-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
-ARG DISABLE_EXTRACT="yes"
 ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
 #    NODE_OPTIONS="--max_old_space_size=4096"
@@ -13,18 +12,13 @@ WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 # Check the Docker build arguments and if they are empty do the task.
-RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
+RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
         echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
         npm install html-minifier-terser@7.2.0 jsdom@26.0.0 esprima@4.0.1 && \
         cd translate && \
-        case "$DISABLE_EXTRACT" in \
-            false|no|FALSE|NO) \
-                echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
-                node translate.js extractall;; \
-            *) \
-                echo "Setting EXTRACT as disabled.";; \
-        esac && \
+        echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
+        node translate.js extractall && \
         case "$DISABLE_MINIFY" in \
             false|no|FALSE|NO) \
                 echo -e "----------\nSTARTING THE MINIFYING PROCESS...\n----------"; \
@@ -43,14 +37,14 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
-RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
+RUN rm -rf /opt/meshcentral/meshcentral/docker
+RUN rm -rf /opt/meshcentral/meshcentral/node_modules
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM node:22-alpine3.22 AS dep-compiler
+FROM node:lts-alpine3.22 AS dep-compiler
 
-RUN apk update && \
-    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
         bash gcc g++ jq make python3 tzdata
 
@@ -62,11 +56,13 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
     && npm ci --omit=dev \
     && npm cache clean --force
 
-FROM node:lts-trixie-slim AS finalizer
+### STAGE 3 BUILDING.
 
-# Copy files from previous layers
+FROM alpine:3.22 AS finalizer
+
+# copy files from previous layers
+COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=mongo-tools-compiler /mongo-tools/bin/ /tmp/bin/
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -122,6 +118,7 @@ ENV MARIADB_HOST="" \
     MARIADB_PASS="" \
     MARIADB_DATABASE=""
 
+RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
@@ -133,7 +130,6 @@ RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
-        /var/tmp/* \
         /usr/lib/debug/ && \
     npm install -g npm@latest
 
@@ -141,7 +137,7 @@ RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
-            npm install ssh2@1.16.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 otplib@12.0.1 yub@0.11.1;; \
+            npm install ssh2@1.16.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 otplib@12.0.1 yubikeyotp@0.2.0;; \
         false|no|FALSE|NO) \
             echo "Not pre-installing libraries.";; \
         *) \
@@ -155,7 +151,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
             apk add --no-cache mongodb-tools && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
-            npm install mongodb@4.17.2 @mongodb-js/saslprep@1.3.1;; \
+            npm install mongodb@4.17.2;; \
         false|no|FALSE|NO) \
             echo "Not including MongoDB Tools.";; \
         *) \
@@ -189,9 +185,9 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             exit 1;; \
     esac
 
-# Remove left over files and cache
+# install dependencies from package.json
 RUN cd meshcentral \
-    && rm -rf /root/* /tmp/* /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
+    && rm -rf /root/ /tmp/ /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
     && npm cache clean --force
 
 # Expose needed ports
@@ -204,9 +200,10 @@ VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
-COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
+COPY ./docker/entrypoint.sh ./entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
 =======
@@ -218,3 +215,6 @@ USER meshuser
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
 >>>>>>> b1b38d59 (chore: update debian docker files)
+=======
+ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
+>>>>>>> fef9793d (chore: add volumes back into the default)
