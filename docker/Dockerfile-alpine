@@ -193,11 +193,11 @@ RUN cd meshcentral \
 # Expose needed ports
 EXPOSE 80 443
 
-# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
-#VOLUME /opt/meshcentral/meshcentral-data
-#VOLUME /opt/meshcentral/meshcentral-files
-#VOLUME /opt/meshcentral/meshcentral-web
-#VOLUME /opt/meshcentral/meshcentral-backups
+# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman. Dummy proofing.
+VOLUME /opt/meshcentral/meshcentral-data
+VOLUME /opt/meshcentral/meshcentral-files
+VOLUME /opt/meshcentral/meshcentral-web
+VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
 COPY ./docker/entrypoint.sh ./entrypoint.sh
