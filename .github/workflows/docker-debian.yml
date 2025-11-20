@@ -3,7 +3,7 @@ name: Docker-Builder-Debian
 on:
   workflow_dispatch:
   schedule:
-    - cron: '2 0 * * *' # Daily at 00:02 UTC
+    - cron: '0 1 * * *' # Daily at 01:00 UTC (I think)
   release:
     types: [ published ]
 

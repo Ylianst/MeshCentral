@@ -12,13 +12,18 @@ WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 # Check the Docker build arguments and if they are empty do the task.
-RUN if [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
+RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
         echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
         npm install html-minifier-terser@7.2.0 jsdom@26.0.0 esprima@4.0.1 && \
         cd translate && \
-        echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
-        node translate.js extractall && \
+        case "$DISABLE_EXTRACT" in \
+            false|no|FALSE|NO) \
+                echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
+                node translate.js extractall;; \
+            *) \
+                echo "Setting EXTRACT as disabled.";; \
+        esac && \
         case "$DISABLE_MINIFY" in \
             false|no|FALSE|NO) \
                 echo -e "----------\nSTARTING THE MINIFYING PROCESS...\n----------"; \
