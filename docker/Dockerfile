@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-alpine3.22 AS builder
+FROM node:22-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_EXTRACT="yes"
@@ -43,11 +43,11 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
- rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
+RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM node:lts-alpine3.22 AS dep-compiler
+FROM node:22-alpine3.22 AS dep-compiler
 
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
@@ -63,7 +63,8 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
 
 ### STAGE 3 BUILDING.
 
-FROM alpine:3.22 AS finalizer
+FROM node:22-alpine3.22 AS finalizer
+#FROM alpine:3.22 AS finalizer
 
 # copy files from previous layers
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
@@ -128,7 +129,7 @@ WORKDIR /opt/meshcentral
 
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash jq nodejs npm tzdata && \
+        bash curl jq tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
@@ -156,7 +157,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
             apk add --no-cache mongodb-tools && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
-            npm install mongodb@4.17.2;; \
+            npm install mongodb@4.17.2 @mongodb-js/saslprep@1.3.1;; \
         false|no|FALSE|NO) \
             echo "Not including MongoDB Tools.";; \
         *) \
@@ -192,7 +193,7 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
 
 # install dependencies from package.json
 RUN cd meshcentral \
-    && rm -rf /root/ /tmp/ /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
+    && rm -rf /root /tmp/ /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
     && npm cache clean --force
 
 # Expose needed ports

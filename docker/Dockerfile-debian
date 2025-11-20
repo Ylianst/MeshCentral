@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-trixie-slim AS builder
+FROM node:22-trixie-slim AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_EXTRACT="yes"
@@ -47,7 +47,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM node:lts-trixie-slim AS dep-compiler
+FROM node:22-trixie-slim AS dep-compiler
 
 ENV NODE_ENV="production"
 
@@ -89,7 +89,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 ### STAGE 4 BUILDING.
 
-FROM node:lts-trixie-slim AS finalizer
+FROM node:22-trixie-slim AS finalizer
 
 # Copy files from previous layers
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
