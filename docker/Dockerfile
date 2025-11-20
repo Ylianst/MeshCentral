@@ -128,7 +128,7 @@ WORKDIR /opt/meshcentral
 
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash curl jq tzdata && \
+        bash jq tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \

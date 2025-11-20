@@ -154,7 +154,7 @@ WORKDIR /opt/meshcentral
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        bash jq tzdata curl && \
+        bash jq tzdata && \
     rm -rf \
         /var/cache/* \
         /usr/share/man/ \
