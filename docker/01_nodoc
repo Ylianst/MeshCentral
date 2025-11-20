@@ -2,7 +2,10 @@
 
 # Don't install package docs
 path-exclude=/usr/share/doc/*
+<<<<<<< HEAD
 path-include=/usr/share/doc/*/copyright
+=======
+>>>>>>> master
 
 # Don't install man pages
 path-exclude=/usr/share/man/*
