@@ -1,9 +1,9 @@
-name: Docker-Builder
+name: Docker-Builder-Alpine
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '2 0 * * *' # Daily at 00:02 UTC
+    - cron: '0 0 * * *' # Daily at 00:00 UTC
   release:
     types: [ published ]
 
@@ -95,7 +95,7 @@ jobs:
             .
 
   build-arm64:
-    runs-on: ubuntu-22.04-arm
+    runs-on: ubuntu-24.04-arm
     needs: translate
     strategy:
       fail-fast: false
