@@ -248,8 +248,8 @@ VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
-<<<<<<< HEAD
 COPY ./docker/entrypoint.sh ./entrypoint.sh
+<<<<<<< HEAD
 <<<<<<< HEAD
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
@@ -259,6 +259,8 @@ ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
 COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
 >>>>>>> e58dadb8 (chore: add volumes back into the default)
+=======
+>>>>>>> e761534c (chore: remove unneeded lines)
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
 =======
