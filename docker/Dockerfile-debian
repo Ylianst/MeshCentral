@@ -152,7 +152,7 @@ ENV PSQL_HOST="" \
     PSQL_PASS="" \
     PSQL_DATABASE=""
 
-# MariaDB/MySQL Variables, Alpine Linux only provides the actual MariaDB binaries.
+# MariaDB/MySQL Variables.
 ENV MARIADB_HOST="" \
     MARIADB_PORT="3306" \
     MARIADB_USER="" \
@@ -249,22 +249,6 @@ VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
 COPY ./docker/entrypoint.sh ./entrypoint.sh
-<<<<<<< HEAD
-<<<<<<< HEAD
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
-=======
-=======
-COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
-COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
->>>>>>> e58dadb8 (chore: add volumes back into the default)
-=======
->>>>>>> e761534c (chore: remove unneeded lines)
-COPY ./docker/config.json.template /opt/meshcentral/config.json.template
-
-=======
->>>>>>> b2b9823f (fix: some logic issues when removing volumes from Dockerfile):docker/Dockerfile-alpine
-ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
->>>>>>> da248ab0 (chore: update debian docker files):docker/Dockerfile-alpine
->>>>>>> fef9793d (chore: add volumes back into the default)
