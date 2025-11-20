@@ -194,7 +194,6 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
             apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
-            apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.14.1;; \
@@ -208,7 +207,6 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
 RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
             apt-get install -y --no-install-recommends --no-install-suggests default-mysql-client mariadb-client; \
-            apt-get install -y --no-install-recommends --no-install-suggests default-mysql-client mariadb-client; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.0 mysql2@3.11.4;; \
@@ -221,7 +219,7 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
 
 # Remove left over files and cache
 RUN cd meshcentral \
-    && rm -rf /root/* /tmp/* /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
+    && rm -rf /root /tmp/* /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
     && npm cache clean --force
 
 # Expose needed ports
@@ -234,7 +232,7 @@ VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
-COPY ./docker/entrypoint.sh ./entrypoint.sh
+COPY ./docker/entrypoint.sh  /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
