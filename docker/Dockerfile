@@ -66,8 +66,7 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
 FROM node:22-alpine3.22 AS finalizer
 #FROM alpine:3.22 AS finalizer
 
-# copy files from previous layers
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+# copy files from previous layer
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # environment variables
