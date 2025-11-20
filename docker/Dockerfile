@@ -2,6 +2,7 @@
 FROM node:lts-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
+ARG DISABLE_EXTRACT="yes"
 ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
 #    NODE_OPTIONS="--max_old_space_size=4096"
@@ -42,8 +43,7 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
     fi
 # Possible more updated alternative? @minify-html/node@0.15.0 -> https://www.npmjs.com/package/@minify-html/node
 
-RUN rm -rf /opt/meshcentral/meshcentral/docker
-RUN rm -rf /opt/meshcentral/meshcentral/node_modules
+ rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
