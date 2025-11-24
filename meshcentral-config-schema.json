@@ -799,7 +799,7 @@
         "log": {
           "type": "string",
           "default": null,
-          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to a file named 'log.txt' located inside the 'meshcentral-data' folder. Setting it to '*' will output all logs."
+          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to a file named 'log.txt' located inside the 'meshcentral-data' folder. Setting it to '*' will output all logs. Available values are: cookie,dispatch,main,peer,web,webrequest,relay,webrelaydata,webrelay,mps,mpscmd,swarm,swarmcmd,agentupdate,agent,cert,db,email,amt,httpheaders,websocket"
         },
         "syslog": {
           "type": "string",
