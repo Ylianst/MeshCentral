@@ -12429,7 +12429,7 @@
 
         function p13gotofolder() {
             xxdialogButtons = 3;
-            setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
+            setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% value="' + (isWindowsNode(currentNode) ? p13targetpath.replaceAll('/','\\') + '\\' : p13targetpath + '/') +'"placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p13gotofolderEx);
             focusTextBox('p13folderinput');
         }
