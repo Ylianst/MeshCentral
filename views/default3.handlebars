@@ -15565,7 +15565,7 @@
             x += '</div>';
 
             if (userid == null) {
-                xxdialogButtons = 3; xxdialogTag = '';
+                xxdialogButtons = 3; xxdialogTag = null;
                 setModalContent('xxAddAgent', "Add Users to Device Group", x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                     p20showAddMeshUserDialogEx(xxdialogButtons, xxdialogTag);
