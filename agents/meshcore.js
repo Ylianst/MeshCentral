@@ -5297,6 +5297,38 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'netinfo': { // Show network interface information
                 var interfaces = require('os').networkInterfaces();
+                if (process.platform == 'win32') {
+                    try {
+                        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                        if (ret[0]) {
+                            var speedMap = {};
+                            for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
+                            var adapterNames = Object.keys(interfaces);
+                            for (var j = 0; j < adapterNames.length; j++) {
+                                var theinterfaces = interfaces[adapterNames[j]];
+                                for (var k = 0; k < theinterfaces.length; k++) {
+                                    var iface = theinterfaces[k], speed = speedMap[iface.index] || 0;
+                                    iface.speed = parseInt(speed); // bits per seconds
+                                }
+                            }
+                        }
+                    } catch(ex) { }
+                } else if (process.platform == 'linux') {
+                    var adapterNames = Object.keys(interfaces);
+                    for (var i = 0; i < adapterNames.length; i++) {
+                        var ifaceName = adapterNames[i];
+                        try {
+                            var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
+                            if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
+                                var theinterfaces = interfaces[ifaceName];
+                                for (var k = 0; k < theinterfaces.length; k++) {
+                                    var iface = theinterfaces[k];
+                                    iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
+                                }
+                            }
+                        } catch(ex) { }
+                    }
+                }
                 response = objToString(interfaces, 0, ' ', true);
                 break;
             }
@@ -6008,6 +6040,21 @@ function sendNetworkUpdate(force) {
                     }
                 }
             } catch(ex) { }
+        } else if (process.platform == 'linux') {
+            var adapterNames = Object.keys(netInfo.netif2);
+            for (var i = 0; i < adapterNames.length; i++) {
+                var ifaceName = adapterNames[i];
+                try {
+                    var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
+                    if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
+                        var theinterfaces = netInfo.netif2[ifaceName];
+                        for (var k = 0; k < theinterfaces.length; k++) {
+                            var iface = theinterfaces[k];
+                            iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
+                        }
+                    }
+                } catch(ex) { }
+            }
         }
         if (netInfo.netif2) {
             netInfo.action = 'netinfo';
