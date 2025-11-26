@@ -2746,6 +2746,8 @@
             toggleFullScreen(0);
             toggleStackMenu(0);
             if (webPageStackMenu && (xxcurrentView >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
+            updateSelf()
+            updateSiteAdmin();
             adjustPanels();
         }
 
@@ -2943,7 +2945,7 @@
             QV('p2AccountImageFrame', !accountSettingsLocked)
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
-            try { (QS('LeftMenuMyServer').display == 'none') ? QC('mobileServerMenuItem').add('d-none') : QC('mobileServerMenuItem').remove('d-none'); } catch (e) { }
+            ((siteRights & 21) && ((serverFeatures & 64) != 0)) ? QC('mobileServerMenuItem').remove('d-none') : QC('mobileServerMenuItem').add('d-none');
             QV('MainMenuMyServer', siteRights & 21);
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
@@ -2952,7 +2954,7 @@
             QV('p2ServerActionsConfig', (siteRights & 16) && ((serverFeatures & 128) != 0));
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
-            try { (QS('LeftMenuMyFiles').display == 'none') ? QC('mobileFilesMenuItem').add('d-none') : QC('mobileFilesMenuItem').remove('d-none'); } catch (e) { }
+            (siteRights & 8) ? QC('mobileFilesMenuItem').remove('d-none') : QC('mobileFilesMenuItem').add('d-none');
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
@@ -3082,7 +3084,7 @@
             // Adjust "My Users" tabs
             QV('MainMenuMyUsers', ((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0)));
             QV('LeftMenuMyUsers', ((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0)));
-            try { (QS('LeftMenuMyUsers').display == 'none') ? QC('mobileUsersMenuItem').add('d-none') : QC('mobileUsersMenuItem').remove('d-none'); } catch (e) { }
+            (((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0))) ? QC('mobileUsersMenuItem').remove('d-none') : QC('mobileUsersMenuItem').add('d-none');
             QV('UsersGeneral', ((users != null) && ((features & 4) == 0)));
             QV('UsersGroups', ((users != null) && ((features & 4) == 0)));
             QV('UsersRecordings', ((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0));
