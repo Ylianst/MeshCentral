@@ -7826,8 +7826,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.authLog('setupDomainAuthStrategy', 'Azure profile: ' + JSON.stringify(userex));
                     var user = null;
                     if (userex != null) {
-                        var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
-                        if (typeof userex.email == 'string') { user.email = userex.email; }
+                        var user = { sid: '~azure:' + userex.unique_name.toLowerCase(), name: userex.name, strategy: 'azure' };
+                        if (typeof userex.email == 'string') { user.email = userex.email.toLowerCase(); }
                     }
                     return done(null, user);
                 }
