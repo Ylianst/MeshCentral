@@ -9576,7 +9576,7 @@
                 if ((wintype == true) || (linuxtype == true)) {
                     var x = "Run commands on selected devices." + '<br />';
                     if (wintype == true) {
-                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px>';
+                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px> class=form-select>';
                         x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>';
                         if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
                         x += '</select>';
