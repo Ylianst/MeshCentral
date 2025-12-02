@@ -206,7 +206,13 @@ module.exports.CreateLetsEncrypt = function (parent) {
             acme.forge.createCsr(certRequest).then(function (r) {
                 obj.csr = r[1];
                 obj.tempPrivateKey = r[0];
-                if(obj.zerossl) { obj.log("Requesting certificate from ZeroSSL..."); } else { obj.log("Requesting certificate from Let's Encrypt..."); }
+                if(obj.zerossl) { 
+                    obj.log("Requesting certificate from ZeroSSL...");
+                } else if(obj.custom) {
+                    obj.log("Requesting certificate from Custom ACME server...");
+                } else {
+                    obj.log("Requesting certificate from Let's Encrypt...");
+                }
                 obj.client.auto({
                     csr: obj.csr,
                     email: obj.parent.config.letsencrypt.email,
