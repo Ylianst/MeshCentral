@@ -180,6 +180,18 @@ module.exports.CreateLetsEncrypt = function (parent) {
                         hmacKey: obj.zerossl.hmackey
                     }
                 });
+            } else if (obj.custom) {
+                if (obj.custom.kid == "") { obj.log("EAB KID hasn't been set, invalid configuration."); return; }
+                if (obj.custom.hmackey == "") { obj.log("EAB HMAC KEY hasn't been set, invalid configuration."); return; }
+                if (obj.custom.server == "") { obj.log("Custom ACME server URL hasn't been set, invalid configuration."); return; }
+                obj.client = new acme.Client({
+                    directoryUrl: obj.custom.server,
+                    accountKey: accountKey,
+                    externalAccountBinding: {
+                        kid: obj.custom.kid,
+                        hmacKey: obj.custom.hmackey
+                    }
+                });
             } else {
                 obj.client = new acme.Client({
                     directoryUrl: obj.runAsProduction ? acme.directory.letsencrypt.production : acme.directory.letsencrypt.staging,
