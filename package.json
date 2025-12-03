@@ -47,6 +47,7 @@
     "express-handlebars": "7.1.3",
     "express-ws": "5.0.2",
     "ipcheck": "0.1.0",
+    "meshcentral": "^1.1.54",
     "minimist": "1.2.8",
     "multiparty": "4.2.3",
     "node-forge": "1.3.2",
