@@ -5995,7 +5995,8 @@
             d7bitmapscaling.value = multidesktopsettings.scaling;
             d7encoding.value = multidesktopsettings.agentencoding;
             if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 100; }
-            setModalContent('xxAddAgent', "Remote Desktop Settings", x);
+            changeDesktopSettingsTab(null, 'd7meshkvm');
+            setModalContent('xxAddAgent', "Remote Desktop Settings", 7);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showMultiDesktopSettingsChanged());
         }
 
