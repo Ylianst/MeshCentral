@@ -1018,6 +1018,9 @@
                             <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
                             <input id=DeskToolsButton type=button class="btn btn-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
+                            <span id=DeskGuestShareButton title="Blank monitor" role="button">
+                                <i class="fa-solid fa-fw fa-share-nodes" id=BlankScreen onclick=desktopPrivacyToggle()></i>
+                            /span>
                             <span id=DeskGuestShareButton title="Share the device with a guest" role="button">
                                 <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
                             </span>
@@ -9323,6 +9326,23 @@
             setModalContent('xxAddAgent', "Remote Input Lock", (value == 1) ? "Lock remote user's mouse and keyboard?" : "Unlock remote user's mouse and keyboard?");
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { try { desktop.m.SendRemoteInputLock(value); } catch (ex) { } });
         }
+
+        function desktopPrivacyToggle() {
+                    desktopPrivacyOn = !desktopPrivacyOn;
+
+                    // TODO: later a command to the desktop to turn on/off privacy mode
+                    // like sendPrivacyScreenCommand(desktopPrivacyOn);
+
+                    // Visual state of the button (check the class in the real code)
+                    var btn = document.getElementById('DeskPrivacyBtn');
+                    if (btn) {
+                        if (desktopPrivacyOn) {
+                            btn.classList.add('DeskButtonActive');
+                        } else {
+                            btn.classList.remove('DeskButtonActive');
+                        }
+                    }
+                }
 
         function deskClipboardOutFunction() {
             if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
