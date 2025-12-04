@@ -1020,9 +1020,9 @@
                             <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
                             <input id=DeskToolsButton type=button class="btn btn-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
-                            <span id=DeskGuestShareButton title="Blank monitor" role="button">
-                                <i class="fa-solid fa-fw fa-share-nodes" id=BlankScreen onclick=desktopPrivacyToggle()></i>
-                            /span>
+                            <span id=BlankScreen title="Download remote clipboard to local clipboard" style="display:none"  role="button">
+                                <i class="fa-solid fa-fw fa-down-long" data-fa-transform="shrink-9 down-4" data-fa-mask="fa-solid fa-clipboard" onclick=desktopPrivacyToggle()></i>
+                            </span>
                             <span id=DeskGuestShareButton title="Share the device with a guest" role="button">
                                 <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
                             </span>
