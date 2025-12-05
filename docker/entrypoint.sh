@@ -293,6 +293,8 @@ if [[ $INSTALL_STYLISHUI == "true" ]]; then
         mv ${web_folder}/* /opt/meshcentral/meshcentral-web
 
         echo "StylishUI has been installed!"
+    else
+        echo "URL is not ok, skipping..."
     fi
 fi
 
