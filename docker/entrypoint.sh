@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Origin: https://github.com/Melo-Professional/MeshCentral-Stylish-UI
+stylishui_version="3.2.0"
+stylishui_url="https://github.com/Melo-Professional/MeshCentral-Stylish-UI/archive/refs/tags/${stylishui_version}.tar.gz"
+
 graceful_shutdown() {
     echo "Received SIGTERM from the container host. Cleaning up..."
     kill -SIGINT $meshcentral_pid
@@ -271,6 +275,25 @@ if [[ ${DYNAMIC_CONFIG,,} =~ ^(true|yes)$ ]]; then
     cat "$CONFIG_FILE"
 else
     echo "Leaving config as-is. Dynamic Configuration is off."
+fi
+
+if [[ $INSTALL_STYLISHUI == "true" ]]; then
+    echo "Reached StylishUI install trigger, installing..."
+
+    printf "Testing URL..."
+    wget --spider $stylishui_url &> /dev/null
+    if [[ $? -eq 0 ]]; then
+        echo "URL is ok."
+
+        wget -O /tmp/stylishui.tar.gz $stylishui_url
+        tar -xzf /tmp/stylishui.tar.gz -C /tmp
+
+        web_folder=$(find /tmp -name meshcentral-web)
+        echo Found extracted contents at: $web_folder
+        mv ${web_folder}/* /opt/meshcentral/meshcentral-web
+
+        echo "StylishUI has been installed!"
+    fi
 fi
 
 # Actually start MeshCentral.
