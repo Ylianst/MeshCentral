@@ -1,0 +1,21 @@
+{
+  "name": "Privacy Screen",
+  "shortName": "privacy_screen",
+  "version": "0.0.1",
+  "author": "Vitalii",
+  "description": "Blank local monitor while keeping remote desktop visible",
+  "hasAdminPanel": false,
+
+  "homepage": "http://localhost/plugins/privacy_screen",
+  "changelogUrl": "http://localhost/plugins/privacy_screen/changelog.txt",
+  "configUrl": "http://localhost/plugins/privacy_screen/config.json",
+  "downloadUrl": "http://localhost/plugins/privacy_screen/archive.zip",
+
+  "repository": {
+    "type": "git",
+    "url": "http://localhost/git/meshcentral-privacy-screen.git"
+  },
+
+  "versionHistoryUrl": "http://localhost/plugins/privacy_screen/tags.json",
+  "meshCentralCompat": ">=1.1.0"
+}

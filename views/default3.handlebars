@@ -9331,24 +9331,22 @@
         }
 
         function desktopPrivacyToggle() {
-            // TODO: later a command to the desktop to turn on/off privacy mode
+            desktopPrivacyOn = !desktopPrivacyOn;
 
-            // Visual state of the button (check the class in the real code)
-            var btn = document.getElementById('BlankScreenButton');
+            var btn = document.getElementById('DeskPrivacyBtn');
             if (btn) {
-                btn.addEventListener('click', function () {
-                    // Test message
-                    console.log('BlankScreenButton clicked');
-                    alert('BlankScreenButton clicked');
+                if (desktopPrivacyOn) {
+                    btn.classList.add('DeskButtonActive');
+                } else {
+                    btn.classList.remove('DeskButtonActive');
+                }
+            }
 
-                    // Your existing logic
-                    desktopPrivacyOn = !desktopPrivacyOn;
-
-                    if (desktopPrivacyOn) {
-                        btn.classList.add('DeskButtonActive');
-                    } else {
-                        btn.classList.remove('DeskButtonActive');
-                    }
+            if (currentNode && currentNode._id) {
+                meshserver.send({
+                    action: 'privacyScreen',
+                    nodeid: currentNode._id,
+                    on: desktopPrivacyOn
                 });
             }
         }
