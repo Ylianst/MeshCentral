@@ -87,6 +87,7 @@ ENV ALLOW_PLUGINS="false" \
     REVERSE_PROXY="" \
     REVERSE_PROXY_TLS_PORT="443" \
     TRUSTED_PROXY="" \
+    INSTALL_STYLISHUI="false" \
     ARGS=""
 
 # Database
