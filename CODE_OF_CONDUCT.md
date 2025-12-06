@@ -1,7 +1,7 @@
 # MeshCentral Community Standards
 
 ## Purpose
-The MeshCentral Community is composed of professionals and volunteers from around the world, working on development, support, mentorship, and community engagement. Our strength lies in our diversity, and our goal is to create a collaborative, welcoming, and technically focused environment. This code of conduct applies to all MeshCentral-managed spaces, including GitHub, Discord, Telegram, Reddit, forums, and any other community communication channels. Moderators and all community members are subject to these standards.
+The MeshCentral Community is composed of professionals and volunteers from around the world, working on development, support, mentorship, and community engagement. Our strength lies in our diversity, and our goal is to create a collaborative, welcoming, and technically focused environment. This code of conduct applies to all MeshCentral-managed spaces, including GitHub, Discord, Telegram, Reddit, forums, and any other community communication channels, and it must be prominently available across all these platforms to ensure visibility, consistency, and community alignment. Moderators and all community members are subject to these standards.
 
 We should focus on welcoming anyone who wants to contribute, fostering engagement, and supporting community-driven improvements. Treat this code as a guide to make the community productive, inclusive, and enriching for everyone.
 
@@ -62,4 +62,4 @@ To receive accurate and useful support:
 - Maintain a professional, kind, and respectful tone at all times.
 
 ## Enforcement
-Violations of these standards may result in warnings, content removal, or removal from community spaces. Severe or repeated violations may result in permanent exclusion. Members are encouraged to report any violations to moderators or directly to project maintainers.
+Violations of these standards may result in warnings, content removal, or removal from community spaces. Severe or repeated violations may result in permanent exclusion. Members are encouraged to report any violations to moderators or directly to project maintainers. This code should
