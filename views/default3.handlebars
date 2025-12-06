@@ -9331,18 +9331,27 @@
         }
 
         function desktopPrivacyToggle() {
-                    // TODO: later a command to the desktop to turn on/off privacy mode
+            // TODO: later a command to the desktop to turn on/off privacy mode
 
-                    // Visual state of the button (check the class in the real code)
-                    var btn = document.getElementById('BlankScreenButton');
-                    if (btn) {
-                        if (desktopPrivacyOn) {
-                            btn.classList.add('DeskButtonActive');
-                        } else {
-                            btn.classList.remove('DeskButtonActive');
-                        }
+            // Visual state of the button (check the class in the real code)
+            var btn = document.getElementById('BlankScreenButton');
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    // Test message
+                    console.log('BlankScreenButton clicked');
+                    alert('BlankScreenButton clicked');
+
+                    // Your existing logic
+                    desktopPrivacyOn = !desktopPrivacyOn;
+
+                    if (desktopPrivacyOn) {
+                        btn.classList.add('DeskButtonActive');
+                    } else {
+                        btn.classList.remove('DeskButtonActive');
                     }
-                }
+                });
+            }
+        }
 
         function deskClipboardOutFunction() {
             if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
