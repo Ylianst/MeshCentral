@@ -4,59 +4,14 @@ module.exports.privacy_screen = function (parent) {
     var obj = {};
     obj.parent = parent;
 
-    // Функція, доступна з браузера: pluginHandler.privacy_screen.sendPrivacyCommand(...)
+    // Функція, доступна з Web-UI як pluginHandler.privacy_screen.sendPrivacyCommand(...)
     obj.exports = ['sendPrivacyCommand'];
 
-    // Детектуємо, де ми запущені: на сервері (Node.js) чи в браузері
-    var isNode = (typeof process !== 'undefined') &&
-        process.versions && process.versions.node;
+    // Надійний спосіб визначити браузер
+    var isBrowser = (typeof window !== 'undefined' && typeof window.document !== 'undefined');
 
-    if (isNode) {
-        //
-        // ********* BACKEND / SERVER-SIDE *********
-        //
-        obj.sendPrivacyCommand = function (args, rights, session, user) {
-            if (!args || !args.nodeid) return;
-
-            var nodeid = args.nodeid;
-            var state = args.on ? 1 : 0;
-
-            console.log('privacy_screen (server) sendPrivacyCommand', nodeid, state);
-
-            // parent = pluginHandler, parent.parent = meshServer
-            var meshServer = obj.parent && obj.parent.parent;
-            var webserver = meshServer && meshServer.webserver;
-
-            if (webserver && typeof webserver.sendAgentCommand === 'function') {
-                webserver.sendAgentCommand(nodeid, {
-                    type: 'privacyscreen',
-                    state: state
-                });
-            } else if (meshServer && typeof meshServer.sendAgentCommand === 'function') {
-                // запасний варіант, якщо твоя версія все ж має цей метод на meshServer
-                meshServer.sendAgentCommand(nodeid, {
-                    type: 'privacyscreen',
-                    state: state
-                });
-            } else {
-                // Лог для дебагу, якщо API відрізняється
-                try {
-                    console.log('privacy_screen: sendAgentCommand not available, meshServer keys:',
-                        meshServer ? Object.keys(meshServer) : 'no meshServer');
-                } catch (e) {
-                    console.log('privacy_screen: sendAgentCommand not available, error inspecting meshServer:', e);
-                }
-            }
-        };
-
-        obj.server_startup = function () {
-            console.log('privacy_screen plugin: server_startup');
-        };
-
-    } else {
-        //
+    if (isBrowser) {
         // ********* WEB UI / BROWSER *********
-        //
         obj.sendPrivacyCommand = function (args) {
             try {
                 if (typeof meshserver !== 'undefined') {
@@ -67,11 +22,74 @@ module.exports.privacy_screen = function (parent) {
                         args: args
                     });
                 } else {
-                    console.log('privacy_screen: meshserver global not available in UI', args);
+                    console.log('privacy_screen(UI): meshserver global not available', args);
                 }
             } catch (e) {
-                console.log('privacy_screen UI sendPrivacyCommand error', e);
+                console.log('privacy_screen(UI): sendPrivacyCommand error', e);
             }
+        };
+
+    } else {
+        // ********* BACKEND / SERVER-SIDE (Node.js) *********
+
+        // Пошук об'єкта з sendAgentCommand, піднімаючись по parent-ланцюжку
+        function findSendAgentCommand(start) {
+            var p = start;
+            var depth = 0;
+
+            while (p && depth < 5) {
+                try {
+                    if (typeof p.sendAgentCommand === 'function') {
+                        console.log('privacy_screen(server): using p.sendAgentCommand at depth', depth);
+                        return p.sendAgentCommand.bind(p);
+                    }
+                    if (p.webserver && typeof p.webserver.sendAgentCommand === 'function') {
+                        console.log('privacy_screen(server): using p.webserver.sendAgentCommand at depth', depth);
+                        return p.webserver.sendAgentCommand.bind(p.webserver);
+                    }
+                } catch (e) {
+                    console.log('privacy_screen(server): error scanning parent chain at depth', depth, e);
+                }
+
+                p = p.parent;
+                depth++;
+            }
+
+            console.log('privacy_screen(server): sendAgentCommand NOT found in parent chain');
+            return null;
+        }
+
+        var sendAgentCommand = null;
+
+        obj.sendPrivacyCommand = function (args, rights, session, user) {
+            if (!args || !args.nodeid) return;
+
+            var nodeid = args.nodeid;
+            var state = args.on ? 1 : 0;
+
+            console.log('privacy_screen (server) sendPrivacyCommand', nodeid, state);
+
+            // Ініціалізуємо один раз, при першому виклику
+            if (!sendAgentCommand) {
+                sendAgentCommand = findSendAgentCommand(obj.parent);
+            }
+            if (!sendAgentCommand) {
+                console.log('privacy_screen(server): cannot send command, sendAgentCommand is null');
+                return;
+            }
+
+            try {
+                sendAgentCommand(nodeid, {
+                    type: 'privacyscreen',
+                    state: state
+                });
+            } catch (e) {
+                console.log('privacy_screen(server): error calling sendAgentCommand', e);
+            }
+        };
+
+        obj.server_startup = function () {
+            console.log('privacy_screen plugin: server_startup');
         };
     }
 
