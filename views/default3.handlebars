@@ -9334,17 +9334,22 @@
         function desktopPrivacyToggle() {
             desktopPrivacyOn = !desktopPrivacyOn;
 
-            if (typeof pluginHandler !== 'undefined' &&
-                    pluginHandler.privacy_screen &&
-                    typeof pluginHandler.privacy_screen.sendPrivacyCommand === 'function') {
-
-                pluginHandler.privacy_screen.sendPrivacyCommand({
-                    nodeid: currentNode._id,
-                    on: desktopPrivacyOn
-                });
-            } else {
-                console.log('privacy_screen: pluginHandler.privacy_screen not ready');
+            if (!currentNode || !currentNode._id) {
+                console.log('privacy_screen: currentNode is undefined');
+                return;
             }
+
+            if (typeof pluginHandler === 'undefined' ||
+                    !pluginHandler.privacy_screen ||
+                    typeof pluginHandler.privacy_screen.sendPrivacyCommand !== 'function') {
+                console.log('privacy_screen: pluginHandler.privacy_screen.sendPrivacyCommand not available');
+                return;
+            }
+
+            pluginHandler.privacy_screen.sendPrivacyCommand({
+                nodeid: currentNode._id,
+                on: desktopPrivacyOn
+            });
         }
 
         function deskClipboardOutFunction() {
