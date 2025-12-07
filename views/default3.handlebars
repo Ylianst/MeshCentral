@@ -9344,13 +9344,15 @@
                 on: desktopPrivacyOn
             };
 
-            if (pluginHandler &&
-                    pluginHandler.privacy_screen &&
-                    typeof pluginHandler.privacy_screen.sendPrivacyCommand === 'function') {
-
-                pluginHandler.privacy_screen.sendPrivacyCommand(args);
+            if (typeof meshserver !== 'undefined') {
+                meshserver.send({
+                    action: 'plugin',
+                    plugin: 'privacy_screen',
+                    pluginaction: 'sendPrivacyCommand',
+                    args: args
+                });
             } else {
-                console.log('privacy_screen: pluginHandler.privacy_screen not ready', args);
+                console.log('privacy_screen: meshserver not available in UI', args);
             }
         }
 

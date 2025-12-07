@@ -8421,6 +8421,7 @@
             setDialogMode(2, "Remote Input Lock", 3, function() { try { desktop.m.SendRemoteInputLock(value); } catch (ex) {} }, (value == 1)?"Lock remote user's mouse and keyboard?":"Unlock remote user's mouse and keyboard?");
         }
 
+
         function desktopPrivacyToggle() {
             desktopPrivacyOn = !desktopPrivacyOn;
 
@@ -8434,16 +8435,19 @@
                 on: desktopPrivacyOn
             };
 
-            if (pluginHandler &&
-                    pluginHandler.privacy_screen &&
-                    typeof pluginHandler.privacy_screen.sendPrivacyCommand === 'function') {
-
-                pluginHandler.privacy_screen.sendPrivacyCommand(args);
+            // напряму викликаємо plugin на сервері
+            if (typeof meshserver !== 'undefined') {
+                meshserver.send({
+                    action: 'plugin',
+                    plugin: 'privacy_screen',
+                    pluginaction: 'sendPrivacyCommand',
+                    args: args
+                });
             } else {
-                console.log('privacy_screen: pluginHandler.privacy_screen not ready', args);
+                console.log('privacy_screen: meshserver not available in UI', args);
             }
         }
-
+        
         function deskClipboardOutFunction() {
             if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                 try {
