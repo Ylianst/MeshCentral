@@ -1,27 +1,16 @@
-module.exports = function (parent) {
+// meshcentral-data/plugins/privacy_screen/privacy_screen.js
+
+module.exports.privacy_screen = function (parent) {
     var obj = {};
     obj.parent = parent;
     obj.meshServer = parent;
 
-    obj.exports = ['sendPrivacyCommand'];
+    // Експорти, які підуть у браузер (pluginHandler.privacy_screen.*)
+    obj.exports = [];
 
+    // Лог при старті сервера — чисто для перевірки
     obj.server_startup = function () {
-        console.log('=== Privacy Screen plugin: server_startup ===');
-    };
-
-    obj.sendPrivacyCommand = function (args, rights, session, user) {
-        if (!args || !args.nodeid) return;
-
-        var nodeid = args.nodeid;
-        var state = args.on ? 1 : 0;
-
-        parent.sendAgentCommand(nodeid, { type: 'privacyscreen', state: state });
-    };
-
-    obj.hook_processAgentData = function (node, info, data) {
-        if (data && data._plugin == 'privacy_screen') {
-            console.log('Privacy Screen plugin got data from agent:', node._id);
-        }
+        console.log('privacy_screen plugin: server_startup');
     };
 
     return obj;
