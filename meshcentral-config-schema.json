@@ -4014,6 +4014,32 @@
           "default": false,
           "description": "If you choose \"true\", MeshCentral won't verify if \"email\" is valid, has a valid MX record, AND if \"names\" doesn't contain a wildcard, can be resolved by DNS A/AAAA record."
         },
+        "custom": {
+          "type": "object",
+          "description": "If this object is set, we will use a custom acme server with custom kid and hmackey for SSL creation instead of Let's Encrypt",
+          "required": [ 
+            "server",
+            "kid",
+            "hmackey"
+          ],
+          "properties": {
+            "server": {
+              "type": "string",
+              "description": "ACME server URL e.g. https://acme.zerossl.com/v2/DV90",
+              "default": ""
+            },
+            "kid": {
+              "type": "string",
+              "description": "EAB KID",
+              "default": ""
+            },
+            "hmackey": {
+              "type": "string",
+              "description": "EAB HMAC KEY",
+              "default": ""
+            }
+          }
+        },
         "zerossl": {
           "type": "object",
           "description": "If this object is set, we will use ZeroSSL for SSL creation instead of Let's Encrypt",
