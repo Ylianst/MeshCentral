@@ -612,6 +612,12 @@
     "names": "myserver.com,customer1.myserver.com",
     "skipChallengeVerification": false,
     "production": false,
+    "rsaKeySize": 2048,
+    "custom": {
+      "server": "https://acme.zerossl.com/v2/DV90",
+      "kid": "a1b2c3d4e5",
+      "hmacKey": "a1b2c3d4e5"
+    },
     "zerossl": {
       "kid": "a1b2c3d4e5",
       "hmacKey": "a1b2c3d4e5"

@@ -4499,15 +4499,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const nodeid = fields.attrib[0];
             obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                for (var i in files.files) {
-                    var file = files.files[i];
+                files.files.forEach(function (file) {
                     obj.fs.readFile(file.path, 'utf8', function (err, data) {
                         if (err != null) return;
                         data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                         obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
                         try { obj.fs.unlinkSync(file.path); } catch (e) { }
                     });
-                }
+                });
                 res.send('');
             });
         });
@@ -4542,14 +4541,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const nodeid = fields.attrib[0];
             obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                for (var i in files.files) {
-                    var file = files.files[i];
-
+                files.files.forEach(function (file) {
                     // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
                     parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
 
                     //try { obj.fs.unlinkSync(file.path); } catch (e) { } // TODO: Remove this file after 30 minutes.
-                }
+                });
                 res.send('');
             });
         });
@@ -4617,8 +4614,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 } else {
                     // More typical upload method, the file data is in a multipart mime post.
-                    for (var i in files.files) {
-                        var file = files.files[i], fpath = obj.path.join(xfile.fullpath, file.originalFilename);
+                    files.files.forEach(function (file) {
+                        var fpath = obj.path.join(xfile.fullpath, file.originalFilename);
                         if (obj.common.IsFilenameValid(file.originalFilename) && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
 
                             // See if we need to create the folder
@@ -4646,7 +4643,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
                             try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
                         }
-                    }
+                    });
                 }
             } else {
                 // Send a notification
@@ -4698,8 +4695,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             try { obj.fs.mkdirSync(serverpath); } catch (ex) { }
 
             // More typical upload method, the file data is in a multipart mime post.
-            for (var i in files.files) {
-                var file = files.files[i], ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
+            files.files.forEach(function (file) {
+                var ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
                 cmd.files.push({ name: file.originalFilename, target: ftarget });
                 // Rename the file
                 obj.fs.rename(file.path, fpath, function (err) {
@@ -4708,7 +4705,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { }); });
                     }
                 });
-            }
+            });
 
             // Instruct one of more agents to download a URL to a given local drive location.
             var tlsCertHash = null;

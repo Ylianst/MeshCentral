@@ -46,7 +46,8 @@ If applicable, add screenshots to help explain your problem.
 **Additional context**
 Add any other context about the problem here.
 
-**Your config.json file**
+**Your sanitized config.json file**  
+Please sanitize your configuration (remove private or irrelevant values) before posting, using the community tool at https://sanitizer.meshcentraltools.com/
 ```
 {
   "$schema": "https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json",
