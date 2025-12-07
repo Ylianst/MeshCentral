@@ -9331,29 +9331,19 @@
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { try { desktop.m.SendRemoteInputLock(value); } catch (ex) { } });
         }
 
-
         function desktopPrivacyToggle() {
             desktopPrivacyOn = !desktopPrivacyOn;
 
-            if (!currentNode || !currentNode._id) {
-                console.log('privacy_screen: currentNode undefined');
-                return;
-            }
+            if (typeof pluginHandler !== 'undefined' &&
+                    pluginHandler.privacy_screen &&
+                    typeof pluginHandler.privacy_screen.sendPrivacyCommand === 'function') {
 
-            var args = {
-                nodeid: currentNode._id,
-                on: desktopPrivacyOn
-            };
-
-            if (typeof meshserver !== 'undefined') {
-                meshserver.send({
-                    action: 'plugin',
-                    plugin: 'privacy_screen',
-                    pluginaction: 'sendPrivacyCommand',
-                    args: args
+                pluginHandler.privacy_screen.sendPrivacyCommand({
+                    nodeid: currentNode._id,
+                    on: desktopPrivacyOn
                 });
             } else {
-                console.log('privacy_screen: meshserver not available in UI', args);
+                console.log('privacy_screen: pluginHandler.privacy_screen not ready');
             }
         }
 

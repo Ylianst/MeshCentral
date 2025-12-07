@@ -2,35 +2,24 @@
 
 module.exports.privacy_screen = function (parent) {
     var obj = {};
-    obj.parent = parent; // pluginHandler
+    obj.parent = parent;         // це pluginHandler
+    obj.exports = ['sendPrivacyCommand'];
 
-    //
-    // Викликається MeshCentral-ом при { action: 'plugin', plugin: 'privacy_screen', ... }
-    //
-    // createMeshUser робить:
-    //   pluginHandler.plugins[command.plugin].serveraction(command, obj, parent);
-    //
-    // де:
-    //   command – це те, що прилетіло з браузера (action, plugin, pluginaction, args)
-    //   obj     – об'єкт юзерської сесії / ws-обгортка
-    //   parent  – "верхній" об'єкт (webserver/meshserver)
-    //
-    obj.serveraction = function (command, wsObj, parentFromUser) {
-        try {
-            if (command.pluginaction === 'sendPrivacyCommand') {
-                obj.sendPrivacyCommand(command.args, parentFromUser);
-            } else {
-                console.log('privacy_screen(serveraction): unknown pluginaction =', command.pluginaction);
-            }
-        } catch (e) {
-            console.log('privacy_screen(serveraction) error:', e);
-        }
+    obj.server_startup = function () {
+        console.log('privacy_screen plugin: server_startup');
     };
 
-    //
-    // Реальна логіка: надіслати команду на агент
-    //
-    obj.sendPrivacyCommand = function (args, rootParent) {
+    /**
+     * Викликається на СЕРВЕРІ, коли в браузері:
+     * pluginHandler.privacy_screen.sendPrivacyCommand({ nodeid, on })
+     *
+     * @param {object} args      - { nodeid: 'node//...', on: true/false }
+     * @param {number} rights
+     * @param {object} session
+     * @param {object} user
+     * @param {object} rootParent - головний об’єкт MeshCentral (з webserver, msgserver і т.д.)
+     */
+    obj.sendPrivacyCommand = function (args, rights, session, user, rootParent) {
         if (!args || !args.nodeid) return;
 
         var nodeid = args.nodeid;
@@ -38,60 +27,39 @@ module.exports.privacy_screen = function (parent) {
 
         console.log('privacy_screen (server.sendPrivacyCommand)', nodeid, state);
 
-        // Пошук sendAgentCommand, стартуючи з rootParent (третій аргумент serveraction)
-        var sendAgentCommand = findSendAgentCommand(rootParent);
-        if (!sendAgentCommand) {
-            // fallback – спробувати з самого pluginHandler, про всяк випадок
-            sendAgentCommand = findSendAgentCommand(obj.parent);
-        }
-
-        if (!sendAgentCommand) {
-            console.log('privacy_screen(server): sendAgentCommand not found in parent chain (rootParent + pluginHandler)');
+        // rootParent тобі вже приходив (ти друкував його keys у логах)
+        var server = rootParent || (obj.parent && obj.parent.parent);
+        if (!server || !server.webserver) {
+            console.log('privacy_screen(server): server or webserver not available');
             return;
         }
 
+        var web = server.webserver;
+        var wsagents = web.wsagents;
+        if (!wsagents) {
+            console.log('privacy_screen(server): webserver.wsagents not available');
+            return;
+        }
+
+        var agent = wsagents[nodeid];
+        if (!agent) {
+            console.log('privacy_screen(server): agent not connected for nodeid', nodeid);
+            return;
+        }
+
+        var msg = {
+            action: 'msg',          // важливо: так це попаде в handleServerCommand у meshcore
+            type: 'privacyscreen',  // наш тип, на який дивиться privacyScreenCommandHandler
+            state: state,
+            on: !!args.on
+        };
+
         try {
-            sendAgentCommand(nodeid, {
-                type: 'privacyscreen',
-                state: state
-            });
+            agent.send(JSON.stringify(msg));
+            console.log('privacy_screen(server): command sent', msg);
         } catch (e) {
-            console.log('privacy_screen(server): error calling sendAgentCommand', e);
+            console.log('privacy_screen(server): ws.send error', e);
         }
-    };
-
-    function findSendAgentCommand(start) {
-        var p = start;
-        var depth = 0;
-
-        while (p && depth < 6) {
-            try {
-                // Для дебагу подивимось, що це за об'єкт
-                try {
-                    console.log('privacy_screen(server): depth', depth, 'keys:', Object.keys(p));
-                } catch (e) { }
-
-                if (typeof p.sendAgentCommand === 'function') {
-                    console.log('privacy_screen(server): using p.sendAgentCommand at depth', depth);
-                    return p.sendAgentCommand.bind(p);
-                }
-                if (p.webserver && typeof p.webserver.sendAgentCommand === 'function') {
-                    console.log('privacy_screen(server): using p.webserver.sendAgentCommand at depth', depth);
-                    return p.webserver.sendAgentCommand.bind(p.webserver);
-                }
-            } catch (e) {
-                console.log('privacy_screen(server): error scanning at depth', depth, e);
-            }
-
-            p = p.parent;
-            depth++;
-        }
-
-        return null;
-    }
-
-    obj.server_startup = function () {
-        console.log('privacy_screen plugin: server_startup');
     };
 
     return obj;

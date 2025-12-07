@@ -1,15 +1,14 @@
 // meshcentral-data/plugins/privacy_screen/modules_meshcore/privacy_screen.js
-
 if (typeof _plugin_privacy_screen === 'undefined') {
     _plugin_privacy_screen = true;
 
-    try { sendConsoleText('privacy_screen meshcore module loaded\n'); } catch (e) { }
+    try { sendConsoleText('privacy_screen: meshcore module loaded\n'); } catch (e) { }
 
     function enablePrivacy() {
-        // TODO: реальний код гасіння локального екрану
-        // наприклад: запустити privacy-screen.exe on
-        try { sendConsoleText('Privacy screen ENABLED\n'); } catch (e) { }
+        try { sendConsoleText('privacy_screen: ENABLE\n'); } catch (e) { }
 
+        // TODO: тут твій реальний код гасіння локального екрану
+        // напр. запуск зовнішнього EXE:
         /*
         try {
             var child = require('child_process').execFile(
@@ -25,10 +24,9 @@ if (typeof _plugin_privacy_screen === 'undefined') {
     }
 
     function disablePrivacy() {
-        // TODO: реальний код повернення екрану
-        // наприклад: privacy-screen.exe off
-        try { sendConsoleText('Privacy screen DISABLED\n'); } catch (e) { }
+        try { sendConsoleText('privacy_screen: DISABLE\n'); } catch (e) { }
 
+        // TODO: повернути екран:
         /*
         try {
             var child = require('child_process').execFile(
@@ -43,15 +41,12 @@ if (typeof _plugin_privacy_screen === 'undefined') {
         */
     }
 
-    // handler for server commands
+    // Цей хендлер викликається для КОЖНОГО повідомлення від сервера
     function privacyScreenCommandHandler(data) {
         try {
-            // Нас цікавлять лише наші пакети
             if (!data || data.type !== 'privacyscreen') return;
 
-            // state: 1 = on, 0 = off
             var on = (data.state === 1 || data.on === true);
-
             if (on) {
                 enablePrivacy();
             } else {
@@ -62,11 +57,8 @@ if (typeof _plugin_privacy_screen === 'undefined') {
         }
     }
 
-    // Register our handler in MeshAgent
+    // Реєструємо хендлер у MeshAgent
     try {
-        // В meshcore.js вже є global `mesh = require("MeshAgent")`
-        // та використовується mesh.AddCommandHandler(handleServerCommand)
-        // — ми просто додаємо ще один handler.
         if (typeof mesh !== 'undefined' && typeof mesh.AddCommandHandler === 'function') {
             mesh.AddCommandHandler(privacyScreenCommandHandler);
             try { sendConsoleText('privacy_screen: command handler registered\n'); } catch (e) { }
