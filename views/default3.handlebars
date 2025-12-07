@@ -9334,21 +9334,23 @@
         function desktopPrivacyToggle() {
             desktopPrivacyOn = !desktopPrivacyOn;
 
-            var btn = document.getElementById('DeskPrivacyBtn');
-            if (btn) {
-                if (desktopPrivacyOn) {
-                    btn.classList.add('DeskButtonActive');
-                } else {
-                    btn.classList.remove('DeskButtonActive');
-                }
+            if (!currentNode || !currentNode._id) {
+                console.log('privacy_screen: currentNode undefined');
+                return;
             }
 
-            if (currentNode && currentNode._id) {
-                meshserver.send({
-                    action: 'privacyScreen',
-                    nodeid: currentNode._id,
-                    on: desktopPrivacyOn
-                });
+            var args = {
+                nodeid: currentNode._id,
+                on: desktopPrivacyOn
+            };
+
+            if (pluginHandler &&
+                    pluginHandler.privacy_screen &&
+                    typeof pluginHandler.privacy_screen.sendPrivacyCommand === 'function') {
+
+                pluginHandler.privacy_screen.sendPrivacyCommand(args);
+            } else {
+                console.log('privacy_screen: pluginHandler.privacy_screen not ready', args);
             }
         }
 
