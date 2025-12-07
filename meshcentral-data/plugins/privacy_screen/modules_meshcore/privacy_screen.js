@@ -1,3 +1,4 @@
+// meshcentral-data/plugins/privacy_screen/modules_meshcore/privacy_screen.js
 
 if (typeof _plugin_privacy_screen === 'undefined') {
     _plugin_privacy_screen = true;

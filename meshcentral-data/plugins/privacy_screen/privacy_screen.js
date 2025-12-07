@@ -13,7 +13,7 @@ module.exports.privacy_screen = function (parent) {
 
     if (isNode) {
         //
-        // ********* BACKEND / SERVER-SIDE РЕАЛІЗАЦІЯ *********
+        // ********* BACKEND / SERVER-SIDE *********
         //
         obj.sendPrivacyCommand = function (args, rights, session, user) {
             if (!args || !args.nodeid) return;
@@ -23,16 +23,29 @@ module.exports.privacy_screen = function (parent) {
 
             console.log('privacy_screen (server) sendPrivacyCommand', nodeid, state);
 
-            // На бекенді parent = pluginHandler, а meshServer = parent.parent
+            // parent = pluginHandler, parent.parent = meshServer
             var meshServer = obj.parent && obj.parent.parent;
+            var webserver = meshServer && meshServer.webserver;
 
-            if (meshServer && typeof meshServer.sendAgentCommand === 'function') {
+            if (webserver && typeof webserver.sendAgentCommand === 'function') {
+                webserver.sendAgentCommand(nodeid, {
+                    type: 'privacyscreen',
+                    state: state
+                });
+            } else if (meshServer && typeof meshServer.sendAgentCommand === 'function') {
+                // запасний варіант, якщо твоя версія все ж має цей метод на meshServer
                 meshServer.sendAgentCommand(nodeid, {
                     type: 'privacyscreen',
                     state: state
                 });
             } else {
-                console.log('privacy_screen: meshServer.sendAgentCommand not available');
+                // Лог для дебагу, якщо API відрізняється
+                try {
+                    console.log('privacy_screen: sendAgentCommand not available, meshServer keys:',
+                        meshServer ? Object.keys(meshServer) : 'no meshServer');
+                } catch (e) {
+                    console.log('privacy_screen: sendAgentCommand not available, error inspecting meshServer:', e);
+                }
             }
         };
 
@@ -42,10 +55,8 @@ module.exports.privacy_screen = function (parent) {
 
     } else {
         //
-        // ********* WEB UI / BROWSER РЕАЛІЗАЦІЯ *********
+        // ********* WEB UI / BROWSER *********
         //
-        // Ця функція викликається в браузері, але сама нічого на агент не шле,
-        // а просто пробиває RPC на сервер (action: 'plugin').
         obj.sendPrivacyCommand = function (args) {
             try {
                 if (typeof meshserver !== 'undefined') {
