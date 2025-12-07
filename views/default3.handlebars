@@ -9339,17 +9339,21 @@
                 return;
             }
 
-            if (typeof pluginHandler === 'undefined' ||
-                    !pluginHandler.privacy_screen ||
-                    typeof pluginHandler.privacy_screen.sendPrivacyCommand !== 'function') {
-                console.log('privacy_screen: pluginHandler.privacy_screen.sendPrivacyCommand not available');
+            if (typeof meshserver === 'undefined') {
+                console.log('privacy_screen: meshserver not available on UI');
                 return;
             }
 
-            pluginHandler.privacy_screen.sendPrivacyCommand({
-                nodeid: currentNode._id,
-                on: desktopPrivacyOn
+            // Надсилаємо ПРЯМО plugin-action на сервер
+            meshserver.send({
+                action:       'plugin',
+                plugin:       'privacy_screen',
+                pluginaction: 'sendPrivacyCommand',
+                nodeid:       currentNode._id,
+                on:           desktopPrivacyOn
             });
+
+            // тут можеш ще зробити візуальний toggle для кнопки
         }
 
         function deskClipboardOutFunction() {

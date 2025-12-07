@@ -2,102 +2,84 @@
 
 module.exports.privacy_screen = function (parent) {
     var obj = {};
+    obj.parent = parent;        // <- це pluginHandler на сервері
+    obj.exports = [];           // НІЧОГО не експортуємо в UI, працюємо тільки через action:"plugin"
 
-    // Визначаємо, де ми: в браузері чи на сервері
-    var isBrowser = (typeof window !== 'undefined' && typeof window.document !== 'undefined');
-
-    if (isBrowser) {
-        // ************ WEB UI / БРАУЗЕР ************
-        // Тут parent – це browser-side pluginHandler
-        obj.parent = parent;
-        obj.exports = ['sendPrivacyCommand']; // можна, але не критично
-
-        // Цю функцію будемо викликати з кнопки в UI:
-        // pluginHandler.privacy_screen.sendPrivacyCommand({ nodeid, on })
-        obj.sendPrivacyCommand = function (args) {
-            try {
-                if (typeof meshserver !== 'undefined') {
-                    meshserver.send({
-                        action: 'plugin',
-                        plugin: 'privacy_screen',
-                        pluginaction: 'sendPrivacyCommand',
-                        args: args
-                    });
-                } else {
-                    console.log('privacy_screen(UI): meshserver is not defined', args);
-                }
-            } catch (e) {
-                console.log('privacy_screen(UI): error in sendPrivacyCommand', e);
-            }
-        };
-
-        return obj;
-    }
-
-    // ************ SERVER / NODE.JS ************
-    obj.parent = parent;              // server-side pluginHandler
-    obj.exports = ['sendPrivacyCommand']; // просто для сумісності
-
+    //
+    // Викликається, коли сервер стартує (або плагін активується)
+    //
     obj.server_startup = function () {
         console.log('privacy_screen plugin: server_startup');
     };
 
-    /**
-     * Викликається MeshCentral, коли з браузера приходить:
-     * { action:'plugin', plugin:'privacy_screen', pluginaction:'sendPrivacyCommand', args: {...} }
-     *
-     * Сигнатура з боку MeshCentral:
-     *   plugin.serveraction(command, ws, webserver)
-     */
-    obj.serveraction = function (command, ws, webserver) {
+    //
+    // Викликається MeshCentral-ом при action: "plugin"
+    // Реальна сигнатура з боку серверу виглядає приблизно так:
+    //
+    //   plugin.serveraction(command, ws, req, user, domain, rights, session)
+    //
+    // Нам реально потрібен тільки `command` і доступ до obj.parent.parent (meshServer)
+    //
+    obj.serveraction = function (command /*, ws, req, user, domain, rights, session */) {
         try {
+            // Переконуємось, що це наш плагін
             if (!command || command.plugin !== 'privacy_screen') return;
 
             if (command.pluginaction === 'sendPrivacyCommand') {
-                obj.sendPrivacyCommand(command.args, webserver);
+                sendPrivacyCommand(command);
             } else {
-                console.log('privacy_screen(server): unknown pluginaction', command.pluginaction);
+                console.log('privacy_screen(serveraction): unknown pluginaction', command.pluginaction);
             }
         } catch (e) {
-            console.log('privacy_screen(server): error in serveraction', e);
+            console.log('privacy_screen(serveraction) error:', e);
         }
     };
 
-    // Реальна логіка "сервер -> агент"
-    obj.sendPrivacyCommand = function (args, webserver) {
-        if (!args || !args.nodeid) return;
-
-        var nodeid = args.nodeid;
-        var state = args.on ? 1 : 0;
-
-        console.log('privacy_screen (server.sendPrivacyCommand)', nodeid, state);
-
-        if (!webserver || !webserver.wsagents) {
-            console.log('privacy_screen(server): webserver or webserver.wsagents not available');
+    //
+    // Власне логіка: знайти агента і послати йому msg:type='privacyscreen'
+    //
+    function sendPrivacyCommand(command) {
+        var nodeid = command.nodeid || (command.args && command.args.nodeid);
+        var on = command.on;
+        if (!nodeid) {
+            console.log('privacy_screen(server): no nodeid in command');
             return;
         }
 
-        // wsagents: NodeId --> Agent (у твоєму webserver.js так і підписано)
+        var state = on ? 1 : 0;
+        console.log('privacy_screen (server.sendPrivacyCommand)', nodeid, state);
+
+        // Піднімаємось вгору:
+        // obj.parent -> pluginHandler
+        // obj.parent.parent -> meshServer
+        var meshServer = obj.parent && obj.parent.parent;
+        if (!meshServer || !meshServer.webserver || !meshServer.webserver.wsagents) {
+            console.log('privacy_screen(server): meshServer.webserver.wsagents not available');
+            return;
+        }
+
+        var webserver = meshServer.webserver;
         var agent = webserver.wsagents[nodeid];
+
         if (!agent) {
-            console.log('privacy_screen(server): no agent in wsagents for nodeid', nodeid);
+            console.log('privacy_screen(server): agent not connected for nodeid', nodeid);
             return;
         }
 
         var msg = {
-            action: 'msg',
-            type: 'privacyscreen',
+            action: 'msg',          // це ловить meshcore case 'msg'
+            type: 'privacyscreen',  // наш тип, який перевіряє modules_meshcore/privacy_screen.js
             state: state,
-            on: !!args.on
+            on: !!on
         };
 
         try {
             agent.send(JSON.stringify(msg));
             console.log('privacy_screen(server): command sent to agent', nodeid, msg);
         } catch (e) {
-            console.log('privacy_screen(server): ws send error', e);
+            console.log('privacy_screen(server): ws.send error', e);
         }
-    };
+    }
 
     return obj;
 };
