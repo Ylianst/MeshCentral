@@ -78,16 +78,17 @@ ENV NODE_ENV="production" \
 ENV ALLOW_PLUGINS="false" \
     ALLOW_NEW_ACCOUNTS="false" \
     ALLOWED_ORIGIN="false" \
+    HOSTNAME="localhost" \
+    INSTALL_STYLISHUI="false" \
+    INSTALL_STYLISHUI_MAIN_BRANCH="false" \
     IFRAME="false" \
-    REGEN_SESSIONKEY="false" \
-    WEBRTC="false" \
     LOCAL_SESSION_RECORDING="true" \
     MINIFY="true" \
-    HOSTNAME="localhost" \
     REVERSE_PROXY="" \
     REVERSE_PROXY_TLS_PORT="443" \
+    REGEN_SESSIONKEY="false" \
+    WEBRTC="false" \
     TRUSTED_PROXY="" \
-    INSTALL_STYLISHUI="false" \
     ARGS=""
 
 # Database
@@ -209,4 +210,4 @@ VOLUME /opt/meshcentral/meshcentral-backups
 COPY ./docker/entrypoint.sh  /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
-ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
+ENTRYPOINT  ["/bin/bash", "/opt/meshcentral/entrypoint.sh"]

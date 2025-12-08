@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Origin: https://github.com/Melo-Professional/MeshCentral-Stylish-UI
-stylishui_version="3.2.0"
-stylishui_url="https://github.com/Melo-Professional/MeshCentral-Stylish-UI/archive/refs/tags/${stylishui_version}.tar.gz"
+stylishui_base_url="https://github.com/Melo-Professional/MeshCentral-Stylish-UI/archive/refs"
+stylishui_compat="https://raw.githubusercontent.com/Melo-Professional/MeshCentral-Stylish-UI/refs/heads/main/metadata/compat.json"
 
-graceful_shutdown() {
+function graceful_shutdown() {
     echo "Received SIGTERM from the container host. Cleaning up..."
     kill -SIGINT $meshcentral_pid
 
@@ -13,33 +13,18 @@ graceful_shutdown() {
 }
 trap graceful_shutdown SIGTERM
 
-### Start MeshCentral Docker Container.
-
-# Make the start more cleared when restarted.
-echo "-------------------------------------------------------------"
-date
-if [ -n "$CONFIG_FILE" ]; then
-    echo "Config file: $CONFIG_FILE"
-else
-    exit 1
-fi
-
-# Failsafe to create a new config if the expected config is not there.
-if [ -f "${CONFIG_FILE}" ]; then
-    echo "Pre-existing config found, not recreating..."
-else
-    if [ ! -d $(dirname "$CONFIG_FILE") ]; then
-        echo "Creating meshcentral-data directory..."
-        mkdir -p /opt/meshcentral/meshcentral-data
+function test_url() {
+    wget --spider $1 &> /dev/null
+    if [[ $? -eq 0 ]]; then
+        echo "is ok."
+        return 0
+    else
+        echo "is NOT ok."
+        return 1
     fi
+}
 
-    echo "Placing template into the relevant directory: $(dirname $CONFIG_FILE)"
-    cp /opt/meshcentral/config.json.template "${CONFIG_FILE}"
-fi
-
-if [[ ${DYNAMIC_CONFIG,,} =~ ^(true|yes)$ ]]; then
-    echo "Using Dynamic Configuration values..."
-
+function dynamic_config() {
     # BEGIN DATABASE CONFIGURATION FIELDS
     USE_MONGODB=${USE_MONGODB,,}
     if [[ $USE_MONGODB =~ ^(true|yes)$ ]]; then
@@ -273,29 +258,102 @@ if [[ ${DYNAMIC_CONFIG,,} =~ ^(true|yes)$ ]]; then
     fi
 
     cat "$CONFIG_FILE"
+}
+
+function install_stylishui() {
+    # Start by testing if we can determine compatibility
+    printf "Testing compatibility schema URL..."
+    if ! test_url $stylishui_compat; then
+        echo "Compat URL failed."
+        return 1
+    fi
+
+    if [[ ${INSTALL_STYLISHUI_MAIN_BRANCH,,} =~ ^(true|yes)$ ]]; then
+        echo "Overriding to main branch..."
+        full_url="${stylishui_base_url}/heads/main.tar.gz"
+    else
+        # Retrieve the values we need to determine compatibility
+        compat_data=$(curl -fsSL $stylishui_compat)
+        meshcentral_version=$(jq -r '.version' /opt/meshcentral/meshcentral/package.json)
+        # Target the StylishUI version we need for our present Meshcentral version
+        compat_version=$(echo "$compat_data" | jq -r --arg mcv "$meshcentral_version" \
+            '.compatibility[] | select(.meshcentral==$mcv) | .stylishui')
+        echo "Data: MeshCentral: $meshcentral_version, matched StylishUI: $compat_version"
+
+        # From the data gathered above, compile the whole URL.
+        full_url="${stylishui_base_url}/tags/${compat_version}.tar.gz"
+    fi
+
+    # Test if we can reach the data/content URL on github
+    printf "Testing content URL..."
+    if ! test_url $full_url; then
+        echo "StylishUI URL failed."
+        return 1
+    fi
+
+    # Lets download and install the UI
+    wget -O /tmp/stylishui.tar.gz $full_url > /dev/null
+    tar -xzf /tmp/stylishui.tar.gz -C /tmp
+    web_folder=$(find /tmp -name meshcentral-web)
+
+    # Check if we have some integrity
+    if [[ -z $web_folder ]]; then
+        echo "Installation failed, cleaning..."
+        rm /tmp/stylishui*
+        return 1
+    fi
+
+    # Looks good!
+    echo Found extracted contents at: $web_folder
+    mv ${web_folder}/* /opt/meshcentral/meshcentral-web
+
+    return 0
+}
+
+### Start MeshCentral Docker Container.
+
+### BEGIN MAIN CHAIN
+
+# Make the start more cleared when restarted.
+echo "-------------------------------------------------------------"
+date
+if [ -n "$CONFIG_FILE" ]; then
+    echo "Config file: $CONFIG_FILE"
+else
+    exit 1
+fi
+
+# Failsafe to create a new config if the expected config is not there.
+if [ -f "${CONFIG_FILE}" ]; then
+    echo "Pre-existing config found, not recreating..."
+else
+    if [ ! -d $(dirname "$CONFIG_FILE") ]; then
+        echo "Creating meshcentral-data directory..."
+        mkdir -p /opt/meshcentral/meshcentral-data
+    fi
+
+    echo "Placing template into the relevant directory: $(dirname $CONFIG_FILE)"
+    cp /opt/meshcentral/config.json.template "${CONFIG_FILE}"
+fi
+
+if [[ ${DYNAMIC_CONFIG,,} =~ ^(true|yes)$ ]]; then
+    echo "-------------------------------------------------------------"
+    echo "Using Dynamic Configuration values..."
+    dynamic_config
+    echo "-------------------------------------------------------------"
 else
     echo "Leaving config as-is. Dynamic Configuration is off."
 fi
 
-if [[ $INSTALL_STYLISHUI == "true" ]]; then
+if [[ ${INSTALL_STYLISHUI,,} =~ ^(true|yes)$ ]]; then
+    echo "-------------------------------------------------------------"
     echo "Reached StylishUI install trigger, installing..."
-
-    printf "Testing URL..."
-    wget --spider $stylishui_url &> /dev/null
-    if [[ $? -eq 0 ]]; then
-        echo "URL is ok."
-
-        wget -O /tmp/stylishui.tar.gz $stylishui_url
-        tar -xzf /tmp/stylishui.tar.gz -C /tmp
-
-        web_folder=$(find /tmp -name meshcentral-web)
-        echo Found extracted contents at: $web_folder
-        mv ${web_folder}/* /opt/meshcentral/meshcentral-web
-
-        echo "StylishUI has been installed!"
+    if ! install_stylishui; then
+        echo "Something fatal happened in the StylishUI install. Skipping..."
     else
-        echo "URL is not ok, skipping..."
+        echo "StylishUI has been installed!"
     fi
+    echo "-------------------------------------------------------------"
 fi
 
 # Actually start MeshCentral.
@@ -303,3 +361,5 @@ node /opt/meshcentral/meshcentral/meshcentral --configfile "${CONFIG_FILE}" "${A
 meshcentral_pid=$!
 
 wait "$meshcentral_pid"
+
+### END MAIN CHAIN
