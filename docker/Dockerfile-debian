@@ -237,4 +237,4 @@ VOLUME /opt/meshcentral/meshcentral-backups
 COPY ./docker/entrypoint.sh  /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
 
-ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]
+ENTRYPOINT  ["/bin/bash", "/opt/meshcentral/entrypoint.sh"]
