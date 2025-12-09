@@ -268,7 +268,7 @@ function install_stylishui() {
         return 1
     fi
 
-    if [[ ${INSTALL_STYLISHUI_MAIN_BRANCH,,} =~ ^(true|yes)$ ]]; then
+    if [[ ${STYLISHUI_FORCE_LATEST,,} =~ ^(true|yes)$ ]]; then
         echo "Overriding to main branch..."
         full_url="${stylishui_base_url}/heads/main.tar.gz"
     else
@@ -306,6 +306,7 @@ function install_stylishui() {
     # Looks good!
     echo Found extracted contents at: $web_folder
     mv ${web_folder}/* /opt/meshcentral/meshcentral-web
+    rm /tmp/stylishui*
 
     return 0
 }
