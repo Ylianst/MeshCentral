@@ -1385,6 +1385,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'pong': { break; }
                 case 'getScript':
                     {
+                        if (typeof parent.getCiraConfigurationScript !== 'function' || typeof parent.getCiraCleanupScript !== 'function') {
+                            obj.send('Function deprecated.');
+                            break;
+                        }
+
                         // Used by the agent to get configuration scripts.
                         if (command.type == 1) {
                             parent.getCiraConfigurationScript(obj.dbMeshKey, function (script) {
