@@ -3735,6 +3735,37 @@ function CreateMeshCentralServer(config, args) {
                 objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
                 objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
             }
+
+            // For macOS agents, check if app bundle ZIP exists and extract/hash the binary
+            if (obj.meshAgentsArchitectureNumbers[archid].platform == 'osx') {
+                var appBundleZipPath = null;
+
+                // Check for app bundle ZIP in same directory as agent binary
+                var appBundleZipPath1 = agentpath + '-app.zip';
+                if (obj.fs.existsSync(appBundleZipPath1)) {
+                    appBundleZipPath = appBundleZipPath1;
+                } else {
+                    // Fall back to default agents directory
+                    var appBundleZipPath2 = obj.path.join(__dirname, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname + '-app.zip');
+                    if (obj.fs.existsSync(appBundleZipPath2)) {
+                        appBundleZipPath = appBundleZipPath2;
+                    }
+                }
+
+                if (appBundleZipPath != null) {
+                    try {
+                        // Hash the ZIP file itself (not the contents)
+                        const zipData = obj.fs.readFileSync(appBundleZipPath);
+                        const hash = obj.crypto.createHash('sha384').update(zipData);
+                        const hashBinary = hash.digest('binary');
+                        objx.meshAgentBinaries[archid].appBundleHash = hashBinary;
+                        objx.meshAgentBinaries[archid].appBundleHashHex = Buffer.from(hashBinary, 'binary').toString('hex');
+                        objx.meshAgentBinaries[archid].appBundlePath = appBundleZipPath;
+                    } catch (ex) {
+                        console.log('Warning: Failed to hash app bundle ZIP: ' + appBundleZipPath + ', ' + ex.message);
+                    }
+                }
+            }
         }
     };
 

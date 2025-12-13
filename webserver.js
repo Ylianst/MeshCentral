@@ -3225,12 +3225,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Load default page style or new modern ui
                 var uiViewMode = 'default';
                 var webstateJSON = JSON.parse(webstate);
+                // Check in priority order: query param > domain config > saved user preference
                 if (req.query.sitestyle != null) {
                     if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
-                } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
-                    uiViewMode = 'default3';
+                    else if (req.query.sitestyle == 78) { uiViewMode = 'default78'; }
                 } else if (domain.sitestyle == 3) {
                     uiViewMode = 'default3';
+                } else if (domain.sitestyle == 78) {
+                    uiViewMode = 'default78';
+                } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                } else if (webstateJSON && webstateJSON.uiViewMode == 78) {
+                    uiViewMode = 'default78';
                 }
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
@@ -3394,6 +3400,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
         if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
+        if (domain.sitestyle === 78) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 78)
         return { features: features, features2: features2 };
     }
 
@@ -5701,6 +5708,34 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var scriptInfo = obj.parent.meshAgentInstallScripts[6];
             if ((argentInfo == null) || (scriptInfo == null) || (argentInfo.platform == 'win32')) { try { res.sendStatus(404); } catch (ex) { } return; }
 
+            // Check if this is an app bundle request for macOS
+            if ((req.query.appbundle == '1') && (argentInfo.platform == 'osx') && (argentInfo.appBundlePath != null)) {
+                // Serve pre-built app bundle ZIP
+                if (obj.fs.existsSync(argentInfo.appBundlePath)) {
+                    try {
+                        res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent.app.zip"' });
+                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+                        obj.fs.createReadStream(argentInfo.appBundlePath).pipe(res);
+                        return;
+                    } catch (ex) {
+                        parent.debug('web', 'Error serving app bundle: ' + ex);
+                        res.sendStatus(500);
+                        return;
+                    }
+                } else {
+                    parent.debug('web', 'App bundle not found: ' + argentInfo.appBundlePath);
+                    res.sendStatus(404);
+                    return;
+                }
+            }
+
+            // Check if this is a ZIP request (installflags >= 10)
+            var installflags = parseInt(req.query.installflags) || 0;
+            if (installflags >= 10) {
+                // ZIP mode: Create ZIP with clean binary + separate .msh file
+                return createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain);
+            }
+
             // Change the .msh file into JSON format and merge it into the install script
             var tokens, msh = {}, meshsettingslines = meshsettings.split('\r').join('').split('\n');
             for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
@@ -5741,6 +5776,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
                 try { res.sendStatus(404); } catch (ex) { }
                 return;
+            }
+
+            // Check if this is an app bundle request for macOS
+            if ((req.query.appbundle == '1') && (argentInfo.platform == 'osx') && (argentInfo.appBundlePath != null)) {
+                // Serve pre-built app bundle ZIP
+                if (obj.fs.existsSync(argentInfo.appBundlePath)) {
+                    try {
+                        res.set({ 'Cache-Control': 'no-store', 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="MeshAgent.app.zip"' });
+                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+                        obj.fs.createReadStream(argentInfo.appBundlePath).pipe(res);
+                        return;
+                    } catch (ex) {
+                        parent.debug('web', 'Error serving app bundle: ' + ex);
+                        res.sendStatus(500);
+                        return;
+                    }
+                } else {
+                    parent.debug('web', 'App bundle not found: ' + argentInfo.appBundlePath);
+                    res.sendStatus(404);
+                    return;
+                }
             }
 
             if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
@@ -6352,6 +6408,47 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 archive.finalize();
             });
         });
+    }
+
+    // Create a ZIP package with clean macOS binary and separate .msh file (preserves code signature)
+    function createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain) {
+        try {
+            const archiver = require('archiver');
+            const archive = archiver('zip', { zlib: { level: 9 } });
+
+            // Get the agent filename
+            var meshagentFilename = 'meshagent';
+            if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
+                meshagentFilename = domain.agentcustomization.filename;
+            }
+
+            // Set response headers for ZIP download
+            setContentDispositionHeader(res, 'application/zip', meshagentFilename + '.zip', null, 'meshagent.zip');
+            if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+            res.statusCode = 200;
+
+            // Pipe archive to response
+            archive.pipe(res);
+
+            // Add clean binary (no embedded .msh - preserves code signature!)
+            archive.file(argentInfo.path, { name: meshagentFilename });
+
+            // Add separate .msh file with adjusted installflags (convert 10,11,12 back to 0,1,2)
+            var adjustedInstallFlags = installflags - 10;
+            var adjustedMeshSettings = meshsettings.replace(/InstallFlags=\d+/, 'InstallFlags=' + adjustedInstallFlags);
+            if (adjustedMeshSettings.indexOf('InstallFlags=') === -1 && adjustedInstallFlags > 0) {
+                adjustedMeshSettings += 'InstallFlags=' + adjustedInstallFlags + '\r\n';
+            }
+            archive.append(adjustedMeshSettings, { name: meshagentFilename + '.msh' });
+
+            // Finalize the archive
+            archive.finalize();
+
+            parent.debug('web', 'Serving macOS ZIP package: ' + meshagentFilename + '.zip (installflags=' + installflags + ')');
+        } catch (ex) {
+            parent.debug('web', 'Error creating macOS ZIP package: ' + ex);
+            try { res.sendStatus(500); } catch (ex2) { }
+        }
     }
 
     // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.
@@ -9766,56 +9863,53 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (translateFolder != null) {
             obj.renderPages = {};
             obj.renderLanguages = ['en'];
+
             for (var i in parent.config.domains) {
-                if (obj.fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
-                if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) { translateFolder = obj.path.join(__dirname, 'views', 'translations'); }
-                var files = obj.fs.readdirSync(translateFolder);
                 var domain = parent.config.domains[i].id;
                 obj.renderPages[domain] = {};
-                for (var i in files) {
-                    var name = files[i];
-                    if (name.endsWith('.handlebars')) {
-                        name = name.substring(0, name.length - 11);
-                        var xname = name.split('_');
-                        if (xname.length == 2) {
-                            if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                            obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                            if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                        }
-                    }
+
+                // Define scan paths in priority order (later entries override earlier)
+                var scanPaths = [];
+
+                // Priority 1: Default translations (lowest)
+                if (obj.fs.existsSync('views/translations')) {
+                    scanPaths.push({ path: 'views/translations', type: 'default' });
                 }
-                // See if there are any custom rending pages that will override the default ones
+                if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) {
+                    scanPaths.push({ path: obj.path.join(__dirname, 'views', 'translations'), type: 'default' });
+                }
+
+                // Priority 2: Override translations (medium)
                 if ((obj.parent.webViewsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations')))) {
-                    translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations');
-                    var files = obj.fs.readdirSync(translateFolder);
-                    for (var i in files) {
-                        var name = files[i];
-                        if (name.endsWith('.handlebars')) {
-                            name = name.substring(0, name.length - 11);
-                            var xname = name.split('_');
-                            if (xname.length == 2) {
-                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                            }
-                        }
-                    }
+                    scanPaths.push({ path: obj.path.join(obj.parent.webViewsOverridePath, 'translations'), type: 'override' });
                 }
-                // See if there is a custom meshcentral-web-domain folder as that will override the default ones
-                if (obj.fs.existsSync(obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations'))) {
-                    translateFolder = obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations');
-                    var files = obj.fs.readdirSync(translateFolder);
-                    for (var i in files) {
-                        var name = files[i];
-                        if (name.endsWith('.handlebars')) {
-                            name = name.substring(0, name.length - 11);
-                            var xname = name.split('_');
-                            if (xname.length == 2) {
-                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+
+                // Priority 3: Domain-specific translations (highest)
+                var domainTransPath = obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations');
+                if (obj.fs.existsSync(domainTransPath)) {
+                    scanPaths.push({ path: domainTransPath, type: 'domain' });
+                }
+
+                // Scan all paths and build lookup table
+                for (var j = 0; j < scanPaths.length; j++) {
+                    var pathInfo = scanPaths[j];
+                    try {
+                        var files = obj.fs.readdirSync(pathInfo.path);
+                        for (var k = 0; k < files.length; k++) {
+                            var name = files[k];
+                            if (name.endsWith('.handlebars')) {
+                                name = name.substring(0, name.length - 11);
+                                var xname = name.split('_');
+                                if (xname.length == 2) {
+                                    if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
+                                    // Later scans override earlier ones
+                                    obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(pathInfo.path, name);
+                                    if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                                }
                             }
                         }
+                    } catch (ex) {
+                        // Silently ignore errors (e.g., permission denied, missing directories)
                     }
                 }
             }
