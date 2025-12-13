@@ -4003,7 +4003,9 @@
                 QH('MainComputerState', '<span style=font-size:12px>' + powerstate + '</span>');
 
                 // Set the node icon
-                QH('MainComputerImage', '<div class="i' + node.icon + '"></div>');
+                var icon = node.icon;
+                if (((!node.conn) || (node.conn == 0)) && (node.mtype != 3)) { icon += ' gray'; }
+                QH('MainComputerImage', '<div class="i' + icon + '"></div>');
 
                 // Request the power timeline
                 if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) {
