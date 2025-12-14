@@ -5701,6 +5701,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var meshsettings = getMshFromRequest(req, res, domain);
             if (meshsettings == null) { try { res.sendStatus(401); } catch (ex) { } return; }
 
+            // Check if this is a request for .msh file only
+            if (req.query.mshonly == '1') {
+                parent.debug('web', 'Serving .msh configuration file only');
+                setContentDispositionHeader(res, 'text/plain', 'meshagent.msh', null, 'meshagent.msh');
+                res.setHeader('Content-Type', 'text/plain');
+                try { res.send(meshsettings); } catch (ex) { }
+                return;
+            }
+
             // Get the interactive install script, this only works for non-Windows agents
             var agentid = parseInt(req.query.meshinstall);
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
@@ -5750,7 +5759,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 return createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain);
             }
 
-            // Change the .msh file into JSON format and merge it into the install script
+            // For macOS with installflags < 10, serve bare binary without embedding (preserves code signature)
+            if (argentInfo.platform == 'osx') {
+                parent.debug('web', 'Serving bare macOS binary without embedding (installflags=' + installflags + ')');
+                var meshagentFilename = 'meshagent';
+                if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+                setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
+                if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+                if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.send(argentInfo.data); }
+                return;
+            }
+
+            // For non-macOS platforms: Change the .msh file into JSON format and merge it into the install script
             var tokens, msh = {}, meshsettingslines = meshsettings.split('\r').join('').split('\n');
             for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
             var js = scriptInfo.data.replace('var msh = {};', 'var msh = ' + JSON.stringify(msh) + ';');
