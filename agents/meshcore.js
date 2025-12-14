@@ -23,6 +23,15 @@ if (process.platform == 'win32' && require('user-sessions').getDomain == null) {
     };
 }
 
+// Cleanup any leftover meshagent.upgrade launchctl job from failed previous upgrades (macOS only)
+if (process.platform == 'darwin') {
+    try {
+        require('child_process').execFile('/bin/launchctl', ['launchctl', 'remove', 'meshagent.upgrade']);
+    } catch (ex) {
+        // Ignore errors - job may not exist, which is normal
+    }
+}
+
 var promise = require('promise');
 
 // Mesh Rights
@@ -660,7 +669,19 @@ else {
 
 
 // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
+var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent, 128 = App Bundle
+
+// Detect if running in macOS app bundle mode
+var isAppBundle = false;
+var appBundlePath = null;
+if (process.platform == 'darwin' && process.execPath.indexOf('.app/Contents/MacOS/') > -1) {
+    isAppBundle = true;
+    var parts = process.execPath.split('.app/Contents/MacOS/');
+    if (parts.length === 2) {
+        appBundlePath = parts[0] + '.app';
+        meshCoreObj.caps |= 128; // Set bit 7 to indicate app bundle mode
+    }
+}
 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
@@ -4044,7 +4065,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,meshcoreversion,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4693,6 +4714,57 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'versions':
                 response = JSON.stringify(process.versions, null, '  ');
+                break;
+            case 'meshcoreversion':
+                var versionInfo = 'MeshCore Version: ' + meshCoreObj.value + '\n';
+                versionInfo += 'Capabilities: ' + meshCoreObj.caps + ' (';
+                var capsArray = [];
+                if (meshCoreObj.caps & 1) capsArray.push('Desktop');
+                if (meshCoreObj.caps & 2) capsArray.push('Terminal');
+                if (meshCoreObj.caps & 4) capsArray.push('Files');
+                if (meshCoreObj.caps & 8) capsArray.push('Console');
+                if (meshCoreObj.caps & 16) capsArray.push('JavaScript');
+                if (meshCoreObj.caps & 32) capsArray.push('Temporary');
+                if (meshCoreObj.caps & 64) capsArray.push('Recovery');
+                if (meshCoreObj.caps & 128) capsArray.push('App Bundle');
+                versionInfo += capsArray.join(', ') + ')\n';
+                if (require('MeshAgent').coreHash) {
+                    versionInfo += 'Core Hash: ' + require('MeshAgent').coreHash + '\n';
+                }
+                if (process.versions.compileTime) {
+                    versionInfo += 'Compile Time: ' + process.versions.compileTime + '\n';
+                }
+                versionInfo += 'Running as root: ' + (meshCoreObj.root ? 'Yes' : 'No');
+                response = versionInfo;
+                break;
+            case 'meshcoretouch':
+                try {
+                    // Get install directory
+                    var installPath;
+                    if (isAppBundle && appBundlePath) {
+                        // For app bundles, use the parent directory
+                        installPath = appBundlePath.substring(0, appBundlePath.lastIndexOf('/'));
+                    } else {
+                        // For standalone, use the directory containing the binary
+                        installPath = process.execPath.substring(0, process.execPath.lastIndexOf('/'));
+                    }
+
+                    // Create filename with timestamp
+                    var now = new Date();
+                    var timestamp = now.getFullYear() + '-' +
+                                  String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                                  String(now.getDate()).padStart(2, '0') + '_' +
+                                  String(now.getHours()).padStart(2, '0') + '-' +
+                                  String(now.getMinutes()).padStart(2, '0') + '-' +
+                                  String(now.getSeconds()).padStart(2, '0');
+                    var touchFile = installPath + '/meshcore_' + timestamp;
+
+                    // Create the file
+                    require('fs').writeFileSync(touchFile, 'MeshCore touch test at ' + now.toString() + '\n');
+                    response = 'Created: ' + touchFile;
+                } catch(ex) {
+                    response = 'Error: ' + ex.message;
+                }
                 break;
             case 'wpfhwacceleration':
                 if (process.platform != 'win32') { throw ("wpfhwacceleration setting is only supported on Windows"); }
@@ -5818,6 +5890,65 @@ function windows_execve(name, agentfilename, sessionid) {
     libc._wexecve(cmd, args, 0);
 }
 
+function darwin_spawn(command, args) {
+    // Spawn a detached process on macOS using posix_spawn via _GenericMarshal
+    // command: full path to executable
+    // args: array of arguments (without command itself)
+    // Returns: true on success, false on failure
+    try {
+        // Load libSystem which contains posix_spawn
+        var libc = require('_GenericMarshal').CreateNativeProxy('/usr/lib/libSystem.dylib');
+        libc.CreateMethod('posix_spawn');
+        libc.CreateMethod('posix_spawnattr_init');
+        libc.CreateMethod('posix_spawnattr_setflags');
+        libc.CreateMethod('posix_spawnattr_destroy');
+
+        // Prepare path
+        var path = require('_GenericMarshal').CreateVariable(command);
+
+        // Prepare argv array: [command, ...args, NULL]
+        var argarr = [command];
+        if (args && args.length > 0) {
+            argarr = argarr.concat(args);
+        }
+
+        // Allocate argv array (+ 1 for NULL terminator)
+        var argv = require('_GenericMarshal').CreateVariable((argarr.length + 1) * require('_GenericMarshal').PointerSize);
+        var argtmp = [];
+
+        for (var i = 0; i < argarr.length; i++) {
+            var arg = require('_GenericMarshal').CreateVariable(argarr[i]);
+            argtmp.push(arg);
+            arg.pointerBuffer().copy(argv.toBuffer(), i * require('_GenericMarshal').PointerSize);
+        }
+
+        // argv is already NULL-terminated (extra space is zero-initialized)
+
+        // Create spawn attributes to detach the process
+        var attr = require('_GenericMarshal').CreateVariable(128); // posix_spawnattr_t storage
+        libc.posix_spawnattr_init(attr);
+
+        // Set POSIX_SPAWN_SETPGROUP flag to create new process group
+        // This detaches the child from the parent's process group
+        var POSIX_SPAWN_SETPGROUP = 0x0001;
+        libc.posix_spawnattr_setflags(attr, POSIX_SPAWN_SETPGROUP);
+
+        // Prepare pid storage
+        var pid = require('_GenericMarshal').CreateVariable(4); // pid_t is 4 bytes
+
+        // Call posix_spawn(pid, path, NULL, attr, argv, NULL)
+        var result = libc.posix_spawn(pid, path, 0, attr, argv, 0);
+
+        // Clean up attributes
+        libc.posix_spawnattr_destroy(attr);
+
+        return (result.Val == 0);
+    } catch (ex) {
+        process.stderr.write('[darwin_spawn] Exception: ' + ex.message + '\n');
+        return false;
+    }
+}
+
 // Start a JavaScript based Agent Self-Update
 function agentUpdate_Start(updateurl, updateoptions) {
     // If this value is null
@@ -5841,7 +5972,10 @@ function agentUpdate_Start(updateurl, updateoptions) {
         }
         else {
             var agentfilename = process.execPath.split(process.platform == 'win32' ? '\\' : '/').pop(); // Local File Name, ie: MeshAgent.exe
-            var name = require('MeshAgent').serviceName;
+            // Use serviceId for service lookups if available (macOS/launchd uses Label like "meshagent.company.service")
+            // Fall back to serviceName, then platform default
+            var name = require('MeshAgent').serviceId || require('MeshAgent').serviceName;
+            var originalName = name; // For debugging
             if (name == null) { name = (process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); } // This is an older agent that doesn't expose the service name, so use the default
             try {
                 var s = require('service-manager').manager.getService(name);
@@ -5853,15 +5987,31 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 if (process.platform == 'win32') { s.close(); }
             }
             catch (ex) {
-                sendConsoleText('Self Update Failed because this agent is not an instance of (' + name + ')', sessionid);
-                sendAgentMessage('Self Update Failed because this agent is not an instance of (' + name + ')', 3);
+                // Enhanced error logging for debugging service name issues
+                var debugInfo = 'MeshAgent.serviceId=' + (require('MeshAgent').serviceId || 'NULL');
+                debugInfo += ', MeshAgent.serviceName=' + (require('MeshAgent').serviceName || 'NULL');
+                debugInfo += ', lookupName=' + name;
+                debugInfo += ', execPath=' + process.execPath;
+                debugInfo += ', error=' + ex.message;
+                sendConsoleText('Self Update Failed: ' + debugInfo, sessionid);
+                sendAgentMessage('Self Update Failed because this agent is not an instance of (' + name + '). Debug: ' + debugInfo, 3);
                 return;
             }
 
-            if ((sessionid != null) && (updateurl != null)) { sendConsoleText('Downloading update from: ' + updateurl, sessionid); }
             var options = require('http').parseUri(updateurl != null ? updateurl : require('MeshAgent').ServerUrl);
             options.protocol = 'https:';
-            if (updateurl == null) { options.path = ('/meshagents?id=' + require('MeshAgent').ARCHID); sendConsoleText('Downloading update from: ' + options.path, sessionid); }
+            if (updateurl == null) {
+                options.path = '/meshagents?id=' + require('MeshAgent').ARCHID;
+            }
+            // Add app bundle parameter if running in app bundle mode
+            if (isAppBundle) {
+                if (options.path.indexOf('?') > -1) {
+                    options.path += '&appbundle=1';
+                } else {
+                    options.path += '?appbundle=1';
+                }
+            }
+            sendConsoleText('Downloading update from: ' + options.protocol + '//' + options.host + ':' + options.port + options.path, sessionid);
             options.rejectUnauthorized = false;
             options.checkServerIdentity = function checkServerIdentity(certs) {
                 // If the tunnel certificate matches the control channel certificate, accept the connection
@@ -5890,16 +6040,26 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 agentUpdate_Start._selfupdate = null;
             });
             agentUpdate_Start._selfupdate.on('response', function (img) {
-                this._file = require('fs').createWriteStream(agentfilename + (process.platform == 'win32' ? '.update.exe' : '.update'), { flags: 'wb' });
+                var downloadFilename = isAppBundle ? 'MeshAgent.app.zip' : (agentfilename + (process.platform == 'win32' ? '.update.exe' : '.update'));
+                this._file = require('fs').createWriteStream(downloadFilename, { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
                 this._filehash.on('hash', function (h) {
+                    // Verify hash for both app bundles and standalone binaries
+                    var localHash = h.toString('hex');
+                    var archid = require('MeshAgent').ARCHID;
+
                     if (updateoptions != null && updateoptions.hash != null) {
-                        if (updateoptions.hash.toLowerCase() == h.toString('hex').toLowerCase()) {
-                            if (sessionid != null) { sendConsoleText('Download complete. HASH verified.', sessionid); }
+                        var serverHash = updateoptions.hash.toLowerCase();
+
+                        // Always show hash values for verification
+                        sendConsoleText('Expected: ' + serverHash, sessionid);
+                        sendConsoleText('Got:      ' + localHash.toLowerCase(), sessionid);
+
+                        if (serverHash == localHash.toLowerCase()) {
+                            sendConsoleText('Download complete. HASH verified.', sessionid);
                         } else {
                             agentUpdate_Start._retryCount++;
                             sendConsoleText('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, sessionid);
-                            sendConsoleText(updateoptions.hash + " != " + h.toString('hex'));
                             sendAgentMessage('Self Update FAILED because the downloaded agent FAILED hash check (' + agentUpdate_Start._retryCount + '), URL: ' + updateurl, 3);
                             agentUpdate_Start._selfupdate = null;
 
@@ -5916,16 +6076,178 @@ function agentUpdate_Start(updateurl, updateoptions) {
                         }
                     }
                     else {
-                        sendConsoleText('Download complete. HASH=' + h.toString('hex'), sessionid);
+                        sendConsoleText('Download complete. HASH=' + localHash, sessionid);
                     }
 
                     // Send an indication to the server that we got the update download correctly.
                     try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (ex) { }
 
+                    // Store update in progress flag for post-restart verification
+                    try {
+                        db.Put('UpdateInProgress', JSON.stringify({
+                            timestamp: Date.now(),
+                            sessionid: sessionid,
+                            expectedHash: updateoptions != null ? updateoptions.hash : null
+                        }));
+                    } catch (ex) { }
+
                     if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
                     if (process.platform == 'win32') {
                         // Use _wexecve() equivalent to perform the update
                         windows_execve(name, agentfilename, sessionid);
+                    }
+                    else if (isAppBundle) {
+                        // App bundle update path
+                        sendConsoleText('App bundle update starting...', sessionid);
+
+                        var fs = require('fs');
+                        var cwd = process.cwd();
+                        // Remove trailing slash if present
+                        if (cwd.endsWith('/')) { cwd = cwd.slice(0, -1); }
+                        var tempDir = appBundlePath + '.upgrade/';
+                        var zipPath = cwd + '/MeshAgent.app.zip';
+
+                        // Clean up old temp directory from previous failed updates
+                        sendConsoleText('Cleaning up old temp directory...', sessionid);
+                        try {
+                            // Remove old temp directory if it exists
+                            if (fs.existsSync(tempDir)) {
+                                sendConsoleText('Removing old temp dir: ' + tempDir, sessionid);
+                                var cleanupChild = require('child_process').execFile('/bin/sh', ['sh']);
+                                cleanupChild.stdout.str = '';
+                                cleanupChild.stderr.str = '';
+                                cleanupChild.stdout.on('data', function(c) { this.str += c.toString(); });
+                                cleanupChild.stderr.on('data', function(c) { this.str += c.toString(); });
+                                cleanupChild.stdin.write('/bin/rm -rf "' + tempDir + '"\n');
+                                cleanupChild.stdin.write('exit\n');
+                                cleanupChild.waitExit();
+                                sendConsoleText('Old temp dir removed', sessionid);
+                            }
+                        } catch(cleanupEx) {
+                            sendConsoleText('Cleanup warning: ' + cleanupEx.message, sessionid);
+                        }
+                        sendConsoleText('Cleanup complete', sessionid);
+
+                        // Check if ZIP exists
+                        if (!fs.existsSync(zipPath)) {
+                            sendConsoleText('ERROR: ZIP file not found at: ' + zipPath, sessionid);
+                            return;
+                        }
+                        var zipSize = fs.statSync(zipPath).size;
+                        sendConsoleText('ZIP file: ' + zipPath + ' (' + zipSize + ' bytes)', sessionid);
+
+                        // Create temp directory
+                        sendConsoleText('Temp dir: ' + tempDir, sessionid);
+                        if (!fs.existsSync(tempDir)) {
+                            fs.mkdirSync(tempDir, { recursive: true });
+                            sendConsoleText('Created temp directory', sessionid);
+                        } else {
+                            sendConsoleText('Temp directory exists', sessionid);
+                        }
+
+                        // Extract with unzip using shell approach (proven pattern in meshcore.js)
+                        var unzipCmd = '/usr/bin/unzip -o "' + zipPath + '" -d "' + tempDir + '"';
+                        sendConsoleText('Running: ' + unzipCmd, sessionid);
+
+                        var child = require('child_process').execFile('/bin/sh', ['sh']);
+                        child.stdout.str = '';
+                        child.stderr.str = '';
+                        child.stdout.on('data', function(c) { this.str += c.toString(); });
+                        child.stderr.on('data', function(c) { this.str += c.toString(); });
+                        child.stdin.write(unzipCmd + '\n');
+                        child.stdin.write('exit\n');
+                        child.waitExit();
+
+                        // Check if extraction succeeded by verifying the binary exists
+                        sendConsoleText('Verifying extracted binary...', sessionid);
+                        var extractedBinaryPath = tempDir + 'MeshAgent.app/Contents/MacOS/meshagent';
+                        if (!fs.existsSync(extractedBinaryPath)) {
+                            sendConsoleText('ERROR: Extraction failed - binary not found at: ' + extractedBinaryPath, sessionid);
+                            sendConsoleText('Stderr: ' + child.stderr.str, sessionid);
+                            return;
+                        }
+                        sendConsoleText('Extraction successful!', sessionid);
+
+                        // Replace bundle
+                        sendConsoleText('Step 2: Setting bundle paths', sessionid);
+                        sendConsoleText('Step 2a: tempDir type = ' + typeof tempDir, sessionid);
+                        sendConsoleText('Step 2b: appBundlePath type = ' + typeof appBundlePath, sessionid);
+                        var newBundlePath = tempDir + 'MeshAgent.app';
+                        sendConsoleText('Step 2c: Created newBundlePath', sessionid);
+                        var currentBundlePath = appBundlePath;
+                        sendConsoleText('Step 2d: Created currentBundlePath', sessionid);
+                        sendConsoleText('  New bundle: ' + newBundlePath, sessionid);
+                        sendConsoleText('  Current bundle: ' + currentBundlePath, sessionid);
+
+                        // Delete old bundle using shell command
+                        sendConsoleText('Step 3: Deleting old bundle with rm -rf', sessionid);
+                        try {
+                            var rmChild = require('child_process').execFile('/bin/sh', ['sh']);
+                            rmChild.stdout.str = '';
+                            rmChild.stderr.str = '';
+                            rmChild.stdout.on('data', function(c) { this.str += c.toString(); });
+                            rmChild.stderr.on('data', function(c) { this.str += c.toString(); });
+                            rmChild.stdin.write('/bin/rm -rf "' + currentBundlePath + '"\n');
+                            rmChild.stdin.write('exit\n');
+                            rmChild.waitExit();
+
+                            if (rmChild.stderr.str.length > 0) {
+                                sendConsoleText('Step 3 stderr: ' + rmChild.stderr.str, sessionid);
+                            }
+                            sendConsoleText('Step 3: Old bundle deleted', sessionid);
+                        } catch(ex) {
+                            sendConsoleText('ERROR in Step 3: ' + ex.message, sessionid);
+                            return;
+                        }
+
+                        sendConsoleText('Step 5: Renaming new bundle to current location', sessionid);
+                        try {
+                            fs.renameSync(newBundlePath, currentBundlePath);
+                            sendConsoleText('Step 5: Rename complete', sessionid);
+                        } catch(ex) {
+                            sendConsoleText('ERROR in Step 5: ' + ex.message, sessionid);
+                            return;
+                        }
+
+                        sendConsoleText('Step 6: Setting executable permissions', sessionid);
+                        try {
+                            var binaryPath = currentBundlePath + '/Contents/MacOS/meshagent';
+                            sendConsoleText('  Binary path: ' + binaryPath, sessionid);
+                            fs.chmodSync(binaryPath, 0o755);
+                            sendConsoleText('Step 6: Permissions set', sessionid);
+                        } catch(ex) {
+                            sendConsoleText('ERROR in Step 6: ' + ex.message, sessionid);
+                            return;
+                        }
+
+                        sendConsoleText('Step 7: Cleaning up ZIP file', sessionid);
+                        try {
+                            fs.unlinkSync(zipPath);
+                            sendConsoleText('Step 7: ZIP deleted', sessionid);
+                        } catch(ex) {
+                            sendConsoleText('Step 7: Failed to delete ZIP: ' + ex.message, sessionid);
+                        }
+
+                        sendConsoleText('Step 8: Cleaning up temp directory', sessionid);
+                        try {
+                            fs.rmdirSync(tempDir);
+                            sendConsoleText('Step 8: Temp dir deleted', sessionid);
+                        } catch(ex) {
+                            sendConsoleText('Step 8: Failed to delete temp dir: ' + ex.message, sessionid);
+                        }
+
+                        sendConsoleText('Step 9: Preparing restart', sessionid);
+                        var execPath = currentBundlePath + '/Contents/MacOS/meshagent';
+                        sendConsoleText('  Exec path: ' + execPath, sessionid);
+
+                        sendConsoleText('Step 10: Removing existing upgrade job', sessionid);
+                        var removeResult = darwin_spawn('/bin/launchctl', ['remove', 'meshagent.upgrade']);
+                        sendConsoleText('  Remove result: ' + removeResult, sessionid);
+
+                        sendConsoleText('Step 11: Submitting upgrade job', sessionid);
+                        var submitResult = darwin_spawn('/bin/launchctl', ['submit', '-l', 'meshagent.upgrade', '--', execPath, '-upgrade']);
+                        sendConsoleText('  Submit result: ' + submitResult, sessionid);
+                        sendConsoleText('Step 11: Complete - agent should restart now', sessionid);
                     }
                     else {
                         var m = require('fs').statSync(process.execPath).mode;
@@ -5948,18 +6270,49 @@ function agentUpdate_Start(updateurl, updateoptions) {
                             case 'linux':
                                 linux_execv(name, agentfilename, sessionid);
                                 break;
-                            default:
+                            case 'darwin':
+                                // On macOS, call -upgrade to regenerate LaunchDaemon/LaunchAgent plists
+                                // Use launchctl submit to run -upgrade as a one-shot launchd job
+                                // This completely isolates it from meshcore's Duktape runtime
                                 try {
-                                    // restart service
+                                    // First, remove any existing meshagent.upgrade job (prevents conflicts/loops)
+                                    darwin_spawn('/bin/launchctl', ['remove', 'meshagent.upgrade']);
+                                    // Ignore result - will fail if job doesn't exist, which is fine
+
+                                    var spawnSuccess = darwin_spawn('/bin/launchctl', ['submit', '-l', 'meshagent.upgrade', '--', process.execPath, '-upgrade']);
+
+                                    if (spawnSuccess) {
+                                        sendConsoleText('Running agent -upgrade...', sessionid);
+                                    } else {
+                                        throw new Error('launchctl submit failed');
+                                    }
+                                }
+                                catch (ex) {
+
+                                    // If -upgrade fails, fall back to service restart
+                                    sendConsoleText('Warning: -upgrade failed (' + ex.message + '), attempting restart...', sessionid);
+
+                                    try {
+                                        var s = require('service-manager').manager.getService(name);
+                                        s.restart();
+                                    }
+                                    catch (ex2) {
+                                        sendConsoleText('Update complete. Agent will restart shortly...', sessionid);
+                                    }
+                                }
+                                break;
+                            default:
+                                // Other platforms: attempt service restart
+                                try {
                                     var s = require('service-manager').manager.getService(name);
                                     s.restart();
                                 }
                                 catch (ex) {
-                                    sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                                    sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                    sendConsoleText('Restart command returned an error. Waiting for agent to reconnect...', sessionid);
                                 }
                                 break;
                         }
+
                     }
                 });
                 img.pipe(this._file);
@@ -5994,6 +6347,28 @@ function handleServerConnection(state) {
 
         var oldNodeId = db.Get('OldNodeId');
         if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
+
+        // Check if we just completed an agent update
+        var updateInProgress = db.Get('UpdateInProgress');
+        if (updateInProgress != null) {
+            try {
+                var updateInfo = JSON.parse(updateInProgress);
+                var currentTime = Date.now();
+
+                // Only report if update was started recently (within 5 minutes)
+                if (updateInfo.timestamp && (currentTime - updateInfo.timestamp) < 300000) {
+                    mesh.SendCommand({
+                        action: 'agentupdatecomplete',
+                        success: true,
+                        info: 'Agent restarted successfully after update'
+                    });
+                    sendConsoleText('Agent update completed successfully.', updateInfo.sessionid);
+                }
+            } catch (ex) {
+                // Failed to parse updateInProgress, just clear it
+            }
+            db.Put('UpdateInProgress', null);
+        }
 
         // Send SMBios tables if present
         if (SMBiosTablesRaw != null) { mesh.SendCommand({ action: 'smbios', value: SMBiosTablesRaw }); }

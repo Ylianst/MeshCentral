@@ -15,7 +15,7 @@ CheckStartupType() {
   # echo "Checking process autostart system..."
   starttype1=`cat /proc/1/status | grep 'Name:' | awk '{ print $2; }'`
   starttype2=`ps -p 1 -o command= | awk '{a=split($0,res," "); b=split(res[a],tp,"/"); print tp[b]; }'`
- 
+
   # Systemd
   if [[ $starttype1 == 'systemd' ]]
     then return 1;
@@ -23,9 +23,9 @@ CheckStartupType() {
     then
         if [ -d "/etc/init" ]
             then
-                return 2;
+                return 2;  # Upstart
             else
-                return 3;
+                return 3;  # init.d
         fi
   fi
   return 0;
@@ -83,7 +83,7 @@ CheckInstallAgent() {
           else
             # Linux x86, 64 bit
             bitlen=$( getconf LONG_BIT )
-            if [ $bitlen == '32' ] 
+            if [ $bitlen == '32' ]
             then
                 # 32 bit OS
                 machineid=5
