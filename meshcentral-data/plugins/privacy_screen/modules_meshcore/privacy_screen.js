@@ -10,37 +10,34 @@ module.exports.consoleaction = function (args, rights, sessionid, mesh) {
     } catch (e) { }
 
     function enablePrivacy() {
-        try { sendConsoleText('privacy_screen: ENABLE', sessionid); } catch (e) { }
-        // TODO: тут виклик "privacy-screen.exe on"
-        /*
+        sendConsoleText('privacy_screen: ENABLE (calling exe)', sessionid);
+
         try {
             var child = require('child_process').execFile(
                 'C:\\Program Files\\PrivacyScreen\\privacy-screen.exe',
                 ['on'],
                 { type: 0 }
             );
-            child.waitExit();
+            // Можеш child.waitExit(); залишити закоментованим, щоб не блокувати агента
+            // child.waitExit();
         } catch (ex) {
-            try { sendConsoleText('privacy_screen error (enable): ' + ex, sessionid); } catch (_) {}
+            sendConsoleText('privacy_screen error (enable): ' + ex, sessionid);
         }
-        */
     }
 
     function disablePrivacy() {
-        try { sendConsoleText('privacy_screen: DISABLE', sessionid); } catch (e) { }
-        // TODO: тут виклик "privacy-screen.exe off"
-        /*
+        sendConsoleText('privacy_screen: DISABLE (calling exe)', sessionid);
+
         try {
             var child = require('child_process').execFile(
                 'C:\\Program Files\\PrivacyScreen\\privacy-screen.exe',
                 ['off'],
                 { type: 0 }
             );
-            child.waitExit();
+            // child.waitExit();
         } catch (ex) {
-            try { sendConsoleText('privacy_screen error (disable): ' + ex, sessionid); } catch (_) {}
+            sendConsoleText('privacy_screen error (disable): ' + ex, sessionid);
         }
-        */
     }
 
     var mode = 'toggle';
