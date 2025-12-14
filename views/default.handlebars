@@ -8428,22 +8428,20 @@
                 console.log('privacy_screen: currentNode is undefined');
                 return;
             }
-
             if (typeof meshserver === 'undefined') {
                 console.log('privacy_screen: meshserver not available on UI');
                 return;
             }
 
-            // Надсилаємо ПРЯМО plugin-action на сервер
             meshserver.send({
                 action:       'plugin',
                 plugin:       'privacy_screen',
                 pluginaction: 'sendPrivacyCommand',
-                nodeid:       currentNode._id,
-                on:           desktopPrivacyOn
+                args: {
+                    nodeid: currentNode._id,
+                    on: desktopPrivacyOn
+                }
             });
-
-            // тут можеш ще зробити візуальний toggle для кнопки
         }
 
         function deskClipboardOutFunction() {
