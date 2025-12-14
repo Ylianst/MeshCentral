@@ -5871,7 +5871,7 @@
                             Q('agins_macos_area').value = 'Error: ' + ex.message + '\n\ninstallflags=' + actualInstallFlags + ' archid=' + archid;
                         }
                     } else if (actualInstallFlags < 10) {
-                        // Bare binary mode - simple download and install
+                        // Bare binary mode - download binary and .msh file separately
                         try {
                             var linkParts = linkElement.name.split('&installflags=');
                             var baseUrl = linkParts[0];
@@ -5880,8 +5880,9 @@
                                 keyPart = linkParts[1].substring(linkParts[1].indexOf('&'));
                             }
                             var encodedBaseUrl = baseUrl.split('$').join('%24').split('@').join('%40');
-                            var downloadUrl = 'https://' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/' + encodedBaseUrl + '&installflags=' + actualInstallFlags + '&meshinstall=' + archid + keyPart;
-                            var cmd = 'curl -o meshagent "' + downloadUrl + '" && (xattr -d com.apple.quarantine meshagent 2>/dev/null || true) && chmod +x meshagent && sudo ./meshagent -fullinstall\r\n';
+                            var binaryUrl = 'https://' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/' + encodedBaseUrl + '&installflags=' + actualInstallFlags + '&meshinstall=' + archid + keyPart;
+                            var mshUrl = 'https://' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/' + encodedBaseUrl + '&installflags=' + actualInstallFlags + '&meshinstall=' + archid + keyPart + '&mshonly=1';
+                            var cmd = 'curl -o meshagent "' + binaryUrl + '" && curl -o meshagent.msh "' + mshUrl + '" && (xattr -d com.apple.quarantine meshagent 2>/dev/null || true) && chmod +x meshagent && sudo ./meshagent -fullinstall --copy-msh=1\r\n';
                             Q('agins_macos_area').value = cmd;
                         } catch (ex) {
                             Q('agins_macos_area').value = 'Error: ' + ex.message + '\n\ninstallflags=' + actualInstallFlags + ' archid=' + archid;
