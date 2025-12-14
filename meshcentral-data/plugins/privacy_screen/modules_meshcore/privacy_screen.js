@@ -1,66 +1,93 @@
 // meshcentral-data/plugins/privacy_screen/modules_meshcore/privacy_screen.js
-if (typeof _plugin_privacy_screen === 'undefined') {
-    _plugin_privacy_screen = true;
 
-    try { sendConsoleText('privacy_screen: meshcore module loaded\n'); } catch (e) { }
+try {
+    if (typeof _plugin_privacy_screen === 'undefined') {
+        _plugin_privacy_screen = true;
 
-    function enablePrivacy() {
-        try { sendConsoleText('privacy_screen: ENABLE\n'); } catch (e) { }
+        // Беремо об'єкт агента
+        var mesh = require('MeshAgent');
 
-        // TODO: виклик твого exe, наприклад:
-        /*
-        try {
-            var child = require('child_process').execFile(
-                'C:\\Program Files\\PrivacyScreen\\privacy-screen.exe',
-                ['on'],
-                { type: 0 }
-            );
-            child.waitExit();
-        } catch (ex) {
-            try { sendConsoleText('privacy_screen error (enable): ' + ex + '\n'); } catch (_) {}
+        // Простий логер у Console агента
+        function dbg(msg) {
+            try {
+                if (typeof msg === 'object') { msg = JSON.stringify(msg); }
+                require('MeshAgent').SendCommand({
+                    action: 'msg',
+                    type: 'console',
+                    value: msg,
+                    sessionid: null
+                });
+            } catch (e) { }
         }
-        */
-    }
 
-    function disablePrivacy() {
-        try { sendConsoleText('privacy_screen: DISABLE\n'); } catch (e) { }
+        dbg('privacy_screen: meshcore module loaded');
 
-        // TODO: виклик exe 'off'
-        /*
-        try {
-            var child = require('child_process').execFile(
-                'C:\\Program Files\\PrivacyScreen\\privacy-screen.exe',
-                ['off'],
-                { type: 0 }
-            );
-            child.waitExit();
-        } catch (ex) {
-            try { sendConsoleText('privacy_screen error (disable): ' + ex + '\n'); } catch (_) {}
+        function enablePrivacy() {
+            dbg('privacy_screen: ENABLE');
+            // TODO: тут виклик твого exe "on"
+            /*
+            try {
+                var child = require('child_process').execFile(
+                    'C:\\Program Files\\PrivacyScreen\\privacy-screen.exe',
+                    ['on'],
+                    { type: 0 }
+                );
+                child.waitExit();
+            } catch (ex) {
+                dbg('privacy_screen error (enable): ' + ex);
+            }
+            */
         }
-        */
-    }
 
-    function privacyScreenCommandHandler(data) {
-        try {
-            // Ми шлемо { action:'msg', type:'privacyscreen', state, on }
-            if (!data || data.action !== 'msg' || data.type !== 'privacyscreen') return;
-
-            var on = (data.state === 1 || data.on === true);
-            if (on) enablePrivacy();
-            else disablePrivacy();
-        } catch (e) {
-            try { sendConsoleText('privacy_screen handler error: ' + e + '\n'); } catch (_) {}
+        function disablePrivacy() {
+            dbg('privacy_screen: DISABLE');
+            // TODO: тут виклик твого exe "off"
+            /*
+            try {
+                var child = require('child_process').execFile(
+                    'C:\\Program Files\\PrivacyScreen\\privacy-screen.exe',
+                    ['off'],
+                    { type: 0 }
+                );
+                child.waitExit();
+            } catch (ex) {
+                dbg('privacy_screen error (disable): ' + ex);
+            }
+            */
         }
-    }
 
-    try {
-        if (typeof mesh !== 'undefined' && typeof mesh.AddCommandHandler === 'function') {
+        // Наш хендлер на всі server → agent повідомлення
+        function privacyScreenCommandHandler(data) {
+            try {
+                // Сервер шле: { action:'msg', type:'privacyscreen', state, on }
+                if (!data || data.action !== 'msg' || data.type !== 'privacyscreen') return;
+
+                var on = (data.state === 1 || data.on === true);
+                if (on) {
+                    enablePrivacy();
+                } else {
+                    disablePrivacy();
+                }
+            } catch (e) {
+                dbg('privacy_screen handler error: ' + e);
+            }
+        }
+
+        // Реєструємо наш handler у MeshAgent
+        if (mesh && typeof mesh.AddCommandHandler === 'function') {
             mesh.AddCommandHandler(privacyScreenCommandHandler);
-            try { sendConsoleText('privacy_screen: command handler registered\n'); } catch (e) { }
+            dbg('privacy_screen: command handler registered');
         } else {
-            try { sendConsoleText('privacy_screen: mesh.AddCommandHandler NOT available\n'); } catch (e) { }
+            dbg('privacy_screen: mesh.AddCommandHandler NOT available');
         }
-    } catch (e) {
-        try { sendConsoleText('privacy_screen: failed to register handler: ' + e + '\n'); } catch (_) { }
     }
+} catch (ex) {
+    try {
+        require('MeshAgent').SendCommand({
+            action: 'msg',
+            type: 'console',
+            value: 'privacy_screen init error: ' + ex,
+            sessionid: null
+        });
+    } catch (_) { }
 }
