@@ -5661,7 +5661,7 @@
             x += '<div id="aginsTypeDiv_windows">';
             x += addHtmlValue("Installation Type", '<select id="aginsType_windows" onchange="addAgentToMeshClick()" style="width:236px"><option value="0">' + "Background & interactive" + '</option><option value="2">' + "Background only" + '</option><option value="1">' + "Interactive only" + '</option></select>');
             x += '</div><div id="aginsTypeDiv_binary_macos">';
-            x += addHtmlValue("Installation Type", '<select id="aginsType_macos" onchange="addAgentToMeshClick()" style="width:236px"><option value="10" selected>' + "Background & interactive (ZIP)" + '</option><option value="12">' + "Background only (ZIP)" + '</option><option value="11">' + "Interactive only (ZIP)" + '</option><option value="0">' + "Background & interactive (Deprecated)" + '</option><option value="2">' + "Background only (Deprecated)" + '</option><option value="1">' + "Interactive only (Deprecated)" + '</option></select>');
+            x += addHtmlValue("Installation Type", '<select id="aginsType_macos" onchange="addAgentToMeshClick()" style="width:236px"><option value="20" selected>' + "Background & interactive (app ZIP)" + '</option><option value="22">' + "Background only (app ZIP)" + '</option><option value="21">' + "Interactive only (app ZIP)" + '</option><option value="10">' + "Background & interactive (binary ZIP)" + '</option><option value="12">' + "Background only (binary ZIP)" + '</option><option value="11">' + "Interactive only (binary ZIP)" + '</option><option value="0">' + "Background & interactive (Deprecated)" + '</option><option value="2">' + "Background only (Deprecated)" + '</option><option value="1">' + "Interactive only (Deprecated)" + '</option></select>');
             x += '</div><div id="aginsTypeDiv_binary_other">';
             x += addHtmlValue("Installation Type", '<select id="aginsType_other" onchange="addAgentToMeshClick()" style="width:236px"><option value="0">' + "Background & interactive" + '</option><option value="2">' + "Background only" + '</option><option value="1">' + "Interactive only" + '</option></select>');
             x += '</div><div id=asinsTypeDiv>';
@@ -5824,21 +5824,32 @@
 
                 if (installTypeElement && archTypeElement && linkElement) {
                     var installflags = parseInt(installTypeElement.value);
-                    if (isNaN(installflags)) installflags = 10;
+                    if (isNaN(installflags)) installflags = 20;
                     var archid = archTypeElement.value || '10005';
 
-                    Q('aginsbinlnk_macos').onclick = function() { downloadFile((Q('aginsbinlnk_macos').name.split('installflags=')[0]) + 'installflags=' + Q('aginsType_macos').value + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType_macos').value); };
+                    // Determine if this is an app bundle request
+                    var isAppBundle = installflags >= 20;
+                    var actualInstallFlags = isAppBundle ? installflags - 10 : installflags;
+
+                    Q('aginsbinlnk_macos').onclick = function() {
+                        var flags = parseInt(Q('aginsType_macos').value);
+                        var isApp = flags >= 20;
+                        var actualFlags = isApp ? flags - 10 : flags;
+                        downloadFile((Q('aginsbinlnk_macos').name.split('installflags=')[0]) + 'installflags=' + actualFlags + (urlargs.key?('&key=' + urlargs.key):'') + '&meshinstall=' + Q('aginsSysType_macos').value + (isApp ? '&appbundle=1' : ''));
+                    };
 
                     // Update link text based on installation type
-                    if (installflags < 10) {
+                    if (actualInstallFlags < 10) {
                         linkElement.textContent = 'meshagent'; // Deprecated - single binary
+                    } else if (isAppBundle) {
+                        linkElement.textContent = 'MeshAgent.app.zip'; // App bundle ZIP
                     } else {
-                        linkElement.textContent = 'meshagent.zip'; // ZIP package
+                        linkElement.textContent = 'meshagent.zip'; // Binary ZIP package
                     }
 
-                    // Check if deprecated (installflags < 10)
-                    if (installflags < 10) {
-                        Q('agins_macos_area').value = 'WARNING: Deprecated installation method selected.\n\nThis method embeds settings into the binary, which breaks the code signature on macOS.\n\nPlease use the ZIP installation options instead (Background & interactive (ZIP), etc.) which preserve code signatures and are the recommended installation method for macOS.';
+                    // Check if deprecated (actualInstallFlags < 10)
+                    if (actualInstallFlags < 10) {
+                        Q('agins_macos_area').value = 'WARNING: Deprecated installation method selected.\n\nThis method embeds settings into the binary, which breaks the code signature on macOS.\n\nPlease use the ZIP installation options instead (Background & interactive (app/binary ZIP), etc.) which preserve code signatures and are the recommended installation method for macOS.';
                     } else {
                         // ZIP mode - show full install command
                         try {
@@ -5854,12 +5865,14 @@
 
                             // URL-encode special characters in meshid ($ and @)
                             var encodedBaseUrl = baseUrl.split('$').join('%24').split('@').join('%40');
-                            var downloadUrl = 'https://' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/' + encodedBaseUrl + '&installflags=' + installflags + '&meshinstall=' + archid + keyPart;
+                            var downloadUrl = 'https://' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/' + encodedBaseUrl + '&installflags=' + actualInstallFlags + '&meshinstall=' + archid + keyPart + (isAppBundle ? '&appbundle=1' : '');
 
-                            var cmd = 'curl -o meshagent.zip "' + downloadUrl + '" && unzip meshagent.zip && (xattr -d com.apple.quarantine meshagent 2>/dev/null || true) && chmod +x meshagent && sudo ./meshagent -fullinstall\r\n';
+                            var zipFileName = isAppBundle ? 'MeshAgent.app.zip' : 'meshagent.zip';
+                            var extractTarget = isAppBundle ? 'MeshAgent.app' : 'meshagent';
+                            var cmd = 'curl -o ' + zipFileName + ' "' + downloadUrl + '" && unzip ' + zipFileName + ' && (xattr -dr com.apple.quarantine ' + extractTarget + ' 2>/dev/null || true) && chmod +x ' + extractTarget + (isAppBundle ? '/Contents/MacOS/meshagent' : '') + ' && sudo ' + (isAppBundle ? extractTarget + '/Contents/MacOS/meshagent' : './' + extractTarget) + ' -fullinstall\r\n';
                             Q('agins_macos_area').value = cmd;
                         } catch (ex) {
-                            Q('agins_macos_area').value = 'Error: ' + ex.message + '\n\ninstallflags=' + installflags + ' archid=' + archid;
+                            Q('agins_macos_area').value = 'Error: ' + ex.message + '\n\ninstallflags=' + actualInstallFlags + ' archid=' + archid;
                         }
                     }
                 }
