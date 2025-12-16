@@ -1510,13 +1510,12 @@
                     </div>
                     <div class='fs-4 fw-bold'>General - <span id=p30userName></span></div>
                 </div>
-                <div id="p30info" style="overflow-y:auto">
-                    <div class="row">
+                <div id="p30info" class='pe-2' style="overflow-y:auto">
+                    <div class="d-flex">
                         <div class="col">
                             <div id="p30html"></div>
                         </div>
-                        <div class="col-auto" style="width: 20px;"></div>
-                        <div class="col-auto" style="width: 200px; position: relative;">
+                        <div class="col-auto">
                             <img id="p30userAuthServiceLogo" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
                             <picture id="MainUserImage"
                                 style="display:none; border-width:0px; height:200px; width:200px; float:right"
@@ -6554,10 +6553,10 @@
         */
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
             if (xxModal == null) {
-                ['idx_dlgOkButton', 'idx_dlgCancelButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
+                ['idx_dlgOkButton', 'idx_dlgCancelButton', 'idx_dlgDeleteButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
                     Q(id).onclick = null;
-                    QE(id, true);
-                    QV(id, true);
+                    QE(id, (id != 'idx_dlgDeleteButton' ? true : false));
+                    QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
                 });
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
                 var hiddenModal = function (event) {
@@ -13968,7 +13967,7 @@
             var x = '<input id=p2file type=file class="form-control" accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;background: var(--sub-menu-bg);border: 1px solid #cfcdcd; cursor: pointer;" onclick=account_canvasClick() /></div>';
 
             setModalContent('xxAddAgent', "Manage Account Image", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_manageImageEx2);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageImageEx2(1, user._id));
 
             var ctx = Q('p2canvas').getContext('2d');
             if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
@@ -13978,6 +13977,8 @@
             myImg.onload = function () { ctx.clearRect(0, 0, 256, 256); ctx.drawImage(myImg, 0, 0); };
             myImg.src = ((user.flags != null) && (user.flags & 1)) ? ('userimage.ashx?rnd=' + user.accountImageRnd + arg) : 'images/user-256.png';
             QE('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
+            QV('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
+            Q('idx_dlgDeleteButton').onclick = () => account_manageImageEx2(2, user._id);
             QE('idx_dlgOkButton', false);
         }
 
@@ -14004,6 +14005,7 @@
         function account_manageImageEx2(b, userid) {
             // Send updated image, or 0 if we pressed the delete button
             meshserver.send({ action: 'updateUserImage', userid: userid, image: (b == 2) ? 0 : Q('p2canvas').toDataURL(Q('p2file').files[0].type) });
+            if (b == 2) { xxModal.hide(); } // Close dialog on delete
             //meshserver.send({ action: 'updateUserImage', image: (b == 2)?0:Q('p2canvas').toDataURL('image/png', 0.8) });
         }
 

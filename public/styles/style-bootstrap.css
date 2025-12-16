@@ -634,6 +634,7 @@ body {
     background-color: #113962;
     padding: 5px 0;
     text-align: center;
+    z-index: 1000;
 }
 
 .fulldesk #footer {
