@@ -3225,18 +3225,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Load default page style or new modern ui
                 var uiViewMode = 'default';
                 var webstateJSON = JSON.parse(webstate);
-                // Check in priority order: query param > domain config > saved user preference
                 if (req.query.sitestyle != null) {
                     if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
-                    else if (req.query.sitestyle == 78) { uiViewMode = 'default78'; }
-                } else if (domain.sitestyle == 3) {
-                    uiViewMode = 'default3';
-                } else if (domain.sitestyle == 78) {
-                    uiViewMode = 'default78';
                 } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
                     uiViewMode = 'default3';
-                } else if (webstateJSON && webstateJSON.uiViewMode == 78) {
-                    uiViewMode = 'default78';
+                } else if (domain.sitestyle == 3) {
+                    uiViewMode = 'default3';
                 }
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
@@ -3400,7 +3394,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
         if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
-        if (domain.sitestyle === 78) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 78)
         return { features: features, features2: features2 };
     }
 
