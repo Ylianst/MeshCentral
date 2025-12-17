@@ -1293,8 +1293,8 @@
         // Process server-side web state
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
-        for (var i in webState) { localStorage.setItem(i, webState[i]); }
-        if (webState && !webState.loctag) { delete localStorage.removeItem('loctag'); }
+        for (var i in webState) { try { localStorage.setItem(i, webState[i]); } catch (ex) { } }
+        if (webState && !webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         // Fetch URL arguments & do sanitation
         var urlargs = parseUriArgs();
