@@ -4,7 +4,7 @@
 Access the official MeshCmd user guide in your preferred format
 
 > - [📄 PDF version](https://meshcentral.com/docs/MeshCmdUserGuide.pdf)
-> - [📝 ODT version](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCmd%20User%27s%20Guide%20v0.0.3.odt?raw=true)
+> - [📝 ODT version](../documents/MeshCmd%20User's%20Guide%20v0.0.3.odt)
 ---
 
 ## 🎬 Video Walkthru

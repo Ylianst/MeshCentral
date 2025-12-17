@@ -140,28 +140,119 @@
     <!-- main page -->
     <div id=container>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
-        <div id=masthead class=noselect>
-            <div style="float:left">{{{titlehtml}}}</div>
-            <div class="title" onclick="go(1,event)">{{{title1}}}</div>
-            <div class="title2">{{{title2}}}</div>
-            <div style="float:right">
+        <div id="masthead" class="noselect masthead-container">
+            <div class="masthead-left">
+                <div class="masthead-title" onclick="go(1,event)">{{{titlehtml}}}</div>
+                <div class="masthead-titles-container">
+                    <div class="title" onclick="go(1,event)">{{{title1}}}</div>
+                    <div class="title2" onclick="go(1,event)">{{{title2}}}</div>
+                </div>
+            </div>
+
+            <div class="masthead-right">
                 <div id="notificationCount"
-                    class="position-relative"
+                    class="notification-icon position-relative"
                     title="Click to view current notifications"
                     onclick="clickNotificationIcon()"
                     style="display: none;">
-                <i class="fa-solid fa-bell fa-lg text-white"></i>
-                <span id="notificationBadge"
-                        class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger"
-                        style="font-size: 0.65rem;">
-                    0
-                </span>
+                    <i class="fa-solid fa-bell fa-xl text-white"></i>
+                    <span id="notificationBadge"
+                        class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger">0</span>
                 </div>
-            </div>
-            <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
-                    style="color:yellow"></span></p>
-            <div class=textnewui id=textnewui onmouseup=toggleBootstrapUIMode() onkeypress="if (event.key=='Enter') { toggleBootstrapUIMode(); }">
-                <b>Try the new MeshCentral UI</b>
+
+                <div class="user-menu-container">
+                    <div id="userDropdown">
+                        <div id="userDropdownButton">
+                            <img id="userDropdownImage" src="images/user-256.png" alt="User" />
+                            <span id="userDropdownName" class="LogoffLinkColor"></span>
+                            <i class="fa fa-chevron-down LogoffLinkColor" style="font-size: 12px;"></i>
+                        </div>
+                        <div id="userDropdownMenu">
+                            <div id="userDropdownMenuContainer">
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="devices" onclick="handleUserMenuItem('devices')">
+                                    <i class="fa fa-desktop userDropdownMenuIcon"></i>
+                                    <span>My Devices</span>
+                                </div>
+
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="events" onclick="handleUserMenuItem('events')">
+                                    <i class="fa fa-calendar userDropdownMenuIcon"></i>
+                                    <span>My Events</span>
+                                </div>
+
+                                <div id="mobileUsersMenuItem" class="userDropdownMenuItem userDropdownMobileOnly users-menu-item mobile-menu-item d-none" data-action="users" onclick="handleUserMenuItem('users')">
+                                    <i class="fa fa-users userDropdownMenuIcon"></i>
+                                    <span>My Users</span>
+                                </div>
+
+                                <div id="mobileFilesMenuItem" class="userDropdownMenuItem userDropdownMobileOnly files-menu-item mobile-menu-item d-none" data-action="files" onclick="handleUserMenuItem('files')">
+                                    <i class="fa fa-folder userDropdownMenuIcon"></i>
+                                    <span>My Files</span>
+                                </div>
+
+                                <div id="mobileServerMenuItem" class="userDropdownMenuItem userDropdownMobileOnly server-menu-item mobile-menu-item d-none" data-action="server" onclick="handleUserMenuItem('server')">
+                                    <i class="fa fa-server userDropdownMenuIcon"></i>
+                                    <span>My Server</span>
+                                </div>
+
+                                <div id="userDropdownMenuDivider" class="userDropdownMobileOnly mobile-menu-item"></div>
+
+                                <div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(); event.stopPropagation();">
+                                    <i class="fa fa-sliders userDropdownMenuIcon"></i>
+                                    <span>UI Settings</span>
+                                    <i class="fa fa-chevron-right userDropdownMenuIcon submenu-arrow"></i>
+                                </div>
+
+                                <div id="uiSubmenu" class="userDropdownSubmenu">
+                                    <div id="toggleModernUIMenuItem" class="userDropdownMenuItem" data-action="toggle-modern-ui" onclick="handleUserMenuItem('toggle-modern-ui')">
+                                        <i class="fa fa-toggle-on userDropdownMenuIcon"></i>
+                                        <span>Toggle Modern UI</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="left-bar" onclick="handleUserMenuItem('left-bar')">
+                                        <i class="fa fa-window-maximize fa-rotate-270 userDropdownMenuIcon"></i>
+                                        <span>Left Bar Interface</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="top-bar" onclick="handleUserMenuItem('top-bar')">
+                                        <i class="fa fa-window-maximize userDropdownMenuIcon"></i>
+                                        <span>Top Bar Interface</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="fixed-width" onclick="handleUserMenuItem('fixed-width')">
+                                        <i class="fa fa-columns userDropdownMenuIcon"></i>
+                                        <span>Fixed Width Interface</span>
+                                    </div>
+                                    <div id="toggleFooterMenuItem" class="userDropdownMenuItem" data-action="toggle-footer" onclick="handleUserMenuItem('toggle-footer')">
+                                        <i class="fa fa-window-minimize userDropdownMenuIcon"></i>
+                                        <span>Toggle Footer Bar</span>
+                                    </div>
+                                    <div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>
+                                </div>
+
+                                <div id="toggleNightMenuItem" class="userDropdownMenuItem" data-action="toggle-night" onclick="toggleNightMode(); QV('userDropdownMenu', false); QV('uiSubmenu', false); resetChevronArrow();">
+                                    <i id="nightModeIcon" class="fa userDropdownMenuIcon night-mode-icon"></i>
+                                    <span id="nightModeText">Toggle night mode</span>
+                                </div>
+
+
+                                <div class="userDropdownMenuItem" data-action="notes" onclick="handleUserMenuItem('notes')">
+                                    <i class="fa fa-sticky-note userDropdownMenuIcon"></i>
+                                    <span>Personal Notes</span>
+                                </div>
+
+                                <div class="userDropdownMenuItem" data-action="account" onclick="handleUserMenuItem('account')">
+                                    <i class="fa fa-user userDropdownMenuIcon"></i>
+                                    <span>My Account</span>
+                                </div>
+
+                                <div id="userDropdownMenuDivider"></div>
+
+                                <div class="userDropdownMenuItem" data-action="logout" onclick="handleUserMenuItem('logout')">
+                                    <i class="fa fa-sign-out userDropdownMenuIcon"></i>
+                                    <span>Logout</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <span id="idleTimeoutNotify" class="idle-timeout-notify"></span>
+                </div>
             </div>
         </div>
         <div class="sidebar flex-column" id="page_leftbar">
@@ -456,7 +547,7 @@
                     <table>
                         <tr>
                             <td valign="top" style="width:50px">
-                                <img src="images/info.png" loading="lazy" width="47" height="48" />
+                                <img src="images/info.png" width="47" height="48" />
                             </td>
                             <td>
                                 <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
@@ -484,7 +575,7 @@
                 </div>
                 <div id="p2info" style="overflow-y:auto">
                     <div id="p2AccountImageFrame">
-                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128"
+                        <img id="p2AccountImage" alt="" width="128" height="128"
                             onclick="account_manageImage(0)" src="images/user-256.png" />
                         <div><a href=# onclick="account_manageImage(0)">Change image</a></div>
                     </div>
@@ -1440,7 +1531,7 @@
                         </div>
                         <div class="col-auto" style="width: 20px;"></div>
                         <div class="col-auto" style="width: 200px; position: relative;">
-                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
+                            <img id="p30userAuthServiceLogo" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
                             <picture id="MainUserImage"
                                 style="display:none; border-width:0px; height:200px; width:200px; float:right"
                                 onclick="account_manageImage(1)">
@@ -1686,7 +1777,7 @@
         </div>
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
-            <div class="footer2" style="display:none;">
+            <div class="footer2">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
                     </div>
@@ -2134,120 +2225,13 @@
             }
             args.hide = hide;
             QV('uiViewButton5', !(args.hide & 4)); // Hide the footer toggle button if footer is hidden anyway.
+            QV('toggleFooterMenuItem', !(args.hide & 4)); // Hide the footer toggle menu item if footer is hidden anyway.
+            QV('toggleNightMenuItem', ((features2 & 0x00100000) == 0) && ((features2 & 0x00200000) == 0)); // Hide night mode toggle if permanent night (1) or day (2) mode is set
+            //QV('toggleModernUIMenuItem', ((features2 & 0x80000000) == 0)); // Show only if allowed and not forced siteStyle=3
+            updateMobileTopBarVisibility();
             adjustPanels();
 
-            // Setup logout control
-            var logoutControl = '';
-            if (logoutControls) {
-                if (logoutControls.name != null) { 
-                    var userImageSrc = 'images/user-256.png';
-                    if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
-                        if (userinfo.accountImageRnd == null) { userinfo.accountImageRnd = Math.floor(Math.random() * 9999999999); }
-                        userImageSrc = 'userimage.ashx?rnd=' + userinfo.accountImageRnd;
-                    }
-                    
-					// Check permissions
-					var siteRights = userinfo ? userinfo.siteadmin : 0;
-					var serverFeatures = parseInt('{{{serverfeatures}}}');
-					var canViewUsers = ((users != null) && ((features & 4) == 0)) || (((userinfo && userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0));
-					var canViewFiles = (siteRights & 8) != 0;
-					var canViewServer = (siteRights & 21) && ((serverFeatures & 64) != 0);
-					
-					logoutControl = '<div id="userDropdown">' +
-						'<div id="userDropdownButton">' +
-							'<img id="userDropdownImage" src="' + userImageSrc + '" />' +
-							'<span id="userDropdownName" class="LogoffLinkColor">' + logoutControls.name + '</span>' +
-							'<i class="fa fa-chevron-down LogoffLinkColor" style="font-size: 12px;"></i>' +
-						'</div>' +
-						'<div id="userDropdownMenu">' +
-							'<div id="userDropdownMenuContainer">' +
-					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'devices\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-desktop userDropdownMenuIcon"></i>' +
-									'<span>' + "My Devices" + '</span>' +
-								'</div>' +
-					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'events\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-calendar userDropdownMenuIcon"></i>' +
-									'<span>' + "My Events" + '</span>' +
-								'</div>' +
-					
-								(canViewUsers ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-users userDropdownMenuIcon"></i>' +
-									'<span>' + "My Users" + '</span>' +
-								'</div>' : '') +
-					
-								(canViewFiles ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-folder userDropdownMenuIcon"></i>' +
-									'<span>' + "My Files" + '</span>' +
-								'</div>' : '') +
-					
-								(canViewServer ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-server userDropdownMenuIcon"></i>' +
-									'<span>' + "My Server" + '</span>' +
-								'</div>' : '') +
-					
-								'<div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>' +
-					
-								'<div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(event);">' +
-									'<i class="fa fa-sliders userDropdownMenuIcon"></i>' +
-									'<span>' + "UI Settings" + '</span>' +
-									'<i class="fa fa-chevron-right userDropdownMenuIcon" style="margin-left: auto; margin-right: 0; transition: transform 0.3s ease;"></i>' +
-								'</div>' +
-					
-								'<div id="uiSubmenu" class="userDropdownSubmenu" style="display:none;" onclick="event.stopPropagation();">' +
-									'<div class="userDropdownMenuItem" onclick="toggleBootstrapUIMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-toggle-on userDropdownMenuIcon"></i>' +
-										'<span>' + "Toggle Modern UI" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(1); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-window-maximize fa-rotate-270 userDropdownMenuIcon"></i>' +
-										'<span>' + "Left Bar Interface" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-window-maximize userDropdownMenuIcon"></i>' +
-										'<span>' + "Top Bar Interface" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(3); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-columns userDropdownMenuIcon"></i>' +
-										'<span>' + "Fixed Width Interface" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="toggleFooterBarMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-window-minimize userDropdownMenuIcon"></i>' +
-										'<span>' + "Toggle Footer Bar" + '</span>' +
-									'</div>' +
-								'</div>' +
-                                
-								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa ' + (document.body.classList.contains('night') ? 'fa-sun' : 'fa-moon') + ' userDropdownMenuIcon"></i>' +
-									'<span>' + "Toggle night mode" + '</span>' +
-								'</div>' +
-
-								'<div class="userDropdownMenuItem" onclick="showNotes(false); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-sticky-note userDropdownMenuIcon"></i>' +
-									'<span>' + "Personal Notes" + '</span>' +
-								'</div>' +
-					
-								'<div class="userDropdownMenuItem" onclick="go(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-user userDropdownMenuIcon"></i>' +
-									'<span>' + "My Account" + '</span>' +
-								'</div>' +
-                                
-                                '<div id="userDropdownMenuDivider"></div>';
-					
-					if (logoutControls.logoutUrl != null) {
-						logoutControl += '<div class="userDropdownMenuItem" onclick="QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu); window.location.href=\'' + logoutControls.logoutUrl + '\'">' +
-							'<i class="fa fa-sign-out userDropdownMenuIcon"></i>' +
-								'<span>' + "Logout" + '</span>' +
-						'</div>';
-					}
-                    
-                    logoutControl += '</div></div></div>';
-                }
-            }
-            if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
-            
-            setTimeout(updateUserDropdown, 100);
+            setTimeout(updateUserDropdownVisibility, 100);
 
             // Setup the context menu
             document.onclick = function (e) { hideContextMenu(); }
@@ -2686,6 +2670,7 @@
                     QV('uiMenu', false);
                     QV('topMenu', false);
                     updateNightModeIcon();
+                    updateMobileTopBarVisibility();
                 } else {
                     userDropdownMenu.style.display = 'none';
                     var uiSubmenu = Q('uiSubmenu');
@@ -2729,21 +2714,27 @@
         function toggleUISubmenu(event) {
             if (event) {
                 event.stopPropagation();
+                event.preventDefault();
             }
             var uiSubmenu = Q('uiSubmenu');
             if (uiSubmenu) {
                 var isVisible = (uiSubmenu.style.display == 'block');
-                uiSubmenu.style.display = isVisible ? 'none' : 'block';
                 
-                var chevronIcon = document.querySelector('.userDropdownMenuItem[onclick*="toggleUISubmenu"] .fa-chevron-right');
-                if (chevronIcon) {
-                    if (isVisible) {
-                        chevronIcon.style.transform = 'rotate(0deg)';
-                    } else {
-                        chevronIcon.style.transform = 'rotate(90deg)';
+                if (isVisible) {
+                    uiSubmenu.style.display = 'none';
+                    uiSubmenu.classList.remove('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.remove('rotated');
                     }
-                }
-                if (!isVisible) {
+                    document.removeEventListener('click', closeUISubmenu);
+                } else {
+                    uiSubmenu.style.display = 'block';
+                    uiSubmenu.classList.add('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.add('rotated');
+                    }
                     setTimeout(function() {
                         document.addEventListener('click', closeUISubmenu);
                     }, 10);
@@ -2757,7 +2748,11 @@
             if (uiSubmenu && userDropdown) {
                 if (!uiSubmenu.contains(event.target) && !userDropdown.contains(event.target)) {
                     uiSubmenu.style.display = 'none';
-                    resetChevronArrow();
+                    uiSubmenu.classList.remove('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.remove('rotated');
+                    }
                     document.removeEventListener('click', closeUISubmenu);
                 }
             }
@@ -2771,6 +2766,21 @@
             toggleStackMenu(0);
             if (webPageStackMenu && (xxcurrentView >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
             adjustPanels();
+        }
+
+        function updateMobileTopBarVisibility() {
+            try {
+                var items = document.querySelectorAll('.mobile-menu-item');
+                for (var i = 0; i < items.length; i++) {
+                    if ((uiMode == 2) || (uiMode == 3)) {
+                        items[i].classList.add('d-none');
+                    } else {
+                        if (!(items[i].classList.contains('users-menu-item') || items[i].classList.contains('files-menu-item') || items[i].classList.contains('server-menu-item'))) {
+                            items[i].classList.remove('d-none');
+                        }
+                    }
+                }
+            } catch (ex) { }
         }
 
         function toggleNightMode() {
@@ -2952,6 +2962,7 @@
             QV('p2AccountImageFrame', !accountSettingsLocked)
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
+            try { (QS('LeftMenuMyServer').display == 'none') ? QC('mobileServerMenuItem').add('d-none') : QC('mobileServerMenuItem').remove('d-none'); } catch (e) { }
             QV('MainMenuMyServer', siteRights & 21);
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
@@ -2960,6 +2971,7 @@
             QV('p2ServerActionsConfig', (siteRights & 16) && ((serverFeatures & 128) != 0));
             QV('MainMenuMyFiles', siteRights & 8);
             QV('LeftMenuMyFiles', siteRights & 8);
+            try { (QS('LeftMenuMyFiles').display == 'none') ? QC('mobileFilesMenuItem').add('d-none') : QC('mobileFilesMenuItem').remove('d-none'); } catch (e) { }
             if (((siteRights & 8) == 0) && (xxcurrentView == 5)) { setDialogMode(0); go(1); }
             if (currentNode != null) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
@@ -3089,6 +3101,7 @@
             // Adjust "My Users" tabs
             QV('MainMenuMyUsers', ((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0)));
             QV('LeftMenuMyUsers', ((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0)));
+            try { (QS('LeftMenuMyUsers').display == 'none') ? QC('mobileUsersMenuItem').add('d-none') : QC('mobileUsersMenuItem').remove('d-none'); } catch (e) { }
             QV('UsersGeneral', ((users != null) && ((features & 4) == 0)));
             QV('UsersGroups', ((users != null) && ((features & 4) == 0)));
             QV('UsersRecordings', ((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0));
@@ -3519,6 +3532,7 @@
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     if ((xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid)) {
                         var x = '<div class=dialogText>';
+                        if (currentNode.firstconnect) { x += addHtmlValue2("First agent connection", printDateTime(new Date(currentNode.firstconnect))); }
                         if (currentNode.lastconnect) { x += addHtmlValue2("Last agent connection", printDateTime(new Date(currentNode.lastconnect))); }
                         if (currentNode.lastaddr) {
                             var splitip = currentNode.lastaddr.split(':');
@@ -8573,6 +8587,7 @@
                     var y = [];
                     if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                     if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                     if (y.length > 0) x += addDeviceAttribute("Windows Defender", y.join(', '));
                 }
 
@@ -12672,7 +12687,7 @@
                 }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { oldname: renamefile }));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
         }
@@ -13331,6 +13346,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
@@ -16511,10 +16527,9 @@
                 if (checkboxes[i].checked) { renamefile = checkboxes[i].value; }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5renamefileEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile, newname: Q('p5renameinput').value}); });
             focusTextBox('p5renameinput'); p5fileNameCheck();
         }
-        function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() {
@@ -18922,6 +18937,174 @@
             meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUser._id });
         }
 
+        
+        //
+        // UserDropDown Menu 
+        //
+
+        var userDropdownOpen = false;
+        var uiSubmenuOpen = false;
+
+        function initializeUserDropdown() {
+            var dropdownButton = Q('userDropdownButton');
+            var dropdownMenu = Q('userDropdownMenu');
+            var uiSettingsButton = document.querySelector('.userDropdownUISettings');
+            var uiSubmenu = Q('uiSubmenu');
+            
+            if (!dropdownButton || !dropdownMenu) return;
+            
+            QS('uiSubmenu').display = 'none';
+            QS('uiSubmenu').opacity = '0';
+            QS('uiSubmenu').transform = 'translateX(12px)';
+            dropdownMenu.classList.remove('show');
+
+                dropdownButton.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    userDropdownOpen = !userDropdownOpen;
+                    dropdownMenu.classList.toggle('show');
+                    if (!userDropdownOpen) {
+                        QS('uiSubmenu').display = 'none';
+                        QS('uiSubmenu').opacity = '0';
+                        QS('uiSubmenu').transform = 'translateX(12px)';
+                        uiSubmenuOpen = false;
+                        resetChevronArrow();
+                    }
+                };
+
+            document.addEventListener('click', function(e) {
+                var uiSubmenu = Q('uiSubmenu');
+                if (!dropdownMenu.contains(e.target) && !dropdownButton.contains(e.target) && !uiSubmenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                    QS('uiSubmenu').display = 'none';
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                    userDropdownOpen = false;
+                    uiSubmenuOpen = false;
+                    resetChevronArrow();
+                }
+            });
+        }
+
+        function toggleUISubmenu() {
+            uiSubmenuOpen = !uiSubmenuOpen;
+            
+            var uiSubmenu = Q('uiSubmenu');
+            var isDesktop = window.innerWidth > 769;
+            var reduceMotion = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            
+            if (uiSubmenuOpen) {
+                QS('uiSubmenu').display = 'block';
+                
+                if (isDesktop && (reduceMotion == false)) {
+                    setTimeout(function() {
+                        QS('uiSubmenu').opacity = '1';
+                        QS('uiSubmenu').transform = 'translateX(0)';
+                    }, 10);
+                } else {
+                    QS('uiSubmenu').opacity = '1';
+                    QS('uiSubmenu').transform = 'translateX(0)';
+                }
+            } else {
+                if (isDesktop && (reduceMotion == false)) {
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                    setTimeout(function() {
+                        QS('uiSubmenu').display = 'none';
+                    }, 300);
+                } else {
+                    QS('uiSubmenu').display = 'none';
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                }
+            }
+            
+            var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+            if (chevronIcon) {
+                chevronIcon.style.transform = uiSubmenuOpen ? 'rotate(90deg)' : '';
+            }
+        }
+
+        function handleUserMenuItem(action) {
+            Q('userDropdownMenu').classList.remove('show');
+            QS('uiSubmenu').display = 'none';
+            QS('uiSubmenu').opacity = '0';
+            QS('uiSubmenu').transform = 'translateX(12px)';
+            userDropdownOpen = false;
+            uiSubmenuOpen = false;
+            resetChevronArrow();
+
+            switch(action) {
+                case 'devices': goForward('devices'); break;
+                case 'events': goForward('events'); break;
+                case 'users': goForward('users'); break;
+                case 'files': goForward('files'); break;
+                case 'server': goForward('server'); break;
+                case 'toggle-modern-ui': toggleBootstrapUIMode(); break;
+                case 'left-bar': userInterfaceSelectMenu(1); break;
+                case 'top-bar': userInterfaceSelectMenu(2); break;
+                case 'fixed-width': userInterfaceSelectMenu(3); break;
+                case 'toggle-footer': toggleFooterBarMode(); break;
+                case 'toggle-night': toggleNightMode(); break;
+                case 'notes': showNotes(false); break;
+                case 'account': go(2); break;
+                case 'logout': 
+                    if (logoutControls && logoutControls.logoutUrl) {
+                        window.location.href = logoutControls.logoutUrl;
+                    }
+                    break;
+            }
+        }
+
+        function resetChevronArrow() {
+            var arrow = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+            if (arrow) arrow.style.transform = '';
+        }
+
+        function updateUserDropdownVisibility() {
+            var userDropdown = Q('userDropdown');
+            var dropdownName = Q('userDropdownName');
+            var dropdownImage = Q('userDropdownImage');
+            
+            if (logoutControls && logoutControls.name) {
+                QS('userDropdown').display = 'block';
+                dropdownName.textContent = logoutControls.name;
+                
+                if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
+                    var rnd = userinfo.accountImageRnd || Math.floor(Math.random() * 9999999999);
+                    dropdownImage.src = 'userimage.ashx?rnd=' + rnd;
+                }
+            } else {
+                QS('userDropdown').display = 'none';
+            }
+        }
+
+        function updateNightModeIcon() {
+            var nightModeItem = document.querySelector('.userDropdownMenuItem[data-action="toggle-night"]');
+            if (nightModeItem) {
+                var icon = nightModeItem.querySelector('#nightModeIcon');
+                var textSpan = nightModeItem.querySelector('#nightModeText');
+                if (icon && textSpan) {
+                    var isNightMode = document.body.classList.contains('night');
+                    var iconClass = isNightMode ? 'fa-sun' : 'fa-moon';
+                    var text = isNightMode ? "Toggle Light Mode" : "Toggle Dark Mode";
+                    var newIcon = document.createElement('i');
+                    newIcon.id = 'nightModeIcon';
+                    newIcon.className = 'fa ' + iconClass + ' userDropdownMenuIcon night-mode-icon';
+                    icon.parentNode.replaceChild(newIcon, icon);
+                    textSpan.textContent = text;
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUserDropdown();
+            updateUserDropdownVisibility();
+            updateNightModeIcon();
+        });
+
+
+
+
         //
         // MY USER EVENTS
         //
@@ -19632,29 +19815,6 @@
         }
         setupNotificationClickOutside();
 
-        // Update night mode icon and text in dropdown menu
-        function updateNightModeIcon() {
-            var nightModeItem = document.querySelector('.userDropdownMenuItem[onclick*="toggleNightMode"]');
-            if (nightModeItem) {
-                var icon = nightModeItem.querySelector('.userDropdownMenuIcon');
-                var textSpan = nightModeItem.querySelector('span');
-                if (icon && textSpan) {
-                    var isNightMode = document.body.classList.contains('night');
-                    var iconClass = isNightMode ? 'fa-sun' : 'fa-moon';
-                    var text = isNightMode ? "Toggle Light Mode" : "Toggle Dark Mode";
-                    var newIcon = document.createElement('i');
-                    newIcon.className = 'fa ' + iconClass + ' userDropdownMenuIcon';
-                    icon.parentNode.replaceChild(newIcon, icon);
-                    textSpan.textContent = text;
-                }
-            }
-        }
-        function resetChevronArrow() {
-            var chevronIcon = document.querySelector('.userDropdownMenuItem[onclick*="toggleUISubmenu"] .fa-chevron-right');
-            if (chevronIcon) {
-                chevronIcon.style.transform = 'rotate(0deg)';
-            }
-        }
         
         // Refresh the notification box
         function drawNotifications() {

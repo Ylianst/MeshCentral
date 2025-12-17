@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:lts-alpine3.22 AS builder
+FROM node:22-alpine3.22 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_EXTRACT="yes"
@@ -47,25 +47,26 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM alpine:3.22 AS dep-compiler
+FROM node:22-alpine3.22 AS dep-compiler
 
-RUN apk update && \
-    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ jq make nodejs npm python3 tzdata
+        bash gcc g++ jq make python3 tzdata
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
 
 RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
     && npm i --package-lock-only \
-    && npm ci
+    && npm ci --omit=dev \
+    && npm cache clean --force
 
-### STAGE 3 RUNTIME
+### STAGE 3 BUILDING.
 
-FROM alpine:3.22 AS runtime
+FROM node:22-alpine3.22 AS finalizer
+#FROM alpine:3.22 AS finalizer
 
-# # Copy prepared app from builder stage
+# copy files from previous layer
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 
 # environment variables
@@ -122,12 +123,12 @@ ENV MARIADB_HOST="" \
     MARIADB_PASS="" \
     MARIADB_DATABASE=""
 
+RUN mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 
-RUN apk update && \
-    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash curl jq nodejs npm tzdata && \
+        bash curl jq tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
@@ -189,25 +190,22 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             exit 1;; \
     esac
 
-# install dependencies from package.json
-RUN cd meshcentral && \
-    npm cache clean --force && \
-    rm -rf /root/ /tmp/
+# Remove left over files and cache
+RUN cd meshcentral \
+    && rm -rf /root /tmp/* /var/tmp/* /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html \
+    && npm cache clean --force
 
 # Expose needed ports
 EXPOSE 80 443
 
-# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman.
+# These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman. Dummy-proofing.
 VOLUME /opt/meshcentral/meshcentral-data
 VOLUME /opt/meshcentral/meshcentral-files
 VOLUME /opt/meshcentral/meshcentral-web
 VOLUME /opt/meshcentral/meshcentral-backups
 
 # Copy images from Git repo, place it before ending so recompilation can make good use of cache.
-COPY ./docker/entrypoint.sh /opt/meshcentral/entrypoint.sh
+COPY ./docker/entrypoint.sh  /opt/meshcentral/entrypoint.sh
 COPY ./docker/config.json.template /opt/meshcentral/config.json.template
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -k --fail https://localhost:443/health.ashx || exit 1
 
 ENTRYPOINT  ["bash", "/opt/meshcentral/entrypoint.sh"]

@@ -1,3 +1,5 @@
+# Secure
+
 ## 🔒 Increased Security Installation on Debian/Ubuntu
 
 For enhanced security on Debian-based Linux distributions (like Ubuntu), it's best practice to run **MeshCentral** under a dedicated, low-privilege user account. This prevents the server from making unauthorized changes to the system.

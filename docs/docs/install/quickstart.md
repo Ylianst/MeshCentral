@@ -1,3 +1,5 @@
+# Quickstart
+
 ## 🚀 Quick Start Guide: Basic NPM Installation
 
 MeshCentral is platform-agnostic, running almost anywhere thanks to being primarily written in JavaScript. This guide covers the simplest way to get started using **NPM**.
