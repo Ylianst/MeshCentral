@@ -523,6 +523,57 @@ function windows_identifiers()
         }
     } catch (ex) { }
 
+    // Windows Batteries
+    IntToStrLE = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); };
+    try {
+        function mergeJSONArrays() {
+            var resultMap = {};
+            var result = [];
+            // Loop through all arguments (arrays)
+            for (var i = 0; i < arguments.length; i++) {
+                var currentArray = arguments[i];
+                // Skip if not an array
+                if (!currentArray || currentArray.constructor !== Array) {
+                    continue;
+                }
+                // Process each object in the array
+                for (var j = 0; j < currentArray.length; j++) {
+                    var obj = currentArray[j];
+                    // Skip if not an object or missing InstanceName
+                    if (!obj || typeof obj !== 'object' || !obj.InstanceName) {
+                        continue;
+                    }
+                    var name = obj.InstanceName;
+                    // Create new entry if it doesn't exist
+                    if (!resultMap[name]) {
+                        resultMap[name] = { InstanceName: name };
+                        result.push(resultMap[name]);
+                    }
+                    // Copy all properties except InstanceName
+                    for (var key in obj) {
+                        if (obj.hasOwnProperty(key) && key !== 'InstanceName') {
+                            resultMap[name][key] = obj[key];
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        values = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryCycleCount",['InstanceName','CycleCount']);
+        var values2 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
+        var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
+        var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
+        var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
+        for (i = 0; i < values5.length; ++i) {
+            if (values5[i].Chemistry) {
+                values5[i].Chemistry = IntToStrLE(parseInt(values5[i].Chemistry));
+            }
+        }
+        var values6 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
+        ret.battery = mergeJSONArrays(values, values2, values3, values4, values5, values6);
+    }
+    catch (ex) { }
+
     return (ret);
 }
 function macos_identifiers()
