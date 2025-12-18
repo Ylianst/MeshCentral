@@ -13469,6 +13469,7 @@
                     if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
                     if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
                     if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }   
                     x += '</div>';
                 }
                 x += '</table>';
