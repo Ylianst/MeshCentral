@@ -388,6 +388,51 @@ function linux_identifiers()
         }
     } catch (ex) { }
 
+    // Linux Batteries
+    try {
+        var batteries = require('fs').readdirSync('/sys/class/power_supply/');
+        if (batteries.length != 0) {
+            values.battery = [];
+            for (var i in batteries) {
+                const filesToRead = [
+                    'capacity', 'cycle_count', 'energy_full', 'energy_full_design',
+                    'energy_now', 'manufacturer', 'model_name', 'power_now',
+                    'serial_number', 'status', 'technology', 'voltage_now'
+                ];
+                const thedata = {};
+                for (var x in filesToRead) {
+                    try {   
+                        const content = require('fs').readFileSync('/sys/class/power_supply/' + batteries[i] + '/' + filesToRead[x]).toString().trim();
+                        thedata[filesToRead[x]] = /^\d+$/.test(content) ? parseInt(content, 10) : content;
+                    } catch (err) { }
+                }
+                if (Object.keys(thedata).length === 0) continue; // No data read, skip
+                const status = (thedata.status || '').toLowerCase();
+                const isCharging = status === 'charging';
+                const isDischarging = status === 'discharging';
+                const toMilli = function (val) { return Math.round((val || 0) / 1000) }; // Convert from µ units to m units (divide by 1000)
+                const batteryJson = {
+                    "InstanceName": batteries[i],
+                    "CycleCount": thedata.cycle_count || 0,
+                    "FullChargedCapacity": toMilli(thedata.energy_full),
+                    "Chemistry": (thedata.technology || ''),
+                    "DesignedCapacity": toMilli(thedata.energy_full_design),
+                    "DeviceName": thedata.model_name || "Battery",
+                    "ManufactureName": thedata.manufacturer || "Unknown",
+                    "SerialNumber": thedata.serial_number || "unknown",
+                    "ChargeRate": isCharging ? toMilli(thedata.power_now) : 0,
+                    "Charging": isCharging,
+                    "DischargeRate": isDischarging ? toMilli(thedata.power_now) : 0,
+                    "Discharging": isDischarging,
+                    "RemainingCapacity": toMilli(thedata.energy_now),
+                    "Voltage": toMilli(thedata.voltage_now),
+                    "Health": (thedata.energy_now && thedata.energy_full_design ? Math.floor((thedata.energy_now / thedata.energy_full_design) * 100) : 0)
+                };
+                values.battery.push(batteryJson);
+            }
+        }
+    } catch (ex) { }
+
     return (values);
 }
 
@@ -561,18 +606,34 @@ function windows_identifiers()
         }
         values = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryCycleCount",['InstanceName','CycleCount']);
         var values2 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
-        var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
-        var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
-        var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
-        for (i = 0; i < values5.length; ++i) {
-            if (values5[i].Chemistry) {
-                values5[i].Chemistry = IntToStrLE(parseInt(values5[i].Chemistry));
+        var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
+        var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
+        for (i = 0; i < values4.length; ++i) {
+            if (values4[i].Chemistry) {
+                values4[i].Chemistry = IntToStrLE(parseInt(values4[i].Chemistry));
             }
         }
-        var values6 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
+        var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
+        var values6 = [];
+        if (values4.length > 0 && values5.length > 0) {
+            for (i = 0; i < values5.length; ++i) {
+                for (var j = 0; j < values4.length; ++j) {
+                    if (values5[i].InstanceName == values4[j].InstanceName) {
+                        if (values4[j].DesignedCapacity && values4[j].DesignedCapacity > 0) {
+                            values6[i] = { 
+                                Health: Math.floor((values5[i].RemainingCapacity / values4[j].DesignedCapacity) * 100),
+                                InstanceName: values5[i].InstanceName
+                            };
+                        } else {
+                            values6[i] = { Health: 0, InstanceName: values5[i].InstanceName };
+                        }
+                        break;
+                    }
+                }
+            }
+        }
         ret.battery = mergeJSONArrays(values, values2, values3, values4, values5, values6);
-    }
-    catch (ex) { }
+    } catch (ex) { }
 
     return (ret);
 }
