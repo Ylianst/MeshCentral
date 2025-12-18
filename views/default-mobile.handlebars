@@ -13,6 +13,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{{domainurl}}}favicon-32x32.png">
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    {{{customCSSTags}}}
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
     <meta name="apple-mobile-web-app-title" content="{{{title}}}">
@@ -30,6 +31,7 @@
     <script type="text/javascript" src="scripts/zlib-adler32{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-crc32{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    {{{customJSTags}}}
     <meta name="msapplication-TileColor" content="#00aba9">
     <meta name="theme-color" content="#ffffff">
     <title>{{{title}}}</title>
@@ -752,7 +754,7 @@
                         </tr>
                     </table>
                     <div id=p3info style="overflow-y:auto;position:absolute;top:55px;bottom:0px;width:100%">
-                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" style="position:absolute;right:8px;top:7px;border-radius:8px;box-shadow:0px 0px 7px #000" />
+                        <img id="p2AccountImage" alt="" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" style="position:absolute;right:8px;top:7px;border-radius:8px;box-shadow:0px 0px 7px #000" />
                         <div style="margin-left:8px">
                             <div id="p3AccountActions">
                                 <div id="p2AccountSecurity" style="display:none">
@@ -1291,8 +1293,8 @@
         // Process server-side web state
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
-        for (var i in webState) { localStorage.setItem(i, webState[i]); }
-        if (webState && !webState.loctag) { delete localStorage.removeItem('loctag'); }
+        for (var i in webState) { try { localStorage.setItem(i, webState[i]); } catch (ex) { } }
+        if (webState && !webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         // Fetch URL arguments & do sanitation
         var urlargs = parseUriArgs();
@@ -1539,7 +1541,8 @@
                     files = null;
                 }
                 if (serverinfo.logoutonidlesessiontimeout) {
-                    window.location.href = 'logout';
+                    if (urlargs.key) { window.location.href = 'logout?key=' + urlargs.key; }
+					else { window.location.href = 'logout'; }
                 }
             }
         }
@@ -2916,6 +2919,14 @@
             return format("{0}g left", Math.round(bytes / 1024 / 1024 / 1024));
         }
 
+        function getNetworkSpeed(bitsPerSecond) {
+            if (bitsPerSecond <= 0) return "0 bps";
+            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
+            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
+        }
+
         function p5getQuotabar(f) {
             while (f.t > 1 && f.t != 4) { f = f.parent; }
             if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
@@ -3083,17 +3094,17 @@
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
             QS('SearchInput')['background-color'] = (x == '') ? '#FFFFFF' : '#FDFFBE';
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null;
-            if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
-            else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
-            else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
-            else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
-            else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
-            else if (x.startsWith("tag:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("tag:".length); }
-            else if (x.startsWith("t:".toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring("t:".length); }
-            else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("atag:".length).toLowerCase(); }
-            else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring("a:".length).toLowerCase(); }
-            else if (x.startsWith("os:".toLowerCase())) { osSearch = Q('SearchInput').value.trim().substring("os:".length).toLowerCase(); }
-            else if (x.startsWith("amt:".toLowerCase())) { amtSearch = Q('SearchInput').value.trim().substring("amt:".length).toLowerCase(); }
+            if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
+            else if (x.startsWith('u:'.toLowerCase())) { userSearch = x.substring('u:'.length); }
+            else if (x.startsWith('ip:'.toLowerCase())) { ipSearch = x.substring('ip:'.length); }
+            else if (x.startsWith('group:'.toLowerCase())) { groupSearch = x.substring('group:'.length); }
+            else if (x.startsWith('g:'.toLowerCase())) { groupSearch = x.substring('g:'.length); }
+            else if (x.startsWith('tag:'.toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring('tag:'.length); }
+            else if (x.startsWith('t:'.toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring('t:'.length); }
+            else if (x.startsWith('atag:'.toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring('atag:'.length).toLowerCase(); }
+            else if (x.startsWith('a:'.toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring('a:'.length).toLowerCase(); }
+            else if (x.startsWith('os:'.toLowerCase())) { osSearch = Q('SearchInput').value.trim().substring('os:'.length).toLowerCase(); }
+            else if (x.startsWith('amt:'.toLowerCase())) { amtSearch = Q('SearchInput').value.trim().substring('amt:'.length).toLowerCase(); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -3992,7 +4003,9 @@
                 QH('MainComputerState', '<span style=font-size:12px>' + powerstate + '</span>');
 
                 // Set the node icon
-                QH('MainComputerImage', '<div class="i' + node.icon + '"></div>');
+                var icon = node.icon;
+                if (((!node.conn) || (node.conn == 0)) && (node.mtype != 3)) { icon += ' gray'; }
+                QH('MainComputerImage', '<div class="i' + icon + '"></div>');
 
                 // Request the power timeline
                 if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) {
@@ -6334,6 +6347,7 @@
                 var y = [];
                 if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                 if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                 if (y.length > 0) x += addDetailItem("Windows Defender", y.join(', '));
             }
 
@@ -6372,6 +6386,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
@@ -6432,6 +6447,9 @@
                         } else {
                             x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m[0].mac)));
                         }
+                    }
+                    if (typeof m[0].speed == 'number' && (m[0].speed != 9223372036854775807 && m[0].speed > 0)) {
+                        x += addDetailItem("Interface Speed", format("{0}", getNetworkSpeed(m[0].speed)));
                     }
                     for (var j = 0; j < m.length; j++) {
                         var iplayer = m[j], items = [];
@@ -6500,12 +6518,40 @@
             if (hardware.tpm) {
                 var x = '', tpm = hardware.tpm;
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
-                if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
-                if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
-                if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm'}); }
+                if (tpm.ManufacturerId) { x += addDetailItem("Identifier", EscapeHtml(tpm.ManufacturerId), s); }
+                if (tpm.ManufacturerVersion) { x += addDetailItem("Version", EscapeHtml(tpm.ManufacturerVersion), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("Activated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("Enabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("Owned", (tpm.IsOwned ? "Yes" : "No"), s); }
+                if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm' }); }
+            }
+
+            // Batteries
+            if (hardware.battery) {
+                var x = '';
+                x += '<table style=width:100%>';
+                for (var i in hardware.battery) {
+                    var battery = hardware.battery[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
+                    if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
+                    if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
+                    if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
+                    if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Battery", html: x, img: 'battery'}); }
             }
 
             if (hardware.windows) {

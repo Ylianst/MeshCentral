@@ -37,6 +37,6 @@ Some options you can find relate to:
 
 and more!
 
-![Server Options](<images/2023-11-29_140845 - mesh json1.png>)
+![Server Options](images/2023-11-29_140845 - mesh json1.jpg)
 
-![Domain Options](<images/2023-11-29_140845 - mesh json2.png>)
+![Domain Options](images/2023-11-29_140845 - mesh json2.jpg)

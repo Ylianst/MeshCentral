@@ -4,6 +4,7 @@
 
 You can search your list of agents using any of these criteria using the filter box (also viewable in the tooltip of the Filter box):
 
+```
 user:xxx or u:xxx
 ip:xxx
 group:xxx or g:xxx
@@ -17,6 +18,7 @@ wsc:noav
 wsc:noupdate
 wsc:nofirewall
 wsc:any
+```
 
 ## General
 
@@ -50,7 +52,7 @@ Chat
 
 ### 7 Day Power State
 
-![](images/7daypowerstate.png)
+![](images/7daypowerstate.jpg)
 
 Legend
 
@@ -64,7 +66,7 @@ Legend
 
 You can set alternate port in the link if it's not default by right-clicking.
 
-![](images/general_alternateports.png)
+![](images/general_alternateports.jpg)
 
 * Interfaces
 * Location
@@ -92,13 +94,13 @@ Right-clicking on Connect button will give you additional options:
 * Ask Consent
 * Privacy Bar
 
-![](images/desktop_connectbutton.png)
+![](images/desktop_connectbutton.jpg)
 
 ### RDP Connect Button
 
 Right-clicking on RDP Connect button allows you to specify Alternate Port.
 
-![](images/desktop_rdpconnectbutton.png)
+![](images/desktop_rdpconnectbutton.jpg)
 
 ### Intel AMT Connect Button
 
@@ -108,7 +110,7 @@ Uses Intel AMT to control video output of the hardware video card.
 
 **Bottom left include:**
 
-![desktop bottom left](images/desktop_buttonsbottomleft.png)
+![desktop bottom left](images/desktop_buttonsbottomleft.jpg)
 
 * Sending special Keys
 
@@ -116,7 +118,7 @@ Uses Intel AMT to control video output of the hardware video card.
 
 Actions
 
-![](images/desktop_buttonstopright_actions.png)
+![](images/desktop_buttonstopright_actions.jpg)
 
 * Wake Up
 * Run Commands
@@ -127,7 +129,7 @@ Actions
 
 Settings
 
-![](images/desktop_settings.png)
+![](images/desktop_settings.jpg)
 
 * Quality
 * Scaling
@@ -138,7 +140,7 @@ Settings
 * Automatic Clipboard
 * Lock on Disconnect
 
-![](images/desktop_buttonstopright_other.png)
+![](images/desktop_buttonstopright_other.jpg)
 
 * Session recording indicator
 * Screen rotating
@@ -147,7 +149,7 @@ Settings
 
 Bottom right include:
 
-![](images/desktop_buttonsbottomright.png)
+![](images/desktop_buttonsbottomright.jpg)
 
 * Session Sharing with Guest
 * Toggling keyboard lockout on guest
@@ -177,7 +179,7 @@ Right-clicking on Connect button allows you to:
 * User Powershell (Windows)
 * SSH (Linux)
 
-![](images/terminal_connectbutton.png)
+![](images/terminal_connectbutton.jpg)
 
 ## Files
 
@@ -202,7 +204,7 @@ Agent information that includes:
 
 Note you can show CPU and Memory usage info by clicking the icon in the top right corner
 
-![](images/details_cpuram.png)
+![](images/details_cpuram.jpg)
 
 ## Intel AMT
 

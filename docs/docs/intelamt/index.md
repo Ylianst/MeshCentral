@@ -1,7 +1,7 @@
 # Intel AMT
 
 
-Intel AMT Guide [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCentral Intel AMT Guide v0.0.1.odt?raw=true)
+Intel AMT Guide [as .odt](../documents/MeshCentral%20Intel%20AMT%20Guide%20v0.0.1.odt)
 
 ## Video Walkthru
 

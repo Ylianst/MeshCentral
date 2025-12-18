@@ -1,3 +1,5 @@
+# Debugging
+
 ## Websockets Video
 
 Make sure you understand how MeshCentral works with your browser using chrome developer tools.
@@ -235,7 +237,7 @@ Of course, this is just for debugging.
 
 <https://serverurl/meshagents> aka trying figure out what this is
 
-![ID](images/determine-id.png)
+![ID](images/determine-id.jpg)
 
 ### Pull down cert .crt file from internet
 
@@ -370,12 +372,12 @@ Same idea, browser side instead of agent side.
 
 To debug issues, confirm that Intel AMT is active and there MeshCentral is not showing any red errors on the "Intel AMT" line:
 
-![](images/amt_troubleshoot1.png)
+![](images/amt_troubleshoot1.jpg)
 
 Next, you can go in the "My Server / Trace" tab and enable tracing on the "Intel AMT Manager" like this:
 
-![](images/amt_troubleshoot2.png)
+![](images/amt_troubleshoot2.jpg)
 
 You can then open another tab and select to power off or power on Intel AMT, you should see "performPowerAction" with 2 or 8 depending on power on/off.
 
-![](images/amt_troubleshoot3.png)
+![](images/amt_troubleshoot3.jpg)

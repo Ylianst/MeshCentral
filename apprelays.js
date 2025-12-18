@@ -339,6 +339,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain, mtype) {
         var cookieStr = '';
         for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
         if (cookieStr.length > 0) { request += 'cookie: ' + cookieStr + '\r\n' } // If we have session cookies, set them in the header here
+        var reqCookies = parseRequestCookies(req.headers.cookie);
+        for (var i in reqCookies) { if ((i != 'xid') && (i != 'xid.sig')) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + reqCookies[i]); } }
+        if (cookieStr.length > 0) { request += 'cookie: ' + cookieStr + '\r\n' } // If we have session cookies, set them in the header here
         request += '\r\n';
         send(Buffer.from(request));
 

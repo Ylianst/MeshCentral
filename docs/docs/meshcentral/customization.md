@@ -10,7 +10,7 @@ Whitelabeling your MeshCentral installation to personalize it to your company's 
 
 You can put your own logo on the top of the web page. To get started, get the file “logoback.png” from the folder “node_modules/meshcentral/public/images” and copy it to your “meshcentral-data” folder. In this example, we will change the name of the file “logoback.png” to “title-mycompany.png”. Then use any image editor to change the image and place your logo.
 
-![](images/2022-05-19-00-38-51.png)
+![](images/2022-05-19-00-38-51.jpg)
 
 Once done, edit the config.json file and set one or all of the following values:
 
@@ -35,19 +35,19 @@ Once done, edit the config.json file and set one or all of the following values:
 
 This will set the title and sub-title text to empty and set the background image to the new title picture file. You can now restart the server and take a look at the web page. Both the desktop and mobile sites will change.
 
-![](images/2022-05-19-00-39-35.png)
+![](images/2022-05-19-00-39-35.jpg)
 
-![](images/2022-05-19-00-39-42.png)
+![](images/2022-05-19-00-39-42.jpg)
 
 The title image must a PNG image of size 450 x 66.
 
 You can also customize the server icon in the “My Server” tab. By default, it’s a picture of a desktop with a padlock.
 
-![](images/2022-05-19-00-40-00.png)
+![](images/2022-05-19-00-40-00.jpg)
 
 If, for example, MeshCentral is running on a Raspberry Pi. You may want to put a different picture at this location. Just put a “server.jpg” file that is 200 x 200 pixels in the “meshcentral-data” folder. The time MeshCentral page is loaded, you will see the new image.
 
-![](images/2022-05-19-00-40-13.png)
+![](images/2022-05-19-00-40-13.jpg)
 
 This is great to personalize the look of the server within the web site.
 
@@ -57,7 +57,7 @@ MeshCentral lets you change the icons for different devices shown in the Web Use
 To update device icons, you need to edit these files: `meshcentral-web/public/images/webp/iconsXX.webp` (`icons16.webp`, `icons32.webp`, `icons50.webp`, `icons100.webp`), and `meshcentral-web/public/images/iconsXX.png` (`icons16.png`, `icons32.png`, `icons50.png`, `icons64.png`, `icons100.png`) and the corresponding `meshcentral-web/public/images/icons256-X-1.png`. Make sure to keep the resolution of these files as it is. 
 
 By following these steps, you can customize any icon in MeshCentral. Just find and change the corresponding image files in the `meshcentral-web/public/images` folder. Similarly, you can also move other folders from `node_modules/meshcentral` to `meshcentral-web` while keeping the original folder structure. This allows you to modify other parts of MeshCentral too, like the `.handlebars` templates for the web interface. Simply copy files from `node_modules/meshcentral/views` to `meshcentral-web/views` and make your changes in `meshcentral-web`. This lets you match MeshCentral's look to your company's brand or your own style.   
-![](images/custom-web-icons.png)  
+![](images/custom-web-icons.jpg)  
 
 ### Customizing Web Style
 MeshCentral gives you the flexibility to override some or all of the web interface. An easy way to modify the style is to do the following:
@@ -99,7 +99,7 @@ You can customize the Agent to add your own logo, change the title bar, install 
 !!!note
 	The Customization must be done FIRST and BEFORE you deploy your agents! Once the agents have been deployed, any customization made afterwards, will not sync! This is because the setup files are customized on the fly, then when you install the agents, the exe and .msh file with the customizations in are copied over to the required folder, so you will need to reinstall the agent for agent customizations to take effect.
 
-![](images/2022-08-24-06-42-40.png)
+![](images/2022-08-24-06-42-40.jpg)
 
 ```json
 "domains": {
@@ -119,7 +119,7 @@ You can customize the Agent to add your own logo, change the title bar, install 
 }
 ```
 
-![agent icon](images/agentico.png)
+![agent icon](images/agentico.jpg)
 
 ## Terms of use
 

@@ -156,7 +156,7 @@ function linux_identifiers()
     // Fetch storage volumes using df
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
-    child.stdin.write('df -T | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+    child.stdin.write('df -T -x tmpfs -x devtmpfs -x efivarfs | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
     child.waitExit();
     try { ret.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
     child = null;
@@ -523,6 +523,57 @@ function windows_identifiers()
         }
     } catch (ex) { }
 
+    // Windows Batteries
+    IntToStrLE = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); };
+    try {
+        function mergeJSONArrays() {
+            var resultMap = {};
+            var result = [];
+            // Loop through all arguments (arrays)
+            for (var i = 0; i < arguments.length; i++) {
+                var currentArray = arguments[i];
+                // Skip if not an array
+                if (!currentArray || currentArray.constructor !== Array) {
+                    continue;
+                }
+                // Process each object in the array
+                for (var j = 0; j < currentArray.length; j++) {
+                    var obj = currentArray[j];
+                    // Skip if not an object or missing InstanceName
+                    if (!obj || typeof obj !== 'object' || !obj.InstanceName) {
+                        continue;
+                    }
+                    var name = obj.InstanceName;
+                    // Create new entry if it doesn't exist
+                    if (!resultMap[name]) {
+                        resultMap[name] = { InstanceName: name };
+                        result.push(resultMap[name]);
+                    }
+                    // Copy all properties except InstanceName
+                    for (var key in obj) {
+                        if (obj.hasOwnProperty(key) && key !== 'InstanceName') {
+                            resultMap[name][key] = obj[key];
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        values = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryCycleCount",['InstanceName','CycleCount']);
+        var values2 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
+        var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
+        var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
+        var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
+        for (i = 0; i < values5.length; ++i) {
+            if (values5[i].Chemistry) {
+                values5[i].Chemistry = IntToStrLE(parseInt(values5[i].Chemistry));
+            }
+        }
+        var values6 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
+        ret.battery = mergeJSONArrays(values, values2, values3, values4, values5, values6);
+    }
+    catch (ex) { }
+
     return (ret);
 }
 function macos_identifiers()
@@ -702,17 +753,12 @@ function hexToAscii(hexString) {
 
 function win_chassisType()
 {
-    // needs to be replaced with win-wmi but due to bug in win-wmi it doesnt handle arrays correctly
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
-    if (child == null) { return ([]); }
-    child.descriptorMetadata = 'process-manager';
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.stdin.write('Get-WmiObject Win32_SystemEnclosure | Select-Object -ExpandProperty ChassisTypes\r\n');
-    child.stdin.write('exit\r\n');
-    child.waitExit();
+    // use new win-wmi-fixed module to get arrays correctly for time being
     try {
-        return (parseInt(child.stdout.str));
+        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT ChassisTypes FROM Win32_SystemEnclosure', ['ChassisTypes']);
+        if (tokens[0]) {
+            return (parseInt(tokens[0]['ChassisTypes'][0]));
+        }
     } catch (e) {
         return (2); // unknown
     }

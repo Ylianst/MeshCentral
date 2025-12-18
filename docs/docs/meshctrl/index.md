@@ -1,6 +1,6 @@
 # MeshCtrl
 
-MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCtrlUsersGuide.pdf) [as .odt](https://github.com/Ylianst/MeshCentral/blob/master/docs/MeshCtrl User's Guide v0.0.1.odt?raw=true)
+MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCtrlUsersGuide.pdf) [as .odt](../documents/MeshCtrl%20User's%20Guide%20v0.0.1.odt)
 
 ## Video Walkthru
 

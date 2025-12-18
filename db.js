@@ -3011,15 +3011,26 @@ module.exports.CreateDB = function (parent, func) {
                 //if (id) { x._id = id; }
                 //obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             //};
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (extrasids == null) {
+                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                } else {
+                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                }
+            };
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (extrasids == null) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {

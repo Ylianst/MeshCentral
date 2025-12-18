@@ -58,6 +58,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Setup WebAuthn / FIDO2
     obj.webauthn = require('./webauthn.js').CreateWebAuthnModule();
 
+    if (process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) {
+        obj.httpsProxyAgent = new (require('https-proxy-agent').HttpsProxyAgent)(process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+    }
+
     // Variables
     obj.args = args;
     obj.parent = parent;
@@ -3188,6 +3192,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var customui = '';
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+                // Custom files (CSS and JS)
+                var customFiles = '';
+                if (domain.customFiles != null) { 
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+                } else if (domain.customfiles != null) {
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+                }
+
                 // Server features
                 var serverFeatures = 255;
                 if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
@@ -3215,9 +3227,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var webstateJSON = JSON.parse(webstate);
                 if (req.query.sitestyle != null) {
                     if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
-                } else if (domain.sitestyle == 3) {
-                    uiViewMode = 'default3';
                 } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                } else if (domain.sitestyle == 3) {
                     uiViewMode = 'default3';
                 }
                 // Refresh the session
@@ -3239,6 +3251,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,
                     customui: customui,
+                    customFiles: customFiles,
                     webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
                     footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, { 
                         'serverversion': obj.parent.currentVer,
@@ -3258,7 +3271,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig
-                }, dbGetFunc.req, domain), user);
+                }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;
             xdbGetFunc.res = res;
@@ -3356,7 +3369,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true))) { features2 += 0x00000010; } // No agent update
         if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
-        if ((typeof domain.passwordrequirements != 'object') || ((domain.passwordrequirements.logintokens !== false) && ((Array.isArray(domain.passwordrequirements.logintokens) == false) || (domain.passwordrequirements.logintokens.indexOf(user._id) >= 0)))) { features2 += 0x00000080; } // Indicates login tokens are allowed
+        if ((typeof domain.passwordrequirements != 'object') || ((domain.passwordrequirements.logintokens !== false) && ((Array.isArray(domain.passwordrequirements.logintokens) == false) || ((domain.passwordrequirements.logintokens.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => domain.passwordrequirements.logintokens.indexOf(key) >= 0)) )))) { features2 += 0x00000080; } // Indicates login tokens are allowed
         if (req.session.loginToken != null) { features2 += 0x00000100; } // LoginToken mode, no account changes.
         if (domain.ssh == true) { features2 += 0x00000200; } // SSH is enabled
         if (domain.localsessionrecording === false) { features2 += 0x00000400; } // Disable local recording feature
@@ -3380,6 +3393,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.devicesearchbargroupname === true) { features2 += 0x10000000; } // Search bar will find by group name too
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
+        if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
         return { features: features, features2: features2 };
     }
 
@@ -3455,6 +3469,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var customui = '';
         if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+        // Custom files (CSS and JS)
+        var customFiles = '';
+        if (domain.customFiles != null) { 
+            customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+        } else if (domain.customfiles != null) {
+            customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+        }
+
         // Get two-factor screen timeout
         var twoFactorTimeout = 300000; // Default is 5 minutes, 0 for no timeout.
         if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.twofactortimeout == 'number')) {
@@ -3493,6 +3515,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
+                customFiles: customFiles,
                 footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, { 
                     'serverversion': obj.parent.currentVer,
                     'servername': obj.getWebServerName(domain, req),
@@ -3504,7 +3527,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }),
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
                 messageid: msgid,
-                flashErrors: JSON.stringify(flashErrors),
+                flashErrors: JSON.stringify(flashErrors).replace(/"/g, '\\"'),
                 passhint: passhint,
                 
                 welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, { 
@@ -4476,15 +4499,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const nodeid = fields.attrib[0];
             obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                for (var i in files.files) {
-                    var file = files.files[i];
+                files.files.forEach(function (file) {
                     obj.fs.readFile(file.path, 'utf8', function (err, data) {
                         if (err != null) return;
                         data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                         obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
                         try { obj.fs.unlinkSync(file.path); } catch (e) { }
                     });
-                }
+                });
                 res.send('');
             });
         });
@@ -4519,14 +4541,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const nodeid = fields.attrib[0];
             obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                for (var i in files.files) {
-                    var file = files.files[i];
-
+                files.files.forEach(function (file) {
                     // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
                     parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
 
                     //try { obj.fs.unlinkSync(file.path); } catch (e) { } // TODO: Remove this file after 30 minutes.
-                }
+                });
                 res.send('');
             });
         });
@@ -4594,8 +4614,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 } else {
                     // More typical upload method, the file data is in a multipart mime post.
-                    for (var i in files.files) {
-                        var file = files.files[i], fpath = obj.path.join(xfile.fullpath, file.originalFilename);
+                    files.files.forEach(function (file) {
+                        var fpath = obj.path.join(xfile.fullpath, file.originalFilename);
                         if (obj.common.IsFilenameValid(file.originalFilename) && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
 
                             // See if we need to create the folder
@@ -4623,7 +4643,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
                             try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
                         }
-                    }
+                    });
                 }
             } else {
                 // Send a notification
@@ -4675,8 +4695,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             try { obj.fs.mkdirSync(serverpath); } catch (ex) { }
 
             // More typical upload method, the file data is in a multipart mime post.
-            for (var i in files.files) {
-                var file = files.files[i], ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
+            files.files.forEach(function (file) {
+                var ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
                 cmd.files.push({ name: file.originalFilename, target: ftarget });
                 // Rename the file
                 obj.fs.rename(file.path, fpath, function (err) {
@@ -4685,7 +4705,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { }); });
                     }
                 });
-            }
+            });
 
             // Instruct one of more agents to download a URL to a given local drive location.
             var tlsCertHash = null;
@@ -7803,8 +7823,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.authLog('setupDomainAuthStrategy', 'Azure profile: ' + JSON.stringify(userex));
                     var user = null;
                     if (userex != null) {
-                        var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
-                        if (typeof userex.email == 'string') { user.email = userex.email; }
+                        var user = { sid: '~azure:' + userex.unique_name.toLowerCase(), name: userex.name, strategy: 'azure' };
+                        if (typeof userex.email == 'string') { user.email = userex.email.toLowerCase(); }
                     }
                     return done(null, user);
                 }
@@ -7961,6 +7981,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
 
+            if (obj.httpsProxyAgent) {
+                // process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // add using environment variables if needs be not here
+                strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: obj.httpsProxyAgent });
+            }
             // Discover additional information if available, use endpoints from config if present
             let issuer
             try {
@@ -8060,23 +8084,71 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // Callback function must be able to grab info from API's using the access token, would prefer to use the token here.
-            function oidcCallback(tokenset, profile, verified) {
+            function oidcCallback(tokenset, profile, done) {
+                // Handle case where done might not be the third parameter
+                if (typeof done !== 'function') {
+                    // OpenID Connect strategy calls with (tokenset, done) instead of (tokenset, profile, done)
+                    if (typeof profile === 'function') {
+                        done = profile;
+                        profile = null;
+                    } else {
+                        parent.debug('error', 'OIDC: Unable to find callback function in parameters');
+                        return;
+                    }
+                }
+
+                // If profile is null/undefined, extract user info from the tokenset
+                if (!profile && tokenset && tokenset.id_token) {
+                    try {
+                        // Simple JWT decoder to extract user claims from id_token
+                        const parts = tokenset.id_token.split('.');
+                        if (parts.length === 3) {
+                            const payload = parts[1];
+                            const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+                            const decoded = JSON.parse(Buffer.from(paddedPayload, 'base64').toString());
+                            if (decoded) {
+                                profile = decoded;
+                            }
+                        }
+                    } catch (err) {
+                        parent.debug('error', `OIDC: Failed to decode id_token: ${err.message}`);
+                    }
+                }
+
                 // Initialize user object
                 let user = { 'strategy': 'oidc' }
                 let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null;
-                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null;
-                user.name = obj.common.validateString(profile.name) ? profile.name : null;
-                user.email = obj.common.validateString(profile.email) ? profile.email : null;
+                
+                user.sid = null;
+                if (profile && obj.common.validateString(profile.sub)) {
+                    user.sid = '~oidc:' + profile.sub;
+                } else if (profile && obj.common.validateString(profile.oid)) {
+                    user.sid = '~oidc:' + profile.oid;
+                } else if (profile && obj.common.validateString(profile.email)) {
+                    user.sid = '~oidc:' + profile.email;
+                } else if (profile && obj.common.validateString(profile.upn)) {
+                    user.sid = '~oidc:' + profile.upn;
+                }
+                
+                user.name = profile && obj.common.validateString(profile.name) ? profile.name : null;
+                user.email = profile && obj.common.validateString(profile.email) ? profile.email : null;
                 if (claims != null) {
                     user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid;
                     user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name;
                     user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email;
                 }
-                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
-                user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                
+                // Ensure we have a valid sid before proceeding
+                if (!user.sid) {
+                    parent.debug('error', `OIDC: No valid user identifier found in profile`);
+                    return done(new Error('OIDC: No valid user identifier found in profile'));
+                }
+                
+                user.emailVerified = profile && profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
+                user.groups = profile && obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
                 if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
-                    user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
+                    user.groups = profile && obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
                 }
 
                 // Setup end session enpoint if not already configured this requires an auth token
@@ -8096,16 +8168,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (strategy.groups && typeof user.preset == 'string') {
                     getGroups(user.preset, tokenset).then((groups) => {
                         user = Object.assign(user, { 'groups': groups });
-                        return verified(null, user);
+                        done(null, user);
                     }).catch((err) => {
                         let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
                         parent.debug('error', `${JSON.stringify(error)}`);
                         parent.authLog('oidcCallback', error.message);
                         user.groups = [];
-                        return verified(null, user);
+                        done(null, user);
                     });
                 } else {
-                    return verified(null, user);
+                    done(null, user);
                 }
 
                 async function getGroups(preset, tokenset) {
@@ -8116,6 +8188,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         const options = {
                             'headers': { authorization: 'Bearer ' + tokenset.access_token }
                         }
+                        if (obj.httpsProxyAgent) { options.agent = obj.httpsProxyAgent; }
                         const req = require('https').get(url, options, (res) => {
                             let data = []
                             res.on('data', (chunk) => {
@@ -8585,7 +8658,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
                 if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); ws.close(); } catch (e) { } return; }
                 obj.authenticate(s[0], s[1], domain, function (err, userid, passhint, loginOptions) {
-                    var user = obj.users[userid];
+                    var user = obj.users[userid];      
                     if ((err == null) && (user)) {
                         // Check if user as the "notools" site right. If so, deny this connection as tools are not allowed to connect.
                         if ((user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & SITERIGHT_NOMESHCMD)) {
@@ -8979,7 +9052,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
 
             // This is a super user that can see all device groups for a given domain
-            if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (nodes[0].domain == user.domain)) {
+            if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (nodes[0].domain == user.domain)) {
                 func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return;
             }
 
@@ -9037,7 +9110,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user == null) { return []; }
 
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) ) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) ) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]); } }
@@ -9068,7 +9141,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof user == 'string') { user = obj.users[user]; }
         if (user == null) { return []; }
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0)))) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0)))) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]._id); } }
@@ -9113,7 +9186,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return 0;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
 
         // Check direct user to device group permissions
         if (user.links == null) return 0;
@@ -9158,7 +9231,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return false;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
 
         // Check direct user to device group permissions
         if (user.links == null) { return false; }
@@ -9316,7 +9389,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Filter the user web site and only output state that we need to keep
     const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar','loctag','theme','lastThemes','uiViewMode'];
-    const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling', 'agentencoding']
+    const acceptableUserWebStateDesktopStrings = [
+        'encoding', 'showfocus', 'showmouse', 'quality', 'scaling', 'framerate', 'agentencoding', 'swapmouse',
+        'rmw', 'remotekeymap', 'autoclipboard', 'autolock', 'localkeymap', 'kvmrmw', 'rdpsize', 'rdpsmb',
+        'rdprmw', 'rdpautoclipboard', 'rdpflags'
+    ];
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
         if ((state == null) || (typeof state != 'object')) { return null; }
@@ -9396,6 +9473,93 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return null;
     }
 
+    function generateCustomCSSTags(customFilesObject, currentTemplate) {
+        var cssTags = '';
+        
+        cssTags += '<link keeplink=1 type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
+        
+
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesObject.css && Array.isArray(customFilesObject.css)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.css.length; i++) {
+                    cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFilesObject.css[i] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return cssTags.trim();
+    }
+
+    function generateCustomJSTags(customFilesObject, currentTemplate) {
+        var jsTags = '';
+        
+        jsTags += '<script keeplink=1 type="text/javascript" src="scripts/custom.js"></script>\n    ';
+        
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesObject.js && Array.isArray(customFilesObject.js)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.js.length; i++) {
+                    jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFilesObject.js[i] + '"></script>\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return jsTags.trim();
+    }
+    
     // Return the correct render page arguments.
     function getRenderArgs(xargs, req, domain, page) {
         var minify = (domain.minify == true);
@@ -9434,6 +9598,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // To mitigate any possible BREACH attack, we generate a random 0 to 255 bytes length string here.
         xargs.randomlength = (args.webpagelengthrandomization !== false) ? parent.crypto.randomBytes(parent.crypto.randomBytes(1)[0]).toString('base64') : '';
+
+        // Generate custom CSS and JS tags
+        if (xargs.customFiles) {
+            try {
+                var customFiles = JSON.parse(decodeURIComponent(xargs.customFiles));
+                xargs.customCSSTags = generateCustomCSSTags(customFiles, page);
+                xargs.customJSTags = generateCustomJSTags(customFiles, page);
+            } catch (ex) {
+                xargs.customCSSTags = generateCustomCSSTags(null, page);
+                xargs.customJSTags = generateCustomJSTags(null, page);
+            }
+        } else {
+            xargs.customCSSTags = generateCustomCSSTags(null, page);
+            xargs.customJSTags = generateCustomJSTags(null, page);
+        }
 
         return xargs;
     }

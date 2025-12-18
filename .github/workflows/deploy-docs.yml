@@ -20,5 +20,5 @@ jobs:
           python-version: 3.x
       - run: pip install --upgrade pip
       - run: pip install --upgrade setuptools wheel
-      - run: pip install mkdocs mkdocs-material pymdown-extensions
+      - run: pip install mkdocs mkdocs-material mkdocs-print-site-plugin pymdown-extensions
       - run: mkdocs gh-deploy --force
