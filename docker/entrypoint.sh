@@ -304,8 +304,9 @@ function install_stylishui() {
     fi
 
     # Looks good!
-    echo Found extracted contents at: $web_folder
-    mv ${web_folder}/* /opt/meshcentral/meshcentral-web
+    echo "Found extracted contents at: $web_folder"
+    rm -rf /opt/meshcentral/meshcentral-web
+    mv "${web_folder}" /opt/meshcentral/meshcentral-web
     rm /tmp/stylishui*
 
     return 0
