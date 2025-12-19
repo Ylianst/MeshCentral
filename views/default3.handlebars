@@ -8434,19 +8434,20 @@
 
                 // Add node name
                 var nname = EscapeHtml(node.name), nnameEx;
+                var only_nname = nname;
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
                 if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0 || (mesh.flags & 16)))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class="fa-solid fa-pencil fa-2xs"/></i></span>'; }
                 nnameEx = nname;
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
-                QH('p11deviceName', nname);
-                QH('p12deviceName', nname);
-                QH('p13deviceName', nname);
-                QH('p14deviceName', nname);
-                QH('p15deviceName', "Console - " + nname);
-                QH('p16deviceName', nname);
-                QH('p17deviceName', nname);
-                QH('p19deviceName', nname);
+                QH('p11deviceName', only_nname);
+                QH('p12deviceName', only_nname);
+                QH('p13deviceName', only_nname);
+                QH('p14deviceName', only_nname);
+                QH('p15deviceName', "Console - " + only_nname);
+                QH('p16deviceName', only_nname);
+                QH('p17deviceName', only_nname);
+                QH('p19deviceName', only_nname);
 
                 // Node attributes
                 var x = '<table style=width:100%>';
@@ -16164,7 +16165,6 @@
             // Add device group name
             var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
-            if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" role=button>' + mname + ' <i class="fa-solid fa-pencil fa-2xs"></i></span>'; }
             QH('p21meshName', mname);
 
             // Update charts
