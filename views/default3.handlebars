@@ -18088,7 +18088,7 @@
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
             setModalContent('xxAddAgent', "Remove Device Group Permissions", format("Confirm removal of access rights for device group \"{0}\"?", mesh.name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p51removeMeshFromUserGroupEx(3, mesh._id));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removemeshuser', meshid: decodeURIComponent(meshid), userid: currentUserGroup._id }); });;
         }
         function p51editgroup(focus, nameReadOnly) {
             if (xxdialogMode) return;
