@@ -4009,7 +4009,16 @@ function CreateMeshCentralServer(config, args) {
         try { lines = obj.fs.readFileSync(obj.path.join(obj.datapath, arg.substring(5))).toString().split(/\r?\n/).join('\r').split('\r'); } catch (ex) { }
         if (lines == null) return null;
         const validLines = [];
-        for (var i in lines) { if ((lines[i].length > 0) && (((lines[i].charAt(0) > '0') && (lines[i].charAt(0) < '9')) || (lines[i].charAt(0) == ':'))) validLines.push(lines[i]); }
+        for (var i in lines) { 
+            const line = lines[i].trim();
+            if (line.length === 0) continue;
+            if (line.charAt(0) === '#') continue;
+            const parts = line.split('#');
+            const candidate = parts[0].trim();
+            if (candidate.length > 0 && candidate.indexOf('@') === -1 && (candidate.indexOf('.') > -1 || candidate.charAt(0) === ':')) {
+                validLines.push(candidate);
+            }
+        }
         return validLines;
     }
 
