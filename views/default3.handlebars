@@ -18148,9 +18148,8 @@
             if (users && users[userid]) { uname = users[userid].name; }
             if (userinfo._id == userid) { uname = userinfo.name; }
             setModalContent('xxAddAgent', "Remove User Membership", format("Confirm membership removal of user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p51viewuserEx2(3, userid));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); });
         }
-        function p51viewuserEx2(button, userid) { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); }
 
         function p51showAddUserDialog() {
             if (xxdialogMode) return false;
