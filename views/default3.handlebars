@@ -2033,8 +2033,8 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         if ((webState == null) || (typeof webState != 'object')) { webState = {}; }
-        for (var i in webState) { if (i != 'desktopsettings') { try { localStorage.setItem(i, webState[i]); } catch (ex) { } } }
-        if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
+        for (var i in webState) { try { localStorage.setItem(i, webState[i]); } catch (ex) { } }
+        if (webState && !webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;
         var autoReconnect = true;
@@ -13469,12 +13469,40 @@
             if (hardware.tpm) {
                 var x = '', tpm = hardware.tpm;
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
-                if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
-                if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
+                if (tpm.ManufacturerId) { x += addDetailItem("Identifier", EscapeHtml(tpm.ManufacturerId), s); }
+                if (tpm.ManufacturerVersion) { x += addDetailItem("Version", EscapeHtml(tpm.ManufacturerVersion), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("Activated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("Enabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("Owned", (tpm.IsOwned ? "Yes" : "No"), s); }
                 if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png' }); }
+            }
+
+            if (hardware.battery) {
+                var x = '';
+                x += '<table class="table table-hover" style=width:100%>';
+                for (var i in hardware.battery) {
+                    var battery = hardware.battery[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
+                    if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
+                    if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
+                    if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
+                    if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }   
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Battery", html: x, img: 'battery64.png'}); }
             }
 
             if (hardware.windows) {
@@ -18089,7 +18117,7 @@
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
             setModalContent('xxAddAgent', "Remove Device Group Permissions", format("Confirm removal of access rights for device group \"{0}\"?", mesh.name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p51removeMeshFromUserGroupEx(3, mesh._id));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removemeshuser', meshid: decodeURIComponent(meshid), userid: currentUserGroup._id }); });;
         }
         function p51editgroup(focus, nameReadOnly) {
             if (xxdialogMode) return;
@@ -18149,9 +18177,8 @@
             if (users && users[userid]) { uname = users[userid].name; }
             if (userinfo._id == userid) { uname = userinfo.name; }
             setModalContent('xxAddAgent', "Remove User Membership", format("Confirm membership removal of user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p51viewuserEx2(3, userid));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); });
         }
-        function p51viewuserEx2(button, userid) { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); }
 
         function p51showAddUserDialog() {
             if (xxdialogMode) return false;
