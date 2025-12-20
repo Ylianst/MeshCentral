@@ -9657,7 +9657,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             xargs.customCSSTags = generateCustomCSSTags(null, page);
             xargs.customJSTags = generateCustomJSTags(null, page);
         }
-        // Append Theme Pack tags
         xargs.customCSSTags += generateThemePackCSSTags(domain, page);
         xargs.customJSTags += generateThemePackJSTags(domain, page);
         return xargs;
