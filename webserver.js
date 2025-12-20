@@ -7673,6 +7673,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.head('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
                 }
+                
+               // Theme Pack Override Middleware
+               obj.app.use(url, function (req, res, next) {
+                if (req.method !== 'GET') return next();
+                var domain = getDomain(req);
+                if (domain && domain.themePack && (domain.sitestyle === 3)) {
+                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themePack, 'public', req.path);
+                    // Prevent directory traversal
+                    if (themeFilePath.indexOf('..') >= 0) return next();
+
+                    obj.fs.stat(themeFilePath, function (err, stats) {
+                        if (err || !stats.isFile()) return next();
+                        res.sendFile(themeFilePath);
+                    });
+                } else {
+                    next();
+                }
+            });
 
                 // Indicates to ExpressJS that the override public folder should be used to serve static files.
                 obj.app.use(url, function(req, res, next){
@@ -9559,7 +9577,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         
         return jsTags.trim();
     }
-    
+
+    function generateThemePackCSSTags(domain, currentTemplate) {
+        var cssTags = '';
+        if (domain && domain.themePack && (domain.sitestyle === 3)) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themePack, 'public');
+            if (obj.fs.existsSync(obj.path.join(themePath, 'styles', 'theme.css'))) {
+                cssTags += '<link keeplink=1 type="text/css" href="styles/theme.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
+            }
+        }
+        return cssTags;
+    }
+    function generateThemePackJSTags(domain, currentTemplate) {
+        var jsTags = '';
+        if (domain && domain.themePack && (domain.sitestyle === 3)) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themePack, 'public');
+            if (obj.fs.existsSync(obj.path.join(themePath, 'scripts', 'theme.js'))) {
+                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/theme.js"></script>\n    ';
+            }
+        }
+        return jsTags;
+    }
+
     // Return the correct render page arguments.
     function getRenderArgs(xargs, req, domain, page) {
         var minify = (domain.minify == true);
@@ -9613,7 +9652,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             xargs.customCSSTags = generateCustomCSSTags(null, page);
             xargs.customJSTags = generateCustomJSTags(null, page);
         }
-
+        // Append Theme Pack tags
+        xargs.customCSSTags += generateThemePackCSSTags(domain, page);
+        xargs.customJSTags += generateThemePackJSTags(domain, page);
         return xargs;
     }
 
