@@ -610,9 +610,8 @@ function windows_identifiers()
         var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
         var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
         for (i = 0; i < values4.length; ++i) {
-            if (values4[i].Chemistry) {
-                values4[i].Chemistry = IntToStrLE(parseInt(values4[i].Chemistry));
-            }
+            if (values4[i].Chemistry) { values4[i].Chemistry = IntToStrLE(parseInt(values4[i].Chemistry)); }
+            if (values4[i].ManufactureDate) { if (values4[i].ManufactureDate.indexOf('*****') != -1) delete values4[i].ManufactureDate; }
         }
         var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
         var values6 = [];
@@ -625,6 +624,7 @@ function windows_identifiers()
                                 Health: Math.floor((values2[i].FullChargedCapacity / values4[j].DesignedCapacity) * 100),
                                 InstanceName: values2[i].InstanceName
                             };
+                            if (values6[i].Health > 100) { values6[i].Health = 100; }
                         } else {
                             values6[i] = { Health: 0, InstanceName: values2[i].InstanceName };
                         }
