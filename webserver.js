@@ -7678,8 +7678,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                obj.app.use(url, function (req, res, next) {
                 if (req.method !== 'GET') return next();
                 var domain = getDomain(req);
-                if (domain && domain.themePack && (domain.sitestyle === 3)) {
-                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themePack, 'public', req.path);
+                // Serve theme pack files if domain has a theme pack configured
+                if (domain && domain.themepack) {
+                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public', req.path);
                     // Prevent directory traversal
                     if (themeFilePath.indexOf('..') >= 0) return next();
 
@@ -9580,8 +9581,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     function generateThemePackCSSTags(domain, currentTemplate) {
         var cssTags = '';
-        if (domain && domain.themePack && (domain.sitestyle === 3)) {
-            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themePack, 'public');
+        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
+        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
+        if (domain && domain.themepack && isModernUI) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
             if (obj.fs.existsSync(obj.path.join(themePath, 'styles', 'theme.css'))) {
                 cssTags += '<link keeplink=1 type="text/css" href="styles/theme.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
             }
@@ -9590,8 +9593,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
     function generateThemePackJSTags(domain, currentTemplate) {
         var jsTags = '';
-        if (domain && domain.themePack && (domain.sitestyle === 3)) {
-            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themePack, 'public');
+        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
+        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
+        if (domain && domain.themepack && isModernUI) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
             if (obj.fs.existsSync(obj.path.join(themePath, 'scripts', 'theme.js'))) {
                 jsTags += '<script keeplink=1 type="text/javascript" src="scripts/theme.js"></script>\n    ';
             }
