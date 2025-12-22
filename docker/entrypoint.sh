@@ -304,11 +304,19 @@ function install_stylishui() {
     fi
 
     # Looks good!
-    echo "Found extracted contents at: $web_folder"
-    rm -rf /opt/meshcentral/meshcentral-web
-    mv "${web_folder}" /opt/meshcentral/meshcentral-web
-    rm /tmp/stylishui*
+    echo "Found extracted contents at: ${web_folder}"
+    if [[ -d /opt/meshcentral/meshcentral-web/public ]]; then
+        mkdir -p /tmp/web-backup
+        find /opt/meshcentral/meshcentral-web/public -maxdepth 1 -type f -exec mv {} /tmp/web-backup/ \;
+		rm -rf /opt/meshcentral/meshcentral-web/public
+    fi
 
+    echo "Merging!"
+    mv "${web_folder}/"* /opt/meshcentral/meshcentral-web/
+    if [[ -d /tmp/web-backup ]]; then
+        mv /tmp/web-backup/* /opt/meshcentral/meshcentral-web/public/ 2>/dev/null || true
+        rm -rf /tmp/web-backup
+    fi
     return 0
 }
 
