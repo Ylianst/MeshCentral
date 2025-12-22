@@ -465,17 +465,20 @@ function windows_identifiers()
         ret.windows.osinfo = values[0];
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
-    if(values[0]){
-        trimResults(values);
-        ret.windows.partitions = values;
-        for (var i in values) {
-            if (values[i].Description=='GPT: System') {
-                ret['identifiers']['bios_mode'] = 'UEFI';
+   	if(process.env['FIRMWARE_TYPE'] == 'UEFI') {
+		ret['identifiers']['bios_mode'] = 'UEFI';
+	} else {
+        values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
+        if(values[0]){
+            trimResults(values);
+            ret.windows.partitions = values;
+            for (var i in values) {
+                if (values[i].Description=='GPT: System') {
+                    ret['identifiers']['bios_mode'] = 'UEFI';
+                }
             }
         }
     }
-
     values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Processor", ['Caption', 'DeviceID', 'Manufacturer', 'MaxClockSpeed', 'Name', 'SocketDesignation']);
     if(values[0]){
         ret.windows.cpu = values;
