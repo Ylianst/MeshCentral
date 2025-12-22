@@ -1758,11 +1758,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     try { obj.send(JSON.stringify({ action: 'amtconfig', user: '**MeshAgentApfTunnel**', pass: cookie })); } catch (ex) { }
                     break;
                 }
-                case 'script-task': {
-                    // These command are for running regular batch jobs on the remote device
-                    if (parent.parent.taskManager != null) { parent.parent.taskManager.agentAction(command, obj); }
-                    break;
-                }
                 default: {
                     parent.agentStats.unknownAgentActionCount++;
                     parent.parent.debug('agent', 'Unknown agent action (' + obj.remoteaddrport + '): ' + JSON.stringify(command) + '.');
