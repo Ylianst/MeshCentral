@@ -2294,7 +2294,7 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Perform maintenance operations (called every hour)
-    obj.maintenanceActions = function () {
+    obj.maintenanceActions = async function () {
         // Perform database maintenance
         obj.db.maintenance();
 
@@ -2322,7 +2322,48 @@ function CreateMeshCentralServer(config, args) {
         } else {
             checkAutobackup();
         }
+
+        // Reload allowed IPs
+        await reloadAllowedIPs();
     };
+
+    // Reload allowed IPs from config.json
+    async function reloadAllowedIPs() {
+		var config2 = null;
+		try {
+			config2 = JSON.parse(obj.fs.readFileSync(obj.getConfigFilePath('config.json'), "utf8"));
+		} catch (ex) {
+			console.log('Error: Unable to read config.json for reloading allowed IPs.');
+			return;
+		}
+
+		obj.args.userallowedip = config2.settings['userAllowedIp'];
+		obj.args.userblockedip = config2.settings['userblockedip'];
+		obj.args.agentallowedip = config2.settings['agentallowedip'];
+		obj.args.agentblockedip = config2.settings['agentblockedip'];
+		obj.args.swarmallowedip = config2.settings['swarmallowedip'];
+		
+        // Read IP lists from files if applicable
+        obj.config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
+        obj.config.settings.userblockedip = obj.args.userblockedip = readIpListFromFile(obj.args.userblockedip);
+        obj.config.settings.agentallowedip = obj.args.agentallowedip = readIpListFromFile(obj.args.agentallowedip);
+        obj.config.settings.agentblockedip = obj.args.agentblockedip = readIpListFromFile(obj.args.agentblockedip);
+        obj.config.settings.swarmallowedip = obj.args.swarmallowedip = readIpListFromFile(obj.args.swarmallowedip);
+
+        // Check IP lists and ranges
+        if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { obj.config.settings.userallowedip = obj.args.userallowedip = null; } else { obj.config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(' ').join('').split(','); } }
+        if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { obj.config.settings.userblockedip = obj.args.userblockedip = null; } else { obj.config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(' ').join('').split(','); } }
+        if (typeof obj.args.agentallowedip == 'string') { if (obj.args.agentallowedip == '') { obj.config.settings.agentallowedip = obj.args.agentallowedip = null; } else { obj.config.settings.agentallowedip = obj.args.agentallowedip = obj.args.agentallowedip.split(' ').join('').split(','); } }
+        if (typeof obj.args.agentblockedip == 'string') { if (obj.args.agentblockedip == '') { obj.config.settings.agentblockedip = obj.args.agentblockedip = null; } else { obj.config.settings.agentblockedip = obj.args.agentblockedip = obj.args.agentblockedip.split(' ').join('').split(','); } }
+        if (typeof obj.args.swarmallowedip == 'string') { if (obj.args.swarmallowedip == '') { obj.args.swarmallowedip = null; } else { obj.args.swarmallowedip = obj.args.swarmallowedip.split(' ').join('').split(','); } }
+
+        // Check IP lists and ranges and if DNS return IP addresses
+        obj.config.settings.userallowedip = await resolveDomainsToIps(obj.config.settings.userallowedip);
+        obj.config.settings.userblockedip = await resolveDomainsToIps(obj.config.settings.userblockedip);
+        obj.config.settings.agentallowedip = await resolveDomainsToIps(obj.config.settings.agentallowedip);
+        obj.config.settings.agentblockedip = await resolveDomainsToIps(obj.config.settings.agentblockedip);
+        obj.config.settings.swarmallowedip = await resolveDomainsToIps(obj.config.settings.swarmallowedip);
+    }
 
     // Check if we need to perform an automatic backup
     function checkAutobackup() {
