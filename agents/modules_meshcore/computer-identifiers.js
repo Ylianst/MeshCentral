@@ -511,12 +511,12 @@ function windows_identifiers()
         ret.windows.osinfo = values[0];
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
     if(values[0]){
         trimResults(values);
         ret.windows.partitions = values;
         for (var i in values) {
-            if (values[i].Description=='GPT: System') {
+            if (values[i].Type=='GPT: System') {
                 ret['identifiers']['bios_mode'] = 'UEFI';
             }
         }
