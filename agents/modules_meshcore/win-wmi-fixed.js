@@ -247,9 +247,11 @@ function enumerateProperties(j, fields)
         OleAut32.SafeArrayAccessData(nme.Deref(), nn);
 
 
-        for (var i = 0; i < len - 1; ++i)
+        for (var i = 0; i < len; ++i)
         {
-            properties.push(nn.Deref().increment(i * GM.PointerSize).Deref().Wide2UTF8);
+            var propName = nn.Deref().increment(i * GM.PointerSize).Deref().Wide2UTF8;
+            if (propName.length === 0) { continue; }
+            properties.push(propName);
         }
     }
 
