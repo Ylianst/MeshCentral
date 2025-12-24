@@ -4096,11 +4096,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.send(JSON.stringify({ response: 'ok' }));
                 console.log('Started server translation...');
                 obj.pendingTranslation = true;
-                require('child_process').exec('node translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
+                require('child_process').exec('node translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 300000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
                     delete obj.pendingTranslation;
-                    //console.log('error', error);
-                    //console.log('stdout', stdout);
-                    //console.log('stderr', stderr);
+                    if (error) { console.log('Server translation error', error); }
+                    // console.log('stdout', stdout);
+                    if (stderr) { console.log('Server translation stderr', stderr); }
                     //console.log('Server restart...'); // Perform a server restart
                     //process.exit(0);
                     console.log('Server translation completed.');
