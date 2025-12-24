@@ -1027,7 +1027,10 @@
             <div id=p17 style="display:none;margin-left:-18px">
                 <div id="p17title" style="margin-left:18px">
                     <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <div id="devListToolbarViewIcons3"><div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div></div>
+                    <div id="devListToolbarViewIcons3">
+                        <div class="viewSelector" onclick=refreshDetails(event) title="Refresh details information."><div class="viewSelector12"></div></div>
+                        <div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div>
+                    </div>
                     <h1>Details - <span id=p17deviceName></span></h1>
                 </div>
                 <div id=p17info style="overflow-y:auto">
@@ -12115,6 +12118,10 @@
                 deviceDetailsStatsTimer = setInterval(deviceDetailsStatsTimerFunc, 2000);
                 deviceDetailsStatsTimerFunc();
             } else deviceDetailsStatsClear();
+        }
+
+        function refreshDetails() {
+            meshserver.send({ action: 'msg', type: 'sysinfo', nodeid: currentNode._id });
         }
 
         function deviceDetailsStatsClear() {

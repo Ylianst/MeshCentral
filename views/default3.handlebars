@@ -1416,6 +1416,7 @@
                     </div>
                     <div class='fs-4 fw-bold'>Details - <span id=p17deviceName></span></div>
                     <div id="devListToolbarViewIcons3" class="ms-auto">
+                        <i class="fa-solid fa-rotate-right fa-xl fa-border" role="button" onclick=refreshDetails(event) title="Refresh details information."></i>
                         <i class="fa-solid fa-chart-line fa-xl fa-border" role="button" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."></i>
                     </div>
                 </div>
@@ -13158,6 +13159,10 @@
                 deviceDetailsStatsTimer = setInterval(deviceDetailsStatsTimerFunc, 2000);
                 deviceDetailsStatsTimerFunc();
             } else deviceDetailsStatsClear();
+        }
+
+        function refreshDetails() {
+            meshserver.send({ action: 'msg', type: 'sysinfo', nodeid: currentNode._id });
         }
 
         function deviceDetailsStatsClear() {

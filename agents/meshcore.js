@@ -1524,6 +1524,13 @@ function handleServerCommand(data) {
                         }
                         break;
                     }
+                    case 'sysinfo': {
+                        // Send system information
+                        getSystemInformation(function (results) {
+                            if ((results != null) && (data.hash != results.hash)) { mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results }); }
+                        });
+                        break;
+                    }
                     default:
                         // Unknown action, ignore it.
                         break;
