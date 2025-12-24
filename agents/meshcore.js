@@ -4052,7 +4052,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
-                    try { require('win-info'); availcommands += ',installedapps,qfe,defender,av'; } catch (ex) { }
+                    try { require('win-info'); availcommands += ',installedapps,qfe,defender,av,installedstoreapps'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -5531,6 +5531,15 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'installedapps': {
                 if(process.platform == 'win32'){
                     require('win-info').installedApps().then(function (apps){ sendConsoleText(JSON.stringify(apps,null,1)); });
+                }
+                break;
+            }
+            case 'installedstoreapps': {
+                if(process.platform == 'win32'){
+                    var apps = require('win-info').installedStoreApps();
+                    if (apps[0]) {
+                        sendConsoleText(JSON.stringify(apps,null,1));
+                    };
                 }
                 break;
             }

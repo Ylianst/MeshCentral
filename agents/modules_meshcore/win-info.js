@@ -235,6 +235,24 @@ function installedApps()
     return (ret);
 }
 
+function installedStoreApps(){
+    try {
+        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_InstalledStoreProgram');
+        if (tokens[0]){
+            for (var index = 0; index < tokens.length; index++) {
+                for (var key in tokens[index]) {
+                    if (key.startsWith('__')) delete tokens[index][key];
+                }
+            }
+            return (tokens);
+        } else {
+            return ([]);
+        };
+    } catch (ex) {
+        return ([]);
+    }
+}
+
 function defender(){
     try {
         var tokens = require('win-wmi').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
@@ -253,10 +271,10 @@ function defender(){
 
 if (process.platform == 'win32')
 {
-    module.exports = { qfe: qfe, av: av, defrag: defrag, pendingReboot: pendingReboot, installedApps: installedApps, defender: defender };
+    module.exports = { qfe: qfe, av: av, defrag: defrag, pendingReboot: pendingReboot, installedApps: installedApps, installedStoreApps: installedStoreApps, defender: defender };
 }
 else
 {
     var not_supported = function () { throw (process.platform + ' not supported'); };
-    module.exports = { qfe: not_supported, av: not_supported, defrag: not_supported, pendingReboot: not_supported, installedApps: not_supported, defender: not_supported };
+    module.exports = { qfe: not_supported, av: not_supported, defrag: not_supported, pendingReboot: not_supported, installedApps: not_supported, installedStoreApps: not_supported, defender: not_supported };
 }
