@@ -38,7 +38,7 @@ function av()
 {
     var result = [];
     try { 
-        var tokens = require('win-wmi').query('ROOT\\SecurityCenter2', 'SELECT * FROM AntiVirusProduct');
+        var tokens = require('win-wmi-fixed').query('ROOT\\SecurityCenter2', 'SELECT * FROM AntiVirusProduct');
         if (tokens.length == 0) { return ([]); }
         // Process each antivirus product
         for (var i = 0; i < tokens.length; ++i) {
