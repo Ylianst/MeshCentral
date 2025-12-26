@@ -2339,26 +2339,26 @@
             // Custom UI
             if (customui != null) {
                 if (customui.devicesbarbuttons) {
-                    var x = '';
+                    var x = '&nbsp;';
                     for (var i in customui.devicesbarbuttons) {
                         var disabled = ((customui.devicesbarbuttons[i].selection == 'one') || (customui.devicesbarbuttons[i].selection == 'many')) ? 'disabled' : '';
-                        x += '<input id="cui:' + i + '" type="button" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />';
+                        x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />&nbsp;';
                     }
                     QH('devsCustomUIBar', x);
                 }
                 if (customui.desktopbuttons) {
-                    var x = '';
-                    for (var i in customui.desktopbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.desktopbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"desktopbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.desktopbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.desktopbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"desktopbuttons") />&nbsp;'; }
                     QH('desktopCustomUiButtons', x);
                 }
                 if (customui.terminalbuttons) {
-                    var x = '';
-                    for (var i in customui.terminalbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.terminalbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"terminalbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.terminalbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.terminalbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"terminalbuttons") />&nbsp;'; }
                     QH('terminalCustomUiButtons', x);
                 }
                 if (customui.filesbuttons) {
-                    var x = '';
-                    for (var i in customui.filesbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.filesbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"filesbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.filesbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.filesbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"filesbuttons") />&nbsp;'; }
                     QH('filesCustomUiButtons', x);
                 }
             }
@@ -2444,18 +2444,18 @@
                         if (elem.name == null) {
                             x += '<textarea id=cui:' + i + ' style=width:356px;resize:none;height:100px autocomplete=off></textarea>';
                         } else {
-                            x += addHtmlFormFloating(elem.name, '<textarea id=cui:' + i + ' style=width:230px;resize:none;height:100px autocomplete=off></textarea>');
+                            x += addHtmlFormFloating(elem.name, '<textarea class=form-control id=cui:' + i + ' style=resize:none;height:100px autocomplete=off></textarea>');
                         }
                     }
                     if (elem.type == 'droplist') {
                         var y = '';
                         for (var j in elem.options) { y += '<option value="' + j + '">' + EscapeHtml(elem.options[j]) + '</option>'; }
-                        x += addHtmlFormFloating(elem.name, '<select id="cui:' + i + '" class=form-select autocomplete=off />' + y + '</select>');
+                        x += addHtmlFormFloating(elem.name, '<select class=form-select id="cui:' + i + '" class=form-select autocomplete=off />' + y + '</select>');
                     }
                 }
             }
             setModalContent('xxAddAgent', dialog.title, x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg })
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showCustomUiDialogEx(1, { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg }) );
         }
 
         // Handle a generic custom UI dialog event
@@ -8725,7 +8725,7 @@
                 if ((customui != null) && (customui.devicebuttons != null)) {
                     for (var i in customui.devicebuttons) {
                         if ((customui.devicebuttons[i].showif == null) || ((mesh != null) && (customui.devicebuttons[i].showif == mesh._id)) || (customui.devicebuttons[i].showif == currentNode._id)) {
-                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />';
+                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />&nbsp;';
                         }
                     }
                 }
