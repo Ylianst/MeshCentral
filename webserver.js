@@ -4096,7 +4096,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.send(JSON.stringify({ response: 'ok' }));
                 console.log('Started server translation...');
                 obj.pendingTranslation = true;
-                require('child_process').exec('node translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 300000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
+                require('child_process').exec(process.argv[0] + ' translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 300000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
                     delete obj.pendingTranslation;
                     if (error) { console.log('Server translation error', error); }
                     // console.log('stdout', stdout);
