@@ -13252,6 +13252,7 @@
                     const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
+                if(m.Domain){ x += addDetailItem((m.PartOfDomain ? "Domain" : "Workgroup"), EscapeHtml(m.Domain), s); }
             }
             if (hardware.linux && hardware.linux.LastBootUpTime) {
                 var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
