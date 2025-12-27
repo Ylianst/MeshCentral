@@ -83,12 +83,12 @@ function bcdOK() {
 }
 function getDomainInfo() {
     var hostname = require('os').hostname();
-    var ret = { Name: hostname, Domain: "" };
+    var ret = { Name: hostname, Domain: "", PartOfDomain: false };
 
     switch (process.platform) {
         case 'win32':
             try {
-                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain'])[0];
+                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain', 'PartOfDomain'])[0];
             }
             catch (x) {
             }
@@ -126,7 +126,7 @@ function getDomainInfo() {
                 }
                 while (names.length > 0) {
                     if (hostname.endsWith('.' + names.peek())) {
-                        ret = { Name: hostname.substring(0, hostname.length - names.peek().length - 1), Domain: names.peek() };
+                        ret = { Name: hostname.substring(0, hostname.length - names.peek().length - 1), Domain: names.peek(), PartOfDomain: true };
                         break;
                     }
                     names.pop();
@@ -682,7 +682,7 @@ function onUserSessionChanged(user, locked) {
         var u = [], a = users.Active;
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
         if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
-        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Domain','PartOfDomain'])[0];
+        var ret = getDomainInfo();
         for (var i = 0; i < a.length; i++) {
             var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
             if (user && locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); } }
@@ -1926,7 +1926,11 @@ function getSystemInformation(func) {
             try { delete x.TotalVisibleMemorySize; } catch (ex) { }
             try {
                 if (results.hardware.windows.memory) { for (var i in results.hardware.windows.memory) { delete results.hardware.windows.memory[i].Node; } }
-                if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
+                if (results.hardware.windows.osinfo) { 
+                    delete results.hardware.windows.osinfo.Node;
+                    results.hardware.windows.osinfo.Domain = getDomainInfo().Domain;
+                    results.hardware.windows.osinfo.PartOfDomain = getDomainInfo().PartOfDomain;
+                }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
             if (x.LastBootUpTime) { // detect windows uptime
@@ -4072,7 +4076,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,deskbackground';
+                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,deskbackground,domaininfo';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
@@ -4187,7 +4191,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'domaininfo':
                 {
                     if (process.platform != 'win32') {
-                        response = 'Unknown command "cs", type "help" for list of available commands.';
+                        response = 'Unknown command "domaininfo", type "help" for list of available commands.';
                         break;
                     }
                     if (global._domainQuery != null) {
@@ -4774,7 +4778,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     p.sessionid = sessionid;
                     p.then(function (u) {
                         var v = [];
-                        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Domain','PartOfDomain'])[0];
+                        var ret = getDomainInfo();
                         for (var i in u) {
                             if (u[i].State == 'Active') {
                                if (u[i].Domain != null && u[i].Domain == 'AzureAD'){
@@ -5002,7 +5006,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'users': {
                 if (meshCoreObj.users == null) { response = 'Active users are unknown.'; } else { response = 'Active Users: ' + meshCoreObj.users.join(', ') + '.'; }
                 require('user-sessions').enumerateUsers().then(function (u) { 
-                    var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Domain','PartOfDomain'])[0];
+                    var ret = getDomainInfo();
                     for (var i in u) { 
                         if (u[i].Domain != null && u[i].Domain == 'AzureAD'){
                             // AzureAD to-do
