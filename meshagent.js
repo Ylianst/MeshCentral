@@ -1241,8 +1241,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex };
                                 parent.parent.debug('agentupdate', "Sending agent update url: " + cmd.url);
 
-                                // Add the hash
-                                if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
+                                // Add the hash - use app bundle hash if agent is in app bundle mode
+                                if ((obj.agentInfo != null) && (obj.agentInfo.capabilities & 0x80) && (obj.agentExeInfo.appBundleHashHex != null)) {
+                                    cmd.hash = obj.agentExeInfo.appBundleHashHex;
+                                } else if (obj.agentExeInfo.fileHash != null) {
+                                    cmd.hash = obj.agentExeInfo.fileHashHex;
+                                } else {
+                                    cmd.hash = obj.agentExeInfo.hashhex;
+                                }
 
                                 // Add server TLS cert hash
                                 if (isIgnoreHashCheck() == false) {
@@ -1588,8 +1594,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
                             parent.parent.debug('agentupdate', "Sending user requested agent update url: " + cmd.url);
 
-                            // Add the hash
-                            if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
+                            // Add the hash - use app bundle hash if agent is in app bundle mode
+                            if ((obj.agentInfo != null) && (obj.agentInfo.capabilities & 0x80) && (obj.agentExeInfo.appBundleHashHex != null)) {
+                                cmd.hash = obj.agentExeInfo.appBundleHashHex;
+                            } else if (obj.agentExeInfo.fileHash != null) {
+                                cmd.hash = obj.agentExeInfo.fileHashHex;
+                            } else {
+                                cmd.hash = obj.agentExeInfo.hashhex;
+                            }
 
                             // Add server TLS cert hash
                             if (isIgnoreHashCheck() == false) {
@@ -2128,16 +2140,36 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // If we are testing the agent update system, always return true
         if ((args.agentupdatetest === true) || (args.agentupdatetest === 1)) return 1;
         if (args.agentupdatetest === 2) return 2;
-        // If the hash matches or is null, no update required.
-        if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return 0;
-        // If this is a macOS x86 or ARM agent type and it matched the universal binary, no update required.
-        if ((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) {
-            if (domain.meshAgentBinaries && domain.meshAgentBinaries[10005]) {
-                if (domain.meshAgentBinaries[10005].hash == agentHash) return 0;
-            } else {
-                if (parent.parent.meshAgentBinaries[10005].hash == agentHash) return 0;
+        // Determine which hash to compare based on app bundle mode
+        var expectedHash = agentExeInfo.hash;
+        var universalHash = null;
+
+        // Check if agent is in app bundle mode (capability bit 7 = 128 = 0x80)
+        if ((obj.agentInfo.capabilities & 0x80) && (agentExeInfo.appBundleHash != null)) {
+            expectedHash = agentExeInfo.appBundleHash;
+            // For app bundles, also get universal binary app bundle hash
+            if ((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) {
+                if (domain.meshAgentBinaries && domain.meshAgentBinaries[10005] && domain.meshAgentBinaries[10005].appBundleHash) {
+                    universalHash = domain.meshAgentBinaries[10005].appBundleHash;
+                } else if (parent.parent.meshAgentBinaries[10005] && parent.parent.meshAgentBinaries[10005].appBundleHash) {
+                    universalHash = parent.parent.meshAgentBinaries[10005].appBundleHash;
+                }
+            }
+        } else {
+            // Standalone binary mode - use regular hash
+            if ((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) {
+                if (domain.meshAgentBinaries && domain.meshAgentBinaries[10005]) {
+                    universalHash = domain.meshAgentBinaries[10005].hash;
+                } else {
+                    universalHash = parent.parent.meshAgentBinaries[10005].hash;
+                }
             }
         }
+
+        // If the hash matches or is null, no update required.
+        if ((expectedHash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return 0;
+        // If this is a macOS x86 or ARM agent and it matched the universal binary, no update required.
+        if ((universalHash != null) && (universalHash == agentHash)) return 0;
 
         // No match, update the agent.
         if (args.agentupdatesystem === 2) return 2; // If set, force a meshcore update.

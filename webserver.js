@@ -5694,6 +5694,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var meshsettings = getMshFromRequest(req, res, domain);
             if (meshsettings == null) { try { res.sendStatus(401); } catch (ex) { } return; }
 
+            // Check if this is a request for .msh file only
+            if (req.query.mshonly == '1') {
+                parent.debug('web', 'Serving .msh configuration file only');
+                setContentDispositionHeader(res, 'text/plain', 'meshagent.msh', null, 'meshagent.msh');
+                res.setHeader('Content-Type', 'text/plain');
+                try { res.send(meshsettings); } catch (ex) { }
+                return;
+            }
+
             // Get the interactive install script, this only works for non-Windows agents
             var agentid = parseInt(req.query.meshinstall);
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
@@ -5701,7 +5710,60 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var scriptInfo = obj.parent.meshAgentInstallScripts[6];
             if ((argentInfo == null) || (scriptInfo == null) || (argentInfo.platform == 'win32')) { try { res.sendStatus(404); } catch (ex) { } return; }
 
-            // Change the .msh file into JSON format and merge it into the install script
+            // Check if this is an app bundle request for macOS
+            if ((req.query.appbundle == '1') && (argentInfo.platform == 'osx') && (argentInfo.appBundlePath != null)) {
+                var installflags = parseInt(req.query.installflags) || 0;
+
+                // Agent self-updates (no installflags or script parameter) should get pre-built ZIP directly
+                if ((installflags == 0) && (req.query.script == null)) {
+                    // Self-update: serve pre-built app bundle ZIP with known hash
+                    if (obj.fs.existsSync(argentInfo.appBundlePath)) {
+                        parent.debug('web', 'Serving pre-built app bundle for self-update: ' + argentInfo.appBundlePath);
+                        setContentDispositionHeader(res, 'application/zip', obj.path.basename(argentInfo.appBundlePath), null, 'MeshAgentAPP.zip');
+                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+                        try { res.sendFile(argentInfo.appBundlePath); } catch (ex) { }
+                        return;
+                    } else {
+                        parent.debug('web', 'App bundle not found: ' + argentInfo.appBundlePath);
+                        res.sendStatus(404);
+                        return;
+                    }
+                } else if (installflags >= 10) {
+                    // Initial installation: create dynamic ZIP with .msh file
+                    if (obj.fs.existsSync(argentInfo.appBundlePath)) {
+                        return createMacOSAppBundleZipPackage(req, res, argentInfo, meshsettings, installflags, domain);
+                    } else {
+                        parent.debug('web', 'App bundle not found: ' + argentInfo.appBundlePath);
+                        res.sendStatus(404);
+                        return;
+                    }
+                } else {
+                    // For deprecated mode (installflags < 10), fall back to binary
+                    parent.debug('web', 'App bundle requested with deprecated installflags, falling back to binary');
+                    res.sendStatus(400);
+                    return;
+                }
+            }
+
+            // Check if this is a ZIP request (installflags >= 10)
+            var installflags = parseInt(req.query.installflags) || 0;
+            if (installflags >= 10) {
+                // ZIP mode: Create ZIP with clean binary + separate .msh file
+                return createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain);
+            }
+
+            // For macOS with installflags < 10, serve bare binary without embedding (preserves code signature)
+            if (argentInfo.platform == 'osx') {
+                parent.debug('web', 'Serving bare macOS binary without embedding (installflags=' + installflags + ')');
+                var meshagentFilename = 'meshagent';
+                if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+                setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
+                if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+                if (argentInfo.data == null) { res.sendFile(argentInfo.path); } else { res.send(argentInfo.data); }
+                return;
+            }
+
+            // For non-macOS platforms: Change the .msh file into JSON format and merge it into the install script
             var tokens, msh = {}, meshsettingslines = meshsettings.split('\r').join('').split('\n');
             for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
             var js = scriptInfo.data.replace('var msh = {};', 'var msh = ' + JSON.stringify(msh) + ';');
@@ -5741,6 +5803,41 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
                 try { res.sendStatus(404); } catch (ex) { }
                 return;
+            }
+
+            // Check if this is an app bundle request for macOS
+            if ((req.query.appbundle == '1') && (argentInfo.platform == 'osx') && (argentInfo.appBundlePath != null)) {
+                var installflags = parseInt(req.query.installflags) || 0;
+
+                // Agent self-updates (no installflags or script parameter) should get pre-built ZIP directly
+                if ((installflags == 0) && (req.query.script == null)) {
+                    // Self-update: serve pre-built app bundle ZIP with known hash
+                    if (obj.fs.existsSync(argentInfo.appBundlePath)) {
+                        parent.debug('web', 'Serving pre-built app bundle for self-update: ' + argentInfo.appBundlePath);
+                        setContentDispositionHeader(res, 'application/zip', obj.path.basename(argentInfo.appBundlePath), null, 'MeshAgentAPP.zip');
+                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+                        try { res.sendFile(argentInfo.appBundlePath); } catch (ex) { }
+                        return;
+                    } else {
+                        parent.debug('web', 'App bundle not found: ' + argentInfo.appBundlePath);
+                        res.sendStatus(404);
+                        return;
+                    }
+                } else if (installflags >= 10) {
+                    // Initial installation: create dynamic ZIP with .msh file
+                    if (obj.fs.existsSync(argentInfo.appBundlePath)) {
+                        return createMacOSAppBundleZipPackage(req, res, argentInfo, meshsettings, installflags, domain);
+                    } else {
+                        parent.debug('web', 'App bundle not found: ' + argentInfo.appBundlePath);
+                        res.sendStatus(404);
+                        return;
+                    }
+                } else {
+                    // For deprecated mode (installflags < 10), fall back to binary
+                    parent.debug('web', 'App bundle requested with deprecated installflags, falling back to binary');
+                    res.sendStatus(400);
+                    return;
+                }
             }
 
             if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
@@ -6352,6 +6449,121 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 archive.finalize();
             });
         });
+    }
+
+    // Create a ZIP package with clean macOS binary and separate .msh file (preserves code signature)
+    function createMacOSZipPackage(req, res, argentInfo, meshsettings, installflags, domain) {
+        try {
+            const archiver = require('archiver');
+            const archive = archiver('zip', { zlib: { level: 9 } });
+
+            // Get the agent filename
+            var meshagentFilename = 'meshagent';
+            if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
+                meshagentFilename = domain.agentcustomization.filename;
+            }
+
+            // Set response headers for ZIP download
+            setContentDispositionHeader(res, 'application/zip', meshagentFilename + '.zip', null, 'meshagent.zip');
+            if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+            res.statusCode = 200;
+
+            // Pipe archive to response
+            archive.pipe(res);
+
+            // Add clean binary (no embedded .msh - preserves code signature!)
+            archive.file(argentInfo.path, { name: meshagentFilename });
+
+            // Add separate .msh file with adjusted installflags (convert 10,11,12 back to 0,1,2)
+            var adjustedInstallFlags = installflags - 10;
+            var adjustedMeshSettings = meshsettings.replace(/InstallFlags=\d+/, 'InstallFlags=' + adjustedInstallFlags);
+            if (adjustedMeshSettings.indexOf('InstallFlags=') === -1 && adjustedInstallFlags > 0) {
+                adjustedMeshSettings += 'InstallFlags=' + adjustedInstallFlags + '\r\n';
+            }
+            archive.append(adjustedMeshSettings, { name: meshagentFilename + '.msh' });
+
+            // Finalize the archive
+            archive.finalize();
+
+            parent.debug('web', 'Serving macOS ZIP package: ' + meshagentFilename + '.zip (installflags=' + installflags + ')');
+        } catch (ex) {
+            parent.debug('web', 'Error creating macOS ZIP package: ' + ex);
+            try { res.sendStatus(500); } catch (ex2) { }
+        }
+    }
+
+    // Create a ZIP package with macOS app bundle and separate .msh file
+    function createMacOSAppBundleZipPackage(req, res, argentInfo, meshsettings, installflags, domain) {
+        try {
+            const archiver = require('archiver');
+            const yauzl = require('yauzl');
+            const archive = archiver('zip', { zlib: { level: 9 } });
+
+            // Get the app bundle filename
+            var appBundleName = 'MeshAgent.app';
+            var meshagentFilename = 'meshagent';
+            var containerFolderName = 'MeshAgentAPP';
+            if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
+                appBundleName = domain.agentcustomization.filename + '.app';
+                meshagentFilename = domain.agentcustomization.filename;
+                containerFolderName = domain.agentcustomization.filename + 'APP';
+            }
+
+            // Set response headers for ZIP download
+            setContentDispositionHeader(res, 'application/zip', containerFolderName + '.zip', null, 'MeshAgentAPP.zip');
+            if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
+            res.statusCode = 200;
+
+            // Pipe archive to response
+            archive.pipe(res);
+
+            // Open the pre-built app bundle ZIP and extract all entries to the new archive
+            yauzl.open(argentInfo.appBundlePath, { lazyEntries: true }, function (err, zipfile) {
+                if (err) {
+                    parent.debug('web', 'Error opening app bundle ZIP: ' + err);
+                    res.sendStatus(500);
+                    return;
+                }
+
+                zipfile.readEntry();
+                zipfile.on('entry', function (entry) {
+                    if (/\/$/.test(entry.fileName)) {
+                        // Directory entry
+                        archive.append(null, { name: containerFolderName + '/' + entry.fileName });
+                        zipfile.readEntry();
+                    } else {
+                        // File entry - stream it to the new archive
+                        zipfile.openReadStream(entry, function (err, readStream) {
+                            if (err) {
+                                parent.debug('web', 'Error reading app bundle entry: ' + err);
+                                res.sendStatus(500);
+                                return;
+                            }
+                            archive.append(readStream, { name: containerFolderName + '/' + entry.fileName });
+                            readStream.on('end', function () { zipfile.readEntry(); });
+                        });
+                    }
+                });
+
+                zipfile.on('end', function () {
+                    // Add separate .msh file with adjusted installflags (convert 10,11,12 back to 0,1,2)
+                    var adjustedInstallFlags = installflags - 10;
+                    var adjustedMeshSettings = meshsettings.replace(/InstallFlags=\d+/, 'InstallFlags=' + adjustedInstallFlags);
+                    if (adjustedMeshSettings.indexOf('InstallFlags=') === -1 && adjustedInstallFlags > 0) {
+                        adjustedMeshSettings += 'InstallFlags=' + adjustedInstallFlags + '\r\n';
+                    }
+                    archive.append(adjustedMeshSettings, { name: containerFolderName + '/' + meshagentFilename + '.msh' });
+
+                    // Finalize the archive
+                    archive.finalize();
+
+                    parent.debug('web', 'Serving macOS app bundle ZIP package: ' + appBundleName + '.zip (installflags=' + installflags + ')');
+                });
+            });
+        } catch (ex) {
+            parent.debug('web', 'Error creating macOS app bundle ZIP package: ' + ex);
+            try { res.sendStatus(500); } catch (ex2) { }
+        }
     }
 
     // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.
@@ -9770,56 +9982,53 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (translateFolder != null) {
             obj.renderPages = {};
             obj.renderLanguages = ['en'];
+
             for (var i in parent.config.domains) {
-                if (obj.fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
-                if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) { translateFolder = obj.path.join(__dirname, 'views', 'translations'); }
-                var files = obj.fs.readdirSync(translateFolder);
                 var domain = parent.config.domains[i].id;
                 obj.renderPages[domain] = {};
-                for (var i in files) {
-                    var name = files[i];
-                    if (name.endsWith('.handlebars')) {
-                        name = name.substring(0, name.length - 11);
-                        var xname = name.split('_');
-                        if (xname.length == 2) {
-                            if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                            obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                            if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                        }
-                    }
+
+                // Define scan paths in priority order (later entries override earlier)
+                var scanPaths = [];
+
+                // Priority 1: Default translations (lowest)
+                if (obj.fs.existsSync('views/translations')) {
+                    scanPaths.push({ path: 'views/translations', type: 'default' });
                 }
-                // See if there are any custom rending pages that will override the default ones
+                if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) {
+                    scanPaths.push({ path: obj.path.join(__dirname, 'views', 'translations'), type: 'default' });
+                }
+
+                // Priority 2: Override translations (medium)
                 if ((obj.parent.webViewsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations')))) {
-                    translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations');
-                    var files = obj.fs.readdirSync(translateFolder);
-                    for (var i in files) {
-                        var name = files[i];
-                        if (name.endsWith('.handlebars')) {
-                            name = name.substring(0, name.length - 11);
-                            var xname = name.split('_');
-                            if (xname.length == 2) {
-                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                            }
-                        }
-                    }
+                    scanPaths.push({ path: obj.path.join(obj.parent.webViewsOverridePath, 'translations'), type: 'override' });
                 }
-                // See if there is a custom meshcentral-web-domain folder as that will override the default ones
-                if (obj.fs.existsSync(obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations'))) {
-                    translateFolder = obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations');
-                    var files = obj.fs.readdirSync(translateFolder);
-                    for (var i in files) {
-                        var name = files[i];
-                        if (name.endsWith('.handlebars')) {
-                            name = name.substring(0, name.length - 11);
-                            var xname = name.split('_');
-                            if (xname.length == 2) {
-                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+
+                // Priority 3: Domain-specific translations (highest)
+                var domainTransPath = obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations');
+                if (obj.fs.existsSync(domainTransPath)) {
+                    scanPaths.push({ path: domainTransPath, type: 'domain' });
+                }
+
+                // Scan all paths and build lookup table
+                for (var j = 0; j < scanPaths.length; j++) {
+                    var pathInfo = scanPaths[j];
+                    try {
+                        var files = obj.fs.readdirSync(pathInfo.path);
+                        for (var k = 0; k < files.length; k++) {
+                            var name = files[k];
+                            if (name.endsWith('.handlebars')) {
+                                name = name.substring(0, name.length - 11);
+                                var xname = name.split('_');
+                                if (xname.length == 2) {
+                                    if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
+                                    // Later scans override earlier ones
+                                    obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(pathInfo.path, name);
+                                    if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
+                                }
                             }
                         }
+                    } catch (ex) {
+                        // Silently ignore errors (e.g., permission denied, missing directories)
                     }
                 }
             }
