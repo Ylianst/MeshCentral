@@ -681,11 +681,25 @@ function onUserSessionChanged(user, locked) {
 
         var u = [], a = users.Active;
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
+        if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
+        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Domain','PartOfDomain'])[0];
         for (var i = 0; i < a.length; i++) {
             var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
             if (user && locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); } }
             else if (user && !locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { meshCoreObj.lusers.splice(meshCoreObj.lusers.indexOf(un), 1); }
             if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
+            if (a[i].Domain != null && a[i].Domain == 'AzureAD'){
+                // AzureAD to-do
+                // var userGUID = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
+                // if (userGUID != null){
+                //     var user = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\\' + userGUID.subkeys[0], 'UserEmail');
+                //     if (user != null) u[i].UPN = user;
+                // }
+            } else if (a[i].Domain != null) {
+                if (ret != null && ret.PartOfDomain === true) {
+                    meshCoreObj.upnusers.push(a[i].Username + '@' + ret.Domain);
+                }
+            }
         }
         meshCoreObj.lusers = meshCoreObj.lusers;
         meshCoreObj.users = u;
@@ -4051,7 +4065,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
+                availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
+                availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo';
+                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4757,8 +4774,23 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     p.sessionid = sessionid;
                     p.then(function (u) {
                         var v = [];
+                        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Domain','PartOfDomain'])[0];
                         for (var i in u) {
-                            if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
+                            if (u[i].State == 'Active') {
+                               if (u[i].Domain != null && u[i].Domain == 'AzureAD'){
+                                    // AzureAD to-do
+                                    // var userGUID = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
+                                    // if (userGUID != null){
+                                    //     var user = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\\' + userGUID.subkeys[0], 'UserEmail');
+                                    //     if (user != null) u[i].UPN = user;
+                                    // }
+                                } else if (u[i].Domain != null) {
+                                    if (ret != null && ret.PartOfDomain === true) {
+                                        u[i].UPN = u[i].Username + '@' + ret.Domain;
+                                    }
+                                }
+                                v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain, upn: u[i].UPN });
+                            }
                         }
                         sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
                     });
@@ -4969,7 +5001,24 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'users': {
                 if (meshCoreObj.users == null) { response = 'Active users are unknown.'; } else { response = 'Active Users: ' + meshCoreObj.users.join(', ') + '.'; }
-                require('user-sessions').enumerateUsers().then(function (u) { for (var i in u) { sendConsoleText(u[i]); } });
+                require('user-sessions').enumerateUsers().then(function (u) { 
+                    var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Domain','PartOfDomain'])[0];
+                    for (var i in u) { 
+                        if (u[i].Domain != null && u[i].Domain == 'AzureAD'){
+                            // AzureAD to-do
+                            // var userGUID = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
+                            // if (userGUID != null){
+                            //     var user = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\\' + userGUID.subkeys[0], 'UserEmail');
+                            //     if (user != null) u[i].UPN = user;
+                            // }
+                        } else if (u[i].Domain != null) {
+                            if (ret != null && ret.PartOfDomain === true) {
+                                u[i].UPN = u[i].Username + '@' + ret.Domain;
+                            }
+                        }
+                        sendConsoleText(u[i]);
+                    }
+                });
                 break;
             }
             case 'kvmusers':

@@ -3554,6 +3554,7 @@
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
                                 node.lusers = message.event.node.lusers;
+                                node.upnusers = message.event.node.upnusers;
                                 node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
@@ -7716,8 +7717,13 @@
 
                 // Active Users
                 if (node.users && node.users.length > 0) {
-                    var u = node.users.map(function(user) {
-                        return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                    var u = node.users.map(function(user, index) {
+                        var label = (node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
+                        var locked = (node.lusers && node.lusers.indexOf(user) >= 0);
+                        var escapedUser = EscapeHtml(user);
+                        if (locked) { return addKeyLinkConditional(escapedUser, (label ? (label + ' - ' + "Locked") : "Locked"), true); }
+                        else if (label) { return '<span style=cursor:default title=\''+ label + '\'>' + escapedUser + '</span>'; }
+                        else { return escapedUser; }
                     }).join(', ');
                     x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
                 }
