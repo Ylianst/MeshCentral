@@ -3098,7 +3098,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Check if this agent is correct for this command type
                                     // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
                                     var commandsOk = false;
-                                    if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                                    if ((node.agent.id > 0) && (node.agent.id < 5) || (node.agent.id > 41 && node.agent.id < 44)) {
                                         // Windows Agent
                                         if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
                                         else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent

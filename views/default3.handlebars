@@ -6895,7 +6895,7 @@
             } else if (op == 109) {
                 // Upload files
                 var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
-                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (((n.agent.id > 0) && (n.agent.id < 5)) || (n.agent.id == 34)) { wintype = true; } else { linuxtype = true; } } }
+                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } } }
                 var x = "Upload selected files to all selected devices" + '<br /><br />';
                 x += '<form method=post enctype=multipart/form-data action=uploadfilebatch.ashx target=fileUploadFrame>';
                 x += '<input type=hidden name=authCookie value=' + authCookie + ' /><input type=hidden name=nodeIds value=' + chkNodeIds.join(',') + ' /><input type=submit id=d2batchUploadSubmit style=display:none />';
@@ -7077,7 +7077,7 @@
                 var n = getNodeFromId(options.nodeids[i]);
                 if (n.agent) {
                     if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
-                    if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; }
+                    if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; }
                 }
             }
             if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
@@ -9580,7 +9580,7 @@
             } else if (op == 106) {
                 // Run commands
                 var wintype = false, linuxtype = false;
-                if (currentNode.agent) { if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (currentNode.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } }
                 if ((wintype == true) || (linuxtype == true)) {
                     var x = "Run commands on selected devices." + '<br />';
                     if (wintype == true) {
@@ -12504,7 +12504,7 @@
 
         function p13findfileEx(b, t) {
             if (Q('d2findFilter').value.length == 0) return;
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var slash = winAgent ? '\\' : '/';
             var path = p13filetreelocation.join(slash) + slash;
             if (!winAgent) { path = slash + path; }
@@ -12553,7 +12553,7 @@
                 QE('p13OpenButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+                var winAgent = isWindowsNode(currentNode);
                 QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) || (currentNode.agent.id == 14)));
@@ -12879,7 +12879,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {

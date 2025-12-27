@@ -4244,7 +4244,7 @@
             for (var i in options.nodeids) {
                 var n = getNodeFromId(options.nodeids[i]);
                 if (n.agent) { if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
-                if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } }
             }
             if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
                 // Fetch run options
@@ -5904,7 +5904,7 @@
                 QE('p13PasteButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+                var winAgent = isWindowsNode(currentNode);
                 QE('p13DeleteFileButton', advancedFeatures && (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
@@ -6100,7 +6100,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {
@@ -7762,6 +7762,7 @@
         function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g, '%27'); };
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
+        function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34,42,43].indexOf(node.agent.id) >= 0); }
 
     </script>
 </body>
