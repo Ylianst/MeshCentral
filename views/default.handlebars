@@ -7718,7 +7718,7 @@
                 // Active Users
                 if (node.users && node.users.length > 0) {
                     var u = node.users.map(function(user, index) {
-                        var label = (node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
+                        var label = (node.upnusers && node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
                         var locked = (node.lusers && node.lusers.indexOf(user) >= 0);
                         var escapedUser = EscapeHtml(user);
                         if (locked) { return addKeyLinkConditional(escapedUser, (label ? (label + ' - ' + "Locked") : "Locked"), true); }
