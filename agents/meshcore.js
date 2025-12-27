@@ -1715,6 +1715,7 @@ function handleServerCommand(data) {
                 // Fetch system information
                 getSystemInformation(function (results) {
                     if ((results != null) && (data.hash != results.hash)) { mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results }); }
+                    else { mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: null }); }
                 });
                 break;
             }
