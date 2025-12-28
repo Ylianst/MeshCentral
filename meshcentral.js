@@ -1877,8 +1877,12 @@ function CreateMeshCentralServer(config, args) {
             if (obj.fs.existsSync(translationpath2)) { translationpath = translationpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
             var translations = JSON.parse(obj.fs.readFileSync(translationpath).toString());
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
-            if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
-
+            if (translations['zh-cht']) {
+                translations['zh-hant'] = translations['zh-cht'];
+                translations['zh-tw'] = translations['zh-cht'];
+                translations['zh-hk'] = translations['zh-cht'];
+                delete translations['zh-cht'];
+            }
             // If there is domain customizations to the agent strings, do this here.
             for (var i in obj.config.domains) {
                 var domainTranslations = translations;
