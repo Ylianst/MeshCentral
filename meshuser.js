@@ -3210,7 +3210,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'poweraction':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                    if (common.validateInt(command.actiontype, 2, 401) == false) break; // Check actiontype
+                    if (common.validateInt(command.actiontype, 2, 402) == false) break; // Check actiontype
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i];
 
@@ -3222,9 +3222,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             if ((command.actiontype >= 400) && ((rights & MESHRIGHT_REMOTECONTROL) != 0)) {
-                                // Flash and vibrate
+                                // Flash, vibrate and lock
                                 if ((command.actiontype == 400) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'flash ' + command.time }, MESHRIGHT_ADMIN, 0); }
                                 if ((command.actiontype == 401) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'vibrate ' + command.time }, MESHRIGHT_ADMIN, 0); }
+                                if ((command.actiontype == 402) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'lock ' + command.time }, MESHRIGHT_ADMIN, 0); }
                             } else {
                                 // Check we have the rights to perform this operation
                                 if ((command.actiontype == 302) && ((rights & MESHRIGHT_WAKEDEVICE) == 0)) return; // This is a Intel AMT power on operation, check if we have WAKE rights
