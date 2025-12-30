@@ -6582,7 +6582,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Start a second agent-only server if needed
         if (obj.args.agentport) {
             var agentPortTls = true;
-            if (obj.args.tlsoffload != null) { agentPortTls = false; }
+            if (obj.args.tlsoffload != null && obj.args.tlsoffload != false) { agentPortTls = false; }
             if (typeof obj.args.agentporttls == 'boolean') { agentPortTls = obj.args.agentporttls; }
             if (obj.certificates.webdefault == null) { agentPortTls = false; }
 
