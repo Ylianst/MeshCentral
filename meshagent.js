@@ -1944,6 +1944,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 
                 if ((command.users != null) && (Array.isArray(command.users)) && (device.users != command.users)) { device.users = command.users; change = 1; } // Don't save this to the db.
                 if ((command.lusers != null) && (Array.isArray(command.lusers)) && (device.lusers != command.lusers)) { device.lusers = command.lusers; change = 1; } // Don't save this to the db.
+                if ((command.upnusers != null) && (Array.isArray(command.upnusers)) && (device.upnusers != command.upnusers)) { device.upnusers = command.upnusers; change = 1; } // Don't save this to the db.
                 if ((mesh.mtype == 2) && (!args.wanonly)) {
                     // In WAN mode, the hostname of a computer is not important. Don't log hostname changes.
                     if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
