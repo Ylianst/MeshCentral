@@ -1995,6 +1995,10 @@
           "customUI": {
             "type": "object"
           },
+          "themePack": {
+            "type": "string",
+            "description": "The name of the theme pack to use for this domain. Example: \"Stylish-UI\""
+          },
           "customFiles": {
             "type": "object",
             "description": "Advanced customization system allowing multiple CSS and JavaScript file configurations per domain. Each configuration is identified by a unique name and can target specific templates using the 'scope' property, enabling granular control over where custom files are loaded. All custom files are loaded after the default custom.css and custom.js files.",
