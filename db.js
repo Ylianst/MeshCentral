@@ -3412,6 +3412,7 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 if ((error != null) && (error != '')) {
                         func(1, "Mongodump error, backup will not be performed. Check path or use mongodumppath & mongodumpargs");
+						console.error("MongoDump DumpTool: " + error);
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
@@ -3423,6 +3424,7 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath, timeout: 1000*30 }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
                         func(1, "mysqldump error, backup will not be performed. Check path or use mysqldumppath");
+						console.error("MariaDB DumpTool: " + error);
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
 
@@ -3437,7 +3439,9 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath." + '<br />' + error.toString().replace(/(postgresql:\/\/)([^:]+):([^@]+)@/g, '$1$2:****@') );
+                        func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath.");
+						//func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath." + '<br />' + error.toString().replace(/(postgresql:\/\/)([^:]+):([^@]+)@/g, '$1$2:****@') );
+						console.error("PostgreSQL DumpTool: " + error);
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
