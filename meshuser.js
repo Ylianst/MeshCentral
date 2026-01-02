@@ -3098,7 +3098,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Check if this agent is correct for this command type
                                     // command.type 1 = Windows Command, 2 = Windows PowerShell, 3 = Linux/BSD/macOS
                                     var commandsOk = false;
-                                    if ((node.agent.id > 0) && (node.agent.id < 5)) {
+                                    if ((node.agent.id > 0) && (node.agent.id < 5) || (node.agent.id > 41 && node.agent.id < 44)) {
                                         // Windows Agent
                                         if ((command.type == 1) || (command.type == 2)) { commandsOk = true; }
                                         else if (command.type === 0) { command.type = 1; commandsOk = true; } // Set the default type of this agent
@@ -5063,7 +5063,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 if (req.session.loginToken != null) { err = "Access denied"; } // Do not allow this command when logged in using a login token
                 else if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens === false)) { err = "Not supported"; } // Login tokens are not supported on this server
-                else if ((typeof domain.passwordrequirements == 'object') && Array.isArray(domain.passwordrequirements.logintokens) && (domain.passwordrequirements.logintokens.indexOf(user._id) < 0)) { err = "Not supported"; } // Login tokens are not supported by this user
+                else if ((typeof domain.passwordrequirements == 'object') && Array.isArray(domain.passwordrequirements.logintokens) && ((domain.passwordrequirements.logintokens.indexOf(user._id) < 0) && (user.links && Object.keys(user.links).some(key => domain.passwordrequirements.logintokens.indexOf(key) < 0)))) { err = "Not supported"; } // Login tokens are not supported by this user
                 else if (common.validateString(command.name, 1, 100) == false) { err = "Invalid name"; } // Check name
                 else if ((typeof command.expire != 'number') || (command.expire < 0)) { err = "Invalid expire value"; } // Check expire
 

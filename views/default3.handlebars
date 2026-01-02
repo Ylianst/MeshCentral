@@ -140,28 +140,119 @@
     <!-- main page -->
     <div id=container>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
-        <div id=masthead class=noselect>
-            <div style="float:left">{{{titlehtml}}}</div>
-            <div class="title" onclick="go(1,event)">{{{title1}}}</div>
-            <div class="title2">{{{title2}}}</div>
-            <div style="float:right">
+        <div id="masthead" class="noselect masthead-container">
+            <div class="masthead-left">
+                <div class="masthead-title" onclick="go(1,event)">{{{titlehtml}}}</div>
+                <div class="masthead-titles-container">
+                    <div class="title" onclick="go(1,event)">{{{title1}}}</div>
+                    <div class="title2" onclick="go(1,event)">{{{title2}}}</div>
+                </div>
+            </div>
+
+            <div class="masthead-right">
                 <div id="notificationCount"
-                    class="position-relative"
+                    class="notification-icon position-relative"
                     title="Click to view current notifications"
                     onclick="clickNotificationIcon()"
                     style="display: none;">
-                <i class="fa-solid fa-bell fa-lg text-white"></i>
-                <span id="notificationBadge"
-                        class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger"
-                        style="font-size: 0.65rem;">
-                    0
-                </span>
+                    <i class="fa-solid fa-bell fa-xl text-white"></i>
+                    <span id="notificationBadge"
+                        class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger">0</span>
                 </div>
-            </div>
-            <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
-                    style="color:yellow"></span></p>
-            <div class=textnewui id=textnewui onmouseup=toggleBootstrapUIMode() onkeypress="if (event.key=='Enter') { toggleBootstrapUIMode(); }">
-                <b>Try the new MeshCentral UI</b>
+
+                <div class="user-menu-container">
+                    <div id="userDropdown">
+                        <div id="userDropdownButton">
+                            <img id="userDropdownImage" src="images/user-256.png" alt="User" />
+                            <span id="userDropdownName" class="LogoffLinkColor"></span>
+                            <i class="fa fa-chevron-down LogoffLinkColor" style="font-size: 12px;"></i>
+                        </div>
+                        <div id="userDropdownMenu">
+                            <div id="userDropdownMenuContainer">
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="devices" onclick="handleUserMenuItem('devices')">
+                                    <i class="fa fa-desktop userDropdownMenuIcon"></i>
+                                    <span>My Devices</span>
+                                </div>
+
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="events" onclick="handleUserMenuItem('events')">
+                                    <i class="fa fa-calendar userDropdownMenuIcon"></i>
+                                    <span>My Events</span>
+                                </div>
+
+                                <div id="mobileUsersMenuItem" class="userDropdownMenuItem userDropdownMobileOnly users-menu-item mobile-menu-item d-none" data-action="users" onclick="handleUserMenuItem('users')">
+                                    <i class="fa fa-users userDropdownMenuIcon"></i>
+                                    <span>My Users</span>
+                                </div>
+
+                                <div id="mobileFilesMenuItem" class="userDropdownMenuItem userDropdownMobileOnly files-menu-item mobile-menu-item d-none" data-action="files" onclick="handleUserMenuItem('files')">
+                                    <i class="fa fa-folder userDropdownMenuIcon"></i>
+                                    <span>My Files</span>
+                                </div>
+
+                                <div id="mobileServerMenuItem" class="userDropdownMenuItem userDropdownMobileOnly server-menu-item mobile-menu-item d-none" data-action="server" onclick="handleUserMenuItem('server')">
+                                    <i class="fa fa-server userDropdownMenuIcon"></i>
+                                    <span>My Server</span>
+                                </div>
+
+                                <div id="userDropdownMenuDivider" class="userDropdownMobileOnly mobile-menu-item"></div>
+
+                                <div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(); event.stopPropagation();">
+                                    <i class="fa fa-sliders userDropdownMenuIcon"></i>
+                                    <span>UI Settings</span>
+                                    <i class="fa fa-chevron-right userDropdownMenuIcon submenu-arrow"></i>
+                                </div>
+
+                                <div id="uiSubmenu" class="userDropdownSubmenu">
+                                    <div id="toggleModernUIMenuItem" class="userDropdownMenuItem" data-action="toggle-modern-ui" onclick="handleUserMenuItem('toggle-modern-ui')">
+                                        <i class="fa fa-toggle-on userDropdownMenuIcon"></i>
+                                        <span>Toggle Modern UI</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="left-bar" onclick="handleUserMenuItem('left-bar')">
+                                        <i class="fa fa-window-maximize fa-rotate-270 userDropdownMenuIcon"></i>
+                                        <span>Left Bar Interface</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="top-bar" onclick="handleUserMenuItem('top-bar')">
+                                        <i class="fa fa-window-maximize userDropdownMenuIcon"></i>
+                                        <span>Top Bar Interface</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="fixed-width" onclick="handleUserMenuItem('fixed-width')">
+                                        <i class="fa fa-columns userDropdownMenuIcon"></i>
+                                        <span>Fixed Width Interface</span>
+                                    </div>
+                                    <div id="toggleFooterMenuItem" class="userDropdownMenuItem" data-action="toggle-footer" onclick="handleUserMenuItem('toggle-footer')">
+                                        <i class="fa fa-window-minimize userDropdownMenuIcon"></i>
+                                        <span>Toggle Footer Bar</span>
+                                    </div>
+                                    <div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>
+                                </div>
+
+                                <div id="toggleNightMenuItem" class="userDropdownMenuItem" data-action="toggle-night" onclick="toggleNightMode(); QV('userDropdownMenu', false); QV('uiSubmenu', false); resetChevronArrow();">
+                                    <i id="nightModeIcon" class="fa userDropdownMenuIcon night-mode-icon"></i>
+                                    <span id="nightModeText">Toggle night mode</span>
+                                </div>
+
+
+                                <div class="userDropdownMenuItem" data-action="notes" onclick="handleUserMenuItem('notes')">
+                                    <i class="fa fa-sticky-note userDropdownMenuIcon"></i>
+                                    <span>Personal Notes</span>
+                                </div>
+
+                                <div class="userDropdownMenuItem" data-action="account" onclick="handleUserMenuItem('account')">
+                                    <i class="fa fa-user userDropdownMenuIcon"></i>
+                                    <span>My Account</span>
+                                </div>
+
+                                <div id="userDropdownMenuDivider"></div>
+
+                                <div class="userDropdownMenuItem" data-action="logout" onclick="handleUserMenuItem('logout')">
+                                    <i class="fa fa-sign-out userDropdownMenuIcon"></i>
+                                    <span>Logout</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <span id="idleTimeoutNotify" class="idle-timeout-notify"></span>
+                </div>
             </div>
         </div>
         <div class="sidebar flex-column" id="page_leftbar">
@@ -798,7 +889,12 @@
                         <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
                     <div class='fs-4 fw-bold'>Desktop - <span id=p11deviceName></span></div>
-                    <div id="devListToolbarViewIcons" class="ms-auto">
+                    <div id="p11KeyboardLights" style="font-size:x-small;color:black" class="ms-auto pe-2">
+                        <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
+                        <div id="p11capslock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">CAPS</div>
+                        <div id="p11scrolllock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">SCROLL</div>
+                    </div>
+                    <div id="devListToolbarViewIcons">
                         <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
                 </div>
@@ -810,11 +906,6 @@
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.
                     </div>
-                </div>
-                <div style="position:absolute;right:16px;margin-top:-14px;font-size:x-small;color:black">
-                    <div id="p11capslock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">CAPS</div>
-                    <div id="p11scrolllock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">SCROLL</div>
-                    <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
                 </div>
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
                     <div id=deskarea1 class="areaHead d-flex flex-wrap">
@@ -1325,6 +1416,7 @@
                     </div>
                     <div class='fs-4 fw-bold'>Details - <span id=p17deviceName></span></div>
                     <div id="devListToolbarViewIcons3" class="ms-auto">
+                        <i class="fa-solid fa-rotate-right fa-xl fa-border" role="button" onclick=refreshDetails(event) title="Refresh details information."></i>
                         <i class="fa-solid fa-chart-line fa-xl fa-border" role="button" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."></i>
                     </div>
                 </div>
@@ -1414,13 +1506,12 @@
                     </div>
                     <div class='fs-4 fw-bold'>General - <span id=p30userName></span></div>
                 </div>
-                <div id="p30info" style="overflow-y:auto">
-                    <div class="row">
+                <div id="p30info" class='pe-2' style="overflow-y:auto">
+                    <div class="d-flex">
                         <div class="col">
                             <div id="p30html"></div>
                         </div>
-                        <div class="col-auto" style="width: 20px;"></div>
-                        <div class="col-auto" style="width: 200px; position: relative;">
+                        <div class="col-auto">
                             <img id="p30userAuthServiceLogo" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
                             <picture id="MainUserImage"
                                 style="display:none; border-width:0px; height:200px; width:200px; float:right"
@@ -1667,7 +1758,7 @@
         </div>
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
-            <div class="footer2" style="display:none;">
+            <div class="footer2">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
                     </div>
@@ -1938,8 +2029,8 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         if ((webState == null) || (typeof webState != 'object')) { webState = {}; }
-        for (var i in webState) { if (i != 'desktopsettings') { try { localStorage.setItem(i, webState[i]); } catch (ex) { } } }
-        if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
+        for (var i in webState) { try { localStorage.setItem(i, webState[i]); } catch (ex) { } }
+        if (webState && !webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;
         var autoReconnect = true;
@@ -2115,120 +2206,13 @@
             }
             args.hide = hide;
             QV('uiViewButton5', !(args.hide & 4)); // Hide the footer toggle button if footer is hidden anyway.
+            QV('toggleFooterMenuItem', !(args.hide & 4)); // Hide the footer toggle menu item if footer is hidden anyway.
+            QV('toggleNightMenuItem', ((features2 & 0x00100000) == 0) && ((features2 & 0x00200000) == 0)); // Hide night mode toggle if permanent night (1) or day (2) mode is set
+            //QV('toggleModernUIMenuItem', ((features2 & 0x80000000) == 0)); // Show only if allowed and not forced siteStyle=3
+            updateMobileTopBarVisibility();
             adjustPanels();
 
-            // Setup logout control
-            var logoutControl = '';
-            if (logoutControls) {
-                if (logoutControls.name != null) { 
-                    var userImageSrc = 'images/user-256.png';
-                    if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
-                        if (userinfo.accountImageRnd == null) { userinfo.accountImageRnd = Math.floor(Math.random() * 9999999999); }
-                        userImageSrc = 'userimage.ashx?rnd=' + userinfo.accountImageRnd;
-                    }
-                    
-					// Check permissions
-					var siteRights = userinfo ? userinfo.siteadmin : 0;
-					var serverFeatures = parseInt('{{{serverfeatures}}}');
-					var canViewUsers = ((users != null) && ((features & 4) == 0)) || (((userinfo && userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0));
-					var canViewFiles = (siteRights & 8) != 0;
-					var canViewServer = (siteRights & 21) && ((serverFeatures & 64) != 0);
-					
-					logoutControl = '<div id="userDropdown">' +
-						'<div id="userDropdownButton">' +
-							'<img id="userDropdownImage" src="' + userImageSrc + '" />' +
-							'<span id="userDropdownName" class="LogoffLinkColor">' + logoutControls.name + '</span>' +
-							'<i class="fa fa-chevron-down LogoffLinkColor" style="font-size: 12px;"></i>' +
-						'</div>' +
-						'<div id="userDropdownMenu">' +
-							'<div id="userDropdownMenuContainer">' +
-					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'devices\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-desktop userDropdownMenuIcon"></i>' +
-									'<span>' + "My Devices" + '</span>' +
-								'</div>' +
-					
-								'<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'events\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-calendar userDropdownMenuIcon"></i>' +
-									'<span>' + "My Events" + '</span>' +
-								'</div>' +
-					
-								(canViewUsers ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'users\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-users userDropdownMenuIcon"></i>' +
-									'<span>' + "My Users" + '</span>' +
-								'</div>' : '') +
-					
-								(canViewFiles ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'files\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-folder userDropdownMenuIcon"></i>' +
-									'<span>' + "My Files" + '</span>' +
-								'</div>' : '') +
-					
-								(canViewServer ? '<div class="userDropdownMenuItem userDropdownMobileOnly" onclick="goForward(\'server\'); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-server userDropdownMenuIcon"></i>' +
-									'<span>' + "My Server" + '</span>' +
-								'</div>' : '') +
-					
-								'<div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>' +
-					
-								'<div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(event);">' +
-									'<i class="fa fa-sliders userDropdownMenuIcon"></i>' +
-									'<span>' + "UI Settings" + '</span>' +
-									'<i class="fa fa-chevron-right userDropdownMenuIcon" style="margin-left: auto; margin-right: 0; transition: transform 0.3s ease;"></i>' +
-								'</div>' +
-					
-								'<div id="uiSubmenu" class="userDropdownSubmenu" style="display:none;" onclick="event.stopPropagation();">' +
-									'<div class="userDropdownMenuItem" onclick="toggleBootstrapUIMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-toggle-on userDropdownMenuIcon"></i>' +
-										'<span>' + "Toggle Modern UI" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(1); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-window-maximize fa-rotate-270 userDropdownMenuIcon"></i>' +
-										'<span>' + "Left Bar Interface" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-window-maximize userDropdownMenuIcon"></i>' +
-										'<span>' + "Top Bar Interface" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="userInterfaceSelectMenu(3); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-columns userDropdownMenuIcon"></i>' +
-										'<span>' + "Fixed Width Interface" + '</span>' +
-									'</div>' +
-									'<div class="userDropdownMenuItem" onclick="toggleFooterBarMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-										'<i class="fa fa-window-minimize userDropdownMenuIcon"></i>' +
-										'<span>' + "Toggle Footer Bar" + '</span>' +
-									'</div>' +
-								'</div>' +
-                                
-								'<div class="userDropdownMenuItem" onclick="toggleNightMode(); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa ' + (document.body.classList.contains('night') ? 'fa-sun' : 'fa-moon') + ' userDropdownMenuIcon"></i>' +
-									'<span>' + "Toggle night mode" + '</span>' +
-								'</div>' +
-
-								'<div class="userDropdownMenuItem" onclick="showNotes(false); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-sticky-note userDropdownMenuIcon"></i>' +
-									'<span>' + "Personal Notes" + '</span>' +
-								'</div>' +
-					
-								'<div class="userDropdownMenuItem" onclick="go(2); QV(\'userDropdownMenu\', false); QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu);">' +
-									'<i class="fa fa-user userDropdownMenuIcon"></i>' +
-									'<span>' + "My Account" + '</span>' +
-								'</div>' +
-                                
-                                '<div id="userDropdownMenuDivider"></div>';
-					
-					if (logoutControls.logoutUrl != null) {
-						logoutControl += '<div class="userDropdownMenuItem" onclick="QV(\'uiSubmenu\', false); resetChevronArrow(); document.removeEventListener(\'click\', closeUISubmenu); window.location.href=\'' + logoutControls.logoutUrl + '\'">' +
-							'<i class="fa fa-sign-out userDropdownMenuIcon"></i>' +
-								'<span>' + "Logout" + '</span>' +
-						'</div>';
-					}
-                    
-                    logoutControl += '</div></div></div>';
-                }
-            }
-            if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
-            
-            setTimeout(updateUserDropdown, 100);
+            setTimeout(updateUserDropdownVisibility, 100);
 
             // Setup the context menu
             document.onclick = function (e) { hideContextMenu(); }
@@ -2355,26 +2339,26 @@
             // Custom UI
             if (customui != null) {
                 if (customui.devicesbarbuttons) {
-                    var x = '';
+                    var x = '&nbsp;';
                     for (var i in customui.devicesbarbuttons) {
                         var disabled = ((customui.devicesbarbuttons[i].selection == 'one') || (customui.devicesbarbuttons[i].selection == 'many')) ? 'disabled' : '';
-                        x += '<input id="cui:' + i + '" type="button" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />';
+                        x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />&nbsp;';
                     }
                     QH('devsCustomUIBar', x);
                 }
                 if (customui.desktopbuttons) {
-                    var x = '';
-                    for (var i in customui.desktopbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.desktopbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"desktopbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.desktopbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.desktopbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"desktopbuttons") />&nbsp;'; }
                     QH('desktopCustomUiButtons', x);
                 }
                 if (customui.terminalbuttons) {
-                    var x = '';
-                    for (var i in customui.terminalbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.terminalbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"terminalbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.terminalbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.terminalbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"terminalbuttons") />&nbsp;'; }
                     QH('terminalCustomUiButtons', x);
                 }
                 if (customui.filesbuttons) {
-                    var x = '';
-                    for (var i in customui.filesbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.filesbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"filesbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.filesbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.filesbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"filesbuttons") />&nbsp;'; }
                     QH('filesCustomUiButtons', x);
                 }
             }
@@ -2460,18 +2444,18 @@
                         if (elem.name == null) {
                             x += '<textarea id=cui:' + i + ' style=width:356px;resize:none;height:100px autocomplete=off></textarea>';
                         } else {
-                            x += addHtmlFormFloating(elem.name, '<textarea id=cui:' + i + ' style=width:230px;resize:none;height:100px autocomplete=off></textarea>');
+                            x += addHtmlFormFloating(elem.name, '<textarea class=form-control id=cui:' + i + ' style=resize:none;height:100px autocomplete=off></textarea>');
                         }
                     }
                     if (elem.type == 'droplist') {
                         var y = '';
                         for (var j in elem.options) { y += '<option value="' + j + '">' + EscapeHtml(elem.options[j]) + '</option>'; }
-                        x += addHtmlFormFloating(elem.name, '<select id="cui:' + i + '" class=form-select autocomplete=off />' + y + '</select>');
+                        x += addHtmlFormFloating(elem.name, '<select class=form-select id="cui:' + i + '" class=form-select autocomplete=off />' + y + '</select>');
                     }
                 }
             }
             setModalContent('xxAddAgent', dialog.title, x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg })
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showCustomUiDialogEx(1, { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg }) );
         }
 
         // Handle a generic custom UI dialog event
@@ -2667,6 +2651,7 @@
                     QV('uiMenu', false);
                     QV('topMenu', false);
                     updateNightModeIcon();
+                    updateMobileTopBarVisibility();
                 } else {
                     userDropdownMenu.style.display = 'none';
                     var uiSubmenu = Q('uiSubmenu');
@@ -2710,21 +2695,27 @@
         function toggleUISubmenu(event) {
             if (event) {
                 event.stopPropagation();
+                event.preventDefault();
             }
             var uiSubmenu = Q('uiSubmenu');
             if (uiSubmenu) {
                 var isVisible = (uiSubmenu.style.display == 'block');
-                uiSubmenu.style.display = isVisible ? 'none' : 'block';
                 
-                var chevronIcon = document.querySelector('.userDropdownMenuItem[onclick*="toggleUISubmenu"] .fa-chevron-right');
-                if (chevronIcon) {
-                    if (isVisible) {
-                        chevronIcon.style.transform = 'rotate(0deg)';
-                    } else {
-                        chevronIcon.style.transform = 'rotate(90deg)';
+                if (isVisible) {
+                    uiSubmenu.style.display = 'none';
+                    uiSubmenu.classList.remove('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.remove('rotated');
                     }
-                }
-                if (!isVisible) {
+                    document.removeEventListener('click', closeUISubmenu);
+                } else {
+                    uiSubmenu.style.display = 'block';
+                    uiSubmenu.classList.add('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.add('rotated');
+                    }
                     setTimeout(function() {
                         document.addEventListener('click', closeUISubmenu);
                     }, 10);
@@ -2738,7 +2729,11 @@
             if (uiSubmenu && userDropdown) {
                 if (!uiSubmenu.contains(event.target) && !userDropdown.contains(event.target)) {
                     uiSubmenu.style.display = 'none';
-                    resetChevronArrow();
+                    uiSubmenu.classList.remove('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.remove('rotated');
+                    }
                     document.removeEventListener('click', closeUISubmenu);
                 }
             }
@@ -2751,7 +2746,37 @@
             toggleFullScreen(0);
             toggleStackMenu(0);
             if (webPageStackMenu && (xxcurrentView >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
+            updateMobileTopBarVisibility();
             adjustPanels();
+        }
+
+        function updateMobileTopBarVisibility() {
+            try {
+                var items = document.querySelectorAll('.mobile-menu-item');
+                for (var i = 0; i < items.length; i++) {
+                    if ((uiMode == 2) || (uiMode == 3)) {
+                        items[i].classList.add('d-none');
+                    } else {
+                        if (!(items[i].classList.contains('users-menu-item') || items[i].classList.contains('files-menu-item') || items[i].classList.contains('server-menu-item'))) {
+                            items[i].classList.remove('d-none');
+                        }
+                    }
+                }
+
+                if ((uiMode != 2) && (uiMode != 3)) {
+                    var serverFeatures = parseInt('{{{serverfeatures}}}');
+                    var siteRights = userinfo.siteadmin;
+
+                    // Server Menu Item
+                    ((siteRights & 21) && ((serverFeatures & 64) != 0)) ? QC('mobileServerMenuItem').remove('d-none') : QC('mobileServerMenuItem').add('d-none');
+
+                    // Files Menu Item
+                    (siteRights & 8) ? QC('mobileFilesMenuItem').remove('d-none') : QC('mobileFilesMenuItem').add('d-none');
+
+                    // Users Menu Item
+                    (((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0))) ? QC('mobileUsersMenuItem').remove('d-none') : QC('mobileUsersMenuItem').add('d-none');
+                }
+            } catch (ex) { }
         }
 
         function toggleNightMode() {
@@ -2915,6 +2940,7 @@
         }
 
         function updateSiteAdmin() {
+            if (!userinfo) return;
             var serverFeatures = parseInt('{{{serverfeatures}}}');
             var siteRights = userinfo.siteadmin;
             var accountSettingsLocked = ((siteRights != 0xFFFFFFFF) && ((siteRights & 1024) != 0)) || ((features2 & 0x100) != 0); // Not admin and have account features locked, or using a loginToken
@@ -3024,6 +3050,7 @@
 
         var backupCodesWarningDone = false;
         function updateSelf() {
+            if (!userinfo) return;
             var authFactorCount = count2factoraAuths(); // Get the number of 2nd factors
             var accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0));
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
@@ -3345,6 +3372,7 @@
                     if (message.noinfo === true) {
                         updateDeviceDetails(getNodeFromId(message.nodeid));
                     } else {
+                        message.hardware.time = message.time;
                         updateDeviceDetails(getNodeFromId(message.nodeid), message.hardware);
                     }
                     break;
@@ -3500,6 +3528,7 @@
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     if ((xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid)) {
                         var x = '<div class=dialogText>';
+                        if (currentNode.firstconnect) { x += addHtmlValue2("First agent connection", printDateTime(new Date(currentNode.firstconnect))); }
                         if (currentNode.lastconnect) { x += addHtmlValue2("Last agent connection", printDateTime(new Date(currentNode.lastconnect))); }
                         if (currentNode.lastaddr) {
                             var splitip = currentNode.lastaddr.split(':');
@@ -4205,6 +4234,7 @@
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
                                 node.lusers = message.event.node.lusers;
+                                node.upnusers = message.event.node.upnusers;
                                 node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
@@ -4555,7 +4585,6 @@
                     break;
                 }
                 case 'createDeviceShareLink': { // Guest sharing link
-                    if (xxdialogTag) break;
                     var node = getNodeFromId(message.nodeid), x = '';
                     if (node == null) break;
                     x += addHtmlValue("Device", node.name);
@@ -5967,7 +5996,8 @@
             d7bitmapscaling.value = multidesktopsettings.scaling;
             d7encoding.value = multidesktopsettings.agentencoding;
             if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 100; }
-            setModalContent('xxAddAgent', "Remote Desktop Settings", x);
+            changeDesktopSettingsTab(null, 'd7meshkvm');
+            setModalContent('xxAddAgent', "Remote Desktop Settings", 7);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showMultiDesktopSettingsChanged());
         }
 
@@ -6519,10 +6549,10 @@
         */
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
             if (xxModal == null) {
-                ['idx_dlgOkButton', 'idx_dlgCancelButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
+                ['idx_dlgOkButton', 'idx_dlgCancelButton', 'idx_dlgDeleteButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
                     Q(id).onclick = null;
-                    QE(id, true);
-                    QV(id, true);
+                    QE(id, (id != 'idx_dlgDeleteButton' ? true : false));
+                    QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
                 });
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
                 var hiddenModal = function (event) {
@@ -6865,7 +6895,7 @@
             } else if (op == 109) {
                 // Upload files
                 var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
-                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (((n.agent.id > 0) && (n.agent.id < 5)) || (n.agent.id == 34)) { wintype = true; } else { linuxtype = true; } } }
+                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } } }
                 var x = "Upload selected files to all selected devices" + '<br /><br />';
                 x += '<form method=post enctype=multipart/form-data action=uploadfilebatch.ashx target=fileUploadFrame>';
                 x += '<input type=hidden name=authCookie value=' + authCookie + ' /><input type=hidden name=nodeIds value=' + chkNodeIds.join(',') + ' /><input type=submit id=d2batchUploadSubmit style=display:none />';
@@ -7047,7 +7077,7 @@
                 var n = getNodeFromId(options.nodeids[i]);
                 if (n.agent) {
                     if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
-                    if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; }
+                    if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; }
                 }
             }
             if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
@@ -7199,20 +7229,20 @@
         function getDevicesThatMatchFilter(x) {
             var r = [];
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
-            if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
-            else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
-            else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
-            else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
-            else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
-            else if (x.startsWith("tag:".toLowerCase())) { tagSearch = x.substring("tag:".length); }
-            else if (x.startsWith("t:".toLowerCase())) { tagSearch = x.substring("t:".length); }
-            else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = x.substring("atag:".length); }
-            else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = x.substring("a:".length); }
-            else if (x.startsWith("os:".toLowerCase())) { osSearch = x.substring("os:".length); }
-            else if (x.startsWith("amt:".toLowerCase())) { amtSearch = x.substring("amt:".length); }
-            else if (x.startsWith("desc:".toLowerCase())) { descSearch = x.substring("desc:".length); }
-            else if (x.startsWith("connectivity:".toLowerCase())) { connectivitySearch = x.substring("connectivity:".length); }
-            else if (x.startsWith("c:".toLowerCase())) { connectivitySearch = x.substring("c:".length); }
+            if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
+            else if (x.startsWith('u:'.toLowerCase())) { userSearch = x.substring('u:'.length); }
+            else if (x.startsWith('ip:'.toLowerCase())) { ipSearch = x.substring('ip:'.length); }
+            else if (x.startsWith('group:'.toLowerCase())) { groupSearch = x.substring('group:'.length); }
+            else if (x.startsWith('g:'.toLowerCase())) { groupSearch = x.substring('g:'.length); }
+            else if (x.startsWith('tag:'.toLowerCase())) { tagSearch = x.substring('tag:'.length); }
+            else if (x.startsWith('t:'.toLowerCase())) { tagSearch = x.substring('t:'.length); }
+            else if (x.startsWith('atag:'.toLowerCase())) { agentTagSearch = x.substring('atag:'.length); }
+            else if (x.startsWith('a:'.toLowerCase())) { agentTagSearch = x.substring('a:'.length); }
+            else if (x.startsWith('os:'.toLowerCase())) { osSearch = x.substring('os:'.length); }
+            else if (x.startsWith('amt:'.toLowerCase())) { amtSearch = x.substring('amt:'.length); }
+            else if (x.startsWith('desc:'.toLowerCase())) { descSearch = x.substring('desc:'.length); }
+            else if (x.startsWith('connectivity:'.toLowerCase())) { connectivitySearch = x.substring('connectivity:'.length); }
+            else if (x.startsWith('c:'.toLowerCase())) { connectivitySearch = x.substring('c:'.length); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -8553,6 +8583,7 @@
                     var y = [];
                     if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                     if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                     if (y.length > 0) x += addDeviceAttribute("Windows Defender", y.join(', '));
                 }
 
@@ -8573,8 +8604,13 @@
 
                 // Active Users
                 if (node.users && node.users.length > 0) {
-                    var u = node.users.map(function(user) {
-                        return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                    var u = node.users.map(function(user, index) {
+                        var label = (node.upnusers && node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
+                        var locked = (node.lusers && node.lusers.indexOf(user) >= 0);
+                        var escapedUser = EscapeHtml(user);
+                        if (locked) { return addKeyLinkConditional(escapedUser, (label ? (label + ' - ' + "Locked") : "Locked"), true); }
+                        else if (label) { return '<span style=cursor:default title=\''+ label + '\'>' + escapedUser + '</span>'; }
+                        else { return escapedUser; }
                     }).join(', ');
                     x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
                 }
@@ -8696,7 +8732,7 @@
                 if ((customui != null) && (customui.devicebuttons != null)) {
                     for (var i in customui.devicebuttons) {
                         if ((customui.devicebuttons[i].showif == null) || ((mesh != null) && (customui.devicebuttons[i].showif == mesh._id)) || (customui.devicebuttons[i].showif == currentNode._id)) {
-                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />';
+                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />&nbsp;';
                         }
                     }
                 }
@@ -8975,7 +9011,7 @@
                     count = 1;
                     for (var i = 0; i < deviceShares.length; i++) {
                         var dshare = deviceShares[i], trash = '';
-                        if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> '; }
+                        if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><i class="fa-fw fa-solid fa-share-from-square"></i></a> '; }
                         trash += '<i role=button onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" class="fa-fw fa-solid fa-trash text-danger"></i>';
                         var type = ''; if (dshare.p <= 7) { type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p]; } else if (dshare.p == 8) { type = "HTTP/" + dshare.port; } else if (dshare.p == 16) { type = "HTTPS/" + dshare.port; }
                         var details = type;
@@ -9476,6 +9512,7 @@
             } else {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.start.selectedDates[0].getTime() / 1000), expire: parseInt(Q('d2inviteDuration').value), recurring: Q('d2timeRange').value - 1, consent: consent, viewOnly: viewOnly });
             }
+            return false;
         }
 
         function deviceActionFunction() {
@@ -9543,11 +9580,11 @@
             } else if (op == 106) {
                 // Run commands
                 var wintype = false, linuxtype = false;
-                if (currentNode.agent) { if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (currentNode.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } }
                 if ((wintype == true) || (linuxtype == true)) {
                     var x = "Run commands on selected devices." + '<br />';
                     if (wintype == true) {
-                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px>';
+                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px> class=form-select>';
                         x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>';
                         if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
                         x += '</select>';
@@ -11298,12 +11335,14 @@
         function showDeskClip() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskClip').blur();
-            var x = '';
-            if ((features2 & 0x0800) == 0) x += '<input id=dlgClipGet type=button value="' + "Get Clipboard" + '" style=width:160px onclick=showDeskClipGet()>';
-            if ((features2 & 0x1000) == 0) x += '<input id=dlgClipSet type=button value="' + "Set Clipboard" + '" style=width:160px onclick=showDeskClipSet()>';
-            x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
-            x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
-            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
+            var x = '<div class="container text-center"><div class="row">';
+            if ((features2 & 0x0800) == 0) x += '<div class="col"><input class="btn btn-secondary" id=dlgClipGet type=button value="' + "Get Clipboard" + '" onclick=showDeskClipGet()></div>';
+            if ((features2 & 0x1000) == 0) x += '<div class="col"><input class="btn btn-secondary" id=dlgClipSet type=button value="' + "Set Clipboard" + '" onclick=showDeskClipSet()></div>';
+            x += '</div>';
+            x += '<div class="row"><div class="col"><div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div></div></div>';
+            x += '<div class="row"><div class="col"><textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea></div></div>';
+            x += '<div class="row"><div class="col"><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span></div></div></div>';
+            x += '</div>'
             xxdialogTag = 'clipboard';
             setModalContent('xxAddAgent', "Remote Clipboard", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
@@ -12414,7 +12453,7 @@
 
         function p13gotofolder() {
             xxdialogButtons = 3;
-            setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
+            setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% value="' + (isWindowsNode(currentNode) ? p13targetpath.replaceAll('/','\\') + '\\' : p13targetpath + '/') +'"placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p13gotofolderEx);
             focusTextBox('p13folderinput');
         }
@@ -12465,7 +12504,7 @@
 
         function p13findfileEx(b, t) {
             if (Q('d2findFilter').value.length == 0) return;
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var slash = winAgent ? '\\' : '/';
             var path = p13filetreelocation.join(slash) + slash;
             if (!winAgent) { path = slash + path; }
@@ -12514,7 +12553,7 @@
                 QE('p13OpenButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+                var winAgent = isWindowsNode(currentNode);
                 QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) || (currentNode.agent.id == 14)));
@@ -12573,7 +12612,7 @@
                 }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { oldname: renamefile }));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
         }
@@ -12840,7 +12879,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {
@@ -13129,6 +13168,10 @@
             } else deviceDetailsStatsClear();
         }
 
+        function refreshDetails() {
+            meshserver.send({ action: 'msg', type: 'sysinfo', nodeid: currentNode._id });
+        }
+
         function deviceDetailsStatsClear() {
             QV('p17graph', false);
             if (window.deviceDetailsStatsChart != null) { window.deviceDetailsStatsChart.destroy(); delete window.deviceDetailsStatsChart; }
@@ -13209,6 +13252,7 @@
                     const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
+                if(m.Domain){ x += addDetailItem((m.PartOfDomain ? "Domain" : "Workgroup"), EscapeHtml(m.Domain), s); }
             }
             if (hardware.linux && hardware.linux.LastBootUpTime) {
                 var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
@@ -13232,6 +13276,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
@@ -13256,6 +13301,9 @@
                         var d = Date.parse(hardware.agentvers.compileTime)
                         x += addDetailItem("Compile time", isNaN(d) ? hardware.agentvers.compileTime : printDateTime(new Date(d)));
                     }
+                }
+                if (hardware.time != null) {
+                    x += addDetailItem("Last details update", printDateTime(new Date(hardware.time)));
                 }
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png' }); }
             }
@@ -13408,12 +13456,41 @@
             if (hardware.tpm) {
                 var x = '', tpm = hardware.tpm;
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
-                if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
-                if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
+                if (tpm.ManufacturerId) { x += addDetailItem("Identifier", EscapeHtml(tpm.ManufacturerId), s); }
+                if (tpm.ManufacturerVersion) { x += addDetailItem("Version", EscapeHtml(tpm.ManufacturerVersion), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("Activated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("Enabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("Owned", (tpm.IsOwned ? "Yes" : "No"), s); }
                 if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png' }); }
+            }
+
+            if (hardware.battery) {
+                var x = '';
+                x += '<table class="table table-hover" style=width:100%>';
+                for (var i in hardware.battery) {
+                    var battery = hardware.battery[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
+                    if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
+                    if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
+                    if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
+                    if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Battery", html: x, img: 'battery64.png'}); }
             }
 
             if (hardware.windows) {
@@ -13906,7 +13983,7 @@
             var x = '<input id=p2file type=file class="form-control" accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;background: var(--sub-menu-bg);border: 1px solid #cfcdcd; cursor: pointer;" onclick=account_canvasClick() /></div>';
 
             setModalContent('xxAddAgent', "Manage Account Image", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_manageImageEx2);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageImageEx2(1, user._id));
 
             var ctx = Q('p2canvas').getContext('2d');
             if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
@@ -13916,6 +13993,8 @@
             myImg.onload = function () { ctx.clearRect(0, 0, 256, 256); ctx.drawImage(myImg, 0, 0); };
             myImg.src = ((user.flags != null) && (user.flags & 1)) ? ('userimage.ashx?rnd=' + user.accountImageRnd + arg) : 'images/user-256.png';
             QE('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
+            QV('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
+            Q('idx_dlgDeleteButton').onclick = () => account_manageImageEx2(2, user._id);
             QE('idx_dlgOkButton', false);
         }
 
@@ -13942,6 +14021,7 @@
         function account_manageImageEx2(b, userid) {
             // Send updated image, or 0 if we pressed the delete button
             meshserver.send({ action: 'updateUserImage', userid: userid, image: (b == 2) ? 0 : Q('p2canvas').toDataURL(Q('p2file').files[0].type) });
+            if (b == 2) { xxModal.hide(); } // Close dialog on delete
             //meshserver.send({ action: 'updateUserImage', image: (b == 2)?0:Q('p2canvas').toDataURL('image/png', 0.8) });
         }
 
@@ -15549,7 +15629,7 @@
             x += '</div>';
 
             if (userid == null) {
-                xxdialogButtons = 3; xxdialogTag = '';
+                xxdialogButtons = 3; xxdialogTag = null;
                 setModalContent('xxAddAgent', "Add Users to Device Group", x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                     p20showAddMeshUserDialogEx(xxdialogButtons, xxdialogTag);
@@ -16412,10 +16492,9 @@
                 if (checkboxes[i].checked) { renamefile = checkboxes[i].value; }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5renamefileEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile, newname: Q('p5renameinput').value}); });
             focusTextBox('p5renameinput'); p5fileNameCheck();
         }
-        function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() {
@@ -18026,7 +18105,7 @@
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
             setModalContent('xxAddAgent', "Remove Device Group Permissions", format("Confirm removal of access rights for device group \"{0}\"?", mesh.name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p51removeMeshFromUserGroupEx(3, mesh._id));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removemeshuser', meshid: decodeURIComponent(meshid), userid: currentUserGroup._id }); });;
         }
         function p51editgroup(focus, nameReadOnly) {
             if (xxdialogMode) return;
@@ -18086,9 +18165,8 @@
             if (users && users[userid]) { uname = users[userid].name; }
             if (userinfo._id == userid) { uname = userinfo.name; }
             setModalContent('xxAddAgent', "Remove User Membership", format("Confirm membership removal of user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p51viewuserEx2(3, userid));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); });
         }
-        function p51viewuserEx2(button, userid) { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); }
 
         function p51showAddUserDialog() {
             if (xxdialogMode) return false;
@@ -18823,6 +18901,174 @@
             meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUser._id });
         }
 
+        
+        //
+        // UserDropDown Menu 
+        //
+
+        var userDropdownOpen = false;
+        var uiSubmenuOpen = false;
+
+        function initializeUserDropdown() {
+            var dropdownButton = Q('userDropdownButton');
+            var dropdownMenu = Q('userDropdownMenu');
+            var uiSettingsButton = document.querySelector('.userDropdownUISettings');
+            var uiSubmenu = Q('uiSubmenu');
+            
+            if (!dropdownButton || !dropdownMenu) return;
+            
+            QS('uiSubmenu').display = 'none';
+            QS('uiSubmenu').opacity = '0';
+            QS('uiSubmenu').transform = 'translateX(12px)';
+            dropdownMenu.classList.remove('show');
+
+                dropdownButton.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    userDropdownOpen = !userDropdownOpen;
+                    dropdownMenu.classList.toggle('show');
+                    if (!userDropdownOpen) {
+                        QS('uiSubmenu').display = 'none';
+                        QS('uiSubmenu').opacity = '0';
+                        QS('uiSubmenu').transform = 'translateX(12px)';
+                        uiSubmenuOpen = false;
+                        resetChevronArrow();
+                    }
+                };
+
+            document.addEventListener('click', function(e) {
+                var uiSubmenu = Q('uiSubmenu');
+                if (!dropdownMenu.contains(e.target) && !dropdownButton.contains(e.target) && !uiSubmenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                    QS('uiSubmenu').display = 'none';
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                    userDropdownOpen = false;
+                    uiSubmenuOpen = false;
+                    resetChevronArrow();
+                }
+            });
+        }
+
+        function toggleUISubmenu() {
+            uiSubmenuOpen = !uiSubmenuOpen;
+            
+            var uiSubmenu = Q('uiSubmenu');
+            var isDesktop = window.innerWidth > 769;
+            var reduceMotion = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            
+            if (uiSubmenuOpen) {
+                QS('uiSubmenu').display = 'block';
+                
+                if (isDesktop && (reduceMotion == false)) {
+                    setTimeout(function() {
+                        QS('uiSubmenu').opacity = '1';
+                        QS('uiSubmenu').transform = 'translateX(0)';
+                    }, 10);
+                } else {
+                    QS('uiSubmenu').opacity = '1';
+                    QS('uiSubmenu').transform = 'translateX(0)';
+                }
+            } else {
+                if (isDesktop && (reduceMotion == false)) {
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                    setTimeout(function() {
+                        QS('uiSubmenu').display = 'none';
+                    }, 300);
+                } else {
+                    QS('uiSubmenu').display = 'none';
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                }
+            }
+            
+            var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+            if (chevronIcon) {
+                chevronIcon.style.transform = uiSubmenuOpen ? 'rotate(90deg)' : '';
+            }
+        }
+
+        function handleUserMenuItem(action) {
+            Q('userDropdownMenu').classList.remove('show');
+            QS('uiSubmenu').display = 'none';
+            QS('uiSubmenu').opacity = '0';
+            QS('uiSubmenu').transform = 'translateX(12px)';
+            userDropdownOpen = false;
+            uiSubmenuOpen = false;
+            resetChevronArrow();
+
+            switch(action) {
+                case 'devices': goForward('devices'); break;
+                case 'events': goForward('events'); break;
+                case 'users': goForward('users'); break;
+                case 'files': goForward('files'); break;
+                case 'server': goForward('server'); break;
+                case 'toggle-modern-ui': toggleBootstrapUIMode(); break;
+                case 'left-bar': userInterfaceSelectMenu(1); break;
+                case 'top-bar': userInterfaceSelectMenu(2); break;
+                case 'fixed-width': userInterfaceSelectMenu(3); break;
+                case 'toggle-footer': toggleFooterBarMode(); break;
+                case 'toggle-night': toggleNightMode(); break;
+                case 'notes': showNotes(false); break;
+                case 'account': go(2); break;
+                case 'logout': 
+                    if (logoutControls && logoutControls.logoutUrl) {
+                        window.location.href = logoutControls.logoutUrl;
+                    }
+                    break;
+            }
+        }
+
+        function resetChevronArrow() {
+            var arrow = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+            if (arrow) arrow.style.transform = '';
+        }
+
+        function updateUserDropdownVisibility() {
+            var userDropdown = Q('userDropdown');
+            var dropdownName = Q('userDropdownName');
+            var dropdownImage = Q('userDropdownImage');
+            
+            if (logoutControls && logoutControls.name) {
+                QS('userDropdown').display = 'block';
+                dropdownName.textContent = logoutControls.name;
+                
+                if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
+                    var rnd = userinfo.accountImageRnd || Math.floor(Math.random() * 9999999999);
+                    dropdownImage.src = 'userimage.ashx?rnd=' + rnd;
+                }
+            } else {
+                QS('userDropdown').display = 'none';
+            }
+        }
+
+        function updateNightModeIcon() {
+            var nightModeItem = document.querySelector('.userDropdownMenuItem[data-action="toggle-night"]');
+            if (nightModeItem) {
+                var icon = nightModeItem.querySelector('#nightModeIcon');
+                var textSpan = nightModeItem.querySelector('#nightModeText');
+                if (icon && textSpan) {
+                    var isNightMode = document.body.classList.contains('night');
+                    var iconClass = isNightMode ? 'fa-sun' : 'fa-moon';
+                    var text = isNightMode ? "Toggle Light Mode" : "Toggle Dark Mode";
+                    var newIcon = document.createElement('i');
+                    newIcon.id = 'nightModeIcon';
+                    newIcon.className = 'fa ' + iconClass + ' userDropdownMenuIcon night-mode-icon';
+                    icon.parentNode.replaceChild(newIcon, icon);
+                    textSpan.textContent = text;
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUserDropdown();
+            updateUserDropdownVisibility();
+            updateNightModeIcon();
+        });
+
+
+
+
         //
         // MY USER EVENTS
         //
@@ -19533,29 +19779,6 @@
         }
         setupNotificationClickOutside();
 
-        // Update night mode icon and text in dropdown menu
-        function updateNightModeIcon() {
-            var nightModeItem = document.querySelector('.userDropdownMenuItem[onclick*="toggleNightMode"]');
-            if (nightModeItem) {
-                var icon = nightModeItem.querySelector('.userDropdownMenuIcon');
-                var textSpan = nightModeItem.querySelector('span');
-                if (icon && textSpan) {
-                    var isNightMode = document.body.classList.contains('night');
-                    var iconClass = isNightMode ? 'fa-sun' : 'fa-moon';
-                    var text = isNightMode ? "Toggle Light Mode" : "Toggle Dark Mode";
-                    var newIcon = document.createElement('i');
-                    newIcon.className = 'fa ' + iconClass + ' userDropdownMenuIcon';
-                    icon.parentNode.replaceChild(newIcon, icon);
-                    textSpan.textContent = text;
-                }
-            }
-        }
-        function resetChevronArrow() {
-            var chevronIcon = document.querySelector('.userDropdownMenuItem[onclick*="toggleUISubmenu"] .fa-chevron-right');
-            if (chevronIcon) {
-                chevronIcon.style.transform = 'rotate(0deg)';
-            }
-        }
         
         // Refresh the notification box
         function drawNotifications() {
@@ -20921,7 +21144,7 @@
         function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
 
         function addDetailItem(title, value, state, classNames = []) {
-            return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-8'}"> ${nobreak(title)} </div><div class="${classNames[1] || 'col-md-4 text-end'}"> ${value} </div></div>`;
+            return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-7'}"> ${nobreak(title)} </div><div class="${classNames[1] || 'col-md-5 text-end'}"> ${value} </div></div>`;
         }
 
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };

@@ -799,7 +799,7 @@
         "log": {
           "type": "string",
           "default": null,
-          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to a file named 'log.txt' located inside the 'meshcentral-data' folder. Setting it to '*' will output all logs."
+          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to a file named 'log.txt' located inside the 'meshcentral-data' folder. Setting it to '*' will output all logs. Available values are: cookie,dispatch,main,peer,web,webrequest,relay,webrelaydata,webrelay,mps,mpscmd,swarm,swarmcmd,agentupdate,agent,cert,db,email,amt,httpheaders,websocket"
         },
         "syslog": {
           "type": "string",
@@ -1784,7 +1784,7 @@
                   "array"
                 ],
                 "default": true,
-                "description": "Allows users to create alternative username/passwords for their account. Set to false to disallow all users, or set to a userid array to only allow some users."
+                "description": "Allows users to create alternative username/passwords for their account. Set to false to disallow all users, or set to a userid array or to a groupid array to only allow some users."
               },
               "twoFactorTimeout": {
                 "type": "integer",
@@ -2008,14 +2008,14 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                    "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-web/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
                   },
                   "js": {
                     "type": "array",
                     "items": {
                       "type": "string"
                     },
-                    "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                    "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-web/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
                   },
                   "scope": {
                     "type": "array",
@@ -2036,14 +2036,14 @@
                   "items": {
                     "type": "string"
                   },
-                  "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                  "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-web/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
                 },
                 "js": {
                   "type": "array",
                   "items": {
                     "type": "string"
                   },
-                  "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                  "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-web/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
                 },
                 "scope": {
                   "type": "array",
@@ -4013,6 +4013,32 @@
           "type": "boolean",
           "default": false,
           "description": "If you choose \"true\", MeshCentral won't verify if \"email\" is valid, has a valid MX record, AND if \"names\" doesn't contain a wildcard, can be resolved by DNS A/AAAA record."
+        },
+        "custom": {
+          "type": "object",
+          "description": "If this object is set, we will use a custom acme server with custom kid and hmackey for SSL creation instead of Let's Encrypt",
+          "required": [ 
+            "server",
+            "kid",
+            "hmackey"
+          ],
+          "properties": {
+            "server": {
+              "type": "string",
+              "description": "ACME server URL e.g. https://acme.zerossl.com/v2/DV90",
+              "default": ""
+            },
+            "kid": {
+              "type": "string",
+              "description": "EAB KID",
+              "default": ""
+            },
+            "hmackey": {
+              "type": "string",
+              "description": "EAB HMAC KEY",
+              "default": ""
+            }
+          }
         },
         "zerossl": {
           "type": "object",

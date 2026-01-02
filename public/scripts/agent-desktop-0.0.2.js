@@ -824,7 +824,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.xxKeyInputGrab == true) return;
         document.onkeyup = obj.xxKeyUp;
         document.onkeydown = obj.xxKeyDown;
-        document.onkeypress = obj.xxKeyPress;c
+        document.onkeypress = obj.xxKeyPress;
         obj.xxKeyInputGrab = true;
     }
 

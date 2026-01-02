@@ -139,7 +139,32 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (ex) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'usenodedefaulttlsciphers', 'tlsciphers', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'oldencrypt', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores', 'dev', 'mysql', 'mariadb', 'trustedproxy'];
+        const validArguments = [
+            '_', 'user', 'port', 'portbind', 'relayport', 'relayaliasport', 'agentport',
+            'agentportbind', 'agentaliasport', 'aliasport', 'mpsport', 'mpsaliasport',
+            'redirport', 'redirportbind', 'rediraliasport', 'cert', 'mpscert',
+            'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem',
+            'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes',
+            'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations',
+            'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall',
+            'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate',
+            'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly',
+            'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport',
+            'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload',
+            'usenodedefaulttlsciphers', 'tlsciphers', 'userallowedip', 'userblockedip',
+            'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport',
+            'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin',
+            'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore',
+            'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'oldencrypt',
+            'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles',
+            'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey',
+            'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault',
+            'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount',
+            'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount',
+            'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb',
+            'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass',
+            'indexmcrec', 'mpsdebug', 'dumpcores', 'dev', 'mysql', 'mariadb', 'trustedproxy'
+        ];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         const ENVVAR_PREFIX = "meshcentral_"
         let envArgs = []
@@ -569,13 +594,10 @@ function CreateMeshCentralServer(config, args) {
         } else {
             // if "--launch" is not specified, launch the server as a child process.
             const startArgs = [];
-            for (i in process.argv) {
-                if (i > 0) {
-                    const arg = process.argv[i];
-                    if ((arg.length > 0) && ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0))) { startArgs.push(arg); } else { startArgs.push(arg); }
-                }
-            }
-            startArgs.push('--launch', process.pid);
+            for (const flag of process.execArgv) { startArgs.push(flag); }
+            startArgs.push(process.argv[1]);
+            for (let i = 2; i < process.argv.length; i++) { startArgs.push(process.argv[i]); }
+            startArgs.push('--launch', process.pid.toString());
             obj.launchChildServer(startArgs);
         }
     };
@@ -585,9 +607,7 @@ function CreateMeshCentralServer(config, args) {
         const child_process = require('child_process');
         const isInspectorAttached = (()=> { try { return require('node:inspector').url() !== undefined; } catch (_) { return false; } }).call();
         const logFromChildProcess = isInspectorAttached ? () => {} : console.log.bind(console);
-        try { if (process.traceDeprecation === true) { startArgs.unshift('--trace-deprecation'); } } catch (ex) { }
-        try { if (process.traceProcessWarnings === true) { startArgs.unshift('--trace-warnings'); } } catch (ex) { }
-        if (startArgs[0] != "--disable-proto=delete") startArgs.unshift("--disable-proto=delete")
+        if (!startArgs.includes('--disable-proto=delete')) { startArgs.unshift('--disable-proto=delete'); }
         childProcess = child_process.execFile(process.argv[0], startArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (childProcess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startArgs); }, 500); // This is an expected restart.
@@ -1857,8 +1877,12 @@ function CreateMeshCentralServer(config, args) {
             if (obj.fs.existsSync(translationpath2)) { translationpath = translationpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
             var translations = JSON.parse(obj.fs.readFileSync(translationpath).toString());
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
-            if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
-
+            if (translations['zh-cht']) {
+                translations['zh-hant'] = translations['zh-cht'];
+                translations['zh-tw'] = translations['zh-cht'];
+                translations['zh-hk'] = translations['zh-cht'];
+                delete translations['zh-cht'];
+            }
             // If there is domain customizations to the agent strings, do this here.
             for (var i in obj.config.domains) {
                 var domainTranslations = translations;
@@ -3989,7 +4013,16 @@ function CreateMeshCentralServer(config, args) {
         try { lines = obj.fs.readFileSync(obj.path.join(obj.datapath, arg.substring(5))).toString().split(/\r?\n/).join('\r').split('\r'); } catch (ex) { }
         if (lines == null) return null;
         const validLines = [];
-        for (var i in lines) { if ((lines[i].length > 0) && (((lines[i].charAt(0) > '0') && (lines[i].charAt(0) < '9')) || (lines[i].charAt(0) == ':'))) validLines.push(lines[i]); }
+        for (var i in lines) { 
+            const line = lines[i].trim();
+            if (line.length === 0) continue;
+            if (line.charAt(0) === '#') continue;
+            const parts = line.split('#');
+            const candidate = parts[0].trim();
+            if (candidate.length > 0 && candidate.indexOf('@') === -1 && (candidate.indexOf('.') > -1 || candidate.charAt(0) === ':')) {
+                validLines.push(candidate);
+            }
+        }
         return validLines;
     }
 
@@ -4325,7 +4358,7 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb@4.1.2', 'node-forge@1.3.1', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.3', 'yauzl@2.10.0'];
+        var modules = ['archiver@7.0.1', 'body-parser@1.20.4', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.1', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb@4.1.2', 'node-forge@1.3.2', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.3', 'yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.17.0'); }
