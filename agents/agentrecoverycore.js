@@ -258,6 +258,11 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                         fs.mkdirSync(cmd.path);
                                                         break;
                                                     }
+                                                    case 'mkfile': {
+                                                        // Create a new empty file
+                                                        fs.closeSync(fs.openSync(cmd.path, 'w'));
+                                                        break;
+                                                    }
                                                     case 'rm': {
                                                         // Delete, possibly recursive delete
                                                         for (var i in cmd.delfiles)

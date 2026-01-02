@@ -3455,6 +3455,12 @@ function onTunnelData(data)
                     MeshServerLogEx(44, [cmd.path], "Create folder: \"" + cmd.path + "\"", this.httprequest);
                     break;
                 }
+                case 'mkfile': {
+                    // Create a new empty file
+                    fs.closeSync(fs.openSync(cmd.path, 'w'));
+                    MeshServerLogEx(164, [cmd.path], "Create file: \"" + cmd.path + "\"", this.httprequest);
+                    break;
+                }
                 case 'rm': {
                     // Delete, possibly recursive delete
                     for (var i in cmd.delfiles) {
