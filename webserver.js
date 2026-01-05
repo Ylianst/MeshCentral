@@ -1428,6 +1428,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const sec = parent.decryptSessionData(req.session.e);
             sec.rtuser = xusername;
             sec.rtpass = xpassword;
+            sec.rtreset = true;
             req.session.e = parent.encryptSessionData(sec);
 
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1685,7 +1686,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const sec = parent.decryptSessionData(req.session.e);
 
         // Check everything is ok
-        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
+        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false) || (sec.rtreset === true));
         if ((allowAccountReset === false) || (domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof sec.rtuser != 'string') || (typeof sec.rtpass != 'string')) {
             parent.debug('web', 'handleResetPasswordRequest: checks failed');
             delete req.session.e;
