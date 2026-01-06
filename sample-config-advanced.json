@@ -206,6 +206,7 @@
       "_minify": true,
       "_hidePowerTimeline": true,
       "_showNotesPanel": true,
+      "_collapseGroups": true,
       "_userSessionsSort": "Username",
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],

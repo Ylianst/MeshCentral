@@ -1922,6 +1922,11 @@
             "default": false,
             "description": "When enabled, this will show the notes panel in the device view"
           },
+          "collapseGroups": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, device groups will be collapsed by default in the devices tab."
+          },
           "userSessionsSort": {
             "type": "string",
             "default": "SessionId",
