@@ -7966,7 +7966,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup Strategy Options
             strategy.custom.scope = obj.common.convertStrArray(strategy.custom.scope, ' ')
-            if (strategy.custom.scope.length > 1) {
+            if (strategy.custom.scope.length > 0) {
                 strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': strategy.custom.scope });
             } else {
                 strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': ['openid', 'profile', 'email'] });
