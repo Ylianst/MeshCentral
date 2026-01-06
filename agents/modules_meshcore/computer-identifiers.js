@@ -431,6 +431,7 @@ function linux_identifiers()
                 };
                 values.battery.push(batteryJson);
             }
+            if (values.battery.length == 0) { delete values.battery; }
         }
     } catch (ex) { }
 

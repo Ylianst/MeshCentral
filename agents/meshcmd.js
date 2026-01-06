@@ -2016,6 +2016,11 @@ function kvmCtrlData(channel, cmd) {
             fs.mkdirSync(cmd.path);
             break;
         }
+        case 'mkfile': {
+            // Create a new empty file
+            fs.closeSync(fs.openSync(cmd.path, 'w'));
+            break;
+        }
         case 'rm': {
             // Remove many files or folders
             for (var i in cmd.delfiles) {

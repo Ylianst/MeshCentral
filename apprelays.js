@@ -2054,6 +2054,28 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 44, msgArgs: [requestedPath], msg: 'Create folder: \"' + requestedPath + '\"', domain: domain.id });
                         break;
                     }
+                    case 'mkfile': {
+                        if (obj.sftp == null) return;
+                        var requestedPath = msg.path;
+                        if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                        obj.sftp.open(requestedPath, 'w', 0o666, function (err, handle) {
+                            if (err != null) {
+                                // To-do: Report error?
+                            } else {
+                                obj.uploadHandle = handle;
+                                if (obj.uploadHandle != null) {
+                                    obj.sftp.close(obj.uploadHandle, function () {
+                                        // Event the file create
+                                        const targets = ['*', 'server-users'];
+                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                        parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 164, msgArgs: [requestedPath], msg: 'Create file: \"' + requestedPath + '\"', domain: domain.id });    
+                                    });
+                                    delete obj.uploadHandle;
+                                }
+                            }
+                        });
+                        break;
+                    }
                     case 'rm': {
                         if (obj.sftp == null) return;
                         var requestedPath = msg.path;
