@@ -8020,6 +8020,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.options = Object.assign(strategy.options, { 'client': client, sessionKey: 'oidc-' + domain.id });
             strategy.client = client.metadata
             strategy.obj.client = client
+			
+			if (preset == 'azure') {
+				strategy.options.params = strategy.options.params || {}
+				strategy.options.params.prompt = 'select_account';
+			}
 
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
