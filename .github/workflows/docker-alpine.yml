@@ -7,8 +7,11 @@ on:
   release:
     types: [ published ]
 
-jobs:
+permissions:
+  contents: read
+  packages: write
 
+jobs:
   prepare:
     runs-on: ubuntu-latest
     name: Run Translations
