@@ -120,7 +120,7 @@ jobs:
             INCLUDE_MONGODB_TOOLS=${{ matrix.mongodb }}
             INCLUDE_POSTGRESQL_TOOLS=${{ matrix.postgresql }}
             INCLUDE_MARIADB_TOOLS=${{ matrix.mariadb }}
-  rerun:
+  rerun-failed:
     runs-on: ubuntu-latest
     needs: build-image
     if: failure() && github.run_attempt < 3
