@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:22-alpine3.22 AS builder
+FROM node:24-alpine3.23 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_EXTRACT="yes"
@@ -47,7 +47,7 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM node:22-alpine3.22 AS dep-compiler
+FROM node:24-alpine3.23 AS dep-compiler
 
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
@@ -63,8 +63,7 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
 
 ### STAGE 3 BUILDING.
 
-FROM node:22-alpine3.22 AS finalizer
-#FROM alpine:3.22 AS finalizer
+FROM node:24-alpine3.23 AS finalizer
 
 # copy files from previous layer
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
