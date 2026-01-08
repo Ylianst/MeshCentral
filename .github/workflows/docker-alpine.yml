@@ -128,7 +128,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           GH_DEBUG: api
-        run: gh workflow run rerun.yml -F run_id=${{ github.run_id }}
+        run: gh workflow run rerun.yaml -F run_id=${{ github.run_id }}
 
 
 #      - name: Build and push Docker image (amd64-${{ matrix.variant }})
