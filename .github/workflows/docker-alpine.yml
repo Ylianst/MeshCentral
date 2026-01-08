@@ -45,6 +45,7 @@ jobs:
     needs: prepare
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - variant: mongodb
