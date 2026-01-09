@@ -5,18 +5,14 @@ FROM debian:trixie-slim AS builder
 ARG DISABLE_EXTRACT="yes"
 ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
-ARG NODEJS_DOWNLOAD="https://nodejs.org/dist/v24.12.0/node-v24.12.0-linux-x64.tar.xz"
 #    NODE_OPTIONS="--max_old_space_size=4096"
 # If your process gets OOM killed, perhaps the above will help.
 
 # Install nodesource's NodeJS
 RUN apt-get update && \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        ca-certificates curl xz-utils && \
-    curl --output /tmp/nodejs.tar.xz "$NODEJS_DOWNLOAD" && \
-    tar -xJf /tmp/nodejs.tar.xz -C /usr/local --strip-components=1 && \
-    rm /tmp/nodejs.tar.xz && \
-    node -v && npm -v && \
+        nodejs npm && \
+    npm install -g npm@latest && \
     mkdir -p /opt/meshcentral/meshcentral
 
 WORKDIR /opt/meshcentral
@@ -59,18 +55,14 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 FROM debian:trixie-slim AS dep-compiler
 
-ARG NODEJS_DOWNLOAD="https://nodejs.org/dist/v24.12.0/node-v24.12.0-linux-x64.tar.xz"
 ENV NODE_ENV="production"
 
 # Install general dependencies and nodesource's NodeJS
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        bash ca-certificates curl gcc g++ jq make python3 tzdata xz-utils && \
-    curl --output /tmp/nodejs.tar.xz "$NODEJS_DOWNLOAD" && \
-    tar -xJf /tmp/nodejs.tar.xz -C /usr/local --strip-components=1 && \
-    rm /tmp/nodejs.tar.xz && \
-    node -v && npm -v
+        bash gcc g++ jq make nodejs npm python3 tzdata && \
+    npm install -g npm@latest
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
@@ -174,11 +166,8 @@ WORKDIR /opt/meshcentral
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        bash ca-certificates curl jq tzdata xz-utils && \
-    curl --output /tmp/nodejs.tar.xz "$NODEJS_DOWNLOAD" && \
-    tar -xJf /tmp/nodejs.tar.xz -C /usr/local --strip-components=1 && \
-    rm /tmp/nodejs.tar.xz && \
-    node -v && npm -v && \
+        bash ca-certificates curl jq nodejs npm tzdata && \
+    npm install -g npm@latest && \    
     rm -rfv \
         /var/cache/* \
         /usr/share/man/ \

@@ -8,7 +8,8 @@ ARG DISABLE_TRANSLATE="yes"
 #    NODE_OPTIONS="--max_old_space_size=4096"
 # If your process gets OOM killed, perhaps the above will help.
 
-RUN apk add nodejs npm; \
+RUN apk add --no-cache --update \
+        nodejs npm; \
     mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
@@ -50,10 +51,9 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 FROM alpine:3.23 AS dep-compiler
 
-RUN apk add nodejs npm; \
-    echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ jq make python3 tzdata
+        bash gcc g++ jq make nodejs npm python3 tzdata
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
@@ -126,13 +126,10 @@ ENV MARIADB_HOST="" \
     MARIADB_PASS="" \
     MARIADB_DATABASE=""
 
-RUN apk add nodejs npm; \
-    mkdir -p /opt/meshcentral/meshcentral
-WORKDIR /opt/meshcentral
-
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    mkdir -p /opt/meshcentral/meshcentral; \
     apk add --no-cache --update \
-        bash curl jq tzdata && \
+        bash curl jq nodejs npm tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
@@ -141,6 +138,8 @@ RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
         /var/spool/* \
         /usr/lib/debug/ && \
     npm install -g npm@latest
+
+WORKDIR /opt/meshcentral
 
 RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
