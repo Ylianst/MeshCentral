@@ -1,14 +1,24 @@
 ### STAGE 1 BUILDING.
-FROM node:22-trixie-slim AS builder
+FROM debian:trixie-slim AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_EXTRACT="yes"
 ARG DISABLE_MINIFY="yes"
 ARG DISABLE_TRANSLATE="yes"
+ARG NODEJS_DOWNLOAD="https://nodejs.org/dist/v24.12.0/node-v24.12.0-linux-x64.tar.xz"
 #    NODE_OPTIONS="--max_old_space_size=4096"
 # If your process gets OOM killed, perhaps the above will help.
 
-RUN mkdir -p /opt/meshcentral/meshcentral
+# Install nodesource's NodeJS
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --no-install-suggests \
+        ca-certificates curl xz-utils && \
+    curl --output /tmp/nodejs.tar.xz "$NODEJS_DOWNLOAD" && \
+    tar -xJf /tmp/nodejs.tar.xz -C /usr/local --strip-components=1 && \
+    rm /tmp/nodejs.tar.xz && \
+    node -v && npm -v && \
+    mkdir -p /opt/meshcentral/meshcentral
+
 WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
@@ -47,14 +57,20 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM node:22-trixie-slim AS dep-compiler
+FROM debian:trixie-slim AS dep-compiler
 
+ARG NODEJS_DOWNLOAD="https://nodejs.org/dist/v24.12.0/node-v24.12.0-linux-x64.tar.xz"
 ENV NODE_ENV="production"
 
+# Install general dependencies and nodesource's NodeJS
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        bash gcc g++ jq make python3 tzdata
+        bash ca-certificates curl gcc g++ jq make python3 tzdata xz-utils && \
+    curl --output /tmp/nodejs.tar.xz "$NODEJS_DOWNLOAD" && \
+    tar -xJf /tmp/nodejs.tar.xz -C /usr/local --strip-components=1 && \
+    rm /tmp/nodejs.tar.xz && \
+    node -v && npm -v
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
@@ -89,7 +105,9 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
 
 ### STAGE 4 BUILDING.
 
-FROM node:22-trixie-slim AS finalizer
+FROM debian:trixie-slim AS finalizer
+
+ARG NODEJS_DOWNLOAD="https://nodejs.org/dist/v24.12.0/node-v24.12.0-linux-x64.tar.xz"
 
 # Copy files from previous layers
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
@@ -156,16 +174,19 @@ WORKDIR /opt/meshcentral
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        bash curl jq tzdata && \
-    rm -rf \
+        bash ca-certificates curl jq tzdata xz-utils && \
+    curl --output /tmp/nodejs.tar.xz "$NODEJS_DOWNLOAD" && \
+    tar -xJf /tmp/nodejs.tar.xz -C /usr/local --strip-components=1 && \
+    rm /tmp/nodejs.tar.xz && \
+    node -v && npm -v && \
+    rm -rfv \
         /var/cache/* \
         /usr/share/man/ \
         /usr/share/doc/ \
         /var/log/* \
         /var/spool/* \
         /var/tmp/* \
-        /usr/lib/debug/ && \
-    npm install -g npm@latest
+        /usr/lib/debug/
 
 RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
