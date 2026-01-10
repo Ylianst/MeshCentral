@@ -2008,14 +2008,14 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-data/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                    "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-web/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
                   },
                   "js": {
                     "type": "array",
                     "items": {
                       "type": "string"
                     },
-                    "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-data/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                    "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-web/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
                   },
                   "scope": {
                     "type": "array",

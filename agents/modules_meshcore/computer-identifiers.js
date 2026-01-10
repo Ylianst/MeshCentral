@@ -426,7 +426,8 @@ function linux_identifiers()
                     "Discharging": isDischarging,
                     "RemainingCapacity": toMilli(thedata.energy_now),
                     "Voltage": toMilli(thedata.voltage_now),
-                    "Health": (thedata.energy_now && thedata.energy_full_design ? Math.floor((thedata.energy_now / thedata.energy_full_design) * 100) : 0)
+                    "Health": (thedata.energy_full && thedata.energy_full_design ? Math.floor((thedata.energy_full / thedata.energy_full_design) * 100) : 0),
+                    "BatteryCharge": (thedata.energy_now && thedata.energy_full ? Math.floor((thedata.energy_now / thedata.energy_full) * 100) : 0)
                 };
                 values.battery.push(batteryJson);
             }
@@ -510,12 +511,12 @@ function windows_identifiers()
         ret.windows.osinfo = values[0];
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
     if(values[0]){
         trimResults(values);
         ret.windows.partitions = values;
         for (var i in values) {
-            if (values[i].Description=='GPT: System') {
+            if (values[i].Type=='GPT: System') {
                 ret['identifiers']['bios_mode'] = 'UEFI';
             }
         }
@@ -609,30 +610,48 @@ function windows_identifiers()
         var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
         var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
         for (i = 0; i < values4.length; ++i) {
-            if (values4[i].Chemistry) {
-                values4[i].Chemistry = IntToStrLE(parseInt(values4[i].Chemistry));
-            }
+            if (values4[i].Chemistry) { values4[i].Chemistry = IntToStrLE(parseInt(values4[i].Chemistry)); }
+            if (values4[i].ManufactureDate) { if (values4[i].ManufactureDate.indexOf('*****') != -1) delete values4[i].ManufactureDate; }
         }
         var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
         var values6 = [];
-        if (values4.length > 0 && values5.length > 0) {
-            for (i = 0; i < values5.length; ++i) {
+        if (values2.length > 0 && values4.length > 0) {
+            for (i = 0; i < values2.length; ++i) {
                 for (var j = 0; j < values4.length; ++j) {
-                    if (values5[i].InstanceName == values4[j].InstanceName) {
-                        if (values4[j].DesignedCapacity && values4[j].DesignedCapacity > 0) {
+                    if (values2[i].InstanceName == values4[j].InstanceName) {
+                        if ((values4[j].DesignedCapacity && values4[j].DesignedCapacity > 0) && (values2[i].FullChargedCapacity && values2[i].FullChargedCapacity > 0)) {
                             values6[i] = { 
-                                Health: Math.floor((values5[i].RemainingCapacity / values4[j].DesignedCapacity) * 100),
-                                InstanceName: values5[i].InstanceName
+                                Health: Math.floor((values2[i].FullChargedCapacity / values4[j].DesignedCapacity) * 100),
+                                InstanceName: values2[i].InstanceName
                             };
+                            if (values6[i].Health > 100) { values6[i].Health = 100; }
                         } else {
-                            values6[i] = { Health: 0, InstanceName: values5[i].InstanceName };
+                            values6[i] = { Health: 0, InstanceName: values2[i].InstanceName };
                         }
                         break;
                     }
                 }
             }
         }
-        ret.battery = mergeJSONArrays(values, values2, values3, values4, values5, values6);
+        var values7 = [];
+        if (values2.length > 0 && values5.length > 0) {
+            for (i = 0; i < values2.length; ++i) {
+                for (var j = 0; j < values5.length; ++j) {
+                    if (values2[i].InstanceName == values5[j].InstanceName) {
+                        if ((values2[i].FullChargedCapacity && values2[i].FullChargedCapacity > 0) && (values5[j].RemainingCapacity && values5[j].RemainingCapacity > 0)) {
+                            values7[i] = { 
+                                BatteryCharge: Math.floor((values5[j].RemainingCapacity / values2[i].FullChargedCapacity) * 100),
+                                InstanceName: values2[i].InstanceName
+                            };
+                        } else {
+                            values7[i] = { BatteryCharge: 0, InstanceName: values2[i].InstanceName };
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        ret.battery = mergeJSONArrays(values, values2, values3, values4, values5, values6, values7);
     } catch (ex) { }
 
     return (ret);
