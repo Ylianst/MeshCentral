@@ -2275,10 +2275,6 @@ nav .lbbuttonsel2 {
     background-color: #FFFFFF;
 }
 
-.gradTable1 { background-image: linear-gradient(to right, #fff 0%, #d3d9d6 100%); }
-.gradTable2 { background-color: #d3d9d6; }
-.gradTable3 { background-image: linear-gradient(to right, #d3d9d6 0%, #fff 100%); }
-
 .h1 {
     background-position: 0% 0%;
     width: 14px;
