@@ -8190,7 +8190,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             done(null, user);
                         });
                     }
-                    if(strategy.custom.authorities.includes('roles') || strategy.custom.authorities.length == 0){
+                    if(strategy.custom.authorities.includes('roles')){
                         console.log('OIDC: Skipping group fetch from API.');
                         if(user.roles){
                             if(!strategy.custom.authorities.includes('groups')){
