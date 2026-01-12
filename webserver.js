@@ -8177,27 +8177,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // Setup presets and groups, get groups from API if needed then return
-                if (strategy.groups && typeof user.preset == 'string' && (strategy.custom.authorities.includes('groups') || strategy.custom.authorities.length == 0)) {
-                    getGroups(user.preset, tokenset).then((groups) => {
-                        user = Object.assign(user, { 'groups': groups });
-                        done(null, user);
-                    }).catch((err) => {
-                        let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
-                        parent.debug('error', `${JSON.stringify(error)}`);
-                        parent.authLog('oidcCallback', error.message);
-                        user.groups = [];
-                        done(null, user);
-                    });
-                } else {
-                    console.log('OIDC: Skipping group fetch from API.');
-                    if(profile.roles){
-                        if(!strategy.custom.authorities.includes('groups')){
-                            user.groups = user.roles;
-                        } else {
-                            user.groups = (user.groups || []).concat(user.roles);
+                if (strategy.groups && typeof user.preset == 'string') {
+                    if(strategy.custom.authorities.includes('groups') || strategy.custom.authorities.length == 0){
+                        getGroups(user.preset, tokenset).then((groups) => {
+                            user = Object.assign(user, { 'groups': groups });
+                            //done(null, user);
+                        }).catch((err) => {
+                            let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
+                            parent.debug('error', `${JSON.stringify(error)}`);
+                            parent.authLog('oidcCallback', error.message);
+                            user.groups = [];
+                            done(null, user);
+                        });
+                    }
+                    if(strategy.custom.authorities.includes('roles') || strategy.custom.authorities.length == 0){
+                        console.log('OIDC: Skipping group fetch from API.');
+                        if(profile.roles){
+                            if(!strategy.custom.authorities.includes('groups')){
+                                user.groups = user.roles;
+                            } else {
+                                user.groups = (user.groups || []).concat(user.roles);
+                            }
                         }
                     }
                     parent.authLog('OIDC: USER GROUPS/ROLES:', user);
+                    done(null, user);
+                } else {
                     done(null, user);
                 }
 
