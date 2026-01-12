@@ -8192,7 +8192,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                     if(strategy.custom.authorities.includes('roles') || strategy.custom.authorities.length == 0){
                         console.log('OIDC: Skipping group fetch from API.');
-                        if(profile.roles){
+                        if(user.roles){
                             if(!strategy.custom.authorities.includes('groups')){
                                 user.groups = user.roles;
                             } else {
