@@ -8187,7 +8187,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             parent.debug('error', `${JSON.stringify(error)}`);
                             parent.authLog('oidcCallback', error.message);
                             user.groups = [];
-                            done(null, user);
+                            //done(null, user);
                         });
                     }
                     if(strategy.custom.authorities.includes('roles')){
