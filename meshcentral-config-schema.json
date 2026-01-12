@@ -3904,7 +3904,17 @@
                       "customer_id": {
                         "type": "string",
                         "description": "REQUIRED IF USING GROUPS: Customer ID from Google Workspace Admin Console (https://admin.google.com/ac/accountsettings/profile)"
-                      }
+                      },
+					  "authorities": {
+						"type": [
+                          "array"
+                        ],
+                        "description": "Default value is groups. Roles can be used in azure to assign app permissons",
+						"enum": [
+                          "groups",
+                          "roles"
+                        ]
+					  }
                     }
                   },
                   "groups": {
@@ -3959,7 +3969,11 @@
                         "description": "Custom claim to use."
                       }
                     }
-                  }
+                  },
+				  "options": {
+					"type": "object",
+                    "description": "Allows custom settings like params and prompt"
+				  }
                 }
               }
             }
