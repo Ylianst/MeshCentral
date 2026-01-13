@@ -7983,8 +7983,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (typeof preset != 'string') { groupScope = 'groups' }
                     }
                     strategy.options.params.scope.push(groupScope)
+					parent.authLog('setupDomainAuthStrategy', `OIDC: Groups sync enabled, added group scope to request: ${strategy.options.params.scope}`);
                 }
-                parent.authLog('setupDomainAuthStrategy', `OIDC: Groups sync enabled, added group scope to request: ${strategy.options.params.scope}`);
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
 
