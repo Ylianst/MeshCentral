@@ -3415,7 +3415,7 @@ module.exports.CreateDB = function (parent, func) {
 						
 						let processedError = error;
 						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
-							processedError = encodeURIComponent(processedError).replaceAll(parent.config.settings.postgres.password, "****");
+							processedError = encodeURIComponent(processedError.replaceAll(parent.config.settings.postgres.password, "****"));
 						}
 						parent.debug('backup', 'MongoDB/MongoJS DumpTool: ' + processedError);			
 						
@@ -3433,7 +3433,7 @@ module.exports.CreateDB = function (parent, func) {
 						
 						let processedError = error;
 						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
-							processedError = encodeURIComponent(processedError).replaceAll(parent.config.settings.postgres.password, "****");
+							processedError = encodeURIComponent(processedError.replaceAll(parent.config.settings.postgres.password, "****"));
 						}
 						parent.debug('backup', 'MariaDB/MySQL DumpTool: ' + processedError);
 						
@@ -3455,7 +3455,7 @@ module.exports.CreateDB = function (parent, func) {
 						
 						let processedError = error;
 						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
-							processedError = encodeURIComponent(processedError).replaceAll(parent.config.settings.postgres.password, "****");
+							processedError = encodeURIComponent(processedError.replaceAll(parent.config.settings.postgres.password, "****"));
 						}
 						parent.debug('backup', 'PostgreSQL DumpTool: ' + processedError);				
 						
