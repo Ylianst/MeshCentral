@@ -2350,17 +2350,12 @@
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
 
-        // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
-        // So we do that for all browsers except FireFox
         function downloadFile(link, name, closeDialog) {
-            var element = document.createElement('a');
-            element.setAttribute('href', link);
-            element.setAttribute('rel', 'noreferrer noopener');
-            element.setAttribute('target', 'fileDownloadFrame');
-            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name ? name : '')); }
+            var element = document.createElement('iframe');
+            element.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            element.src = link;
             document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
         }
 

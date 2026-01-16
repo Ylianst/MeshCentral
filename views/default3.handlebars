@@ -21184,14 +21184,11 @@
         function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1, 2, 3, 4, 21, 22, 34, 42, 43].indexOf(node.agent.id) >= 0); }
 
         function downloadFile(link, name, closeDialog) {
-            var element = document.createElement('a');
-            element.setAttribute('href', link);
-            element.setAttribute('rel', 'noreferrer noopener');
-            element.setAttribute('target', 'fileDownloadFrame');
-            element.setAttribute('download', decodeURIComponent(name ? name : ''));
+            var element = document.createElement('iframe');
+            element.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            element.src = link;
             document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
         }
 
