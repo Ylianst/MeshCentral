@@ -2084,6 +2084,9 @@ nav .lbbuttonsel2 {
     cursor: default;
     -khtml-user-drag: element;
     clear: both;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
     .filelist:hover {

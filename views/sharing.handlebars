@@ -1762,9 +1762,10 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                shortname = name;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
-                name = EscapeHtml(name);
+                // shortname = name;
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -1781,7 +1782,7 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     if (f.s > 0) {
@@ -1793,7 +1794,7 @@
                         //link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }

@@ -2779,7 +2779,9 @@
 
                 // Filter out files
                 if ((f.t == 3) && (fileFilter != '') && (f.nx.toLowerCase().endsWith(fileFilter) == false)) { continue; }
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the size
                 var fsize = '';
@@ -2788,11 +2790,11 @@
                 var h = '';
                 if (f.t != 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
-                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -2868,7 +2870,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 40) { shortname = EscapeHtml(name.substring(0, 40)) + "..."; } else { shortname = EscapeHtml(name); }
+                // if (name.length > 40) { shortname = EscapeHtml(name.substring(0, 40)) + "..."; } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 //var fdatestr = '';
@@ -2881,13 +2885,13 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     var publiclink = '';
                     if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink("' + publicPath + '/' + f.nx + '")\'>' + "Link" + '</a>)'; }
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -5813,7 +5817,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 40) { shortname = EscapeHtml(name.substring(0, 70)) + "..."; } else { shortname = EscapeHtml(name); }
+                // if (name.length > 40) { shortname = EscapeHtml(name.substring(0, 70)) + "..."; } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the size
                 var fsize = '';
@@ -5822,11 +5828,11 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right>' + right + '</span><span><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
