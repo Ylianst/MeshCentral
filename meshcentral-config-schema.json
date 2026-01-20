@@ -3314,6 +3314,26 @@
                     "type": "string",
                     "description": "GitHub client secret."
                   },
+                  "authorizationurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to obtain an authorization grant from the user."
+                  },
+                  "tokenurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to exchange a code for an access token."
+                  },
+                  "userprofileurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to obtain user profile information."
+                  },
+                  "useremailurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to obtain user email information."
+                  },
                   "logouturl": {
                     "type": "string",
                     "format": "uri",

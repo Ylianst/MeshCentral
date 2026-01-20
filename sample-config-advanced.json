@@ -525,7 +525,11 @@
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],
           "_newAccountsRights": [ "nonewgroups", "notools" ],
           "clientid": "xxxxxxxxxxxxxxxxxxxxxxx",
-          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          "clientsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "_authorizationurl": "https://hostname/login/oauth/authorize",
+          "_tokenurl": "https://hostname/login/oauth/access_token",
+          "_userprofileurl": "https://hostname/user",
+          "_useremailurl": "https://hostname/user/emails"
         },
         "azure": {
           "_callbackurl": "https://server/auth-azure-callback",
