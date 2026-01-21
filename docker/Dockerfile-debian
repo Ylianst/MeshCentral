@@ -227,7 +227,8 @@ RUN cd meshcentral \
     && npm cache clean --force
 
 # Expose needed ports
-EXPOSE 80 443
+EXPOSE ${PORT}
+EXPOSE ${REDIR_PORT}
 
 # These volumes will be created by default even without any declaration, this allows default persistence in Docker/Podman. Dummy-proofing.
 VOLUME /opt/meshcentral/meshcentral-data
