@@ -17225,8 +17225,10 @@
                 // Delete accounts, ask for confirmation
                 var x = "Confirm delete selected account(s)?" + '<br /><br />';
                 x += '<label><input id=d3check type=checkbox class="form-check-input me-2" onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
-                //setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
+                setModalContent('xxAddAgent', "Delete Accounts", x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', p3groupActionFunctionDelExec);
                 QE('idx_dlgOkButton', false);
+                return false;
             } else if (op == 4) {
                 // Validate emails
                 for (var i in userids) {
