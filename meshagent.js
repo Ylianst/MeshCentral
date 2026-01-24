@@ -1087,7 +1087,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // If we need to ask for IP location, see if we have the quota to do it.
                     if (doIpLocation > 0) {
-                        db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
+                        db.getValueOfTheDay('ipLocationRequestLimitor', 1000, function (ipLocationLimitor) {
                             if ((ipLocationLimitor != null) && (ipLocationLimitor.value > 0)) {
                                 ipLocationLimitor.value--;
                                 db.Set(ipLocationLimitor);
