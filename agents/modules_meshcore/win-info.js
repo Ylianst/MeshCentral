@@ -16,6 +16,9 @@ limitations under the License.
 
 var promise = require('promise');
 
+// We use the environment variable directly or the standard Windows path
+var psPath = (process.env['SystemRoot'] ? process.env['SystemRoot'] : 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+
 function qfe()
 {
     try {
@@ -178,79 +181,116 @@ function pendingReboot()
     }
     return (ret);
 }
-
-function installedApps()
-{
-    var promise = require('promise');
+function installedApps() {
     var ret = new promise(function (a, r) { this._resolve = a; this._reject = r; });
-    
-    var code = "\
-    var reg = require('win-registry');\
-    var result = [];\
-    var val, tmp;\
-    var items = reg.QueryKey(reg.HKEY.LocalMachine, 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall');\
-    for (var key in items.subkeys)\
-    {\
-        val = {};\
-        try\
-        {\
-            val.name = reg.QueryKey(reg.HKEY.LocalMachine, 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\' + items.subkeys[key], 'DisplayName');\
-        }\
-        catch(e)\
-        {\
-            continue;\
-        }\
-        try\
-        {\
-            val.version = reg.QueryKey(reg.HKEY.LocalMachine, 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\' + items.subkeys[key], 'DisplayVersion');\
-            if (val.version == '') { delete val.version; }\
-        }\
-        catch(e)\
-        {\
-        }\
-        try\
-        {\
-            val.location = reg.QueryKey(reg.HKEY.LocalMachine, 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\' + items.subkeys[key], 'InstallLocation');\
-            if (val.location == '') { delete val.location; }\
-        }\
-        catch(e)\
-        {\
-        }\
-        try\
-        {\
-            val.installdate = reg.QueryKey(reg.HKEY.LocalMachine, 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\' + items.subkeys[key], 'InstallDate');\
-            if (val.installdate == '') { delete val.installdate; }\
-        }\
-        catch(e)\
-        {\
-        }\
-        result.push(val);\
-    }\
-    console.log(JSON.stringify(result,'', 1));process.exit();";
 
-    ret.child = require('child_process').execFile(process.execPath, [process.execPath.split('\\').pop().split('.exe')[0], '-exec "' + code + '"']);
-    ret.child.promise = ret;
-    ret.child.stdout.str = ''; ret.child.stdout.on('data', function (c) { this.str += c.toString(); });
-    ret.child.on('exit', function (c) { this.promise._resolve(JSON.parse(this.stdout.str.trim())); });
+    // PowerShell command for Desktop Apps (64 & 32 Bit)
+    var psCommand = "Get-ItemProperty HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* , HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object {$_.DisplayName -ne $null} | Select-Object @{Name='name'; Expression={$_.DisplayName}}, @{Name='version'; Expression={$_.DisplayVersion}}, @{Name='publisher'; Expression={$_.Publisher}}, @{Name='uninstall'; Expression={if($_.QuietUninstallString){$_.QuietUninstallString}else{$_.UninstallString}}} | ConvertTo-Json";
+
+    try {
+        ret.child = require('child_process').execFile(psPath, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', psCommand]);
+        ret.child.promise = ret;
+        ret.child.stdout.str = ''; 
+        ret.child.stdout.on('data', function (c) { this.str += c.toString(); });
+        
+        ret.child.on('exit', function (c) {
+            try {
+                var data = JSON.parse(this.stdout.str.trim());
+                if (!Array.isArray(data)) { data = [data]; }
+                this.promise._resolve(data);
+            } catch (e) {
+                this.promise._resolve([]); 
+            }
+        });
+        
+        ret.child.on('error', function (err) {
+            this.promise._resolve([]);
+        });
+    } catch (ex) {
+        ret._resolve([]);
+    }
+
     return (ret);
 }
 
-function installedStoreApps(){
+function installedStoreApps() {
+    var ret = new promise(function (a, r) { this._resolve = a; this._reject = r; });
+
+    // Basierend auf deiner funktionierenden Version + Scope-Erkennung
+    var psCommand = [
+        "$ErrorActionPreference = 'SilentlyContinue'",
+        "$allUsersApps = @(Get-AppxPackage -AllUsers)",
+        "$allUsersPkgNames = @($allUsersApps | Select-Object -ExpandProperty PackageFullName)",
+        "$userOnlyApps = @(Get-AppxPackage | Where-Object { $allUsersPkgNames -notcontains $_.PackageFullName })",
+        "$provPkgs = @(Get-AppxProvisionedPackage -Online | Select-Object -ExpandProperty DisplayName)",
+        "$results = @()",
+        "foreach ($app in $allUsersApps) {",
+        "  if ($app.Name -and $app.Name -notlike 'Microsoft.Windows.*' -and $app.Name -notlike 'windows.*' -and $app.Name -notlike '*_neutral_*') {",
+        "    $scope = 'System'",
+        "    if ($provPkgs -contains $app.Name) { $scope = 'System+Prov' }",
+        "    $results += [PSCustomObject]@{ Name=$app.Name; Version=[string]$app.Version; PackageFullName=$app.PackageFullName; Publisher=$app.Publisher; Scope=$scope }",
+        "  }",
+        "}",
+        "foreach ($app in $userOnlyApps) {",
+        "  if ($app.Name -and $app.Name -notlike 'Microsoft.Windows.*' -and $app.Name -notlike 'windows.*' -and $app.Name -notlike '*_neutral_*') {",
+        "    $scope = 'User'",
+        "    if ($provPkgs -contains $app.Name) { $scope = 'User+Prov' }",
+        "    $results += [PSCustomObject]@{ Name=$app.Name; Version=[string]$app.Version; PackageFullName=$app.PackageFullName; Publisher=$app.Publisher; Scope=$scope }",
+        "  }",
+        "}",
+        "$results | Sort-Object Name -Unique | ConvertTo-Json -Compress"
+    ].join("; ");
+
     try {
-        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_InstalledStoreProgram');
-        if (tokens[0]){
-            for (var index = 0; index < tokens.length; index++) {
-                for (var key in tokens[index]) {
-                    if (key.startsWith('__')) delete tokens[index][key];
+        var psPath = (process.env['SystemRoot'] || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+        
+        ret.child = require('child_process').execFile(
+            psPath, 
+            ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', psCommand], 
+            { timeout: 60000, maxBuffer: 10 * 1024 * 1024 }
+        );
+        
+        ret.child.promise = ret;
+        ret.child.stdout.str = '';
+        ret.child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+        
+        ret.child.on('exit', function (code) {
+            try {
+                var output = this.stdout.str.trim();
+                
+                if (output === '' || output === 'null' || output === '[]') {
+                    this.promise._resolve([]);
+                    return;
                 }
+                
+                var data = JSON.parse(output);
+                if (!Array.isArray(data)) { data = [data]; }
+                
+                var apps = data.map(function(app) {
+                    return {
+                        name: app.Name || '',
+                        version: app.Version || '',
+                        publisher: app.Publisher || '',
+                        packageFullName: app.PackageFullName || '',
+                        scope: app.Scope || '',
+                        uninstall: 'Remove-AppxPackage -Package "' + (app.PackageFullName || '') + '" -AllUsers'
+                    };
+                });
+                
+                this.promise._resolve(apps);
+            } catch (e) {
+                this.promise._resolve([]); 
             }
-            return (tokens);
-        } else {
-            return ([]);
-        };
+        });
+        
+        ret.child.on('error', function (err) {
+            this.promise._resolve([]);
+        });
     } catch (ex) {
-        return ([]);
+        ret._resolve([]);
     }
+
+    return (ret);
 }
 
 function defender(){

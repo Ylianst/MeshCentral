@@ -236,6 +236,7 @@
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
                                 <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
                                 <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event) onkeypress="if (event.key == 'Enter') go(17)">Details</td>
+                                <td tabindex=0 id=MainDevApps class="topbar_td style3x" onmouseup=go(18,event) onkeypress="if (event.key == 'Enter') go(18)">Software</td>
                                 <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
                                 <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event) onkeypress="if (event.key == 'Enter') go(15)">Console</td>
                                 <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event) onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
@@ -1054,6 +1055,33 @@
                     <div id=p17info2></div>
                 </div>
             </div>
+            <div id=p18 style="display:none">
+			<div id="p18title">
+				<div id="p18BackButton" style="float:left">
+					<div class="backButton" tabindex=0 onclick=goBack() title="Back" 
+						onkeypress="if (event.key == 'Enter') goBack()">
+						<div class="backButtonEx"></div>
+					</div>
+				</div>
+				<h1>Software - <span id=p18deviceName></span></h1>
+			</div>
+			<div id="p18toolbar" style="padding:10px;background-color:#f5f5f5;border-bottom:1px solid #ddd">
+				<input type="button" id="p18RefreshBtn" class="btn btn-primary btn-sm" value="Refresh" onclick="loadInstalledApps()" />
+				<input type="text" id="p18SearchInput" class="form-control-sm" placeholder="Search software..." 
+					style="margin-left:10px;width:250px" onkeyup="filterInstalledApps()" />
+				<label style="margin-left:15px">
+					<input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" /> Show Store Apps
+				</label>
+				<span id="p18Status" style="margin-left:20px;color:gray"></span>
+			</div>
+			<div id="p18info" style="overflow-y:auto;padding:10px">
+				<div id="p18html">
+					<div style="text-align:center;padding:50px;color:gray">
+						<i>Click "Refresh" to load installed software...</i>
+					</div>
+				</div>
+			</div>
+		    </div>
             <div id=p19 style="display:none">
                 <div id="p19title">
                     <div id="p19BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
@@ -1617,6 +1645,13 @@
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
 
+        //
+		// INSTALLED SOFTWARE
+		//
+		var installedAppsData = null;       // Gespeicherte App-Daten
+		var installedAppsLoading = false;   // Ladestatus
+		var showStoreApps = false;          // Store Apps anzeigen?
+
         /*
         // Check browser dark mode preference
         var prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1984,6 +2019,7 @@
             QV('p15title', !(hide & 8));
             QV('p16title', !(hide & 8));
             QV('p17title', !(hide & 8));
+            QV('p18title', !(hide & 8));
             QV('p20title', !(hide & 8));
             QV('p21title', !(hide & 8));
             QV('p30title', !(hide & 8));
@@ -2055,6 +2091,8 @@
             QS('p10info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
             QS('p17info')['max-height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
+            QS('p18info')['height'] = 'calc(100vh - ' + (120 + xh + xh2) + 'px)';
+			QS('p18info')['max-height'] = 'calc(100vh - ' + (120 + xh + xh2) + 'px)';
             QS('p20main')['height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p20main')['max-height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p21main')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
@@ -2084,6 +2122,7 @@
                 QV('p15BackButton', false);
                 QV('p16BackButton', false);
                 QV('p17BackButton', false);
+                QV('p18BackButton', false);
             }
             p1updateInfo();
         }
@@ -2750,7 +2789,45 @@
                                 if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
                                 deviceDetailsStatsData.push([now, cpu, memory]);
                                 deviceDetailsStatsDraw(message);
-                            } else if (message.type === 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
+                            } else if (message.type === 'console') {
+								// ========================================
+								// INSTALLED SOFTWARE: Abfangen von Antworten für Panel 18
+								// ========================================
+								if (xxcurrentView == 18 && currentNode != null && message.nodeid == currentNode._id) {
+									var consoleData = message.value || '';
+        
+									// Prüfen ob es eine installedapps-Antwort ist (JSON Array mit name/version)
+									if (consoleData.charAt(0) === '[' && consoleData.indexOf('"name"') >= 0) {
+										handleInstalledAppsResponse(consoleData);
+										p15consoleReceive(nodes[index], message.value, message.source);
+										break;
+									}
+        
+									// Prüfen ob es eine Uninstall-Antwort ist
+									if (consoleData.indexOf('"success"') >= 0 || 
+										consoleData.indexOf('"status"') >= 0 || 
+										consoleData.indexOf('"error"') >= 0) {
+											// Versuchen als Uninstall-Response zu verarbeiten
+										try {
+											var testJson = JSON.parse(consoleData);
+											if (testJson.success !== undefined || testJson.status !== undefined || testJson.error !== undefined) {
+												handleUninstallResponse(consoleData);
+												p15consoleReceive(nodes[index], message.value, message.source);
+											break;
+											}
+									} catch(e) {
+										// Kein gültiges JSON, normal weiterverarbeiten
+										}
+									}
+								}
+								// ========================================
+								// END INSTALLED SOFTWARE
+								// ========================================
+    
+								// Standard Console-Verarbeitung (Original-Code)
+								p15consoleReceive(nodes[index], message.value, message.source);
+							}
+							// This is a console message.
                             else if (message.type === 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
@@ -12683,6 +12760,357 @@
             setDialogMode(2, decodeURIComponent(drive) + ': ' + "BitLocker Information", 1, null, x, '');
         }
 
+        // ============================================
+        // INSTALLED SOFTWARE (Panel 18)
+        // ============================================
+        //
+
+        var installedAppsData = { desktop: [], store: [] };  // Getrennte Speicherung
+        var installedAppsLoading = false;
+        var installedAppsLoadingType = 0;  // 0=idle, 1=desktop, 2=store
+        var showStoreApps = false;
+
+        function loadInstalledApps() {
+            if (currentNode == null) return;
+            if (installedAppsLoading) return;
+    
+            installedAppsLoading = true;
+            installedAppsLoadingType = 1;  // Desktop Apps laden
+            installedAppsData = { desktop: [], store: [] };  // Reset
+    
+            QH('p18Status', '<span style="color:blue">Loading desktop apps...</span>');
+            QH('p18html', '<div style="text-align:center;padding:50px;color:gray">Loading installed software...</div>');
+    
+            // Prüfen ob Agent online
+            if ((currentNode.conn & 1) == 0) {
+                QH('p18html', '<div style="text-align:center;padding:50px;color:#cc0000"><b>Device is offline.</b></div>');
+                QH('p18Status', '<span style="color:red">Offline</span>');
+                installedAppsLoading = false;
+                installedAppsLoadingType = 0;
+                return;
+            }
+    
+            // Desktop Apps laden
+            meshserver.send({ 
+                action: 'msg', 
+                type: 'console', 
+                nodeid: currentNode._id, 
+                value: 'installedapps'
+            });
+        }
+
+        function handleInstalledAppsResponse(data) {
+            try {
+                var apps = JSON.parse(data);
+                if (!Array.isArray(apps)) { apps = []; }
+        
+                if (installedAppsLoadingType === 1) {
+                    // Desktop Apps erhalten
+                    installedAppsData.desktop = apps;
+                    installedAppsLoading = false;
+                    installedAppsLoadingType = 0;
+            
+                    // Wenn Store Apps Checkbox aktiv, diese auch laden
+                    if (showStoreApps && currentNode != null) {
+                        loadStoreApps();
+                    } else {
+                        displayInstalledApps();
+                    }
+                } else if (installedAppsLoadingType === 2) {
+                    // Store Apps erhalten
+                    installedAppsData.store = apps;
+                    installedAppsLoading = false;
+                    installedAppsLoadingType = 0;
+                    displayInstalledApps();
+                } else {
+                    // Unbekannter Typ - als Desktop behandeln
+                    installedAppsData.desktop = apps;
+                 installedAppsLoading = false;
+                    installedAppsLoadingType = 0;
+                    displayInstalledApps();
+                }
+            } catch (e) {
+                H('p18Status', '<span style="color:red">Error parsing data: ' + e.message + '</span>');
+                installedAppsLoading = false;
+                installedAppsLoadingType = 0;
+            }
+        }
+
+        function loadStoreApps() {
+            if (currentNode == null) return;
+            if (installedAppsLoading) return;
+    
+            installedAppsLoading = true;
+            installedAppsLoadingType = 2;  // Store Apps laden
+    
+            QH('p18Status', '<span style="color:blue">Loading store apps...</span>');
+    
+            meshserver.send({ 
+                action: 'msg', 
+                type: 'console', 
+                nodeid: currentNode._id, 
+                value: 'installedstoreapps'
+            });
+        }
+
+        function toggleStoreApps() {
+            showStoreApps = Q('p18ShowStore').checked;
+    
+            if (showStoreApps && installedAppsData.store.length === 0 && currentNode != null) {
+                // Store Apps müssen noch geladen werden
+                loadStoreApps();
+            } else {
+                // Einfach neu anzeigen
+                displayInstalledApps();
+            }
+        }
+
+        function displayInstalledApps() {
+            var searchTerm = '';
+            if (Q('p18SearchInput')) { searchTerm = Q('p18SearchInput').value.toLowerCase(); }
+    
+            var desktopApps = installedAppsData.desktop || [];
+            var storeApps = installedAppsData.store || [];
+    
+            // Filtern nach Suchbegriff
+            if (searchTerm) {
+                desktopApps = desktopApps.filter(function(app) {
+                    return (app.name && app.name.toLowerCase().indexOf(searchTerm) >= 0) ||
+                        (app.publisher && app.publisher.toLowerCase().indexOf(searchTerm) >= 0);
+                });
+                storeApps = storeApps.filter(function(app) {
+                    return (app.name && app.name.toLowerCase().indexOf(searchTerm) >= 0) ||
+                        (app.publisher && app.publisher.toLowerCase().indexOf(searchTerm) >= 0);
+                });
+            }
+    
+            // Sortieren nach Name
+            desktopApps.sort(function(a, b) { 
+                return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()); 
+            });
+            storeApps.sort(function(a, b) { 
+                return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()); 
+            });
+    
+            var x = '';
+    
+            // ===== DESKTOP APPS TABELLE (immer anzeigen) =====
+            x += '<div style="margin-bottom:20px">';
+            x += '<h4 style="border-bottom:2px solid #007bff;padding-bottom:5px;margin-top:0">';
+            x += '<span style="color:#007bff">&#128187;</span> Desktop Applications (' + desktopApps.length + ')';
+            x += '</h4>';
+            x += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+            x += '<thead><tr style="background-color:#e9ecef">';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">Name</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:120px">Version</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:200px">Publisher</th>';
+            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:180px">Actions</th>';
+            x += '</tr></thead><tbody>';
+    
+            if (desktopApps.length === 0) {
+                x += '<tr><td colspan="4" style="text-align:center;color:gray;padding:20px">';
+                x += searchTerm ? 'No applications matching "' + EscapeHtml(searchTerm) + '"' : 'No desktop applications found';
+                x += '</td></tr>';
+            } else {
+                for (var i = 0; i < desktopApps.length; i++) {
+                    var app = desktopApps[i];
+                    var uninstallCmd = app.uninstall ? encodeURIComponent(app.uninstall) : '';
+                    var hasUninstall = (uninstallCmd !== '');
+                    var rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
+            
+                    x += '<tr style="background-color:' + rowColor + '">';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee" title="' + EscapeHtml(app.name || '') + '">' + EscapeHtml(app.name || '-') + '</td>';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.version || '-') + '</td>';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.publisher || '-') + '</td>';
+                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">';
+            
+                    var userRights = GetNodeRights(currentNode);
+												
+					if (hasUninstall && (userRights == 0xFFFFFFFF)) {
+						x += '<input type="button" value="Uninstall" style="padding:2px 8px;cursor:pointer" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')" />';
+					} else {
+						x += '<span style="color:#999">-</span>';
+					}
+
+            
+                    x += '</td>';
+                    x += '</tr>';
+                }
+            }
+    
+            x += '</tbody></table>';
+            x += '</div>';
+    
+            // ===== STORE APPS TABELLE (nur wenn Checkbox aktiv) =====
+			if (showStoreApps) {
+				x += '<div style="margin-bottom:20px">';
+				x += '<h4 style="border-bottom:2px solid #28a745;padding-bottom:5px">';
+				x += '<span style="color:#28a745">&#127979;</span> Microsoft Store Apps (' + storeApps.length + ')';
+				x += '</h4>';
+				x += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+				x += '<thead><tr style="background-color:#d4edda">';
+				x += '<th style="text-align:left;padding:8px;border:1px solid #c3e6cb">Name</th>';
+				x += '<th style="text-align:left;padding:8px;border:1px solid #c3e6cb;width:120px">Version</th>';
+				x += '<th style="text-align:left;padding:8px;border:1px solid #c3e6cb;width:250px">Package</th>';
+				x += '<th style="text-align:center;padding:8px;border:1px solid #c3e6cb;width:100px">Scope</th>';
+				x += '<th style="text-align:center;padding:8px;border:1px solid #c3e6cb;width:80px">Actions</th>';
+				x += '</tr></thead><tbody>';
+
+				if (storeApps.length === 0) {
+					x += '<tr><td colspan="5" style="text-align:center;color:gray;padding:20px">';
+					x += searchTerm ? 'No store apps matching "' + EscapeHtml(searchTerm) + '"' : 'No store apps found';
+					x += '</td></tr>';
+				} else {
+					for (var i = 0; i < storeApps.length; i++) {
+						var app = storeApps[i];
+						var uninstallCmd = app.uninstall ? encodeURIComponent(app.uninstall) : '';
+						var hasUninstall = (uninstallCmd !== '');
+						var rowColor = (i % 2 == 0) ? '#ffffff' : '#f0fff0';
+            
+						// Scope-Badge erstellen
+						var scopeBadge = '';
+						if (app.scope) {
+							if (app.scope.indexOf('User') >= 0) {
+								scopeBadge = '<span style="background:#ffc107;color:#000;padding:2px 6px;border-radius:3px;font-size:10px" title="Installed for current user only">User</span>';
+							} else if (app.scope.indexOf('System') >= 0) {
+								scopeBadge = '<span style="background:#17a2b8;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px" title="Installed for all users">System</span>';
+							}
+							if (app.scope.indexOf('Prov') >= 0) {
+								scopeBadge += ' <span style="background:#6c757d;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px" title="Provisioned for new users">Prov</span>';
+							}
+						} else {
+							scopeBadge = '<span style="color:#999">-</span>';
+						}
+
+						x += '<tr style="background-color:' + rowColor + '">';
+						x += '<td style="padding:6px 8px;border:1px solid #c3e6cb">' + EscapeHtml(app.name || '-') + '</td>';
+						x += '<td style="padding:6px 8px;border:1px solid #c3e6cb">' + EscapeHtml(app.version || '-') + '</td>';
+						x += '<td style="padding:6px 8px;border:1px solid #c3e6cb" title="' + EscapeHtml(app.packageFullName || '') + '">' + EscapeHtml(app.publisher || '-') + '</td>';
+						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">' + scopeBadge + '</td>';
+						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">';
+
+						var userRights = GetNodeRights(currentNode);
+												
+						if (hasUninstall && (userRights == 0xFFFFFFFF)) {
+							x += '<input type="button" value="Remove" style="padding:2px 8px;cursor:pointer" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')" />';
+						} else {
+							x += '<span style="color:#999">-</span>';
+						}
+
+						x += '</td>';
+						x += '</tr>';
+					}
+				}
+
+				x += '</tbody></table>';
+				x += '</div>';
+			}
+    
+            QH('p18html', x);
+    
+            // Status aktualisieren
+            var totalDesktop = (installedAppsData.desktop || []).length;
+            var totalStore = (installedAppsData.store || []).length;
+            var shownDesktop = desktopApps.length;
+            var shownStore = showStoreApps ? storeApps.length : 0;
+    
+            var statusText = 'Desktop: ' + shownDesktop + '/' + totalDesktop;
+            if (showStoreApps) {
+                statusText += ' | Store: ' + shownStore + '/' + totalStore;
+            }
+            QH('p18Status', statusText);
+        }
+
+        function filterInstalledApps() {
+            if (filterInstalledApps.timer) clearTimeout(filterInstalledApps.timer);
+            filterInstalledApps.timer = setTimeout(function() {
+                displayInstalledApps();
+            }, 300);
+        }
+
+        function uninstallDesktopApp(encodedCmd) {
+            if (xxdialogMode) return;
+            if (currentNode == null) return;
+    
+            var cmd = decodeURIComponent(encodedCmd);
+    
+            // Prüfen ob Befehl leer ist
+            if (!cmd || cmd.trim() === '') {
+                QH('p18Status', '<span style="color:red">Error: No uninstall command available</span>');
+                return;
+            }
+    
+            var dialogContent = '<div style="max-width:500px">';
+            dialogContent += '<p><b>Uninstall this software?</b></p>';
+            dialogContent += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;font-size:11px;max-height:80px;overflow-y:auto">' + EscapeHtml(cmd) + '</div>';
+            dialogContent += '<p style="margin-top:10px"><i>Silent uninstall will be performed.</i></p>';
+            dialogContent += '</div>';
+    
+            setDialogMode(2, "Uninstall Software", 3, function() {
+                QH('p18Status', '<span style="color:blue">Uninstalling...</span>');
+        
+                // Base64 kodieren um Sonderzeichen-Probleme zu vermeiden
+                var base64Cmd = btoa(unescape(encodeURIComponent(cmd)));
+        
+                meshserver.send({ 
+                    action: 'msg', 
+                    type: 'console', 
+                    nodeid: currentNode._id, 
+                    value: 'uninstallapp ' + base64Cmd
+                });
+        
+                setTimeout(function() {
+                    QH('p18Status', 'Uninstall started. Click Refresh to update.');
+                }, 2000);
+            }, dialogContent);
+        }
+
+
+
+        function uninstallStoreApp(encodedCmd) {
+			if (xxdialogMode) return;
+			if (currentNode == null) return;
+    
+			var cmd = decodeURIComponent(encodedCmd);
+    
+			var dialogContent = '<div style="max-width:500px">';
+			dialogContent += '<p><b>Remove this Store app?</b></p>';
+			dialogContent += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;font-size:11px">' + EscapeHtml(cmd) + '</div>';
+			dialogContent += '</div>';
+    
+			setDialogMode(2, "Remove Store App", 3, function() {
+				QH('p18Status', '<span style="color:blue">Removing...</span>');
+        
+				var escapedCmd = cmd.replace(/"/g, '\\"');
+        
+				meshserver.send({ 
+					action: 'msg', 
+					type: 'console', 
+					nodeid: currentNode._id, 
+					value: 'uninstallstoreapp "' + escapedCmd + '"'
+				});
+        
+				setTimeout(function() {
+					QH('p18Status', 'Remove command sent. Click Refresh to update.');
+				}, 2000);
+			}, dialogContent);
+		}
+
+        function handleUninstallResponse(data) {
+            try {
+                var result = JSON.parse(data);
+                if (result.success) {
+                    QH('p18Status', '<span style="color:green">✓ Success!</span> Click Refresh to update.');
+                } else if (result.error) {
+                    QH('p18Status', '<span style="color:red">✗ Error: ' + EscapeHtml(result.error) + '</span>');
+                }
+            } catch(e) {}
+        }
+
+        // ============================================
+        // END INSTALLED SOFTWARE
+        // ============================================
+
         //
         // CONSOLE
         //
@@ -18982,7 +19410,7 @@
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
             QV('UsersSubMenuSpan', x == 4 || x == 50 || x == 52);
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
-            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
+            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevApps', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
@@ -19028,6 +19456,14 @@
 
             // Some panels must not have scroll bars
             QS('column_l')['overflow'] = ([11,12].indexOf(x)>= 0)?'hidden':null;
+
+            // Software Panel - Apps laden wenn Panel 18 aktiv wird
+			if (x == 18) {
+				if (currentNode == null) { go(1); return; }
+					QH('p18deviceName', EscapeHtml(currentNode.name));
+				// Optional: Apps automatisch laden
+				loadInstalledApps();
+			}
         }
 
         //

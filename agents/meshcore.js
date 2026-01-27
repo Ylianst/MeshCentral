@@ -5595,20 +5595,287 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'installedapps': {
-                if(process.platform == 'win32'){
-                    require('win-info').installedApps().then(function (apps){ sendConsoleText(JSON.stringify(apps,null,1)); });
+                if (process.platform == 'win32') {
+                    try {
+                        // Wir nutzen 'sessionid' aus dem Funktionskopf von processConsoleCommand
+                        require('win-info').installedApps().then(function (apps) { 
+                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid); 
+                        }).catch(function(e) { 
+                            sendConsoleText("Error: " + e, sessionid); 
+                        });
+                    } catch (ex) { 
+                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                    }
                 }
                 break;
             }
             case 'installedstoreapps': {
-                if(process.platform == 'win32'){
-                    var apps = require('win-info').installedStoreApps();
-                    if (apps[0]) {
-                        sendConsoleText(JSON.stringify(apps,null,1));
-                    };
+                if (process.platform == 'win32') {
+                    try {
+                        // Hier muss der Name exakt so geschrieben sein wie in module.exports der win-info.js
+                        require('win-info').installedStoreApps().then(function (apps) {
+                            if (apps && apps.length > 0) {
+                                sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
+                            } else {
+                                sendConsoleText("No Store Apps found or PowerShell error.", sessionid);
+                            }
+                        }).catch(function(e) { 
+                            sendConsoleText("Promise Error: " + e, sessionid); 
+                        });
+                    } catch (ex) { 
+                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                    }
                 }
                 break;
             }
+            case 'uninstallapp':
+    if (args['_'].length < 1) {
+        response = "Usage: uninstallapp <base64-encoded-command>";
+    } else {
+        var base64Cmd = args['_'][0];
+        var uninstallCmd = '';
+        
+        // Base64 dekodieren
+        try {
+            var b = Buffer.from(base64Cmd, 'base64');
+            var decoded = b.toString();
+            
+            if (decoded && decoded.length > 0 && decoded.indexOf(':') >= 0) {
+                uninstallCmd = decoded;
+            } else {
+                uninstallCmd = base64Cmd;
+            }
+        } catch (e) {
+            uninstallCmd = base64Cmd;
+        }
+        
+        // Prüfen ob Befehl leer oder ungültig ist
+        if (!uninstallCmd || uninstallCmd.trim() === '' || uninstallCmd.trim() === '\\') {
+            response = JSON.stringify({ success: false, error: 'No valid uninstall command available' });
+            break;
+        }
+        
+        var logFile = 'C:\\ProgramData\\MeshAgent_Uninstall.log';
+        var child_process = require('child_process');
+        var cmdPath = process.env['windir'] + '\\system32\\cmd.exe';
+        
+        // Log-Funktion mit CMD echo
+        function writeLog(message, callback) {
+            try {
+                var timestamp = new Date().toISOString();
+                var logLine = timestamp + ' | ' + message;
+                // Sonderzeichen escapen
+                logLine = logLine.replace(/"/g, '""').replace(/&/g, '^&').replace(/</g, '^<').replace(/>/g, '^>').replace(/\|/g, '^|');
+                
+                var logChild = child_process.execFile(cmdPath, ['cmd', '/c', 'echo ' + logLine + ' >> "' + logFile + '"'], { timeout: 5000 });
+                logChild.on('exit', function() {
+                    if (callback) callback();
+                });
+            } catch (e) {
+                if (callback) callback();
+            }
+        }
+        
+        try {
+            // Logging - Start
+            writeLog('UNINSTALL START - Command: ' + uninstallCmd.replace(/\\/g, '/'));
+            
+            var originalCmd = uninstallCmd;
+            
+            // Silent-Parameter hinzufügen
+            if (uninstallCmd.toLowerCase().indexOf('msiexec') >= 0) {
+                uninstallCmd = uninstallCmd.replace(/\/q[nbrf]?/gi, '');
+                if (uninstallCmd.indexOf('/QN') < 0) {
+                    uninstallCmd = uninstallCmd + ' /QN /norestart';
+                }
+            } else {
+                if (uninstallCmd.toLowerCase().indexOf('/s') < 0) {
+                    uninstallCmd = uninstallCmd + ' /S /silent /SILENT /VERYSILENT /quiet /norestart';
+                }
+            }
+            
+            uninstallCmd = uninstallCmd.replace(/\s+/g, ' ').trim();
+            
+            writeLog('UNINSTALL EXEC - Modified: ' + uninstallCmd.replace(/\\/g, '/'));
+            
+            var child = child_process.execFile(cmdPath, ['cmd', '/c', uninstallCmd], { timeout: 300000 });
+            
+            child.stdout.str = '';
+            child.stderr.str = '';
+            child._sessionid = sessionid;
+            child._cmd = uninstallCmd;
+            child._originalCmd = originalCmd;
+            child._writeLog = writeLog;
+            
+            child.stdout.on('data', function(c) { this.str += c.toString(); });
+            child.stderr.on('data', function(c) { this.str += c.toString(); });
+            
+            child.on('exit', function(code) {
+                var success = (code === 0 || code === null || code === 3010);
+                var status = success ? 'SUCCESS' : 'FAILED';
+                
+                child._writeLog('UNINSTALL ' + status + ' - ExitCode: ' + code);
+                
+                var result = { 
+                    success: success, 
+                    exitCode: code,
+                    command: child._cmd
+                };
+                
+                if (child.stdout.str) result.stdout = child.stdout.str.trim().substring(0, 500);
+                if (child.stderr.str) result.stderr = child.stderr.str.trim().substring(0, 500);
+                
+                sendConsoleText(JSON.stringify(result), child._sessionid);
+            });
+            
+            response = JSON.stringify({ status: 'Silent uninstall started', command: uninstallCmd });
+        } catch (ex) {
+            writeLog('UNINSTALL ERROR - ' + ex.toString());
+            response = JSON.stringify({ error: ex.toString() });
+        }
+    }
+    break;
+
+                case 'uninstallstoreapp':
+                    if (args['_'].length < 1) {
+                        response = "Usage: uninstallstoreapp <PackageName>";
+                    } else {
+                        var packageName = args['_'][0];
+                        var logFile = 'C:\\ProgramData\\MeshAgent_StoreUninstall.log';
+        
+                        try {
+                            var psPath = (process.env['SystemRoot'] || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+                            var child_process = require('child_process');
+                            var safePackageName = packageName.replace(/'/g, "''");
+                            var completionMarker = '###DONE###' + Date.now();
+            
+                            var child = child_process.execFile(psPath, ['powershell', '-NoProfile', '-NoLogo', '-Command', '-'], {});
+            
+                            child.stdout.str = '';
+                            child.stderr.str = '';
+                            child._sessionid = sessionid;
+                            child._packageName = packageName;
+                            child._marker = completionMarker;
+                            child._completed = false;
+                            child._logFile = logFile;
+            
+                            child.stdout.on('data', function(c) { 
+                                this.str += c.toString();
+                
+                                if (!child._completed && this.str.indexOf(child._marker) >= 0) {
+                                    child._completed = true;
+                                    var result = this.str.split(child._marker)[0].trim();
+                    
+                                    if (result === 'NO_MATCH' || result === '') {
+                                        sendConsoleText(JSON.stringify({ 
+                                            success: false, 
+                                            error: 'No matching packages found',
+                                            package: child._packageName
+                                        }), child._sessionid);
+                                    } else if (result.indexOf('REMOVED') >= 0 || result.indexOf('DEPROVISIONED') >= 0) {
+                                        var items = result.split('|').filter(function(x) { return x.length > 0; });
+                                        sendConsoleText(JSON.stringify({ 
+                                            success: true, 
+                                            message: 'Store app removed',
+                                            results: items
+                                        }), child._sessionid);
+                                    } else if (result.indexOf('FAILED') >= 0) {
+                                        sendConsoleText(JSON.stringify({ 
+                                            success: false, 
+                                            error: 'Removal failed',
+                                            details: result.split('|')
+                                        }), child._sessionid);
+                                    } else {
+                                        sendConsoleText(JSON.stringify({ output: result }), child._sessionid);
+                                    }
+                                }
+                            });
+            
+                            child.stderr.on('data', function(c) { this.str += c.toString(); });
+            
+                            // PowerShell-Skript mit Logging
+                            var script = [
+                                "$LogFile = '" + logFile + "'",
+                                "function Write-Log { param([string]$Message); $LogLine = \"$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - $Message\"; Add-Content -Path $LogFile -Value $LogLine -ErrorAction SilentlyContinue }",
+                                "",
+                                "Write-Log 'STORE UNINSTALL START: " + safePackageName + "'",
+                                "Write-Log \"Running as: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)\"",
+                                "",
+                                "$ErrorActionPreference = 'SilentlyContinue'",
+                                "$results = @()",
+                                "",
+                                "# Packages suchen",
+                                "$pkgs = Get-AppxPackage -AllUsers -Name '*" + safePackageName + "*'",
+                                "Write-Log \"Found (AllUsers): $($pkgs.Count) packages\"",
+                                "",
+                                "if (-not $pkgs) {",
+                                "    $pkgs = Get-AppxPackage -Name '*" + safePackageName + "*'",
+                                "    Write-Log \"Found (CurrentUser): $($pkgs.Count) packages\"",
+                                "}",
+                                "",
+                                "foreach ($p in $pkgs) {",
+                                "    Write-Log \"Removing: $($p.PackageFullName)\"",
+                                "    try {",
+                                "        Remove-AppxPackage -Package $p.PackageFullName -AllUsers -ErrorAction Stop",
+                                "        Write-Log 'SUCCESS: Removed with -AllUsers'",
+                                "        $results += 'REMOVED_ALLUSERS:' + $p.PackageFullName",
+                                "    } catch {",
+                                "        Write-Log \"FAILED -AllUsers: $($_.Exception.Message)\"",
+                                "        try {",
+                                "            Remove-AppxPackage -Package $p.PackageFullName -ErrorAction Stop",
+                                "            Write-Log 'SUCCESS: Removed'",
+                                "            $results += 'REMOVED:' + $p.PackageFullName",
+                                "        } catch {",
+                                "            Write-Log \"FAILED: $($_.Exception.Message)\"",
+                                "            $results += 'FAILED:' + $p.PackageFullName + ':' + $_.Exception.Message",
+                                "        }",
+                                "    }",
+                                "}",
+                                "",
+                                "# Provisioned Packages entfernen",
+                                "$prov = Get-AppxProvisionedPackage -Online 2>$null | Where-Object { $_.PackageName -like '*" + safePackageName + "*' }",
+                                "Write-Log \"Found provisioned: $($prov.Count) packages\"",
+                                "",
+                                "foreach ($pr in $prov) {",
+                                "    Write-Log \"Deprovisioning: $($pr.DisplayName)\"",
+                                "    try {",
+                                "        Remove-AppxProvisionedPackage -Online -PackageName $pr.PackageName -ErrorAction Stop | Out-Null",
+                                "        Write-Log 'SUCCESS: Deprovisioned'",
+                                "        $results += 'DEPROVISIONED:' + $pr.DisplayName",
+                                "    } catch {",
+                                "        Write-Log \"FAILED: $($_.Exception.Message)\"",
+                                "        $results += 'DEPROV_FAILED:' + $pr.DisplayName",
+                                "    }",
+                                "}",
+                                "",
+                                "if ($results.Count -eq 0) {",
+                                "    Write-Log 'NO_MATCH'",
+                                "    'NO_MATCH'",
+                                "} else {",
+                                "    $output = $results -join '|'",
+                                "    Write-Log \"RESULT: $output\"",
+                                "    $output",
+                                "}",
+                                "'" + completionMarker + "'",
+                                "exit"
+                            ].join("\r\n");
+            
+                            child.stdin.write(script + "\r\n");
+            
+                            setTimeout(function() {
+                                if (!child._completed) {
+                                    sendConsoleText(JSON.stringify({ error: 'Timeout after 2 minutes' }), child._sessionid);
+                                }
+                            }, 120000);
+            
+                            response = JSON.stringify({ status: 'Store app removal started', package: packageName });
+                        } catch (ex) {
+                            var logErr = new Date().toISOString() + ' - STORE UNINSTALL ERROR: ' + ex.toString() + '\r\n';
+                            try { require('fs').appendFileSync(logFile, logErr); } catch (e) { }
+                            response = JSON.stringify({ error: ex.toString() });
+                        }
+                        break;
+                }
             case 'qfe': {
                 if(process.platform == 'win32'){
                     var qfe = require('win-info').qfe();
