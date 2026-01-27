@@ -2826,9 +2826,9 @@
     
 								// Standard Console-Verarbeitung (Original-Code)
 								p15consoleReceive(nodes[index], message.value, message.source);
-							}
+							
 							// This is a console message.
-                            else if (message.type === 'notify') { // This is a notification message.
+                            } else if (message.type === 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
                                 var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
