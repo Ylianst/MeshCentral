@@ -944,40 +944,40 @@ module.exports.CreateDB = function (parent, func) {
                 }
             });
         } else {
-        //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
+            //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
             connectionArgs.database = 'postgres';
             DatastoreTest = new Client(connectionArgs);
-        DatastoreTest.connect();
+            DatastoreTest.connect();
             connectionArgs.database = databaseName; //put the name back for backupconfig info
-        DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
-            if (res.rowCount != 0) { // database exists now check tables exists
-                DatastoreTest.end();
-                Datastore.connect();
-                Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
-                    if (err == null) {
-                      (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
-                    } else
-                    if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
-                        postgreSqlCreateTables(func);
-                    } else {
-                        console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
-                    };
-                });
-            } else { // If not present, create the tables and indexes
-                //not needed, just use a create db statement: const pgtools = require('pgtools'); 
-                DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
-                    if (err == null) {
-                        // Create the tables and indexes
-                        DatastoreTest.end();
-                        Datastore.connect();
-                        postgreSqlCreateTables(func);
-                    } else {
-                            console.log('Postgresql database create error: ', err.message);
-                            process.exit(0);
-                    }
-                });
-            }
-        });
+            DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
+                if (res.rowCount != 0) { // database exists now check tables exists
+                    DatastoreTest.end();
+                    Datastore.connect();
+                    Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                        if (err == null) {
+                        (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
+                        } else
+                        if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
+                            postgreSqlCreateTables(func);
+                        } else {
+                            console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
+                        };
+                    });
+                } else { // If not present, create the tables and indexes
+                    //not needed, just use a create db statement: const pgtools = require('pgtools'); 
+                    DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
+                        if (err == null) {
+                            // Create the tables and indexes
+                            DatastoreTest.end();
+                            Datastore.connect();
+                            postgreSqlCreateTables(func);
+                        } else {
+                                console.log('Postgresql database create error: ', err.message);
+                                process.exit(0);
+                        }
+                    });
+                }
+            });
         }
     } else if (parent.args.mongodb) {
         // Use MongoDB
