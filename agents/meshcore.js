@@ -137,6 +137,106 @@ function getDomainInfo() {
     return (ret);
 }
 
+function getLogonCacheKeys() {
+    var registry = require('win-registry');
+    var HKLM = registry.HKEY.LocalMachine;
+
+    var userObj = [];
+
+    function readSubKeys(path) {
+        var vals = registry.QueryKey(HKLM, path);
+        if (!vals) return;
+
+        // Extract IdentityName, SAMName, SID if they exist
+        var identityName = null, samName = null, sid = null;
+
+        for (var i = 0; i in vals.values; i++) {
+            if (vals.values[i].toLowerCase() === 'identityname' && identityName === null) {
+                identityName = registry.QueryKey(HKLM, path, vals.values[i]);
+            }
+            if (vals.values[i].toLowerCase() === 'samname' && samName === null) {
+                samName = registry.QueryKey(HKLM, path, vals.values[i]); 
+            }
+            if (vals.values[i].toLowerCase() === 'sid' && sid === null) {
+                sid = registry.QueryKey(HKLM, path, vals.values[i]);
+            }
+        }
+
+        // If IdentityName exists, add to userObj
+        if (identityName) {
+            userObj.push({
+                UPN: identityName,
+                SAM: samName,
+                SID: sid
+            });
+        }
+
+        // Recurse into subkeys if any
+        if (vals.subkeys && vals.subkeys.length > 0) {
+            for (var j = 0; j < vals.subkeys.length; j++) {
+                readSubKeys(path + '\\' + vals.subkeys[j]);
+            }
+        }
+    }
+
+    // Start recursion from the LogonCache root
+    readSubKeys('SOFTWARE\\Microsoft\\IdentityStore\\LogonCache');
+
+    var grouped = {};
+
+    function pushUnique(arr, val) {
+        if (val && arr.indexOf(val) === -1) arr.push(val);
+    }
+
+    // Group by UPN and merge values
+    for (var i = 0; i < userObj.length; i++) {
+        var u = userObj[i];
+
+        if (!grouped[u.UPN]) grouped[u.UPN] = {UPN: u.UPN, SID: [], SAM: []};
+
+        pushUnique(grouped[u.UPN].SID, u.SID);
+        pushUnique(grouped[u.UPN].SAM, u.SAM);
+    }
+
+    userObj = [];
+    // Convert grouped object to array
+    for (var k in grouped) if (grouped.hasOwnProperty(k)) userObj.push(grouped[k]);
+
+    return userObj;
+
+}
+
+function getJoinState() {
+    if (process.platform != 'win32') { return -1; }
+    
+    var isAzureAD = false;
+    var isOnPrem = false;
+
+    // 1 Azure AD / Entra ID
+    try {
+        const joinInfo = require('win-registry').QueryKey(
+        require('win-registry').HKEY.LocalMachine,
+        'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo'
+        );
+        isAzureAD = Array.isArray(joinInfo.subkeys) && joinInfo.subkeys.length > 0;
+    } catch (e) {}
+
+    // 2 On-prem AD
+    try {
+        const tcpip = require('win-registry').QueryKey(
+        require('win-registry').HKEY.LocalMachine,
+        'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters'
+        );
+        isOnPrem = !!(tcpip.Domain || null);
+    } catch (e) {}
+
+    if (isAzureAD && isOnPrem) return 12;
+    if (isAzureAD) return 1;
+    if (isOnPrem) return 2;
+
+    return 0;
+
+}
 
 
 try {
@@ -688,13 +788,32 @@ function onUserSessionChanged(user, locked) {
             if (user && locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); } }
             else if (user && !locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { meshCoreObj.lusers.splice(meshCoreObj.lusers.indexOf(un), 1); }
             if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
-            if (a[i].Domain != null && a[i].Domain == 'AzureAD'){
+            if ((a[i].Domain != null && a[i].Domain == 'AzureAD') || getJoinState() == 1 ){
                 // AzureAD to-do
                 // var userGUID = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
                 // if (userGUID != null){
                 //     var user = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\\' + userGUID.subkeys[0], 'UserEmail');
                 //     if (user != null) u[i].UPN = user;
                 // }
+				var userobj = getLogonCacheKeys();
+
+                if(userobj && userobj.length > 0){
+                    var samToUpn = null;
+
+                    for (var i = 0; i < userobj.length; i++) {
+                        var u = userobj[i];
+
+                        if (u && u.SAM && u.UPN) {
+                            samToUpn = u.UPN;
+                            break;
+                        }
+                    }
+
+                    if (samToUpn) {
+                        meshCoreObj.upnusers.push(samToUpn);
+                    }
+                }  
+				
             } else if (a[i].Domain != null) {
                 if (ret != null && ret.PartOfDomain === true) {
                     meshCoreObj.upnusers.push(a[i].Username + '@' + ret.Domain);
