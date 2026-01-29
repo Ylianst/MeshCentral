@@ -6523,6 +6523,14 @@
                 if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
                 if (ident.gpu_name) { for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard' }); }
+
+                // System
+                x = '';
+                if (ident.chassis_manufacturer) { x += addDetailItem("Manufacturer", EscapeHtml(ident.chassis_manufacturer), s); }
+                if (ident.product_name) { x += addDetailItem("Product Name", EscapeHtml(ident.product_name), s); }
+                if (ident.chassis_serial) { x += addDetailItem("Serial", EscapeHtml(ident.chassis_serial), s); }
+                if (ident.chassis_assettag) { x += addDetailItem("Asset Tag", EscapeHtml(ident.chassis_assettag), s); }
+                if (x != '') { sections.push({ name: "System", html: x, img: 'system' }); }
             }
 
             // TPM

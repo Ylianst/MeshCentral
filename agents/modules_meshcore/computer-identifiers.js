@@ -18,7 +18,7 @@ function trimIdentifiers(val)
 {
     for(var v in val)
     {
-        if (!val[v] || val[v] == 'None' || val[v] == '') { delete val[v]; }
+        if (!val[v] || val[v] == 'None' || val[v] == '' || val[v].trim() == '') { delete val[v]; }
     }
 }
 function trimResults(val)
@@ -497,8 +497,16 @@ function windows_identifiers()
     if(values[0]){
         ret['identifiers']['product_uuid'] = values[0]['UUID'];
         ret['identifiers']['product_name'] = values[0]['Name'];
-        trimIdentifiers(ret.identifiers);
     }
+
+    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_SystemEnclosure", ['SerialNumber', 'SMBIOSAssetTag', 'Manufacturer']);
+    if(values[0]){
+        ret['identifiers']['chassis_serial'] = values[0]['SerialNumber'];
+        ret['identifiers']['chassis_assettag'] = values[0]['SMBIOSAssetTag'];
+        ret['identifiers']['chassis_manufacturer'] = values[0]['Manufacturer'];
+    }
+
+    trimIdentifiers(ret.identifiers);
 
     values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_PhysicalMemory");
     if(values[0]){

@@ -5161,7 +5161,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (type == 'csv') {
                                 try {
                                     // Create the CSV file
-                                    output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,tags,lastbootuptime,cpu,osbuild,biosDate,biosVendor,biosVersion,biosSerial,biosMode,boardName,boardVendor,boardVersion,productUuid,tpmversion,tpmmanufacturer,tpmmanufacturerversion,tpmisactivated,tpmisenabled,tpmisowned,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
+                                    output = 'id,name,rname,host,icon,ip,osdesc,groupname,av,update,firewall,bitlocker,avdetails,tags,lastbootuptime,cpu,osbuild,biosDate,biosVendor,biosVersion,biosSerial,biosMode,boardName,boardVendor,boardVersion,boardSerial,chassisSerial,chassisAssetTag,chassisManufacturer,productUuid,tpmversion,tpmmanufacturer,tpmmanufacturerversion,tpmisactivated,tpmisenabled,tpmisowned,totalMemory,agentOpenSSL,agentCommitDate,agentCommitHash,agentCompileTime,netIfCount,macs,addresses,lastConnectTime,lastConnectAddr\r\n';
                                     for (var i = 0; i < results.length; i++) {
                                         const nodeinfo = results[i];
 
@@ -5222,6 +5222,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_version)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_version); }
                                             output += ',';
+                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.board_serial)) { output += csvClean(nodeinfo.sys.hardware.identifiers.board_serial); }
+                                            output += ',';
+                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.chassis_serial)) { output += csvClean(nodeinfo.sys.hardware.identifiers.chassis_serial); }
+                                            output += ',';
+                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.chassis_asset_tag)) { output += csvClean(nodeinfo.sys.hardware.identifiers.chassis_asset_tag); }
+                                            output += ',';
+                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.chassis_manufacturer)) { output += csvClean(nodeinfo.sys.hardware.identifiers.chassis_manufacturer); }
+                                            output += ',';
                                             if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.identifiers.product_uuid); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.SpecVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.SpecVersion); }
@@ -5262,6 +5270,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.brand)) { output += csvClean(nodeinfo.sys.hardware.mobile.brand); }
                                             output += ',';
                                             output += ',';
+                                            output += ',';
                                             if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.id)) { output += csvClean(nodeinfo.sys.hardware.mobile.id); }
                                             output += ',';
                                             output += ',';
@@ -5292,6 +5301,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.board_version)) { output += csvClean(nodeinfo.sys.hardware.linux.board_version); }
                                             output += ',';
+                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.board_serial)) { output += csvClean(nodeinfo.sys.hardware.linux.board_serial); }
+                                            output += ',';
+                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.chassis_serial)) { output += csvClean(nodeinfo.sys.hardware.linux.chassis_serial); }
+                                            output += ',';
+                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.chassis_asset_tag)) { output += csvClean(nodeinfo.sys.hardware.linux.chassis_asset_tag); }
+                                            output += ',';
+                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.chassis_manufacturer)) { output += csvClean(nodeinfo.sys.hardware.linux.chassis_manufacturer); }
+                                            output += ',';
                                             if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.product_uuid)) { output += csvClean(nodeinfo.sys.hardware.linux.product_uuid); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.tpm && nodeinfo.sys.hardware.tpm.SpecVersion) { output += csvClean(nodeinfo.sys.hardware.tpm.SpecVersion); }
@@ -5319,7 +5336,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                                 }
                                             }
                                         } else {
-                                            output += ',,,,,,,,,,,,,,,,,,';
+                                            output += ',,,,,,,,,,,,,,,,,,,';
                                         }
 
                                         // Agent information
