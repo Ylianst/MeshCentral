@@ -210,6 +210,11 @@
               "type": "string",
               "default": "meshcentral",
               "description": "Name of PostgreSQL database used"
+            },
+            "createdatabase": {
+              "type": "boolean",
+              "default": true,
+              "description": "Set to false to skip database existence check and creation. Useful when the connected user does not have permission to create databases."
             }
           }
         },

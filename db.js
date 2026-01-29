@@ -922,18 +922,33 @@ module.exports.CreateDB = function (parent, func) {
         }
     } else if (parent.args.postgres) {
         // Postgres SQL
-        let connectinArgs = parent.args.postgres;
-        connectinArgs.database = (databaseName = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral');
+        let connectionArgs = parent.args.postgres;
+        connectionArgs.database = (databaseName = (connectionArgs.database != null) ? connectionArgs.database : 'meshcentral');
 
         let DatastoreTest;
         obj.databaseType = DB_POSTGRESQL;
         const { Client } = require('pg');
-        Datastore = new Client(connectinArgs);
+        Datastore = new Client(connectionArgs);
+        // Check if we should skip database creation check
+        if (connectionArgs.createdatabase === false ) {
+            // Skip database check/creation, just connect and run the SELECT query
+            Datastore.connect();
+            Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                if (err == null) {
+                    (res.rowCount == 0) ? postgreSqlCreateTables(func) : setupFunctions(func);
+                } else if (err.code == '42P01') { //42P01 = undefined table
+                    postgreSqlCreateTables(func);
+                } else {
+                    console.log('Postgresql connection error: ', err.message); 
+                    process.exit(0);
+                }
+            });
+        } else {
         //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
-        connectinArgs.database = 'postgres';
-        DatastoreTest = new Client(connectinArgs);
+            connectionArgs.database = 'postgres';
+            DatastoreTest = new Client(connectionArgs);
         DatastoreTest.connect();
-        connectinArgs.database = databaseName; //put the name back for backupconfig info
+            connectionArgs.database = databaseName; //put the name back for backupconfig info
         DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
             if (res.rowCount != 0) { // database exists now check tables exists
                 DatastoreTest.end();
@@ -963,6 +978,7 @@ module.exports.CreateDB = function (parent, func) {
                 });
             }
         });
+        }
     } else if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = DB_MONGODB;
