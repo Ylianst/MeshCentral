@@ -5226,7 +5226,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.chassis_serial)) { output += csvClean(nodeinfo.sys.hardware.identifiers.chassis_serial); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.chassis_asset_tag)) { output += csvClean(nodeinfo.sys.hardware.identifiers.chassis_asset_tag); }
+                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.chassis_assettag)) { output += csvClean(nodeinfo.sys.hardware.identifiers.chassis_assettag); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.chassis_manufacturer)) { output += csvClean(nodeinfo.sys.hardware.identifiers.chassis_manufacturer); }
                                             output += ',';
@@ -5271,6 +5271,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             output += ',';
                                             output += ',';
+                                            output += ',';
+                                            output += ',';
+                                            output += ',';
                                             if (nodeinfo.sys.hardware.mobile && (nodeinfo.sys.hardware.mobile.id)) { output += csvClean(nodeinfo.sys.hardware.mobile.id); }
                                             output += ',';
                                             output += ',';
@@ -5305,7 +5308,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.chassis_serial)) { output += csvClean(nodeinfo.sys.hardware.linux.chassis_serial); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.chassis_asset_tag)) { output += csvClean(nodeinfo.sys.hardware.linux.chassis_asset_tag); }
+                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.chassis_assettag)) { output += csvClean(nodeinfo.sys.hardware.linux.chassis_assettag); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.chassis_manufacturer)) { output += csvClean(nodeinfo.sys.hardware.linux.chassis_manufacturer); }
                                             output += ',';
@@ -5336,7 +5339,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                                 }
                                             }
                                         } else {
-                                            output += ',,,,,,,,,,,,,,,,,,,';
+                                            output += ',,,,,,,,,,,,,,,,,,,,,,';
                                         }
 
                                         // Agent information
