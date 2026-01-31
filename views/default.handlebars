@@ -12225,6 +12225,7 @@
                     x += addDetailItem("Last Boot Up Time", date);
                 }
                 if(m.Domain){ x += addDetailItem((m.PartOfDomain ? "Domain" : "Workgroup"), EscapeHtml(m.Domain), s); }
+                if(m.DomainState > 0){ x += addDetailItem("Domain State", (domainStates[m.DomainState] ? domainStates[m.DomainState] : "Unknown"), s); }
             }
             if(hardware.linux && hardware.linux.LastBootUpTime){
                 var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
