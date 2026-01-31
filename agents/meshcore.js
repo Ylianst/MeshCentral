@@ -208,26 +208,31 @@ function getLogonCacheKeys() {
 
 function getJoinState() {
     if (process.platform != 'win32') { return -1; }
-    
     var isAzureAD = false;
     var isOnPrem = false;
-
+    var isHybrid = false;
+    var isMicrosoft = false;
     // 1 Azure AD / Entra ID
     try {
         const joinInfo = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
         isAzureAD = Array.isArray(joinInfo.subkeys) && joinInfo.subkeys.length > 0;
     } catch (e) {}
-
     // 2 On-prem AD
     try {
         const tcpip = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters','Domain');
         isOnPrem = !!(tcpip !== "" || null);
     } catch (e) {}
-
-    if (isAzureAD && isOnPrem) return 12;
-    if (isAzureAD) return 1;
+    // 4 Hybrid AD
+    isHybrid = isAzureAD && isOnPrem;
+    // 8 Microsoft Account
+    try {
+        const userAccounts = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\IdentityStore\\LogonCache\\D7F9888F-E3FC-49b0-9EA6-A85B5F392A4F');
+        isMicrosoft = Array.isArray(userAccounts.subkeys) && userAccounts.subkeys.length > 0;
+    } catch (e) {}
+    if (isMicrosoft) return 8;
+    if (isHybrid) return 4;
     if (isOnPrem) return 2;
-
+    if (isAzureAD) return 1;
     return 0;
 
 }
@@ -783,30 +788,30 @@ function onUserSessionChanged(user, locked) {
             else if (user && !locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { meshCoreObj.lusers.splice(meshCoreObj.lusers.indexOf(un), 1); }
             if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
             if ((a[i].Domain != null && a[i].Domain == 'AzureAD') || getJoinState() == 1 ){
-                // AzureAD to-do
-                // var userGUID = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
-                // if (userGUID != null){
-                //     var user = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\\' + userGUID.subkeys[0], 'UserEmail');
-                //     if (user != null) u[i].UPN = user;
-                // }
 				var userobj = getLogonCacheKeys();
-
                 if(userobj && userobj.length > 0){
-
                     for (var j = 0; j < userobj.length; j++) {
                         var u = userobj[j];
-
-                        if (u && u.SAM && u.SAM[0].trim().toLowerCase() === a[i].Username) {
+                        if (u && u.SAM && u.SAM[0].trim() === a[i].Username) {
                             meshCoreObj.upnusers.push(u.UPN);
                             break;
                         }
                     }
-
                 }  
-				
             } else if (a[i].Domain != null) {
                 if (ret != null && ret.PartOfDomain === true) {
                     meshCoreObj.upnusers.push(a[i].Username + '@' + ret.Domain);
+                } else if (getJoinState() == 8) { // One account with Microsoft Account
+                    var userobj = getLogonCacheKeys();
+                    if(userobj && userobj.length > 0){
+                        for (var j = 0; j < userobj.length; j++) {
+                            var u = userobj[j];
+                            if (u && u.SAM && u.SAM.length == 0 && u.UPN && u.UPN != '') {
+                                meshCoreObj.upnusers.push(u.UPN);
+                                break;
+                            }
+                        }
+                    }  
                 }
             }
         }
