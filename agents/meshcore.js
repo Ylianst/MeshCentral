@@ -798,20 +798,16 @@ function onUserSessionChanged(user, locked) {
 				var userobj = getLogonCacheKeys();
 
                 if(userobj && userobj.length > 0){
-                    var samToUpn = null;
 
-                    for (var i = 0; i < userobj.length; i++) {
-                        var u = userobj[i];
+                    for (var j = 0; j < userobj.length; j++) {
+                        var u = userobj[j];
 
-                        if (u && u.SAM && u.UPN) {
-                            samToUpn = u.UPN;
+                        if (u && u.SAM && u.SAM[0].trim().toLowerCase() === a[i].Username) {
+                            meshCoreObj.upnusers.push(u.UPN);
                             break;
                         }
                     }
 
-                    if (samToUpn) {
-                        meshCoreObj.upnusers.push(samToUpn);
-                    }
                 }  
 				
             } else if (a[i].Domain != null) {
