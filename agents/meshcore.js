@@ -791,9 +791,8 @@ function onUserSessionChanged(user, locked) {
 				var userobj = getLogonCacheKeys();
                 if(userobj && userobj.length > 0){
                     for (var j = 0; j < userobj.length; j++) {
-                        var u = userobj[j];
-                        if (u && u.SAM && u.SAM[0].trim() === a[i].Username) {
-                            meshCoreObj.upnusers.push(u.UPN);
+                        if (userobj[j] && userobj[j].SAM && userobj[j].SAM[0].trim() === a[i].Username) {
+                            meshCoreObj.upnusers.push(userobj[j].UPN);
                             break;
                         }
                     }
@@ -805,9 +804,8 @@ function onUserSessionChanged(user, locked) {
                     var userobj = getLogonCacheKeys();
                     if(userobj && userobj.length > 0){
                         for (var j = 0; j < userobj.length; j++) {
-                            var u = userobj[j];
-                            if (u && u.SAM && u.SAM.length == 0 && u.UPN && u.UPN != '') {
-                                meshCoreObj.upnusers.push(u.UPN);
+                            if (userobj[j] && userobj[j].SAM && userobj[j].SAM.length == 0 && userobj[j].UPN && userobj[j].UPN != '') {
+                                meshCoreObj.upnusers.push(userobj[j].UPN);
                                 break;
                             }
                         }
@@ -4901,18 +4899,32 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         var ret = getDomainInfo();
                         for (var i in u) {
                             if (u[i].State == 'Active') {
-                               if (u[i].Domain != null && u[i].Domain == 'AzureAD'){
-                                    // AzureAD to-do
-                                    // var userGUID = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
-                                    // if (userGUID != null){
-                                    //     var user = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\\' + userGUID.subkeys[0], 'UserEmail');
-                                    //     if (user != null) u[i].UPN = user;
-                                    // }
+                                if ((u[i].Domain != null && u[i].Domain == 'AzureAD') || getJoinState() == 1){
+                                    var userobj = getLogonCacheKeys();
+                                    if(userobj && userobj.length > 0){
+                                        for (var j = 0; j < userobj.length; j++) {
+                                            if (userobj[j] && userobj[j].SAM && userobj[j].SAM[0].trim() === u[i].Username) {
+                                                u[i].UPN = userobj[j].UPN
+                                                break;
+                                            }
+                                        }
+                                    }  
                                 } else if (u[i].Domain != null) {
                                     if (ret != null && ret.PartOfDomain === true) {
                                         u[i].UPN = u[i].Username + '@' + ret.Domain;
+                                    } else if (getJoinState() == 8) { // One account with Microsoft Account
+                                        var userobj = getLogonCacheKeys();
+                                        if(userobj && userobj.length > 0){
+                                            for (var j = 0; j < userobj.length; j++) {
+                                                if (userobj[j] && userobj[j].SAM && userobj[j].SAM.length == 0 && userobj[j].UPN && userobj[j].UPN != '') {
+                                                    u[i].UPN = userobj[j].UPN;
+                                                    break;
+                                                }
+                                            }
+                                        }  
                                     }
                                 }
+                                if (u[i].UPN == null) { u[i].UPN = ''; }
                                 v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain, upn: u[i].UPN });
                             }
                         }
@@ -5128,18 +5140,34 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 require('user-sessions').enumerateUsers().then(function (u) { 
                     var ret = getDomainInfo();
                     for (var i in u) { 
-                        if (u[i].Domain != null && u[i].Domain == 'AzureAD'){
-                            // AzureAD to-do
-                            // var userGUID = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
-                            // if (userGUID != null){
-                            //     var user = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo\\' + userGUID.subkeys[0], 'UserEmail');
-                            //     if (user != null) u[i].UPN = user;
-                            // }
+                       if ((u[i].Domain != null && u[i].Domain == 'AzureAD') || getJoinState() == 1){
+                            var userobj = getLogonCacheKeys();
+                            if(userobj && userobj.length > 0){
+                                for (var j = 0; j < userobj.length; j++) {
+                                    var a = userobj[j];
+                                    if (a && a.SAM && a.SAM[0].trim() === u[i].Username) {
+                                        u[i].UPN = a.UPN
+                                        break;
+                                    }
+                                }
+                            }  
                         } else if (u[i].Domain != null) {
                             if (ret != null && ret.PartOfDomain === true) {
                                 u[i].UPN = u[i].Username + '@' + ret.Domain;
+                            } else if (getJoinState() == 8) { // One account with Microsoft Account
+                                var userobj = getLogonCacheKeys();
+                                if(userobj && userobj.length > 0){
+                                    for (var j = 0; j < userobj.length; j++) {
+                                        var a = userobj[j];
+                                        if (a && a.SAM && a.SAM.length == 0 && a.UPN && a.UPN != '') {
+                                            u[i].UPN = a.UPN;
+                                            break;
+                                        }
+                                    }
+                                }  
                             }
                         }
+                        if (u[i].UPN == null) { u[i].UPN = ''; }
                         sendConsoleText(u[i]);
                     }
                 });
