@@ -214,20 +214,14 @@ function getJoinState() {
 
     // 1 Azure AD / Entra ID
     try {
-        const joinInfo = require('win-registry').QueryKey(
-        require('win-registry').HKEY.LocalMachine,
-        'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo'
-        );
+        const joinInfo = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
         isAzureAD = Array.isArray(joinInfo.subkeys) && joinInfo.subkeys.length > 0;
     } catch (e) {}
 
     // 2 On-prem AD
     try {
-        const tcpip = require('win-registry').QueryKey(
-        require('win-registry').HKEY.LocalMachine,
-        'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters'
-        );
-        isOnPrem = !!(tcpip.Domain || null);
+        const tcpip = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters','Domain');
+        isOnPrem = !!(tcpip !== "" || null);
     } catch (e) {}
 
     if (isAzureAD && isOnPrem) return 12;
