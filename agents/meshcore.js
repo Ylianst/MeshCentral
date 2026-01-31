@@ -222,15 +222,15 @@ function getJoinState() {
         const tcpip = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters','Domain');
         isOnPrem = !!(tcpip !== "" || null);
     } catch (e) {}
-    // 4 Hybrid AD
+    // 3 Hybrid AD
     isHybrid = isAzureAD && isOnPrem;
-    // 8 Microsoft Account
+    // 4 Microsoft Account
     try {
         const userAccounts = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\IdentityStore\\LogonCache\\D7F9888F-E3FC-49b0-9EA6-A85B5F392A4F');
         isMicrosoft = Array.isArray(userAccounts.subkeys) && userAccounts.subkeys.length > 0;
     } catch (e) {}
-    if (isMicrosoft) return 8;
-    if (isHybrid) return 4;
+    if (isMicrosoft) return 4;
+    if (isHybrid) return 3;
     if (isOnPrem) return 2;
     if (isAzureAD) return 1;
     return 0;
@@ -800,7 +800,7 @@ function onUserSessionChanged(user, locked) {
             } else if (a[i].Domain != null) {
                 if (ret != null && ret.PartOfDomain === true) {
                     meshCoreObj.upnusers.push(a[i].Username + '@' + ret.Domain);
-                } else if (getJoinState() == 8) { // One account with Microsoft Account
+                } else if (getJoinState() == 4) { // One account with Microsoft Account
                     var userobj = getLogonCacheKeys();
                     if(userobj && userobj.length > 0){
                         for (var j = 0; j < userobj.length; j++) {
@@ -2042,6 +2042,7 @@ function getSystemInformation(func) {
                     delete results.hardware.windows.osinfo.Node;
                     results.hardware.windows.osinfo.Domain = getDomainInfo().Domain;
                     results.hardware.windows.osinfo.PartOfDomain = getDomainInfo().PartOfDomain;
+                    results.hardware.windows.osinfo.DomainState = getJoinState();
                 }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
@@ -4912,7 +4913,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                                 } else if (u[i].Domain != null) {
                                     if (ret != null && ret.PartOfDomain === true) {
                                         u[i].UPN = u[i].Username + '@' + ret.Domain;
-                                    } else if (getJoinState() == 8) { // One account with Microsoft Account
+                                    } else if (getJoinState() == 4) { // One account with Microsoft Account
                                         var userobj = getLogonCacheKeys();
                                         if(userobj && userobj.length > 0){
                                             for (var j = 0; j < userobj.length; j++) {
@@ -5154,7 +5155,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         } else if (u[i].Domain != null) {
                             if (ret != null && ret.PartOfDomain === true) {
                                 u[i].UPN = u[i].Username + '@' + ret.Domain;
-                            } else if (getJoinState() == 8) { // One account with Microsoft Account
+                            } else if (getJoinState() == 4) { // One account with Microsoft Account
                                 var userobj = getLogonCacheKeys();
                                 if(userobj && userobj.length > 0){
                                     for (var j = 0; j < userobj.length; j++) {
