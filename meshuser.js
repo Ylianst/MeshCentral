@@ -1035,9 +1035,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // If a response is needed, set a callback function
                     var func = null;
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
+					
+					// BEGIN SOFTWARE
+					var isSoftwareCmd = (command.type === 'console') && 
+						(command.value === 'installedapps' || 
+						 command.value === 'installedstoreapps' ||
+						(typeof command.value === 'string' && 
+						(command.value.indexOf('uninstallapp ') === 0 || 
+						 command.value.indexOf('uninstallstoreapp ') === 0)));
 
-                    // Route this command to a target node
-                    routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
+
+					// Software-Command needs MESHRIGHT_DEVICEDETAILS instead MESHRIGHT_AGENTCONSOLE
+					if (isSoftwareCommand) {
+						routeCommandToNode(command, 0x00100000, requiredNonRights, func, routingOptions);
+					} else {
+						// Route this command to a target node
+						routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
+					}
+					// END SOFTWARE
+					
+                    
                     break;
                 }
             case 'events':
