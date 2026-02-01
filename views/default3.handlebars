@@ -306,6 +306,8 @@
                                     onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
                                 <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
                                     onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                <td tabindex=0 id=MainDevGeo class="topbar_td style3x" onmouseup=go(22,event)
+                                    onkeypress="if (event.key == 'Enter') go(22)">Geolocation</td>
                                 <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
                                     onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
@@ -1498,6 +1500,23 @@
                         </div>
                     </div>
                     <p id=p21info style="overflow-y:auto"></p>
+                </div>
+            </div>
+            <div id=p22 style="display:none">
+                <div id="p22title" class="d-flex align-items-center">
+                    <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
+                    <h1>Geolocation - <span id=p22deviceName></span></h1>
+                </div>
+                <div id="p22info" style="overflow-y:auto">
+                    <div>Get Geolocation of device</div>
+                </div>
+                <div id=p22main style="overflow-y:auto">
+                    <div style="width:100%">
+                        <input id=p22Connect value="Update" cmenu="geolocationConnectButton" onclick=connectGeolocation(event,1) type="button" />
+                    </div>
+                    <div>
+                        <div id="p22map" style="width: 100%; height: 600px;"></div>
+                    </div>
                 </div>
             </div>
             <div id=p30 style="display:none">
@@ -8456,6 +8475,7 @@
                 QH('p16deviceName', nname);
                 QH('p17deviceName', nname);
                 QH('p19deviceName', nname);
+                QH('p22deviceName', nname);
 
                 // Node attributes
                 var x = '<table style=width:100%>';
@@ -8895,6 +8915,7 @@
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
+                QV('MainDevGeo', true);
                 QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0));
                 QH('p15coreName', ((node.agent != null) && (node.agent.core != null)) ? node.agent.core : '');
 
@@ -9533,6 +9554,7 @@
                     count++;
                     y += '<option value=400>' + "Flash" + '</option>';
                     y += '<option value=401>' + "Vibrate" + '</option>';
+                    y += '<option value=402>' + "Lock" + '</option>';
                     z += '<div id=d2devicetimediv>' + addHtmlFormFloating("Time", '<select id=d2devicetime class=form-select><option value=1000>' + "1 second" + '</option><option value=5000>' + "5 seconds" + '</option><option value=10000>' + "10 seconds" + '</option></select>') + '</div>';
                 }
             } else {
@@ -9627,8 +9649,8 @@
             } else if (op == 312) { // Intel AMT reset to BIOS
                 setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reset to BIOS?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); });
-            } else if ((op == 400) || (op == 401)) {
-                // Flash / vibrate
+            } else if ((op == 400) || (op == 401) || (op == 402)) {
+                // Flash / vibrate / lock
                 meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
                 return true;
             } else {
@@ -12201,6 +12223,83 @@
         // Debug Only
         var autoConnectFilesTimer = null;
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
+
+        var map = undefined;
+        var marker = undefined;
+
+        function GetGeolocationCoordinates(onGeolocationCoordinatesReceived){
+            var obj = { protocol: 5 };
+            obj.onGeolocationCoordinatesReceived = onGeolocationCoordinatesReceived;
+            obj.xxStateChange = function(state) { }
+            obj.ProcessData = function(data) {obj.onGeolocationCoordinatesReceived(data);}
+            return obj;
+        }
+
+        function p22gotCoordinates(data){
+            try { data = JSON.parse(decode_utf8(data)); } catch (ex) {
+                try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse: ' + data); return; }
+            }
+            if(map && marker){
+                // Updating existing map
+                var newCoordinates = ol.proj.fromLonLat([data["longitude"], data["latitude"]]);
+                marker.getGeometry().setCoordinates(newCoordinates);
+                map.getView().setCenter(newCoordinates);
+            } else {
+                map = new ol.Map({
+                    target: 'p22map',
+                    layers: [
+                      new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                      })
+                    ],
+                    view: new ol.View({
+                      center: ol.proj.fromLonLat([data["longitude"], data["latitude"]]),
+                      zoom: 15
+                    })
+                });
+                marker = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat([data["longitude"], data["latitude"]]))
+                });
+                marker.setStyle(
+                    new ol.style.Style({
+                        image: new ol.style.Icon({
+                            src: 'styles/images/marker-icon-2x.png',
+                            scale: 0.7,
+                            anchor: [0.5, 1]
+                        })
+                    })
+                );
+                var vectorLayer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: [marker]
+                    })
+                });
+                map.addLayer(vectorLayer);
+            }
+            files.Stop();
+            files = null;
+        }
+
+        function connectGeolocation(e, contype, consent){
+            if(!files){
+                files = CreateAgentRedirect(meshserver, GetGeolocationCoordinates(p22gotCoordinates), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
+                files.contype = contype;
+                files.options = { consent: consent }
+                files.attemptWebRTC = attemptWebRTC;
+                files.webrtcconfig = webrtcconfiguration;
+                files.onStateChanged = function(xdata, state){
+                    if(state == 3){
+                        files.sendText({ action: 'geolocation', reqid: 1 });
+                    }
+                };
+                files.Start(filesNode._id);
+            } else {
+                //QH('Term', '');
+                files.Stop();
+                files = null;
+            }
+        }
 
         // 1 = Agent, 2 = SFTP
         function connectFiles(e, contype, consent) {
@@ -20621,7 +20720,7 @@
             // Change the URL
             if (((features & 0x10000000) == 0) && (xxcurrentView > 0)) {
                 var urlviewmode = '';
-                if ((xxcurrentView >= 10) && (xxcurrentView <= 19)) { // Device Link
+                if (((xxcurrentView >= 10) && (xxcurrentView <= 19)) || xxcurrentView == 22) { // Device Link
                     if (currentNode != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2]; }
                 } else if ((xxcurrentView >= 20) && (xxcurrentView <= 29)) { // Device Group Link
                     if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
@@ -20689,13 +20788,13 @@
             QV('topbar', x != 0);
             if ((x == 0) && (webPageFullScreen)) { QC('body').add('arg_hide'); }
 
-            QV('MainSubMenuSpan', (x >= 10) && (x < 20));
+            QV('MainSubMenuSpan', (x >= 10) && (x < 20) || (x==22));
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
             QV('UsersSubMenuSpan', x == 4 || x == 50 || x == 52);
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
-            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
+            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 22: "MainDevGeo", 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
@@ -20738,6 +20837,9 @@
                 document.title = decodeURIComponent('{{{extitle}}}');
             }
             if (pluginHandler != null) pluginHandler.callHook('goPageEnd', x, event);
+
+            // Remove map
+            if( x == 22){ QH("p22map", ""); Q("p22map").setAttribute("class",""); }
 
             // Some panels must not have scroll bars
             QS('column_l')['overflow'] = ([11, 12].indexOf(x) >= 0) ? 'hidden' : null;
