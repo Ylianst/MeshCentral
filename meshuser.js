@@ -5806,6 +5806,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
+                    parent.InvalidateNodeCache(newuser, node.meshid, node._id)
                 }
             }
     
@@ -5824,7 +5825,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                 parent.parent.DispatchEvent(dispatchTargets, obj, event);
             }
-    
             if (command.responseid != null) { obj.send({ action: 'adddeviceuser', responseid: command.responseid, result: 'ok' }); }
         });
     }
@@ -5944,6 +5944,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, newuserid]), obj, event);
                 if (command.remove === true) { msgs.push("Removed user " + newuserid.split('/')[2]); } else { msgs.push("Added user " + newuserid.split('/')[2]); }
                 successCount++;
+                parent.InvalidateNodeCache(newuser, mesh)
             } else {
                 msgs.push("Unknown user " + newuserid.split('/')[2]);
                 unknownUsers.push(newuserid.split('/')[2]);

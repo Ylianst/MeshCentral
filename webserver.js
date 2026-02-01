@@ -9267,15 +9267,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof mesh == 'string') { meshid = mesh; } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) { meshid = mesh._id; } else return 0;
 
         // Check if we have this in the cache
-        const cacheid = user._id + '/' + meshid + '/' + nodeid;
-        const cache = GetNodeRightsCache[cacheid];
+
+        const cache = ((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid];
         if (cache != null) { if (cache.t > Date.now()) { return cache.o; } else { GetNodeRightsCacheCount--; } } // Cache hit, or we need to update the cache
-        if (GetNodeRightsCacheCount > 2000) { GetNodeRightsCache = {}; GetNodeRightsCacheCount = 0; } // From time to time, flush the cache
+        if (GetNodeRightsCacheCount > 2000) { obj.FlushGetNodeRightsCache() } // From time to time, flush the cache
 
         var r = obj.GetMeshRights(user, mesh);
         if (r == 0xFFFFFFFF) {
             const out = removeUserRights(r, user);
-            GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+            GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+            GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+            GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
             GetNodeRightsCacheCount++;
             return out;
         }
@@ -9284,7 +9286,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.links != null) && (user.links[nodeid] != null)) { r |= user.links[nodeid].rights; } // TODO: Deal with reverse permissions
         if (r == 0xFFFFFFFF) {
             const out = removeUserRights(r, user);
-            GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+            GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+            GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+            GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
             GetNodeRightsCacheCount++;
             return out;
         }
@@ -9298,9 +9302,43 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         const out = removeUserRights(r, user);
-        GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+        GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+        GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+        GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
         GetNodeRightsCacheCount++;
         return out;
+    }
+
+    obj.InvalidateNodeCache = function (user, mesh, nodeid) {
+        if (user == null) { return; }
+        
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if (user == null) { return 0; }
+        var meshid;
+        if (typeof mesh == 'string') { meshid = mesh; } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) { meshid = mesh._id; };
+        
+        if (mesh == null) {
+            for (let [key, val] of Object.entries(GetNodeRightsCache[user._id] || {})) {
+                GetNodeRightsCacheCount -= Object.keys(val).length
+            }
+            delete GetNodeRightsCache[user._id]; 
+            return;
+        }
+        if (nodeid == null) {
+            let cache_reduction = Object.keys((GetNodeRightsCache[user._id] || {})[meshid] || {}).length
+            delete (GetNodeRightsCache[user._id] || {})[meshid]
+            GetNodeRightsCacheCount -= cache_reduction;
+            return; 
+        }
+        if (((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid]) {
+            delete ((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid]
+            GetNodeRightsCacheCount--;
+        }
+    }
+
+    obj.FlushGetNodeRightsCache = function() {
+        GetNodeRightsCache = {};
+        GetNodeRightsCacheCount = 0;
     }
 
     // Returns a list of displatch targets for a given mesh
