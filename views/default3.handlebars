@@ -3442,6 +3442,7 @@
                         if (node != null) { node.lastconnect = message.lastconnects[lcnodeid] }
                     }
                     mainUpdate(4);
+					break;
                 }
                 case 'msg': {
                     // Check if this is a message from a node
@@ -3456,10 +3457,7 @@
                                 if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
                                 deviceDetailsStatsData.push([now, cpu, memory]);
                                 deviceDetailsStatsDraw(message);
-                            } else if (message.type === 'console') {
-								// ========================================
-								// INSTALLED SOFTWARE: Abfangen von Antworten für Panel 18
-								// ========================================
+                            } else if ((message.type === 'console') && (xxcurrentView == 18) && (currentNode != null) && (message.nodeid == currentNode._id)) {
 								if (xxcurrentView == 18 && currentNode != null && message.nodeid == currentNode._id) {
 									var consoleData = message.value || '';
         
@@ -3487,12 +3485,8 @@
 										}
 									}
 								}
-								// ========================================
-								// END INSTALLED SOFTWARE
-								// ========================================
-								p15consoleReceive(nodes[index], message.value, message.source); // This is a console message.
-							
-                            } else if (message.type === 'notify') { // This is a notification message.
+							} else if (message.type === 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
+                            else if (message.type === 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
                                 if (((n & 8) == 0) && (message.amtMessage != null)) { break; } // Intel AMT desktop & terminal messages should be ignored.
                                 var n = { text: message.value, title: message.title, icon: message.icon, titleid: message.titleid, msgid: message.msgid, args: message.args };
@@ -13953,7 +13947,6 @@
                 x += searchTerm ? 'No applications matching "' + EscapeHtml(searchTerm) + '"' : 'No desktop applications found';
                 x += '</td></tr>';
             } else {
-                for (var i = 0; i < desktopApps.length; i++) {
                 for (var i = 0; i < desktopApps.length; i++) {
                     var app = desktopApps[i];
                     var uninstallCmd = app.uninstall ? encodeURIComponent(app.uninstall) : '';
