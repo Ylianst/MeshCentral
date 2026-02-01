@@ -7975,7 +7975,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof strategy.groups == 'object') {
                 strategy.custom.authorities = obj.common.convertStrArray(strategy.custom.authorities, ' ')
                 // Check if authorities does not exist or includes groups
-                if(strategy.custom.authorities.length == 0 || strategy.custom.authorities.includes('groups')){ 
+                if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')){ 
                     let groupScope = strategy.groups.scope || null
                     if (groupScope == null) {
                         if (preset == 'azure') { groupScope = 'Group.Read.All' }
