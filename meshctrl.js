@@ -1190,14 +1190,15 @@ function displayConfigHelp() {
     console.log("  --removefromdomain [domain]   - Remove values from the domain.");
     console.log("\r\nWith adddomain, removedomain, settodomain and removefromdomain you can add the key and value pair. For example:\r\n");
     console.log("  --adddomain \"MyDomain\" --title \"My Server Name\" --newAccounts false");
+    console.log("  --settodomain \"MyDomain\" --themePack \"Stylish-UI\"");
     console.log("  --settodomain \"MyDomain\" --title \"My Server Name\"");
     console.log("  --removefromdomain \"MyDomain\" --title");
 }
 
 function performConfigOperations(args) {
-    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapuseremail', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide', 'customFiles'];
+    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapuseremail', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide', 'customFiles', 'themePack'];
     var domainObjectValues = ['ldapoptions', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'customFiles'];
-    var domainArrayValues = ['newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig'];
+    var domainArrayValues = ['newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig', 'themePack'];
     var configChange = false;
     var fs = require('fs');
     var path = require('path');
