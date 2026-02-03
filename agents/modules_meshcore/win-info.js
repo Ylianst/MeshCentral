@@ -181,36 +181,57 @@ function pendingReboot()
     }
     return (ret);
 }
-function installedApps() {
-    var ret = new promise(function (a, r) { this._resolve = a; this._reject = r; });
 
-    // PowerShell command for Desktop Apps (64 & 32 Bit)
-    var psCommand = "Get-ItemProperty HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* , HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object {$_.DisplayName -ne $null} | Select-Object @{Name='name'; Expression={$_.DisplayName}}, @{Name='version'; Expression={$_.DisplayVersion}}, @{Name='publisher'; Expression={$_.Publisher}}, @{Name='uninstall'; Expression={if($_.QuietUninstallString){$_.QuietUninstallString}else{$_.UninstallString}}} | ConvertTo-Json";
+function installedApps() {
+    var registry = require('win-registry');
+    var HKEY = registry.HKEY;
+    var results = [];
+    
+    var registryPaths = [
+        'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
+        'SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall'
+    ];
 
     try {
-        ret.child = require('child_process').execFile(psPath, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', psCommand]);
-        ret.child.promise = ret;
-        ret.child.stdout.str = ''; 
-        ret.child.stdout.on('data', function (c) { this.str += c.toString(); });
-        
-        ret.child.on('exit', function (c) {
-            try {
-                var data = JSON.parse(this.stdout.str.trim());
-                if (!Array.isArray(data)) { data = [data]; }
-                this.promise._resolve(data);
-            } catch (e) {
-                this.promise._resolve([]); 
+        for (var i in registryPaths) {
+            var path = registryPaths[i];
+            
+            // Wir nutzen direkt die Registry-Komponente für die Unterschlüssel
+            var keyInfo = registry.QueryKey(HKEY.LocalMachine, path);
+            
+            // Falls QueryKey fehlschlägt oder keine Subkeys hat, überspringen
+            if (!keyInfo || !keyInfo.subkeys) continue;
+
+            for (var j = 0; j < keyInfo.subkeys.length; j++) {
+                var subPath = path + '\\' + keyInfo.subkeys[j];
+                
+                // Wir nutzen deine im Modul definierte regQuery Funktion!
+                // Diese ist sicher, da sie try-catch bereits enthält.
+                var name = regQuery(HKEY.LocalMachine, subPath, 'DisplayName');
+                
+                if (name && name != '') {
+                    results.push({
+                        name: name,
+                        version: regQuery(HKEY.LocalMachine, subPath, 'DisplayVersion') || '',
+                        publisher: regQuery(HKEY.LocalMachine, subPath, 'Publisher') || '',
+                        uninstall: regQuery(HKEY.LocalMachine, subPath, 'QuietUninstallString') || 
+                                   regQuery(HKEY.LocalMachine, subPath, 'UninstallString') || ''
+                    });
+                }
             }
-        });
-        
-        ret.child.on('error', function (err) {
-            this.promise._resolve([]);
-        });
-    } catch (ex) {
-        ret._resolve([]);
+        }
+    } catch (e) {
+        // Stille Fehlerbehandlung für maximale Stabilität im Agenten
     }
 
-    return (ret);
+    // Das Promise-Mirror Objekt für MeshCentral Kompatibilität
+    return {
+        data: results,
+        then: function(cb) { if (typeof cb === 'function') cb(this.data); return this; },
+        catch: function(cb) { return this; },
+        finally: function(cb) { if (typeof cb === 'function') cb(); return this; },
+        on: function(ev, cb) { if (ev === 'exit' && typeof cb === 'function') cb(0); return this; }
+    };
 }
 
 function installedStoreApps() {
