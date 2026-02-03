@@ -121,8 +121,18 @@ function linux_identifiers()
     }
 
     try {
-        identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
-    } catch (ex) { identifiers['bios_mode'] = 'Legacy'; }
+        if ((require('fs')).existsSync('/sys/firmware/efi')) {
+            identifiers['bios_mode'] = 'UEFI';
+        } else if ((require('fs')).existsSync('/sys/firmware/devicetree/base/model')) {
+            const modelContent = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model').trim();
+
+            if (modelContent.includes('Raspberry Pi')) {
+                identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)'
+            }
+        } else {
+            identifiers['bios_mode'] = 'Legacy';
+        }
+    } catch (ex) { identifiers['bios_mode'] = 'Legacy / Unknown'; }
 
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
