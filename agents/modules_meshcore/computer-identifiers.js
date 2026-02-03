@@ -426,7 +426,7 @@ function linux_identifiers()
                     "RemainingCapacity": toMilli(thedata.energy_now),
                     "Voltage": toMilli(thedata.voltage_now),
                     "Health": (thedata.energy_full && thedata.energy_full_design ? Math.floor((thedata.energy_full / thedata.energy_full_design) * 100) : 0),
-                    "BatteryCharge": (thedata.energy_now && thedata.energy_full ? Math.floor((thedata.energy_now / thedata.energy_full) * 100) : 0)
+                    "BatteryCharge": (thedata.energy_now && thedata.energy_full ? Math.floor((thedata.energy_now / thedata.energy_full) * 100) : (thedata.capacity ? thedata.capacity : 0))
                 };
                 values.battery.push(batteryJson);
             }
