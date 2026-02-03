@@ -26,6 +26,7 @@
     <script type="text/javascript" src="scripts/amt-desktop-0.0.2{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-inflate{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/zlib-adler32{{{min}}}.js"></script>
@@ -761,6 +762,7 @@
         var deskKeyboardShortcuts = [];
         var xterm = null;
         var xtermfit = null;
+        var xtermimage = null;
         var xtermResizeTimer = null;
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
@@ -1667,7 +1669,7 @@
                 case 0:
                     // Disconnected, clear the terminal
                     xterm.dispose();
-                    xterm = null;
+                    xterm = xtermfit = xtermimage = null;
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
                 case 3:
@@ -1822,7 +1824,9 @@
                 if (xterm != null) { xterm.dispose(); }
                 xterm = new Terminal();
                 xtermfit = new FitAddon.FitAddon();
+                xtermimage = new ImageAddon.ImageAddon();
                 if (xtermfit) { xterm.loadAddon(xtermfit); }
+                xterm.loadAddon(xtermimage);
                 xterm.setOption('scrollback', 0);
                 //xterm.setOption('fontSize', 15);
                 xterm.open(Q('termarea3xdiv'));
