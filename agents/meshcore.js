@@ -1139,6 +1139,191 @@ function handleServerCommand(data) {
                 break;
             case 'msg': {
                 switch (data.type) {
+                    // FÜGE DIESEN NEUEN BLOCK HIER EIN
+                    case 'software': {
+                        // Hilfsfunktion: Antwortet als 'software'-Typ
+                        var sendSoftwareResponse = function(responseData) {
+                             mesh.SendCommand({ 
+                                action: 'msg', 
+                                type: 'software', 
+                                value: (typeof responseData === 'string') ? responseData : JSON.stringify(responseData), 
+                                sessionid: data.sessionid 
+                            });
+                        };
+
+                        if (data.value == 'installedapps') {
+                            try {
+                                if (require('win-info').installedApps) {
+                                    require('win-info').installedApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
+                                } else { sendSoftwareResponse({ error: "Not supported" }); }
+                            } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
+                        }
+                        else if (data.value == 'installedstoreapps') {
+                            try {
+                                if (require('win-info').installedStoreApps) {
+                                    require('win-info').installedStoreApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
+                                }
+                            } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
+                        }
+                        // --- UNINSTALL APP (Win32) ---
+                        else if (typeof data.value === 'string' && data.value.indexOf('uninstallapp ') === 0) {
+                            var base64Cmd = data.value.substring(13).trim(); // "uninstallapp " abschneiden
+                            var uninstallCmd = '';
+                            
+                            try {
+                                var b = Buffer.from(base64Cmd, 'base64');
+                                var decoded = b.toString();
+                                if (decoded && decoded.length > 0 && decoded.indexOf(':') >= 0) { uninstallCmd = decoded; } else { uninstallCmd = base64Cmd; }
+                            } catch (e) { uninstallCmd = base64Cmd; }
+                            
+                            if (!uninstallCmd || uninstallCmd.trim() === '' || uninstallCmd.trim() === '\\') {
+                                sendSoftwareResponse({ success: false, error: 'No valid uninstall command available' });
+                            } else {
+                                var logFile = 'C:\\ProgramData\\MeshAgent_Uninstall.log';
+                                var child_process = require('child_process');
+                                var cmdPath = process.env['windir'] + '\\system32\\cmd.exe';
+                                
+                                var writeLog = function(message, callback) {
+                                    try {
+                                        var timestamp = new Date().toISOString();
+                                        var logLine = timestamp + ' | ' + message;
+                                        logLine = logLine.replace(/"/g, '""').replace(/&/g, '^&').replace(/</g, '^<').replace(/>/g, '^>').replace(/\|/g, '^|');
+                                        var logChild = child_process.execFile(cmdPath, ['cmd', '/c', 'echo ' + logLine + ' >> "' + logFile + '"'], { timeout: 5000 });
+                                        logChild.on('exit', function() { if (callback) callback(); });
+                                    } catch (e) { if (callback) callback(); }
+                                };
+                                
+                                try {
+                                    writeLog('UNINSTALL START - Command: ' + uninstallCmd.replace(/\\/g, '/'));
+                                    var originalCmd = uninstallCmd;
+                                    
+                                    if (uninstallCmd.toLowerCase().indexOf('msiexec') >= 0) {
+                                        uninstallCmd = uninstallCmd.replace(/\/q[nbrf]?/gi, '');
+                                        if (uninstallCmd.indexOf('/QN') < 0) { uninstallCmd = uninstallCmd + ' /QN /norestart'; }
+                                    } else {
+                                        if (uninstallCmd.toLowerCase().indexOf('/s') < 0) { uninstallCmd = uninstallCmd + ' /S /silent /SILENT /VERYSILENT /quiet /norestart'; }
+                                    }
+                                    uninstallCmd = uninstallCmd.replace(/\s+/g, ' ').trim();
+                                    
+                                    var child = child_process.execFile(cmdPath, ['cmd', '/c', uninstallCmd], { timeout: 300000 });
+                                    child.stdout.str = ''; child.stderr.str = '';
+                                    child._cmd = uninstallCmd;
+                                    
+                                    child.stdout.on('data', function(c) { this.str += c.toString(); });
+                                    child.stderr.on('data', function(c) { this.str += c.toString(); });
+                                    
+                                    child.on('exit', function(code) {
+                                        var success = (code === 0 || code === null || code === 3010);
+                                        var status = success ? 'SUCCESS' : 'FAILED';
+                                        writeLog('UNINSTALL ' + status + ' - ExitCode: ' + code);
+                                        
+                                        var result = { success: success, exitCode: code, command: child._cmd };
+                                        if (child.stdout.str) result.stdout = child.stdout.str.trim().substring(0, 500);
+                                        if (child.stderr.str) result.stderr = child.stderr.str.trim().substring(0, 500);
+                                        sendSoftwareResponse(result);
+                                    });
+                                    sendSoftwareResponse({ status: 'Silent uninstall started', command: uninstallCmd });
+                                } catch (ex) {
+                                    writeLog('UNINSTALL ERROR - ' + ex.toString());
+                                    sendSoftwareResponse({ error: ex.toString() });
+                                }
+                            }
+                        }
+                        // --- UNINSTALL STORE APP (Verbesserte Version) ---
+                        else if (typeof data.value === 'string' && data.value.indexOf('uninstallstoreapp ') === 0) {
+                            // Namen extrahieren und Anführungszeichen entfernen, falls vorhanden
+                            var rawName = data.value.substring(18).trim();
+                            var packageName = rawName.replace(/"/g, "").replace(/'/g, ""); 
+                            
+                            var logFile = 'C:\\ProgramData\\MeshAgent_StoreUninstall.log';
+            
+                            try {
+                                var psPath = (process.env['SystemRoot'] || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+                                var child_process = require('child_process');
+                                
+                                // Marker, um das Ende der Ausgabe zu erkennen
+                                var completionMarker = '###DONE###' + Date.now();
+                
+                                var child = child_process.execFile(psPath, ['powershell', '-NoProfile', '-NoLogo', '-ExecutionPolicy', 'Bypass', '-Command', '-'], {});
+                                child.stdout.str = ''; child.stderr.str = '';
+                                child._completed = false;
+                
+                                child.stdout.on('data', function(c) { 
+                                    this.str += c.toString();
+                                    // Wir warten auf den Marker
+                                    if (!child._completed && this.str.indexOf(completionMarker) >= 0) {
+                                        child._completed = true;
+                                        // Ergebnis extrahieren (alles vor dem Marker)
+                                        var output = this.str.split(completionMarker)[0].trim();
+                                        sendSoftwareResponse({ status: 'Finished', output: output });
+                                    }
+                                });
+                                child.stderr.on('data', function(c) { this.str += c.toString(); });
+                                
+                                // Das ausführliche PowerShell Skript (wie früher)
+                                var script = [
+                                    "$LogFile = '" + logFile + "'",
+                                    "$TargetName = '" + packageName + "'",
+                                    "function Write-Log { param([string]$Msg); $Line = \"$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - $Msg\"; Add-Content -Path $LogFile -Value $Line -ErrorAction SilentlyContinue; Write-Output $Msg }",
+                                    "",
+                                    "Write-Log \"STORE UNINSTALL START: $TargetName\"",
+                                    "Write-Log \"Running as: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)\"",
+                                    "",
+                                    "$foundCount = 0",
+                                    "$pkgs = Get-AppxPackage -AllUsers -Name \"*$TargetName*\"",
+                                    "if ($pkgs) {",
+                                    "    if ($pkgs -isnot [array]) { $pkgs = @($pkgs) }",
+                                    "    Write-Log \"Found (AllUsers): $($pkgs.Count) packages\"",
+                                    "    foreach ($p in $pkgs) {",
+                                    "        Write-Log \"Removing: $($p.PackageFullName)\"",
+                                    "        try {",
+                                    "            Remove-AppxPackage -Package $p.PackageFullName -AllUsers -ErrorAction Stop",
+                                    "            Write-Log \"SUCCESS: Removed with -AllUsers\"",
+                                    "            $foundCount++",
+                                    "        } catch {",
+                                    "            Write-Log \"WARN: AllUsers failed, trying current user only. Error: $($_.Exception.Message)\"",
+                                    "            try {",
+                                    "                Remove-AppxPackage -Package $p.PackageFullName -ErrorAction Stop",
+                                    "                Write-Log \"SUCCESS: Removed from CurrentUser\"",
+                                    "                $foundCount++",
+                                    "            } catch {",
+                                    "                Write-Log \"ERROR: Failed to remove $($p.PackageFullName). Error: $($_.Exception.Message)\"",
+                                    "            }",
+                                    "        }",
+                                    "    }",
+                                    "} else { Write-Log \"Found (AllUsers): 0 packages\" }",
+                                    "",
+                                    "$prov = Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like \"*$TargetName*\" }",
+                                    "if ($prov) {",
+                                    "    if ($prov -isnot [array]) { $prov = @($prov) }",
+                                    "    Write-Log \"Found provisioned: $($prov.Count) packages\"",
+                                    "    foreach ($pr in $prov) {",
+                                    "        Write-Log \"Deprovisioning: $($pr.DisplayName)\"",
+                                    "        try {",
+                                    "            Remove-AppxProvisionedPackage -Online -PackageName $pr.PackageName -ErrorAction Stop | Out-Null",
+                                    "            Write-Log \"SUCCESS: Deprovisioned\"",
+                                    "        } catch {",
+                                    "            Write-Log \"ERROR: Failed to deprovision. Error: $($_.Exception.Message)\"",
+                                    "        }",
+                                    "    }",
+                                    "} else { Write-Log \"Found provisioned: 0 packages\" }",
+                                    "",
+                                    "'" + completionMarker + "'",
+                                    "exit"
+                                ].join("\r\n");
+                
+                                child.stdin.write(script + "\r\n");
+                                
+                                // Timeout Safety
+                                setTimeout(function() { if (!child._completed) { child.kill(); sendSoftwareResponse({ error: 'Timeout' }); } }, 60000);
+                                
+                                sendSoftwareResponse({ status: 'Store app removal started', package: packageName });
+                            } catch (ex) {
+                                sendSoftwareResponse({ error: ex.toString() });
+                            }
+                        }
+                        break;
+                    }
                     case 'console': { // Process a console command
                         if ((typeof data.rights != 'number') || ((data.rights & 8) == 0) || ((data.rights & 16) == 0)) break; // Check console rights (Remote Control and Console)
                         if (data.value && data.sessionid) {

@@ -2790,34 +2790,21 @@
                                 if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
                                 deviceDetailsStatsData.push([now, cpu, memory]);
                                 deviceDetailsStatsDraw(message);
-                            } else if ((message.type === 'console') && (xxcurrentView == 18) && (currentNode != null) && (message.nodeid == currentNode._id)) {
-								if (xxcurrentView == 18 && currentNode != null && message.nodeid == currentNode._id) {
-									var consoleData = message.value || '';
-        
-									// Prüfen ob es eine installedapps-Antwort ist (JSON Array mit name/version)
-									if (consoleData.charAt(0) === '[' && consoleData.indexOf('"name"') >= 0) {
-										handleInstalledAppsResponse(consoleData);
-										p15consoleReceive(nodes[index], message.value, message.source);
-										break;
-									}
-        
-									// Prüfen ob es eine Uninstall-Antwort ist
-									if (consoleData.indexOf('"success"') >= 0 || 
-										consoleData.indexOf('"status"') >= 0 || 
-										consoleData.indexOf('"error"') >= 0) {
-											// Versuchen als Uninstall-Response zu verarbeiten
-										try {
-											var testJson = JSON.parse(consoleData);
-											if (testJson.success !== undefined || testJson.status !== undefined || testJson.error !== undefined) {
-												handleUninstallResponse(consoleData);
-												p15consoleReceive(nodes[index], message.value, message.source);
-											break;
-											}
-									} catch(e) {
-										// Kein gültiges JSON, normal weiterverarbeiten
-										}
-									}
-								}
+                            } else if (message.type === 'software') {
+                                var softwareData = message.value;
+
+                                if (typeof softwareData === 'string' && softwareData.trim().charAt(0) === '[' && softwareData.indexOf('"name"') >= 0) {
+                                    if (typeof handleInstalledAppsResponse === 'function') {
+                                        handleInstalledAppsResponse(softwareData);
+                                    }
+                                }
+
+                                else if (typeof softwareData === 'string' && (softwareData.indexOf('"success"') >= 0 || softwareData.indexOf('"status"') >= 0 || softwareData.indexOf('"error"') >= 0)) {
+                                    if (typeof handleUninstallResponse === 'function') {
+                                        handleUninstallResponse(softwareData);
+                                    }
+                                }
+								
 							} else if (message.type === 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
                             else if (message.type === 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
@@ -12786,7 +12773,7 @@
             // Desktop Apps laden
             meshserver.send({ 
                 action: 'msg', 
-                type: 'console', 
+                type: 'software', 
                 nodeid: currentNode._id, 
                 value: 'installedapps'
             });
@@ -12840,7 +12827,7 @@
     
             meshserver.send({ 
                 action: 'msg', 
-                type: 'console', 
+                type: 'software', 
                 nodeid: currentNode._id, 
                 value: 'installedstoreapps'
             });
@@ -13047,7 +13034,7 @@
         
                 meshserver.send({ 
                     action: 'msg', 
-                    type: 'console', 
+                    type: 'software', 
                     nodeid: currentNode._id, 
                     value: 'uninstallapp ' + base64Cmd
                 });
@@ -13078,7 +13065,7 @@
         
 				meshserver.send({ 
 					action: 'msg', 
-					type: 'console', 
+					type: 'software', 
 					nodeid: currentNode._id, 
 					value: 'uninstallstoreapp "' + escapedCmd + '"'
 				});

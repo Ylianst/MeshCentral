@@ -1037,24 +1037,46 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
 					
 					// BEGIN SOFTWARE
-					var isSoftwareCmd = (command.type === 'console') && 
-						(command.value === 'installedapps' || 
-						 command.value === 'installedstoreapps' ||
-						(typeof command.value === 'string' && 
-						(command.value.indexOf('uninstallapp ') === 0 || 
-						 command.value.indexOf('uninstallstoreapp ') === 0)));
+                    var isSoftwareCmd = (command.type === 'console') &&
+                        (command.value === 'installedapps' ||
+                        command.value === 'installedstoreapps' ||
+                        (typeof command.value === 'string' &&
+                        (command.value.indexOf('uninstallapp ') === 0 ||
+                        command.value.indexOf('uninstallstoreapp ') === 0)));
 
-
-					// Software-Command needs MESHRIGHT_DEVICEDETAILS instead MESHRIGHT_AGENTCONSOLE
-					if (isSoftwareCommand) {
-						routeCommandToNode(command, 0x00100000, requiredNonRights, func, routingOptions);
-					} else {
-						// Route this command to a target node
-						routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
-					}
-					// END SOFTWARE
-					
-                    
+                    if (isSoftwareCmd) {
+                        // Wir prüfen auf MESHRIGHT_DEVICEDETAILS (0x100000)
+                        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                            var mesh = parent.meshes[node.meshid];
+                            if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_DEVICEDETAILS) != 0)) {
+                                var agent = parent.wsagents[command.nodeid];
+                                if (agent != null) {
+                                    // Wir bauen das Command um
+                                    // WICHTIG: type='software' und sessionid muss gesetzt sein
+                                    var newCommand = {
+                                        action: 'msg',
+                                        type: 'software', // Neuer Typ!
+                                        value: command.value,
+                                        sessionid: ws.sessionId, // Essenziell für den Rückweg
+                                        rights: rights,
+                                        username: user.name,
+                                        remoteaddr: req.clientIp
+                                    };
+                                    
+                                    try { agent.send(JSON.stringify(newCommand)); } catch (ex) { }
+                                    if (func) { func(true); }
+                                } else {
+                                    if (func) { func(false); } // Agent offline
+                                }
+                            } else {
+                                if (func) { func(false); } // Keine Rechte
+                            }
+                        });
+                    } else {
+                        // Standard Routing für Console etc.
+                        routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
+                    }
+                    // END SOFTWARE
                     break;
                 }
             case 'events':
