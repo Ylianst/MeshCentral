@@ -18,6 +18,7 @@ function trimIdentifiers(val)
 {
     for(var v in val)
     {
+        if(typeof val[v] === 'string') val[v] = val[v].trim();
         if (!val[v] || val[v] == 'None' || val[v] == '') { delete val[v]; }
     }
 }
@@ -68,6 +69,7 @@ function linux_identifiers()
     var identifiers = {};
     var ret = {};
     var values = {};
+    var child = null;
 
     if (!require('fs').existsSync('/sys/class/dmi/id')) {         
         if (require('fs').existsSync('/sys/firmware/devicetree/base/model')) {
@@ -76,7 +78,7 @@ function linux_identifiers()
                 identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
                 identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
                 const memorySlots = [];
-                var child = require('child_process').execFile('/bin/sh', ['sh']);
+                child = require('child_process').execFile('/bin/sh', ['sh']);
                 child.stdout.str = ''; child.stdout.on('data', dataHandler);
                 child.stdin.write('vcgencmd get_mem arm && vcgencmd get_mem gpu\nexit\n');
                 child.waitExit();
@@ -119,23 +121,33 @@ function linux_identifiers()
     }
 
     try {
-        identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
-    } catch (ex) { identifiers['bios_mode'] = 'Legacy'; }
+        if ((require('fs')).existsSync('/sys/firmware/efi')) {
+            identifiers['bios_mode'] = 'UEFI';
+        } else if ((require('fs')).existsSync('/sys/firmware/devicetree/base/model')) {
+            const modelContent = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model').trim();
 
-    var child = require('child_process').execFile('/bin/sh', ['sh']);
+            if (modelContent.includes('Raspberry Pi')) {
+                identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)'
+            }
+        } else {
+            identifiers['bios_mode'] = 'Legacy';
+        }
+    } catch (ex) { identifiers['bios_mode'] = 'Legacy / Unknown'; }
+
+    child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
     child.stdin.write('cat /proc/cpuinfo | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
     child.waitExit();
-    identifiers['cpu_name'] = child.stdout.str.trim();
-    if (identifiers['cpu_name'] == "") { // CPU BLANK, check lscpu instead
-        child = require('child_process').execFile('/bin/sh', ['sh']);
-        child.stdout.str = ''; child.stdout.on('data', dataHandler);
-        child.stdin.write('lscpu | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
-        child.waitExit();
+    try {
         identifiers['cpu_name'] = child.stdout.str.trim();
-    }
-    child = null;
-
+        if (identifiers['cpu_name'] == "") { // CPU BLANK, check lscpu instead
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', dataHandler);
+            child.stdin.write('lscpu | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
+            child.waitExit();
+            try { identifiers['cpu_name'] = child.stdout.str.trim(); } catch (xx) { }
+        }
+    } catch (xx) { }
 
     // Fetch GPU info
     child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -143,7 +155,6 @@ function linux_identifiers()
     child.stdin.write("lspci | grep ' VGA ' | tr '\\n' '`' | awk '{ a=split($0,lines" + ',"`"); printf "["; for(i=1;i<a;++i) { split(lines[i],gpu,"r: "); printf "%s\\"%s\\"", (i==1?"":","),gpu[2]; } printf "]"; }\'\nexit\n');
     child.waitExit();
     try { identifiers['gpu_name'] = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
-    child = null;
 
     // Fetch Storage Info
     child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -151,7 +162,6 @@ function linux_identifiers()
     child.stdin.write("lshw -class disk -disable network | tr '\\n' '`' | awk '" + '{ len=split($0,lines,"*"); printf "["; for(i=2;i<=len;++i) { model=""; caption=""; size=""; clen=split(lines[i],item,"`"); for(j=2;j<clen;++j) { split(item[j],tokens,":"); split(tokens[1],key," "); if(key[1]=="description") { caption=substr(tokens[2],2); } if(key[1]=="product") { model=substr(tokens[2],2); } if(key[1]=="size") { size=substr(tokens[2],2);  } } if(model=="") { model=caption; } if(caption!="" || model!="") { printf "%s{\\"Caption\\":\\"%s\\",\\"Model\\":\\"%s\\",\\"Size\\":\\"%s\\"}",(i==2?"":","),caption,model,size; }  } printf "]"; }\'\nexit\n');
     child.waitExit();
     try { identifiers['storage_devices'] = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
-    child = null;
 
     // Fetch storage volumes using df
     child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -159,7 +169,6 @@ function linux_identifiers()
     child.stdin.write('df -T -x tmpfs -x devtmpfs -x efivarfs | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
     child.waitExit();
     try { ret.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
-    child = null;
 
     values.identifiers = identifiers;
     values.linux = ret;
@@ -427,7 +436,7 @@ function linux_identifiers()
                     "RemainingCapacity": toMilli(thedata.energy_now),
                     "Voltage": toMilli(thedata.voltage_now),
                     "Health": (thedata.energy_full && thedata.energy_full_design ? Math.floor((thedata.energy_full / thedata.energy_full_design) * 100) : 0),
-                    "BatteryCharge": (thedata.energy_now && thedata.energy_full ? Math.floor((thedata.energy_now / thedata.energy_full) * 100) : 0)
+                    "BatteryCharge": (thedata.energy_now && thedata.energy_full ? Math.floor((thedata.energy_now / thedata.energy_full) * 100) : (thedata.capacity ? thedata.capacity : 0))
                 };
                 values.battery.push(batteryJson);
             }
@@ -497,8 +506,16 @@ function windows_identifiers()
     if(values[0]){
         ret['identifiers']['product_uuid'] = values[0]['UUID'];
         ret['identifiers']['product_name'] = values[0]['Name'];
-        trimIdentifiers(ret.identifiers);
     }
+
+    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_SystemEnclosure", ['SerialNumber', 'SMBIOSAssetTag', 'Manufacturer']);
+    if(values[0]){
+        ret['identifiers']['chassis_serial'] = values[0]['SerialNumber'];
+        ret['identifiers']['chassis_assettag'] = values[0]['SMBIOSAssetTag'];
+        ret['identifiers']['chassis_manufacturer'] = values[0]['Manufacturer'];
+    }
+
+    trimIdentifiers(ret.identifiers);
 
     values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_PhysicalMemory");
     if(values[0]){

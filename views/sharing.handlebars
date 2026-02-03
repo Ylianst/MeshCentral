@@ -27,6 +27,7 @@
     <script type="text/javascript" src="scripts/amt-terminal-0.0.2{{min}}.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
     {{{customJSTags}}}
     <title>{{{title}}}</title>
@@ -330,6 +331,7 @@
         var terminal = null;
         var xterm = null;
         var xtermfit = null;
+        var xtermimage = null;
         var xtermResizeTimer = null;
 
         // Files
@@ -1393,7 +1395,7 @@
                         xterminal.m.TermDraw();
                     } else {
                         xterm.dispose();
-                        xterm = xtermfit = null;
+                        xterm = xtermfit = xtermimage = null;
                     }
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
@@ -1488,8 +1490,10 @@
                 // Setup the terminal with auto-fit
                 if (xterm != null) { xterm.dispose(); }
                 xtermfit = new FitAddon.FitAddon();
+                xtermimage = new ImageAddon.ImageAddon();
                 xterm = new Terminal();
                 if (xtermfit) { xterm.loadAddon(xtermfit); }
+                xterm.loadAddon(xtermimage);
                 xterm.open(Q('termarea3xdiv')); // termarea3x
                 xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
                 if (xtermfit) { xtermfit.fit(); }
@@ -1762,9 +1766,10 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                shortname = name;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
-                name = EscapeHtml(name);
+                // shortname = name;
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -1781,7 +1786,7 @@
                 var h = '';
                 if (f.t < 3) {
                     var right = '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     if (f.s > 0) {
@@ -1793,7 +1798,7 @@
                         //link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -2350,17 +2355,12 @@
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
 
-        // Webkit seems to have a problem with "download" tag causing "network error", but openning the download in a hidden frame fixes it.
-        // So we do that for all browsers except FireFox
         function downloadFile(link, name, closeDialog) {
-            var element = document.createElement('a');
-            element.setAttribute('href', link);
-            element.setAttribute('rel', 'noreferrer noopener');
-            element.setAttribute('target', 'fileDownloadFrame');
-            if (navigator.userAgent.indexOf('Firefox') >= 0) { element.setAttribute('download', decodeURIComponent(name ? name : '')); }
+            var element = document.createElement('iframe');
+            element.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            element.src = link;
             document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
         }
 

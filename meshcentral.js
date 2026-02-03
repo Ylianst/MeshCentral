@@ -2051,7 +2051,7 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     // Setup monitoring
-                    obj.monitoring = require('./monitoring.js').CreateMonitoring(obj, obj.args);
+                    if (obj.config.settings.prometheus != null) { obj.monitoring = require('./monitoring.js').CreateMonitoring(obj, obj.args); }
 
                     // Start periodic maintenance
                     obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour

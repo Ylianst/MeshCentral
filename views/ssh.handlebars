@@ -17,6 +17,7 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{min}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-min.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit-min.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image-min.js"></script>
     {{{customJSTags}}}
     <title>SSH</title>
 </head>
@@ -71,6 +72,7 @@
         var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         var term = null;
         var termfit = null;
+        var termimage = null;
         var resizeTimer = null;
         var urlargs = parseUriArgs();
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
@@ -103,8 +105,10 @@
             // Setup the terminal with auto-fit
             if (term != null) { term.dispose(); }
             if (urlargs.fixsize != 1) { termfit = new FitAddon.FitAddon(); }
+            termimage = new ImageAddon.ImageAddon();
             term = new Terminal();
             if (termfit) { term.loadAddon(termfit); }
+            term.loadAddon(termimage);
             term.open(Q('terminal'));
             term.onData(function (data) { if (state == 3) { socket.send('~' + data); } });
             if (termfit) { termfit.fit(); }

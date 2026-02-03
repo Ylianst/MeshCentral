@@ -515,14 +515,11 @@
         function escapeHtmlBreaks(string) { return String(string).replace(/[&<>"'`=\/]/g, function (s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;', '\r': '<br />', '\n': '' }[s]; }); };
         function addHtmlValue(t, v) { return '<table><td style=width:120px>' + t + '<td><b>' + v + '</b></table>'; }     
         function downloadFile(link, name, closeDialog) {
-            var element = document.createElement('a');
-            element.setAttribute('href', link);
-            element.setAttribute('rel', 'noreferrer noopener');
-            element.setAttribute('target', 'fileDownloadFrame');
-            element.setAttribute('download', decodeURIComponent(name?name:''));
+            var element = document.createElement('iframe');
+            element.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            element.src = link;
             document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
         }
         function copyAgentUrl(url,addflag) {

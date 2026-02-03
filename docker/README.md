@@ -52,6 +52,8 @@ Below is a breakdown of environment variables used in this setup.
 | ALLOWED_ORIGIN | false | Enables/disables allowed origin policy. |
 | ARGS | "" | Additional arguments for MeshCentral. |
 | HOSTNAME | localhost | Specifies the hostname. |
+| PORT | 443 | Specifies the port. |
+| REDIR_PORT | 80 | Specifies the redirection port. |
 | IFRAME | false | Enables/disables embedding in an iframe. |
 | LOCAL_SESSION_RECORDING | true | Enables session recording. |
 | MINIFY | true | Minifies the JavaScript and HTML output. |
@@ -149,6 +151,8 @@ ALLOW_NEW_ACCOUNTS=false
 ALLOWED_ORIGIN=false
 ARGS=
 HOSTNAME=localhost
+PORT=443
+REDIR_PORT=80
 IFRAME=false
 LOCAL_SESSION_RECORDING=true
 MINIFY=true
