@@ -17,6 +17,7 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{min}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-min.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit-min.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image-min.js"></script>
     {{{customJSTags}}}
     <title>{{{name}}}</title>
 </head>
@@ -85,6 +86,7 @@
         var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         var term = null;
         var termfit = null;
+        var termimage = null;
         var tunnel = null;
         var domain = '{{{domain}}}';
         var domainUrl = '{{{domainurl}}}';
@@ -158,8 +160,10 @@
                 // Setup the terminal with auto-fit
                 if (term != null) { term.dispose(); }
                 if (args.fixsize != 1) { termfit = new FitAddon.FitAddon(); }
+                termimage = new ImageAddon.ImageAddon();
                 term = new Terminal();
                 if (termfit) { term.loadAddon(termfit); }
+                term.loadAddon(termimage);
                 term.open(Q('terminal'));
                 term.onData(function (data) { if (tunnel != null) { tunnel.sendText(data); } })
                 if (termfit) { termfit.fit(); }
@@ -201,7 +205,7 @@
                 case 0:
                     // Disconnected, clear the terminal
                     term.dispose();
-                    term = termfit = tunnel = null;
+                    term = termfit = termimage = tunnel = null;
                     break;
                 case 3:
                     // Connected

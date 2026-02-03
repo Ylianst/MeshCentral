@@ -21,6 +21,7 @@
     <script type="text/javascript" src="scripts/zlib-crc32{{min}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-min.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit-min.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image-min.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/webm-writer.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
     {{{customJSTags}}}
@@ -124,6 +125,7 @@
         var domainUrl = '{{{domainurl}}}';
         var urlargs;
         var term = null;
+        var termimage = null;
 
         // Streaming values
         var ws = null;
@@ -1101,14 +1103,16 @@
         function setupXTerm() {
             // Setup the terminal
             if (term != null) { term.dispose(); }
+            termimage = new ImageAddon.ImageAddon();
             term = new Terminal();
+            term.loadAddon(termimage);
             term.open(Q('XTermParent'));
             term.resize(80, 25);
             //term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
         }
 
         function clearXTerm() {
-            if (term != null) { term.dispose(); term = null; }
+            if (term != null) { term.dispose(); term = termimage = null; }
         }
 
         function writeXTerm(data) {

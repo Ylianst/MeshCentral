@@ -39,6 +39,7 @@
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/flatpickr.js"></script>
     <script type="text/javascript" src="mstsc/mstsc.js"></script>
     <script type="text/javascript" src="mstsc/keyboard.js"></script>
@@ -2115,6 +2116,7 @@
         try { userViewSettings = JSON.parse(getstore('_usersViewSettings', '{}')); } catch (ex) { }
         var xterm = null;
         var xtermfit = null;
+        var xtermimage = null;
         var xtermResizeTimer = null;
         var miscState = {};
         var checkedNodeids = {};
@@ -11754,7 +11756,7 @@
                         try { xterminal.m.TermResetScreen(); xterminal.m.TermDraw(); } catch (ex) { }
                     } else {
                         xterm.dispose();
-                        xterm = xtermfit = null;
+                        xterm = xtermfit = xtermimage = null;
                     }
                     if (xterminal != null) { xterminal.Stop(); terminal = null; }
                     break;
@@ -11993,8 +11995,10 @@
                         // Setup the terminal with auto-fit
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
+                        xtermimage = new ImageAddon.ImageAddon();
                         xterm = new Terminal();
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
+                        xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
                         xterm.onData(function (data) { if (terminal != null) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } } })
                         if (xtermfit) { xtermfit.fit(); }
