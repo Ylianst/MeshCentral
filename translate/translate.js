@@ -103,6 +103,7 @@ var minifyMeshCentralSourceFiles = [
     "../public/scripts/meshcentral.js",
     "../public/scripts/u2f-api.js",
     "../public/scripts/xterm-addon-fit.js",
+    "../public/scripts/xterm-addon-image.js",
     "../public/scripts/xterm.js",
     "../public/scripts/zlib-adler32.js",
     "../public/scripts/zlib-crc32.js",

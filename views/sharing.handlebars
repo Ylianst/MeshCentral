@@ -27,6 +27,7 @@
     <script type="text/javascript" src="scripts/amt-terminal-0.0.2{{min}}.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
     {{{customJSTags}}}
     <title>{{{title}}}</title>
@@ -330,6 +331,7 @@
         var terminal = null;
         var xterm = null;
         var xtermfit = null;
+        var xtermimage = null;
         var xtermResizeTimer = null;
 
         // Files
@@ -1393,7 +1395,7 @@
                         xterminal.m.TermDraw();
                     } else {
                         xterm.dispose();
-                        xterm = xtermfit = null;
+                        xterm = xtermfit = xtermimage = null;
                     }
                     if (terminal != null) { terminal.Stop(); terminal = null; }
                     break;
@@ -1488,8 +1490,10 @@
                 // Setup the terminal with auto-fit
                 if (xterm != null) { xterm.dispose(); }
                 xtermfit = new FitAddon.FitAddon();
+                xtermimage = new ImageAddon.ImageAddon();
                 xterm = new Terminal();
                 if (xtermfit) { xterm.loadAddon(xtermfit); }
+                xterm.loadAddon(xtermimage);
                 xterm.open(Q('termarea3xdiv')); // termarea3x
                 xterm.onData(function (data) { if (terminal != null) { terminal.sendText(data); } })
                 if (xtermfit) { xtermfit.fit(); }
