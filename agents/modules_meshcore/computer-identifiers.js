@@ -137,7 +137,7 @@ function linux_identifiers()
             var modelBuffer = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model');
             var modelString = modelBuffer.toString().trim()
 
-             if (modelString.includes('Raspberry Pi')) {
+            if (modelString.includes('Raspberry Pi')) {
                 identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)';
             }
         } else {
