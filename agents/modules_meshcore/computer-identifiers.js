@@ -120,19 +120,30 @@ function linux_identifiers()
         identifiers['product_name'] = ret['product_name'];
     }
 
+    // Identify the Linux boot mode
     try {
-        if ((require('fs')).existsSync('/sys/firmware/efi')) {
+        let uefiExist = false;
+        let isRaspberryPi = false;
+
+        try { uefiExist = (require('fs')).existsSync('/sys/firmware/efi'); }
+        catch { uefiExist = false }
+
+        try { isRaspberryPi = (require('fs')).existsSync('/sys/firmware/devicetree/base/model'); }
+        catch { isRaspberryPi = false }
+
+        // Go through the logic: UEFI? No -> Raspberry? No -> Assume BIOS. While catching if anything fails internally to Legacy / Unknown.
+        if (uefiExist) {
             identifiers['bios_mode'] = 'UEFI';
-        } else if ((require('fs')).existsSync('/sys/firmware/devicetree/base/model')) {
+        } else if (isRaspberryPi) {
             const modelContent = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model').trim();
 
-            if (modelContent.includes('Raspberry Pi')) {
-                identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)'
+             if (modelContent.includes('Raspberry Pi')) {
+                identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)';
             }
         } else {
             identifiers['bios_mode'] = 'Legacy';
         }
-    } catch (ex) { identifiers['bios_mode'] = 'Legacy / Unknown'; }
+    } catch { identifiers['bios_mode'] = 'Legacy / Unknown'; }
 
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
