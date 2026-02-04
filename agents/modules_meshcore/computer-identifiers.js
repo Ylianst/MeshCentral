@@ -120,29 +120,32 @@ function linux_identifiers()
         identifiers['product_name'] = ret['product_name'];
     }
 
+    // BIOS Mode
     try {
         var uefiExist = false;
-        var isRaspberryPi = false;
+        var assumePi = false;
 
         try { uefiExist = (require('fs')).existsSync('/sys/firmware/efi'); }
-        catch { uefiExist = false }
+        catch (ex) { uefiExist = false; }
 
-        try { isRaspberryPi = (require('fs')).existsSync('/sys/firmware/devicetree/base/model'); }
-        catch { isRaspberryPi = false }
+        try { assumePi = (require('fs')).existsSync('/sys/firmware/devicetree/base/model'); }
+        catch (ex) { assumePi = false; }
 
         if (uefiExist) {
             identifiers['bios_mode'] = 'UEFI';
-        } else if (isRaspberryPi) {
-            var modelContent = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model', 'utf8').trim();
+        } else if (assumePi) {
+            var modelBuffer = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model');
+            var modelString = modelBuffer.toString().trim()
 
-             if (modelContent.includes('Raspberry Pi')) {
+             if (modelString.includes('Raspberry Pi')) {
                 identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)';
             }
         } else {
-            identifiers['bios_mode'] = 'Legacy';
+            identifiers['bios_mode'] = 'Legacy BIOS (MBR)';
         }
-    } catch { identifiers['bios_mode'] = 'Legacy / Unknown'; }
+    } catch (ex) { identifiers['bios_mode'] = 'Legacy / Unknown'; }
 
+    // CPU Model info
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
     child.stdin.write('cat /proc/cpuinfo | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
