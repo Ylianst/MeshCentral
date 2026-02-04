@@ -120,10 +120,9 @@ function linux_identifiers()
         identifiers['product_name'] = ret['product_name'];
     }
 
-    // Identify the Linux boot mode
     try {
-        let uefiExist = false;
-        let isRaspberryPi = false;
+        var uefiExist = false;
+        var isRaspberryPi = false;
 
         try { uefiExist = (require('fs')).existsSync('/sys/firmware/efi'); }
         catch { uefiExist = false }
@@ -131,11 +130,10 @@ function linux_identifiers()
         try { isRaspberryPi = (require('fs')).existsSync('/sys/firmware/devicetree/base/model'); }
         catch { isRaspberryPi = false }
 
-        // Go through the logic: UEFI? No -> Raspberry? No -> Assume BIOS. While catching if anything fails internally to Legacy / Unknown.
         if (uefiExist) {
             identifiers['bios_mode'] = 'UEFI';
         } else if (isRaspberryPi) {
-            const modelContent = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model').trim();
+            var modelContent = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model', 'utf8').trim();
 
              if (modelContent.includes('Raspberry Pi')) {
                 identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)';
