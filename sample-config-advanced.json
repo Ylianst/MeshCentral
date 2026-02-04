@@ -50,6 +50,7 @@
     "_allowLoginToken": true,
     "_StrictTransportSecurity": true,
     "_allowFraming": true,
+    "_allowedFramingOrigins": ["https://rmm.example.com"],
     "_cookieIpCheck": false,
     "_cookieEncoding": "hex",
     "_webRTC": false,

@@ -454,6 +454,17 @@
           "default": false,
           "description": "When enabled, the MeshCentral web site can be embedded within another website's iframe."
         },
+        "allowedFramingOrigins": {
+          "type": [
+            "array",
+            "string"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "default": null,
+          "description": "List of origins allowed to embed MeshCentral in an iframe. Uses Content-Security-Policy frame-ancestors. 'self' is always included. Example: [\"https://rmm.example.com\"]. Comma-separated string also supported."
+        },
         "cookieIpCheck": {
           "type": [
             "string",
@@ -2922,6 +2933,17 @@
               "id",
               "secret"
             ]
+          },
+          "allowedFramingOrigins": {
+            "type": [
+              "array",
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "default": null,
+            "description": "Per-domain override. List of origins allowed to embed this domain in an iframe. Uses Content-Security-Policy frame-ancestors. Overrides settings.allowedFramingOrigins when set."
           },
           "httpHeaders": {
             "type": "object",
