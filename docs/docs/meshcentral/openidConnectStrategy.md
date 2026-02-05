@@ -284,9 +284,12 @@ There are many available options you can configure but most of them go unused. A
             "description": "URI your IdP sends you after successful authorization. This must match what is listed with your IdP. (Default is https://[currentHost][currentPath]/auth-oidc-callback)"
         },
         "post_logout_redirect_uri": {
-            "type": "string",
+            "type": [
+                "string",
+                "boolean"
+            ],
             "format": "uri",
-            "description": "URI for your IdP to send you after logging out of IdP via MeshCentral.",
+            "description": "URI for your IdP to send you after logging out of IdP via MeshCentral OR set to false to not send a post logout redirect_uri"
             "default": "https:[currentHost][currentPath]/login"
         },
         "id_token_signed_response_alg": { "type": "string", "default": "RS256" },

@@ -874,7 +874,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof domain.authstrategies.oidc.logouturl == 'string') {
                     logouturl = domain.authstrategies.oidc.logouturl;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
-                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + '?post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
+                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + (domain.authstrategies.oidc.issuer.end_session_endpoint.indexOf('?') == -1 ? '?' : '&') + 'post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
                     logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint;
                 }
@@ -8036,7 +8036,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (!strategy.client.redirect_uri) {
                 strategy.client.redirect_uri = origin + url + 'auth-oidc-callback';
             }
-            if (!strategy.client.post_logout_redirect_uri) {
+            if (!strategy.client.post_logout_redirect_uri && strategy.client.post_logout_redirect_uri !== false) {
                 strategy.client.post_logout_redirect_uri = origin + url + 'login';
             }
 
@@ -8177,12 +8177,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     user.groups = profile && obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
                 }
 
-                // Setup end session enpoint if not already configured this requires an auth token
+                // Setup end session endpoint
                 try {
-                    if (!strategy.issuer.end_session_endpoint) {
-                        strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
-                        parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
-                    }
+                    strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
+                    parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
                 } catch (err) {
                     let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
                     strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
