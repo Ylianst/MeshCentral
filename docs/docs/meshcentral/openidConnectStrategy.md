@@ -341,8 +341,9 @@ These are all the options that dont fit with the issuer or client, including the
 
 | Name     | Description                                      | Default                                                   | Example                             | Required |
 | -------- | ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------- | -------- |
-| `scope`  | A list of scopes to request from the issuer.     | `"openid profile email"`                                  | `["openid", "profile"]`             | `false`  |
-| `claims` | A group of claims to use instead of the defaults | Defauts to name of property except that `uuid` used `sub` | `"claims": {"uuid": "unique_name"}` | `false`  |
+| `scope`      | A list of scopes to request from the issuer.     | `"openid profile email"`                                  | `["openid", "profile"]`             | `false`  |
+| `claims`     | A group of claims to use instead of the defaults | Defaults to name of property except that `uuid` used `sub` | `"claims": {"uuid": "unique_name"}` | `false`  |
+| `buttonText` | Custom text for the OIDC login button (tooltip/title). | `Sign-in using OpenID Connect`                             | `"buttonText": "Sign in with Custom SSO"` | `false` |
 
 #### *Advanced Config Example*
 
@@ -353,7 +354,8 @@ These are all the options that dont fit with the issuer or client, including the
     "claims": {
         "name": "nameOfUser",
         "email": "publicEmail"
-    }
+    },
+    "buttonText": "Login to Custom SSO Brand"
 },
 ```
 
@@ -384,11 +386,50 @@ As should be apparent by the name alone, the custom property does not need to be
         },
         "preset": { "type": "string", "enum": ["azure", "google"]},
         "tenant_id": { "type": "string", "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"},
-        "customer_id": { "type": "string", "description": "REQUIRED FOR GOOGLE PRESET IF USING GROUPS: Customer ID from Google, should start with 'C'."}
+        "customer_id": { "type": "string", "description": "REQUIRED FOR GOOGLE PRESET IF USING GROUPS: Customer ID from Google, should start with 'C'."},
+        "buttonText": { "type": "string", "description": "Custom text for the OIDC login button. Default: 'Sign-in using OpenID Connect'."}
     },
     "additionalProperties": false
 },
 ```
+
+#### *Custom Login Button*
+
+MeshCentral allows customizing the tooltip/label text shown on OpenID Connect login buttons via the `authStrategies.oidc.custom` object. These settings are optional and can be defined per-domain and are part of the `custom` object described above.
+
+| Preset | Default button text |
+| --- | --- |
+| Generic (no preset) | `Sign in using OpenID Connect` |
+| Google preset | `Sign in with Google using OpenID Connect` |
+| Azure preset | `Sign in with Azure using OpenID Connect` |
+
+Example:
+
+```json
+"authStrategies": {
+    "oidc": {
+        "custom": {
+            "buttonText": "Sign in with Custom SSO"
+        }
+    }
+}
+```
+
+These properties only affect the login page UI (button tooltip/title) and are safe to set for branding or clarity.
+
+#### *Custom Icon*
+
+To use a custom icon for the OIDC login button (part of whitelabeling), create `meshcentral-web/public/images/login` in the MeshCentral installation root and copy the original icons from `node_modules/meshcentral/public/images/login` into it. Replace the files for the icon you want to change while keeping the same filenames and sizes:
+
+| Icon | Filenames | Size / Notes |
+| --- | --- | --- |
+| Generic OIDC | `oidc32.png`, `oidc64.png` | 32x32, 64x64 (@2x) |
+| Google preset | `google32.png`, `google64.png` | 32x32, 64x64 (@2x) |
+| Azure preset | `azure32.png`, `azure64.png` | 32x32, 64x64 (@2x) |
+
+Keep the same filenames and pixel dimensions so the UI picks them up automatically. For full whitelabeling guidance see the Web Branding section: [customization.md](customization.md#customizing-web-icons).
+
+After replacing the files, restart MeshCentral (or perform a hard browser refresh) to see the new icons.
 
 ### "Groups" Options
 
@@ -512,7 +553,8 @@ If you notice above I forgot to add any preset related configs, however because 
     },
     "custom": {
         "preset": "google",
-        "customer_id": "C46kyhmps"
+        "customer_id": "C46kyhmps",
+        "buttonText": "Custom Button Text"
     },
     "groups": {
         "siteadmin": ["GroupA", "GroupB"],

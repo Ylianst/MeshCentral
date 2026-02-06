@@ -3500,6 +3500,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Render the login page
+        // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
+        if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
+            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttonText)) {
+                oidcButtonText = domain.authstrategies.oidc.custom.buttonText
+            } else if (obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
+                switch(domain.authstrategies.oidc.custom.preset) {
+                    case 'azure':
+                        oidcButtonText = "Sign in with Azure using OpenID Connect";
+                        break;
+                    case 'google':
+                        oidcButtonText = "Sign in with Google using OpenID Connect";
+                        break;
+                    default:
+                        oidcButtonText = "Sign in using OpenID Connect";
+                }
+            } else {
+                oidcButtonText = "Sign in using OpenID Connect"
+            }
+        }
         render(req, res,
             getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
@@ -3551,6 +3570,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 autofido: autofido,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
+                oidcButtonText: oidcButtonText || 'Sign-in using OpenID Connect',
                 loginpicture: (typeof domain.loginpicture == 'string'),
                 tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,

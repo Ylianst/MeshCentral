@@ -3926,6 +3926,10 @@
                           "google"
                         ]
                       },
+                      "buttonText": {
+                        "type": "string",
+                        "description": "Custom text for the OIDC login buttons shown on the login page. Applies to generic and preset buttons."
+                      },
                       "tenant_id": {
                         "type": "string",
                         "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"
