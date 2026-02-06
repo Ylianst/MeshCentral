@@ -399,6 +399,7 @@ body {
     width: 100px;
     height: 24px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .nonenglish .topbar_td {
