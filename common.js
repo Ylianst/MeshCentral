@@ -17,6 +17,8 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
+const net = require('net');
+const { URL } = require('url');
 
 // Binary encoding and decoding functions
 module.exports.ReadShort = function (v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); };
@@ -215,6 +217,293 @@ module.exports.validateEmailDomain = function(email, allowedDomains) {
     }
 
     return true;
+}
+// IP helper functions (defined as module exports like other helpers in this file)
+module.exports.isIPv4Private = function (ip) {
+    const parts = String(ip).split('.').map((p) => parseInt(p, 10));
+    if (parts.length !== 4 || parts.some((p) => isNaN(p) || p < 0 || p > 255)) return true;
+    const [a, b, c, d] = parts;
+    // 10.0.0.0/8
+    if (a === 10) return true;
+    // 127.0.0.0/8 loopback
+    if (a === 127) return true;
+    // 169.254.0.0/16 link-local
+    if (a === 169 && b === 254) return true;
+    // 172.16.0.0/12
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    // 192.168.0.0/16
+    if (a === 192 && b === 168) return true;
+    // 100.64.0.0/10 Carrier-grade NAT
+    if (a === 100 && b >= 64 && b <= 127) return true;
+    // Block multicast (224.0.0.0/4) and reserved addresses
+    if (a >= 224) return true;
+    // Block 0.0.0.0/8
+    if (a === 0) return true;
+    // Explicitly block cloud metadata IP commonly abused
+    if (a === 169 && b === 254 && c === 169 && d === 254) return true;
+    return false;
+}
+
+module.exports.isIPv6Private = function (ip) {
+    // Normalize to lowercase and remove zone index if present (e.g., %eth0)
+    if (!ip) return true;
+    let s = String(ip).toLowerCase();
+    const pct = s.indexOf('%');
+    if (pct !== -1) s = s.substring(0, pct);
+    // Detect IPv4-mapped IPv6 addresses like ::ffff:127.0.0.1 and validate the embedded IPv4
+    if (s.startsWith('::ffff:')) {
+        const embedded = s.substring('::ffff:'.length);
+        // If the embedded part is dotted IPv4, validate it using the IPv4 helper
+        if (embedded.indexOf('.') !== -1) {
+            return module.exports.isIPv4Private(embedded);
+        }
+        // For non-dotted forms (hex), be conservative and treat as private
+        return true;
+    }
+    // ::1 loopback
+    if (s === '::1') return true;
+    // unspecified
+    if (s === '::') return true;
+    // Unique local addresses fc00::/7 (fc or fd)
+    if (s.startsWith('fc') || s.startsWith('fd')) return true;
+    // Link-local fe80::/10 -> any address starting with fe8, fe9, fea, feb
+    if (/^fe[89ab]/i.test(s)) return true;
+    // Multicast ff00::/8
+    if (s.startsWith('ff')) return true;
+    return false;
+}
+
+module.exports.isPrivateIp = function (ip) {
+    const type = net.isIP(String(ip));
+    if (type === 4) return module.exports.isIPv4Private(ip);
+    if (type === 6) return module.exports.isIPv6Private(ip);
+    // If not an IP literal, we don't know here — treat as hostname and apply hostname checks below
+    return false;
+}
+
+// Validate a URL and optionally restrict allowed schemes (default: http, https)
+module.exports.validateUrl = function (url, allowedSchemes) {
+    if (!module.exports.validateString(url, 1, 4096)) return false;
+    try {
+        const u = new URL(url);
+        var scheme = u.protocol;
+        if (scheme && scheme.endsWith(':')) scheme = scheme.substring(0, scheme.length - 1);
+        scheme = scheme.toLowerCase();
+
+        // Reject URLs with embedded credentials to avoid leaking secrets
+        // via logs, proxies, or redirect chains. Embedded credentials
+        // appear in the authority as user:pass@host and should not be
+        // allowed for server-side fetches.
+        if (u.username || u.password) return false;
+
+        if (allowedSchemes == null) allowedSchemes = ['http', 'https'];
+        else if (typeof allowedSchemes === 'string') allowedSchemes = [allowedSchemes];
+        if (!Array.isArray(allowedSchemes)) return false;
+
+        var ok = false;
+        for (var i in allowedSchemes) { if (String(allowedSchemes[i]).toLowerCase() === scheme) { ok = true; break; } }
+        if (!ok) return false;
+
+        // Must have a valid hostname
+        if (!u.hostname || u.hostname.length === 0) return false;
+        const hostname = u.hostname.toLowerCase();
+
+        // Disallow obvious local names
+        if (hostname === 'localhost') return false;
+        if (hostname.endsWith('.local')) return false;
+
+        // Basic IP/hostname checks are performed by module-scoped helpers (`isPrivateIp`) to mitigate SSRF without DNS lookups.
+
+        // If hostname is an IP literal, reject private/reserved addresses.
+        if (net.isIP(hostname)) {
+            if (module.exports.isPrivateIp(hostname)) return false;
+            return true;
+        }
+
+        // For hostnames that are not IP literals, disallow single-label hostnames (no dot)
+        // as they often resolve to internal names via local DNS. This is a conservative protection.
+        if (hostname.indexOf('.') === -1) return false;
+
+        // Passed basic checks
+        return true;
+    } catch (ex) {
+        // Avoid noisy logging and leaking full exception details in production.
+        if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production') {
+            console.error('validateUrl exception: ' + (ex && ex.message ? ex.message : ex));
+        }
+        return false;
+    }
+}
+
+// Validate a remote image URL by checking headers and magic bytes (PNG/JPEG/GIF/WEBP)
+// Returns a Promise<boolean> that always resolves to true (valid image) or false (invalid/error) and never rejects.
+module.exports.validateRemoteImage = function (url, options) {
+    options = options || {};
+    const timeoutMs = (typeof options.timeoutMs === 'number') ? options.timeoutMs : 5000;
+    const maxHeadBytes = (typeof options.maxHeadBytes === 'number') ? options.maxHeadBytes : 16384; // 16 KB
+    const maxContentLength = (typeof options.maxContentLength === 'number') ? options.maxContentLength : (5 * 1024 * 1024); // 5 MB
+    const allowedMimes = options.allowedMimes || ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    // This function MUST always resolve to boolean true/false and never reject.
+    return new Promise((resolve) => {
+        try {
+            if (!module.exports.validateUrl(url, ['http', 'https'])) return resolve(false);
+
+            const http = require('http');
+            const https = require('https');
+            const { URL } = require('url');
+
+            function doRequest(method, reqUrl, headers, redirectsLeft, cb) {
+                try {
+                    const u = new URL(reqUrl);
+                    const lib = (u.protocol === 'https:') ? https : http;
+                    const reqOpts = { method: method, headers: headers || {}, timeout: timeoutMs };
+                    const req = lib.request(u, reqOpts, (res) => {
+                        // Follow redirects (3xx)
+                        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
+                            res.resume();
+                            const redirectUrl = new URL(res.headers.location, u).toString();
+                            // Re-validate each redirect target to prevent SSRF via redirects
+                            if (!module.exports.validateUrl(redirectUrl, ['http', 'https'])) {
+                                return cb(new Error('Invalid redirect URL'));
+                            }
+                            return doRequest(method, redirectUrl, headers, redirectsLeft - 1, cb);
+                        }
+                        cb(null, res, u.toString());
+                    });
+                    req.on('error', (e) => cb(e));
+                    req.on('timeout', () => { req.destroy(new Error('timeout')); });
+                    req.end();
+                } catch (ex) { cb(ex); }
+            }
+
+            // Centralized magic-byte detector
+            function detectBuffer(b) {
+                if (!b || b.length < 4) return null;
+                // PNG
+                if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47 && b[4] === 0x0D && b[5] === 0x0A && b[6] === 0x1A && b[7] === 0x0A) return { mime: 'image/png', ext: 'png' };
+                // JPEG
+                if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return { mime: 'image/jpeg', ext: 'jpg' };
+                // GIF
+                if (b.length >= 6 && b.slice(0, 3).toString('ascii') === 'GIF') return { mime: 'image/gif', ext: 'gif' };
+                // WEBP (RIFF....WEBP)
+                if (b.length >= 12 && b.slice(0, 4).toString('ascii') === 'RIFF' && b.slice(8, 12).toString('ascii') === 'WEBP') return { mime: 'image/webp', ext: 'webp' };
+                return null;
+            }
+
+            // Inspect an incoming GET response stream for image magic bytes.
+            function inspectStreamForImage(getRes) {
+                return new Promise((resolveInspect) => {
+                    try {
+                        const chunks = [];
+                        let length = 0;
+                        let timedOut = false;
+                        let finished = false;
+                        const to = setTimeout(() => { timedOut = true; try { getRes.destroy(new Error('timeout')); } catch (e) {} }, timeoutMs + 1000);
+
+                        function finalize(result) {
+                            if (finished) return;
+                            finished = true;
+                            clearTimeout(to);
+                            try { getRes.removeAllListeners('data'); getRes.removeAllListeners('end'); getRes.removeAllListeners('close'); getRes.removeAllListeners('error'); } catch (e) {}
+                            try { return resolveInspect(result); } catch (e) { return; }
+                        }
+
+                        getRes.on('data', (chunk) => {
+                            if (timedOut || finished) return;
+                            if (length < maxHeadBytes) {
+                                const remaining = maxHeadBytes - length;
+                                if (chunk.length <= remaining) {
+                                    chunks.push(chunk);
+                                    length += chunk.length;
+                                } else {
+                                    chunks.push(chunk.slice(0, remaining));
+                                    length += remaining;
+                                }
+                            }
+                            if (length >= maxHeadBytes) {
+                                try {
+                                    const buf = Buffer.concat(chunks, Math.min(length, maxHeadBytes));
+                                    const det = detectBuffer(buf);
+                                    if (!det) finalize(false);
+                                    else if (allowedMimes.indexOf(det.mime) === -1) finalize(false);
+                                    else finalize(true);
+                                } catch (ex) { finalize(false); }
+                                try { getRes.destroy(); } catch (e) {}
+                            }
+                        });
+
+                        getRes.on('end', () => {
+                            if (finished) return;
+                            try {
+                                const buf = Buffer.concat(chunks, Math.min(length, maxHeadBytes));
+                                const det = detectBuffer(buf);
+                                if (!det) finalize(false);
+                                else if (allowedMimes.indexOf(det.mime) === -1) finalize(false);
+                                else finalize(true);
+                            } catch (ex) { finalize(false); }
+                        });
+
+                        getRes.on('close', () => { if (!finished) finalize(false); });
+                        getRes.on('error', (e) => { if (!finished) finalize(false); });
+                    } catch (ex) { try { return resolveInspect(false); } catch (e) {} }
+                });
+            }
+
+            // First do a HEAD to validate content-type/length. Some hosts/CDNs don't
+            // support HEAD (returning 405/403/501) even though GET would work. In
+            // that case, fall back to a small ranged GET to validate magic bytes.
+            doRequest('HEAD', url, { 'User-Agent': 'MeshCentral/validateRemoteImage' }, 5, (err, headRes, finalUrl) => {
+                // If doRequest failed to produce a finalUrl (network error),
+                // fall back to the original requested URL to allow GET to be
+                // attempted when HEAD fails with network/DNS issues.
+                const effectiveUrl = finalUrl || url;
+                try {
+                    // If HEAD errored or returned a client/server error
+                    if (err || (headRes && headRes.statusCode >= 400)) {
+                        // If the status suggests HEAD is not allowed/implemented or forbidden,
+                        // attempt a ranged GET fallback. For other 4xx/5xx responses, fail fast.
+                        const status = headRes && headRes.statusCode ? headRes.statusCode : 0;
+                        if (err || status === 405 || status === 501 || status === 403) {
+                            try { if (headRes && headRes.resume) headRes.resume(); } catch (e) {}
+                            const headers = { 'Range': 'bytes=0-' + (maxHeadBytes - 1), 'User-Agent': 'MeshCentral/validateRemoteImage' };
+                            // Ranged GET fallback: reuse the same GET inspection logic.
+                            // Use the effectiveUrl (finalUrl or original url) in case
+                            // the HEAD redirect wasn't available.
+                            doRequest('GET', effectiveUrl, headers, 5, (err2, getRes) => {
+                                try {
+                                    if (err2) return resolve(false);
+                                    if (getRes.statusCode !== 200 && getRes.statusCode !== 206) { getRes.resume(); return resolve(false); }
+                                    inspectStreamForImage(getRes).then((r) => resolve(r)).catch(() => resolve(false));
+                                } catch (ex) { return resolve(false); }
+                            });
+                            return;
+                        }
+                        // Other HTTP errors from HEAD should fail fast
+                        try { if (headRes && headRes.resume) headRes.resume(); } catch (e) {}
+                        return resolve(false);
+                    }
+                    const ct = (headRes.headers['content-type'] || '').toLowerCase();
+                    const clen = parseInt(headRes.headers['content-length'] || '0', 10) || 0;
+                    if (clen > 0 && clen > maxContentLength) { headRes.resume(); return resolve(false); }
+                    if (ct && (allowedMimes.indexOf(ct.split(';')[0].trim()) === -1)) { headRes.resume(); return resolve(false); }
+                    // Now fetch a partial range to inspect magic bytes
+                    const headers = { 'Range': 'bytes=0-' + (maxHeadBytes - 1), 'User-Agent': 'MeshCentral/validateRemoteImage' };
+                    // Drain any potential body from the HEAD response so the
+                    // socket can be reused and not held open when issuing the GET.
+                    try { if (headRes && headRes.resume) headRes.resume(); } catch (e) {}
+                    doRequest('GET', effectiveUrl, headers, 5, (err2, getRes) => {
+                        try {
+                            if (err2) return resolve(false);
+                            if (getRes.statusCode !== 200 && getRes.statusCode !== 206) { getRes.resume(); return resolve(false); }
+                            inspectStreamForImage(getRes).then((r) => resolve(r)).catch(() => resolve(false));
+                        } catch (ex) { return resolve(false); }
+                    });
+                } catch (ex) { return resolve(false); }
+            });
+        } catch (ex) {
+            return resolve(false);
+        }
+    });
 }
 // Check password requirements
 module.exports.checkPasswordRequirements = function(password, requirements) {

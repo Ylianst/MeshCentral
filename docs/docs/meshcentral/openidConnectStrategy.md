@@ -431,6 +431,28 @@ Keep the same filenames and pixel dimensions so the UI picks them up automatical
 
 After replacing the files, restart MeshCentral (or perform a hard browser refresh) to see the new icons.
 
+#### Custom icon URL
+
+This allows remote icon URLs instead of replacing local files to change the login button icon. When enabled, an administrator can set a hosted image URL in the domain config under `authstrategies.oidc.custom` and MeshCentral will use that image for the OIDC login button. Example:
+
+```json
+"authstrategies": {
+    "oidc": {
+        "custom": {
+            "buttonIconUrl": "https://cdn.example.com/icons/oidc32.png",
+            "buttonText": "Sign in with Custom SSO"
+        }
+    }
+}
+```
+
+Notes and constraints:
+
+- **Server-side validation:** remote URLs will be validated before use (timeouts, size limits, content-type checks and magic-byte inspection). If validation fails the UI will fall back to the built-in local icons or the file-replacement method described above.
+- **Allowed formats:** remote SVGs are not permitted by default for security and sanitization reasons; prefer PNG/JPEG/WEBP/GIF.
+- **Fallback behavior:** if a remote image is not provided or validation fails, continue to use local files placed under `meshcentral-web/public/images/login` (the file-replacement method remains supported and is unchanged).
+
+
 ### "Groups" Options
 
 #### *Introduction*

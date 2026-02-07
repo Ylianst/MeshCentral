@@ -3930,6 +3930,12 @@
                         "type": "string",
                         "description": "Custom text for the OIDC login buttons shown on the login page. Applies to generic and preset buttons."
                       },
+                      "buttonIconUrl": {
+                        "type": "string",
+                        "description": "URL to a hosted small icon (supports PNG, JPEG, WEBP, GIF). The server validates remote images before use; if validation fails the UI falls back to local login icons. SVGs are not allowed by default.",
+                        "format": "uri",
+                        "pattern": "^[hH][tT][tT][pP][sS]?://"
+                      },
                       "tenant_id": {
                         "type": "string",
                         "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"

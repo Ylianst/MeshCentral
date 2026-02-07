@@ -569,7 +569,8 @@
             "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
           },
           "_custom": {
-            "_buttonText": "Sign-in using Custom Button Text"
+            "_buttonText": "Sign-in using Custom Button Text",
+            "_buttonIconUrl": "https://example.com/custom-icon.png"
           },
           "groups": {
             "required": [ "groupA", "groupB", "groupC" ],

@@ -3502,6 +3502,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Render the login page
         // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
         if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
+            if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttonIconUrl)) {
+                oidcButtonIcon = domain.authstrategies.oidc.custom.buttonIconUrl
+                oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl + ' 2x'
+            } else {
+                switch (domain.authstrategies.oidc.custom.preset) {
+                    case 'azure':
+                        oidcButtonIcon = "images/login/azure32.png";
+                        oidcButtonIcon2x = "images/login/azure64.png 2x";
+                        break;
+                    case 'google':
+                        oidcButtonIcon = "images/login/google32.png";
+                        oidcButtonIcon2x = "images/login/google64.png 2x";
+                        break;
+                    default:
+                        oidcButtonIcon = "images/login/oidc32.png";
+                        oidcButtonIcon2x = "images/login/oidc64.png 2x";
+                }
+            }
+
             if (obj.common.validateString(domain.authstrategies.oidc.custom.buttonText)) {
                 oidcButtonText = domain.authstrategies.oidc.custom.buttonText
             } else if (obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
@@ -3516,7 +3535,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         oidcButtonText = "Sign in using OpenID Connect";
                 }
             } else {
-                oidcButtonText = "Sign in using OpenID Connect"
+                oidcButtonText = "Sign in using OpenID Connect";
             }
         }
         render(req, res,
@@ -3571,6 +3590,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
                 oidcButtonText: oidcButtonText || 'Sign-in using OpenID Connect',
+                oidcButtonIcon: oidcButtonIcon || 'images/login/oidc32.png',
+                oidcButtonIcon2x: oidcButtonIcon2x || 'images/login/oidc64.png 2x',
                 loginpicture: (typeof domain.loginpicture == 'string'),
                 tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,
@@ -8066,6 +8087,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.client = client.metadata
             strategy.obj.client = client
 
+            // Validate OIDC Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttonIconUrl)) {
+                if (obj.common.validateUrl(strategy.custom.buttonIconUrl)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttonIconUrl)) {
+                        parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttonIconUrl);
+                    } else {
+                        parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttonIconUrl);
+                        strategy.custom.buttonIconUrl = null
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttonIconUrl);
+                    strategy.custom.buttonIconUrl = null
+                }
+            }
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             parent.config.domains[domain.id].authstrategies.oidc = strategy;
