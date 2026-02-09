@@ -16160,8 +16160,9 @@
             return false;
         }
 
-        function p20editMeshNotifyEx(b, emailNotify) {
+        function p20editMeshNotifyEx() {
             var meshNotify = 0;
+            var emailNotify = ((features2 & 0x00004000) && (userinfo.emailVerified));
             meshNotify += Q('p20notifyIntelDeviceConnect').checked ? 2 : 0;
             meshNotify += Q('p20notifyIntelDeviceDisconnect').checked ? 4 : 0;
             if (currentMesh.mtype < 3) { meshNotify += Q('p20notifyIntelAmtKvmActions').checked ? 8 : 0; }
