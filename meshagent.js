@@ -600,8 +600,20 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function getMeshAutoCreate() {
         var mesh = parent.meshes[obj.dbMeshKey];
 
+        // Check if this is an invalid/unknown MeshID (all zeros or invalid)
+        var isUnknownMesh = false;
+        if (obj.meshid && (obj.meshid.match(/^0+$/) || obj.meshid.length < 10)) {
+            isUnknownMesh = true;
+            // Redirect to Unknown Devices mesh
+            const unknownMeshId = 'unknowndevices' + Buffer.from('Unknown Devices').toString('base64').substring(0, 32);
+            obj.meshid = unknownMeshId;
+            obj.dbMeshKey = 'mesh/' + domain.id + '/' + unknownMeshId;
+            mesh = parent.meshes[obj.dbMeshKey];
+            console.log('Agent with invalid MeshID, redirecting to Unknown Devices mesh (' + obj.remoteaddrport + ')');
+        }
+
         // If the mesh was not found and we are in LAN mode, check of the domain can be corrected
-        if ((args.lanonly == true) && (mesh == null)) {
+        if ((args.lanonly == true) && (mesh == null) && !isUnknownMesh) {
             var smesh = obj.dbMeshKey.split('/');
             for (var i in parent.parent.config.domains) {
                 mesh = parent.meshes['mesh/' + i + '/' + smesh[2]];
@@ -615,23 +627,23 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
         }
 
-        if ((mesh == null) && (typeof domain.orphanagentuser == 'string')) {
-            const adminUser = parent.users['user/' + domain.id + '/' + domain.orphanagentuser];
+        if ((mesh == null) && (typeof domain.orphanagentuser == 'string' || isUnknownMesh)) {
+            const adminUser = parent.users['user/' + domain.id + '/' + (domain.orphanagentuser || 'admin')];
             if ((adminUser != null) && (adminUser.siteadmin == 0xFFFFFFFF)) {
-                // Mesh name is hex instead of base64
-                const meshname = obj.meshid.substring(0, 18);
+                // Mesh name - use "Unknown Devices" for invalid meshids
+                const meshname = isUnknownMesh ? 'Unknown Devices' : obj.meshid.substring(0, 18);
 
                 // Create a new mesh for this device
                 const links = {};
                 links[adminUser._id] = { name: adminUser.name, rights: 0xFFFFFFFF };
-                mesh = { type: 'mesh', _id: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', domain: domain.id, links: links };
+                mesh = { type: 'mesh', _id: obj.dbMeshKey, name: meshname, mtype: 2, desc: isUnknownMesh ? 'Devices with invalid or missing MeshID' : '', domain: domain.id, links: links };
                 db.Set(mesh);
                 parent.meshes[obj.dbMeshKey] = mesh;
 
                 if (adminUser.links == null) adminUser.links = {};
                 adminUser.links[obj.dbMeshKey] = { rights: 0xFFFFFFFF };
                 db.SetUser(adminUser);
-                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [adminUser._id, obj.dbNodeKey]), obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: '', action: 'createmesh', links: links, msgid: 55, msgArgs: [obj.meshid], msg: "Created device group: " + obj.meshid, domain: domain.id });
+                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [adminUser._id, obj.dbNodeKey]), obj, { etype: 'mesh', username: adminUser.name, meshid: obj.dbMeshKey, name: meshname, mtype: 2, desc: mesh.desc, action: 'createmesh', links: links, msgid: 55, msgArgs: [meshname], msg: "Created device group: " + meshname, domain: domain.id });
             }
         } else {
             if ((mesh != null) && (mesh.deleted != null) && (mesh.links)) {

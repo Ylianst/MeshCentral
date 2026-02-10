@@ -3315,6 +3315,11 @@ function CreateMeshCentralServer(config, args) {
         var pendingOperations = 1;
 
         for (var archid in obj.meshAgentsArchitectureNumbers) {
+            // Skip code signing for MeshService64.exe (archid 4)
+            if (archid == 4) {
+                console.log('Skipping code signing for MeshService64.exe');
+                continue;
+            }
             if (obj.meshAgentsArchitectureNumbers[archid].codesign !== true) continue;
 
             var agentpath;
