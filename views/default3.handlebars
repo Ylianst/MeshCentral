@@ -642,7 +642,6 @@
                             <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                             <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
                         </p>
-                        <br style=clear:both />
                     </div>
                     <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
@@ -1462,10 +1461,17 @@
                         </div>
                         <div class='fs-4 fw-bold'>General - <span id=p20meshName></span></div>
                     </div>
-                    <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
-                        <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
-                        <img alt="" width=200 height=200 src=images/mesh-256.png />
-                    </picture>
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <div id=p20info3></div>
+                        </div>
+                        <div>
+                            <picture id=MainMeshImage>
+                                <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
+                                <img alt="" width=200 height=200 src=images/mesh-256.png />
+                            </picture>
+                        </div>
+                    </div>
                     <p id=p20info></p>
                     <p id=p20info2></p>
                 </div>
@@ -15054,9 +15060,11 @@
                 x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
             }
 
+            QH('p20info3', x);
+            x = '';
+
             // Display device group note support
-            if (meshrights & 1) { x += '<br><input type=button class="btn btn-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
-            x += '<br style=clear:both><br>';
+            if (meshrights & 1) { x += '<div class="row py-1"><div class="col"><input type=button class="btn btn-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") /></div></div>'; }
             if (meshrights & 2) {
                 x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog()"><i class="fa-solid fa-circle-plus"></i> ' + "Add Users" + '</button>';
                 if (usergroups != null) {
