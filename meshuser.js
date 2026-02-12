@@ -6522,7 +6522,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         for (var i in doc.hardware.windows.volumes) { delete doc.hardware.windows.volumes[i].recoveryPassword; }
                     }
 
-                    if (command.nodeinfo === true) { doc.node = node; doc.rights = rights; }
+                    if (command.nodeinfo === true) {
+                        doc.node = node;
+                        doc.rights = rights;
+                        // Remove any connectivity and power state information, that should not be in the database anyway.
+                        // TODO: Find why these are sometimes saved in the db.
+                        if (doc.node.conn != null) { delete doc.node.conn; }
+                        if (doc.node.pwr != null) { delete doc.node.pwr; }
+                        if (doc.node.agct != null) { delete doc.node.agct; }
+                        if (doc.node.cict != null) { delete doc.node.cict; }
+                        // Add the connection state
+                        var state = parent.parent.GetConnectivityState(doc.nodeid);
+                        if (state) {
+                            doc.node.conn = state.connectivity;
+                            doc.node.pwr = state.powerState;
+                            if ((state.connectivity & 1) != 0) { var agent = parent.wsagents[doc.nodeid]; if (agent != null) { doc.node.agct = agent.connectTime; } }
+                            // Use the connection time of the CIRA/Relay connection
+                            if ((state.connectivity & 2) != 0) {
+                                var ciraConnection = parent.parent.mpsserver.GetConnectionToNode(doc.nodeid, null, true);
+                                if ((ciraConnection != null) && (ciraConnection.tag != null)) { doc.node.cict = ciraConnection.tag.connectTime; }
+                            }
+                        }
+                    }
                     obj.send(doc);
                 } else {
                     obj.send({ action: 'getsysinfo', nodeid: node._id, tag: command.tag, noinfo: true, result: 'Invalid device id' });

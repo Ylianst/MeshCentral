@@ -2894,7 +2894,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     //console.log('displayDeviceInfo', sysinfo, lastconnect, network, nodes);
 
     // Fetch the node information
-    var node = null;;
+    var node = null;
     if (sysinfo != null && (sysinfo.node != null)) {
         // Node information came with system information
         node = sysinfo.node;
@@ -2971,6 +2971,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
         } else {
             if (node.lastconnect) { output["Last agent connection"] = new Date(node.lastconnect).toLocaleString(); outputCount++; }
         }
+        output["Agent status"] = (node.conn & 1) != 0 ? "Connected now" : "Offline"; outputCount++;
         if (node.lastaddr) {
             var splitip = node.lastaddr.split(':');
             if (splitip.length > 2) {
