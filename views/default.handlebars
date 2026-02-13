@@ -8265,7 +8265,7 @@
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
-            if (rights & 262144) str.push("Reset/Off");
+            if (rights & 262144) str.push("Reboot/Shutdown");
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
@@ -8298,7 +8298,7 @@
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
-            if (rights & 262144) str.push("Reset/Off");
+            if (rights & 262144) str.push("Reboot/Shutdown");
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
@@ -14687,7 +14687,7 @@
                     if ((meshrights & 16384) != 0) r.push("Chat & Notify");
                     if ((meshrights & 32768) != 0) r.push("Uninstall");
                     if ((meshrights & 131072) != 0) r.push("Commands");
-                    if ((meshrights & 262144) != 0) r.push("Reset/Off");
+                    if ((meshrights & 262144) != 0) r.push("Reboot/Shutdown");
                     if ((meshrights & 524288) != 0) r.push("Sharing");
                     if ((meshrights & 1048576) != 0) r.push("Details");
                     if ((meshrights & 2097152) != 0) r.push("Relay");
@@ -16936,7 +16936,7 @@
                 if ((user.removeRights & 0x00008000) != 0) { userFeatures.push("No Uninstall"); }
                 if ((user.removeRights & 0x00020000) != 0) { userFeatures.push("No Remote Command"); }
                 if ((user.removeRights & 0x00000040) != 0) { userFeatures.push("No Wake"); }
-                if ((user.removeRights & 0x00040000) != 0) { userFeatures.push("No Reset/Off"); }
+                if ((user.removeRights & 0x00040000) != 0) { userFeatures.push("No Reboot/Shutdown"); }
             }
             userFeatures = userFeatures.join(', ');
             if (userFeatures == '') { userFeatures = '<i>' + "None" + '</i>'; }
@@ -17159,7 +17159,7 @@
             x += '<div><label><input type=checkbox id=d20flag8 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag9 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag10 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag11 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag11 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reboot/Shutdown" + '</label><br></div>';
             setDialogMode(2, "Edit User Features", 3, p20edituserfeaturesEx, x);
             p20edituserfeaturesValidate();
         }
