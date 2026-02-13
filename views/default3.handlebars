@@ -6788,7 +6788,7 @@
                 if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions.push({ v: 102, name: "Move to device group" }); }
                 if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions.push({ v: 104, name: "Uninstall Agent" }); }
                 if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions.push({ v: 100, name: "Wake-up devices" }); }
-                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reset devices" }); addedOptions.push({ v: 2, name: "Shut down devices" }); }
+                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reboot devices" }); addedOptions.push({ v: 2, name: "Power off devices" }); }
                 if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions.push({ v: 106, name: "Run commands" }); }
                 if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions.push({ v: 108, name: "Device notification" }); }
                 if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions.push({ v: 107, name: "Edit tags" }); }
@@ -9162,7 +9162,7 @@
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
-            if (rights & 262144) str.push("Reset/Off");
+            if (rights & 262144) str.push("Reboot/Shutdown");
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
@@ -9195,7 +9195,7 @@
             if (rights & 16384) str.push("Chat");
             if (rights & 32768) str.push("Uninstall");
             if (rights & 131072) str.push("Commands");
-            if (rights & 262144) str.push("Reset/Off");
+            if (rights & 262144) str.push("Reboot/Shutdown");
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
@@ -9546,11 +9546,11 @@
             } else {
                 if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
                 if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
-                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Shut down" + '</option>'; }
+                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reboot" + '</option><option value=2>' + "Power off" + '</option>'; }
                 if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 262144) != 0)) {
                     count++;
-                    y += '<option value=310>' + "Intel&reg; AMT Reboot" + '</option>';
+                    y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
                     y += '<option value=308>' + "Intel&reg; AMT Shutdown" + '</option>';
                     if ((xxcurrentView == 11) || (xxcurrentView == 12)) { // Only show these options on terminal or desktop tabs
                         y += '<option value=312>' + "Intel&reg; AMT Reset to BIOS" + '</option>';
@@ -9626,14 +9626,14 @@
             } else if (op == 308) { // Intel AMT shutdown
                 setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT shutdown?<br><br><b>NOTE: If there is an active AMT session, then shutdown command will be rejected, so you must disconnect from the AMT session first!</b>");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
-            } else if (op == 310) { // Intel AMT reboot
-                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reboot?");
+            } else if (op == 310) { // Intel AMT reset
+                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reset?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
             } else if (op == 311) { // Intel AMT power on to BIOS
                 setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT power on to BIOS?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); });
-            } else if (op == 312) { // Intel AMT reboot to BIOS
-                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reboot to BIOS?");
+            } else if (op == 312) { // Intel AMT reset to BIOS
+                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reset to BIOS?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); });
             } else if ((op == 400) || (op == 401)) {
                 // Flash / vibrate
@@ -16023,7 +16023,7 @@ Reset();
                     if ((meshrights & 16384) != 0) r.push("Chat & Notify");
                     if ((meshrights & 32768) != 0) r.push("Uninstall");
                     if ((meshrights & 131072) != 0) r.push("Commands");
-                    if ((meshrights & 262144) != 0) r.push("Reset/Off");
+                    if ((meshrights & 262144) != 0) r.push("Reboot/Shutdown");
                     if ((meshrights & 524288) != 0) r.push("Sharing");
                     if ((meshrights & 1048576) != 0) r.push("Details");
                     if ((meshrights & 2097152) != 0) r.push("Relay");
@@ -18388,7 +18388,7 @@ Reset();
                 if ((user.removeRights & 0x00008000) != 0) { userFeatures.push("No Uninstall"); }
                 if ((user.removeRights & 0x00020000) != 0) { userFeatures.push("No Remote Command"); }
                 if ((user.removeRights & 0x00000040) != 0) { userFeatures.push("No Wake"); }
-                if ((user.removeRights & 0x00040000) != 0) { userFeatures.push("No Reset/Off"); }
+                if ((user.removeRights & 0x00040000) != 0) { userFeatures.push("No Reboot/Shutdown"); }
             }
             userFeatures = userFeatures.join(', ');
             if (userFeatures == '') { userFeatures = '<i>' + "None" + '</i>'; }
@@ -18615,7 +18615,7 @@ Reset();
             x += '<div><label><input type=checkbox id=d20flag8 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag9 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag10 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000040) ? 'checked' : '') + '>' + "No Wake" + '</label><br></div>';
-            x += '<div><label><input type=checkbox id=d20flag11 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reset/Off" + '</label><br></div>';
+            x += '<div><label><input type=checkbox id=d20flag11 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00040000) ? 'checked' : '') + '>' + "No Reboot/Shutdown" + '</label><br></div>';
 
             setModalContent('xxAddAgent', "Edit User Features", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p20edituserfeaturesEx);
@@ -20925,7 +20925,7 @@ Reset();
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
             if ((userinfo.removeRights & 0x00000040) != 0) { substract += 0x00000040; } // No Wake
-            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reset/Off
+            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reboot/Shutdown
             if (rights != 0xFFFFFFFF) {
                 // If not administrator, add and subsctract restrictions
                 rights |= add;

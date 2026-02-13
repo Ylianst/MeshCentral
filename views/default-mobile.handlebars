@@ -4119,7 +4119,7 @@
                 //if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 262144) != 0)) {
                     count++;
-                    y += '<option value=310>' + "Intel&reg; AMT Reboot" + '</option>';
+                    y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
                     y += '<option value=308>' + "Intel&reg; AMT Shutdown" + '</option>';
                 }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 64) != 0)) {
@@ -4184,10 +4184,10 @@
                 */
             } else if (op == 302) { // Intel AMT power on
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power on?");
-            } else if (op == 308) { // Intel AMT shut down
+            } else if (op == 308) { // Intel AMT shutdown
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT shutdown?<br><br><b>NOTE: If there is an active AMT session, then shutdown command will be rejected, so you must disconnect from the AMT session first!</b>");
             } else if (op == 310) { // Intel AMT reset
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reboot?");
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
             } else if ((op == 400) || (op == 401)) {
                 // Flash / vibrate
                 meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
@@ -7220,7 +7220,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reboot / Shut down" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reboot / Shutdown" + '</label><br>';
             x += '</div>';
             setDialogMode(2, "Add User to Device Group", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -7300,7 +7300,7 @@
                 if ((meshrights & 16384) != 0) r.push("Chat & Notify");
                 if ((meshrights & 32768) != 0) r.push("Uninstall");
                 if ((meshrights & 131072) != 0) r.push("Commands");
-                if ((meshrights & 262144) != 0) r.push("Reset/Off");
+                if ((meshrights & 262144) != 0) r.push("Reboot/Power off");
             }
             if (r.length == 0) { r.push("No Rights"); }
             var buttons = 1, uname = userid.split('/')[2];
@@ -7610,7 +7610,7 @@
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
             if ((userinfo.removeRights & 0x00000040) != 0) { substract += 0x00000040; } // No Wake
-            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reset/Off
+            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reboot/Power off
             if (rights != 0xFFFFFFFF) {
                 // If not administrator, add and subsctract restrictions
                 rights |= add;

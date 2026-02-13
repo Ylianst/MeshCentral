@@ -5931,7 +5931,7 @@
                 if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions.push({ v: 102, name: "Move to device group" }); }
                 if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions.push({ v: 104, name: "Uninstall Agent" }); }
                 if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions.push({ v: 100, name: "Wake-up devices" }); }
-                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reset devices" }); addedOptions.push({ v: 2, name: "Shut down devices" }); }
+                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reboot devices" }); addedOptions.push({ v: 2, name: "Power off devices" }); }
                 if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions.push({ v: 106, name: "Run commands" }); }
                 if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions.push({ v: 108, name: "Device notification" }); }
                 if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions.push({ v: 107, name: "Edit tags" }); }
@@ -8625,11 +8625,11 @@
             } else {
                 if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
                 if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
-                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Shut down" + '</option>'; }
+                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reboot" + '</option><option value=2>' + "Power off" + '</option>'; }
                 if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 262144) != 0)) {
                     count++;
-                    y += '<option value=310>' + "Intel&reg; AMT Reboot" + '</option>';
+                    y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
                     y += '<option value=308>' + "Intel&reg; AMT Shutdown" + '</option>';
                     if ((xxcurrentView == 11) || (xxcurrentView == 12)) { // Only show these options on terminal or desktop tabs
                         y += '<option value=312>' + "Intel&reg; AMT Reset to BIOS" + '</option>';
@@ -19210,7 +19210,7 @@
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
             if ((userinfo.removeRights & 0x00000040) != 0) { substract += 0x00000040; } // No Wake
-            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reset/Off
+            if ((userinfo.removeRights & 0x00040000) != 0) { substract += 0x00040000; } // No Reboot/Shutdown
             if (rights != 0xFFFFFFFF) {
                 // If not administrator, add and subsctract restrictions
                 rights |= add;
