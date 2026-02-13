@@ -2042,7 +2042,7 @@
 
         var args, urlargs;
         var autoReconnect = true;
-        var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
+        var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Powered off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
         var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V 64bit"];
         var agentsStrNoAgent = ['', '', '', '', "Windows", '', "Linux", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "Apple"];
@@ -6788,7 +6788,7 @@
                 if ((rights & 1) && ((added & 2) == 0)) { added |= 2; addedOptions.push({ v: 102, name: "Move to device group" }); }
                 if (((node.conn & 1) != 0) && ((rights & 0x8000) != 0) && ((added & 1) == 0)) { added |= 1; addedOptions.push({ v: 104, name: "Uninstall Agent" }); }
                 if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions.push({ v: 100, name: "Wake-up devices" }); }
-                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reset devices" }); addedOptions.push({ v: 2, name: "Power off devices" }); }
+                if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reset devices" }); addedOptions.push({ v: 2, name: "Shut down devices" }); }
                 if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions.push({ v: 106, name: "Run commands" }); }
                 if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions.push({ v: 108, name: "Device notification" }); }
                 if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions.push({ v: 107, name: "Edit tags" }); }
@@ -9075,7 +9075,7 @@
         function setIpPduState(op) {
             if (op == 0) {
                 // Turn off
-                setModalContent('xxAddAgent', "Power Operation", 'Perform power off?');
+                setModalContent('xxAddAgent', "Power Operation", 'Perform shutdown?');
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: 2 }); });
             } else {
                 // Turn on
@@ -9546,12 +9546,12 @@
             } else {
                 if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
                 if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
-                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
+                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Shut down" + '</option>'; }
                 if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 262144) != 0)) {
                     count++;
-                    y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
-                    y += '<option value=308>' + "Intel&reg; AMT Power off" + '</option>';
+                    y += '<option value=310>' + "Intel&reg; AMT Reboot" + '</option>';
+                    y += '<option value=308>' + "Intel&reg; AMT Shutdown" + '</option>';
                     if ((xxcurrentView == 11) || (xxcurrentView == 12)) { // Only show these options on terminal or desktop tabs
                         y += '<option value=312>' + "Intel&reg; AMT Reset to BIOS" + '</option>';
                         y += '<option value=311>' + "Intel&reg; AMT Power on to BIOS" + '</option>';
@@ -9623,17 +9623,17 @@
             } else if (op == 302) { // Intel AMT power on
                 setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT power on?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
-            } else if (op == 308) { // Intel AMT power off
-                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>");
+            } else if (op == 308) { // Intel AMT shutdown
+                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT shutdown?<br><br><b>NOTE: If there is an active AMT session, then shutdown command will be rejected, so you must disconnect from the AMT session first!</b>");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
-            } else if (op == 310) { // Intel AMT reset
-                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reset?");
+            } else if (op == 310) { // Intel AMT reboot
+                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reboot?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); });
             } else if (op == 311) { // Intel AMT power on to BIOS
                 setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT power on to BIOS?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); });
-            } else if (op == 312) { // Intel AMT reset to BIOS
-                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reset to BIOS?");
+            } else if (op == 312) { // Intel AMT reboot to BIOS
+                setModalContent('xxAddAgent', "Intel&reg; AMT Power Operation", "Perform Intel&reg; AMT reboot to BIOS?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) + ((xxcurrentView == 12) ? 2 : 0) }); });
             } else if ((op == 400) || (op == 401)) {
                 // Flash / vibrate
@@ -10366,7 +10366,8 @@
                         if ((data != null) && (data.action != null)) {
                             if (data.action == 'restart') {
                                 // Clear WebRTC channel
-                                webRtcDesktopReset();
+                                webRtcDesktop
+Reset();
                                 desktop.m.sendKvmData(JSON.stringify({ action: 'present', ver: 1 }));
                             } else if ((data.action == 'present') && (webRtcDesktop == null)) {
                                 // Setup WebRTC channel
@@ -15661,7 +15662,7 @@
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
-            x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
+            x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reboot / Shutdown" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
             x += '</div>';

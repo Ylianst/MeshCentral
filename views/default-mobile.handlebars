@@ -3639,7 +3639,7 @@
             return false;
         }
 
-        var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present", "Off"];
+        var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Powered off", "Present", "Off"];
         var powerStateStrings = ['', "Powered", "Sleeping", "Sleeping", "Deep Sleep", "Hibernating", "Soft-Off", "Present", "Off"];
         var powerStateStrings2 = ['', "Device is powered", "Device is in sleep state (S1)", "Device is in sleep state (S2)", "Device is in deep sleep state (S3)", "Device is hibernating (S4)", "Device is in soft-off state (S5)", "Device is present, but power state cannot be determined", "The device is powered off"];
         var powerColorTable = ['#00000000', 'black', 'blue', 'blue', 'lightblue', 'blueviolet', 'darkgreen', 'lightseagreen', 'lightseagreen'];
@@ -4046,7 +4046,7 @@
 
         function setIpPduState(op) {
             if (op == 0) {
-                setDialogMode(2, "Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: 2 }); }, "Perform power off?"); // Turn off
+                setDialogMode(2, "Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: 2 }); }, "Perform shutdown?"); // Turn off
             } else {
                 setDialogMode(2, "Power Operation", 3, function () { meshserver.send({ action: 'wakedevices', nodeids: [currentNode._id] }); }, "Perform power on?"); // Turn on
             }
@@ -4116,12 +4116,11 @@
             } else {
                 if ((rights & 64) != 0) { count++; y += '<option value=100>' + "Wake-up" + '</option>'; } // Wake-up permission
                 //if (((currentNode.conn & 1) != 0) && ((rights & 131072) != 0)) { count++; y += '<option value=106>' + "Run Commands" + '</option>'; } // Remote command permission
-                if ((currentNode.conn != 0) && ((rights & 262144) != 0)) { count++; y += '<option value=4>' + "Sleep" + '</option><option value=3>' + "Reset" + '</option><option value=2>' + "Power off" + '</option>'; }
                 //if ((currentNode.conn & 16) != 0) { count++; y += '<option value=103>' + "Send MQTT Message" + '</option>'; }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 262144) != 0)) {
                     count++;
-                    y += '<option value=310>' + "Intel&reg; AMT Reset" + '</option>';
-                    y += '<option value=308>' + "Intel&reg; AMT Power off" + '</option>';
+                    y += '<option value=310>' + "Intel&reg; AMT Reboot" + '</option>';
+                    y += '<option value=308>' + "Intel&reg; AMT Shutdown" + '</option>';
                 }
                 if ((currentNode.intelamt != null) && (currentNode.intelamt.state == 2) && ((currentNode.conn & 6) != 0) && ((rights & 64) != 0)) {
                     count++;
@@ -4185,10 +4184,10 @@
                 */
             } else if (op == 302) { // Intel AMT power on
                 setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power on?");
-            } else if (op == 308) { // Intel AMT power off
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT power off?<br><br><b>NOTE: If there is an active AMT session, then power off command will be rejected, so you must disconnect from the AMT session first!</b>");
+            } else if (op == 308) { // Intel AMT shut down
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT shutdown?<br><br><b>NOTE: If there is an active AMT session, then shutdown command will be rejected, so you must disconnect from the AMT session first!</b>");
             } else if (op == 310) { // Intel AMT reset
-                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reset?");
+                setDialogMode(2, "Intel&reg; AMT Power Operation", 3, function () { meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op) }); }, "Perform Intel&reg; AMT reboot?");
             } else if ((op == 400) || (op == 401)) {
                 // Flash / vibrate
                 meshserver.send({ action: 'poweraction', nodeids: [currentNode._id], actiontype: parseInt(op), time: parseInt(Q('d2devicetime').value) });
@@ -7221,7 +7220,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
-            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reboot / Shut down" + '</label><br>';
             x += '</div>';
             setDialogMode(2, "Add User to Device Group", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
