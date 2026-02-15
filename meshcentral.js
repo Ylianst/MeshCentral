@@ -3618,9 +3618,9 @@ function CreateMeshCentralServer(config, args) {
                 try { objx.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
             }
 
-            // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
-            if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4)) && (obj.args.agentsinram !== false))) {
-                if ((archid == 3) || (archid == 4)) {
+            // If agents must be stored in RAM or if this is a Windows 32/64/ARM64 agent, load the agent in RAM.
+            if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4) || (archid == 43)) && (obj.args.agentsinram !== false))) {
+                if ((archid == 3) || (archid == 4) || (archid == 43)) {
                     // Load the agent with a random msh added to it.
                     const outStream = new require('stream').Duplex();
                     outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
@@ -3734,7 +3734,7 @@ function CreateMeshCentralServer(config, args) {
             obj.exeHandler.hashExecutableFile(options);
 
             // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
-            if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4))) {
+            if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4) || (archid == 43))) {
                 const hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
                 objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
                 objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
