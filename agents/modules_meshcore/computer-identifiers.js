@@ -539,6 +539,14 @@ function windows_identifiers()
     if(values[0]){
         trimResults(values);
         ret.windows.osinfo = values[0];
+		
+		try {
+            var reg = require('win-registry');
+            var ubr = reg.QueryKey(reg.HKEY.LocalMachine, 'Software\\Microsoft\\Windows NT\\CurrentVersion', 'UBR');
+            if(ubr && ret.windows.osinfo.Version){
+                ret.windows.osinfo.BuildRevision = ret.windows.osinfo.Version + "." + ubr 
+            }
+        } catch (ex){}
     }
 
     values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
