@@ -343,7 +343,7 @@ These are all the options that dont fit with the issuer or client, including the
 | -------- | ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------- | -------- |
 | `scope`      | A list of scopes to request from the issuer.     | `"openid profile email"`                                  | `["openid", "profile"]`             | `false`  |
 | `claims`     | A group of claims to use instead of the defaults | Defaults to name of property except that `uuid` used `sub` | `"claims": {"uuid": "unique_name"}` | `false`  |
-| `buttonText` | Custom tooltip for the OIDC login button. Min 1 character. Max 128 characters. | `Sign-in using OpenID Connect`                             | `"buttonText": "Sign in with Custom SSO"` | `false` |
+| `buttonText` | Custom tooltip for the OIDC login button. Min 1 character. Max 128 characters. | `Sign-in using OpenID Connect`                             | `"buttonText": "Login to Custom SSO Brand"` | `false` |
 
 #### *Advanced Config Example*
 
@@ -409,7 +409,7 @@ Example:
 "authStrategies": {
     "oidc": {
         "custom": {
-            "buttonText": "Sign in with Custom SSO"
+            "buttonText": "Login to Custom SSO Brand"
         }
     }
 }
@@ -427,7 +427,7 @@ The OIDC login button icon can be customized by setting a remote image URL in th
         "custom": {
             "buttonIconUrl": "https://cdn.example.com/icons/oidc32.png",
             "buttonIconUrl2x": "https://cdn.example.com/icons/oidc64.png",
-            "buttonText": "Sign in with Custom SSO"
+            "buttonText": "Login to Custom SSO Brand"
         }
     }
 }
