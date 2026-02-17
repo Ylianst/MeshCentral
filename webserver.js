@@ -3522,7 +3522,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             }
 
-            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttonText)) {
+            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttonText, 1, 128)) {
                 oidcButtonText = domain.authstrategies.oidc.custom.buttonText;
             } else if (obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
                 switch(domain.authstrategies.oidc.custom.preset) {

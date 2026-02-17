@@ -3928,7 +3928,9 @@
                       },
                       "buttonText": {
                         "type": "string",
-                        "description": "Custom text for the OIDC login buttons shown on the login page. Applies to generic and preset buttons."
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Custom text for the OIDC login buttons shown on the login page (tooltip only). Set to empty string to hide tooltip. Maximum 128 characters."
                       },
                       "buttonIconUrl": {
                         "type": "string",
