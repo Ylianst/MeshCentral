@@ -6300,6 +6300,7 @@
             if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
             if (hardware.windows && hardware.windows.osinfo) {
                 var m = hardware.windows.osinfo;
+				if(m.BuildRevision){ x += addDetailItem("Build Number", EscapeHtml(m.BuildRevision), s); }
                 if (m.OSArchitecture) {
                     if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
                     else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }

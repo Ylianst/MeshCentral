@@ -12714,6 +12714,37 @@
         "default3.handlebars->117->69"
       ]
     },
+	{
+      "bs": "Broj izgradnje",
+      "ca": "Número de compilació",
+      "cs": "Číslo sestavení",
+      "da": "Build-nummer",
+      "de": "Build-Nummer",
+      "en": "Build Number",
+      "es": "Número de compilación",
+      "fi": "Koontiversion numero",
+      "fr": "Numéro de build",
+      "hi": "बिल्ड नंबर",
+      "hu": "Build száma",
+      "it": "Numero build",
+      "ja": "ビルド番号",
+      "ko": "빌드 번호",
+      "nl": "Buildnummer",
+      "pl": "Numer kompilacji",
+      "pt": "Número da compilação",
+      "pt-br": "Número da compilação",
+      "ru": "Номер сборки",
+      "sv": "Versionsnummer (build)",
+      "tr": "Derleme numarası",
+      "uk": "Номер збірки",
+      "zh-chs": "内部版本号",
+      "zh-cht": "內部版本號",
+      "xloc": [
+        "default-mobile.handlebars->55->739",
+        "default.handlebars->121->1599",
+        "default3.handlebars->119->1584"
+      ]
+    },
     {
       "bs": "bugarski",
       "ca": "búlgar",
