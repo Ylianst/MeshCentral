@@ -239,7 +239,7 @@ module.exports.validateRemoteImage = function (url, options) {
     const timeoutMs = (typeof options.timeoutMs === 'number') ? options.timeoutMs : 5000;
     const maxHeadBytes = (typeof options.maxHeadBytes === 'number') ? options.maxHeadBytes : 16384; // 16 KB
     const maxContentLength = (typeof options.maxContentLength === 'number') ? options.maxContentLength : (5 * 1024 * 1024); // 5 MB
-    const allowedMimes = options.allowedMimes || ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/x-icon', 'image/vnd.microsoft.icon'];
+    const allowedMimes = options.allowedMimes || ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml'];
     const agent = options.agent || undefined;
     // This function MUST always resolve to boolean true/false and never reject.
     return new Promise((resolve) => {
@@ -288,6 +288,12 @@ module.exports.validateRemoteImage = function (url, options) {
                 if (b.length >= 12 && b.slice(0, 4).toString('ascii') === 'RIFF' && b.slice(8, 12).toString('ascii') === 'WEBP') return { mime: 'image/webp', ext: 'webp' };
                 // ICO (00 00 01 00)
                 if (b[0] === 0x00 && b[1] === 0x00 && b[2] === 0x01 && b[3] === 0x00) return { mime: 'image/x-icon', ext: 'ico' };
+                // SVG (text-based XML; look for '<svg' or '<?xml' after optional whitespace/BOM)
+                try {
+                    var svgHead = b.slice(0, Math.min(b.length, 256)).toString('utf8').trimStart();
+                    if (svgHead.charCodeAt(0) === 0xFEFF) { svgHead = svgHead.slice(1); } // strip BOM
+                    if (svgHead.startsWith('<svg') || svgHead.startsWith('<?xml')) return { mime: 'image/svg+xml', ext: 'svg' };
+                } catch (e) {}
                 return null;
             }
 
