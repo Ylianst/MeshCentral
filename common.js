@@ -412,6 +412,7 @@ module.exports.validateRemoteImage = function (url, options) {
         }
     });
 }
+
 // Check password requirements
 module.exports.checkPasswordRequirements = function(password, requirements) {
     if ((requirements == null) || (requirements == '') || (typeof requirements != 'object')) return true;
