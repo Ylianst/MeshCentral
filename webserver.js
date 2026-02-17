@@ -3501,6 +3501,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Render the login page
         // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
+        var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
         if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
             if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttonIconUrl)) {
                 oidcButtonIcon = domain.authstrategies.oidc.custom.buttonIconUrl
