@@ -818,11 +818,11 @@ function onUserSessionChanged(user, locked) {
                 }  
             } else if (a[i].Domain != null) {
                 if (ret != null && ret.PartOfDomain === true) {
-					var upn = getLoggedOnUserBySessionId(a[i].SessionId);
-                    if(upn == null){
-                        upn = a[i].Username + '@' + ret.Domain;
+					var loggedOnUser = getLoggedOnUserBySessionId(a[i].SessionId);
+                    if(loggedOnUser == null || (/^[^@]+@[^@]+\.[^@]+$/.test(loggedOnUser) == false)){
+                        loggedOnUser = a[i].Username + '@' + ret.Domain;
                     }
-                    meshCoreObj.upnusers.push(upn);
+                    meshCoreObj.upnusers.push(loggedOnUser);
                 } else if (getJoinState() == 4) { // One account with Microsoft Account
                     var userobj = getLogonCacheKeys();
                     if(userobj && userobj.length > 0){
