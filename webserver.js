@@ -8091,7 +8091,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Validate OIDC Icon Url once and null it if it fails validation
             if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttonIconUrl)) {
                 if (obj.common.validateUrl(strategy.custom.buttonIconUrl)){
-                    if (await obj.common.validateRemoteImage(strategy.custom.buttonIconUrl)) {
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttonIconUrl, { agent: obj.httpsProxyAgent })) {
                         parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttonIconUrl);
                     } else {
                         parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttonIconUrl);

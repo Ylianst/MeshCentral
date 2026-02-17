@@ -240,6 +240,7 @@ module.exports.validateRemoteImage = function (url, options) {
     const maxHeadBytes = (typeof options.maxHeadBytes === 'number') ? options.maxHeadBytes : 16384; // 16 KB
     const maxContentLength = (typeof options.maxContentLength === 'number') ? options.maxContentLength : (5 * 1024 * 1024); // 5 MB
     const allowedMimes = options.allowedMimes || ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    const agent = options.agent || undefined;
     // This function MUST always resolve to boolean true/false and never reject.
     return new Promise((resolve) => {
         try {
@@ -254,6 +255,7 @@ module.exports.validateRemoteImage = function (url, options) {
                     const u = new URL(reqUrl);
                     const lib = (u.protocol === 'https:') ? https : http;
                     const reqOpts = { method: method, headers: headers || {}, timeout: timeoutMs };
+                    if (agent) { reqOpts.agent = agent; }
                     const req = lib.request(u, reqOpts, (res) => {
                         // Follow redirects (3xx)
                         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
