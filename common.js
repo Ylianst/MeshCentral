@@ -247,56 +247,16 @@ module.exports.isPrivateIp = function (ip_addr) {
         /^ff([0-9a-fA-F]{2,2}):/i.test(ip_addr)
 }
 
-// Validate a URL and optionally restrict allowed schemes (default: http, https)
-module.exports.validateUrl = function (url, allowedSchemes) {
+// Validate that a string is a parseable http or https URL with a hostname
+module.exports.validateUrl = function (url) {
     if (!module.exports.validateString(url, 1, 4096)) return false;
     try {
         const u = new URL(url);
-        var scheme = u.protocol;
-        if (scheme && scheme.endsWith(':')) scheme = scheme.substring(0, scheme.length - 1);
-        scheme = scheme.toLowerCase();
-
-        // Reject URLs with embedded credentials to avoid leaking secrets
-        // via logs, proxies, or redirect chains. Embedded credentials
-        // appear in the authority as user:pass@host and should not be
-        // allowed for server-side fetches.
-        if (u.username || u.password) return false;
-
-        if (allowedSchemes == null) allowedSchemes = ['http', 'https'];
-        else if (typeof allowedSchemes === 'string') allowedSchemes = [allowedSchemes];
-        if (!Array.isArray(allowedSchemes)) return false;
-
-        var ok = false;
-        for (var i in allowedSchemes) { if (String(allowedSchemes[i]).toLowerCase() === scheme) { ok = true; break; } }
-        if (!ok) return false;
-
-        // Must have a valid hostname
+        const scheme = (u.protocol || '').replace(/:$/, '').toLowerCase();
+        if (scheme !== 'http' && scheme !== 'https') return false;
         if (!u.hostname || u.hostname.length === 0) return false;
-        const hostname = u.hostname.toLowerCase();
-
-        // Disallow obvious local names
-        if (hostname === 'localhost') return false;
-        if (hostname.endsWith('.local')) return false;
-
-        // Basic IP/hostname checks are performed by module-scoped helpers (`isPrivateIp`) to mitigate SSRF without DNS lookups.
-
-        // If hostname is an IP literal, reject private/reserved addresses.
-        if (net.isIP(hostname)) {
-            if (module.exports.isPrivateIp(hostname)) return false;
-            return true;
-        }
-
-        // For hostnames that are not IP literals, disallow single-label hostnames (no dot)
-        // as they often resolve to internal names via local DNS. This is a conservative protection.
-        if (hostname.indexOf('.') === -1) return false;
-
-        // Passed basic checks
         return true;
     } catch (ex) {
-        // Avoid noisy logging and leaking full exception details in production.
-        if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production') {
-            console.error('validateUrl exception: ' + (ex && ex.message ? ex.message : ex));
-        }
         return false;
     }
 }
@@ -312,7 +272,7 @@ module.exports.validateRemoteImage = function (url, options) {
     // This function MUST always resolve to boolean true/false and never reject.
     return new Promise((resolve) => {
         try {
-            if (!module.exports.validateUrl(url, ['http', 'https'])) return resolve(false);
+            if (!module.exports.validateUrl(url)) return resolve(false);
 
             const http = require('http');
             const https = require('https');
@@ -328,8 +288,8 @@ module.exports.validateRemoteImage = function (url, options) {
                         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
                             res.resume();
                             const redirectUrl = new URL(res.headers.location, u).toString();
-                            // Re-validate each redirect target to prevent SSRF via redirects
-                            if (!module.exports.validateUrl(redirectUrl, ['http', 'https'])) {
+                            // Re-validate each redirect target
+                            if (!module.exports.validateUrl(redirectUrl)) {
                                 return cb(new Error('Invalid redirect URL'));
                             }
                             return doRequest(method, redirectUrl, headers, redirectsLeft - 1, cb);
