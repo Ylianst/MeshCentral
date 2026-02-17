@@ -433,10 +433,10 @@ After replacing the files, restart MeshCentral (or perform a hard browser refres
 
 #### Custom icon URL
 
-This allows remote icon URLs instead of replacing local files to change the login button icon. When enabled, an administrator can set a hosted image URL in the domain config under `authstrategies.oidc.custom` and MeshCentral will use that image for the OIDC login button. Example:
+This allows remote icon URLs instead of replacing local files to change the login button icon. When enabled, an administrator can set a hosted image URL in the domain config under `authStrategies.oidc.custom` and MeshCentral will use that image for the OIDC login button. Example:
 
 ```json
-"authstrategies": {
+"authStrategies": {
     "oidc": {
         "custom": {
             "buttonIconUrl": "https://cdn.example.com/icons/oidc32.png",
