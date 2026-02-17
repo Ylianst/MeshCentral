@@ -20619,7 +20619,7 @@
             if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
             // If we are trying to go to "My Users" and we are not a user manager, move to recordings
-            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
+            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0) && (userinfo != null) && (userinfo._id.split('/')[2][0] != '~')) { x = 52; }
 
             // Stop the list graph if active
             if (xxcurrentView == 17) deviceDetailsStatsClear();
