@@ -419,21 +419,7 @@ These properties only affect the login page UI (button tooltip/title) and are sa
 
 #### *Custom Icon*
 
-To use a custom icon for the OIDC login button (part of whitelabeling), create `meshcentral-web/public/images/login` in the MeshCentral installation root and copy the original icons from `node_modules/meshcentral/public/images/login` into it. Replace the files for the icon you want to change while keeping the same filenames and sizes:
-
-| Icon | Filenames | Size / Notes |
-| --- | --- | --- |
-| Generic OIDC | `oidc32.png`, `oidc64.png` | 32x32, 64x64 (@2x) |
-| Google preset | `google32.png`, `google64.png` | 32x32, 64x64 (@2x) |
-| Azure preset | `azure32.png`, `azure64.png` | 32x32, 64x64 (@2x) |
-
-Keep the same filenames and pixel dimensions so the UI picks them up automatically. For full whitelabeling guidance see the Web Branding section: [customization.md](customization.md#customizing-web-icons).
-
-After replacing the files, restart MeshCentral (or perform a hard browser refresh) to see the new icons.
-
-#### Custom icon URL
-
-This allows remote icon URLs instead of replacing local files to change the login button icon. When enabled, an administrator can set a hosted image URL in the domain config under `authStrategies.oidc.custom` and MeshCentral will use that image for the OIDC login button. Example:
+The OIDC login button icon can be customized by setting a remote image URL in the domain config under `authStrategies.oidc.custom`. MeshCentral will validate the image at startup and use it for the login button. Example:
 
 ```json
 "authStrategies": {
@@ -447,13 +433,21 @@ This allows remote icon URLs instead of replacing local files to change the logi
 }
 ```
 
-Notes and constraints:
-
-- **Server-side validation:** remote URLs will be validated before use (timeouts, size limits, content-type checks and magic-byte inspection). If validation fails the UI will fall back to the built-in local icons or the file-replacement method described above.
-- **Allowed formats:** PNG, JPEG, WEBP, GIF, ICO, and SVG are supported.
+- **Server-side validation:** remote URLs are validated before use (timeouts, size limits, content-type checks and magic-byte inspection). If validation fails the UI falls back to the built-in local icons.
+- **Allowed formats:** PNG, JPEG, WEBP, GIF, ICO, and SVG.
 - **2x icon:** if `buttonIconUrl2x` is not set, `buttonIconUrl` is used for both standard and high-DPI displays.
-- **Fallback behavior:** if a remote image is not provided or validation fails, continue to use local files placed under `meshcentral-web/public/images/login` (the file-replacement method remains supported and is unchanged).
+- **Fallback behavior:** if a remote image is not provided or validation fails, MeshCentral uses the default local icons (or any local overrides, see note below).
 
+!!! note "Alternative: local file replacement"
+    You can also replace the login icons on disk instead of using a remote URL. Create `meshcentral-web/public/images/login` in the MeshCentral installation root and copy the original icons from `node_modules/meshcentral/public/images/login` into it. Replace the files you want to change while keeping the same filenames and sizes:
+
+    | Icon | Filenames | Size / Notes |
+    | --- | --- | --- |
+    | Generic OIDC | `oidc32.png`, `oidc64.png` | 32x32, 64x64 (@2x) |
+    | Google preset | `google32.png`, `google64.png` | 32x32, 64x64 (@2x) |
+    | Azure preset | `azure32.png`, `azure64.png` | 32x32, 64x64 (@2x) |
+
+    Restart MeshCentral (or hard-refresh your browser) after replacing files. For full whitelabeling guidance see the Web Branding section: [customization.md](customization.md#customizing-web-icons).
 
 ### "Groups" Options
 
