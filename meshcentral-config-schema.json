@@ -3930,7 +3930,7 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 128,
-                        "description": "Custom text for the OIDC login buttons shown on the login page (tooltip only). Set to empty string to hide tooltip. Maximum 128 characters."
+                        "description": "Custom text for the OIDC login buttons shown on the login page (tooltip only). Minimum 1 character, maximum 128 characters."
                       },
                       "buttonIconUrl": {
                         "type": "string",
