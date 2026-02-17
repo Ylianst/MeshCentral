@@ -137,6 +137,25 @@ function getDomainInfo() {
     return (ret);
 }
 
+function getLoggedOnUserBySessionId(sessionId) {
+
+    try {
+        const result = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine,
+            ("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\" + sessionId), 'LoggedOnUser'
+        );
+
+        if (result) {
+            return result.replace(/^[^\\]+\\/, '');
+        }
+
+        return null;
+
+    } catch (err) {
+        //console.error("Registry read failed:", err.message);
+        return null;
+    }
+}
+
 function getLogonCacheKeys() {
     var registry = require('win-registry');
     var HKLM = registry.HKEY.LocalMachine;
@@ -799,7 +818,11 @@ function onUserSessionChanged(user, locked) {
                 }  
             } else if (a[i].Domain != null) {
                 if (ret != null && ret.PartOfDomain === true) {
-                    meshCoreObj.upnusers.push(a[i].Username + '@' + ret.Domain);
+					var upn = getLoggedOnUserBySessionId(a[i].SessionId);
+                    if(upn == null){
+                        upn = a[i].Username + '@' + ret.Domain;
+                    }
+                    meshCoreObj.upnusers.push(upn);
                 } else if (getJoinState() == 4) { // One account with Microsoft Account
                     var userobj = getLogonCacheKeys();
                     if(userobj && userobj.length > 0){
