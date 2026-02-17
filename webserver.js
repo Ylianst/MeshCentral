@@ -3531,16 +3531,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else if (obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
                 switch(domain.authstrategies.oidc.custom.preset) {
                     case 'azure':
-                        oidcButtonText = "Sign in with Azure using OpenID Connect";
+                        oidcButtonText = "Sign-in with Azure using OpenID Connect";
                         break;
                     case 'google':
-                        oidcButtonText = "Sign in with Google using OpenID Connect";
+                        oidcButtonText = "Sign-in with Google using OpenID Connect";
                         break;
                     default:
-                        oidcButtonText = "Sign in using OpenID Connect";
+                        oidcButtonText = "Sign-in using OpenID Connect";
                 }
             } else {
-                oidcButtonText = "Sign in using OpenID Connect";
+                oidcButtonText = "Sign-in using OpenID Connect";
             }
         }
         render(req, res,
