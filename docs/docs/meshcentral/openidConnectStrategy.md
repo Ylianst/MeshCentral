@@ -399,9 +399,9 @@ MeshCentral allows customizing the tooltip/label text shown on OpenID Connect lo
 
 | Preset | Default button text |
 | --- | --- |
-| Generic (no preset) | `Sign in using OpenID Connect` |
-| Google preset | `Sign in with Google using OpenID Connect` |
-| Azure preset | `Sign in with Azure using OpenID Connect` |
+| Generic (no preset) | `Sign-in using OpenID Connect` |
+| Google preset | `Sign-in with Google using OpenID Connect` |
+| Azure preset | `Sign-in with Azure using OpenID Connect` |
 
 Example:
 
