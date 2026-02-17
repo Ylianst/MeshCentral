@@ -3504,8 +3504,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
         if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
             if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttonIconUrl)) {
-                oidcButtonIcon = domain.authstrategies.oidc.custom.buttonIconUrl
-                oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl + ' 2x'
+                oidcButtonIcon = domain.authstrategies.oidc.custom.buttonIconUrl;
+                oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl + ' 2x';
             } else {
                 switch (domain.authstrategies.oidc.custom.preset) {
                     case 'azure':
@@ -3523,7 +3523,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             if (obj.common.validateString(domain.authstrategies.oidc.custom.buttonText)) {
-                oidcButtonText = domain.authstrategies.oidc.custom.buttonText
+                oidcButtonText = domain.authstrategies.oidc.custom.buttonText;
             } else if (obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
                 switch(domain.authstrategies.oidc.custom.preset) {
                     case 'azure':
@@ -8095,11 +8095,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttonIconUrl);
                     } else {
                         parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttonIconUrl);
-                        strategy.custom.buttonIconUrl = null
+                        strategy.custom.buttonIconUrl = null;
                     }
                 } else {
                     parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttonIconUrl);
-                    strategy.custom.buttonIconUrl = null
+                    strategy.custom.buttonIconUrl = null;
                 }
             }
             // Setup strategy and save configs for later
