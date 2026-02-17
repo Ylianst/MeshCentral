@@ -248,7 +248,6 @@ module.exports.validateRemoteImage = function (url, options) {
 
             const http = require('http');
             const https = require('https');
-            const { URL } = require('url');
 
             function doRequest(method, reqUrl, headers, redirectsLeft, cb) {
                 try {
