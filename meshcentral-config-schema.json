@@ -3934,7 +3934,13 @@
                       },
                       "buttonIconUrl": {
                         "type": "string",
-                        "description": "URL to a hosted small icon (supports PNG, JPEG, WEBP, GIF). The server validates remote images before use; if validation fails the UI falls back to local login icons. SVGs are not allowed by default.",
+                        "description": "URL to a hosted small icon for standard displays (supports PNG, JPEG, WEBP, GIF, ICO). The server validates remote images before use; if validation fails the UI falls back to local login icons. SVGs are not allowed by default. Used for both 1x and 2x if buttonIconUrl2x is not set.",
+                        "format": "uri",
+                        "pattern": "^[hH][tT][tT][pP][sS]?://"
+                      },
+                      "buttonIconUrl2x": {
+                        "type": "string",
+                        "description": "Optional URL to a higher resolution icon for 2x/high-DPI displays. If not set, buttonIconUrl is used for both. The server validates remote images before use.",
                         "format": "uri",
                         "pattern": "^[hH][tT][tT][pP][sS]?://"
                       },

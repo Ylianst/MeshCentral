@@ -3505,7 +3505,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
             if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttonIconUrl)) {
                 oidcButtonIcon = domain.authstrategies.oidc.custom.buttonIconUrl;
-                oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl + ' 2x';
+                if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttonIconUrl2x)) {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl2x + ' 2x';
+                } else {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl + ' 2x';
+                }
             } else {
                 switch (domain.authstrategies.oidc.custom.preset) {
                     case 'azure':
@@ -8100,6 +8104,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 } else {
                     parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttonIconUrl);
                     strategy.custom.buttonIconUrl = null;
+                }
+            }
+            // Validate OIDC 2x Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttonIconUrl2x)) {
+                if (obj.common.validateUrl(strategy.custom.buttonIconUrl2x)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttonIconUrl2x, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated 2x Icon URL and Image: ' + strategy.custom.buttonIconUrl2x);
+                    } else {
+                        parent.debug('warning', 'OIDC: 2x Icon URL and Image validation failed: ' + strategy.custom.buttonIconUrl2x);
+                        strategy.custom.buttonIconUrl2x = null;
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid 2x Icon URL: ' + strategy.custom.buttonIconUrl2x);
+                    strategy.custom.buttonIconUrl2x = null;
                 }
             }
             // Setup strategy and save configs for later

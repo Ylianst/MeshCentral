@@ -440,6 +440,7 @@ This allows remote icon URLs instead of replacing local files to change the logi
     "oidc": {
         "custom": {
             "buttonIconUrl": "https://cdn.example.com/icons/oidc32.png",
+            "buttonIconUrl2x": "https://cdn.example.com/icons/oidc64.png",
             "buttonText": "Sign in with Custom SSO"
         }
     }
@@ -449,7 +450,8 @@ This allows remote icon URLs instead of replacing local files to change the logi
 Notes and constraints:
 
 - **Server-side validation:** remote URLs will be validated before use (timeouts, size limits, content-type checks and magic-byte inspection). If validation fails the UI will fall back to the built-in local icons or the file-replacement method described above.
-- **Allowed formats:** remote SVGs are not permitted by default for security and sanitization reasons; prefer PNG/JPEG/WEBP/GIF.
+- **Allowed formats:** remote SVGs are not permitted by default for security and sanitization reasons; prefer PNG/JPEG/WEBP/GIF/ICO.
+- **2x icon:** if `buttonIconUrl2x` is not set, `buttonIconUrl` is used for both standard and high-DPI displays.
 - **Fallback behavior:** if a remote image is not provided or validation fails, continue to use local files placed under `meshcentral-web/public/images/login` (the file-replacement method remains supported and is unchanged).
 
 
