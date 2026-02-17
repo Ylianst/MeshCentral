@@ -218,67 +218,33 @@ module.exports.validateEmailDomain = function(email, allowedDomains) {
 
     return true;
 }
-// IP helper functions (defined as module exports like other helpers in this file)
-module.exports.isIPv4Private = function (ip) {
-    const parts = String(ip).split('.').map((p) => parseInt(p, 10));
-    if (parts.length !== 4 || parts.some((p) => isNaN(p) || p < 0 || p > 255)) return true;
-    const [a, b, c, d] = parts;
-    // 10.0.0.0/8
-    if (a === 10) return true;
-    // 127.0.0.0/8 loopback
-    if (a === 127) return true;
-    // 169.254.0.0/16 link-local
-    if (a === 169 && b === 254) return true;
-    // 172.16.0.0/12
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    // 192.168.0.0/16
-    if (a === 192 && b === 168) return true;
-    // 100.64.0.0/10 Carrier-grade NAT
-    if (a === 100 && b >= 64 && b <= 127) return true;
-    // Block multicast (224.0.0.0/4) and reserved addresses
-    if (a >= 224) return true;
-    // Block 0.0.0.0/8
-    if (a === 0) return true;
-    // Explicitly block cloud metadata IP commonly abused
-    if (a === 169 && b === 254 && c === 169 && d === 254) return true;
-    return false;
-}
+// Return true if this is a private/reserved IP address, using the ipcheck package (already a project dependency)
+module.exports.isPrivateIp = function (ip_addr) {
+    if (!ip_addr) return true;
+    ip_addr = String(ip_addr);
 
-module.exports.isIPv6Private = function (ip) {
-    // Normalize to lowercase and remove zone index if present (e.g., %eth0)
-    if (!ip) return true;
-    let s = String(ip).toLowerCase();
-    const pct = s.indexOf('%');
-    if (pct !== -1) s = s.substring(0, pct);
-    // Detect IPv4-mapped IPv6 addresses like ::ffff:127.0.0.1 and validate the embedded IPv4
-    if (s.startsWith('::ffff:')) {
-        const embedded = s.substring('::ffff:'.length);
-        // If the embedded part is dotted IPv4, validate it using the IPv4 helper
-        if (embedded.indexOf('.') !== -1) {
-            return module.exports.isIPv4Private(embedded);
-        }
-        // For non-dotted forms (hex), be conservative and treat as private
-        return true;
-    }
-    // ::1 loopback
-    if (s === '::1') return true;
-    // unspecified
-    if (s === '::') return true;
-    // Unique local addresses fc00::/7 (fc or fd)
-    if (s.startsWith('fc') || s.startsWith('fd')) return true;
-    // Link-local fe80::/10 -> any address starting with fe8, fe9, fea, feb
-    if (/^fe[89ab]/i.test(s)) return true;
-    // Multicast ff00::/8
-    if (s.startsWith('ff')) return true;
-    return false;
-}
+    // If this is a loopback address, return true
+    if ((ip_addr == '127.0.0.1') || (ip_addr == '::1')) return true;
 
-module.exports.isPrivateIp = function (ip) {
-    const type = net.isIP(String(ip));
-    if (type === 4) return module.exports.isIPv4Private(ip);
-    if (type === 6) return module.exports.isIPv6Private(ip);
-    // If not an IP literal, we don't know here — treat as hostname and apply hostname checks below
-    return false;
+    // Check IPv4 private addresses
+    const ipcheck = require('ipcheck');
+    const IPv4PrivateRanges = ['0.0.0.0/8', '10.0.0.0/8', '100.64.0.0/10', '127.0.0.0/8', '169.254.0.0/16', '172.16.0.0/12', '192.0.0.0/24', '192.0.0.0/29', '192.0.0.8/32', '192.0.0.9/32', '192.0.0.10/32', '192.0.0.170/32', '192.0.0.171/32', '192.0.2.0/24', '192.31.196.0/24', '192.52.193.0/24', '192.88.99.0/24', '192.168.0.0/16', '192.175.48.0/24', '198.18.0.0/15', '198.51.100.0/24', '203.0.113.0/24', '240.0.0.0/4', '255.255.255.255/32']
+    for (var i in IPv4PrivateRanges) { if (ipcheck.match(ip_addr, IPv4PrivateRanges[i])) return true; }
+
+    // Check IPv6 private addresses
+    return /^::$/.test(ip_addr) ||
+        /^::1$/.test(ip_addr) ||
+        /^::f{4}:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ip_addr) ||
+        /^::f{4}:0.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ip_addr) ||
+        /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ip_addr) ||
+        /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
+        /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
+        /^2001:2[0-9a-fA-F]:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
+        /^2001:db8:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
+        /^2002:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
+        /^f[c-d]([0-9a-fA-F]{2,2}):/i.test(ip_addr) ||
+        /^fe[8-9a-bA-B][0-9a-fA-F]:/i.test(ip_addr) ||
+        /^ff([0-9a-fA-F]{2,2}):/i.test(ip_addr)
 }
 
 // Validate a URL and optionally restrict allowed schemes (default: http, https)
