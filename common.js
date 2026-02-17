@@ -232,14 +232,14 @@ module.exports.validateUrl = function (url) {
     }
 }
 
-// Validate a remote image URL by checking headers and magic bytes (PNG/JPEG/GIF/WEBP)
+// Validate a remote image URL by checking headers and magic bytes (PNG/JPEG/GIF/WEBP/ICO)
 // Returns a Promise<boolean> that always resolves to true (valid image) or false (invalid/error) and never rejects.
 module.exports.validateRemoteImage = function (url, options) {
     options = options || {};
     const timeoutMs = (typeof options.timeoutMs === 'number') ? options.timeoutMs : 5000;
     const maxHeadBytes = (typeof options.maxHeadBytes === 'number') ? options.maxHeadBytes : 16384; // 16 KB
     const maxContentLength = (typeof options.maxContentLength === 'number') ? options.maxContentLength : (5 * 1024 * 1024); // 5 MB
-    const allowedMimes = options.allowedMimes || ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    const allowedMimes = options.allowedMimes || ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/x-icon', 'image/vnd.microsoft.icon'];
     const agent = options.agent || undefined;
     // This function MUST always resolve to boolean true/false and never reject.
     return new Promise((resolve) => {
@@ -286,6 +286,8 @@ module.exports.validateRemoteImage = function (url, options) {
                 if (b.length >= 6 && b.slice(0, 3).toString('ascii') === 'GIF') return { mime: 'image/gif', ext: 'gif' };
                 // WEBP (RIFF....WEBP)
                 if (b.length >= 12 && b.slice(0, 4).toString('ascii') === 'RIFF' && b.slice(8, 12).toString('ascii') === 'WEBP') return { mime: 'image/webp', ext: 'webp' };
+                // ICO (00 00 01 00)
+                if (b[0] === 0x00 && b[1] === 0x00 && b[2] === 0x01 && b[3] === 0x00) return { mime: 'image/x-icon', ext: 'ico' };
                 return null;
             }
 
