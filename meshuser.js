@@ -5653,6 +5653,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'cores': [serverUserCommandCores, ""],
         'dbcounters': [serverUserCommandDbCounters, ""],
         'dbstats': [serverUserCommandDbStats, ""],
+        'dbcompact': [serverUserCommandDbCompact, ""],
         'dispatchtable': [serverUserCommandDispatchTable, ""],
         'dropallcira': [serverUserCommandDropAllCira, ""],
         'dupagents': [serverUserCommandDupAgents, ""],
@@ -7522,6 +7523,50 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverUserCommandDbCounters(cmdData) {
         try { ws.send(JSON.stringify({ action: 'serverconsole', value: JSON.stringify(parent.parent.db.dbCounters, null, 2), tag: cmdData.command.tag })); } catch (ex) { }
+    }
+
+    function serverUserCommandDbCompact(cmdData) {
+        if (user.siteadmin === SITERIGHT_ADMIN) {
+            if (parent.parent.db.databaseType == 1) { // Only compact if using NeDB, other databases should handle compaction on their own
+                parent.parent.db.file.compactDatafile(function (err) {
+                    if (err) { 
+                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Error compacting database: ' + err, tag: cmdData.command.tag })); } catch (ex) { }
+                    } else {
+                        parent.parent.db.eventsfile.compactDatafile(function (err) {
+                            if (err) {
+                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Error compacting events database: ' + err, tag: cmdData.command.tag })); } catch (ex) { }
+                            } else {
+                                parent.parent.db.powerfile.compactDatafile(function (err) {
+                                    if (err) {
+                                        try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Error compacting power database: ' + err, tag: cmdData.command.tag })); } catch (ex) { }
+                                    } else {
+                                        parent.parent.db.serverstatsfile.compactDatafile(function (err) {
+                                            if (err) {
+                                                try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Error compacting server stats database: ' + err, tag: cmdData.command.tag })); } catch (ex) { }
+                                            } else {
+                                                if (parent.parent.db.pluginsActive) {
+                                                    parent.parent.db.pluginsfile.compactDatafile(function (err) {
+                                                        if (err) {
+                                                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Error compacting plugins database: ' + err, tag: cmdData.command.tag })); } catch (ex) { }
+                                                        } else {
+                                                            try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Database compacted successfully.', tag: cmdData.command.tag })); } catch (ex) { }
+                                                        }
+                                                    });
+                                                } else {
+                                                    try { ws.send(JSON.stringify({ action: 'serverconsole', value: 'Database compacted successfully.', tag: cmdData.command.tag })); } catch (ex) { }
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            } else {
+                cmdData.result = 'Database compaction not supported for this database type.';
+            }
+        }
     }
 
     function serverUserCommandServerUpdate(cmdData) {
