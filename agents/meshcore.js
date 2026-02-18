@@ -138,7 +138,6 @@ function getDomainInfo() {
 }
 
 function getLoggedOnUserBySessionId(sessionId) {
-
     try {
         const result = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine,
             ("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\" + sessionId), 'LoggedOnUser'
@@ -151,7 +150,6 @@ function getLoggedOnUserBySessionId(sessionId) {
         return null;
 
     } catch (err) {
-        //console.error("Registry read failed:", err.message);
         return null;
     }
 }
