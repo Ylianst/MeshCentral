@@ -3503,12 +3503,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
         var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
         if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
-            if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttonIconUrl)) {
-                oidcButtonIcon = domain.authstrategies.oidc.custom.buttonIconUrl;
-                if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttonIconUrl2x)) {
-                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl2x + ' 2x';
+            if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl)) {
+                oidcButtonIcon = domain.authstrategies.oidc.custom.buttoniconurl;
+                if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl2x)) {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl2x + ' 2x';
                 } else {
-                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttonIconUrl + ' 2x';
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl + ' 2x';
                 }
             } else {
                 switch (domain.authstrategies.oidc.custom.preset) {
@@ -3526,8 +3526,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             }
 
-            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttonText, 1, 128)) {
-                oidcButtonText = domain.authstrategies.oidc.custom.buttonText;
+            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttontext, 1, 128)) {
+                oidcButtonText = domain.authstrategies.oidc.custom.buttontext;
             } else if (obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
                 switch(domain.authstrategies.oidc.custom.preset) {
                     case 'azure':
@@ -8093,31 +8093,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.obj.client = client
 
             // Validate OIDC Icon Url once and null it if it fails validation
-            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttonIconUrl)) {
-                if (obj.common.validateUrl(strategy.custom.buttonIconUrl)){
-                    if (await obj.common.validateRemoteImage(strategy.custom.buttonIconUrl, { agent: obj.httpsProxyAgent })) {
-                        parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttonIconUrl);
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttoniconurl);
                     } else {
-                        parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttonIconUrl);
-                        strategy.custom.buttonIconUrl = null;
+                        parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl);
+                        strategy.custom.buttoniconurl = null;
                     }
                 } else {
-                    parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttonIconUrl);
-                    strategy.custom.buttonIconUrl = null;
+                    parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttoniconurl);
+                    strategy.custom.buttoniconurl = null;
                 }
             }
             // Validate OIDC 2x Icon Url once and null it if it fails validation
-            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttonIconUrl2x)) {
-                if (obj.common.validateUrl(strategy.custom.buttonIconUrl2x)){
-                    if (await obj.common.validateRemoteImage(strategy.custom.buttonIconUrl2x, { agent: obj.httpsProxyAgent })) {
-                        parent.debug('verbose', 'OIDC: Validated 2x Icon URL and Image: ' + strategy.custom.buttonIconUrl2x);
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl2x)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl2x)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl2x, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated 2x Icon URL and Image: ' + strategy.custom.buttoniconurl2x);
                     } else {
-                        parent.debug('warning', 'OIDC: 2x Icon URL and Image validation failed: ' + strategy.custom.buttonIconUrl2x);
-                        strategy.custom.buttonIconUrl2x = null;
+                        parent.debug('warning', 'OIDC: 2x Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl2x);
+                        strategy.custom.buttoniconurl2x = null;
                     }
                 } else {
-                    parent.debug('warning', 'OIDC: Invalid 2x Icon URL: ' + strategy.custom.buttonIconUrl2x);
-                    strategy.custom.buttonIconUrl2x = null;
+                    parent.debug('warning', 'OIDC: Invalid 2x Icon URL: ' + strategy.custom.buttoniconurl2x);
+                    strategy.custom.buttoniconurl2x = null;
                 }
             }
             // Setup strategy and save configs for later
