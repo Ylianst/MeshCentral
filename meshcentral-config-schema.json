@@ -3688,9 +3688,12 @@
                         ]
                       },
                       "post_logout_redirect_uri": {
-                        "type": "string",
+                        "type": [
+                          "string",
+                          "boolean"
+                        ],
                         "format": "uri",
-                        "description": "URI for your IdP to send you after logging out of IdP via MeshCentral. (Default is https:[currentHost][currentPath]/login)"
+                        "description": "URI for your IdP to send you after logging out of IdP via MeshCentral. (Default is https:[currentHost][currentPath]/login) OR set to false to not send a post logout redirect_uri"
                       },
                       "default_max_age": {
                         "type": "number",
