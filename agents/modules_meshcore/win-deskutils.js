@@ -248,7 +248,52 @@ function idle_getSeconds(tsid)
     return Math.floor(idleMs / 1000);
 }
 
+//
+// This function returns the minimum idle time across all active/connected user sessions.
+// This is useful for detecting if ANY user (console or RDP) is actively using the machine.
+// Returns a promise that resolves to the minimum idle seconds, or -1 if no users are logged in.
+//
+function idle_getSecondsAllSessions()
+{
+    var promise = require('promise');
+    return new promise(function (resolve, reject)
+    {
+        require('user-sessions').enumerateUsers().then(function (sessions)
+        {
+            var minIdleSeconds = Infinity;
+            for (var sessionId in sessions)
+            {
+                var session = sessions[sessionId];
+                
+                // Only check Active sessions with a logged-in user (Username is present)
+                // Skip "Connected" sessions (console when disconnected) and "Listening" sessions
+                if (session.State === 'Active' && session.Username && session.Username !== '')
+                {
+                    try
+                    {
+                        var idleSeconds = parseFloat(sessionDispatch(session.SessionId, 'idle', 'getSeconds', []));
+                        if (idleSeconds < minIdleSeconds)
+                        {
+                            minIdleSeconds = idleSeconds;
+                        }
+                    }
+                    catch (e)
+                    {
+                        // Session might not support GetLastInputInfo, skip it
+                    }
+                }
+            }
+            
+            // If no active user sessions found, return -1 to indicate "no users logged in"
+            resolve(minIdleSeconds === Infinity ? -1 : Math.floor(minIdleSeconds));
+        }).catch(function (err)
+        {
+            reject(err);
+        });
+    });
+}
+
 module.exports = { background: { get: background_get, set: background_set } };
 module.exports.mouse = { getTrails: mousetrails_get, setTrails: mousetrails_set };
-module.exports.idle = { getSeconds: idle_getSeconds };
+module.exports.idle = { getSeconds: idle_getSeconds, getSecondsAllSessions: idle_getSecondsAllSessions };
 module.exports.dispatch = dispatch;

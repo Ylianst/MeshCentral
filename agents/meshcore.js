@@ -4256,7 +4256,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'idletime':
                 try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "idletime", type "help" for list of available commands.'; break; }
-                response = 'idling for ' + require('win-deskutils').idle.getSeconds(null) + ' seconds';
+                require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) { sendConsoleText((seconds === -1 ? 'No active users' : 'Idle time for all sessions: ' + seconds + ' seconds'), sessionid); });
                 break;
             case 'taskbar':
                 try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of available commands.'; break; }
@@ -6339,9 +6339,10 @@ function sendPeriodicServerUpdate(flags, force) {
 
         // Calculate Windows Idle Time
         try {
-            var idletime = require('win-deskutils').idle.getSeconds(null);
-            meshCoreObj.idletime = idletime;
+            require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) {
+                meshCoreObj.idletime = seconds;
             meshCoreObjChanged();
+            });
         } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
     }
 
