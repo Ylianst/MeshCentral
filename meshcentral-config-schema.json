@@ -3929,6 +3929,24 @@
                           "google"
                         ]
                       },
+                      "buttonText": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Custom text for the OIDC login buttons shown on the login page (tooltip only). Minimum 1 character, maximum 128 characters."
+                      },
+                      "buttonIconUrl": {
+                        "type": "string",
+                        "description": "URL to a hosted icon for standard displays (supports PNG, JPEG, WEBP, GIF, ICO, SVG). The server validates remote images before use; if validation fails the UI falls back to local login icons. Used for both 1x and 2x if buttonIconUrl2x is not set.",
+                        "format": "uri",
+                        "pattern": "^[hH][tT][tT][pP][sS]?://"
+                      },
+                      "buttonIconUrl2x": {
+                        "type": "string",
+                        "description": "Optional URL to a higher resolution icon for 2x/high-DPI displays. If not set, buttonIconUrl is used for both. The server validates remote images before use.",
+                        "format": "uri",
+                        "pattern": "^[hH][tT][tT][pP][sS]?://"
+                      },
                       "tenant_id": {
                         "type": "string",
                         "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"

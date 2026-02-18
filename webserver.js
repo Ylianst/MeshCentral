@@ -3500,6 +3500,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Render the login page
+        // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
+        var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
+        if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
+            if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl)) {
+                oidcButtonIcon = domain.authstrategies.oidc.custom.buttoniconurl;
+                if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl2x)) {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl2x + ' 2x';
+                } else {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl + ' 2x';
+                }
+            } else {
+                switch (domain.authstrategies.oidc.custom.preset) {
+                    case 'azure':
+                        oidcButtonIcon = "images/login/azure32.png";
+                        oidcButtonIcon2x = "images/login/azure64.png 2x";
+                        break;
+                    case 'google':
+                        oidcButtonIcon = "images/login/google32.png";
+                        oidcButtonIcon2x = "images/login/google64.png 2x";
+                        break;
+                    default:
+                        oidcButtonIcon = "images/login/oidc32.png";
+                        oidcButtonIcon2x = "images/login/oidc64.png 2x";
+                }
+            }
+
+            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttontext, 1, 128)) {
+                oidcButtonText = domain.authstrategies.oidc.custom.buttontext;
+            }
+        }
         render(req, res,
             getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
@@ -3551,6 +3581,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 autofido: autofido,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
+                oidcButtonText: oidcButtonText || '',
+                oidcButtonIcon: oidcButtonIcon || 'images/login/oidc32.png',
+                oidcButtonIcon2x: oidcButtonIcon2x || 'images/login/oidc64.png 2x',
                 loginpicture: (typeof domain.loginpicture == 'string'),
                 tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,
@@ -6809,13 +6842,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.apihostname == 'string')) {
                 duoSrc = domain.duo2factor.apihostname;
             }
-                
+
+            // If a custom OIDC button icon URL is configured, allow its origin in img-src CSP
+            var extraImgSrc = '';
+            if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
+                const seen = {};
+                const urls = [domain.authstrategies.oidc.custom.buttoniconurl, domain.authstrategies.oidc.custom.buttoniconurl2x];
+                for (var k = 0; k < urls.length; k++) {
+                    if (obj.common.validateUrl(urls[k])) {
+                        try { const u = new URL(urls[k]); if (!seen[u.origin]) { extraImgSrc += ' ' + u.origin; seen[u.origin] = true; } } catch (e) {}
+                    }
+                }
+            }
+
             // Finish setup security headers
             const headers = {
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'"
+                'Content-Security-Policy': "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + extraImgSrc + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'"
             };
             if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
             if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
@@ -8046,6 +8091,34 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.client = client.metadata
             strategy.obj.client = client
 
+            // Validate OIDC Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttoniconurl);
+                    } else {
+                        parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl);
+                        strategy.custom.buttoniconurl = null;
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttoniconurl);
+                    strategy.custom.buttoniconurl = null;
+                }
+            }
+            // Validate OIDC 2x Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl2x)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl2x)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl2x, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated 2x Icon URL and Image: ' + strategy.custom.buttoniconurl2x);
+                    } else {
+                        parent.debug('warning', 'OIDC: 2x Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl2x);
+                        strategy.custom.buttoniconurl2x = null;
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid 2x Icon URL: ' + strategy.custom.buttoniconurl2x);
+                    strategy.custom.buttoniconurl2x = null;
+                }
+            }
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             parent.config.domains[domain.id].authstrategies.oidc = strategy;
