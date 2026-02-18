@@ -4986,7 +4986,7 @@
                     r += '<td style=text-align:center;font-size:x-small>' + ((node.lastbootuptime != null) ? printDateTime(new Date(node.lastbootuptime)) : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { // Idle Time
-                    r += '<td style=text-align:center;font-size:x-small>' + ((node.idletime != null) ? printTimer(node.idletime) : "");
+                    r += '<td style=text-align:center;font-size:x-small>' + ((node.idletime != null && node.idletime != -1) ? printTimer(node.idletime) : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
@@ -7746,7 +7746,7 @@
                 }
                 
                 // Windows Idle Time
-                if (node.idletime) { x += addDeviceAttribute("Idle Time", printTimer(node.idletime)); }
+                if (node.idletime && node.idletime != -1) { x += addDeviceAttribute("Idle Time", printTimer(node.idletime)); }
 
                 // Display device user consent
                 if ((node.agent != null) && (node.agent.id != 14) && (node.mtype != 3)) {

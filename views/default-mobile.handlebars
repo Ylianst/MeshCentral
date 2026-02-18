@@ -6392,7 +6392,7 @@
             }
 
             // Windows Idle Time
-            if (node.idletime) { x += addDetailItem("Idle Time", printTimer(node.idletime)); }
+            if (node.idletime && node.idletime != -1) { x += addDetailItem("Idle Time", printTimer(node.idletime)); }
 
             if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software' }); }
 
