@@ -4195,11 +4195,12 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,deskbackground,domaininfo';
+                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,domaininfo';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
                     try { require('win-info'); availcommands += ',installedapps,qfe,defender,av,installedstoreapps'; } catch (ex) { }
+                    try { require('win-deskutils'); availcommands += ',mousetrails,idletime,deskbackground'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -4252,6 +4253,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         response = 'Proper usage: deskbackground [path]';
                         break;
                 }
+                break;
+            case 'idletime':
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "idletime", type "help" for list of available commands.'; break; }
+                response = 'idling for ' + require('win-deskutils').idle.getSeconds(null) + ' seconds';
                 break;
             case 'taskbar':
                 try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of available commands.'; break; }
@@ -6221,7 +6226,7 @@ function handleServerConnection(state) {
         LastPeriodicServerUpdate = null;
         sendPeriodicServerUpdate(null, true);
         if (selfInfoUpdateTimer == null) {
-            selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); // 20 minutes
+            selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 300000); // 5 minutes
             selfInfoUpdateTimer.metadata = 'meshcore (InfoUpdate Timer)';
         }
 
@@ -6331,6 +6336,13 @@ function sendPeriodicServerUpdate(flags, force) {
             meshCoreObj.defender = require('win-info').defender();
             meshCoreObjChanged();
         } catch (ex) { }
+
+        // Calculate Windows Idle Time
+        try {
+            var idletime = require('win-deskutils').idle.getSeconds(null);
+            meshCoreObj.idletime = idletime;
+            meshCoreObjChanged();
+        } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
     }
 
     // Send available data right now
