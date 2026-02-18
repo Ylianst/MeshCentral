@@ -41,7 +41,7 @@ function Global(transport, fastPathTransport) {
 inherits(Global, events.EventEmitter);
 
 /**
- * Send formated PDU message
+ * Send formatted PDU message
  * @param message {type.Component} PDU message
  */
 Global.prototype.sendPDU = function(message) {
@@ -49,7 +49,7 @@ Global.prototype.sendPDU = function(message) {
 };
 
 /**
- * Send formated Data PDU message
+ * Send formatted Data PDU message
  * @param message {type.Component} PDU message
  */
 Global.prototype.sendDataPDU = function(message) {
