@@ -413,7 +413,7 @@ function processConsoleCommand(cmd, args, rights, sessionid)
     if (response != null) { sendConsoleText(response, sessionid); }
 }
 
-// Get a formated response for a given directory path
+// Get a formatted response for a given directory path
 function getDirectoryInfo(reqpath)
 {
     var response = { path: reqpath, dir: [] };
