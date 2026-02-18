@@ -1,0 +1,24 @@
+.md-grid {
+    max-width: 80%;
+}
+
+img {
+    height: auto;
+    width: auto;
+    border: none;
+    border-radius: 10px;
+    transition: transform ease-in-out 0.3s;
+}
+img:hover {
+    transform: scale(1.025); /* Slightly enlarges on hover */
+}
+
+.video-wrapper iframe {
+    width: 100%; /* Ratio 16:9 */
+    height: 600px; /* Ratio 16:9 */
+    border-radius: 10px; /* Rounded Corners */
+    transition: transform ease-in-out 0.3s;
+}
+.video-wrapper:hover iframe {
+    transform: scale(1.025); /* Slightly enlarges on hover */
+}
