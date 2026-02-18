@@ -3528,19 +3528,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             if (obj.common.validateString(domain.authstrategies.oidc.custom.buttontext, 1, 128)) {
                 oidcButtonText = domain.authstrategies.oidc.custom.buttontext;
-            } else if (obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
-                switch(domain.authstrategies.oidc.custom.preset) {
-                    case 'azure':
-                        oidcButtonText = "Sign-in with Azure using OpenID Connect";
-                        break;
-                    case 'google':
-                        oidcButtonText = "Sign-in with Google using OpenID Connect";
-                        break;
-                    default:
-                        oidcButtonText = "Sign-in using OpenID Connect";
-                }
-            } else {
-                oidcButtonText = "Sign-in using OpenID Connect";
             }
         }
         render(req, res,
@@ -3594,7 +3581,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 autofido: autofido,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
-                oidcButtonText: oidcButtonText || 'Sign-in using OpenID Connect',
+                oidcButtonText: oidcButtonText || '',
                 oidcButtonIcon: oidcButtonIcon || 'images/login/oidc32.png',
                 oidcButtonIcon2x: oidcButtonIcon2x || 'images/login/oidc64.png 2x',
                 loginpicture: (typeof domain.loginpicture == 'string'),

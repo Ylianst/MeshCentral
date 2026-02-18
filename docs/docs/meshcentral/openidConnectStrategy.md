@@ -415,7 +415,7 @@ Example:
 }
 ```
 
-These properties only affect the login page UI (button tooltip/title) and are safe to set for branding or clarity.
+These properties only affect the login page UI (button tooltip) and are safe to set for branding or clarity. If using a custom button text, it will not be translated when changing languages.
 
 #### *Custom Icon*
 

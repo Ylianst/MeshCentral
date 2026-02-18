@@ -69893,9 +69893,9 @@
       "zh-chs": "使用 OpenID Connect 登录",
       "zh-cht": "使用 OpenID Connect 登錄",
       "xloc": [
-        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->authStrategies->auth-oidc"
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->authStrategies"
       ]
     },
     {
@@ -69935,9 +69935,9 @@
       "nl": "Meld u aan met Azure OpenID Connect ",
       "uk": "Увійдіть за допомогою Azure завдяки OpenID Connect",
       "xloc": [
-        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc-azure",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc-azure",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->authStrategies->auth-oidc-azure"
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->authStrategies"
       ]
     },
     {
@@ -69946,9 +69946,9 @@
       "nl": "Meld u aan met Google OpenID Connect ",
       "uk": "Увійдіть за допомогою Google завдяки OpenID Connect",
       "xloc": [
-        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies->auth-oidc-google",
-        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies->auth-oidc-google",
-        "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->authStrategies->auth-oidc-google"
+        "login-mobile.handlebars->container->page_content->column_l->1->1->0->1->loginpanel->1->authStrategies",
+        "login.handlebars->container->column_l->centralTable->1->0->logincell->loginpanel->1->authStrategies",
+        "login2.handlebars->centralTable->1->0->logincell->loginpanel->loginpanelform->authStrategies"
       ]
     },
     {
