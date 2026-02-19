@@ -8,7 +8,7 @@ python -m venv env
 .\env\Scripts\activate 
 
 # Install requirements (obvs first time only!)
-python -m pip install --upgrade pip # Usable periodically to update pip modules
+python -m pip install --upgrade pip # Additionally usable periodically to update pip modules
 pip install pytest
 pip install zensical
 pip install mkdocs-material
