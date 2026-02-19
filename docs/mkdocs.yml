@@ -2,13 +2,11 @@ site_name: "MeshCentral Documentation"
 
 nav:
   - Home:
-    - Home:
-      - 'Abstract': 'index.md'
+    - 'Abstract': 'index.md'
 
   - 'Install':
-    - 'Install':
-      - 'Abstract': 'install/abstract.md'
-      - 'Quickstart': 'install/quickstart.md'
+    - 'Abstract': 'install/abstract.md'
+    - 'Quickstart': 'install/quickstart.md'
     - 'Installation Guides':
         - 'Abstract': 'install/abstract.md'
         - 'Advanced': 'install/advanced.md'
@@ -24,30 +22,28 @@ nav:
       - 'Secure Installation': 'install/security/secure.md'
 
   - 'MeshCentral':
-    - 'MeshCentral':
-      - 'MeshCentral Guide': 'meshcentral/'
-      - 'All Configuration Options': 'meshcentral/config.md'
-      - 'SSL/TLS': 'meshcentral/SSLnletsencrypt.md'
-      - 'Agent Information': 'meshcentral/agents.md'
-      - 'Assistant': 'meshcentral/assistant.md'
-      - 'Code Signing': 'meshcentral/codesigning.md'
-      - 'Debugging': 'meshcentral/debugging.md'
-      - 'Device Tabs': 'meshcentral/devicetabs.md'
-      - 'Plugins': 'meshcentral/plugins.md'
-      - 'Security': 'meshcentral/security.md'
-      - 'Tokens': 'meshcentral/tokens.md'
-      - 'FAQ': 'meshcentral/faq.md'
-      - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
-      - 'Messaging': 'messaging/'
-      - 'Customization': 'meshcentral/customization.md'
-      - 'OpenID Connect Strategy (OIDC)': 'meshcentral/openidConnectStrategy.md'
+    - 'MeshCentral Guide': 'meshcentral/'
+    - 'All Configuration Options': 'meshcentral/config.md'
+    - 'SSL/TLS': 'meshcentral/SSLnletsencrypt.md'
+    - 'Agent Information': 'meshcentral/agents.md'
+    - 'Assistant': 'meshcentral/assistant.md'
+    - 'Code Signing': 'meshcentral/codesigning.md'
+    - 'Debugging': 'meshcentral/debugging.md'
+    - 'Device Tabs': 'meshcentral/devicetabs.md'
+    - 'Plugins': 'meshcentral/plugins.md'
+    - 'Security': 'meshcentral/security.md'
+    - 'Tokens': 'meshcentral/tokens.md'
+    - 'FAQ': 'meshcentral/faq.md'
+    - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
+    - 'Messaging': 'messaging/'
+    - 'Customization': 'meshcentral/customization.md'
+    - 'OpenID Connect Strategy (OIDC)': 'meshcentral/openidConnectStrategy.md'
 
   - 'Submodules and Features':
-    - 'Submodules and Features':
-      - 'MeshCmd': 'meshcmd/'
-      - 'MeshCtrl': 'meshctrl/'
-      - 'Mesh Router': 'meshrouter/'
-      - 'Intel AMT': 'intelamt/'
+    - 'MeshCmd': 'meshcmd/'
+    - 'MeshCtrl': 'meshctrl/'
+    - 'Mesh Router': 'meshrouter/'
+    - 'Intel AMT': 'intelamt/'
 
   - 'How to Contribute': 'how-to-contribute/'
 
@@ -108,3 +104,5 @@ markdown_extensions:
       alternate_style: true
   - admonition
   - tables
+
+# to-do later on down the line; migrate to zensical.toml in an ideal world

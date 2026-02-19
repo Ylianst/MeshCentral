@@ -2,7 +2,7 @@
 
 ![](images/2022-05-15-12-57-36.jpg)
 
-## 🎬 Video Walkthru
+## 🎬 Video Walkthrough
 
 <div class="video-wrapper">
   <iframe src="https://www.youtube.com/embed/MOQ0uCUs7_M" frameborder="0" allowfullscreen></iframe>
@@ -360,7 +360,7 @@ A unique feature of MeshCentral is its use of WebRTC. WebRTC was introduced in m
 
 The use of WebRTC allows MeshCentral to scale better, to offer a faster user experience and lower hosting costs all at the same time. However, WebRTC is not easy, especially when you must maintain the C code for it and have to keep up with browser implementations, but the benefits are clear. 
 
-To setup WebRTC, browsers typically use STUN and TURN servers to get traffic thru any network obstacles (routers, proxies, firewalls). This infrastructure can be complex to setup especially if an administrator is not familiar with WebRTC concepts. To make things easy, MeshCentral opted to always start by using a websocket relay thru the server to get things started. While a session is active, the browser and agent will attempt to automatically switch the session traffic to WebRTC when possible. This way, the session always works and gets more efficient when network conditions allow. 
+To setup WebRTC, browsers typically use STUN and TURN servers to get traffic through any network obstacles (routers, proxies, firewalls). This infrastructure can be complex to setup especially if an administrator is not familiar with WebRTC concepts. To make things easy, MeshCentral opted to always start by using a websocket relay through the server to get things started. While a session is active, the browser and agent will attempt to automatically switch the session traffic to WebRTC when possible. This way, the session always works and gets more efficient when network conditions allow. 
 
 To perform the switch-over, both browser and agent will exchange WebRTC control messages over the newly established web socket relay session. 
 
