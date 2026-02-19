@@ -15,10 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
-      - run: pip install --upgrade pip
-      - run: pip install --upgrade setuptools wheel
-      - run: pip install mkdocs mkdocs-material mkdocs-print-site-plugin pymdown-extensions
-      - run: mkdocs gh-deploy --force
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install zensical mkdocs-material mkdocs-print-site-plugin pymdown-extensions
+
+      - name: Build with Zensical
+        run: zensical build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/site
+          publish_branch: gh-pages
