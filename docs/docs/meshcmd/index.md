@@ -185,11 +185,9 @@ On Linux computers, both systemd and initd are supported. When installing, the M
 
 The Layered Management Service (LMS) is a background process that runs in the operating system and provides local OS access to Intel AMT. More specifically, it redirects local TCP ports `16992` and `16993` to Intel AMT thru the MEI driver. One way to check if the LMS service is installed on your computer is to try *[http://localhost:16992](http://localhost:16992/)* or *[https://localhost:16993](https://localhost:16993/)* in a browser. A page should generally show up. 
 
-> **📌 Note :**
-
-> On Windows, LMS is a Windows service that must be downloaded and installed as part of the OEM drivers for a computer.
-
-> On Linux, it’s generally never installed and users normally have to download the source code and compile it themselves.
+!!! note
+    On Windows, LMS is a Windows service that must be downloaded and installed as part of the OEM drivers for a computer.
+    On Linux, it's generally never installed and users normally have to download the source code and compile it themselves.
 
 ---
 
@@ -382,13 +380,8 @@ C:\MeshCmd>meshcmd amtdeactivate
 Success
 ```
 
----
-
-> **📌 Note :**
-
-> Note that when using the `amtccm` action, you need to provide a password that will be used for authentication into Intel AMT. This password must be strong with at least 8 characters including a lower case, an uppercase, a numeric value and a non-alpha-numeric value.
-
---- 
+!!! note
+    Note that when using the `amtccm` action, you'll need to provide a password that will be used for authentication into Intel AMT. This password must be strong with at least 8 characters including a lower-case letter, an upper-case letter, a numeric value and a non-alpha-numeric value.
 
 ## 📋 Intel AMT Audit Log
 
