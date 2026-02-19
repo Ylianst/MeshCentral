@@ -2,10 +2,10 @@
 
 ## ❓ About
 
-!!! note
-    MeshCentral is a versatile, open-source computer management platform. By hosting your own MeshCentral server, you can remotely manage computers from anywhere in the world. The platform provides a seamless, web-based experience for remote desktop access, terminal control, and file management.
+MeshCentral is a versatile, open-source computer management platform. By hosting your own MeshCentral server, you can remotely manage computers from anywhere in the world. The platform provides a seamless, web-based experience for remote desktop access, terminal control, and file management.
 
-For more information, [visit MeshCentral.com](https://meshcentral.com).
+!!! note
+    For more information, [visit MeshCentral.com](https://meshcentral.com).
 
 ## 🌐 Social Media
 
