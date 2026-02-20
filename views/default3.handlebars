@@ -12633,7 +12633,7 @@
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
         function p13createfile() {
             setModalContent('xxAddAgent', "New File", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13createfolderEx());
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13createfileEx());
             focusTextBox('p13renameinput'); p13fileNameCheck();
         }
         function p13createfileEx() { files.sendText({ action: 'mkfile', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
