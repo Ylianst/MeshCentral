@@ -842,6 +842,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return parent.config.domains[''];
     }
 
+    function parseAllowedFramingOrigins(val) {
+        if (val == null) return [];
+        var arr = [];
+        if (Array.isArray(val)) { arr = val.slice(); } else if (typeof val == 'string') { arr = val.split(',').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; }); } else { return []; }
+        var out = [];
+        for (var i = 0; i < arr.length; i++) {
+            var o = arr[i].trim().replace(/\/+$/, '');
+            if (o.length === 0) continue;
+            if (o.indexOf('https://') === 0 || o.indexOf('http://') === 0) { out.push(o); }
+        }
+        return out;
+    }
+
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -3248,6 +3261,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     serverfeatures: serverFeatures,
                     features: allFeatures.features,
                     features2: allFeatures.features2,
+                    features3: allFeatures.features3,
                     sessiontime: (args.sessiontime) ? args.sessiontime : 60,
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,
@@ -3323,12 +3337,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.getDomainUserFeatures = function (domain, user, req) {
         var features = 0;
         var features2 = 0;
+        var features3 = 0;
         if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
         if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
         if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
         if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
         if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
-        if ((parent.config.settings.allowframing != null) || (domain.allowframing != null)) { features += 0x00000020; } // Allow site within iframe
+        if ((parent.config.settings.allowframing != null) || (domain.allowframing != null) || (parent.config.settings.allowedframingorigins != null) || (domain.allowedframingorigins != null)) { features += 0x00000020; } // Allow site within iframe
         if ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
         if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
         // 0x00000100 --> This feature flag is free for future use.
@@ -3396,13 +3411,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
         if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
-        return { features: features, features2: features2 };
+        if ((typeof domain.desktop == 'object') && (domain.desktop.disableconnectall == true)) { features3 += 0x00000001; } // Disable "Connect All" button when multiple sessions are active on a device
+        return { features: features, features2: features2, features3: features3 };
     }
 
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
         parent.debug('web', 'handleRootRequestLogin()');
         var features = 0;
-        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string'))) { features += 32; } // Allow site within iframe
+        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string') || (parent.config.settings.allowedframingorigins != null) || (domain != null && domain.allowedframingorigins != null))) { features += 32; } // Allow site within iframe
         if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         var loginmode = 0;
@@ -6855,15 +6871,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             }
 
+            // allowedFramingOrigins: domain override, else settings
+            var allowedFramingOriginsVal = (domain != null && domain.allowedframingorigins != null) ? domain.allowedframingorigins : parent.config.settings.allowedframingorigins;
+            var framingOrigins = parseAllowedFramingOrigins(allowedFramingOriginsVal);
+            var hasAllowedFramingOrigins = (domain != null && domain.allowedframingorigins != null) || (parent.config.settings.allowedframingorigins != null);
+
+
             // Finish setup security headers
+            var cspBase = "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + extraImgSrc + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'";
+            if (hasAllowedFramingOrigins) {
+                var frameAncestors = "'self'" + (framingOrigins.length > 0 ? ' ' + framingOrigins.join(' ') : '');
+                cspBase += "; frame-ancestors " + frameAncestors;
+            }
             const headers = {
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + extraImgSrc + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'"
+                'Content-Security-Policy': cspBase
             };
             if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
-            if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
+            if (hasAllowedFramingOrigins) {
+                if (framingOrigins.length === 0) { headers['X-Frame-Options'] = 'sameorigin'; }
+            } else if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) {
+                headers['X-Frame-Options'] = 'sameorigin';
+            }
             if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
 
             // If this domain has configured headers, add them. If a header is set to null, remove it.
@@ -8090,7 +8121,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.options = Object.assign(strategy.options, { 'client': client, sessionKey: 'oidc-' + domain.id });
             strategy.client = client.metadata
             strategy.obj.client = client
-
+            
             // Validate OIDC Icon Url once and null it if it fails validation
             if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl)) {
                 if (obj.common.validateUrl(strategy.custom.buttoniconurl)){

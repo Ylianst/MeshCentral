@@ -552,7 +552,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
             // Build server information object
             const allFeatures = parent.getDomainUserFeatures(domain, user, req);
-            var serverinfo = { domain: domain.id, name: domain.dns ? domain.dns : parent.certificates.CommonName, mpsname: parent.certificates.AmtMpsName, mpsport: mpsport, mpspass: args.mpspass, port: httpport, emailcheck: ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)), domainauth: (domain.auth == 'sspi'), serverTime: Date.now(), features: allFeatures.features, features2: allFeatures.features2 };
+            var serverinfo = { 
+                domain: domain.id,
+                name: domain.dns ? domain.dns : parent.certificates.CommonName,
+                mpsname: parent.certificates.AmtMpsName,
+                mpsport: mpsport,
+                mpspass: args.mpspass,
+                port: httpport,
+                emailcheck: ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (args.lanonly != true) && (parent.certificates.CommonName != null) && (parent.certificates.CommonName.indexOf('.') != -1) && (user._id.split('/')[2].startsWith('~') == false)),
+                domainauth: (domain.auth == 'sspi'),
+                serverTime: Date.now(),
+                features: allFeatures.features,
+                features2: allFeatures.features2,
+                features3: allFeatures.features3
+            };
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
