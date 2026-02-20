@@ -489,10 +489,15 @@
                             <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
                         </span>
-                        <input type="button" class="btn btn-success me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
-                        <input type="button" class="btn btn-danger me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
+                        <span id="KvmDesktopButtons">
+                            <input type="button" class="btn btn-success me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
+                            <input type="button" class="btn btn-danger me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
+                            <div class="form-check form-check-inline me-1 align-middle" title="Automatic connect">
+                                <input class="form-check-input me-1" type=checkbox id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" />
+                                <label class="form-check-label" for="autoConnectDesktopCheckbox">Auto</label>
+                            </div>
+                        </span>
                         <input type="button" class="btn btn-secondary me-1 btn-sm" onclick="onDevicesScroll(true);" value="Scroll To Top" />
-                        <div class="form-check me-1" title="Automatic connect"><input class="form-check-input me-1" type=checkbox id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" /><label class="form-check-label" for="autoConnectDesktopCheckbox">Auto</label></div>
                         <input type="button" class="btn btn-primary me-1 btn-sm" onclick="showMultiDesktopSettings()" value="Settings" />
                         <input type="text" id=KvmSearchInput class="form-control-sm me-1" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx">
                         <span id=KvmSearchInputClearButton style="display:none;position:relative">
@@ -2075,6 +2080,7 @@
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
+        var features3 = parseInt('{{{features3}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -2259,6 +2265,9 @@
 
             // Show the modern ui switcher
             QV('textnewui', ((features2 & 0x40000000) == 0) ? false : true);
+
+            // Show Connect All and Disconnect All
+            QV('KvmDesktopButtons', ((features3 & 0x00000001) == 0) ? true : false);
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);

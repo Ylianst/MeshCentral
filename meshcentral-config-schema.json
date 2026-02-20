@@ -2491,6 +2491,11 @@
                 "type": "boolean",
                 "description": "When set to true, the remote desktop feature is view only.",
                 "default": "false"
+              },
+              "disableconnectall": {
+                "type": "boolean",
+                "description": "When set to true, the 'Connect All','Disconnect All' and 'Auto' buttons are removed from the desktop tab.",
+                "default": "false"
               }
             }
           },
