@@ -18,7 +18,7 @@ At a high level, there are only four (4) main steps : **_Setup_**, **_Install_**
   3. Generates an agent and installs it on a target or each end-point that immediately attempts a connection back to MeshCentral server. 
   4. Controls/manages assets or end-points that are available in respective administrative mesh
 
-## 🎬 Video Walkthru
+## 🎬 Video Walkthrough
 
 <div class="video-wrapper">
   <iframe src="https://www.youtube.com/embed/D9Q7M7PdTg0" frameborder="0" allowfullscreen></iframe>
@@ -28,12 +28,8 @@ At a high level, there are only four (4) main steps : **_Setup_**, **_Install_**
 
 Because the MeshCentral server is written in NodeJS it can be installed on many operating systems including Windows, Linux. Please refer to the MeshCentral Installer’s Guide available at <https://www.meshcommander.com/meshcentral2> for information on how to install the server.
 
----
-> **📌 Note:**
-
-> For information on how to install the server, please refer to the **MeshCentral Installer’s Guide** available at:  
-> [https://www.meshcommander.com/meshcentral2](https://www.meshcommander.com/meshcentral2)
----
+!!! note
+    For information on how to install the server, please refer to the **MeshCentral Installer’s Guide** available at [https://www.meshcommander.com/meshcentral2](https://www.meshcommander.com/meshcentral2).
 
 The server can be installed both on a local area network for local computer management and in the cloud for management of computers over the Internet. You can also install it on small IoT devices like a Raspberry Pi all the way to big servers. It’s recommended to get started with a test setup to get a feel for this server. Once installed, come back to this document for configuring and using your new server.
 
@@ -67,13 +63,8 @@ To continue on **Chrome**:
 2. Click *Proceed to `http://serverIP` (unsafe)*
 ---
 
----
-> **📌 Note:**
-
-> You can also get to a device by specifying the device name in the URL by adding *`?viewmode=10&gotodevicename=MyComputer`* to the URL of the MeshCentral web page.
-> The new *`gotodevicename`* will find a device with the specified name and navigate to that device’s page.
-> This is perfect for integrating MeshCentral with other solutions but be aware that a computer name is not a unique identifier and so, *`&gotonode=`* is always the preferred way to access a device. This feature also works on the mobile web site.
----
+!!! note
+    You can also get to a device by specifying the device name in the URL by adding *`?viewmode=10&gotodevicename=MyComputer`* to the URL of the MeshCentral web page. The new *`gotodevicename`* will find a device with the specified name and navigate to that device's page. This is perfect for integrating MeshCentral with other solutions but be aware that a computer name is not a unique identifier and so, *`&gotonode=`* is always the preferred way to access a device. This feature also works on the mobile web site.
 
 ### Create Account
 
@@ -160,7 +151,7 @@ Users have few ways to handle this certificate warning:
 - Add webserver’s root certificate into web browser’s trust list. Click on “Root Certificate” link at the bottom right of login page to download the root certificate of the web server and then add/import this as a trusted certificate into web browser. Some web browser may require a restart before the certificate installation takes effect. 
 - If you own a domain name that points to your MeshCentral server, you can get a free trusted certificate using Let’s Encrypt (https://letsencrypt.org/). See the section on Let’s Encrypt in this document for more information on this option. MeshCentral has built-in support for Let’ Encrypt.
 
-!!! important
+!!! danger
     Before adding/importing the certificate, user must check the validity of the certificate presented by the website and compare with `“root-cert-public.crt”` file in the `“meshcentral-data”` folder of the server. 
   
 For large scale deployments or setup, a legitimate trusted certificate is highly recommended for your web server. This way, any web browser that navigates to this web server will be able to readily verify its authenticity.
@@ -168,13 +159,8 @@ For large scale deployments or setup, a legitimate trusted certificate is highly
 - If a legitimate trusted certificate is available, replace `“webserver-cert-public.crt”` and `“webserver-cert-private.key” with your certificate. These files are located in “meshcentral-data” folder of the server. 
 - If intermediate certificates are needed, add the files `“webserver-cert-chain1.crt”`, `“webserver-cert-chain2.crt”`, `“webserver-cert-chain3.crt”` respectively with the intermediate certificates.
 
----
-
-> **📌 Note :**
-
-> If you are using TLS offloading, see the section on “TLS Offloading” cover in the latter parts of this document.
-
----
+!!! note
+    If you're using TLS offloading, see the section on “TLS Offloading” cover in the latter parts of this document.
 
 ## 📁 Files and Folder Structure
 
@@ -184,7 +170,7 @@ It’s important to know the basic file and folder structure from which MeshCent
 
 Right after running the `npm install meshcentral` command, the node_module folder will be created which contains meshcentral and all of its dependent modules. When the server executes for the first time, both meshcentral-data and meshcentral-files folders will be created.
 
-!!! important
+!!! danger
     User must periodically backup both meshcentral-data and meshcentral-files which contains all of server’s data.
 
 
@@ -204,7 +190,7 @@ The `“meshcentral-data”` folder will contain:
 
 The `“meshcentral-files”` folder contains user files that have been uploaded to the server. This folder can be quite large, especially if no user space quota is set in the config.json file. Users can upload a significant amount of files on the server.
 
-!!! important
+!!! danger
     Back-up the “meshcentral-data” folder since this is the folder needed to reconstruct the server if something goes wrong. Without it, user will to start over. Recommended to apply suitable encryption on both folders given that they contain sensitive data.
 
 ## ⚙️ Server Configuration File
@@ -274,18 +260,13 @@ As indicated before, the settings section of the config.json is equivalent to pa
 | **MongoDBCol** | Used to specify the MongoDB collection name in the database. By default this value is "meshcentral". See Database section for more details on MongoDB setup. |
 | **DbEncryptKey** | Specifies a password used to encrypt the database when NeDB is in use. If wanting to encrypt an existing database, use the "dbexport" and "dbimport" to save and reload the database with the encryption password set. |
 | **WebRTC** | Set to "true" or "false" depending if you want to allow the server to setup WebRTC communication. If WebRTC is setup, management traffic will flow directly between the browser and mesh agent, bypassing the server completely. The default is false now, but will be switched to true when WebRTC is ready for production. |
-| **ClickOnce** | Set to "true" or "false" to allow or disallow browser ClickOnce features. When enabled, browsers running on Windows will be shown extra options to allow RDP and other sessions thru the MeshCentral server. This requires ClickOnce browser support that is built-in to IE and available as add-in to Chrome and Firefox. Default is true. |
+| **ClickOnce** | Set to "true" or "false" to allow or disallow browser ClickOnce features. When enabled, browsers running on Windows will be shown extra options to allow RDP and other sessions through the MeshCentral server. This requires ClickOnce browser support that is built-in to IE and available as add-in to Chrome and Firefox. Default is true. |
 
-!!! important
-    Changes in config.json will NOT take effect until server is restarted.
+!!! danger
+    Changes in config.json will **NOT** take effect until the server is restarted.
 
----
-
-> **📌 Note :**
-
-> We recommend the user to use a non-production server to experiment the setting options above.
-
---- 
+!!! tip
+    We recommend that you use a non-production server to experiment with the options above.
 
 ### Domains
 
@@ -303,7 +284,7 @@ When a user setup many domains, the server considers each domain separately and 
 
 Each domain has sub-settings as follows:
 
-| ***Sub Settings*** | ***Description*** |
+| **Sub Settings** | **Description** |
 | -------------- | -------- |
 | **Title & Title2** | This are the strings that will be displayed at the banner of the website. By default title is set to “MeshCentral” and title2 is set to a version number |
 | **UserQuota** | This is the maximum amount of data in kilobytes that can be placed in the “My Files” tab for a user account. |
@@ -315,13 +296,8 @@ Each domain has sub-settings as follows:
 | **CertUrl** | Load the TLS certificate for this domain from this https url. For example “https://127.0.0.1:123”. This option is useful when used along with the “TlsOffload” option. When MeshCentral is not doing any TLS but has a reverse-proxy or TLS offload device doing this work in front of the server, you can use this to have MeshCentral load the certificate from the server in front of MeshCentral.<br><br>This is needed because when agents connect, they need to be told that the certificate they saw upon connecting is the correct one. Using this, MeshCentral will know what certificate the agents are expected to see. |
 | **PasswordRequirements** | Used to specify the minimum password requirements for user authentication to this domain. By default, no password requirements are enforced but the user will see a password strength indicator that is not backed by any verifiable data.<br><br>The value must be set to an object, for example:<br><br>`{ ""min"": 8, ""max"": 128, ""upper"": 1, ""lower"": 1, ""numeric"": 1, ""nonalpha"": 1 }`<br><br>This indicated that passwords must be at least 8 characters long and have at least one upper case, one lower case, one numeric and one non-alphanumeric character. You can also set the maximum length of the password, however MeshCentral has already a limit of 256 characters. Specifying anything above this will have no effect.<br><br>Note that password requirements for Intel® AMT are defined by Intel and so, Intel® AMT passwords will always be verified using a separate set of requirements. |
 
----
-
-> **📌 Note :**
-
-> When the DNS value is set for a domain, user can’t access the domain using “servername/customer1” instead it must be accessed with the valid DNS record and the DNS server should be setup to have two or more DNS records pointing to the same IP address.
-
----
+!!! note
+    When the DNS value is set for a domain, a user can't access the domain using `servername/customer1`, and instead, it must be accessed with a valid DNS record, and the DNS server should be setup to have two or more DNS records pointing to the same IP address.
 
 In this mode, the server will serve a different TLS certificate depending on what DNS record is used to access the server.
 
@@ -502,7 +478,7 @@ Alternatively, user can also specify the full export path for the JSON file as s
 
 Importing the MeshCentral database is useful when transitioning between database softwares (NeDB to/from MongoDB) or when importing the database from MeshCentral1 via migration tool.
 
-!!! important
+!!! danger
     Importing a JSON file will overwrite the entire content of the database. A starting empty database is recommended.
 
 When you are ready to import a JSON file into the database, run meshcentral with `--dbimport` as shown below. If path is not specified, the application will default to use `meshcentral.db.json` that is in `meshcentral-data` folder. 
@@ -517,7 +493,7 @@ Alternatively, user can specify the full path of the import JSON as shown below.
 
 For debugging purposes, Meshcentral allow users to have quick preview of certain frequently accessed data in the database with the following options:
 
-| ***Option***       | ***Description***                            |
+| **Option**       | **Description**                            |
 | ------------ | -------------------------------------- |
 | **`--showusers`**  | List of all users in the database.     |
 | **`--showmeshes`** | List of all meshes in the database.    |
@@ -532,84 +508,72 @@ For example, you can show the list of users with the `--showusers`
 
 ### MongoDB Setup
 
-MongoDB is useful when setting up MeshCentral for two or more peer servers given that all peer servers much have access to the same database. NeDB and MongoDB have similar access interfaces hence the DB migration from one to the other is straight forward. Installing MongoDB depends on its host OS so do check for available download options at mongodb.com.
-In this guide, we will focus on the 64-bit windows with SSL support installer. 
+MongoDB is useful when setting up MeshCentral for two or more peer servers given that all peer servers much have access to the same database. NeDB and MongoDB have similar access interfaces, hence the DB migration from one to the other is straight forward. Installing MongoDB depends on its host OS, so do check for available download options on [MongoDB's website](mongodb.com).
+
+In this guide, we will focus on the 64-bit version of MongoDB (with SSL support!)'s installer. 
 
 ![](images/2022-05-18-23-41-58.jpg)
 
-After completing the installation step,
+After completing the installation,
 
-1. Stop any instance of Meshcentral that is running locally or in any machine
-2. Start a terminal or Windows Command prompt (CMD), 
-3. Create a folder “c:\data\db” 
-4. Go to the MongoDB bin folder and run `mongod --bind 127.0.0.1`. 
+1. Stop any instance of MeshCentral that is running locally or on any other machine.
+2. Start Terminal or Windows' Command Prompt.
+3. Create a folder at the path of `C:\data\db`.
+4. Enter MongoDB's `bin` folder and run `mongod --bind 127.0.0.1`. 
 
-    This execute the database engine and store the database data in the default location “/data/db” path and bind a loopback on the local port “127.0.0.1”.
-  ---
+This executes the database engine and stores the database data in the default location of `/data/db` and binds a loopback on the local IP of `127.0.0.1`.
 
-  > **📌 Note :** 
+!!! tip
+    We recommend that you use a non-production server to experiment with the options above.
 
-  > We recommend the user to use a non-production server to experiment the setting options above.
-  ---
+![](images/2022-05-18-23-42-51.jpg)
 
-  ![](images/2022-05-18-23-42-51.jpg)
+!!! note
+    Upon successful execution, MongoDB will begin to wait for connections on its default port of `27017`.
 
-  ---
+5. Now run MeshCentral with the command below, and this will tell MeshCentral to connect to MongoDB and use the `meshcentral` database. MongoDB will automatically create this database if it doesn't already exist.
 
-  > **📌 Note :**
+```bash
+node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral
+```
 
-  > Upon successful execution, MongoDB will wait for connections on its default port 27017.
+![](images/2022-05-18-23-46-26.jpg)
 
-  ---
+6. Alternatively, to transition an existing MeshCentral DB from NeDB to MongoDB, just run the following commands below:
 
-5. Now run MeshCentral with the command below, it will tell Meshcentral to connect to MongoDB and use “meshcentral” DB. MongoDB will create this DB if it does not exist.
+```bash
+node meshcentral --dbexport
+```
 
-    ```bash
-    node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral
-    ```
+```bash
+node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral --dbimport
+```
 
-    ![](images/2022-05-18-23-46-26.jpg)
+```bash
+node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral
+```
 
-6. Alternatively, to transition an existing meshcentral DB from NeDB and to MongoDB, just run commands below:
+7. We recommend that you include your MongoDB configuration into MeshCentral's `config.json` to avoid specifying the `--mongodb` argument each time MeshCentral is executed, as shown below:
 
-    ```bash
-    node meshcentral --dbexport
-    ```
+```json
+{
+  "settings": {
+    "mongodb": "mongodb://127.0.0.1:27017/meshcentral",
+    "mongodbcol": "meshcentral"
+  }
+}
+```
 
-    ```bash
-    node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral --dbimport
-    ```
+!!! info
+    By default, MeshCentral will create a single collection called `meshcentral` in the specified database. If you want to specify a different collection name, use the `--mongodbcol` argument or specify the `mongodbcol` variable in MeshCentral's `config.json` for those settings, as shown above.
 
-    ```bash
-    node meshcentral --mongodb mongodb://127.0.0.1:27017/meshcentral
-    ```
-
-7. We recommend the user to include MongoDB configuration into the server’s configuration “config.json” to avoid specifying the “--mongodb" each time MeshCentral is executed as shown below 
-
-    ```json
-    {
-      "settings": {
-        "mongodb": "mongodb://127.0.0.1:27017/meshcentral",
-        "mongodbcol": "meshcentral"
-      }
-    }
-    ```
-
----
-
-> **📌 Note :**
-
-> By default, MeshCentral will create a single collections called “meshcentral” in the specified database. If user want to specify a different collection name, use “--mongodbcol" or “mongodbcol” for settings like shown above.
-
----
-
-If you are using MongoDB with authentication, you can change the URL a little to add the username and password, for example:
+If you are using MongoDB with authentication, you can change the URL slightly to add the username and password, for example:
 
 ```
 mongodb://username:password@127.0.0.1:27017/meshcentral
 ```
 
-You can also provide extra connection parameters like this:
+You can also provide extra connection parameters, like this:
 
 ```
 mongodb://username:password@127.0.0.1:27017/meshcentral?authMechanism=MONGODB-CR&authSource=db
@@ -629,7 +593,7 @@ When loading configuration information into the database, MeshCentral requires t
 
 To make this happen, we will be using the following command line options from MeshCentral:
 
-| ***Command***                                  | ***Description***                                                                                                                                                                                               |
+| **Command**                                  | **Description**                                                                                                                                                                                               |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`--configkey (key)`**                        | Specifies the encryption password that will be used to read or write the configuration files to the database.                                                                                             |
 | **`--dblistconfigfiles`**                      | List the names and size of all configuration files in the database.                                                                                                                                       |
@@ -693,7 +657,7 @@ To make this work, it is important the server is setup with `--tlsoffload`. This
 
 However, incoming port 443 (main web port) and 4433 (Intel® AMT MPS port) will not have TLS but MeshCentral will still put many HTTPS flags in its responses on port 443. By default, if a user accesses http://127.0.0.1:443 without TLS offloader setting, the browser is expected to display warnings. To make this work, TLS offloader device’s ports and functions should be configured correctly like below 
 
-| ***Port*** | ***Function Description***                                                   |
+| **Port** | **Function Description**                                                   |
 | ---- | ---------------------------------------------------------------------- |
 | **80**   | Directly forwards port 80 to MeshCentral port 80                       |
 | **443**  | Handle TLS using a web certificate and forward to MeshCentral port 443 |
@@ -703,13 +667,8 @@ If possible, port 443 should be configured with a legitimate trusted certificate
 
 For Intel® AMT MPS port 4433, the certificate files “mpsserver-cert-public.crt” and “mpsserver-cert-public.key” must be copied from the “meshcentral-data” folder and loaded into the TLS offload module.
 
-  ---
-
-  > **📌 Note :**
-
-  > Please consult the TLS offloader user manual from the respective vendor to configure TLS offloading feature correctly.
-
-  --- 
+!!! note
+    Please consult the TLS offloader user manual from the respective vendor to configure TLS offloading feature correctly.
 
 ## 📜 Let’s Encrypt support
 
@@ -739,7 +698,7 @@ The names section is a list of domain names the requested certificate will be va
 
 The RSA key size can only be 2048 or 3072, with the default being 3072. This is the number of bit used for the RSA key in the certificate. Bigger is more secure, but takes more time to compute.
 
-Lastly the production key, by default this is false. When set to false, MeshCentral will query the Let’s Encrypt staging server for a certificate. It’s highly recommended to try this first and make sure everything works before getting a real certificate. Keep production to false, run thru the process at least once and make sure everything works. You will get a new certificate installed on the HTTPS server signed by a staging Let’s Encrypt certificate authority.
+Lastly the production key, by default this is false. When set to false, MeshCentral will query the Let’s Encrypt staging server for a certificate. It’s highly recommended to try this first and make sure everything works before getting a real certificate. Keep production to false, run through the process at least once and make sure everything works. You will get a new certificate installed on the HTTPS server signed by a staging Let’s Encrypt certificate authority.
 
 The Let’s Encrypt certificates and files will be created in the “meshcentral-data” folder. Make sure to keep regular backups of the “meshcentral-data” folder and all sub-folders.
 
@@ -776,13 +735,8 @@ IP addresses are separated by a comma. As a result, only users coming these IP a
 
 ![](images/2022-05-18-23-59-28.jpg)
 
-  ---
-
-  > **📌 Note :**
-
-  > When IP address whitelist is effective, Mesh Agent connection from any IP address will be not affected. 
-
-  --- 
+!!! note
+    When an IP address whitelist is in effect, MeshAgent's connection from any IP address will be not affected. 
 
 You can also use files for IP lists
 
@@ -890,13 +844,8 @@ There are multiple options available for user to explicitly choose the features 
 | **gotodeviceip** | Same like gotonode but go directly to a device with a certain IP. (this wont work for devices with external ip addreses, its meant for internal ips and amt for example) | Node or NodeID is a long base64 encoded SHA384 value |
 | **gotomesh** | go directly to the mesh general page of the device group | Node or NodeID is a long base64 encoded SHA384 value |
 
-  ---
-
-  > **📌 Note :**
-
-  > Typically, the URL for the website is followed by “?” then a set of name=value pairs separated by `&`. 
-
-  ---
+!!! example
+    Typically, the URL for the website is followed by `?` then a set of name=value pairs separated by `&`.
 
 Based on the URL https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&viewmode=11&hide=15 , the nodeID starts with “UkSNlz7t”. We shortened the value in this example, but it’s normally a long base64 encoded SHA384 value. The Viewmode set to 11 which is the remote desktop page and Hide set to 15 to hide everything. Hence the user may see as illustrated below. 
 
@@ -904,13 +853,8 @@ Based on the URL https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&viewmode=11&h
 
 Only the remote desktop viewer will be displayed embedded within an iframe.
 
-  ---
-
-  > **📌 Note :**
-
-  > User must set “allowFraming” to true in the config.json of the server. This is in addition to the Node, Viewmode and Hide arguments, the login token must be specified to add complex features into another website.
-
-  --- 
+!!! note
+    You must set `allowFraming` to true in the `config.json` of the server. This is in addition to the Node, Viewmode and Hide arguments, the login token must be specified to add complex features into another website.
 
 ## 🔀 Server port aliasing
 
@@ -959,9 +903,9 @@ The routing of IP and ports by the firewall shown on the picture must be configu
 
 ## 📡 Web relay using DNS names and multiple web relays
 
-MeshCentral has a web relay feature that allows a user to access remote web sites thru the MeshCentral server without having to install MeshCentral Router. Web relay also allow you to use an alternate DNS name instead of a different web relay port which has a few advantages. You can also use multiple alternate DNS names which can be used at the same time to provide users with many HTTP/HTTPS relays.
+MeshCentral has a web relay feature that allows a user to access remote web sites through the MeshCentral server without having to install MeshCentral Router. Web relay also allow you to use an alternate DNS name instead of a different web relay port which has a few advantages. You can also use multiple alternate DNS names which can be used at the same time to provide users with many HTTP/HTTPS relays.
 
-## 🎬 Video Walkthrus
+## 🎬 Video Walkthroughs
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/GU7MQjkPSd8" frameborder="0" allowfullscreen></iframe>
@@ -972,7 +916,7 @@ MeshCentral has a web relay feature that allows a user to access remote web site
 
 ## 🖧 Device Groups with Relay Agent
 
-MeshCentral supports the local device group allowing devices that do not have an agent to be managed thru MeshCentral with regular SSH, SFTP, RDP, VNC protocols. Until now, the MeshCentral server had to be in LAN or Hybrid modes to support his device group and the managed devices had to be on the same network as the MeshCentral server. Starting with v1.0.11, users can create a local device group specifying a MeshAgent as a relay. This makes it possible to manage agent-less devices from anywhere on the Internet even if the server is in WAN mode. Simply install a single device with a MeshAgent on a network and create a local device group with that device as the relay.
+MeshCentral supports the local device group allowing devices that do not have an agent to be managed through MeshCentral with regular SSH, SFTP, RDP, VNC protocols. Until now, the MeshCentral server had to be in LAN or Hybrid modes to support his device group and the managed devices had to be on the same network as the MeshCentral server. Starting with v1.0.11, users can create a local device group specifying a MeshAgent as a relay. This makes it possible to manage agent-less devices from anywhere on the Internet even if the server is in WAN mode. Simply install a single device with a MeshAgent on a network and create a local device group with that device as the relay.
 
 ![](images/2022-05-31-10-30-07.jpg)
 
@@ -984,7 +928,7 @@ To enable SSH support, add this line to the domain section of your `config.json`
 "ssh": true
 ```
 
-### Video Walkthru
+### Video Walkthrough
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/TtW5-g6SeZQ" frameborder="0" allowfullscreen></iframe>
@@ -1003,7 +947,7 @@ In addition to local device groups, the IP-KVM/Power switch device group was als
 
 ## 🧭 NGINX Reverse-Proxy Setup
 
-### Video Walkthru
+### Video Walkthrough
 
 <div class="video-wrapper">
   <iframe src="https://www.youtube.com/embed/YSmiLyKSX2I" frameborder="0" allowfullscreen></iframe>
@@ -1221,13 +1165,8 @@ First we will start with the MeshCentral configuration, here is a minimal config
 }
 ```
 
----
-
-> **📌 Note “agentConfig” line :**
-
-> Because Traefik does not support web socket connections that are not “masked”, we have to tell the Mesh Agents to mask web socket connections using this line. Once set, any new agent will be installed with the web socket masking turned on. Also note that we will be running MeshCentral on port HTTPS/4430 and HTTP/800. However, we also indicate to MeshCentral that HTTPS will really be on port 443 using the “AliasPort” line.
-
----
+!!! note
+    Relating to the `agentConfig` line, due to Traefik not supporting web socket connections that aren't “masked”, we have to tell MeshAgents to mask web socket connections using this line. Once set, any new agent will be installed with websocket masking turned on. Also note that we will be running MeshCentral on port HTTPS/4430 and HTTP/800. However, we also indicate to MeshCentral that HTTPS will really be on port 443 using the `AliasPort` line.
 
 The `TlsOffload` line indicates that MeshCentral should not perform TLS on port 4430. And the `certUrl` line indicates what URL can be used to load the external certificate that will be presented on port 443 in front of MeshCentral.
 
@@ -1590,13 +1529,8 @@ node node_modules/meshcentral --recordencryptionrecode
 
 It’s really important to keep the encryption key in a safe place along with database backups. If the database is backed up but the record encryption key is lost, it will not be possible to recover the secured data in the database.
 
-  ---
-
-  > **📌 Note :**
-
-  > Also note that database record encryption can and should be used along with other data protection systems.
-
-  --- 
+!!! note
+    Also note that database record encryption can and should be used along with other data protection systems.
 
 ## 📊 MongoDB free server monitoring
 
@@ -1668,13 +1602,8 @@ Once done, your config.json should look a bit like this:
 }
 ```
 
-  ---
-
-  > **📌 Note :**
-
-  > Note that if you do not allow new accounts, any new users that use Twitter credentials will not be able to login to MeshCentral. One trick is to allow new account, login and change this setting again. Once the config.json is correct, restart the server and you should see the Twitter icon on the login screen. When restarting the MeshCentral server, new modules will need to be installed to support this new feature. Depending on how your server is setup, you may need to restart the server manually to allow the new modules to be installed.
-
-  ---
+!!! note
+    Note that if you do not allow new accounts, any new users that use Twitter credentials will not be able to login to MeshCentral. One trick is to allow new account, login and change this setting again. Once the config.json is correct, restart the server and you should see the Twitter icon on the login screen. When restarting the MeshCentral server, new modules will need to be installed to support this new feature. Depending on how your server is setup, you may need to restart the server manually to allow the new modules to be installed.
 
 ![](images/2022-05-19-00-49-25.jpg)
 
@@ -1770,7 +1699,7 @@ We then copy the resulting secret and this will be the 3rd and final value we ne
 }
 ```
 
-The `Application ID` value is placed as `Client ID` in the configuration file. You can also see that in the example above, we have `NewAccounts` set to false in the default MeshCentral domain, but set to true in the Azure section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating thru Azure. Once done, restart the MeshCentral server. Depending on your setup, you many need to run MeshCentral once manually to allow new required modules to be installed. Once running again, you should see the Azure single sign-on button on the login page.
+The `Application ID` value is placed as `Client ID` in the configuration file. You can also see that in the example above, we have `NewAccounts` set to false in the default MeshCentral domain, but set to true in the Azure section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating through Azure. Once done, restart the MeshCentral server. Depending on your setup, you many need to run MeshCentral once manually to allow new required modules to be installed. Once running again, you should see the Azure single sign-on button on the login page.
 
 ![](images/2022-05-19-00-52-05.jpg)
 
@@ -1840,7 +1769,7 @@ Edit the `config.json` and make it look like this:
 }
 ```
 
-Take note that the `entityid`, `idpurl` and `cert` are values taken from JumpCloud. The callback URL should be configured in JumpCloud as we have done in previous steps. You can see that in the example above, we have `NewAccounts` set to false in the default MeshCentral domain, but set to true in the JumpCloud section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating thru JumpCloud.
+Take note that the `entityid`, `idpurl` and `cert` are values taken from JumpCloud. The callback URL should be configured in JumpCloud as we have done in previous steps. You can see that in the example above, we have `NewAccounts` set to false in the default MeshCentral domain, but set to true in the JumpCloud section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating through JumpCloud.
 
 You are now ready to restart the MeshCentral server. Extra modules will be needed to support SAML and so, depending on your server configuration, you may need to run MeshCentral manually once to allow the new modules to be installed from NPM. Once restarted, you should see the JumpCloud sign-in button on the login screen.
 
@@ -1920,13 +1849,8 @@ Generally, if you are using an IdP that supports OpenID Connect (OIDC), you can 
 
 As you can see, this is roughly the same as all the other OAuth2 based authentication strategies. These are the basics you need to get started using OpenID Connect because it's still authenticating with OAuth2. If you plan to take advantage of some of the more advanced features provided by this strategy you should consider reading the [additional strategy documentation](./openidConnectStrategy.md).
 
-  ---
-
-  > **📌 Note :**
-
-  > MeshCentral will use `https://mesh.your.domain/auth-oidc-callback` as the default redirect uri.
-
-  ---
+!!! note
+    MeshCentral will use `https://mesh.your.domain/auth-oidc-callback` as the default redirect uri.
 
 ## ✨ Improvements to MeshCentral
 

@@ -52,4 +52,4 @@ Copy these three values in a safe place and do not share these values with anyon
 }
 ```
 
-Restart MeshCentral and your server should now be Duo capable. Users will see an option to enable it in the "My Account" tab. When enabling it, users will be walked thru the process of downloading the mobile application and going thru a trial run on 2FA. Users that get setup will be added to your Duo account under the "Users" / "Users" screen in Duo. Note that the "admin" user is not valid in Duo, so, if you have a user with the name "Admin" in MeshCentral, they will get an error trying to setup Duo.
+Restart MeshCentral and your server should now be Duo capable. Users will see an option to enable it in the "My Account" tab. When enabling it, users will be walked through the process of downloading the mobile application and going through a trial run on 2FA. Users that get setup will be added to your Duo account under the "Users" / "Users" screen in Duo. Note that the "admin" user is not valid in Duo, so, if you have a user with the name "Admin" in MeshCentral, they will get an error trying to setup Duo.

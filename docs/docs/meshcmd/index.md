@@ -7,7 +7,7 @@ Access the official MeshCmd user guide in your preferred format
 > - [📝 ODT version](../documents/MeshCmd%20User's%20Guide%20v0.0.3.odt)
 ---
 
-## 🎬 Video Walkthru
+## 🎬 Video Walkthrough
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/AzdKyzqmpIs" frameborder="0" allowfullscreen></iframe>
@@ -26,7 +26,7 @@ MeshCmd, called “Mesh Command”, is a command line tool that runs on both Win
 Broadly, the tool is intended to perform three sets of tasks : 
 
 - `MeshCentral2 command line operations`
-> There are command line operations that relate to interacting with the MeshCentral2 server. A good example of this is to route traffic from your computer to a remote computer on the internet thru a MeshCentral2 server. 
+> There are command line operations that relate to interacting with the MeshCentral2 server. A good example of this is to route traffic from your computer to a remote computer on the internet through a MeshCentral2 server. 
   
 - `Intel AMT local actions`
 > If you happen to have Intel AMT on your computer, MeshCmd can take a look at the version and activation status, activate and de-activate Intel AMT and help with getting access to Intel AMT and more. 
@@ -89,9 +89,9 @@ By default you will get the help screen with all of the different actions you ca
 
 ## 🔌 MeshCentral TCP port mapping
 
-MeshCmd can map a TCP port from your local computer to any remote port on any computer with one of your MeshAgents installed. This port mapping will work over a local network or the Internet and should work even thru proxies and firewalls. 
+MeshCmd can map a TCP port from your local computer to any remote port on any computer with one of your MeshAgents installed. This port mapping will work over a local network or the Internet and should work even through proxies and firewalls. 
 
-In order to start using MeshCmd in this way, you first need to have access to a MeshCentral server and at least one computer you already manage. TCP port mapping works by selecting a port on your local computer that will be routed to a remote device and port. Here, local port 123 is routed thru the server to port 123 on a remote device. 
+In order to start using MeshCmd in this way, you first need to have access to a MeshCentral server and at least one computer you already manage. TCP port mapping works by selecting a port on your local computer that will be routed to a remote device and port. Here, local port 123 is routed through the server to port 123 on a remote device. 
 
 ![](images/2022-05-15-15-23-45.png)
 
@@ -183,13 +183,11 @@ On Linux computers, both systemd and initd are supported. When installing, the M
 
 ### 2. LMS & MeshCommander
 
-The Layered Management Service (LMS) is a background process that runs in the operating system and provides local OS access to Intel AMT. More specifically, it redirects local TCP ports `16992` and `16993` to Intel AMT thru the MEI driver. One way to check if the LMS service is installed on your computer is to try *[http://localhost:16992](http://localhost:16992/)* or *[https://localhost:16993](https://localhost:16993/)* in a browser. A page should generally show up. 
+The Layered Management Service (LMS) is a background process that runs in the operating system and provides local OS access to Intel AMT. More specifically, it redirects local TCP ports `16992` and `16993` to Intel AMT through the MEI driver. One way to check if the LMS service is installed on your computer is to try *[http://localhost:16992](http://localhost:16992/)* or *[https://localhost:16993](https://localhost:16993/)* in a browser. A page should generally show up. 
 
-> **📌 Note :**
-
-> On Windows, LMS is a Windows service that must be downloaded and installed as part of the OEM drivers for a computer.
-
-> On Linux, it’s generally never installed and users normally have to download the source code and compile it themselves.
+!!! note
+    On Windows, LMS is a Windows service that must be downloaded and installed as part of the OEM drivers for a computer.
+    On Linux, it's generally never installed and users normally have to download the source code and compile it themselves.
 
 ---
 
@@ -382,17 +380,12 @@ C:\MeshCmd>meshcmd amtdeactivate
 Success
 ```
 
----
-
-> **📌 Note :**
-
-> Note that when using the `amtccm` action, you need to provide a password that will be used for authentication into Intel AMT. This password must be strong with at least 8 characters including a lower case, an uppercase, a numeric value and a non-alpha-numeric value.
-
---- 
+!!! note
+    Note that when using the `amtccm` action, you'll need to provide a password that will be used for authentication into Intel AMT. This password must be strong with at least 8 characters including a lower-case letter, an upper-case letter, a numeric value and a non-alpha-numeric value.
 
 ## 📋 Intel AMT Audit Log
 
-One very useful feature of MeshCmd is its ability to fetch the Intel AMT audit log. This can be valuable when doing forensics on a computer or just trying figure out what is being done thru Intel AMT. MeshCmd can pull the audit log on a local computer without any credentials, as long as it’s running as root or administrator, or pull the audit log remotely if usual credentials are provided. 
+One very useful feature of MeshCmd is its ability to fetch the Intel AMT audit log. This can be valuable when doing forensics on a computer or just trying figure out what is being done through Intel AMT. MeshCmd can pull the audit log on a local computer without any credentials, as long as it’s running as root or administrator, or pull the audit log remotely if usual credentials are provided. 
 
 ![](images/2022-05-15-15-37-16.png)
 
@@ -459,7 +452,7 @@ In this example, the CIRA setup script was run on a remote computer. After the s
 
 ## ➡️ IDE Redirection
 
-## 🎬 Video Walkthru
+## 🎬 Video Walkthrough
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/iG73j7Toz1c" frameborder="0" allowfullscreen></iframe>

@@ -37,10 +37,8 @@ All master tags below follow the master branch of MeshCentral, the latest and ve
 | `1.1.51-postgresql` and `latest-postgresql` | Docker image with the PostgreSQL packages installed. |
 | `1.1.51-mysql` and `latest-mysql` | Docker image with the MySQL packages installed. |
 
----
-> **📌 Note:**
-Refer to [this page](https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral) for more information on the container status.
----
+!!! note
+    Refer to [this page](https://github.com/Ylianst/MeshCentral/pkgs/container/meshcentral) for more information on the container status.
 
 ## 🐋 Docker/Podman
 

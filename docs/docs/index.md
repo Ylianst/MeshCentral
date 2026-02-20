@@ -1,10 +1,11 @@
 # MeshCentral Documentation
 
-## About
+## ❓ About
 
-MeshCentral is a full computer management web site. With MeshCentral, you can run your own web server to remotely manage and control computers on a local network or anywhere on the internet. Once you get the server started, create device group and download and install an agent on each computer you want to manage. A minute later, the new computer will show up on the web site and you can take control of it. MeshCentral includes full web-based remote desktop, terminal and file management capability.
+MeshCentral is a versatile, open-source computer management platform. By hosting your own MeshCentral server, you can remotely manage computers from anywhere in the world. The platform provides a seamless, web-based experience for remote desktop access, terminal control, and file management.
 
-For more information, [visit MeshCentral.com](https://meshcentral.com).
+!!! tip
+    For more information, [visit MeshCentral.com](https://meshcentral.com).
 
 ## 🌐 Social Media
 
@@ -53,15 +54,15 @@ Use **MeshCentral Router** to **port map TCP connections** securely.
 
 ## 💬 Feedback
 
-If you encounter a problem or have a suggestion to improve the product, you may file an [GitHub Issue](https://github.com/Ylianst/MeshCentral/issues/).<br>
+If you encounter a problem or have a suggestion to improve MeshCentral, you may want to create a [GitHub issue](https://github.com/Ylianst/MeshCentral/issues/).<br>
 If you are filing a problem report, you should include:
 
-* The version of the software you are using.
-> For example: 1.1.46
-* The Operating System and version.
-> For example: Debian 12
+* The version of MeshCentral you are using.
+> For example: v1.1.56.
+* The operating system and its version.
+> For example: Debian 12.
 * Any troubleshooting you took to resolve the issue yourself.
-> For example: Reinstalling MeshCentral (including OS)
+> For example: Reinstalling MeshCentral. (and your OS!)
 * Any other similar reports.
 > For example: other GitHub issues.
 * The observed output.

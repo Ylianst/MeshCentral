@@ -3,7 +3,7 @@
 
 Intel AMT Guide [as .odt](../documents/MeshCentral%20Intel%20AMT%20Guide%20v0.0.1.odt)
 
-## Video Walkthru
+## Video Walkthrough
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/naWKE3rT6e8" frameborder="0" allowfullscreen></iframe>
@@ -81,7 +81,7 @@ If the MeshCentral server is setup in “LAN mode” or “Hybrid mode”, optio
 
 Client Initiated Remote Access (CIRA) is a feature of Intel AMT that, then configured, makes Intel AMT connect back to the server using a TLS tunneling connection similar with a SSH tunnel. Once this tunnel connection is established, the server can perform remote management operations on Intel AMT.
 
-CIRA is great when remotely managing Intel AMT devices over the Internet thru network address translator (NAT) routers where the server would not be able to connect to Intel AMT. This is similar to the Mesh Agent that initiated and keeps an idle connection to the server.
+CIRA is great when remotely managing Intel AMT devices over the Internet through network address translator (NAT) routers where the server would not be able to connect to Intel AMT. This is similar to the Mesh Agent that initiated and keeps an idle connection to the server.
 
 By default, MeshCentral will be configured to receive Mesh Agent connections on TCP port 443 and Intel AMT connections on TCP port 4433. These port values can be configured in the config.json file of MeshCentral.
 
