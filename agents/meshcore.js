@@ -960,32 +960,43 @@ var getIpLocationDataExInProgress = false;
 var getIpLocationDataExCounts = [0, 0];
 function getIpLocationDataEx(func) {
     if (getIpLocationDataExInProgress == true) { return false; }
-    try {
         getIpLocationDataExInProgress = true;
         getIpLocationDataExCounts[0]++;
-        var options = http.parseUri("http://ipinfo.io/json");
+
+    function tryEndpoint(url, fallback) {
+        var options = http.parseUri(url);
         options.method = 'GET';
         http.request(options, function (resp) {
-            if (resp.statusCode == 200) {
                 var geoData = '';
-                resp.data = function (geoipdata) { geoData += geoipdata; };
+            resp.data = function (chunk) { geoData += chunk; };
                 resp.end = function () {
-                    var location = null;
                     try {
-                        if (typeof geoData == 'string') {
                             var result = JSON.parse(geoData);
-                            if (result.ip && result.loc) { location = result; }
+                    if (result.ip && result.loc) {
+                        getIpLocationDataExInProgress = false;
+                        getIpLocationDataExCounts[1]++;
+                        func(result);
+                        return;
                         }
                     } catch (ex) { }
-                    if (func) { getIpLocationDataExCounts[1]++; func(location); }
-                }
-            } else
-            { func(null); }
-            getIpLocationDataExInProgress = false;
+                if (fallback) { fallback(); } else { done(null); }
+            };
+            if (resp.statusCode != 200) { if (fallback) { fallback(); } else { done(null); } }
+        }).on('error', function () {
+            if (fallback) { fallback(); } else { done(null); }
         }).end();
-        return true;
     }
-    catch (ex) { return false; }
+
+    function done(result) {
+            getIpLocationDataExInProgress = false;
+        if (func) { func(result); }
+    }
+
+    tryEndpoint('https://v6.ipinfo.io/json', function () {
+        tryEndpoint('https://ipinfo.io/json', null);
+    });
+
+        return true;
 }
 
 // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
