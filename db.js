@@ -3054,7 +3054,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (id) { x._id = id; }
                 obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             };
-            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, common.unEscapeAllLinksFieldName(performTypedRecordDecrypt(docs))); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
