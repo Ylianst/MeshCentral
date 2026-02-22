@@ -1002,6 +1002,27 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }, obj);
     }
 
+
+    const WarmupPromisesMixin = {
+        resolvedCount: 0,
+        create: function create(key) {
+            let resolvePromise, promise = new Promise((resolve) => { resolvePromise = resolve; });
+            this[key] = resolvePromise;
+            this.push(promise);
+        },
+        resolve: function resolve(key) {
+            if (this.hasOwnProperty(key)) {
+                this[key]();
+                delete this[key];
+                if (++this.resolvedCount == this.length) {
+                    this.length = 0;
+                }
+            }
+        },
+    }
+    const warmupDbPromises = Object.assign([], WarmupPromisesMixin);
+    const warmupActionPromises = Object.assign([], WarmupPromisesMixin);
+
     function agentCoreIsStable() {
         parent.agentStats.coreIsStableCount++;
 
@@ -1021,30 +1042,39 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
 
         // Fetch the the diagnostic agent nodeid
+        warmupDbPromises.create('FetchDiagnosticAgentNodeId');
         db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
             if ((nodes != null) && (nodes.length == 1)) {
                 obj.diagnosticNodeKey = nodes[0].daid;
                 obj.send(JSON.stringify({ action: 'diagnostic', value: { command: 'query', value: obj.diagnosticNodeKey } }));
             }
+            warmupDbPromises.resolve('FetchDiagnosticAgentNodeId');
         });
 
         // Indicate that we want to check the Intel AMT configuration
         // This may trigger a CIRA-LMS tunnel to the server for further processing
+        // TODO: should we synchronize this?
         obj.sendUpdatedIntelAmtPolicy();
 
         // Fetch system information
+        warmupDbPromises.create('FetchSystemInformation');
         db.GetHash('si' + obj.dbNodeKey, function (err, results) {
+            warmupActionPromises.create('sysinfo');
             if ((results != null) && (results.length == 1)) { obj.send(JSON.stringify({ action: 'sysinfo', hash: results[0].hash })); } else { obj.send(JSON.stringify({ action: 'sysinfo' })); }
+            warmupDbPromises.resolve('FetchSystemInformation');
         });
 
         // Agent error log dump
         if (parent.parent.agentErrorLog != null) {
+            warmupDbPromises.create('AgentErrorLogDump');
             db.Get('al' + obj.dbNodeKey, function (err, docs) { // Agent Log
+                warmupActionPromises.create('errorlog');
                 if ((docs != null) && (docs.length == 1) && (typeof docs[0].lastEvent)) {
                     obj.send('{"action":"errorlog","startTime":' + docs[0].lastEvent + '}'); // Ask all events after a given time
                 } else {
                     obj.send('{"action":"errorlog"}'); // Ask all
                 }
+                warmupDbPromises.resolve('AgentErrorLogDump');
             });
         }
 
@@ -1059,6 +1089,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Do this if IP location is enabled on this domain TODO: Set IP location per device group?
         if (domain.iplocation == true) {
+            warmupDbPromises.create('IP location')
             // Check if we already have IP location information for this node
             db.Get('iploc_' + obj.remoteaddr, function (err, iplocs) {
                 if ((iplocs != null) && (iplocs.length == 1)) {
@@ -1069,6 +1100,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         x.iploc = iploc.loc + ',' + (Math.floor((new Date(iploc.date)) / 1000));
                         ChangeAgentLocationInfo(x);
                     }
+                    warmupDbPromises.resolve('IP location');
                 } else {
                     // Check if we need to ask for the IP location
                     var doIpLocation = 0;
@@ -1091,9 +1123,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             if ((ipLocationLimitor != null) && (ipLocationLimitor.value > 0)) {
                                 ipLocationLimitor.value--;
                                 db.Set(ipLocationLimitor);
+                                warmupActionPromises.create('iplocation');
                                 obj.send(JSON.stringify({ action: 'iplocation' }));
                             }
+                            warmupDbPromises.resolve('IP location');
                         });
+                    } else {
+                        warmupDbPromises.resolve('IP location');
                     }
                 }
             });
@@ -1114,7 +1150,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Plug in handler
         if (parent.parent.pluginHandler != null) {
-            parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent);
+            Promise.all(warmupDbPromises)
+            .then(() => Promise.all(warmupActionPromises))
+            .then(() => parent.parent.pluginHandler.callHook('hook_agentCoreIsStable', obj, parent));
         }
     }
 
@@ -1304,6 +1342,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                 case 'iplocation':
                     {
+                        warmupActionPromises.resolve('iplocation');
                         // Sent by the agent to update location information
                         if ((command.type == 'publicip') && (command.value != null) && (typeof command.value == 'object') && (command.value.ip) && (command.value.loc)) {
                             var x = {};
@@ -1445,7 +1484,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         break;
                     }
                 case 'sysinfo': {
-                    if ((typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
+                    warmupActionPromises.resolve('sysinfo');
+                    if ((command.data != null) && (typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
                         // Validate command.data.
                         if (common.validateObjectForMongo(command.data, 1024) == false) break;
 
@@ -1616,6 +1656,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'errorlog': { // This is the agent error log
+                    warmupActionPromises.resolve('errorlog');
                     if ((!Array.isArray(command.log)) || (command.log.length == 0) || (parent.parent.agentErrorLog == null)) break;
                     var lastLogEntry = command.log[command.log.length - 1];
                     if ((lastLogEntry != null) && (typeof lastLogEntry == 'object') && (typeof lastLogEntry.t == 'number')) {
