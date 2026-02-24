@@ -11782,6 +11782,14 @@
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
                     setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    if (isWindowsNode(currentNode)){
+                        d4EditLineBreakVal = 0; // Windows (CR LF)
+                    } else if (isMacNode(currentNode)) {
+                        d4EditLineBreakVal = 2; // Mac (CR)
+                    } else {
+                        d4EditLineBreakVal = 1; // Linux (LF)
+                    }
+                    d4ToggleLineBreak(true);
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';

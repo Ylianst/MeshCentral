@@ -12827,6 +12827,14 @@
                     setModalContent('xxAddAgent', EscapeHtml(gdownloadFile.file), 4, 'extra-large');
                     var file = gdownloadFile.file;
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13editSaveBack(3, file));
+                    if (isWindowsNode(currentNode)){
+                        d4EditLineBreakVal = 0; // Windows (CR LF)
+                    } else if (isMacNode(currentNode)) {
+                        d4EditLineBreakVal = 2; // Mac (CR)
+                    } else {
+                        d4EditLineBreakVal = 1; // Linux (LF)
+                    }
+                    d4ToggleLineBreak(true);
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
                     if (d4EditEncodingVal == 1) {
@@ -21230,6 +21238,7 @@
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
         function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1, 2, 3, 4, 21, 22, 34, 42, 43].indexOf(node.agent.id) >= 0); }
+        function isMacNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([11,16,29].indexOf(node.agent.id) >= 0); }
 
         function downloadFile(link, name, closeDialog) {
             var element = document.createElement('iframe');
