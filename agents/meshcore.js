@@ -967,20 +967,20 @@ function getIpLocationDataEx(func) {
         var options = http.parseUri(url);
         options.method = 'GET';
         http.request(options, function (resp) {
-                var geoData = '';
+            var geoData = '';
             resp.data = function (chunk) { geoData += chunk; };
                 resp.end = function () {
                     try {
-                            var result = JSON.parse(geoData);
-                    if (result.ip && result.loc) {
-                        getIpLocationDataExInProgress = false;
-                        getIpLocationDataExCounts[1]++;
-                        func(result);
-                        return;
+                        var result = JSON.parse(geoData);
+                        if (result.ip && result.loc) {
+                            getIpLocationDataExInProgress = false;
+                            getIpLocationDataExCounts[1]++;
+                            func(result);
+                            return;
                         }
                     } catch (ex) { }
-                if (fallback) { fallback(); } else { done(null); }
-            };
+                    if (fallback) { fallback(); } else { done(null); }
+                };
             if (resp.statusCode != 200) { if (fallback) { fallback(); } else { done(null); } }
         }).on('error', function () {
             if (fallback) { fallback(); } else { done(null); }
@@ -988,7 +988,7 @@ function getIpLocationDataEx(func) {
     }
 
     function done(result) {
-            getIpLocationDataExInProgress = false;
+        getIpLocationDataExInProgress = false;
         if (func) { func(result); }
     }
 
@@ -996,7 +996,7 @@ function getIpLocationDataEx(func) {
         tryEndpoint('https://ipinfo.io/json', null);
     });
 
-        return true;
+    return true;
 }
 
 // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
@@ -6373,7 +6373,7 @@ function sendPeriodicServerUpdate(flags, force) {
         try {
             require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) {
                 meshCoreObj.idletime = seconds;
-            meshCoreObjChanged();
+                meshCoreObjChanged();
             });
         } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
     }
