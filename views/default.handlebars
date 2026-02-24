@@ -11782,19 +11782,37 @@
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
                     setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
-                    if (isWindowsNode(currentNode)){
-                        d4EditLineBreakVal = 0; // Windows (CR LF)
-                    } else if (isMacNode(currentNode)) {
-                        d4EditLineBreakVal = 2; // Mac (CR)
-                    } else {
-                        d4EditLineBreakVal = 1; // Linux (LF)
-                    }
                     d4ToggleLineBreak(true);
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
+                    const crlf = (gdownloadFile.data.match(/\r\n/g) || []).length;
+                    const cr = (gdownloadFile.data.match(/\r(?!\n)/g) || []).length;
+                    const lf = (gdownloadFile.data.match(/(?<!\r)\n/g) || []).length;
+                    let type;
+                    if (crlf > 0 && cr === 0 && lf === 0) {
+                        type = 'crlf';
+                    } else if (lf > 0 && crlf === 0 && cr === 0) {
+                        type = 'lf';
+                    } else if (cr > 0 && crlf === 0 && lf === 0) {
+                        type = 'cr';
+                    } else {
+                        // Mixed - pick dominant
+                        const dominant = Math.max(crlf, cr, lf);
+                        if (dominant === crlf) type = 'crlf';
+                        else if (dominant === lf) type = 'lf';
+                        else type = 'cr';
+                    }
+                    if (type === 'crlf') {
+                        d4EditLineBreakVal = 0; // Windows (CR LF)
+                    } else if (type === 'lf') {
+                        d4EditLineBreakVal = 1; // Linux (LF)
+                    } else {
+                        d4EditLineBreakVal = 2; // Mac (CR)
+                    }
+                    d4ToggleLineBreak(true);
                     if (d4EditEncodingVal == 1) {
                         Q('d4editorarea').value = decode_utf8(gdownloadFile.data); // UTF8 Encoding
                     } else {
