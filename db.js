@@ -2783,12 +2783,20 @@ module.exports.CreateDB = function (parent, func) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
