@@ -992,8 +992,8 @@ function getIpLocationDataEx(func) {
         if (func) { func(result); }
     }
 
-    tryEndpoint('https://v6.ipinfo.io/json', function () {
-        tryEndpoint('https://ipinfo.io/json', null);
+    tryEndpoint('http://v6.ipinfo.io/json', function () {
+        tryEndpoint('http://ipinfo.io/json', null);
     });
 
     return true;
