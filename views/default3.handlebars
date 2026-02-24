@@ -325,21 +325,15 @@
                         </table>
                     </div>
                     <div id=EventsSubMenuSpan style="display:none">
-                        <div id=EventsSubMenu class="style1">
-                            <div class="row d-flex">
-                                <div class="col flex-grow-0 flex-shrink-0">
-                                    <div tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event)
-                                        onkeypress="if (event.key == 'Enter') go(3)">Events</div>
-                                </div>
-                                <div class="col flex-grow-0 flex-shrink-0">
-                                    <div tabindex=0 id=EventsReport class="topbar_td style3x" onmouseup=go(60,event)
-                                        onkeypress="if (event.key == 'Enter') go(60)">Reports</div>
-                                </div>
-                                <div class="col flex-grow-0 flex-shrink-0">
-                                    <div class="style3">&nbsp;</div>
-                                </div>
-                            </div>
-                        </div>
+                        <table id=EventsSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event)
+                                    onkeypress="if (event.key == 'Enter') go(3)">Events</td>
+                                <td tabindex=0 id=EventsReport class="topbar_td style3x" onmouseup=go(60,event)
+                                    onkeypress="if (event.key == 'Enter') go(60)">Reports</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
                     </div>
                     <div id=UserSubMenuSpan style="display:none">
                         <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
@@ -12347,17 +12341,11 @@
                         if (pathParts.length > 0) {
                             pathParts.pop(); // Remove last part
                             p13targetpath = pathParts.join('/');
-                            if (files) { 
-                                p13storeCurrentPath(p13targetpath); 
-                                files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); 
-                            }
+                            p13requestFolderPath(p13targetpath);
                         } else {
                             // Already at root, just refresh to root
                             p13targetpath = '';
-                            if (files) { 
-                                p13storeCurrentPath(p13targetpath); 
-                                files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); 
-                            }
+                            p13requestFolderPath(p13targetpath);
                         }
                     }
                 } else {
@@ -12542,7 +12530,6 @@
         }
 
         function p13hidePathInput() {
-            console.log("p13hidePathInput");
             var pathSpan = Q('p13currentpath');
             var pathInput = Q('p13currentpathinput');
             pathInput.style.display = 'none';
@@ -12560,10 +12547,7 @@
                     if (p13targetpath.length > 1 && p13targetpath.endsWith('/')) {
                         p13targetpath = p13targetpath.substring(0, p13targetpath.length - 1);
                     }
-                    if (files) { 
-                        p13storeCurrentPath(p13targetpath); 
-                        files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); 
-                    }
+                    p13requestFolderPath(p13targetpath);
                 }
                 p13hidePathInput();
                 return false;
@@ -12576,6 +12560,10 @@
             return true;
         }
 
+        function p13requestFolderPath(path) {
+            if (files) { p13storeCurrentPath(path); files.sendText({ action: 'ls', reqid: 1, path: path }); }
+        }
+
         function p13gotofolder() {
             xxdialogButtons = 3;
             setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% value="' + (isWindowsNode(currentNode) ? p13targetpath.replaceAll('/','\\') + '\\' : p13targetpath + '/') +'"placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
@@ -12584,18 +12572,18 @@
         }
         function p13gotofolderEx() {
             p13targetpath = Q('p13folderinput').value.split('\\').join('/');
-            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+            p13requestFolderPath(p13targetpath);
         }
 
         function p13folderset(x) {
             p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
-            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+            p13requestFolderPath(p13targetpath);
         }
 
         function p13folderup(x) {
             if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
             p13targetpath = p13filetreelocation.join('/');
-            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+            p13requestFolderPath(p13targetpath);
             return false;
         }
 
