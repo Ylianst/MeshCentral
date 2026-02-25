@@ -96,10 +96,14 @@
           }
         },
         "sqlite3": {
-          "type": [ "boolean", "string", "object" ],
+          "type": [
+            "boolean",
+            "string",
+            "object"
+          ],
           "default": false,
           "description": "Set boolean true to use SQLite3 as a local MeshCentral database with default db filename 'meshcentral' or enter a string for a different db filename. Extension .sqlite is appended",
-          "properties":{
+          "properties": {
             "name": {
               "type": "string",
               "default": "meshcentral",
@@ -931,7 +935,7 @@
               "default": 10,
               "description": "How many days of backups should the autobackup keep? Default is 10 Days worth"
             },
-            "zipCompression" : {
+            "zipCompression": {
               "type": "integer",
               "default": "5",
               "description": "Set the zip compression level, 1=fast/less small file to 9=slow/smallest file."
@@ -967,7 +971,7 @@
               "default": [],
               "description": "Glob for ignoring files in the data directory. For example [\"**/*.log\"] !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !! Don't do string..."
             },
-            "backupSkipFoldersGlob":{
+            "backupSkipFoldersGlob": {
               "type": "array",
               "default": [],
               "description": "Glob for ignoring directories in the data directory. For example [\"**/signedagents\"]"
@@ -1374,7 +1378,7 @@
             "items": {
               "type": "string"
             },
-            "description": "When set, new accounts will be added to these siteadmin rights."
+            "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
           },
           "allowedOrigin": {
             "type": [
@@ -1820,7 +1824,11 @@
               "fidopininput": {
                 "type": "string",
                 "default": "preferred",
-                "enum": ["preferred", "required", "discouraged"],
+                "enum": [
+                  "preferred",
+                  "required",
+                  "discouraged"
+                ],
                 "description": "Controls FIDO PIN prompt behavior: 'preferred' (asks only if key requires PIN), 'required' (always asks for PIN), or 'discouraged' (never asks for PIN). Default: 'preferred'."
               },
               "allowaccountreset": {
@@ -3236,7 +3244,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3288,7 +3296,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3340,7 +3348,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3412,7 +3420,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3469,7 +3477,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "entityid": {
                     "type": "string",
@@ -3532,7 +3540,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "entityid": {
                     "type": "string",
@@ -3614,7 +3622,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -4099,7 +4107,7 @@
         "custom": {
           "type": "object",
           "description": "If this object is set, we will use a custom acme server with custom kid and hmackey for SSL creation instead of Let's Encrypt",
-          "required": [ 
+          "required": [
             "server",
             "kid",
             "hmackey"
