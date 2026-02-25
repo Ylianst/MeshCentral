@@ -1,5 +1,5 @@
 ### STAGE 1 BUILDING.
-FROM node:22-alpine3.22 AS builder
+FROM alpine:3.23 AS builder
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_EXTRACT="yes"
@@ -8,7 +8,9 @@ ARG DISABLE_TRANSLATE="yes"
 #    NODE_OPTIONS="--max_old_space_size=4096"
 # If your process gets OOM killed, perhaps the above will help.
 
-RUN mkdir -p /opt/meshcentral/meshcentral
+RUN apk add --no-cache --update \
+        nodejs npm; \
+    mkdir -p /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
@@ -47,11 +49,11 @@ RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node
 
 ### STAGE 2 PRECOMPILE DEPS MODULE
 
-FROM node:22-alpine3.22 AS dep-compiler
+FROM alpine:3.23 AS dep-compiler
 
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
     apk add --no-cache --update \
-        bash gcc g++ jq make python3 tzdata
+        bash gcc g++ jq make nodejs npm python3 tzdata
 
 COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
@@ -63,8 +65,7 @@ RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' pack
 
 ### STAGE 3 BUILDING.
 
-FROM node:22-alpine3.22 AS finalizer
-#FROM alpine:3.22 AS finalizer
+FROM alpine:3.23 AS finalizer
 
 # copy files from previous layer
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
@@ -127,12 +128,10 @@ ENV MARIADB_HOST="" \
     MARIADB_PASS="" \
     MARIADB_DATABASE=""
 
-RUN mkdir -p /opt/meshcentral/meshcentral
-WORKDIR /opt/meshcentral
-
 RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
+    mkdir -p /opt/meshcentral/meshcentral; \
     apk add --no-cache --update \
-        bash curl jq tzdata && \
+        bash curl jq nodejs npm tzdata && \
     rm -rf /var/cache/* \
         /tmp/* \
         /usr/share/man/ \
@@ -141,6 +140,8 @@ RUN echo -e "----------\nINSTALLING ALPINE PACKAGES...\n----------"; \
         /var/spool/* \
         /usr/lib/debug/ && \
     npm install -g npm@latest
+
+WORKDIR /opt/meshcentral
 
 RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
