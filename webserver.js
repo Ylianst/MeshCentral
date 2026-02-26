@@ -8073,13 +8073,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': ['openid', 'profile', 'email'] });
             }
             if (typeof strategy.groups == 'object') {
-                let groupScope = strategy.groups.scope || null
-                if (groupScope == null) {
-                    if (preset == 'azure') { groupScope = 'Group.Read.All' }
-                    if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
-                    if (typeof preset != 'string') { groupScope = 'groups' }
+                strategy.custom.authorities = obj.common.convertStrArray(strategy.custom.authorities, ' ')
+                // Check if authorities does not exist or includes groups
+                if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
+                    let groupScope = strategy.groups.scope || null
+                    if (groupScope == null) {
+                        if (preset == 'azure') { groupScope = 'Group.Read.All' }
+                        if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
+                        if (typeof preset != 'string') { groupScope = 'groups' }
+                    }
+                    strategy.options.params.scope.push(groupScope)
+					parent.authLog('setupDomainAuthStrategy', `OIDC: Groups sync enabled, added group scope to request: ${strategy.options.params.scope}`);
                 }
-                strategy.options.params.scope.push(groupScope)
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
 
@@ -8227,8 +8232,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 }
 
-                // If profile is null/undefined, extract user info from the tokenset
-                if (!profile && tokenset && tokenset.id_token) {
+                // If profile is null/undefined or roles are requested, extract user info from the tokenset
+                if ((!profile || (strategy.custom.authorities.includes('roles')) && !profile.roles) && tokenset && tokenset.id_token) {
                     try {
                         // Simple JWT decoder to extract user claims from id_token
                         const parts = tokenset.id_token.split('.');
@@ -8237,7 +8242,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
                             const decoded = JSON.parse(Buffer.from(paddedPayload, 'base64').toString());
                             if (decoded) {
-                                profile = decoded;
+                                if(!profile){
+                                    profile = decoded;
+                                } else {
+                                    profile.roles = decoded.roles;
+                                }
                             }
                         }
                     } catch (err) {
@@ -8276,6 +8285,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 
                 user.emailVerified = profile && profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
                 user.groups = profile && obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                user.roles = profile && obj.common.validateStrArray(profile.roles, 1) ? profile.roles : null;
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
                 if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
                     user.groups = profile && obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
@@ -8294,16 +8304,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup presets and groups, get groups from API if needed then return
                 if (strategy.groups && typeof user.preset == 'string') {
-                    getGroups(user.preset, tokenset).then((groups) => {
-                        user = Object.assign(user, { 'groups': groups });
-                        done(null, user);
-                    }).catch((err) => {
-                        let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
-                        parent.debug('error', `${JSON.stringify(error)}`);
-                        parent.authLog('oidcCallback', error.message);
-                        user.groups = [];
-                        done(null, user);
-                    });
+                    if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
+                        getGroups(user.preset, tokenset).then((groups) => {
+                            user = Object.assign(user, { 'groups': groups });
+                            //done(null, user);
+                        }).catch((err) => {
+                            let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
+                            parent.debug('error', `${JSON.stringify(error)}`);
+                            parent.authLog('oidcCallback', error.message);
+                            user.groups = [];
+                            //done(null, user);
+                        });
+                    }
+                    if(strategy.custom.authorities.includes('roles')){
+                        if(user.roles){
+                            if(!strategy.custom.authorities.includes('groups')){
+                                user.groups = user.roles;
+                            } else {
+                                user.groups = (user.groups || []).concat(user.roles);
+                            }
+                        }
+                    }
+                    parent.authLog('OIDC: USER GROUPS/ROLES:', user);
+                    done(null, user);
                 } else {
                     done(null, user);
                 }
