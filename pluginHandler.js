@@ -256,10 +256,12 @@ module.exports.pluginHandler = function (parent) {
                 options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
             }
             http.get(options, function (res) {
+
                 var configStr = '';
                 res.on('data', function (chunk) {
                     configStr += chunk;
                 });
+
                 res.on('end', function () {
                     if (configStr[0] == '{') { // Let's be sure we're JSON
                         try {
@@ -437,14 +439,16 @@ module.exports.pluginHandler = function (parent) {
                     method: 'GET'
                 };
                 if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
-					opts.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
-				}
+                    opts.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+                }
+                var done = false;
                 var request = http.get(opts, function (response) {
                     // handle redirections with grace
                     if (response.headers.location) {
                         file.close(() => obj.fs.unlink(fileName, () => {}));
                         return obj.installPlugin(id, version_only, response.headers.location, func);
                     }
+                    if ((response.statusCode != null) && (response.statusCode >= 400)) { return console.log('Error downloading plugin: HTTP ' + response.statusCode); }
                     response.pipe(file);
                     file.on('finish', function () {
                         file.close(function () {
@@ -484,11 +488,11 @@ module.exports.pluginHandler = function (parent) {
                                 });
                                 zipfile.on('end', function () {
                                     setTimeout(function () {
-                                        obj.fs.unlinkSync(fileName);
+                                        try { obj.fs.unlinkSync(fileName); } catch (ex) { }
                                         if (version_only == null || version_only === false) {
-                                            parent.db.setPluginStatus(id, 1, func);
+                                            parent.db.setPluginStatus(id, 1, function () { if (done) return; done = true; if (typeof func == 'function') { func(null); } });
                                         } else {
-                                            parent.db.updatePlugin(id, { status: 1, version: version_only.name }, func);
+                                            parent.db.updatePlugin(id, { status: 1, version: version_only.name }, function () { if (done) return; done = true; if (typeof func == 'function') { func(null); } });
                                         }
                                         try {
                                             obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
@@ -503,10 +507,13 @@ module.exports.pluginHandler = function (parent) {
                                         parent.updateMeshCore();
                                     });
                                 });
+                                zipfile.on('error', function (e) { console.log('Error extracting plugin ZIP: ' + e.message); });
                             });
                         });
                     });
                 });
+                request.on('error', function (e) { console.log('Error downloading plugin: ' + e.message); });
+                request.setTimeout(30000, function () { request.destroy(new Error('Timed out while downloading plugin')); });
             } else if (plugin.repository.type == 'npm') {
                 // @TODO npm support? (need a test plugin)
             }
@@ -531,8 +538,8 @@ module.exports.pluginHandler = function (parent) {
                     }
                 };
                 if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
-					options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
-				}
+                    options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+                }
                 http.get(opts, function (res) {
                     var versStr = '';
                     res.on('data', function (chunk) {
