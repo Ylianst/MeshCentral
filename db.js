@@ -3436,6 +3436,13 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 if ((error != null) && (error != '')) {
                         func(1, "Mongodump error, backup will not be performed. Check path or use mongodumppath & mongodumpargs");
+						
+						let processedError = error;
+						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
+							processedError = encodeURIComponent(processedError.replaceAll(parent.config.settings.postgres.password, "****"));
+						}
+						parent.debug('backup', 'MongoDB/MongoJS DumpTool: ' + processedError);			
+						
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
@@ -3447,6 +3454,13 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath, timeout: 1000*30 }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
                         func(1, "mysqldump error, backup will not be performed. Check path or use mysqldumppath");
+						
+						let processedError = error;
+						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
+							processedError = encodeURIComponent(processedError.replaceAll(parent.config.settings.postgres.password, "****"));
+						}
+						parent.debug('backup', 'MariaDB/MySQL DumpTool: ' + processedError);
+						
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
 
@@ -3462,6 +3476,13 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
                         func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath.");
+						
+						let processedError = error;
+						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
+							processedError = encodeURIComponent(processedError.replaceAll(parent.config.settings.postgres.password, "****"));
+						}
+						parent.debug('backup', 'PostgreSQL DumpTool: ' + processedError);				
+						
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
