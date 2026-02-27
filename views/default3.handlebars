@@ -1288,7 +1288,7 @@
                                     <option value=6>Descend by date</option>
                                 </select>
                             </div>
-                            <div>&nbsp;&nbsp;<span id="p13currentpath"></span></div>
+                            <div id="p13pathrow" style="display:none" ondblclick="p13pathRowClick(event)">&nbsp;&nbsp;<span id="p13currentpath" ondblclick="p13pathRowClick(event)"></span><input type="text" id="p13currentpathinput" class="form-control form-control-sm" style="width: auto; min-width: 400px; display:none;" onkeydown="return p13onPathKeyDown(event)" onblur="p13hidePathInput()" /></div>
                         </td>
                     </tr>
                 </table>
@@ -12177,6 +12177,8 @@
             QV('p13Connectspan', (state == 0) && (filesNode.mtype == 2)); // Files Connect button and dropdown
             QV('p13Connectsspan', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));  // Files SFTP Connect button and dropdown
             QV('p13Disconnect', state != 0);
+            QV('p13pathrow', state == 3);
+            if (state != 3) { QV('p13currentpathinput', false); QV('p13currentpath', true); }
             var str = StatusStrs[state];
             if (state == 3) {
                 if (files.contype == 2) { str += ", SFTP"; }
@@ -12190,6 +12192,9 @@
                     p13filetree = null;
                     p13filetreelocation = [];
                     QH('p13currentpath', '');
+                    Q('p13currentpathinput').value = '';
+                    QV('p13currentpathinput', false);
+                    QV('p13currentpath', true);
                     QE('p13FolderUp', false);
                     QV('filesRecordIcon', false);
                     p13setActions();
@@ -12330,7 +12335,19 @@
 
             if (data.path != null) {
                 if (data.dir == null) {
-                    if (p13targetpath != '') { p13folderup(); }
+                    // Path not found, go up directory tree until we find a valid path
+                    if (p13targetpath != '') { 
+                        var pathParts = p13targetpath.split('/').filter(function(p) { return p != ''; });
+                        if (pathParts.length > 0) {
+                            pathParts.pop(); // Remove last part
+                            p13targetpath = pathParts.join('/');
+                            p13requestFolderPath(p13targetpath);
+                        } else {
+                            // Already at root, just refresh to root
+                            p13targetpath = '';
+                            p13requestFolderPath(p13targetpath);
+                        }
+                    }
                 } else {
                     data.path = data.path.replace(/\//g, '\\');
                     if ((p13filetree != null) && (data.path == p13filetree.path)) {
@@ -12380,13 +12397,23 @@
         }
 
         function p13updateFiles(checkedNames) {
-            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p13folderup(0)">' + "Root" + '</a>', fullPath = 'Root';
+            var html1 = '', html2 = '', displayPath = '', displayPathInput = '';
             if (p13filetree == null) return;
             // Work on parsing the file path
             var x = p13filetree.path.split('\\');
             p13filetreelocation = [];
             for (var i in x) { if (x[i] != '') { p13filetreelocation.push(x[i]); } } // Remove empty spaces
-            for (var i in p13filetreelocation) { displayPath += ' / <a href=# style=cursor:pointer onclick="return p13folderup(' + (parseInt(i) + 1) + ')">' + EscapeHtml(p13filetreelocation[i]) + '</a>' } // Setup the path we display
+            // Set the breadcrumb display value
+            displayPath = '<a href=# style=cursor:pointer onclick="return p13folderup(0)">' + "Root" + '</a>';
+            for (var i in p13filetreelocation) { displayPath += ' / <a href=# style=cursor:pointer onclick="return p13folderup(' + (parseInt(i) + 1) + ')">' + EscapeHtml(p13filetreelocation[i]) + '</a>'; }
+            // Set the input display value
+            if (isWindowsNode(currentNode)) {
+                displayPathInput = p13filetreelocation.join('\\');
+                if (displayPathInput && !displayPathInput.endsWith('\\')) { displayPathInput += '\\'; }
+            } else {
+                displayPathInput = '/' + p13filetreelocation.join('/');
+                if (displayPathInput != '/' && !displayPathInput.endsWith('/')) { displayPathInput += '/'; }
+            }
             var newlinkpath = p13filetreelocation.join('/');
 
             // Sort the files
@@ -12461,6 +12488,7 @@
             // Display the files and path
             QH('p13files', html1 + html2);
             QH('p13currentpath', displayPath);
+            Q('p13currentpathinput').value = displayPathInput;
             QE('p13FolderUp', p13filetreelocation.length != 0);
 
             // Re-check all boxes if needed using names
@@ -12485,6 +12513,57 @@
             files.sendText({ action: 'open', reqid: 1, path: openfilefolder, dir: (p13getFileSelDirCount() == 1) ? true : false });
         }
 
+        // Path input field handlers
+        function p13pathRowClick(event) {
+            if (event && event.target && event.target.closest && (event.target.closest('.toright2') || event.target.closest('select') || event.target.closest('input') || event.target.closest('button'))) { return; }
+            if ((!event || event.type !== 'dblclick') && event && event.target && ((event.target.tagName == 'A') || (event.target.closest && event.target.closest('a')))) { return; }
+            p13showPathInput();
+        }
+
+        function p13showPathInput() {
+            var pathSpan = Q('p13currentpath');
+            var pathInput = Q('p13currentpathinput');
+            pathSpan.style.display = 'none';
+            pathInput.style.display = 'inline-block';
+            pathInput.focus();
+            pathInput.select();
+        }
+
+        function p13hidePathInput() {
+            var pathSpan = Q('p13currentpath');
+            var pathInput = Q('p13currentpathinput');
+            pathInput.style.display = 'none';
+            pathSpan.style.display = '';
+        }
+
+        function p13onPathKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                var pathInput = Q('p13currentpathinput');
+                var newPath = pathInput.value.trim();
+                if (newPath) {
+                    p13targetpath = newPath.split('\\').join('/');
+                    // Remove trailing slash for consistency
+                    if (p13targetpath.length > 1 && p13targetpath.endsWith('/')) {
+                        p13targetpath = p13targetpath.substring(0, p13targetpath.length - 1);
+                    }
+                    p13requestFolderPath(p13targetpath);
+                }
+                p13hidePathInput();
+                return false;
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                p13hidePathInput();
+                p13updateFiles();
+                return false;
+            }
+            return true;
+        }
+
+        function p13requestFolderPath(path) {
+            if (files) { p13storeCurrentPath(path); files.sendText({ action: 'ls', reqid: 1, path: path }); }
+        }
+
         function p13gotofolder() {
             xxdialogButtons = 3;
             setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% value="' + (isWindowsNode(currentNode) ? p13targetpath.replaceAll('/','\\') + '\\' : p13targetpath + '/') +'"placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
@@ -12493,18 +12572,18 @@
         }
         function p13gotofolderEx() {
             p13targetpath = Q('p13folderinput').value.split('\\').join('/');
-            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+            p13requestFolderPath(p13targetpath);
         }
 
         function p13folderset(x) {
             p13targetpath = joinPaths(p13filetree.path, p13filetree.dir[x].n).split('\\').join('/');
-            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+            p13requestFolderPath(p13targetpath);
         }
 
         function p13folderup(x) {
             if (x == null) { p13filetreelocation.pop(); } else { while (p13filetreelocation.length > x) { p13filetreelocation.pop(); } }
             p13targetpath = p13filetreelocation.join('/');
-            if (files) { p13storeCurrentPath(p13targetpath); files.sendText({ action: 'ls', reqid: 1, path: p13targetpath }); }
+            p13requestFolderPath(p13targetpath);
             return false;
         }
 
