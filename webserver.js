@@ -2157,7 +2157,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 }
                             }
                         }
-                    });
+                });
                 }
             } else {
                 render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
@@ -4592,7 +4592,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
                         try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { }
                     });
-                });
+                }
                 res.send('');
             });
         });
@@ -4834,7 +4834,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
                             try { obj.fs.unlink(uploadTempPath, function (err) { }); } catch (e) { }
                         }
-                    });
+                    }
                 }
             } else {
                 // Send a notification
@@ -4900,7 +4900,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.common.copyFile(uploadTempPath, targetPath, function (err) { obj.fs.unlink(uploadTempPath, function (err) { }); });
                     }
                 });
-            });
+            }
 
             // Instruct one of more agents to download a URL to a given local drive location.
             var tlsCertHash = null;
